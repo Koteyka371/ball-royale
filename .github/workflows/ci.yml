@@ -10,7 +10,7 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -24,26 +24,21 @@ jobs:
     runs-on: ubuntu-latest
     needs: validate
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-          cache: pip
 
-      - name: Install dependencies
-        run: pip install -r requirements.txt
+      - name: Run AI behavior tests
+        run: python scripts/test_ai_behaviors.py
 
-      - name: Run tests
-        run: pytest tests/ -v
-
-  auto-merge-check:
-    runs-on: ubuntu-latest
-    needs: test
-    if: github.event_name == 'pull_request'
-    steps:
-      - name: Check task risk level
+      - name: Run pytest (if tests exist)
         run: |
-          echo "PR ready for merge if risk is low/medium"
-          echo "High/critical risk requires human review"
+          if ls tests/test_*.py 1>/dev/null 2>&1; then
+            pip install pytest
+            pytest tests/ -v
+          else
+            echo "No pytest tests yet, skipping..."
+          fi
