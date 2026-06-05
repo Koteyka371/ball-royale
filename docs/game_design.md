@@ -373,45 +373,48 @@ def make_decision(ball, world):
 
 ---
 
-## Innovation Lab (Self-Evolution Goals)
+## Innovation Lab (Jules Lives Here)
 
 This project is designed to EVOLVE autonomously. Each Jules cycle should push boundaries.
 
-### Things That Don't Exist Yet (Invent These)
+### Priority Innovations (Work on These)
 
-1. **Emergent AI** — Balls that develop personalities over multiple battles. A ball that wins 5 fights in a row becomes arrogant (takes more risks). A ball that keeps losing becomes cautious.
+1. **Ball Genetics** — Balls reproduce after surviving N battles. Offspring inherit traits (speed, damage, color) with random mutations. Over generations, the population adapts.
 
-2. **Swarm Intelligence** — Balls coordinate without explicit commands. If 3 balls see the same enemy, they automatically flank from different sides. No "team" designation needed.
+2. **Neural Ball** — A ball controlled by a simple neural network (numpy, no external libs). It gets inputs (distance to enemies, HP, boosters nearby) and outputs actions. After each battle, it learns from wins/losses.
 
-3. **Emotional Contagion** — Fear spreads. If one ball flees, nearby balls become nervous. If one ball attacks aggressively, nearby balls become bolder.
+3. **Swarm Intelligence** — Balls coordinate without explicit commands. If 3 balls see the same enemy, they automatically flank from different sides. No "team" designation needed. Based on boid rules.
 
-4. **Procedural Storytelling** — Each battle generates a narrative. "Red ball #7, once a coward, finally defeated its nemesis Blue ball #3 after 5 encounters."
+4. **Emotional Contagion** — Fear spreads like a virus. If one ball flees, nearby balls have a chance to become nervous. If one ball attacks aggressively, nearby balls become bolder. Creates chain reactions.
 
-5. **AI Commentary** — An AI commentator that analyzes the battle in real-time and generates exciting commentary for YouTube.
+5. **AI Commentary** — A text generator that watches the battle and produces exciting commentary: "Red #7 is on a killing spree! Blue #3 is trying to flank but — OH! Taken out by a surprise attack!"
 
-6. **Ball Evolution** — Balls that learn from experience. A ball that survives many battles gains new abilities or improves existing ones.
+6. **Ball Relationships** — Balls remember each other. Rivalry (attacked me before → attack on sight), Alliance (survived together → protect), Grudge (killed my ally → revenge).
 
-7. **Physics Emergence** — Balls bouncing off each other create unexpected chain reactions. A well-timed bounce can save a life or cause a kill.
+7. **Procedural Arenas** — Generate arenas with hazards, walls, teleporters, gravity zones. Each battle has a unique arena.
 
-8. **Meta-Game** — Between battles, balls have relationships. Rivalries, alliances, grudges. A ball might refuse to attack its "friend" even if commanded.
+8. **Meta Evolution** — Between battles, balls have a "development phase" where they choose which stat to upgrade. Over many battles, each ball becomes unique.
 
-9. **Neural Ball** — A ball controlled by a simple neural network that actually learns to play better over time (not scripted AI).
+9. **Physics Chain Reactions** — Balls bouncing off walls/enemies create ripple effects. A well-timed bounce can push an enemy into a hazard.
 
-10. **Chaos Theory** — Tiny changes in initial conditions create wildly different outcomes. The same battle played twice should never be identical.
+10. **Battle Royale Shrinking Zone** — The arena shrinks over time, forcing balls into closer combat. Creates tension and prevents camping.
 
-### Infrastructure Self-Improvement
+### Self-Improvement (Improve These Every Cycle)
 
-The project itself should evolve:
-- Better test coverage each cycle
-- Performance benchmarks that track improvement
-- Code quality metrics that get better over time
-- Documentation that writes itself
-- CI/CD that becomes more sophisticated
+- Better test coverage
+- Faster simulation (optimize the spatial grid)
+- Better AI decision making
+- More emergent behavior
+- Cleaner code architecture
+- Better documentation
+- New automation scripts
+- Improved CI/CD
 
-### The Ultimate Goal
+### The Ultimate Vision
 
-After 50 Jules cycles, this project should be:
-- A working game with emergent AI behavior
-- A research platform for artificial life
-- A YouTube content machine
-- A codebase that improves itself
+After many Jules cycles, this project should be:
+- A living artificial life simulation
+- A research platform for emergent AI
+- A game that plays itself in increasingly interesting ways
+- A codebase that improves itself with each cycle
+- Something that makes people say: "An AI built this?"
