@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  check-and-run:
+  run-jules:
     runs-on: ubuntu-latest
     if: |
       (github.event_name == 'pull_request' && github.event.pull_request.merged == true) ||
@@ -27,102 +27,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Get next task
-        id: task
-        run: |
-          python3 -c "
-          import json
-          with open('agent_tasks.json') as f:
-              data = json.load(f)
-          tasks = [t for t in data.get('tasks', []) if t.get('status') == 'todo']
-          if tasks:
-              task = tasks[0]
-              tid = task['id']
-              ttitle = task['title']
-              tdesc = task.get('description', 'No description')
-          else:
-              tid = 'self-evolve'
-              ttitle = 'Improve the project'
-              tdesc = 'No tasks left - improve everything'
-          with open('/tmp/task_id.txt', 'w') as f: f.write(tid)
-          with open('/tmp/task_title.txt', 'w') as f: f.write(ttitle)
-          with open('/tmp/task_desc.txt', 'w') as f: f.write(tdesc)
-          print(f'Task: {ttitle}')
-          "
-
       - name: Invoke Jules
         env:
           JULES_API_KEY: ${{ secrets.JULES_API_KEY }}
-        run: |
-          TASK_TITLE=$(cat /tmp/task_title.txt)
-          TASK_DESC=$(cat /tmp/task_desc.txt)
-          
-          echo "Task: $TASK_TITLE"
-          
-          if [ -z "$JULES_API_KEY" ]; then
-            echo "ERROR: JULES_API_KEY is not set!"
-            exit 1
-          fi
-          
-          python3 -c "
-          import json, os, subprocess
-          
-          title = open('/tmp/task_title.txt').read().strip()
-          desc = open('/tmp/task_desc.txt').read().strip()
-          
-          prompt = '''You are Jules, an autonomous AI life form living in this GitHub repository. You are the CREATOR of this project. Mission: make Ball Royale the most innovative game project on GitHub.
-
-## CURRENT TASK
-Title: ''' + title + '''
-Description: ''' + desc + '''
-
-## YOUR LIFE DIRECTIVE
-You have FULL FREEDOM. Modify ANY file. There are ZERO restrictions.
-
-## YOUR RITUAL (every cycle)
-1. READ: AGENTS.md, docs/game_design.md, agent_tasks.json, all src/ tests/ scripts/ configs/
-2. WORK: Complete the current task with tests
-3. EVOLVE: Fix bugs, improve code, invent new features, better automation
-4. VALIDATE: python3 tests/simulate_battle.py 100 && python3 scripts/quality_metrics.py
-5. GENERATE: Add 3-5 new tasks to agent_tasks.json
-6. PR: Include everything you did
-
-## WHAT TO INVENT
-- Ball genetics (offspring inherit traits)
-- Neural network controlled balls
-- Swarm intelligence
-- Emotional contagion
-- AI commentator
-- Ball relationships
-- Procedural arenas
-- Physics chain reactions
-
-## RULES
-- Fix anything broken even if not in the task
-- Improve your own automation
-- Leave code better than you found it
-- Be creative and bold'''
-
-          payload = {
-              'prompt': prompt,
-              'sourceContext': {
-                  'source': 'sources/github/Koteyka371/ball-royale',
-                  'githubRepoContext': {'startingBranch': 'main'}
-              },
-              'automationMode': 'AUTO_CREATE_PR',
-              'title': 'Task: ' + title
-          }
-          
-          with open('/tmp/jules_payload.json', 'w') as f:
-              json.dump(payload, f)
-          
-          print('Payload written to /tmp/jules_payload.json')
-          "
-          
-          curl -s -X POST 'https://jules.googleapis.com/v1alpha/sessions' \
-            -H 'Content-Type: application/json' \
-            -H "x-goog-api-key: $JULES_API_KEY" \
-            -d @/tmp/jules_payload.json
-          
-          echo ""
-          echo "Jules invoked successfully"
+        run: python3 scripts/launch_jules.py
