@@ -370,3 +370,48 @@ def make_decision(ball, world):
 - [ ] Highlight detection
 - [ ] Replay system
 - [ ] Stats overlay
+
+---
+
+## Innovation Lab (Self-Evolution Goals)
+
+This project is designed to EVOLVE autonomously. Each Jules cycle should push boundaries.
+
+### Things That Don't Exist Yet (Invent These)
+
+1. **Emergent AI** — Balls that develop personalities over multiple battles. A ball that wins 5 fights in a row becomes arrogant (takes more risks). A ball that keeps losing becomes cautious.
+
+2. **Swarm Intelligence** — Balls coordinate without explicit commands. If 3 balls see the same enemy, they automatically flank from different sides. No "team" designation needed.
+
+3. **Emotional Contagion** — Fear spreads. If one ball flees, nearby balls become nervous. If one ball attacks aggressively, nearby balls become bolder.
+
+4. **Procedural Storytelling** — Each battle generates a narrative. "Red ball #7, once a coward, finally defeated its nemesis Blue ball #3 after 5 encounters."
+
+5. **AI Commentary** — An AI commentator that analyzes the battle in real-time and generates exciting commentary for YouTube.
+
+6. **Ball Evolution** — Balls that learn from experience. A ball that survives many battles gains new abilities or improves existing ones.
+
+7. **Physics Emergence** — Balls bouncing off each other create unexpected chain reactions. A well-timed bounce can save a life or cause a kill.
+
+8. **Meta-Game** — Between battles, balls have relationships. Rivalries, alliances, grudges. A ball might refuse to attack its "friend" even if commanded.
+
+9. **Neural Ball** — A ball controlled by a simple neural network that actually learns to play better over time (not scripted AI).
+
+10. **Chaos Theory** — Tiny changes in initial conditions create wildly different outcomes. The same battle played twice should never be identical.
+
+### Infrastructure Self-Improvement
+
+The project itself should evolve:
+- Better test coverage each cycle
+- Performance benchmarks that track improvement
+- Code quality metrics that get better over time
+- Documentation that writes itself
+- CI/CD that becomes more sophisticated
+
+### The Ultimate Goal
+
+After 50 Jules cycles, this project should be:
+- A working game with emergent AI behavior
+- A research platform for artificial life
+- A YouTube content machine
+- A codebase that improves itself
