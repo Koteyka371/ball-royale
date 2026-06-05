@@ -22,31 +22,45 @@ jobs:
       - name: Get next task
         id: task
         run: |
-          TASK=$(python3 -c "
+          python3 -c "
           import json
           with open('agent_tasks.json') as f:
               data = json.load(f)
           tasks = [t for t in data.get('tasks', []) if t.get('status') == 'todo']
           if tasks:
               task = tasks[0]
-              print(f'{task[\"id\"]}|{task[\"title\"]}|{task[\"description\"]}')
+              print(f'task_id={task[\"id\"]}')
+              print(f'task_title={task[\"title\"]}')
+              with open('task.txt', 'w') as tf:
+                  tf.write(f'{task[\"id\"]}|{task[\"title\"]}|{task[\"description\"]}')
           else:
-              print('generate-ideas|Generate new tasks|Read game_design.md and generate new tasks')
-          ")
-          
-          IFS='|' read -r TASK_ID TASK_TITLE TASK_DESC <<< "$TASK"
+              print('task_id=generate-ideas')
+              print('task_title=Generate new tasks')
+              with open('task.txt', 'w') as tf:
+                  tf.write('generate-ideas|Generate new tasks|Read game_design.md and generate new tasks')
+          "
+          cat task.txt
+
+      - name: Read task file
+        id: read_task
+        run: |
+          IFS='|' read -r TASK_ID TASK_TITLE TASK_DESC < task.txt
           echo "task_id=$TASK_ID" >> $GITHUB_OUTPUT
           echo "task_title=$TASK_TITLE" >> $GITHUB_OUTPUT
+          echo "task_desc=$TASK_DESC" >> $GITHUB_OUTPUT
 
-      - name: Invoke Jules via API
+      - name: Invoke Jules
         env:
           JULES_API_KEY: ${{ secrets.JULES_API_KEY }}
         run: |
-          curl -X POST 'https://jules.googleapis.com/v1alpha/sessions' \
+          echo "Task: ${{ steps.read_task.outputs.task_title }}"
+          echo "Starting Jules session..."
+          
+          RESPONSE=$(curl -s -X POST 'https://jules.googleapis.com/v1alpha/sessions' \
             -H 'Content-Type: application/json' \
             -H "x-goog-api-key: $JULES_API_KEY" \
             -d '{
-              "prompt": "You are working on Ball Royale game.\n\nCURRENT TASK: ${{ steps.task.outputs.task_title }}\n\nIMPORTANT RULES:\n1. Read AGENTS.md first\n2. Read docs/game_design.md\n3. All balls are AI-controlled\n4. Write code with tests\n5. Update agent_tasks.json (set status to done)\n6. Generate 2-3 new tasks\n7. Create a PR with changes",
+              "prompt": "You are working on Ball Royale game.\n\nCURRENT TASK: ${{ steps.read_task.outputs.task_title }}\n\nDESCRIPTION:\n${{ steps.read_task.outputs.task_desc }}\n\nRULES:\n1. Read AGENTS.md first\n2. Read docs/game_design.md\n3. Write code with tests\n4. Update agent_tasks.json (set task status to done)\n5. Create a PR",
               "sourceContext": {
                 "source": "sources/github/Koteyka371/ball-royale",
                 "githubRepoContext": {
@@ -54,28 +68,7 @@ jobs:
                 }
               },
               "automationMode": "AUTO_CREATE_PR",
-              "title": "Task: ${{ steps.task.outputs.task_title }}"
-            }'
-
-      - name: Mark task as done
-        if: success()
-        run: |
-          TASK_ID="${{ steps.task.outputs.task_id }}"
-          if [ "$TASK_ID" != "generate-ideas" ]; then
-            python3 << EOF
-          import json
+              "title": "Task: ${{ steps.read_task.outputs.task_title }}"
+            }')
           
-          with open('agent_tasks.json', 'r') as f:
-              data = json.load(f)
-          
-          for task in data.get('tasks', []):
-              if task.get('id') == '$TASK_ID':
-                  task['status'] = 'done'
-                  break
-          
-          with open('agent_tasks.json', 'w') as f:
-              json.dump(data, f, indent=2, ensure_ascii=False)
-          
-          print(f"Marked task $TASK_ID as done")
-          EOF
-          fi
+          echo "Response: $RESPONSE"
