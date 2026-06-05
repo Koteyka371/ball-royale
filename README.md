@@ -13,21 +13,47 @@
 ## Quick Start
 
 ```bash
-# Install dependencies
 pip install -r requirements.txt
-
-# Validate tasks
 python scripts/validate_tasks.py agent_tasks.json
-
-# Run tests
 python scripts/test_ai_behaviors.py
-
-# Analyze project
-python scripts/analyze_project.py
-
-# Generate ideas
-python scripts/generate_ideas.py
 ```
+
+## Jules Infinite Loop Setup
+
+### Step 1: Get Jules API Key
+
+1. Go to https://jules.google.com
+2. Sign in with GitHub
+3. Go to Settings → API Keys
+4. Create new API key
+5. Copy the key
+
+### Step 2: Add API Key to GitHub
+
+1. Go to https://github.com/Koteyka371/ball-royale/settings
+2. Secrets and variables → Actions
+3. New repository secret
+4. Name: `JULES_API_KEY`
+5. Value: your API key from step 1
+
+### Step 3: Install Jules GitHub App
+
+1. Go to https://jules.google.com
+2. Click "Install on GitHub"
+3. Select your repository
+
+### Step 4: Enable Workflow
+
+1. Go to https://github.com/Koteyka371/ball-royale/actions
+2. Click "Jules Infinite Loop"
+3. Click "Run workflow"
+
+That's it! Jules will now:
+1. Pick the first `todo` task from `agent_tasks.json`
+2. Implement it with code + tests
+3. Create a PR
+4. When PR is merged → triggers next task
+5. Generate new tasks when queue is low
 
 ## Project Structure
 
@@ -44,31 +70,13 @@ ball-royale/
 └── .github/workflows/        # CI/CD
 ```
 
-## Automation (GitHub Actions)
+## Automation
 
-### Auto-Improve (Daily)
-- Runs every day at 10:00 UTC
-- Analyzes project state
-- Generates new tasks from `game_design.md`
-- Creates PR with updates
-
-### Test (On Push)
-- Runs on every push to main
-- Validates task manifest
-- Runs AI behavior tests
-- Checks project status
-
-### Issue to Task
-- Add label `task` to any issue
-- Issue is automatically converted to task in `agent_tasks.json`
-
-## How It Works
-
-1. **Tasks** are defined in `agent_tasks.json`
-2. **Game design** is in `docs/game_design.md`
-3. **Scripts** analyze and generate new tasks
-4. **GitHub Actions** runs automatically
-5. **PRs** are created with improvements
+| Workflow | Trigger | Description |
+|----------|---------|-------------|
+| Jules Infinite Loop | PR merged / Manual | Jules picks and implements next task |
+| Auto-Improve | Daily | Generate new tasks from game_design.md |
+| Test | On push | Validate and test code |
 
 ## AI System
 
@@ -77,15 +85,6 @@ Each ball has a **BallBrain** with 4 layers:
 2. **Emotion** - fear, rage, greed based on situation
 3. **Decision** - choose best action
 4. **Action** - execute behavior
-
-## Contributing
-
-1. Create an issue with label `task`
-2. Issue is converted to task automatically
-3. Implement the task
-4. Create PR
-5. CI runs tests
-6. Merge when ready
 
 ## License
 
