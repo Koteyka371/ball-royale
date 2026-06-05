@@ -15,13 +15,15 @@ from ai.ball_brain import BallBrain
 
 
 class MockBall:
-    def __init__(self, hp=100, max_hp=100, personality="idle"):
+    def __init__(self, id_val, hp=100, max_hp=100, personality="idle"):
+        self.id = id_val
         self.hp = hp
         self.max_hp = max_hp
         self.personality = personality
         self.current_action = None
         self.x = 0.0
         self.y = 0.0
+        self.perception_radius = 300.0
 
     def get_hp_percent(self):
         return self.hp / self.max_hp if self.max_hp > 0 else 0.0
@@ -35,17 +37,24 @@ class MockBall:
 
 class MockWorld:
     def __init__(self):
-        self.entities = {"enemies": [], "allies": [], "boosters": []}
+        self.entities = {"enemies": [], "allies": [], "boosters": [], "traps": []}
 
     def get_nearby_entities(self, ball, radius):
         return self.entities
 
 
+class MockBooster:
+    def __init__(self, id_val):
+        self.id = id_val
+        self.x = 0.0
+        self.y = 0.0
+
+
 def benchmark_brain_tick(num_balls: int, num_iterations: int = 100) -> Dict:
-    balls = [MockBall(hp=100, max_hp=100) for _ in range(num_balls)]
+    balls = [MockBall(i, hp=100, max_hp=100) for i in range(num_balls)]
     world = MockWorld()
-    world.entities["enemies"] = [MockBall() for _ in range(num_balls // 3)]
-    world.entities["boosters"] = [1] * (num_balls // 10)
+    world.entities["enemies"] = [MockBall(i + 1000) for i in range(num_balls // 3)]
+    world.entities["boosters"] = [MockBooster(i + 2000) for i in range(num_balls // 10)]
 
     brains = [BallBrain(b, world) for b in balls]
 

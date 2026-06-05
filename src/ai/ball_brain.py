@@ -1,4 +1,5 @@
 from typing import Any, Dict
+from ai.perception import Perception
 
 
 class BallBrain:
@@ -10,6 +11,7 @@ class BallBrain:
     def __init__(self, ball: Any, world: Any):
         self.ball = ball
         self.world = world
+        self.perception_system = Perception(ball, world)
 
     def process(self, delta: float) -> None:
         """Main processing loop through the 4 layers."""
@@ -22,33 +24,9 @@ class BallBrain:
         """
         1. PERCEPTION LAYER
         Scans environment for entities (enemies, allies, boosters).
-        Calculates danger and opportunity levels.
+        Calculates danger and opportunity levels using the Perception system.
         """
-        data = {
-            "enemies": [],
-            "allies": [],
-            "boosters": [],
-            "danger_level": 0.0,
-            "opportunity_level": 0.0,
-        }
-
-        if hasattr(self.world, "get_nearby_entities"):
-            entities = self.world.get_nearby_entities(self.ball, 300.0)
-            data["enemies"] = entities.get("enemies", [])
-            data["allies"] = entities.get("allies", [])
-            data["boosters"] = entities.get("boosters", [])
-
-        # In testing we can also just provide it via the ball if needed,
-        # but the standard way is from the world.
-
-        enemies = data.get("enemies", [])
-        boosters = data.get("boosters", [])
-        allies = data.get("allies", [])
-
-        data["danger_level"] = len(enemies) * 0.2 if isinstance(enemies, list) else 0.0
-        data["opportunity_level"] = (len(boosters) * 0.3 if isinstance(boosters, list) else 0.0) + (len(allies) * 0.1 if isinstance(allies, list) else 0.0)
-
-        return data
+        return self.perception_system.scan()
 
     def emotion(self, perception_data: Dict[str, Any]) -> str:
         """

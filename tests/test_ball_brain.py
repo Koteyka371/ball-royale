@@ -8,11 +8,15 @@ from ai.ball_brain import BallBrain
 
 
 class MockBall:
-    def __init__(self, hp=100, max_hp=100, personality="idle"):
+    def __init__(self, hp=100, max_hp=100, personality="idle", x=0, y=0, perception_radius=300):
         self.hp = hp
         self.max_hp = max_hp
         self.personality = personality
         self.current_action = None
+        self.x = x
+        self.y = y
+        self.perception_radius = perception_radius
+        self.id = "mock_ball"
 
     def flee(self, delta):
         pass
@@ -36,6 +40,7 @@ class MockWorld:
             "enemies": [],
             "allies": [],
             "boosters": [],
+            "traps": []
         }
 
     def get_nearby_entities(self, ball, radius):
@@ -52,10 +57,17 @@ def test_ball_brain_initialization():
 
 
 def test_perception_layer():
-    ball = MockBall()
+    ball = MockBall(x=0, y=0, perception_radius=100)
     world = MockWorld()
-    world.entities["enemies"] = [MockBall(), MockBall()]
-    world.entities["boosters"] = [1] # mock booster
+
+    # 2 enemies right on top of ball (dist 0), so each gives 0.5 danger
+    world.entities["enemies"] = [MockBall(x=0, y=0), MockBall(x=0, y=0)]
+    # 1 booster right on top (dist 0), gives 0.6 opportunity
+    class MockBooster:
+        x = 0
+        y = 0
+        id = "mock_booster"
+    world.entities["boosters"] = [MockBooster()]
 
     brain = BallBrain(ball, world)
     data = brain.perception()
@@ -63,8 +75,10 @@ def test_perception_layer():
     assert len(data["enemies"]) == 2
     assert len(data["allies"]) == 0
     assert len(data["boosters"]) == 1
-    assert data["danger_level"] == 0.4
-    assert data["opportunity_level"] == 0.3
+    # danger = 2 * 0.5 = 1.0
+    assert data["danger_level"] == 1.0
+    # opp = 1 * 0.6 = 0.6
+    assert data["opportunity_level"] == 0.6
 
 
 def test_emotion_layer():
@@ -91,7 +105,7 @@ def test_emotion_layer():
 
 
 def test_decision_layer():
-    ball = MockBall(hp=100, max_hp=100, personality="warrior")
+    ball = MockBall(hp=100, max_hp=100, personality="warrior", x=0, y=0, perception_radius=100)
     world = MockWorld()
     brain = BallBrain(ball, world)
 
@@ -102,7 +116,11 @@ def test_decision_layer():
     assert decision == "warrior"
 
     # High danger -> defend
-    world.entities["enemies"] = [MockBall() for _ in range(4)] # danger_level = 0.8
+    for _ in range(4):
+        b = MockBall(x=0, y=0)
+        b.id = str(len(world.entities["enemies"]))
+        world.entities["enemies"].append(b)
+
     perception_data = brain.perception()
     emotion = brain.emotion(perception_data)
     decision = brain.decision(perception_data, emotion)
@@ -118,7 +136,14 @@ def test_decision_layer():
     # Greed / Booster -> opportunistic
     ball.hp = 100
     world.entities["enemies"] = []
-    world.entities["boosters"] = [1, 2] # opportunity_level = 0.6
+
+    class MockBooster:
+        def __init__(self, id):
+            self.id = id
+            self.x = 0
+            self.y = 0
+
+    world.entities["boosters"] = [MockBooster(1), MockBooster(2)]
     perception_data = brain.perception()
     emotion = brain.emotion(perception_data)
     decision = brain.decision(perception_data, emotion)
@@ -138,9 +163,9 @@ def test_action_layer():
 
 
 def test_full_process():
-    ball = MockBall(hp=100, max_hp=100)
+    ball = MockBall(hp=100, max_hp=100, x=0, y=0)
     world = MockWorld()
-    world.entities["enemies"] = [MockBall()]
+    world.entities["enemies"] = [MockBall(x=0, y=0)]
     brain = BallBrain(ball, world)
 
     brain.process(0.1)
