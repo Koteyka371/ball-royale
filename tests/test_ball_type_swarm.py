@@ -21,15 +21,15 @@ def test_swarm_initialization():
 def test_swarm_hp_percent():
     ball = Swarm(ball_id=1)
     ball.hp = 20
-    assert ball.get_hp_percent() == 0.5
+    assert abs(ball.get_hp_percent() - 20/40) < 0.01
 
 
 def test_swarm_take_damage():
     ball = Swarm(ball_id=1)
-    ball.take_damage(50)
-    assert ball.hp == -10
+    ball.take_damage(10)
+    assert ball.hp == 30
     assert ball.alive is True
-    ball.take_damage(40)
+    ball.take_damage(140)
     assert ball.alive is False
 
 

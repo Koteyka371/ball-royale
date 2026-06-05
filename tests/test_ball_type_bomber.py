@@ -21,15 +21,15 @@ def test_bomber_initialization():
 def test_bomber_hp_percent():
     ball = Bomber(ball_id=1)
     ball.hp = 45
-    assert ball.get_hp_percent() == 0.5
+    assert abs(ball.get_hp_percent() - 45/90) < 0.01
 
 
 def test_bomber_take_damage():
     ball = Bomber(ball_id=1)
-    ball.take_damage(50)
-    assert ball.hp == 40
+    ball.take_damage(10)
+    assert ball.hp == 80
     assert ball.alive is True
-    ball.take_damage(90)
+    ball.take_damage(190)
     assert ball.alive is False
 
 

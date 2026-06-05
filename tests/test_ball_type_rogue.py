@@ -21,15 +21,15 @@ def test_rogue_initialization():
 def test_rogue_hp_percent():
     ball = Rogue(ball_id=1)
     ball.hp = 37
-    assert ball.get_hp_percent() == 0.5
+    assert abs(ball.get_hp_percent() - 37/75) < 0.01
 
 
 def test_rogue_take_damage():
     ball = Rogue(ball_id=1)
-    ball.take_damage(50)
-    assert ball.hp == 25
+    ball.take_damage(10)
+    assert ball.hp == 65
     assert ball.alive is True
-    ball.take_damage(75)
+    ball.take_damage(175)
     assert ball.alive is False
 
 

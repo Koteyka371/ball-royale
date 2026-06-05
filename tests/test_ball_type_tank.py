@@ -21,15 +21,15 @@ def test_tank_initialization():
 def test_tank_hp_percent():
     ball = Tank(ball_id=1)
     ball.hp = 100
-    assert ball.get_hp_percent() == 0.5
+    assert abs(ball.get_hp_percent() - 100/200) < 0.01
 
 
 def test_tank_take_damage():
     ball = Tank(ball_id=1)
-    ball.take_damage(50)
-    assert ball.hp == 150
+    ball.take_damage(10)
+    assert ball.hp == 190
     assert ball.alive is True
-    ball.take_damage(200)
+    ball.take_damage(300)
     assert ball.alive is False
 
 

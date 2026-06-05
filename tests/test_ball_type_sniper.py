@@ -21,15 +21,15 @@ def test_sniper_initialization():
 def test_sniper_hp_percent():
     ball = Sniper(ball_id=1)
     ball.hp = 30
-    assert ball.get_hp_percent() == 0.5
+    assert abs(ball.get_hp_percent() - 30/60) < 0.01
 
 
 def test_sniper_take_damage():
     ball = Sniper(ball_id=1)
-    ball.take_damage(50)
-    assert ball.hp == 10
+    ball.take_damage(10)
+    assert ball.hp == 50
     assert ball.alive is True
-    ball.take_damage(60)
+    ball.take_damage(160)
     assert ball.alive is False
 
 

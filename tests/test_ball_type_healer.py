@@ -21,15 +21,15 @@ def test_healer_initialization():
 def test_healer_hp_percent():
     ball = Healer(ball_id=1)
     ball.hp = 40
-    assert ball.get_hp_percent() == 0.5
+    assert abs(ball.get_hp_percent() - 40/80) < 0.01
 
 
 def test_healer_take_damage():
     ball = Healer(ball_id=1)
-    ball.take_damage(50)
-    assert ball.hp == 30
+    ball.take_damage(10)
+    assert ball.hp == 70
     assert ball.alive is True
-    ball.take_damage(80)
+    ball.take_damage(180)
     assert ball.alive is False
 
 

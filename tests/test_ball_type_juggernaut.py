@@ -21,15 +21,15 @@ def test_juggernaut_initialization():
 def test_juggernaut_hp_percent():
     ball = Juggernaut(ball_id=1)
     ball.hp = 150
-    assert ball.get_hp_percent() == 0.5
+    assert abs(ball.get_hp_percent() - 150/300) < 0.01
 
 
 def test_juggernaut_take_damage():
     ball = Juggernaut(ball_id=1)
-    ball.take_damage(50)
-    assert ball.hp == 250
+    ball.take_damage(10)
+    assert ball.hp == 290
     assert ball.alive is True
-    ball.take_damage(300)
+    ball.take_damage(400)
     assert ball.alive is False
 
 

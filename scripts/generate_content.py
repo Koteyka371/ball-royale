@@ -93,6 +93,8 @@ class {class_name}:
 
 def generate_ball_tests(name: str, cfg: dict) -> str:
     class_name = name.capitalize()
+    half_hp = cfg["hp"] // 2
+    survive_damage = min(10, cfg["hp"] - 1)
     return f'''"""
 Auto-generated tests for: {class_name}
 """
@@ -115,16 +117,16 @@ def test_{name}_initialization():
 
 def test_{name}_hp_percent():
     ball = {class_name}(ball_id=1)
-    ball.hp = {cfg["hp"] // 2}
-    assert ball.get_hp_percent() == 0.5
+    ball.hp = {half_hp}
+    assert abs(ball.get_hp_percent() - {half_hp}/{cfg["hp"]}) < 0.01
 
 
 def test_{name}_take_damage():
     ball = {class_name}(ball_id=1)
-    ball.take_damage(50)
-    assert ball.hp == {cfg["hp"] - 50}
+    ball.take_damage({survive_damage})
+    assert ball.hp == {cfg["hp"] - survive_damage}
     assert ball.alive is True
-    ball.take_damage({cfg["hp"]})
+    ball.take_damage({cfg["hp"] + 100})
     assert ball.alive is False
 
 

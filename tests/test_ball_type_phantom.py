@@ -21,15 +21,15 @@ def test_phantom_initialization():
 def test_phantom_hp_percent():
     ball = Phantom(ball_id=1)
     ball.hp = 32
-    assert ball.get_hp_percent() == 0.5
+    assert abs(ball.get_hp_percent() - 32/65) < 0.01
 
 
 def test_phantom_take_damage():
     ball = Phantom(ball_id=1)
-    ball.take_damage(50)
-    assert ball.hp == 15
+    ball.take_damage(10)
+    assert ball.hp == 55
     assert ball.alive is True
-    ball.take_damage(65)
+    ball.take_damage(165)
     assert ball.alive is False
 
 

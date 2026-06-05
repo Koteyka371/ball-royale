@@ -21,15 +21,15 @@ def test_warrior_initialization():
 def test_warrior_hp_percent():
     ball = Warrior(ball_id=1)
     ball.hp = 60
-    assert ball.get_hp_percent() == 0.5
+    assert abs(ball.get_hp_percent() - 60/120) < 0.01
 
 
 def test_warrior_take_damage():
     ball = Warrior(ball_id=1)
-    ball.take_damage(50)
-    assert ball.hp == 70
+    ball.take_damage(10)
+    assert ball.hp == 110
     assert ball.alive is True
-    ball.take_damage(120)
+    ball.take_damage(220)
     assert ball.alive is False
 
 

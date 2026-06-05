@@ -21,15 +21,15 @@ def test_assassin_initialization():
 def test_assassin_hp_percent():
     ball = Assassin(ball_id=1)
     ball.hp = 35
-    assert ball.get_hp_percent() == 0.5
+    assert abs(ball.get_hp_percent() - 35/70) < 0.01
 
 
 def test_assassin_take_damage():
     ball = Assassin(ball_id=1)
-    ball.take_damage(50)
-    assert ball.hp == 20
+    ball.take_damage(10)
+    assert ball.hp == 60
     assert ball.alive is True
-    ball.take_damage(70)
+    ball.take_damage(170)
     assert ball.alive is False
 
 
