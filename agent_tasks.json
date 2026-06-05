@@ -58,7 +58,7 @@
     },
     {
       "id": "ai-perception-system",
-      "status": "todo",
+      "status": "done",
       "area": "ai-core",
       "risk": "medium",
       "title": "Implement Perception system",
@@ -702,6 +702,60 @@
         "Basic arena implemented",
         "Tests pass",
         "No regressions"
+      ]
+    },
+    {
+      "id": "ai-genetic-inheritance",
+      "status": "todo",
+      "area": "ai-genetics",
+      "risk": "medium",
+      "title": "Implement Genetic Inheritance system",
+      "description": "Create a genetic inheritance system where surviving balls can reproduce, passing on traits (speed, damage, max hp) to offspring with a small mutation rate.",
+      "allowed_paths": [
+        "src/ai/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Surviving balls produce offspring",
+        "Offspring inherit stats with mutations",
+        "Genetics system is fully testable in Python",
+        "Stats evolve over generations in simulated battles"
+      ]
+    },
+    {
+      "id": "ai-swarm-behavior",
+      "status": "todo",
+      "area": "ai-core",
+      "risk": "medium",
+      "title": "Implement Swarm behavior (Boids)",
+      "description": "Implement boids-like swarm rules (cohesion, alignment, separation) for groups of balls of the same type when not engaging enemies, creating natural formations.",
+      "allowed_paths": [
+        "src/ai/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Balls form cohesive swarms",
+        "Swarm rules respect alignment and separation",
+        "Formation breaks appropriately when engaged",
+        "Performance scales well with 50+ balls"
+      ]
+    },
+    {
+      "id": "ai-neural-learning",
+      "status": "todo",
+      "area": "ai-core",
+      "risk": "high",
+      "title": "Implement simple Neural Learning AI",
+      "description": "Create an experimental AI type that uses a simple neural network to decide actions, learning through reinforcement after each battle iteration.",
+      "allowed_paths": [
+        "src/ai/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Neural network uses basic inputs (distance, health)",
+        "Outputs dictate action choice",
+        "Weights update based on battle success",
+        "Agent improves survival rate over iterations"
       ]
     }
   ]

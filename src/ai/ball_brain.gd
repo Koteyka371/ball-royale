@@ -19,26 +19,20 @@ func process(delta):
 # 1. PERCEPTION LAYER
 # Scans environment for entities
 func perception() -> Dictionary:
-    var data = {
+    # Use the Perception class
+    var PerceptionClass = load("res://src/ai/perception.gd")
+    if PerceptionClass:
+        var perceptor = PerceptionClass.new(self.ball, self.world)
+        return perceptor.scan()
+    return {
         "enemies": [],
         "allies": [],
         "boosters": [],
+        "traps": [],
+        "distances": {},
         "danger_level": 0.0,
         "opportunity_level": 0.0
     }
-
-    # In a real implementation, we would query the world
-    if self.world and self.world.has_method("get_nearby_entities"):
-        var entities = self.world.get_nearby_entities(self.ball, 300.0) # Assume 300 is max perception radius
-        data["enemies"] = entities.get("enemies", [])
-        data["allies"] = entities.get("allies", [])
-        data["boosters"] = entities.get("boosters", [])
-
-    # Calculate danger and opportunity
-    data["danger_level"] = data["enemies"].size() * 0.2
-    data["opportunity_level"] = data["boosters"].size() * 0.3 + (data["allies"].size() * 0.1)
-
-    return data
 
 # 2. EMOTION LAYER
 # Determines current emotional state based on HP and situation
