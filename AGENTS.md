@@ -11,53 +11,73 @@ Every ball in the game is controlled by an in-built AI system. The player does N
 3. `docs/backlog.md` — human-readable backlog
 4. `AGENTS.md` — this file
 
+## What You Can Change
+
+**You can modify ANY file in this project.** There are no restrictions. This includes:
+- `src/` — game source code (Python and GDScript)
+- `tests/` — test files
+- `scripts/` — automation scripts
+- `configs/` — configuration files
+- `.github/workflows/` — CI/CD and automation
+- `docs/` — documentation
+- `agent_tasks.json` — task queue
+- `AGENTS.md` — this file
+- `CHANGELOG.md` — changelog
+
+If you see something that needs improvement, improve it. Do not wait for permission.
+
 ## How to Work
 
-### Step 1: Analyze Project State
+### Step 1: READ the project
 ```bash
-# Check project status
-python scripts/analyze_project.py
-
-# Check test results
-python scripts/auto_test.py
-
-# Generate new ideas
-python scripts/generate_ideas.py
+# Understand the full project
+cat AGENTS.md
+cat docs/game_design.md
+cat agent_tasks.json
+ls src/ tests/ scripts/ configs/
 ```
 
-### Step 2: Pick Task
-```bash
-# Validate manifest
-python scripts/validate_tasks.py agent_tasks.json
+### Step 2: Pick and complete task
+- Read `agent_tasks.json`, find first `todo` task
+- Implement it with tests
+- Make tests pass
 
-# See next task
-# Read agent_tasks.json and find first "todo" task
+### Step 3: Self-Improve (MANDATORY)
+After the task, improve SOMETHING ELSE that helps the next run:
+- Better scripts
+- Better tests
+- Better code
+- Better docs
+- Better CI/CD
+- New tools
+- Fix bugs you find
+- Optimize slow code
+
+### Step 4: Run validation
+```bash
+# Battle simulation (50-1000 balls)
+python tests/simulate_battle.py 100
+
+# Performance benchmark
+python tests/benchmark_ai.py
+
+# Code quality metrics
+python scripts/quality_metrics.py
+
+# Content generator (from JSON configs)
+python scripts/generate_content.py
+
+# All tests
+pytest tests/ -v
 ```
 
-### Step 3: Implement
-1. Create code in `src/`
-2. Create tests in `tests/`
-3. Run tests: `pytest tests/ -v`
+### Step 5: Update agent_tasks.json
+- Mark current task as `done`
+- Add 3-5 new tasks (status: `todo`)
 
-### Step 4: Verify
-```bash
-# Run all checks
-python scripts/auto_test.py
-
-# Analyze progress
-python scripts/analyze_project.py
-```
-
-### Step 5: Update Manifest
-- Change task status to "done"
-- If fewer than 5 todo tasks, run: `python scripts/generate_ideas.py`
-
-### Step 6: Commit
-```bash
-git add .
-git commit -m "feat: [task-title]"
-git push
-```
+### Step 6: Create PR
+- One task per PR
+- Include all changes (current task + improvements + new tasks)
 
 ## AI System Architecture
 
@@ -74,13 +94,17 @@ Each ball has a BallBrain with 4 layers:
 - Each PR = one task ID
 - Do not expand PR scope
 
-## Risk Rules
+## Available Tools
 
-Do NOT auto-merge:
-- Changes to CI/CD
-- New external dependencies
-- Security-sensitive code
-- High/critical risk tasks
+| Tool | Purpose |
+|------|---------|
+| `tests/simulate_battle.py [N]` | Battle simulation with N balls (default 100) |
+| `tests/benchmark_ai.py` | AI performance benchmark (60 FPS target) |
+| `scripts/quality_metrics.py` | Code quality metrics |
+| `scripts/generate_content.py` | Generate ball type code from JSON |
+| `scripts/validate_tasks.py` | Validate agent_tasks.json |
+| `scripts/analyze_project.py` | Project analysis |
+| `scripts/generate_ideas.py` | Generate new ideas |
 
 ## Code Style
 
@@ -89,29 +113,12 @@ Do NOT auto-merge:
 - Use meaningful variable names
 - Comment complex AI logic
 
-## Self-Improvement
-
-After each task:
-1. Run `python scripts/analyze_project.py`
-2. Run `python scripts/generate_ideas.py`
-3. Check if new tasks were generated
-4. Continue with next task
-
 ## Validation
 
 ```bash
-# Validate task manifest
-python scripts/validate_tasks.py agent_tasks.json
-
-# Run all tests
-python scripts/auto_test.py
-
-# Analyze project
-python scripts/analyze_project.py
-
-# Generate ideas
-python scripts/generate_ideas.py
-
-# Run pytest
+# Before creating PR, run ALL of these:
+python tests/simulate_battle.py 100
+python tests/benchmark_ai.py
+python scripts/quality_metrics.py
 pytest tests/ -v
 ```

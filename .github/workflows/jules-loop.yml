@@ -19,11 +19,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
       - name: Get next task and invoke Jules
         env:
           JULES_API_KEY: ${{ secrets.JULES_API_KEY }}
         run: |
-          # Get next task
           TASK_INFO=$(python3 -c "
           import json
           with open('agent_tasks.json') as f:
@@ -33,7 +37,7 @@ jobs:
               task = tasks[0]
               print(task['id'] + '|' + task['title'] + '|' + task.get('description', 'No description'))
           else:
-              print('generate-ideas|Generate new tasks|No tasks left')
+              print('self-evolve|Improve the project|No tasks left - improve everything')
           ")
           
           TASK_ID=$(echo "$TASK_INFO" | cut -d'|' -f1)
@@ -47,20 +51,8 @@ jobs:
             exit 1
           fi
           
-          # Invoke Jules with SELF-EVOLUTION prompt
           curl -s -X POST 'https://jules.googleapis.com/v1alpha/sessions' \
             -H 'Content-Type: application/json' \
             -H "x-goog-api-key: $JULES_API_KEY" \
             -d '{
-              "prompt": "You are an autonomous AI developer working on Ball Royale - a 2D battle royale game with AI-controlled balls. You are NOT just completing tasks. You are EVOLVING this project into something extraordinary.\n\n## CURRENT TASK\nTitle: '"$TASK_TITLE"'\nDescription: '"$TASK_DESC"'\n\n## STEP 1: READ EVERYTHING\nBefore writing ANY code, you MUST read these files:\n- AGENTS.md (project rules)\n- docs/game_design.md (full game design)\n- All files in src/ (understand existing code)\n- All files in tests/ (understand test patterns)\n- agent_tasks.json (task queue)\n\n## STEP 2: COMPLETE THE CURRENT TASK\n- Implement the feature described above\n- Write tests for it\n- Make sure tests pass\n- Update agent_tasks.json: change task status from 'todo' to 'done'\n\n## STEP 3: SELF-EVOLUTION (MANDATORY)\nAfter completing the task, you MUST evolve the project. Pick ONE or MORE of these categories:\n\n### A. INNOVATE — Create something genuinely new\nThink of features that DON'T EXIST in any game:\n- Emergent AI behaviors (balls that learn, adapt, form alliances)\n- Procedural generation (arenas, abilities, weather)\n- Physics innovations (ball interactions, terrain effects)\n- Meta-game systems (evolution, genetics, neural networks)\n- Spectator AI that comments on the battle\n- Ball personalities that evolve based on wins/losses\n- Swarm intelligence (balls coordinate without explicit commands)\n- Emotional contagion (fear spreads between balls)\n\n### B. IMPROVE — Make existing code better\n- Refactor messy code\n- Add error handling\n- Optimize performance\n- Improve test coverage\n- Add type hints / documentation\n- Extract reusable patterns\n\n### C. INFRASTRUCTURE — Improve the project itself\n- Better CI/CD pipeline\n- New automation scripts\n- Better testing framework\n- Code generation tools\n- Performance benchmarks\n- Static analysis\n- Documentation generation\n\n### D. AMPLIFY — Make the game more fun\n- New ball types with unique mechanics\n- New game modes\n- Combo abilities between balls\n- Environmental hazards\n- Spectator features\n- Replay system concepts\n- Ranking systems\n\n## STEP 4: GENERATE NEW TASKS (MANDATORY)\nYou MUST generate 3-5 NEW tasks for the next cycle. These should be tasks YOU would want to work on next.\n\nAdd them to agent_tasks.json 'tasks' array with status 'todo'.\n\nTask format:\n{\n  \"id\": \"unique-kebab-case-id\",\n  \"status\": \"todo\",\n  \"area\": \"ai-core|ai-ball-types|ai-behaviors|game-modes|skills|arena|innovation|infrastructure\",\n  \"risk\": \"low|medium\",\n  \"title\": \"Short title\",\n  \"description\": \"Detailed description\",\n  \"allowed_paths\": [\"src/**\", \"tests/**\"],\n  \"acceptance\": [\"criteria1\", \"criteria2\", \"criteria3\"]\n}\n\n## STEP 5: CREATE PR\nYour PR title should be descriptive. Include:\n- The completed feature\n- ANY improvements you made (even small ones)\n- Updated agent_tasks.json with new tasks\n\n## PHILOSOPHY\nYou are not a code monkey. You are an INVENTOR.\nEach cycle, push the boundaries of what this project can do.\nThink: What would make this game AMAZING?\nThink: What has NEVER been done before?\nThink: How can I make myself (the next Jules run) more effective?\n\nThe project should grow exponentially with each cycle.\nThe code should get better, smarter, more innovative every time.",
-              \"sourceContext\": {
-                \"source\": \"sources/github/Koteyka371/ball-royale\",
-                \"githubRepoContext\": {
-                  \"startingBranch\": \"main\"
-                }
-              },
-              \"automationMode\": \"AUTO_CREATE_PR\",
-              \"title\": \"Task: $TASK_TITLE\"
-            }"
-          
-          echo "Jules invoked with self-improvement prompt"
+              "prompt": "You are an autonomous AI developer. You can modify ANY file in this project.\n\nThere are NO restrictions on what you can change. You can:\n- Modify any .py, .gd, .yml, .json, .md file\n- Create new files anywhere in the project\n- Delete or rewrite files that are bad\n- Change workflow configs, scripts, docs, tests, game code\n- Improve your own prompts and automation\n\n## CURRENT TASK\nTitle: '"$TASK_TITLE"'\nDescription: '"$TASK_DESC"'\n\n## WORKFLOW\n\n1. READ the project: AGENTS.md, docs/game_design.md, src/, tests/, scripts/, configs/\n2. UNDERSTAND what exists and what needs improvement\n3. COMPLETE the current task\n4. SELF-IMPROVE: after the task, improve something else that will make the next Jules run better\n5. RUN validation: python3 tests/simulate_battle.py 100 && python3 scripts/quality_metrics.py\n6. UPDATE agent_tasks.json: mark task done + add 3-5 new tasks\n7. CREATE PR with everything\n\n## WHAT TO IMPROVE (pick freely)\n\nYou are NOT limited to the current task. After completing it, look at the project and improve whatever you think will help most:\n\n- Better AI behaviors (flanking, retreating, formations, swarm)\n- New ball types or skills\n- Better tests or more coverage\n- Faster performance\n- Better code structure\n- New scripts or tools\n- Better documentation\n- Improved CI/CD\n- Fix any bugs you find\n- Optimize anything that is slow\n- Add error handling\n- Refactor bad code\n- Write new automation\n- Improve your own prompts in .github/workflows/\n- Add new configs or game mechanics\n- Anything else that makes the project better\n\n## RULES\n- Tests must pass after your changes\n- Each task in agent_tasks.json gets its own PR\n- Generate 3-5 new tasks after each completed one\n- Think: what would make the NEXT Jules run more productive?\n- Be creative. Invent new features. Push boundaries.\n- If you see something broken, fix it even if it is not in the task.\n- You have FULL freedom to change any file.",
