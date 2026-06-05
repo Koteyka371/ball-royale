@@ -1,0 +1,708 @@
+{
+  "schema_version": 1,
+  "project": "ball-royale",
+  "task_source_priority": [
+    "agent_tasks.json",
+    "AGENTS.md",
+    "docs/game_design.md",
+    "docs/backlog.md"
+  ],
+  "risk_levels": [
+    "low",
+    "medium",
+    "high",
+    "critical"
+  ],
+  "merge_policy": {
+    "low": "auto_merge_after_tests",
+    "medium": "auto_merge_after_tests_and_critic",
+    "high": "human_review_required",
+    "critical": "manual_only"
+  },
+  "replenishment_policy": {
+    "minimum_todo_tasks": 5,
+    "batch_size": 5,
+    "allowed_risks_for_generated_tasks": [
+      "low",
+      "medium"
+    ],
+    "instruction": "If fewer than minimum_todo_tasks remain, generate new tasks from: 1) docs/game_design.md AI system, 2) unimplemented ball types, 3) missing AI behaviors, 4) game modes, 5) arenas, 6) skills. Focus on AI improvements first."
+  },
+  "autonomous_loop_policy": {
+    "selection_rule": "Choose the first todo task. Prioritize AI-related tasks.",
+    "anti_stall_rule": "Never ask user what to do. Generate tasks from game_design.md AI system.",
+    "max_pr_scope": "one task id per PR",
+    "failure_rule": "If CI fails, fix before new features.",
+    "idea_generation": "After completing a task, read docs/game_design.md AI section and suggest 2-3 new AI tasks."
+  },
+  "tasks": [
+    {
+      "id": "ai-brain-architecture",
+      "status": "todo",
+      "area": "ai-core",
+      "risk": "medium",
+      "title": "Implement Ball Brain architecture",
+      "description": "Create the core AI system: BallBrain class with 4 layers: Perception (find enemies/allies/boosters), Emotion (fear/rage/greed based on HP and situation), Decision (choose strategy), Action (execute behavior). Each ball gets its own Brain instance.",
+      "allowed_paths": [
+        "src/ai/**/*.gd",
+        "src/ai/**/*.tscn",
+        "tests/**"
+      ],
+      "acceptance": [
+        "BallBrain class exists with 4 subsystems",
+        "Each ball has its own Brain instance",
+        "Brain processes perception -> emotion -> decision -> action",
+        "Basic decisions work: chase, flee, attack",
+        "Unit tests for decision logic"
+      ]
+    },
+    {
+      "id": "ai-perception-system",
+      "status": "todo",
+      "area": "ai-core",
+      "risk": "medium",
+      "title": "Implement Perception system",
+      "description": "Create Perception class that scans the world: finds nearby enemies, allies, boosters, traps. Calculates distances, threat levels, opportunity scores. Each ball has perception radius based on type.",
+      "allowed_paths": [
+        "src/ai/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Perception finds all entities in radius",
+        "Correctly calculates distances",
+        "Identifies threats and opportunities",
+        "Performance: 50 balls at 60 FPS",
+        "Perception radius varies by ball type"
+      ]
+    },
+    {
+      "id": "ai-emotion-system",
+      "status": "todo",
+      "area": "ai-core",
+      "risk": "medium",
+      "title": "Implement Emotion system",
+      "description": "Create Emotion class that models ball's emotional state: Fear (low HP), Rage (ally killed), Greed (sees booster), Cowardice (first hit), Heroism (ally in danger), Bloodlust (killed 2+ enemies). Emotions modify behavior.",
+      "allowed_paths": [
+        "src/ai/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "6 emotions implemented",
+        "Emotions trigger based on correct conditions",
+        "Emotions modify behavior (fear = flee, rage = attack)",
+        "Emotions decay over time",
+        "Visual feedback for emotional state"
+      ]
+    },
+    {
+      "id": "ai-decision-system",
+      "status": "todo",
+      "area": "ai-core",
+      "risk": "medium",
+      "title": "Implement Decision system",
+      "description": "Create Decision class that evaluates options and chooses action: weighs threat level, opportunity, personality, emotional state. Returns best action: chase, flee, attack, use skill, collect booster, defend.",
+      "allowed_paths": [
+        "src/ai/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Decision system evaluates all options",
+        "Uses weighted scoring",
+        "Considers personality and emotions",
+        "Returns valid action",
+        "Decisions are deterministic given same state"
+      ]
+    },
+    {
+      "id": "ai-action-system",
+      "status": "todo",
+      "area": "ai-core",
+      "risk": "medium",
+      "title": "Implement Action execution system",
+      "description": "Create Action class that executes chosen behavior: move to target, attack, use skill, flee, collect booster. Handles pathfinding, timing, and cooldowns.",
+      "allowed_paths": [
+        "src/ai/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Actions execute correctly",
+        "Movement uses pathfinding",
+        "Cooldowns respected",
+        "Actions interrupt when situation changes",
+        "Smooth movement (no jitter)"
+      ]
+    },
+    {
+      "id": "ai-personality-system",
+      "status": "todo",
+      "area": "ai-core",
+      "risk": "low",
+      "title": "Implement Personality system",
+      "description": "Create Personality class that defines ball's character: aggressive, cautious, supportive, reckless, cunning. Each ball type has default personality. Personality influences decision weights.",
+      "allowed_paths": [
+        "src/ai/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "8 personality types implemented",
+        "Personality affects decision weights",
+        "Warrior = aggressive, Healer = supportive, etc.",
+        "Personality can be customized",
+        "Visual indicator of personality"
+      ]
+    },
+    {
+      "id": "ai-behavior-chase",
+      "status": "todo",
+      "area": "ai-behaviors",
+      "risk": "low",
+      "title": "Implement Chase behavior",
+      "description": "Ball moves towards nearest enemy. Uses pathfinding to avoid obstacles. Stops when in attack range. Can be modified by fear (runs away) or greed (chases booster instead).",
+      "allowed_paths": [
+        "src/ai/behaviors/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Ball moves towards target",
+        "Uses pathfinding",
+        "Stops at attack range",
+        "Respects obstacles",
+        "Can be interrupted by higher priority"
+      ]
+    },
+    {
+      "id": "ai-behavior-flee",
+      "status": "todo",
+      "area": "ai-behaviors",
+      "risk": "low",
+      "title": "Implement Flee behavior",
+      "description": "Ball moves away from nearest threat. Prioritizes moving towards allies or safe zones. Speed boost when fleeing. Can stop when safe.",
+      "allowed_paths": [
+        "src/ai/behaviors/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Ball moves away from threat",
+        "Seeks allies or safe zones",
+        "Gets speed boost while fleeing",
+        "Stops when safe",
+        "Respects arena boundaries"
+      ]
+    },
+    {
+      "id": "ai-behavior-attack",
+      "status": "todo",
+      "area": "ai-behaviors",
+      "risk": "low",
+      "title": "Implement Attack behavior",
+      "description": "Ball attacks when in range. Timing varies by ball type (fast for Scout, slow for Tank). Can chain attacks. Uses skill when available and optimal.",
+      "allowed_paths": [
+        "src/ai/behaviors/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Ball attacks when in range",
+        "Attack timing varies by type",
+        "Can chain multiple attacks",
+        "Uses skill when available",
+        "Damage calculation correct"
+      ]
+    },
+    {
+      "id": "ai-behavior-kite",
+      "status": "todo",
+      "area": "ai-behaviors",
+      "risk": "medium",
+      "title": "Implement Kite behavior",
+      "description": "Ball maintains distance from enemy while attacking. Moves back when enemy approaches, attacks when enemy retreats. Used by Sniper and ranged types.",
+      "allowed_paths": [
+        "src/ai/behaviors/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Ball maintains optimal distance",
+        "Moves back when enemy approaches",
+        "Attacks when enemy retreats",
+        "Uses terrain for advantage",
+        "Effective against melee enemies"
+      ]
+    },
+    {
+      "id": "ai-behavior-flank",
+      "status": "todo",
+      "area": "ai-behaviors",
+      "risk": "medium",
+      "title": "Implement Flank behavior",
+      "description": "Ball moves behind enemy for bonus damage. Uses stealth (Ninja) or speed (Scout) to get behind. Attacks from behind for critical hit.",
+      "allowed_paths": [
+        "src/ai/behaviors/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Ball moves to enemy's back",
+        "Uses stealth or speed",
+        "Attacks from behind for bonus",
+        "Enemy AI doesn't detect flanking",
+        "Visual indicator for backstab"
+      ]
+    },
+    {
+      "id": "ai-behavior-group-attack",
+      "status": "todo",
+      "area": "ai-behaviors",
+      "risk": "medium",
+      "title": "Implement Group Attack behavior",
+      "description": "Multiple balls coordinate to attack same target. Balls signal intent and converge. Tank takes aggro, damage dealers attack, healer supports.",
+      "allowed_paths": [
+        "src/ai/behaviors/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Balls coordinate on single target",
+        "Tank takes aggro",
+        "Damage dealers flank",
+        "Healer stays back",
+        "Effective against strong enemies"
+      ]
+    },
+    {
+      "id": "ai-behavior-collect-booster",
+      "status": "todo",
+      "area": "ai-behaviors",
+      "risk": "low",
+      "title": "Implement Collect Booster behavior",
+      "description": "Ball moves towards nearest booster. Ignores enemies when collecting (greed). Can be interrupted if enemy gets too close.",
+      "allowed_paths": [
+        "src/ai/behaviors/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Ball moves to booster",
+        "Ignores enemies while collecting",
+        "Interrupts if enemy attacks",
+        "Prioritizes valuable boosters",
+        "Doesn't get stuck on obstacles"
+      ]
+    },
+    {
+      "id": "ai-ball-warrior-ai",
+      "status": "todo",
+      "area": "ai-ball-types",
+      "risk": "medium",
+      "title": "Implement Warrior AI profile",
+      "description": "Warrior AI: aggressive personality, high attack priority, never flees, uses Wave Attack when 2+ enemies in front, charges into battle.",
+      "allowed_paths": [
+        "src/ai/balls/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Warrior always seeks combat",
+        "Uses Wave Attack optimally",
+        "Never flees even at low HP",
+        "Charges into groups of enemies",
+        "Has unique battle cry on kill"
+      ]
+    },
+    {
+      "id": "ai-ball-scout-ai",
+      "status": "todo",
+      "area": "ai-ball-types",
+      "risk": "medium",
+      "title": "Implement Scout AI profile",
+      "description": "Scout AI: curious personality, seeks boosters, attacks weak enemies, flees from strong ones, uses Dash to escape or chase.",
+      "allowed_paths": [
+        "src/ai/balls/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Scout prioritizes boosters",
+        "Attacks only weak enemies",
+        "Flees from strong enemies",
+        "Uses Dash effectively",
+        "Explores arena edges"
+      ]
+    },
+    {
+      "id": "ai-ball-tank-ai",
+      "status": "todo",
+      "area": "ai-ball-types",
+      "risk": "medium",
+      "title": "Implement Tank AI profile",
+      "description": "Tank AI: brave personality, protects allies, uses Shield when taking damage, body blocks for healers, draws aggro.",
+      "allowed_paths": [
+        "src/ai/balls/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Tank seeks allies to protect",
+        "Uses Shield when hit",
+        "Body blocks for support",
+        "Draws enemy aggro",
+        "Stays in front of formation"
+      ]
+    },
+    {
+      "id": "ai-ball-healer-ai",
+      "status": "todo",
+      "area": "ai-ball-types",
+      "risk": "medium",
+      "title": "Implement Healer AI profile",
+      "description": "Healer AI: caring personality, follows wounded allies, heals them, avoids combat, uses heal on cooldown.",
+      "allowed_paths": [
+        "src/ai/balls/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Healer follows wounded allies",
+        "Heals on cooldown",
+        "Avoids direct combat",
+        "Prioritizes low HP allies",
+        "Stays behind Tank"
+      ]
+    },
+    {
+      "id": "ai-ball-sniper-ai",
+      "status": "todo",
+      "area": "ai-ball-types",
+      "risk": "medium",
+      "title": "Implement Sniper AI profile",
+      "description": "Sniper AI: cautious personality, maintains distance, uses Snipe from max range, kites enemies, avoids melee.",
+      "allowed_paths": [
+        "src/ai/balls/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Sniper stays at max range",
+        "Uses Snipe on cooldown",
+        "Kites approaching enemies",
+        "Avoids melee combat",
+        "Targets highest threat"
+      ]
+    },
+    {
+      "id": "ai-ball-bomber-ai",
+      "status": "todo",
+      "area": "ai-ball-types",
+      "risk": "medium",
+      "title": "Implement Bomber AI profile",
+      "description": "Bomber AI: reckless personality, seeks crowded enemy groups, uses Bomb when 3+ enemies nearby, suicide attacks.",
+      "allowed_paths": [
+        "src/ai/balls/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Bomber seeks enemy clusters",
+        "Uses Bomb optimally",
+        "Sacrifices self for kills",
+        "Doesn't flee even at 1 HP",
+        "Explosion damages all nearby"
+      ]
+    },
+    {
+      "id": "ai-ball-ninja-ai",
+      "status": "todo",
+      "area": "ai-ball-types",
+      "risk": "medium",
+      "title": "Implement Ninja AI profile",
+      "description": "Ninja AI: cunning personality, uses Stealth to approach, attacks from behind for critical, flees after attack, hit-and-run tactics.",
+      "allowed_paths": [
+        "src/ai/balls/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Ninja uses Stealth to approach",
+        "Attacks from behind",
+        "Deals critical damage",
+        "Flees after attack",
+        "Hit-and-run pattern"
+      ]
+    },
+    {
+      "id": "ai-ball-king-ai",
+      "status": "todo",
+      "area": "ai-ball-types",
+      "risk": "medium",
+      "title": "Implement King AI profile",
+      "description": "King AI: leader personality, stays behind allies, uses Command to buff team, targets low HP allies to boost, avoids direct combat.",
+      "allowed_paths": [
+        "src/ai/balls/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "King stays behind formation",
+        "Uses Command on cooldown",
+        "Buffs nearby allies",
+        "Avoids direct combat",
+        "Targets injured allies to boost"
+      ]
+    },
+    {
+      "id": "ai-difficulty-system",
+      "status": "todo",
+      "area": "ai-meta",
+      "risk": "medium",
+      "title": "Implement AI difficulty levels",
+      "description": "Create difficulty system: Easy (slow reactions, simple decisions), Medium (normal), Hard (fast, optimal), Chaos (random, funny). Affects reaction time, decision quality, skill usage.",
+      "allowed_paths": [
+        "src/ai/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "4 difficulty levels implemented",
+        "Easy has visible delays",
+        "Hard makes optimal decisions",
+        "Chaos creates funny behavior",
+        "Difficulty can be set per ball or globally"
+      ]
+    },
+    {
+      "id": "ai-team-coordination",
+      "status": "todo",
+      "area": "ai-team",
+      "risk": "high",
+      "title": "Implement Team coordination AI",
+      "description": "Balls in same team share information: call out targets, request help, coordinate attacks. Tank signals to hold position, Healer calls for wounded, Sniper calls out threats.",
+      "allowed_paths": [
+        "src/ai/**/*.gd",
+        "src/ai/team/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Team balls share target info",
+        "Call for help when low HP",
+        "Coordinate on single target",
+        "Formations (tank front, healer back)",
+        "Team commands (attack, defend, regroup)"
+      ]
+    },
+    {
+      "id": "auto-implement-perception-skill",
+      "status": "todo",
+      "area": "skills",
+      "risk": "medium",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature works",
+        "Tests pass"
+      ],
+      "title": "Implement PERCEPTION skill",
+      "description": "Create PERCEPTION skill: Восприятие"
+    },
+    {
+      "id": "auto-implement-emotion-skill",
+      "status": "todo",
+      "area": "skills",
+      "risk": "medium",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature works",
+        "Tests pass"
+      ],
+      "title": "Implement EMOTION skill",
+      "description": "Create EMOTION skill: Эмоции"
+    },
+    {
+      "id": "auto-implement-decision-skill",
+      "status": "todo",
+      "area": "skills",
+      "risk": "medium",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature works",
+        "Tests pass"
+      ],
+      "title": "Implement DECISION skill",
+      "description": "Create DECISION skill: Решение"
+    },
+    {
+      "id": "auto-implement-action-skill",
+      "status": "todo",
+      "area": "skills",
+      "risk": "medium",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature works",
+        "Tests pass"
+      ],
+      "title": "Implement ACTION skill",
+      "description": "Create ACTION skill: Действие"
+    },
+    {
+      "id": "auto-implement-**target-strong**-—-атакует-самого-сильн",
+      "status": "todo",
+      "area": "skills",
+      "risk": "medium",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature works",
+        "Tests pass"
+      ],
+      "title": "Implement **Target Strong** — атакует самого сильного skill",
+      "description": "Create **Target Strong** — атакует самого сильного skill: для Tank"
+    },
+    {
+      "id": "auto-implement-**kite**-—-держит-дистанцию,-атакует-при",
+      "status": "todo",
+      "area": "skills",
+      "risk": "medium",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature works",
+        "Tests pass"
+      ],
+      "title": "Implement **Kite** — держит дистанцию, атакует при приближении skill",
+      "description": "Create **Kite** — держит дистанцию, атакует при приближении skill: для Sniper"
+    },
+    {
+      "id": "auto-implement-**flank**-—-обходит-сзади-для-удара-skil",
+      "status": "todo",
+      "area": "skills",
+      "risk": "medium",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature works",
+        "Tests pass"
+      ],
+      "title": "Implement **Flank** — обходит сзади для удара skill",
+      "description": "Create **Flank** — обходит сзади для удара skill: для Ninja"
+    },
+    {
+      "id": "auto-implement-spectator-mode-(наблюдатель)-game-mode",
+      "status": "todo",
+      "area": "modes",
+      "risk": "medium",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature works",
+        "Tests pass"
+      ],
+      "title": "Implement Spectator Mode (Наблюдатель) game mode",
+      "description": "Create Spectator Mode (Наблюдатель) with full rules and mechanics"
+    },
+    {
+      "id": "auto-implement-coach-mode-(тренер)-game-mode",
+      "status": "todo",
+      "area": "modes",
+      "risk": "medium",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature works",
+        "Tests pass"
+      ],
+      "title": "Implement Coach Mode (Тренер) game mode",
+      "description": "Create Coach Mode (Тренер) with full rules and mechanics"
+    },
+    {
+      "id": "idea-feature-033",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Ball brain architecture (perception, emotion, decision, action)",
+      "description": "Implement Ball brain architecture (perception, emotion, decision, action) as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Ball brain architecture (perception, emotion, decision, action) implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-feature-034",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Basic AI behaviors (chase, flee, attack)",
+      "description": "Implement Basic AI behaviors (chase, flee, attack) as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Basic AI behaviors (chase, flee, attack) implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-feature-035",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "4 ball types with unique AI",
+      "description": "Implement 4 ball types with unique AI as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "4 ball types with unique AI implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-feature-036",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Battle Royale mode with 20 balls",
+      "description": "Implement Battle Royale mode with 20 balls as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Battle Royale mode with 20 balls implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-feature-037",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Basic arena",
+      "description": "Implement Basic arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Basic arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    }
+  ]
+}

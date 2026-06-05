@@ -1,0 +1,10 @@
+# Game dependencies
+# Add your game engine dependencies here
+
+# Testing
+pytest
+pytest-cov
+
+# Code quality
+ruff
+mypy
