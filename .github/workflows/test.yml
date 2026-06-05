@@ -12,16 +12,12 @@ jobs:
     
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-          cache: pip
-
-      - name: Install dependencies
-        run: pip install -r requirements.txt
 
       - name: Validate task manifest
         run: python scripts/validate_tasks.py agent_tasks.json
@@ -29,9 +25,13 @@ jobs:
       - name: Run AI behavior tests
         run: python scripts/test_ai_behaviors.py
 
-      - name: Run pytest
-        run: pytest tests/ -v --tb=short
-        continue-on-error: true  # Don't fail if no tests yet
+      - name: Run pytest (if tests exist)
+        run: |
+          if [ -d "tests" ] && [ "$(ls -A tests/*.py 2>/dev/null)" ]; then
+            pytest tests/ -v --tb=short
+          else
+            echo "No pytest tests found, skipping..."
+          fi
 
       - name: Project analysis
         run: python scripts/analyze_project.py
