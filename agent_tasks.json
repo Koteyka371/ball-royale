@@ -38,7 +38,7 @@
   "tasks": [
     {
       "id": "ai-brain-architecture",
-      "status": "done",
+      "status": "todo",
       "area": "ai-core",
       "risk": "medium",
       "title": "Implement Ball Brain architecture",
