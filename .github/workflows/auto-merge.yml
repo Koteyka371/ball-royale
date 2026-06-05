@@ -1,0 +1,27 @@
+name: Auto Merge Jules PR
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.user.login == 'jules[bot]' || github.event.pull_request.user.login == 'google-labs-code[bot]'
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Wait for CI to pass
+        uses: lewagon/wait-on-check-action@v1.3.4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          check-regexp: '^(validate|test)$'
+          wait-interval: 30
+
+      - name: Auto merge PR
+        uses: pascalgn/automerge-action@v0.16.4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MERGE_METHOD: squash
+          MERGE_LABELS: ""
