@@ -19,56 +19,51 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Get next task
-        id: task
+      - name: Get next task and invoke Jules
+        env:
+          JULES_API_KEY: ${{ secrets.JULES_API_KEY }}
         run: |
-          python3 -c "
+          # Get next task
+          TASK_INFO=$(python3 -c "
           import json
           with open('agent_tasks.json') as f:
               data = json.load(f)
           tasks = [t for t in data.get('tasks', []) if t.get('status') == 'todo']
           if tasks:
               task = tasks[0]
-              print(f'task_id={task[\"id\"]}')
-              print(f'task_title={task[\"title\"]}')
-              with open('task.txt', 'w') as tf:
-                  tf.write(f'{task[\"id\"]}|{task[\"title\"]}|{task[\"description\"]}')
+              print(task['id'] + '|' + task['title'] + '|' + task.get('description', 'No description'))
           else:
-              print('task_id=generate-ideas')
-              print('task_title=Generate new tasks')
-              with open('task.txt', 'w') as tf:
-                  tf.write('generate-ideas|Generate new tasks|Read game_design.md and generate new tasks')
-          "
-          cat task.txt
-
-      - name: Read task file
-        id: read_task
-        run: |
-          IFS='|' read -r TASK_ID TASK_TITLE TASK_DESC < task.txt
-          echo "task_id=$TASK_ID" >> $GITHUB_OUTPUT
-          echo "task_title=$TASK_TITLE" >> $GITHUB_OUTPUT
-          echo "task_desc=$TASK_DESC" >> $GITHUB_OUTPUT
-
-      - name: Invoke Jules
-        env:
-          JULES_API_KEY: ${{ secrets.JULES_API_KEY }}
-        run: |
-          echo "Task: ${{ steps.read_task.outputs.task_title }}"
-          echo "Starting Jules session..."
+              print('generate-ideas|Generate new tasks|Read game_design.md and generate new tasks')
+          ")
           
-          RESPONSE=$(curl -s -X POST 'https://jules.googleapis.com/v1alpha/sessions' \
+          TASK_ID=$(echo "$TASK_INFO" | cut -d'|' -f1)
+          TASK_TITLE=$(echo "$TASK_INFO" | cut -d'|' -f2)
+          TASK_DESC=$(echo "$TASK_INFO" | cut -d'|' -f3)
+          
+          echo "Task ID: $TASK_ID"
+          echo "Task Title: $TASK_TITLE"
+          
+          # Check if API key exists
+          if [ -z "$JULES_API_KEY" ]; then
+            echo "ERROR: JULES_API_KEY is not set!"
+            exit 1
+          fi
+          
+          # Invoke Jules
+          echo "Invoking Jules API..."
+          curl -s -X POST 'https://jules.googleapis.com/v1alpha/sessions' \
             -H 'Content-Type: application/json' \
             -H "x-goog-api-key: $JULES_API_KEY" \
-            -d '{
-              "prompt": "You are working on Ball Royale game.\n\nCURRENT TASK: ${{ steps.read_task.outputs.task_title }}\n\nDESCRIPTION:\n${{ steps.read_task.outputs.task_desc }}\n\nRULES:\n1. Read AGENTS.md first\n2. Read docs/game_design.md\n3. Write code with tests\n4. Update agent_tasks.json (set task status to done)\n5. Create a PR",
-              "sourceContext": {
-                "source": "sources/github/Koteyka371/ball-royale",
-                "githubRepoContext": {
-                  "startingBranch": "main"
+            -d "{
+              \"prompt\": \"You are working on Ball Royale game.\n\nCURRENT TASK: $TASK_TITLE\n\nDESCRIPTION: $TASK_DESC\n\nRULES:\n1. Read AGENTS.md first\n2. Read docs/game_design.md\n3. Write code with tests\n4. Update agent_tasks.json (set task status to done)\n5. Create a PR\",
+              \"sourceContext\": {
+                \"source\": \"sources/github/Koteyka371/ball-royale\",
+                \"githubRepoContext\": {
+                  \"startingBranch\": \"main\"
                 }
               },
-              "automationMode": "AUTO_CREATE_PR",
-              "title": "Task: ${{ steps.read_task.outputs.task_title }}"
-            }')
+              \"automationMode\": \"AUTO_CREATE_PR\",
+              \"title\": \"Task: $TASK_TITLE\"
+            }"
           
-          echo "Response: $RESPONSE"
+          echo "Jules invoked successfully"
