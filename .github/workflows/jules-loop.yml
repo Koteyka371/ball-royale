@@ -4,10 +4,6 @@ on:
   pull_request:
     types: [closed]
   workflow_dispatch:
-    inputs:
-      task:
-        description: 'Custom task for Jules'
-        required: false
 
 jobs:
   check-and-run:
@@ -26,7 +22,6 @@ jobs:
       - name: Get next task
         id: task
         run: |
-          # Get next todo task from agent_tasks.json
           TASK=$(python3 -c "
           import json
           with open('agent_tasks.json') as f:
@@ -42,47 +37,25 @@ jobs:
           IFS='|' read -r TASK_ID TASK_TITLE TASK_DESC <<< "$TASK"
           echo "task_id=$TASK_ID" >> $GITHUB_OUTPUT
           echo "task_title=$TASK_TITLE" >> $GITHUB_OUTPUT
-          echo "task_desc=$TASK_DESC" >> $GITHUB_OUTPUT
 
-      - name: Invoke Jules
-        uses: google-labs-code/jules-invoke@v1
-        with:
-          prompt: |
-            You are working on Ball Royale - a 2D battle royale game with AI-controlled balls.
-            
-            CURRENT TASK: ${{ steps.task.outputs.task_title }}
-            
-            TASK DESCRIPTION:
-            ${{ steps.task.outputs.task_desc }}
-            
-            IMPORTANT RULES:
-            1. Read AGENTS.md first for project instructions
-            2. Read docs/game_design.md for game design
-            3. All balls are AI-controlled - player only observes
-            4. Write clean code with tests
-            5. Update agent_tasks.json when done (set status to "done")
-            6. Generate 2-3 new tasks from game_design.md
-            
-            AI SYSTEM ARCHITECTURE:
-            Each ball has a BallBrain with 4 layers:
-            - Perception: scan for enemies, allies, boosters
-            - Emotion: fear, rage, greed based on situation
-            - Decision: choose best action
-            - Action: execute behavior
-            
-            FILE STRUCTURE:
-            - src/ - game source code (GDScript)
-            - tests/ - Python tests
-            - docs/game_design.md - full game design
-            - agent_tasks.json - task queue
-            
-            When task is complete:
-            1. Set task status to "done" in agent_tasks.json
-            2. Add 2-3 new todo tasks from game_design.md
-            3. Create PR with changes
-          jules_api_key: ${{ secrets.JULES_API_KEY }}
-          starting_branch: main
-          include_last_commit: true
+      - name: Invoke Jules via API
+        env:
+          JULES_API_KEY: ${{ secrets.JULES_API_KEY }}
+        run: |
+          curl -X POST 'https://jules.googleapis.com/v1alpha/sessions' \
+            -H 'Content-Type: application/json' \
+            -H "x-goog-api-key: $JULES_API_KEY" \
+            -d '{
+              "prompt": "You are working on Ball Royale game.\n\nCURRENT TASK: ${{ steps.task.outputs.task_title }}\n\nIMPORTANT RULES:\n1. Read AGENTS.md first\n2. Read docs/game_design.md\n3. All balls are AI-controlled\n4. Write code with tests\n5. Update agent_tasks.json (set status to done)\n6. Generate 2-3 new tasks\n7. Create a PR with changes",
+              "sourceContext": {
+                "source": "sources/github/Koteyka371/ball-royale",
+                "githubRepoContext": {
+                  "startingBranch": "main"
+                }
+              },
+              "automationMode": "AUTO_CREATE_PR",
+              "title": "Task: ${{ steps.task.outputs.task_title }}"
+            }'
 
       - name: Mark task as done
         if: success()
