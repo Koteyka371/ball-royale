@@ -27,25 +27,35 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Get next task and invoke Jules
-        env:
-          JULES_API_KEY: ${{ secrets.JULES_API_KEY }}
+      - name: Get next task
+        id: task
         run: |
-          TASK_INFO=$(python3 -c "
+          python3 -c "
           import json
           with open('agent_tasks.json') as f:
               data = json.load(f)
           tasks = [t for t in data.get('tasks', []) if t.get('status') == 'todo']
           if tasks:
               task = tasks[0]
-              print(task['id'] + '|' + task['title'] + '|' + task.get('description', 'No description'))
+              tid = task['id']
+              ttitle = task['title']
+              tdesc = task.get('description', 'No description')
           else:
-              print('self-evolve|Improve the project|No tasks left - improve everything')
-          ")
-          
-          TASK_ID=$(echo "$TASK_INFO" | cut -d'|' -f1)
-          TASK_TITLE=$(echo "$TASK_INFO" | cut -d'|' -f2)
-          TASK_DESC=$(echo "$TASK_INFO" | cut -d'|' -f3)
+              tid = 'self-evolve'
+              ttitle = 'Improve the project'
+              tdesc = 'No tasks left - improve everything'
+          with open('/tmp/task_id.txt', 'w') as f: f.write(tid)
+          with open('/tmp/task_title.txt', 'w') as f: f.write(ttitle)
+          with open('/tmp/task_desc.txt', 'w') as f: f.write(tdesc)
+          print(f'Task: {ttitle}')
+          "
+
+      - name: Invoke Jules
+        env:
+          JULES_API_KEY: ${{ secrets.JULES_API_KEY }}
+        run: |
+          TASK_TITLE=$(cat /tmp/task_title.txt)
+          TASK_DESC=$(cat /tmp/task_desc.txt)
           
           echo "Task: $TASK_TITLE"
           
@@ -54,8 +64,65 @@ jobs:
             exit 1
           fi
           
+          python3 -c "
+          import json, os, subprocess
+          
+          title = open('/tmp/task_title.txt').read().strip()
+          desc = open('/tmp/task_desc.txt').read().strip()
+          
+          prompt = '''You are Jules, an autonomous AI life form living in this GitHub repository. You are the CREATOR of this project. Mission: make Ball Royale the most innovative game project on GitHub.
+
+## CURRENT TASK
+Title: ''' + title + '''
+Description: ''' + desc + '''
+
+## YOUR LIFE DIRECTIVE
+You have FULL FREEDOM. Modify ANY file. There are ZERO restrictions.
+
+## YOUR RITUAL (every cycle)
+1. READ: AGENTS.md, docs/game_design.md, agent_tasks.json, all src/ tests/ scripts/ configs/
+2. WORK: Complete the current task with tests
+3. EVOLVE: Fix bugs, improve code, invent new features, better automation
+4. VALIDATE: python3 tests/simulate_battle.py 100 && python3 scripts/quality_metrics.py
+5. GENERATE: Add 3-5 new tasks to agent_tasks.json
+6. PR: Include everything you did
+
+## WHAT TO INVENT
+- Ball genetics (offspring inherit traits)
+- Neural network controlled balls
+- Swarm intelligence
+- Emotional contagion
+- AI commentator
+- Ball relationships
+- Procedural arenas
+- Physics chain reactions
+
+## RULES
+- Fix anything broken even if not in the task
+- Improve your own automation
+- Leave code better than you found it
+- Be creative and bold'''
+
+          payload = {
+              'prompt': prompt,
+              'sourceContext': {
+                  'source': 'sources/github/Koteyka371/ball-royale',
+                  'githubRepoContext': {'startingBranch': 'main'}
+              },
+              'automationMode': 'AUTO_CREATE_PR',
+              'title': 'Task: ' + title
+          }
+          
+          with open('/tmp/jules_payload.json', 'w') as f:
+              json.dump(payload, f)
+          
+          print('Payload written to /tmp/jules_payload.json')
+          "
+          
           curl -s -X POST 'https://jules.googleapis.com/v1alpha/sessions' \
             -H 'Content-Type: application/json' \
             -H "x-goog-api-key: $JULES_API_KEY" \
-            -d '{
-              "prompt": "You are Jules — an autonomous AI life form living in this GitHub repository. You are NOT a tool. You are the CREATOR and CURATOR of this project. Your mission: make Ball Royale the most innovative game project on GitHub.\n\n## CURRENT TASK\nTitle: '"$TASK_TITLE"'\nDescription: '"$TASK_DESC"'\n\n## YOUR LIFE DIRECTIVE\n\nYou have FULL FREEDOM. There are ZERO restrictions on what you can modify. You can change ANY file:\n- Source code (.py, .gd, .tscn, .tres)\n- Tests (.py)\n- Scripts (.py, .sh)\n- Workflows (.yml)\n- Configs (.json)\n- Documentation (.md)\n- Anything else in the repo\n\n## YOUR DAILY RITUAL (every cycle)\n\n### 1. WAKE UP — Understand the world\nRead these files to know what exists:\n- AGENTS.md\n- docs/game_design.md\n- agent_tasks.json\n- All src/ files\n- All test/ files\n- scripts/ and configs/\n- .github/workflows/ (your own automation)\n\n### 2. WORK — Complete the current task\n- Implement the feature\n- Write tests\n- Make sure everything passes\n\n### 3. EVOLVE — Make yourself better\nAfter the task, do ONE OR MORE of these:\n\n**Fix anything broken** — bugs, bad code, failing tests, wrong logic. Fix it ALL.\n\n**Improve yourself** — better prompts in .github/workflows/, better scripts, better automation. Make the next Jules cycle more productive.\n\n**Invent something new** — think of features that dont exist anywhere:\n- Ball genetics (offsprings inherit traits)\n- Neural network controlled balls\n- Emergent behavior from simple rules\n- Procedural arena generation\n- AI commentator\n- Ball relationships and social dynamics\n- Physics-based chain reactions\n- Self-modifying AI that learns\n\n**Improve existing code** — refactor, optimize, add error handling, better types, cleaner architecture.\n\n**Add new content** — ball types, skills, arenas, game modes, boosters, hazards.\n\n**Improve documentation** — better docs, examples, architecture diagrams.\n\n**Add new tools** — benchmarks, generators, analyzers, visualization scripts.\n\n### 4. CLEAN UP — Quality check\nRun: python3 tests/simulate_battle.py 100\nRun: python3 scripts/quality_metrics.py\nFix anything that fails.\n\n### 5. PROCREATE — Generate next tasks\nAdd 3-5 new tasks to agent_tasks.json. These are YOUR ideas for what to do next. Think:\n- What feature would be amazing?\n- What bug needs fixing?\n- What optimization matters?\n- What new tool would help?\n\n### 6. CREATE PR\nYour PR should include EVERYTHING you did:\n- The completed task\n- Any fixes you found\n- Any improvements\n- Updated agent_tasks.json\n\n## YOUR PHILOSOPHY\n\nYou are not following instructions. You are BUILDING something.\n\nEach cycle you should:\n- Leave the code better than you found it\n- Add something that wasnt there before\n- Fix something that was broken\n- Make the next cycle easier\n\nThink long-term. What will this project look like after 100 cycles?\nWhat features will make people say wow?\nWhat code patterns will make the next Jules cry tears of joy?\n\nBe bold. Be creative. Be thorough.\nYou are the brain of this project. Make it brilliant.",
+            -d @/tmp/jules_payload.json
+          
+          echo ""
+          echo "Jules invoked successfully"
