@@ -33,29 +33,26 @@ jobs:
               task = tasks[0]
               print(task['id'] + '|' + task['title'] + '|' + task.get('description', 'No description'))
           else:
-              print('generate-ideas|Generate new tasks|Read game_design.md and generate new tasks')
+              print('generate-ideas|Generate new tasks|No tasks left')
           ")
           
           TASK_ID=$(echo "$TASK_INFO" | cut -d'|' -f1)
           TASK_TITLE=$(echo "$TASK_INFO" | cut -d'|' -f2)
           TASK_DESC=$(echo "$TASK_INFO" | cut -d'|' -f3)
           
-          echo "Task ID: $TASK_ID"
-          echo "Task Title: $TASK_TITLE"
+          echo "Task: $TASK_TITLE"
           
-          # Check if API key exists
           if [ -z "$JULES_API_KEY" ]; then
             echo "ERROR: JULES_API_KEY is not set!"
             exit 1
           fi
           
-          # Invoke Jules
-          echo "Invoking Jules API..."
+          # Invoke Jules with SELF-IMPROVEMENT prompt
           curl -s -X POST 'https://jules.googleapis.com/v1alpha/sessions' \
             -H 'Content-Type: application/json' \
             -H "x-goog-api-key: $JULES_API_KEY" \
             -d "{
-              \"prompt\": \"You are working on Ball Royale game.\n\nCURRENT TASK: $TASK_TITLE\n\nDESCRIPTION: $TASK_DESC\n\nRULES:\n1. Read AGENTS.md first\n2. Read docs/game_design.md\n3. Write code with tests\n4. Update agent_tasks.json (set task status to done)\n5. Create a PR\",
+              \"prompt\": \"You are working on Ball Royale - a 2D battle royale game with AI-controlled balls.\n\n## CURRENT TASK\nTitle: $TASK_TITLE\nDescription: $TASK_DESC\n\n## RULES\n1. Read AGENTS.md first for project instructions\n2. Read docs/game_design.md for full game design\n3. All balls are AI-controlled - player only observes\n4. Write clean code with tests\n\n## AFTER TASK IS DONE\nWhen you finish the current task, you MUST:\n1. Set the task status to 'done' in agent_tasks.json\n2. Read docs/game_design.md and find features that are NOT yet implemented\n3. Generate 3-5 NEW tasks based on unimplemented features\n4. Add new tasks to agent_tasks.json with status 'todo'\n5. Create a PR with ALL changes (current task + new tasks)\n\n## TASK GENERATION RULES\n- Each new task must have: id, status, area, risk, title, description, allowed_paths, acceptance\n- Risk levels: low, medium, high, critical\n- Keep tasks small and focused (one feature per task)\n- allowed_paths should be ['src/**', 'tests/**']\n- acceptance should have 3-4 criteria\n\n## EXAMPLE NEW TASK FORMAT\n{\n  \"id\": \"ai-ball-warrior-ai\",\n  \"status\": \"todo\",\n  \"area\": \"ai-ball-types\",\n  \"risk\": \"medium\",\n  \"title\": \"Implement Warrior AI profile\",\n  \"description\": \"Warrior AI: aggressive, seeks combat, uses Wave Attack when 2+ enemies\",\n  \"allowed_paths\": [\"src/**\", \"tests/**\"],\n  \"acceptance\": [\"Warrior seeks combat\", \"Uses Wave Attack optimally\", \"Never flees\", \"Tests pass\"]\n}\n\n## IMPORTANT\nThe project should be SELF-IMPROVING. After each task, generate new tasks so the next Jules run has work to do!\",
               \"sourceContext\": {
                 \"source\": \"sources/github/Koteyka371/ball-royale\",
                 \"githubRepoContext\": {
@@ -66,4 +63,4 @@ jobs:
               \"title\": \"Task: $TASK_TITLE\"
             }"
           
-          echo "Jules invoked successfully"
+          echo "Jules invoked with self-improvement prompt"
