@@ -1,0 +1,92 @@
+name: Issue to Task
+
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  convert-issue:
+    runs-on: ubuntu-latest
+    if: contains(github.event.issue.labels.*.name, 'task')
+    
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Convert issue to task
+        env:
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          # Create task from issue
+          python3 << 'EOF'
+          import json
+          import os
+          import re
+          
+          title = os.environ['ISSUE_TITLE']
+          body = os.environ['ISSUE_BODY'] or ''
+          number = os.environ['ISSUE_NUMBER']
+          
+          # Generate task ID from title
+          task_id = re.sub(r'[^a-z0-9]+', '-', title.lower())[:50]
+          task_id = f"issue-{number}-{task_id}"
+          
+          # Determine area from labels or title
+          area = 'content'
+          if 'bug' in title.lower():
+              area = 'bugfix'
+          elif 'feature' in title.lower():
+              area = 'feature'
+          elif 'ai' in title.lower():
+              area = 'ai-core'
+          
+          # Determine risk
+          risk = 'medium'
+          if 'urgent' in title.lower() or 'critical' in title.lower():
+              risk = 'high'
+          elif 'simple' in title.lower() or 'easy' in title.lower():
+              risk = 'low'
+          
+          # Create task
+          task = {
+              "id": task_id,
+              "status": "todo",
+              "area": area,
+              "risk": risk,
+              "title": title,
+              "description": body or f"Implement {title}",
+              "allowed_paths": ["src/**", "tests/**"],
+              "acceptance": [
+                  "Feature works as described",
+                  "Tests pass",
+                  "No regressions"
+              ]
+          }
+          
+          # Load and update manifest
+          with open('agent_tasks.json', 'r') as f:
+              manifest = json.load(f)
+          
+          # Check for duplicate
+          existing_ids = {t['id'] for t in manifest.get('tasks', [])}
+          if task_id not in existing_ids:
+              manifest['tasks'].append(task)
+              with open('agent_tasks.json', 'w') as f:
+                  json.dump(manifest, f, indent=2, ensure_ascii=False)
+              print(f"Added task: {task_id}")
+          else:
+              print(f"Task already exists: {task_id}")
+          EOF
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add agent_tasks.json
+          git diff --staged --quiet || git commit -m "auto: add task from issue #${{ github.event.issue.number }}"
+          git push

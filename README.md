@@ -1,16 +1,14 @@
 # Ball Royale
 
-2D арена-батл-рояль с самуправляемыми шариками. Идеально для коротких YouTube/Shorts видео.
+2D арена-батл-рояль с самуправляемыми шариками. Все шарики управляются встроенным ИИ.
 
 ## Features
 
-- 6+ игровых режимов (Battle Royale, Team Battle, Racing, Survival, Sumo, King of the Hill)
-- 10+ типов шариков (Warrior, Scout, Tank, Healer, Sniper, Bomber, etc.)
-- 10+ арен (Classic, Death Valley, Sky Island, Lava Pit, etc.)
-- 20+ скиллов (wave attack, dash, shield, heal, snipe, bomb, etc.)
-- Автоматическое управление шариками + вмешательство игрока
-- Эпичные эффекты: частицы, взрывы, следы
-- Идеально для YouTube Shorts (30-60 секунд)
+- 6+ игровых режимов
+- 10+ типов шариков с уникальным ИИ
+- 10+ арен
+- 20+ скиллов
+- Автономное ИИ-управление каждым шариком
 
 ## Quick Start
 
@@ -18,98 +16,77 @@
 # Install dependencies
 pip install -r requirements.txt
 
-# Validate task manifest
+# Validate tasks
 python scripts/validate_tasks.py agent_tasks.json
 
-# Generate new tasks from game_design.md
-python scripts/generate_tasks.py
-
 # Run tests
-pytest tests/ -v
+python scripts/test_ai_behaviors.py
+
+# Analyze project
+python scripts/analyze_project.py
+
+# Generate ideas
+python scripts/generate_ideas.py
 ```
 
 ## Project Structure
 
 ```
 ball-royale/
-├── agent_tasks.json          # Task queue (56 tasks)
-├── AGENTS.md                 # Instructions for AI agents
+├── agent_tasks.json          # Task queue
+├── AGENTS.md                 # Instructions for AI
 ├── docs/
-│   ├── game_design.md        # Full game design document
-│   └── backlog.md            # Detailed backlog
-├── scripts/
-│   ├── validate_tasks.py     # Task manifest validator
-│   └── generate_tasks.py     # Auto-generate tasks from design
-├── src/                      # Game source code (TBD)
-├── tests/                    # Tests (TBD)
+│   ├── game_design.md        # Game design document
+│   └── backlog.md            # Backlog
+├── scripts/                  # Automation tools
+├── src/                      # Game source code
+├── tests/                    # Tests
 └── .github/workflows/        # CI/CD
 ```
 
-## Self-Improvement Loop
+## Automation (GitHub Actions)
 
-This project uses an automated self-improvement loop:
+### Auto-Improve (Daily)
+- Runs every day at 10:00 UTC
+- Analyzes project state
+- Generates new tasks from `game_design.md`
+- Creates PR with updates
 
-1. `agent_tasks.json` contains 56+ tasks
-2. Jules/Codex picks the first `todo` task
-3. Implements it with code + tests
-4. Creates a PR
-5. CI validates and tests
-6. Auto-merges if safe (low/medium risk)
-7. `generate_tasks.py` creates new tasks from `game_design.md`
+### Test (On Push)
+- Runs on every push to main
+- Validates task manifest
+- Runs AI behavior tests
+- Checks project status
 
-## Game Modes
+### Issue to Task
+- Add label `task` to any issue
+- Issue is automatically converted to task in `agent_tasks.json`
 
-### 1. Battle Royale (Main)
-- 20-50 balls on arena
-- Arena shrinks every 5 seconds
-- Last ball standing wins
+## How It Works
 
-### 2. Team Battle
-- 4 teams (Red, Blue, Green, Yellow)
-- Each team has unique bonus
-- Destroy enemy flags to win
+1. **Tasks** are defined in `agent_tasks.json`
+2. **Game design** is in `docs/game_design.md`
+3. **Scripts** analyze and generate new tasks
+4. **GitHub Actions** runs automatically
+5. **PRs** are created with improvements
 
-### 3. Racing
-- Balls race on track with obstacles
-- First to finish wins
+## AI System
 
-### 4. Survival
-- 1 ball vs 50 enemies
-- Waves get harder
-- Survive as long as possible
+Each ball has a **BallBrain** with 4 layers:
+1. **Perception** - scan for enemies, allies, boosters
+2. **Emotion** - fear, rage, greed based on situation
+3. **Decision** - choose best action
+4. **Action** - execute behavior
 
-### 5. Sumo
-- Push opponents off platform
-- Last one standing wins
+## Contributing
 
-### 6. King of the Hill
-- Control the throne
-- Most points wins
-
-## Ball Types
-
-| Ball | Color | Skill | Role |
-|------|-------|-------|------|
-| Warrior | 🔴 Red | Wave Attack | Damage |
-| Scout | 🔵 Blue | Dash | Speed |
-| Tank | 🟢 Green | Shield | Defense |
-| Healer | 🟡 Yellow | Heal | Support |
-| Sniper | 🟣 Purple | Snipe | Ranged |
-| Bomber | 🟠 Orange | Bomb | AoE |
-| Ninja | ⚫ Black | Stealth | Assassin |
-| King | 👑 Gold | Buff | Leader |
-
-## YouTube Strategy
-
-- **Duration**: 30-60 seconds (perfect for Shorts)
-- **Format**: Vertical (9:16)
-- **Content**: Epic moments, clutch plays, funny chaos
-- **Viral elements**: Comebacks, 1v1 finals, unexpected plays
-
-## Development
-
-See `AGENTS.md` for detailed instructions on how Jules/Codex should work with this project.
+1. Create an issue with label `task`
+2. Issue is converted to task automatically
+3. Implement the task
+4. Create PR
+5. CI runs tests
+6. Merge when ready
 
 ## License
 
-TBD
+MIT

@@ -1,0 +1,37 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Validate task manifest
+        run: python scripts/validate_tasks.py agent_tasks.json
+
+      - name: Run AI behavior tests
+        run: python scripts/test_ai_behaviors.py
+
+      - name: Run pytest
+        run: pytest tests/ -v --tb=short
+        continue-on-error: true  # Don't fail if no tests yet
+
+      - name: Project analysis
+        run: python scripts/analyze_project.py
