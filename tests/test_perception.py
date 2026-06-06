@@ -84,3 +84,34 @@ def test_perception_empty_world():
     assert not data["allies"]
     assert not data["boosters"]
     assert not data["traps"]
+
+def test_perception_radius_by_ball_type():
+    from ai.ball_types_assassin import Assassin
+    from ai.ball_types_sniper import Sniper
+    from ai.perception import Perception
+
+    assassin_ball = Assassin(1, 0, 0)
+    sniper_ball = Sniper(2, 0, 0)
+
+    assert assassin_ball.perception_radius == 300
+    assert sniper_ball.perception_radius == 500
+
+    world = MockWorld()
+
+    # Sniper sees an enemy at 400 distance
+    world.entities["enemies"] = [MockEntity("e1", 400, 0)]
+
+    sniper_perception = Perception(sniper_ball, world)
+    sniper_data = sniper_perception.scan()
+    assert "e1" in sniper_data["distances"]
+    assert sniper_data["threat_level"] > 0
+
+    assassin_perception = Perception(assassin_ball, world)
+    assassin_data = assassin_perception.scan()
+    # Wait, in our mock world it just returns whatever is in world.entities
+    # but the perception system uses max(0, 1 - dist/radius)
+    # Let's check threat level calculations
+    assert "e1" in assassin_data["distances"]
+    # The enemy is at 400, but assassin's radius is 300
+    # max(0, 1 - 400/300) = 0
+    assert assassin_data["threat_level"] == 0.0

@@ -117,7 +117,7 @@ def check_code_quality() -> dict[str, Any]:
     # Check mypy
     try:
         result = subprocess.run(
-            [sys.executable, "-m", "mypy", "src/"],
+            [sys.executable, "-m", "mypy", "src/", "--explicit-package-bases"],
             capture_output=True,
             text=True,
             timeout=30

@@ -7,7 +7,7 @@ import time
 import sys
 import os
 import statistics
-from typing import List, Dict
+from typing import Dict, Any
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
@@ -92,7 +92,7 @@ def run_benchmark_suite() -> Dict:
     print("  BALL ROYALE — AI PERFORMANCE BENCHMARK")
     print("=" * 60)
 
-    results = {}
+    results: Dict[Any, Any] = {}
     for count in [10, 50, 100, 200, 500, 1000]:
         result = benchmark_brain_tick(count, num_iterations=50)
         results[count] = result

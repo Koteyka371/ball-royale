@@ -1,5 +1,5 @@
 import math
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 class Perception:
     """
@@ -19,7 +19,7 @@ class Perception:
         """
         perception_radius = getattr(self.ball, "perception_radius", 300.0)
 
-        data = {
+        data: Dict[str, Any] = {
             "enemies": [],
             "allies": [],
             "boosters": [],

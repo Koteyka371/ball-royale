@@ -9,8 +9,8 @@ import math
 import time
 import sys
 import os
-from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Tuple
+from dataclasses import dataclass
+from typing import List, Dict, Optional, Tuple, Any
 from collections import Counter
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
@@ -175,8 +175,8 @@ class BattleSimulation:
         self.num_balls = num_balls
         self.grid = SpatialGrid(arena_size, arena_size)
         self.tick = 0
-        self.kill_log = []
-        self.stats = {
+        self.kill_log: List[Dict[str, Any]] = []
+        self.stats: Dict[str, Any] = {
             "ticks": 0, "total_kills": 0, "survivors": 0, "winner": None,
             "battle_duration": 0.0, "actions_performed": Counter(),
             "ball_types_alive": Counter(), "ball_types_killed": Counter(),
@@ -427,7 +427,7 @@ def test_all_ball_types_represented():
 
 def test_battle_reduces_to_few():
     sim = BattleSimulation(num_balls=50, max_ticks=1000, seed=42)
-    stats = sim.run()
+    sim.run()
     alive = sum(1 for b in sim.balls if b.alive)
     assert alive < 50, f"Battle should reduce ball count, got {alive}"
 
@@ -436,5 +436,5 @@ if __name__ == "__main__":
     n = int(sys.argv[1]) if len(sys.argv) > 1 else 100
     print(f"Running simulation with {n} balls...")
     sim = BattleSimulation(num_balls=n, max_ticks=1000, seed=42)
-    stats = sim.run()
+    sim.run()
     sim.print_report()
