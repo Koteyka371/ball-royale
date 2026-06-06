@@ -26,6 +26,7 @@ class Phantom:
         self.y = y
         self.alive = True
         self.kills = 0
+        self.first_hit_taken = False
         self.current_action = "idle"
         self.skill_timer = 0.0
         self.personality = "phantom"
@@ -49,6 +50,8 @@ class Phantom:
         self.current_action = "idle"
 
     def take_damage(self, amount: float) -> None:
+        if self.hp == self.max_hp and amount > 0:
+            self.first_hit_taken = True
         self.hp -= amount
         if self.hp <= 0:
             self.alive = False

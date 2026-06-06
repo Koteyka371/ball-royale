@@ -493,7 +493,7 @@
     },
     {
       "id": "auto-implement-emotion-skill",
-      "status": "todo",
+      "status": "done",
       "area": "skills",
       "risk": "medium",
       "allowed_paths": [
@@ -824,6 +824,53 @@
       ],
       "title": "Implement **Ball Relationships** — Balls remember each other. Rivalry skill",
       "description": "Create **Ball Relationships** — Balls remember each other. Rivalry skill: attacked me before → attack on sight"
+    },
+    {
+      "id": "add-particle-effects",
+      "status": "todo",
+      "area": "visuals",
+      "risk": "low",
+      "title": "Add particle effects for skills",
+      "description": "Create basic particle effects in Godot for when balls use their skills like Wave Attack or Explosion.",
+      "allowed_paths": [
+        "src/**"
+      ],
+      "acceptance": [
+        "Feature works",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "implement-kill-feed-ui",
+      "status": "todo",
+      "area": "ui",
+      "risk": "medium",
+      "title": "Implement Kill Feed UI",
+      "description": "Create a UI kill feed that logs which ball killed which, using the battle simulation kill_log data.",
+      "allowed_paths": [
+        "src/ui/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature works",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "procedural-hazards",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "high",
+      "title": "Add procedural hazards to arena",
+      "description": "Generate random hazards (spikes, lava) in the arena that damage balls when they collide.",
+      "allowed_paths": [
+        "src/arena/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature works",
+        "Tests pass"
+      ]
     }
   ]
 }
