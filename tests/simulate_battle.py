@@ -226,42 +226,24 @@ class BattleSimulation:
             if not ball.alive:
                 continue
 
-            brain = BallBrain(ball, None)
-            # Manually set world for perception
-            nearby = self.grid.get_nearby(ball.x, ball.y, ball.perception_radius)
-            enemies = [b for b in nearby if b.id != ball.id]
-
-            perception_data = {
-                "enemies": enemies, "allies": [], "boosters": [],
-                "danger_level": len(enemies) * 0.2,
-                "opportunity_level": 0.0,
-            }
-
-            # Find nearby boosters
-            for bo in self.boosters:
-                if bo.active:
-                    dx = bo.x - ball.x
-                    dy = bo.y - ball.y
-                    if dx * dx + dy * dy <= ball.perception_radius ** 2:
-                        perception_data["boosters"].append(bo)
-            perception_data["opportunity_level"] = len(perception_data["boosters"]) * 0.3
-
+            brain = BallBrain(ball, self)
+            perception_data = brain.perception()
             emotion = brain.emotion(perception_data)
             decision = brain.decision(perception_data, emotion)
             ball.current_action = decision
             self.stats["actions_performed"][decision] += 1
 
             # Movement
-            if decision == "flee" and enemies:
-                nearest = min(enemies, key=lambda e: (e.x - ball.x) ** 2 + (e.y - ball.y) ** 2)
+            if decision == "flee" and perception_data["enemies"]:
+                nearest = min(perception_data["enemies"], key=lambda e: (e.x - ball.x) ** 2 + (e.y - ball.y) ** 2)
                 dx, dy = ball.x - nearest.x, ball.y - nearest.y
                 dist = math.sqrt(dx * dx + dy * dy)
                 if dist > 0.01:
                     ball.x += (dx / dist) * ball.speed * self._delta * 60
                     ball.y += (dy / dist) * ball.speed * self._delta * 60
 
-            elif decision == "attack" and enemies:
-                target = min(enemies, key=lambda e: (e.x - ball.x) ** 2 + (e.y - ball.y) ** 2)
+            elif decision == "attack" and perception_data["enemies"]:
+                target = min(perception_data["enemies"], key=lambda e: (e.x - ball.x) ** 2 + (e.y - ball.y) ** 2)
                 dx, dy = target.x - ball.x, target.y - ball.y
                 dist = math.sqrt(dx * dx + dy * dy)
                 if dist > 0.01:
@@ -328,6 +310,25 @@ class BattleSimulation:
         elif booster.kind == "speed":
             ball.speed += booster.value * 0.01
         booster.active = False
+
+    def get_nearby_entities(self, ball: Ball, radius: float) -> Dict[str, list]:
+        nearby = self.grid.get_nearby(ball.x, ball.y, radius)
+        enemies = [b for b in nearby if b.id != ball.id]
+
+        nearby_boosters = []
+        for bo in self.boosters:
+            if bo.active:
+                dx = bo.x - ball.x
+                dy = bo.y - ball.y
+                if dx * dx + dy * dy <= radius ** 2:
+                    nearby_boosters.append(bo)
+
+        return {
+            "enemies": enemies,
+            "allies": [],
+            "boosters": nearby_boosters,
+            "traps": []
+        }
 
     def run(self) -> Dict:
         self._delta = 0.016

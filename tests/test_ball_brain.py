@@ -13,6 +13,10 @@ class MockBall:
         self.max_hp = max_hp
         self.personality = personality
         self.current_action = None
+        self.x = 0
+        self.y = 0
+        self.damage = 10.0
+        self.perception_radius = 300.0
 
     def flee(self, delta):
         pass
@@ -63,8 +67,14 @@ def test_perception_layer():
     assert len(data["enemies"]) == 2
     assert len(data["allies"]) == 0
     assert len(data["boosters"]) == 1
-    assert data["danger_level"] == 0.4
-    assert data["opportunity_level"] == 0.3
+    # 2 enemies. Each gives base_threat * dist_factor + 0.1
+    # distance is 0, so dist_factor is 1.0. damage is 10.0 => base_threat = 0.1
+    # danger = 2 * (0.1 * 1.0 + 0.1) = 0.4
+    assert abs(data["danger_level"] - 0.4) < 0.001
+    # 1 booster. opportunity = 0.3 * dist_factor + 0.1
+    # booster has no x/y (it's int 1), so getattr returns 0. distance is 0 => dist_factor is 1.0
+    # opportunity = 0.3 * 1.0 + 0.1 = 0.4
+    assert abs(data["opportunity_level"] - 0.4) < 0.001
 
 
 def test_emotion_layer():
