@@ -3,7 +3,6 @@ Auto-generated ball type: Juggernaut
 Slow but devastating, area damage on impact
 """
 
-from typing import Any
 
 
 class Juggernaut:
@@ -49,7 +48,7 @@ class Juggernaut:
         self.current_action = "idle"
 
     def take_damage(self, amount: float) -> None:
-        self.hp -= amount
+        self.hp -= int(amount)
         if self.hp <= 0:
             self.alive = False
 

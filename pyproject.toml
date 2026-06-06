@@ -1,0 +1,3 @@
+[tool.mypy]
+mypypath = "src"
+explicit_package_bases = true
