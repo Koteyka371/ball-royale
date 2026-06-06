@@ -1,6 +1,7 @@
 from typing import Any, Dict
 
 from .perception import Perception
+from .emotion import Emotion
 
 
 class BallBrain:
@@ -13,6 +14,7 @@ class BallBrain:
         self.ball = ball
         self.world = world
         self.perception_layer = Perception(self.ball, self.world)
+        self.emotion_layer = Emotion(self.ball)
 
     def process(self, delta: float) -> None:
         """Main processing loop through the 4 layers."""
@@ -33,22 +35,7 @@ class BallBrain:
         2. EMOTION LAYER
         Determines current emotional state based on HP and situation.
         """
-        hp_percent = 1.0
-        if hasattr(self.ball, "get_hp_percent"):
-            hp_percent = self.ball.get_hp_percent()
-        elif hasattr(self.ball, "hp") and hasattr(self.ball, "max_hp"):
-            hp_percent = float(self.ball.hp) / float(self.ball.max_hp)
-
-        if hp_percent < 0.3:
-            return "fear"
-
-        if len(perception_data["boosters"]) > 0:
-            return "greed"
-
-        if hp_percent > 0.8 and len(perception_data["enemies"]) > 0:
-            return "rage"
-
-        return "neutral"
+        return self.emotion_layer.process(perception_data)
 
     def decision(self, perception_data: Dict[str, Any], emotion_state: str) -> str:
         """
