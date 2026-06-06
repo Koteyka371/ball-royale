@@ -58,7 +58,7 @@
     },
     {
       "id": "ai-perception-system",
-      "status": "todo",
+      "status": "done",
       "area": "ai-core",
       "risk": "medium",
       "title": "Implement Perception system",
@@ -703,6 +703,70 @@
         "Tests pass",
         "No regressions"
       ]
+    },
+    {
+      "id": "auto-create-procedural-arenas-arena",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "medium",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature works",
+        "Tests pass"
+      ],
+      "title": "Create Procedural Arenas arena",
+      "description": "Implement Procedural Arenas with unique mechanics"
+    },
+    {
+      "id": "auto-implement-**ball-genetics**-—-balls-reproduce-afte",
+      "status": "todo",
+      "area": "skills",
+      "risk": "medium",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature works",
+        "Tests pass"
+      ],
+      "title": "Implement **Ball Genetics** — Balls reproduce after surviving N battles. Offspring inherit traits skill",
+      "description": "Create **Ball Genetics** — Balls reproduce after surviving N battles. Offspring inherit traits skill: speed, damage, color"
+    },
+    {
+      "id": "auto-implement-**neural-ball**-—-a-ball-controlled-by-a",
+      "status": "todo",
+      "area": "skills",
+      "risk": "medium",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature works",
+        "Tests pass"
+      ],
+      "title": "Implement **Neural Ball** — A ball controlled by a simple neural network skill",
+      "description": "Create **Neural Ball** — A ball controlled by a simple neural network skill: numpy, no external libs"
+    },
+    {
+      "id": "auto-implement-**ball-relationships**-—-balls-remember-",
+      "status": "todo",
+      "area": "skills",
+      "risk": "medium",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature works",
+        "Tests pass"
+      ],
+      "title": "Implement **Ball Relationships** — Balls remember each other. Rivalry skill",
+      "description": "Create **Ball Relationships** — Balls remember each other. Rivalry skill: attacked me before → attack on sight"
     }
   ]
 }
