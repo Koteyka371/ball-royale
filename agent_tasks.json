@@ -824,6 +824,159 @@
       ],
       "title": "Implement **Ball Relationships** — Balls remember each other. Rivalry skill",
       "description": "Create **Ball Relationships** — Balls remember each other. Rivalry skill: attacked me before → attack on sight"
+    },
+    {
+      "id": "ai-emotional-contagion",
+      "status": "todo",
+      "area": "ai-innovation",
+      "risk": "medium",
+      "title": "Implement Emotional Contagion",
+      "description": "Allow emotions like fear or rage to spread to nearby allies.",
+      "allowed_paths": [
+        "src/ai/**/*.py",
+        "src/ai/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Emotions can be transmitted to allies",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "physics-chain-reactions",
+      "status": "todo",
+      "area": "physics",
+      "risk": "high",
+      "title": "Add Physics Chain Reactions",
+      "description": "Explosions and high-speed impacts should push other balls.",
+      "allowed_paths": [
+        "src/arena/**/*.py",
+        "src/arena/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Impact forces propagate to nearby balls",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "ai-battle-commentator",
+      "status": "todo",
+      "area": "meta",
+      "risk": "low",
+      "title": "AI Battle Commentator",
+      "description": "Create a system that analyzes the current battle state and outputs commentary.",
+      "allowed_paths": [
+        "src/meta/**/*.py",
+        "src/meta/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Commentator generates relevant logs based on events",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "ai-emotional-contagion-e0c76f95",
+      "status": "todo",
+      "area": "ai-innovation",
+      "risk": "medium",
+      "title": "Implement Emotional Contagion",
+      "description": "Allow emotions like fear or rage to spread to nearby allies, making groups behave as a panicked herd or an angry mob.",
+      "allowed_paths": [
+        "src/ai/**/*.py",
+        "src/ai/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Emotions can be transmitted to allies",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "physics-chain-reactions-876daef2",
+      "status": "todo",
+      "area": "physics",
+      "risk": "high",
+      "title": "Add Physics Chain Reactions",
+      "description": "Explosions and high-speed impacts should push other balls, creating domino-effect collisions and chain reactions.",
+      "allowed_paths": [
+        "src/arena/**/*.py",
+        "src/arena/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Impact forces propagate to nearby balls",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "ai-battle-commentator-384d54a8",
+      "status": "todo",
+      "area": "meta",
+      "risk": "low",
+      "title": "AI Battle Commentator",
+      "description": "Create a system that analyzes the current battle state and outputs exciting play-by-play commentary log text.",
+      "allowed_paths": [
+        "src/meta/**/*.py",
+        "src/meta/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Commentator generates relevant logs based on events",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "new-task-emotional-contagion",
+      "status": "todo",
+      "area": "ai-innovation",
+      "risk": "medium",
+      "title": "Implement Emotional Contagion",
+      "description": "Allow emotions like fear or rage to spread to nearby allies.",
+      "allowed_paths": [
+        "src/ai/**/*.py",
+        "src/ai/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Emotions can be transmitted to allies",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "new-task-physics-chain-reactions",
+      "status": "todo",
+      "area": "physics",
+      "risk": "high",
+      "title": "Add Physics Chain Reactions",
+      "description": "Explosions and high-speed impacts should push other balls.",
+      "allowed_paths": [
+        "src/arena/**/*.py",
+        "src/arena/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Impact forces propagate to nearby balls",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "new-task-ai-battle-commentator",
+      "status": "todo",
+      "area": "meta",
+      "risk": "low",
+      "title": "AI Battle Commentator",
+      "description": "Create a system that analyzes the current battle state and outputs commentary.",
+      "allowed_paths": [
+        "src/meta/**/*.py",
+        "src/meta/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Commentator generates relevant logs based on events",
+        "Tests pass"
+      ]
     }
   ]
 }

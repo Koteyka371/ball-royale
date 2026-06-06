@@ -85,6 +85,7 @@ def test_emotion_layer():
     ball.hp = 100
     world.entities["boosters"] = []
     world.entities["enemies"] = [MockBall()]
+    ball.ally_killed_recently = True
     perception_data = brain.perception()
     emotion = brain.emotion(perception_data)
     assert emotion == "rage"
