@@ -107,6 +107,7 @@ class Ball:
     skill_timer: float = 0.0
     alive: bool = True
     kills: int = 0
+    first_hit_taken: bool = False
     current_action: str = "idle"
     personality: str = "idle"
 
@@ -323,6 +324,8 @@ class BattleSimulation:
                     ))
 
     def _deal_damage(self, attacker: Ball, target: Ball):
+        if target.hp == target.max_hp and attacker.damage > 0:
+            target.first_hit_taken = True
         target.hp -= attacker.damage
         if target.hp <= 0:
             target.alive = False

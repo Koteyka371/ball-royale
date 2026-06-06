@@ -2,16 +2,19 @@ class_name BallBrain
 extends Node
 
 const Perception = preload("res://src/ai/perception.gd")
+const EmotionLayer = preload("res://src/ai/emotion.gd")
 
 # Reference to the ball this brain controls
 var ball = null
 var world = null
 var perception_layer = null
+var emotion_layer = null
 
 func _init(ball_ref, world_ref):
     self.ball = ball_ref
     self.world = world_ref
     self.perception_layer = Perception.new(self.ball, self.world)
+    self.emotion_layer = EmotionLayer.new(self.ball, self.world)
 
 # Main processing loop
 func process(delta):
@@ -26,24 +29,9 @@ func perception() -> Dictionary:
     return self.perception_layer.scan()
 
 # 2. EMOTION LAYER
-# Determines current emotional state based on HP and situation
+# Delegates determining current emotional state to the Emotion class.
 func emotion(perception_data: Dictionary) -> String:
-    var hp_percent = 1.0
-    if self.ball.has_method("get_hp_percent"):
-        hp_percent = self.ball.get_hp_percent()
-    elif "hp" in self.ball and "max_hp" in self.ball:
-        hp_percent = float(self.ball.hp) / float(self.ball.max_hp)
-
-    if hp_percent < 0.3:
-        return "fear"
-
-    if perception_data["boosters"].size() > 0:
-        return "greed"
-
-    if hp_percent > 0.8 and perception_data["enemies"].size() > 0:
-        return "rage"
-
-    return "neutral"
+    return self.emotion_layer.get_state(perception_data)
 
 # 3. DECISION LAYER
 # Chooses strategy based on perception and emotion
