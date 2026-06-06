@@ -477,7 +477,7 @@
     },
     {
       "id": "auto-implement-perception-skill",
-      "status": "todo",
+      "status": "done",
       "area": "skills",
       "risk": "medium",
       "allowed_paths": [
@@ -621,7 +621,7 @@
     },
     {
       "id": "idea-feature-033",
-      "status": "todo",
+      "status": "done",
       "area": "content",
       "risk": "medium",
       "title": "Ball brain architecture (perception, emotion, decision, action)",
@@ -702,6 +702,63 @@
         "Basic arena implemented",
         "Tests pass",
         "No regressions"
+      ]
+    },
+    {
+      "id": "ai-neural-network-learning",
+      "status": "todo",
+      "area": "ai-innovation",
+      "risk": "high",
+      "title": "Implement Neural Network module for learning",
+      "description": "Create a simple neural network that allows balls to learn from their successes (kills, survival time) and failures over multiple rounds. The weights should adjust dynamically to improve decision making.",
+      "allowed_paths": [
+        "src/ai/**/*.py",
+        "src/ai/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Neural network class created",
+        "Weights are saved/loaded correctly",
+        "Learning loop functions without crashing",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "arena-shrinking-zone",
+      "status": "todo",
+      "area": "arena-mechanics",
+      "risk": "medium",
+      "title": "Add shrinking battle zone logic",
+      "description": "Implement a battle royale shrinking zone (like in PUBG/Fortnite). The safe area should decrease over time, and any ball outside the zone takes continuous damage.",
+      "allowed_paths": [
+        "src/arena/**/*.gd",
+        "src/arena/**/*.py",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Safe zone shrinks progressively",
+        "Balls take damage outside the zone",
+        "AI tries to move toward the safe zone",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "ai-swarm-boids",
+      "status": "todo",
+      "area": "ai-innovation",
+      "risk": "medium",
+      "title": "Create Swarm intelligence boid rules",
+      "description": "Implement boid rules (separation, alignment, cohesion) for the swarm ball type. This will make swarm balls group together and move dynamically like a flock of birds.",
+      "allowed_paths": [
+        "src/ai/**/*.py",
+        "src/ai/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Swarm balls group together",
+        "Swarm balls maintain reasonable distance from each other",
+        "Swarm balls align their movement directions",
+        "Tests pass"
       ]
     }
   ]
