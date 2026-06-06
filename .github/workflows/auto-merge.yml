@@ -2,26 +2,33 @@ name: Auto Merge Jules PR
 
 on:
   pull_request:
-    types: [opened]
+    types: [opened, synchronize]
+
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   auto-merge:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.user.login == 'jules[bot]' || github.event.pull_request.user.login == 'google-labs-code[bot]' || github.event.pull_request.user.login == 'google-labs-jules[bot]'
-    permissions:
-      contents: write
-      pull-requests: write
+    if: |
+      contains(github.event.pull_request.title, 'Task:') ||
+      contains(github.event.pull_request.head.ref, 'jules') ||
+      contains(github.event.pull_request.head.ref, 'feat/') && contains(github.event.pull_request.title, 'Implement')
     steps:
-      - name: Wait for CI to pass
+      - name: Wait for CI
         uses: lewagon/wait-on-check-action@v1.3.4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-          check-regexp: '^(validate|test)$'
-          wait-interval: 30
+          check-regexp: '^(validate|test|ci|CI|Test)$'
+          wait-interval: 15
+          allowed-conclusions: success
 
-      - name: Auto merge PR
-        uses: pascalgn/automerge-action@v0.16.4
+      - name: Enable auto-merge
+        run: |
+          gh pr merge ${{ github.event.pull_request.number }} \
+            --repo ${{ github.repository }} \
+            --squash \
+            --auto
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          MERGE_METHOD: squash
-          MERGE_LABELS: ""
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
