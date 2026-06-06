@@ -221,7 +221,15 @@ class BattleSimulation:
     def get_nearby_entities(self, ball, radius):
         """Implement world interface for Perception layer."""
         nearby_balls = self.grid.get_nearby(ball.x, ball.y, radius)
-        enemies = [b for b in nearby_balls if b.id != ball.id]
+        enemies = []
+        allies = []
+
+        for b in nearby_balls:
+            if b.id != ball.id:
+                if getattr(b, "ball_type", None) == getattr(ball, "ball_type", None):
+                    allies.append(b)
+                else:
+                    enemies.append(b)
 
         boosters = []
         for bo in self.boosters:
@@ -233,7 +241,7 @@ class BattleSimulation:
 
         return {
             "enemies": enemies,
-            "allies": [], # Add allies here if team logic is added later
+            "allies": allies,
             "boosters": boosters,
             "traps": []   # No traps in this simulation yet
         }
