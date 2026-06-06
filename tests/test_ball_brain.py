@@ -55,7 +55,9 @@ def test_perception_layer():
     ball = MockBall()
     world = MockWorld()
     world.entities["enemies"] = [MockBall(), MockBall()]
-    world.entities["boosters"] = [1] # mock booster
+
+    class MockBooster: pass
+    world.entities["boosters"] = [MockBooster()] # mock booster
 
     brain = BallBrain(ball, world)
     data = brain.perception()
@@ -77,7 +79,9 @@ def test_emotion_layer():
     assert emotion == "fear"
 
     ball.hp = 100
-    world.entities["boosters"] = [1]
+
+    class MockBooster: pass
+    world.entities["boosters"] = [MockBooster()]
     perception_data = brain.perception()
     emotion = brain.emotion(perception_data)
     assert emotion == "greed"
@@ -118,7 +122,9 @@ def test_decision_layer():
     # Greed / Booster -> opportunistic
     ball.hp = 100
     world.entities["enemies"] = []
-    world.entities["boosters"] = [1, 2] # opportunity_level = 0.6
+
+    class MockBooster: pass
+    world.entities["boosters"] = [MockBooster(), MockBooster()] # opportunity_level = 0.6
     perception_data = brain.perception()
     emotion = brain.emotion(perception_data)
     decision = brain.decision(perception_data, emotion)

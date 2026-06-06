@@ -212,6 +212,25 @@ class BattleSimulation:
                 value=random.uniform(10, 30),
             ))
 
+    def get_nearby_entities(self, ball, radius):
+        nearby_balls = self.grid.get_nearby(ball.x, ball.y, radius)
+        enemies = [b for b in nearby_balls if b.id != ball.id]
+
+        nearby_boosters = []
+        for bo in self.boosters:
+            if bo.active:
+                dx = bo.x - ball.x
+                dy = bo.y - ball.y
+                if dx * dx + dy * dy <= radius ** 2:
+                    nearby_boosters.append(bo)
+
+        return {
+            "enemies": enemies,
+            "allies": [],
+            "boosters": nearby_boosters,
+            "traps": []
+        }
+
     def _rebuild_grid(self):
         self.grid.clear()
         for b in self.balls:
@@ -226,30 +245,14 @@ class BattleSimulation:
             if not ball.alive:
                 continue
 
-            brain = BallBrain(ball, None)
-            # Manually set world for perception
-            nearby = self.grid.get_nearby(ball.x, ball.y, ball.perception_radius)
-            enemies = [b for b in nearby if b.id != ball.id]
-
-            perception_data = {
-                "enemies": enemies, "allies": [], "boosters": [],
-                "danger_level": len(enemies) * 0.2,
-                "opportunity_level": 0.0,
-            }
-
-            # Find nearby boosters
-            for bo in self.boosters:
-                if bo.active:
-                    dx = bo.x - ball.x
-                    dy = bo.y - ball.y
-                    if dx * dx + dy * dy <= ball.perception_radius ** 2:
-                        perception_data["boosters"].append(bo)
-            perception_data["opportunity_level"] = len(perception_data["boosters"]) * 0.3
-
+            brain = BallBrain(ball, self)
+            perception_data = brain.perception()
             emotion = brain.emotion(perception_data)
             decision = brain.decision(perception_data, emotion)
             ball.current_action = decision
             self.stats["actions_performed"][decision] += 1
+
+            enemies = perception_data.get("enemies", [])
 
             # Movement
             if decision == "flee" and enemies:
