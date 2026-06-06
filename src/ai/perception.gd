@@ -1,5 +1,5 @@
 class_name Perception
-extends Node
+extends RefCounted
 
 var ball = null
 var world = null
