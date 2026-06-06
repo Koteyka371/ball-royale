@@ -58,7 +58,7 @@
     },
     {
       "id": "ai-perception-system",
-      "status": "todo",
+      "status": "done",
       "area": "ai-core",
       "risk": "medium",
       "title": "Implement Perception system",
