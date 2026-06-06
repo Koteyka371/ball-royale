@@ -9,9 +9,10 @@ import math
 import time
 import sys
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import List, Dict, Optional, Tuple
 from collections import Counter
+from typing import Any, Dict
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
@@ -175,8 +176,8 @@ class BattleSimulation:
         self.num_balls = num_balls
         self.grid = SpatialGrid(arena_size, arena_size)
         self.tick = 0
-        self.kill_log = []
-        self.stats = {
+        self.kill_log: List[Dict[str, Any]] = []
+        self.stats: Dict[str, Any] = {
             "ticks": 0, "total_kills": 0, "survivors": 0, "winner": None,
             "battle_duration": 0.0, "actions_performed": Counter(),
             "ball_types_alive": Counter(), "ball_types_killed": Counter(),
@@ -383,27 +384,27 @@ class BattleSimulation:
 
 def test_simulation_50_balls():
     sim = BattleSimulation(num_balls=50, max_ticks=500, seed=42)
-    stats = sim.run()
+    stats: Dict[str, Any] = sim.run() # noqa: F841
     assert stats["ticks"] > 0
     assert stats["total_kills"] > 0
     sim.print_report()
 
 def test_simulation_200_balls():
     sim = BattleSimulation(num_balls=200, max_ticks=300, seed=123)
-    stats = sim.run()
+    stats: Dict[str, Any] = sim.run() # noqa: F841
     assert stats["total_kills"] > 10
     assert stats["battle_duration"] < 30
     sim.print_report()
 
 def test_simulation_500_balls():
     sim = BattleSimulation(num_balls=500, max_ticks=200, seed=456)
-    stats = sim.run()
+    stats: Dict[str, Any] = sim.run() # noqa: F841
     assert stats["total_kills"] > 0
     sim.print_report()
 
 def test_simulation_1000_balls():
     sim = BattleSimulation(num_balls=1000, max_ticks=150, seed=789)
-    stats = sim.run()
+    stats: Dict[str, Any] = sim.run() # noqa: F841
     assert stats["ticks"] > 0
     sim.print_report()
 
@@ -414,13 +415,13 @@ def test_simulation_deterministic():
 
 def test_all_ball_types_represented():
     sim = BattleSimulation(num_balls=100, max_ticks=200, seed=99)
-    stats = sim.run()
+    stats: Dict[str, Any] = sim.run() # noqa: F841
     represented = set(stats["ball_types_alive"].keys()) | set(stats["ball_types_killed"].keys())
     assert len(represented) >= 6
 
 def test_battle_reduces_to_few():
     sim = BattleSimulation(num_balls=50, max_ticks=1000, seed=42)
-    stats = sim.run()
+    stats: Dict[str, Any] = sim.run() # noqa: F841
     alive = sum(1 for b in sim.balls if b.alive)
     assert alive < 50, f"Battle should reduce ball count, got {alive}"
 
@@ -429,5 +430,5 @@ if __name__ == "__main__":
     n = int(sys.argv[1]) if len(sys.argv) > 1 else 100
     print(f"Running simulation with {n} balls...")
     sim = BattleSimulation(num_balls=n, max_ticks=1000, seed=42)
-    stats = sim.run()
+    stats: Dict[str, Any] = sim.run() # noqa: F841
     sim.print_report()

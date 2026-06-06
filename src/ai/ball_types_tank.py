@@ -3,7 +3,6 @@ Auto-generated ball type: Tank
 Heavy defender, high HP, uses Shield to absorb damage
 """
 
-from typing import Any
 
 
 class Tank:
@@ -49,7 +48,7 @@ class Tank:
         self.current_action = "idle"
 
     def take_damage(self, amount: float) -> None:
-        self.hp -= amount
+        self.hp -= int(amount)
         if self.hp <= 0:
             self.alive = False
 

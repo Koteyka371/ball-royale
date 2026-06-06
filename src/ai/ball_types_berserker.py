@@ -3,7 +3,6 @@ Auto-generated ball type: Berserker
 Maximum aggression, damage increases as HP drops
 """
 
-from typing import Any
 
 
 class Berserker:
@@ -49,7 +48,7 @@ class Berserker:
         self.current_action = "idle"
 
     def take_damage(self, amount: float) -> None:
-        self.hp -= amount
+        self.hp -= int(amount)
         if self.hp <= 0:
             self.alive = False
 

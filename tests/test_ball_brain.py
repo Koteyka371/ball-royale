@@ -58,11 +58,29 @@ def test_perception_layer():
     world.entities["boosters"] = [1] # mock booster
 
     brain = BallBrain(ball, world)
+
+    # Check if scan is called
+    scan_called = False
+    original_scan = brain.perception_system.scan
+    def mock_scan():
+        nonlocal scan_called
+        scan_called = True
+        return original_scan()
+
+    brain.perception_system.scan = mock_scan
+
     data = brain.perception()
 
+    assert scan_called, "perception_system.scan() should be called"
     assert len(data["enemies"]) == 2
     assert len(data["allies"]) == 0
     assert len(data["boosters"]) == 1
+    # with the new distance fallback calculation, a distance of -1 gives a different threat score.
+    # Threat for e: 0.2
+    # if dist > 0 (dist is -1 so no extra threat)
+    # danger = 0.2 * 2 = 0.4. Which matches original!
+    # Opp for b: 0.3
+    # opportunity = 0.3. Which matches original!
     assert data["danger_level"] == 0.4
     assert data["opportunity_level"] == 0.3
 
