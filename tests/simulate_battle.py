@@ -10,7 +10,7 @@ import time
 import sys
 import os
 from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Optional, Tuple, Any
 from collections import Counter
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
@@ -218,6 +218,32 @@ class BattleSimulation:
             if b.alive:
                 self.grid.insert(b)
 
+    def get_nearby_entities(self, ball: Ball, radius: float) -> Dict[str, List[Any]]:
+        """Used by the Perception AI layer to get entities around a ball."""
+        nearby_balls = self.grid.get_nearby(ball.x, ball.y, radius)
+
+        enemies = []
+        allies = []
+        for b in nearby_balls:
+            if b.id != ball.id:
+                # Assuming no teams for now, everyone is an enemy
+                enemies.append(b)
+
+        boosters = []
+        for bo in self.boosters:
+            if bo.active:
+                dx = bo.x - ball.x
+                dy = bo.y - ball.y
+                if dx * dx + dy * dy <= radius * radius:
+                    boosters.append(bo)
+
+        return {
+            "enemies": enemies,
+            "allies": allies,
+            "boosters": boosters,
+            "traps": []
+        }
+
     def _tick(self):
         self.tick += 1
         self._rebuild_grid()
@@ -226,30 +252,17 @@ class BattleSimulation:
             if not ball.alive:
                 continue
 
-            brain = BallBrain(ball, None)
-            # Manually set world for perception
-            nearby = self.grid.get_nearby(ball.x, ball.y, ball.perception_radius)
-            enemies = [b for b in nearby if b.id != ball.id]
-
-            perception_data = {
-                "enemies": enemies, "allies": [], "boosters": [],
-                "danger_level": len(enemies) * 0.2,
-                "opportunity_level": 0.0,
-            }
-
-            # Find nearby boosters
-            for bo in self.boosters:
-                if bo.active:
-                    dx = bo.x - ball.x
-                    dy = bo.y - ball.y
-                    if dx * dx + dy * dy <= ball.perception_radius ** 2:
-                        perception_data["boosters"].append(bo)
-            perception_data["opportunity_level"] = len(perception_data["boosters"]) * 0.3
-
+            brain = BallBrain(ball, self)
+            perception_data = brain.perception()
             emotion = brain.emotion(perception_data)
             decision = brain.decision(perception_data, emotion)
+
             ball.current_action = decision
             self.stats["actions_performed"][decision] += 1
+
+            # Helpers to access data safely from the new dict-based perception
+            enemies = [e["entity"] for e in perception_data.get("enemies", [])]
+            boosters = [b["entity"] for b in perception_data.get("boosters", [])]
 
             # Movement
             if decision == "flee" and enemies:
@@ -273,9 +286,8 @@ class BattleSimulation:
                     self._deal_damage(ball, target)
 
             elif decision == "opportunistic":
-                active_boosters = [b for b in self.boosters if b.active]
-                if active_boosters:
-                    nearest = min(active_boosters, key=lambda b: (b.x - ball.x) ** 2 + (b.y - ball.y) ** 2)
+                if boosters:
+                    nearest = boosters[0] # Perception already sorted by distance
                     dx, dy = nearest.x - ball.x, nearest.y - ball.y
                     dist = math.sqrt(dx * dx + dy * dy)
                     if dist > 0.01:

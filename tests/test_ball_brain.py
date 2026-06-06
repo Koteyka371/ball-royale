@@ -55,7 +55,7 @@ def test_perception_layer():
     ball = MockBall()
     world = MockWorld()
     world.entities["enemies"] = [MockBall(), MockBall()]
-    world.entities["boosters"] = [1] # mock booster
+    world.entities["boosters"] = [MockBall()] # mock booster that has x,y
 
     brain = BallBrain(ball, world)
     data = brain.perception()
@@ -63,8 +63,10 @@ def test_perception_layer():
     assert len(data["enemies"]) == 2
     assert len(data["allies"]) == 0
     assert len(data["boosters"]) == 1
-    assert data["danger_level"] == 0.4
-    assert data["opportunity_level"] == 0.3
+    # distance to MockBall is 0, so danger per enemy is 50/1 = 50, but maxes out at 1.0.
+    # Two enemies = 2.0 danger.
+    assert data["danger_level"] == 2.0
+    assert data["opportunity_level"] == 1.0
 
 
 def test_emotion_layer():
@@ -140,9 +142,14 @@ def test_action_layer():
 def test_full_process():
     ball = MockBall(hp=100, max_hp=100)
     world = MockWorld()
-    world.entities["enemies"] = [MockBall()]
+    # Put enemy far away so danger level doesn't trigger "defend" strategy
+    enemy = MockBall()
+    enemy.x = 200
+    enemy.y = 200
+    world.entities["enemies"] = [enemy]
     brain = BallBrain(ball, world)
 
     brain.process(0.1)
-    # 1 enemy, hp 100 -> rage emotion (hp>80%, enemies>0). decision attack
+    # 1 enemy, hp 100 -> rage emotion (hp>80%, enemies>0).
+    # Dist is ~282 -> danger is 50/282 = ~0.17 (< 0.7 limit). decision attack
     assert ball.current_action == "attack"
