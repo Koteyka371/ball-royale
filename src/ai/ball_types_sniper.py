@@ -3,7 +3,6 @@ Auto-generated ball type: Sniper
 Long range killer, high damage, low HP
 """
 
-from typing import Any
 
 
 class Sniper:
@@ -20,8 +19,8 @@ class Sniper:
 
     def __init__(self, ball_id: int, x: float = 0.0, y: float = 0.0):
         self.id = ball_id
-        self.hp = self.HP
-        self.max_hp = self.HP
+        self.hp = float(self.HP)
+        self.max_hp = float(self.HP)
         self.x = x
         self.y = y
         self.alive = True

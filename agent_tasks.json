@@ -77,7 +77,7 @@
     },
     {
       "id": "ai-emotion-system",
-      "status": "todo",
+      "status": "done",
       "area": "ai-core",
       "risk": "medium",
       "title": "Implement Emotion system",
@@ -869,6 +869,61 @@
       ],
       "acceptance": [
         "Feature works",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "ai-neural-network-learning-v2",
+      "status": "todo",
+      "area": "ai-innovation",
+      "risk": "high",
+      "title": "Implement Neural Network learning logic (Phase 2)",
+      "description": "Refine the previously designed neural network learning module for balls by testing with actual battle simulation data over multiple generations.",
+      "allowed_paths": [
+        "src/ai/**/*.py",
+        "src/ai/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Neural network can ingest battle results",
+        "Generational logic works",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "ai-physics-chain-reactions",
+      "status": "todo",
+      "area": "ai-innovation",
+      "risk": "medium",
+      "title": "Add Physics Chain Reactions",
+      "description": "Make it so balls bouncing off walls or enemies can trigger a ripple effect, pushing other balls into hazards or causing extra damage based on speed.",
+      "allowed_paths": [
+        "src/arena/**/*.py",
+        "src/arena/**/*.gd",
+        "src/ai/**/*.py",
+        "src/ai/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Ripple effect implemented",
+        "Collision momentum transferred correctly",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "ai-battle-commentator-text",
+      "status": "todo",
+      "area": "ai-innovation",
+      "risk": "low",
+      "title": "Add AI Battle Commentator",
+      "description": "Create a module that parses the kill_log and actions performed during a simulation to produce exciting, dynamic text commentary of the battle.",
+      "allowed_paths": [
+        "src/ai/**/*.py",
+        "src/ui/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Commentator module successfully generated commentary based on kill_log",
         "Tests pass"
       ]
     }
