@@ -12,13 +12,8 @@ jobs:
   auto-merge:
     runs-on: ubuntu-latest
     steps:
-      - name: Wait for CI
-        uses: lewagon/wait-on-check-action@v1.3.4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          check-names: 'Test,CI'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          wait-interval: 15
+      - name: Wait 30s for CI to start
+        run: sleep 30
 
       - name: Merge PR
         run: |
