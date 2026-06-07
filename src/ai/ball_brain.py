@@ -3,6 +3,7 @@ from typing import Any, Dict
 from .perception import Perception
 from .emotion import Emotion
 from .decision import Decision
+from .action import Action
 
 
 class BallBrain:
@@ -17,6 +18,7 @@ class BallBrain:
         self.perception_layer = Perception(self.ball, self.world)
         self.emotion_layer = Emotion(self.ball, self.world)
         self.decision_layer = Decision(self.ball, self.world)
+        self.action_layer = Action(self.ball, self.world)
 
     def process(self, delta: float) -> None:
         """Main processing loop through the 4 layers."""
@@ -49,23 +51,6 @@ class BallBrain:
     def action(self, strategy: str, delta: float) -> None:
         """
         4. ACTION LAYER
-        Executes chosen strategy.
+        Delegates executing chosen strategy to the Action class.
         """
-        # Save the chosen strategy as current_action for testing
-        self.ball.current_action = strategy
-
-        if strategy == "flee":
-            if hasattr(self.ball, "flee"):
-                self.ball.flee(delta)
-        elif strategy == "attack":
-            if hasattr(self.ball, "attack"):
-                self.ball.attack(delta)
-        elif strategy == "defend":
-            if hasattr(self.ball, "defend"):
-                self.ball.defend(delta)
-        elif strategy == "opportunistic":
-            if hasattr(self.ball, "collect_booster"):
-                self.ball.collect_booster(delta)
-        else:
-            if hasattr(self.ball, "idle"):
-                self.ball.idle(delta)
+        self.action_layer.execute(strategy, delta)

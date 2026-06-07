@@ -4,6 +4,7 @@ extends Node
 const Perception = preload("res://src/ai/perception.gd")
 const EmotionLayer = preload("res://src/ai/emotion.gd")
 const DecisionLayer = preload("res://src/ai/decision.gd")
+const ActionLayer = preload("res://src/ai/action.gd")
 
 # Reference to the ball this brain controls
 var ball = null
@@ -11,6 +12,7 @@ var world = null
 var perception_layer = null
 var emotion_layer = null
 var decision_layer = null
+var action_layer = null
 
 func _init(ball_ref, world_ref):
     self.ball = ball_ref
@@ -18,6 +20,7 @@ func _init(ball_ref, world_ref):
     self.perception_layer = Perception.new(self.ball, self.world)
     self.emotion_layer = EmotionLayer.new(self.ball, self.world)
     self.decision_layer = DecisionLayer.new(self.ball, self.world)
+    self.action_layer = ActionLayer.new(self.ball, self.world)
 
 # Main processing loop
 func process(delta):
@@ -42,21 +45,6 @@ func decision(perception_data: Dictionary, emotion_state: String) -> String:
     return self.decision_layer.choose_action(perception_data, emotion_state)
 
 # 4. ACTION LAYER
-# Executes chosen strategy
+# Delegates executing chosen strategy to the ActionLayer
 func action(strategy: String, delta: float):
-    # Depending on strategy, call the appropriate behavior on the ball
-    if strategy == "flee":
-        if self.ball.has_method("flee"):
-            self.ball.flee(delta)
-    elif strategy == "attack":
-        if self.ball.has_method("attack"):
-            self.ball.attack(delta)
-    elif strategy == "defend":
-        if self.ball.has_method("defend"):
-            self.ball.defend(delta)
-    elif strategy == "opportunistic":
-        if self.ball.has_method("collect_booster"):
-            self.ball.collect_booster(delta)
-    else:
-        if self.ball.has_method("idle"):
-            self.ball.idle(delta)
+    self.action_layer.execute(strategy, delta)
