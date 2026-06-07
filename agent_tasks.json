@@ -96,7 +96,7 @@
     },
     {
       "id": "ai-decision-system",
-      "status": "todo",
+      "status": "done",
       "area": "ai-core",
       "risk": "medium",
       "title": "Implement Decision system",
@@ -924,6 +924,60 @@
       ],
       "acceptance": [
         "Commentator module successfully generated commentary based on kill_log",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "ai-neural-network-brain-wrapper",
+      "status": "todo",
+      "area": "ai-innovation",
+      "risk": "medium",
+      "title": "Implement NeuralNetworkBrain wrapper",
+      "description": "Create a wrapper for Neural Network that plugs directly into BallBrain architecture (replacing Decision layer) to evaluate its performance against the standard Decision logic.",
+      "allowed_paths": [
+        "src/ai/**/*.py",
+        "src/ai/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "NeuralNetworkBrain can be swapped in for BallBrain",
+        "Works with BattleSimulation seamlessly",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "ai-meta-evolution-phase",
+      "status": "todo",
+      "area": "ai-innovation",
+      "risk": "medium",
+      "title": "Implement Meta Evolution phase between battles",
+      "description": "Create a system where balls have a development phase between battles to upgrade stats (speed, damage, max hp) based on their survival and kills.",
+      "allowed_paths": [
+        "src/ai/**/*.py",
+        "src/ai/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Meta Evolution phase logic works",
+        "Stats carry over and upgrade",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "ai-emotional-contagion-logic",
+      "status": "todo",
+      "area": "ai-innovation",
+      "risk": "medium",
+      "title": "Implement Emotional Contagion Logic",
+      "description": "Update Emotion layer so fear and aggression spread like a virus. If a ball flees, nearby balls have a chance to enter cowardice/fear state.",
+      "allowed_paths": [
+        "src/ai/**/*.py",
+        "src/ai/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Emotions spread between nearby balls",
+        "Chain reactions of fear or aggression work",
         "Tests pass"
       ]
     }
