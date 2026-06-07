@@ -3,18 +3,21 @@ extends Node
 
 const Perception = preload("res://src/ai/perception.gd")
 const EmotionLayer = preload("res://src/ai/emotion.gd")
+const DecisionLayer = preload("res://src/ai/decision.gd")
 
 # Reference to the ball this brain controls
 var ball = null
 var world = null
 var perception_layer = null
 var emotion_layer = null
+var decision_layer = null
 
 func _init(ball_ref, world_ref):
     self.ball = ball_ref
     self.world = world_ref
     self.perception_layer = Perception.new(self.ball, self.world)
     self.emotion_layer = EmotionLayer.new(self.ball, self.world)
+    self.decision_layer = DecisionLayer.new(self.ball, self.world)
 
 # Main processing loop
 func process(delta):
@@ -36,32 +39,7 @@ func emotion(perception_data: Dictionary) -> String:
 # 3. DECISION LAYER
 # Chooses strategy based on perception and emotion
 func decision(perception_data: Dictionary, emotion_state: String) -> String:
-    var hp_percent = 1.0
-    if self.ball.has_method("get_hp_percent"):
-        hp_percent = self.ball.get_hp_percent()
-    elif "hp" in self.ball and "max_hp" in self.ball:
-        hp_percent = float(self.ball.hp) / float(self.ball.max_hp)
-
-    # Decision logic based on game design
-    if hp_percent < 0.3 or emotion_state == "fear":
-        return "flee"
-
-    if perception_data["danger_level"] > 0.7:
-        return "defend"
-
-    if perception_data["opportunity_level"] > 0.5 or emotion_state == "greed":
-        if perception_data["boosters"].size() > 0:
-            return "opportunistic"
-
-    if perception_data["enemies"].size() > 0:
-        return "attack"
-
-    # Default behavior depends on personality (fallback to idle if none)
-    var personality = "idle"
-    if "personality" in self.ball:
-        personality = self.ball.personality
-
-    return personality
+    return self.decision_layer.choose_action(perception_data, emotion_state)
 
 # 4. ACTION LAYER
 # Executes chosen strategy

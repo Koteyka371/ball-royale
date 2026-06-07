@@ -2,6 +2,7 @@ from typing import Any, Dict
 
 from .perception import Perception
 from .emotion import Emotion
+from .decision import Decision
 
 
 class BallBrain:
@@ -15,6 +16,7 @@ class BallBrain:
         self.world = world
         self.perception_layer = Perception(self.ball, self.world)
         self.emotion_layer = Emotion(self.ball, self.world)
+        self.decision_layer = Decision(self.ball, self.world)
 
     def process(self, delta: float) -> None:
         """Main processing loop through the 4 layers."""
@@ -42,27 +44,7 @@ class BallBrain:
         3. DECISION LAYER
         Chooses strategy based on perception and emotion.
         """
-        hp_percent = 1.0
-        if hasattr(self.ball, "get_hp_percent"):
-            hp_percent = self.ball.get_hp_percent()
-        elif hasattr(self.ball, "hp") and hasattr(self.ball, "max_hp"):
-            hp_percent = float(self.ball.hp) / float(self.ball.max_hp)
-
-        if hp_percent < 0.3 or emotion_state == "fear":
-            return "flee"
-
-        if perception_data["danger_level"] > 0.7:
-            return "defend"
-
-        if perception_data["opportunity_level"] > 0.5 or emotion_state == "greed":
-            if len(perception_data["boosters"]) > 0:
-                return "opportunistic"
-
-        if len(perception_data["enemies"]) > 0:
-            return "attack"
-
-        personality = getattr(self.ball, "personality", "idle")
-        return personality
+        return self.decision_layer.choose_action(perception_data, emotion_state)
 
     def action(self, strategy: str, delta: float) -> None:
         """
