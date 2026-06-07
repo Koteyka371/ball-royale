@@ -3,7 +3,6 @@ Auto-generated ball type: Guardian
 Protects nearby allies, high HP bodyguard
 """
 
-from typing import Any
 
 
 class Guardian:
@@ -20,8 +19,8 @@ class Guardian:
 
     def __init__(self, ball_id: int, x: float = 0.0, y: float = 0.0):
         self.id = ball_id
-        self.hp = self.HP
-        self.max_hp = self.HP
+        self.hp = float(self.HP)
+        self.max_hp = float(self.HP)
         self.x = x
         self.y = y
         self.alive = True

@@ -3,7 +3,6 @@ Auto-generated ball type: Berserker
 Maximum aggression, damage increases as HP drops
 """
 
-from typing import Any
 
 
 class Berserker:
@@ -20,8 +19,8 @@ class Berserker:
 
     def __init__(self, ball_id: int, x: float = 0.0, y: float = 0.0):
         self.id = ball_id
-        self.hp = self.HP
-        self.max_hp = self.HP
+        self.hp = float(self.HP)
+        self.max_hp = float(self.HP)
         self.x = x
         self.y = y
         self.alive = True
