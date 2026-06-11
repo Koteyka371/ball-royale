@@ -530,10 +530,9 @@ def main():
 
         if success:
             update = {"agents": {agent_id: {
-                "status": "idle",
+                "status": "working",
                 "cycles_today": cycles_today + 1,
                 "task_id": task_id,
-                "started_at": None,
             }}}
             if not atomic_update(update, f"{agent_id}: Jules accepted, cycles={cycles_today + 1}"):
                 print(f"[{agent_id}] WARNING: Failed to update status after Jules success")
