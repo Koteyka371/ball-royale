@@ -1,18 +1,45 @@
 #!/usr/bin/env python3
 """
 Jules Dispatcher — assigns tasks to agents and triggers workflows.
-Called by jules-dispatcher.yml after a PR merge or on schedule.
+Uses the 'area' field from each task in agent_tasks.json for dynamic assignment.
 """
 import json
 import sys
 import os
 import urllib.request
-import subprocess
+import time
 from datetime import datetime, timezone
 
 LOCK_FILE = "agent_lock.json"
 TASK_FILE = "agent_tasks.json"
 MAX_CYCLES = 30
+
+# Agent → area mapping
+AGENT_AREAS = {
+    "agent-1": "ai-core",
+    "agent-2": "behaviors",
+    "agent-3": "tests",
+    "agent-4": "content",
+    "agent-5": "meta",
+    "agent-6": "innovation",
+}
+
+# Task area → Agent area mapping (task areas from agent_tasks.json)
+AREA_TO_AGENT = {
+    "ai-core": "ai-core",
+    "ai-behaviors": "behaviors",
+    "ai-ball-types": "tests",
+    "ai-innovation": "innovation",
+    "ai-meta": "meta",
+    "ai-team": "content",
+    "arena-mechanics": "content",
+    "arenas": "content",
+    "content": "content",
+    "modes": "content",
+    "skills": "tests",
+    "ui": "content",
+    "visuals": "content",
+}
 
 
 def load_json(path):
@@ -43,10 +70,8 @@ def reset_daily_counters(lock_data):
     return lock_data
 
 
-def find_task_for_agent(agent_id, agent_info, lock_data, tasks_data):
-    """Find the best unassigned task for this agent's area."""
-    area = agent_info["area"]
-    area_tasks = lock_data.get("area_map", {}).get(area, [])
+def find_task_for_agent(agent_id, agent_area, lock_data, tasks_data):
+    """Find the best unassigned task matching this agent's area."""
     todo_tasks = [t for t in tasks_data.get("tasks", []) if t.get("status") == "todo"]
 
     # Get already assigned tasks (by any agent)
@@ -56,21 +81,13 @@ def find_task_for_agent(agent_id, agent_info, lock_data, tasks_data):
             assigned.add(ainfo["task_id"])
 
     # Find first todo task in our area that isn't assigned
-    for task_id in area_tasks:
-        if task_id not in assigned:
-            # Check if task actually exists in agent_tasks.json
-            for t in todo_tasks:
-                if t["id"] == task_id:
-                    return task_id
-
-    # Fallback: find any todo task not in any area and not assigned
-    all_area_tasks = set()
-    for area_name, task_ids in lock_data.get("area_map", {}).items():
-        all_area_tasks.update(task_ids)
-
-    for t in todo_tasks:
-        if t["id"] not in all_area_tasks and t["id"] not in assigned:
-            return t["id"]
+    for task in todo_tasks:
+        task_area = task.get("area", "")
+        task_id = task["id"]
+        # Map task area to agent area
+        mapped_area = AREA_TO_AGENT.get(task_area, task_area)
+        if task_id not in assigned and mapped_area == agent_area:
+            return task_id
 
     return None
 
@@ -83,7 +100,8 @@ def trigger_agent_workflow(agent_id):
         return False
 
     repo = "Koteyka371/ball-royale"
-    workflow = f"jules-agent-{agent_id.split('-')[1]}.yml"
+    agent_num = agent_id.split("-")[1]
+    workflow = f"jules-agent-{agent_num}.yml"
     url = f"https://api.github.com/repos/{repo}/actions/workflows/{workflow}/dispatches"
     headers = {
         "Content-Type": "application/json",
@@ -132,13 +150,16 @@ def main():
             print(f"[Dispatcher] {agent_id}: daily limit reached ({MAX_CYCLES} cycles)")
             continue
 
+        # Get agent's area
+        agent_area = AGENT_AREAS.get(agent_id, agent_info.get("area", ""))
+
         # Find task
-        task_id = find_task_for_agent(agent_id, agent_info, lock_data, tasks_data)
+        task_id = find_task_for_agent(agent_id, agent_area, lock_data, tasks_data)
         if task_id:
             assignments.append((agent_id, task_id))
-            print(f"[Dispatcher] {agent_id}: assigned {task_id}")
+            print(f"[Dispatcher] {agent_id}: assigned {task_id} (area={agent_area})")
         else:
-            print(f"[Dispatcher] {agent_id}: no tasks available")
+            print(f"[Dispatcher] {agent_id}: no tasks available in area={agent_area}")
 
     # Apply assignments
     for agent_id, task_id in assignments:
@@ -155,10 +176,19 @@ def main():
         print("\n[Dispatcher] Triggering agent workflows...")
         for agent_id, task_id in assignments:
             trigger_agent_workflow(agent_id)
-            import time
             time.sleep(2)  # Small delay between triggers
     else:
         print("[Dispatcher] No tasks to assign")
+
+    # Show remaining tasks per area
+    print("\n[Dispatcher] Remaining tasks by area:")
+    todo_tasks = [t for t in tasks_data.get("tasks", []) if t.get("status") == "todo"]
+    area_counts = {}
+    for t in todo_tasks:
+        area = t.get("area", "unknown")
+        area_counts[area] = area_counts.get(area, 0) + 1
+    for area, count in sorted(area_counts.items()):
+        print(f"  {area}: {count} tasks")
 
     print("\n[Dispatcher] Done!")
     return 0

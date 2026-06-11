@@ -134,7 +134,10 @@ Description: {task_desc}
 4. WORK: Complete the current task with tests
 5. EVOLVE: Fix bugs, improve code, invent new features (ONLY in your area)
 6. VALIDATE: python3 tests/simulate_battle.py 100 && python3 scripts/quality_metrics.py
-7. GENERATE: Add 3-5 new tasks to agent_tasks.json (only if < 100 total tasks)
+7. GENERATE: Add 3-5 new tasks to agent_tasks.json (only if < 100 total tasks).
+   IMPORTANT: Each new task MUST have an "area" field matching one of:
+   "ai-core", "behaviors", "tests", "content", "meta", "innovation"
+   Set area based on what the task is about. The dispatcher uses this to assign tasks to agents.
 8. COMMIT: git add -A && git commit -m "feat({agent_id}): {task_title}"
 9. BRANCH: git checkout -b {agent_id}/{task_id}
 10. PUSH: git push origin {agent_id}/{task_id}
@@ -147,7 +150,23 @@ Description: {task_desc}
 - Leave code better than you found it
 - Be creative and bold
 - If you see something cool in another agent's work, INSTEAD of touching it,
-  generate a new task that builds upon it"""
+  generate a new task that builds upon it
+
+## TASK FORMAT (when generating new tasks)
+Each task in agent_tasks.json must have this structure:
+```json
+{
+  "id": "unique-task-id",
+  "status": "todo",
+  "area": "ai-core|behaviors|tests|content|meta|innovation",
+  "risk": "low|medium|high",
+  "title": "Task title",
+  "description": "What to do",
+  "allowed_paths": ["src/ai/**"],
+  "acceptance": ["Criteria 1", "Criteria 2"]
+}
+```
+The "area" field is CRITICAL — it tells the dispatcher which agent should work on this task."""
 
     return prompt
 

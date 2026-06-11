@@ -6,7 +6,7 @@
       "area": "ai-core",
       "task_id": "ai-action-system",
       "status": "assigned",
-      "started_at": "2026-06-11T17:18:36.654235+00:00",
+      "started_at": "2026-06-11T17:22:05.118835+00:00",
       "pr_number": null,
       "cycles_today": 0
     },
@@ -14,9 +14,9 @@
       "name": "Jules Behaviors",
       "api_key": "JULES_API_KEY",
       "area": "behaviors",
-      "task_id": "ai-behavior-chase",
+      "task_id": "ai-behavior-flee",
       "status": "assigned",
-      "started_at": "2026-06-11T17:18:36.654235+00:00",
+      "started_at": "2026-06-11T17:22:05.118835+00:00",
       "pr_number": null,
       "cycles_today": 0
     },
@@ -24,9 +24,9 @@
       "name": "Jules Tests",
       "api_key": "JULES_API_KEY",
       "area": "tests",
-      "task_id": "ai-ball-warrior-ai",
+      "task_id": "ai-ball-scout-ai",
       "status": "assigned",
-      "started_at": "2026-06-11T17:18:36.654235+00:00",
+      "started_at": "2026-06-11T17:22:05.118835+00:00",
       "pr_number": null,
       "cycles_today": 0
     },
@@ -34,9 +34,9 @@
       "name": "Jules Content",
       "api_key": "JULES_API_KEY_2",
       "area": "content",
-      "task_id": "ai-difficulty-system",
+      "task_id": "ai-team-coordination",
       "status": "assigned",
-      "started_at": "2026-06-11T17:18:36.654235+00:00",
+      "started_at": "2026-06-11T17:22:05.118835+00:00",
       "pr_number": null,
       "cycles_today": 0
     },
@@ -44,9 +44,9 @@
       "name": "Jules Meta",
       "api_key": "JULES_API_KEY_2",
       "area": "meta",
-      "task_id": "auto-implement-decision-skill",
+      "task_id": "ai-difficulty-system",
       "status": "assigned",
-      "started_at": "2026-06-11T17:18:36.654235+00:00",
+      "started_at": "2026-06-11T17:22:05.118835+00:00",
       "pr_number": null,
       "cycles_today": 0
     },
@@ -54,9 +54,9 @@
       "name": "Jules Innovation",
       "api_key": "JULES_API_KEY_2",
       "area": "innovation",
-      "task_id": "ai-neural-network-learning",
+      "task_id": "ai-swarm-boids",
       "status": "assigned",
-      "started_at": "2026-06-11T17:18:36.654235+00:00",
+      "started_at": "2026-06-11T17:22:05.118835+00:00",
       "pr_number": null,
       "cycles_today": 0
     }
