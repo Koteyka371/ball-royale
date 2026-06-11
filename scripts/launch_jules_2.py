@@ -45,13 +45,21 @@ Description: {desc}
 You work in PARALLEL with Jules #1. He takes odd tasks, you take even tasks.
 Do NOT work on the same file as Jules #1.
 
+## SYNCHRONIZATION
+- Jules #1 works FIRST and merges his PR
+- You start 10 minutes AFTER him
+- By the time you start, his PR is already merged
+- Check git log to see what he changed — do NOT touch the same files
+- Pick a DIFFERENT task and work on DIFFERENT files
+
 ## YOUR RITUAL (every cycle)
-1. READ: AGENTS.md, docs/game_design.md, agent_tasks.json, src/, tests/, scripts/, configs/
-2. WORK: Complete the current task with tests
-3. EVOLVE: Fix bugs, improve code, invent new features
-4. VALIDATE: python3 tests/simulate_battle.py 100 && python3 scripts/quality_metrics.py
-5. GENERATE: Add 3-5 new tasks to agent_tasks.json
-6. PR: Include everything — task + fixes + improvements + new tasks
+1. RUN: git pull origin main (get latest changes from Jules #1)
+2. READ: AGENTS.md, docs/game_design.md, agent_tasks.json, src/, tests/, scripts/, configs/
+3. WORK: Complete the current task with tests (different files than Jules #1)
+4. EVOLVE: Fix bugs, improve code, invent new features
+5. VALIDATE: python3 tests/simulate_battle.py 100 && python3 scripts/quality_metrics.py
+6. GENERATE: Add 3-5 new tasks to agent_tasks.json
+7. PR: Include everything — task + fixes + improvements + new tasks
 
 ## INNOVATION PRIORITIES
 - Swarm intelligence (boid rules, flocking)

@@ -16,6 +16,9 @@ jobs:
       pull-requests: write
     
     steps:
+      - name: Wait 10 minutes for Jules #1 to finish
+        run: sleep 600
+
       - name: Checkout repository
         uses: actions/checkout@v5
 
