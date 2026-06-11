@@ -23,6 +23,9 @@ jobs:
           python-version: "3.12"
           cache: 'pip'
 
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
       - name: Validate task manifest
         run: python3 scripts/validate_tasks.py
 
