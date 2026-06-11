@@ -6,6 +6,24 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+- dispatch_agents.py: Restore indentation in atomic_update (dispatcher was completely broken since Round 7)
+- supervisor.py: Skip CI fix when agent_id cannot be extracted from branch
+- supervisor.py: Reset agent status when Jules API fails to trigger fix
+- supervisor.py: Add rate limit retry with backoff to github_api
+- launch_agent.py: Keep 'working' status after Jules accepts (was immediately idle)
+- launch_agent.py: Check PR before sleep in polling loop
+- launch_agent.py: Handle unknown areas like dispatch_agents.py
+- supervisor.py: Check pr_updates agents before saving
+- auto-merge.yml: Add head filter to pulls.list for efficiency
+- auto-improve.yml: Replace git add -A with targeted add
+- status_agents.py: Count assigned agents as active
+- status_agents.py: Safe access to task id with .get()
+- jules-supervisor.yml: Remove redundant git pull step
+- launch_agent.py: Remove unnecessary sleep(2)
+- dispatch_agents.py: Safe setdefault for cycles_today
+- ci.yml: Skip commits with auto: prefix
+
 ### Added
 - Battle simulation engine (50-1000 balls) — `tests/simulate_battle.py`
 - AI performance benchmark — `tests/benchmark_ai.py`
