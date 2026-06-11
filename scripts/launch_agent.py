@@ -12,7 +12,7 @@ import urllib.request
 import urllib.error
 import time
 import tempfile
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 
 try:
     import fcntl
@@ -21,10 +21,13 @@ except ImportError:
 
 LOCK_FILE = "agent_lock.json"
 TASK_FILE = "agent_tasks.json"
+DISPATCHER_LOCK = ".dispatcher.lock"
 MAX_RETRIES = 5
 CYCLE_LIMIT = 30
+STALE_TIMEOUT_MIN = 45
 PR_POLL_INTERVAL = 15
 PR_POLL_MAX_MINUTES = 5
+SUPERVISOR_ID = "agent-7"
 
 AGENT_AREAS = {
     "agent-1": "ai-core",
@@ -56,7 +59,7 @@ AREA_TO_AGENT = {
     "tests": "tests",
 }
 
-DISPATCHER_LOCK = ".dispatcher.lock"
+agent_id = ""
 
 
 def atomic_write_json(path, data):
@@ -84,14 +87,16 @@ def git_pull():
 
 
 def git_fetch():
-    subprocess.run(
+    result = subprocess.run(
         ["git", "fetch", "origin", "main"],
         capture_output=True, text=True, timeout=30
     )
+    return result.returncode == 0
 
 
 def git_reset_to_remote():
-    git_fetch()
+    if not git_fetch():
+        return False
     result = subprocess.run(
         ["git", "checkout", "origin/main", "--", LOCK_FILE],
         capture_output=True, text=True, timeout=10
@@ -100,7 +105,13 @@ def git_reset_to_remote():
 
 
 def git_commit_and_push(message):
-    subprocess.run(["git", "add", LOCK_FILE], capture_output=True, timeout=10)
+    add_result = subprocess.run(
+        ["git", "add", LOCK_FILE],
+        capture_output=True, text=True, timeout=10
+    )
+    if add_result.returncode != 0:
+        print(f"[{agent_id}] git add failed: {add_result.stderr}")
+        return False
 
     diff_result = subprocess.run(
         ["git", "diff", "--cached", "--quiet"],
@@ -132,7 +143,8 @@ def verify_pushed():
         capture_output=True, text=True, timeout=10
     )
     if result.returncode != 0:
-        return True
+        print(f"[{agent_id}] verify_pushed: git log failed, cannot verify")
+        return False
     return len(result.stdout.strip()) == 0
 
 
@@ -146,7 +158,7 @@ def atomic_update(new_data, message):
         try:
             with open(LOCK_FILE, encoding="utf-8") as f:
                 current = json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError) as e:
+        except (FileNotFoundError, json.JSONDecodeError, PermissionError, UnicodeDecodeError) as e:
             print(f"[{agent_id}] Failed to read {LOCK_FILE}: {e}")
             return False
 
@@ -179,7 +191,13 @@ def load_json(path):
         return json.load(f)
 
 
-def github_api(endpoint, method="GET", data=None, token=None):
+def github_api(endpoint, method="GET", data=None, token=None, _retry_count=0):
+    if not token:
+        token = os.environ.get("GITHUB_TOKEN", "")
+    if not token:
+        print(f"[{agent_id}] No token available")
+        return None
+
     repo = os.environ.get("GITHUB_REPOSITORY", "Koteyka371/ball-royale")
     url = f"https://api.github.com/repos/{repo}/{endpoint}"
     headers = {
@@ -197,13 +215,14 @@ def github_api(endpoint, method="GET", data=None, token=None):
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
             content = resp.read().decode("utf-8")
-            return json.loads(content) if content.strip() else {"message": "empty response"}
+            return json.loads(content) if content.strip() else None
     except urllib.error.HTTPError as e:
         error_body = e.read().decode("utf-8")
-        if e.code == 403 and "rate limit" in error_body.lower():
-            print(f"[{agent_id}] Rate limited, waiting 60s...")
-            time.sleep(60)
-            return github_api(endpoint, method, data, token)
+        if e.code == 403 and "rate limit" in error_body.lower() and _retry_count < 3:
+            wait_time = 60 * (_retry_count + 1)
+            print(f"[{agent_id}] Rate limited, waiting {wait_time}s (retry {_retry_count + 1}/3)...")
+            time.sleep(wait_time)
+            return github_api(endpoint, method, data, token, _retry_count + 1)
         if e.code != 404:
             print(f"[{agent_id}] API {method} {endpoint}: {e.code} {error_body[:200]}")
         return None
@@ -268,32 +287,52 @@ def invoke_jules(task_id, area, prompt, token):
 
 def check_pr_created(branch_name, token):
     repo = os.environ.get("GITHUB_REPOSITORY", "Koteyka371/ball-royale")
-    url = f"https://api.github.com/repos/{repo}/pulls?head={branch_name}&state=open"
+    owner = repo.split("/")[0]
+    url = f"https://api.github.com/repos/{repo}/pulls?head={owner}:{branch_name}&state=open"
     req = urllib.request.Request(url, headers={
         "Authorization": f"token {token}",
         "Accept": "application/vnd.github.v3+json",
     })
 
-    try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-            if data:
-                print(f"[{agent_id}] PR created: #{data[0].get('number')}")
-                return True
-            return False
-    except urllib.error.HTTPError as e:
-        if e.code == 403:
-            print(f"[{agent_id}] Rate limited, waiting 30s...")
-            time.sleep(30)
-            try:
-                with urllib.request.urlopen(req, timeout=15) as resp:
-                    data = json.loads(resp.read().decode("utf-8"))
-                    return bool(data)
-            except Exception:
+    for attempt in range(3):
+        try:
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                if data:
+                    print(f"[{agent_id}] PR created: #{data[0].get('number')}")
+                    return True
                 return False
-        return False
-    except Exception:
-        return False
+        except urllib.error.HTTPError as e:
+            if e.code == 403 and attempt < 2:
+                print(f"[{agent_id}] Rate limited, waiting 30s...")
+                time.sleep(30)
+            else:
+                return False
+        except Exception:
+            return False
+    return False
+
+
+def find_task_for_agent(agent_id_val, agent_area, lock_data, tasks_data):
+    todo_tasks = [t for t in tasks_data.get("tasks", []) if t.get("status") == "todo"]
+
+    assigned_remote = set()
+    for aid, ainfo in lock_data["agents"].items():
+        if aid == SUPERVISOR_ID:
+            continue
+        if ainfo.get("task_id") and ainfo.get("status") in ("working", "assigned"):
+            assigned_remote.add(ainfo["task_id"])
+
+    for task in todo_tasks:
+        task_area = task.get("area", "")
+        task_id = task.get("id")
+        if not task_id:
+            continue
+        mapped_area = AREA_TO_AGENT.get(task_area, task_area)
+        if task_id not in assigned_remote and mapped_area == agent_area:
+            return task_id
+
+    return None
 
 
 def main():
@@ -301,7 +340,7 @@ def main():
 
     if len(sys.argv) < 2:
         print("Usage: python launch_agent.py <agent-id>")
-        print("  agent-id: agent-1, agent-2, ..., agent-7")
+        print("  agent-id: agent-1, agent-2, ..., agent-6")
         sys.exit(1)
 
     agent_id = sys.argv[1]
@@ -319,8 +358,9 @@ def main():
     print(f"LAUNCHING {agent_id.upper()}")
     print("=" * 60)
 
-    lock_fd = open(DISPATCHER_LOCK, "w")
+    lock_fd = None
     try:
+        lock_fd = open(DISPATCHER_LOCK, "w")
         if fcntl:
             try:
                 fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -329,12 +369,17 @@ def main():
                 fcntl.flock(lock_fd, fcntl.LOCK_EX)
         else:
             lock_fd.close()
+            lock_fd = None
 
         if not git_pull():
             git_reset_to_remote()
 
-        lock_data = load_json(LOCK_FILE)
-        tasks_data = load_json(TASK_FILE)
+        try:
+            lock_data = load_json(LOCK_FILE)
+            tasks_data = load_json(TASK_FILE)
+        except (FileNotFoundError, json.JSONDecodeError, PermissionError, UnicodeDecodeError) as e:
+            print(f"[{agent_id}] Failed to load data files: {e}")
+            sys.exit(1)
 
         agent_info = lock_data["agents"].get(agent_id)
         if not agent_info:
@@ -342,17 +387,57 @@ def main():
             sys.exit(1)
 
         now = datetime.now(timezone.utc)
+
+        if agent_info.get("status") in ("working", "assigned"):
+            started = agent_info.get("started_at")
+            if started:
+                try:
+                    start_dt = datetime.fromisoformat(started)
+                    if start_dt.tzinfo is None:
+                        start_dt = start_dt.replace(tzinfo=timezone.utc)
+                    elapsed_min = (now - start_dt).total_seconds() / 60
+                    if elapsed_min > STALE_TIMEOUT_MIN:
+                        print(f"[{agent_id}] Stale ({elapsed_min:.0f} min), resetting")
+                        agent_info["status"] = "idle"
+                        agent_info["task_id"] = None
+                        agent_info["started_at"] = None
+                        update = {"agents": {agent_id: agent_info}}
+                        if not atomic_update(update, f"{agent_id}: reset stale"):
+                            print(f"[{agent_id}] Failed to reset stale state")
+                            return 1
+                        lock_data = load_json(LOCK_FILE)
+                        agent_info = lock_data["agents"].get(agent_id, {})
+                except (ValueError, TypeError):
+                    agent_info["status"] = "idle"
+                    agent_info["task_id"] = None
+                    agent_info["started_at"] = None
+                    update = {"agents": {agent_id: agent_info}}
+                    atomic_update(update, f"{agent_id}: reset invalid started_at")
+                    lock_data = load_json(LOCK_FILE)
+                    agent_info = lock_data["agents"].get(agent_id, {})
+            else:
+                agent_info["status"] = "idle"
+                agent_info["task_id"] = None
+                update = {"agents": {agent_id: agent_info}}
+                atomic_update(update, f"{agent_id}: reset stale in-progress")
+                lock_data = load_json(LOCK_FILE)
+                agent_info = lock_data["agents"].get(agent_id, {})
+
         today = now.date()
         last_reset = lock_data.get("last_reset")
-
         try:
             last_reset_dt = datetime.fromisoformat(last_reset)
             if last_reset_dt.tzinfo is None:
                 last_reset_dt = last_reset_dt.replace(tzinfo=timezone.utc)
             if last_reset_dt.date() < today:
-                lock_data["agents"][agent_id]["cycles_today"] = 0
-                agent_info["cycles_today"] = 0
-                print(f"[{agent_id}] Day boundary detected, resetting cycles to 0")
+                for aid in lock_data["agents"]:
+                    lock_data["agents"][aid]["cycles_today"] = 0
+                lock_data["last_reset"] = now.isoformat()
+                update = {"agents": {aid: {"cycles_today": 0} for aid in lock_data["agents"]}, "last_reset": now.isoformat()}
+                atomic_update(update, "Day boundary: reset all cycles")
+                lock_data = load_json(LOCK_FILE)
+                agent_info = lock_data["agents"].get(agent_id, {})
+                print(f"[{agent_id}] Day boundary detected, cycles reset")
         except (ValueError, TypeError):
             pass
 
@@ -361,31 +446,9 @@ def main():
             print(f"[{agent_id}] Cycle limit reached ({CYCLE_LIMIT}/{CYCLE_LIMIT})")
             return 0
 
-        status = agent_info.get("status")
-        task_id = agent_info.get("task_id")
         area = agent_info.get("area", AGENT_AREAS.get(agent_id, ""))
 
-        if status in ("working", "assigned"):
-            if task_id:
-                print(f"[{agent_id}] Already has task: {task_id} ({status})")
-                return 0
-            else:
-                print(f"[{agent_id}] Stale in-progress state (no task), resetting to idle")
-                agent_info["status"] = "idle"
-                agent_info["task_id"] = None
-                agent_info["started_at"] = None
-                update = {"agents": {agent_id: agent_info}}
-                atomic_update(update, f"{agent_id}: reset stale in-progress")
-
-        task_id = None
-        for task in tasks_data.get("tasks", []):
-            if task.get("status") != "todo":
-                continue
-            task_area = task.get("area", "")
-            mapped_area = AREA_TO_AGENT.get(task_area, task_area)
-            if mapped_area == area:
-                task_id = task.get("id")
-                break
+        task_id = find_task_for_agent(agent_id, area, lock_data, tasks_data)
 
         if not task_id:
             print(f"[{agent_id}] No tasks found for area {area}")
@@ -395,6 +458,16 @@ def main():
         token = os.environ.get("JULES_API_KEY", "")
         if not token:
             print(f"[{agent_id}] No JULES_API_KEY, skipping")
+            return 0
+
+        task = None
+        for t in tasks_data.get("tasks", []):
+            if t.get("id") == task_id:
+                task = t
+                break
+
+        if not task:
+            print(f"[{agent_id}] Task {task_id} not found in task file")
             return 0
 
         prompt = task.get("prompt", "No description provided")
@@ -429,10 +502,11 @@ def main():
             print(f"[{agent_id}] Polling for PR (branch={branch_name})...")
             for i in range(0, PR_POLL_MAX_MINUTES * 60, PR_POLL_INTERVAL):
                 time.sleep(PR_POLL_INTERVAL)
+                elapsed = i + PR_POLL_INTERVAL
                 if check_pr_created(branch_name, token):
                     print(f"[{agent_id}] PR found!")
                     break
-                print(f"[{agent_id}] Waiting for PR ({i//60}m{i%60}s)...")
+                print(f"[{agent_id}] Waiting for PR ({elapsed//60}m{elapsed%60}s)...")
             else:
                 print(f"[{agent_id}] PR not found after {PR_POLL_MAX_MINUTES} minutes")
         else:
@@ -447,12 +521,16 @@ def main():
         return 0
 
     finally:
-        if fcntl:
+        if lock_fd is not None:
+            if fcntl:
+                try:
+                    fcntl.flock(lock_fd, fcntl.LOCK_UN)
+                except Exception:
+                    pass
             try:
-                fcntl.flock(lock_fd, fcntl.LOCK_UN)
+                lock_fd.close()
             except Exception:
                 pass
-        lock_fd.close()
 
 
 if __name__ == "__main__":

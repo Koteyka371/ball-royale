@@ -3,6 +3,10 @@ name: Jules Agent 6
 on:
   workflow_dispatch:
 
+concurrency:
+  group: agent-6
+  cancel-in-progress: false
+
 permissions:
   contents: write
   pull-requests: write
@@ -16,14 +20,14 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-
-      - name: Pull latest
-        run: git pull origin main
+          cache: 'pip'
 
       - name: Invoke Jules Agent 6
         run: python3 scripts/launch_agent.py agent-6
@@ -32,4 +36,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Show status
+        if: always()
         run: python3 scripts/status_agents.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

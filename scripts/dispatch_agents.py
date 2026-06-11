@@ -8,6 +8,7 @@ import sys
 import os
 import subprocess
 import urllib.request
+import urllib.error
 import time
 import tempfile
 from datetime import datetime, timezone
@@ -23,6 +24,7 @@ DISPATCHER_LOCK = ".dispatcher.lock"
 MAX_CYCLES = 30
 MAX_RETRIES = 5
 STALE_TIMEOUT_MIN = 45
+SUPERVISOR_ID = "agent-7"
 
 AGENT_AREAS = {
     "agent-1": "ai-core",
@@ -100,13 +102,19 @@ def git_reset_to_remote():
 
 
 def git_commit_and_push(message):
-    subprocess.run(["git", "add", LOCK_FILE], capture_output=True, timeout=10)
+    add_result = subprocess.run(
+        ["git", "add", LOCK_FILE],
+        capture_output=True, text=True, timeout=10
+    )
+    if add_result.returncode != 0:
+        print(f"[Dispatcher] git add failed: {add_result.stderr}")
+        return False
 
-    result = subprocess.run(
+    diff_result = subprocess.run(
         ["git", "diff", "--cached", "--quiet"],
         capture_output=True, timeout=10
     )
-    if result.returncode == 0:
+    if diff_result.returncode == 0:
         return True
 
     commit_result = subprocess.run(
@@ -132,7 +140,8 @@ def verify_pushed():
         capture_output=True, text=True, timeout=10
     )
     if result.returncode != 0:
-        return True
+        print("[Dispatcher] verify_pushed: git log failed, cannot verify")
+        return False
     return len(result.stdout.strip()) == 0
 
 
@@ -140,21 +149,24 @@ def atomic_update(new_data, message):
     for attempt in range(MAX_RETRIES):
         if not git_pull():
             if not git_reset_to_remote():
-                print(f"[Dispatcher] Cannot sync with remote, aborting")
+                print("[Dispatcher] Cannot sync with remote, aborting")
                 return False
 
         try:
             with open(LOCK_FILE, encoding="utf-8") as f:
                 current = json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError) as e:
+        except (FileNotFoundError, json.JSONDecodeError, PermissionError, UnicodeDecodeError) as e:
             print(f"[Dispatcher] Failed to read {LOCK_FILE}: {e}")
             return False
 
-        for agent_id, state in new_data.get("agents", {}).items():
-            if agent_id in current.get("agents", {}):
-                current["agents"][agent_id] = {**current["agents"][agent_id], **state}
+        for agent_id_key, state in new_data.get("agents", {}).items():
+            if agent_id_key in current.get("agents", {}):
+                current["agents"][agent_id_key] = {
+                    **current["agents"][agent_id_key],
+                    **state,
+                }
             else:
-                current.setdefault("agents", {})[agent_id] = state
+                current.setdefault("agents", {})[agent_id_key] = state
 
         if "last_reset" in new_data:
             current["last_reset"] = new_data["last_reset"]
@@ -208,6 +220,8 @@ def find_task_for_agent(agent_id, agent_area, lock_data, tasks_data, assigned_in
 
     assigned_remote = set()
     for aid, ainfo in lock_data["agents"].items():
+        if aid == SUPERVISOR_ID:
+            continue
         if ainfo.get("task_id") and ainfo.get("status") in ("working", "assigned"):
             assigned_remote.add(ainfo["task_id"])
 
@@ -216,7 +230,9 @@ def find_task_for_agent(agent_id, agent_area, lock_data, tasks_data, assigned_in
         task_id = task.get("id")
         if not task_id:
             continue
-        mapped_area = AREA_TO_AGENT.get(task_area, task_area)
+        mapped_area = AREA_TO_AGENT.get(task_area)
+        if mapped_area is None:
+            continue
         if task_id not in assigned_remote and task_id not in assigned_in_run and mapped_area == agent_area:
             return task_id
 
@@ -267,17 +283,20 @@ def main():
     if fcntl is None:
         print("[Dispatcher] WARNING: fcntl not available, no file locking")
 
-    lock_fd = open(DISPATCHER_LOCK, "w")
+    lock_fd = None
     try:
+        lock_fd = open(DISPATCHER_LOCK, "a+")
         if fcntl:
             try:
                 fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
             except (IOError, OSError):
                 print("[Dispatcher] Another dispatcher is running, exiting")
                 lock_fd.close()
+                lock_fd = None
                 return 0
         else:
             lock_fd.close()
+            lock_fd = None
 
         if not git_pull():
             git_reset_to_remote()
@@ -285,7 +304,7 @@ def main():
         try:
             lock_data = load_json(LOCK_FILE)
             tasks_data = load_json(TASK_FILE)
-        except (FileNotFoundError, json.JSONDecodeError) as e:
+        except (FileNotFoundError, json.JSONDecodeError, PermissionError, UnicodeDecodeError) as e:
             print(f"[Dispatcher] Failed to load data files: {e}")
             return 1
 
@@ -294,27 +313,46 @@ def main():
         now = datetime.now(timezone.utc)
         stale_reset_agents = []
         for agent_id, agent_info in lock_data["agents"].items():
+            if agent_id == SUPERVISOR_ID:
+                continue
+
             status = agent_info.get("status")
+            if status not in ("assigned", "working"):
+                continue
+
             started = agent_info.get("started_at")
-            if status in ("assigned", "working") and started:
-                try:
-                    start_dt = datetime.fromisoformat(started)
-                    if start_dt.tzinfo is None:
-                        start_dt = start_dt.replace(tzinfo=timezone.utc)
-                    elapsed = (now - start_dt).total_seconds() / 60
-                except (ValueError, TypeError):
-                    continue
-                if elapsed > STALE_TIMEOUT_MIN:
-                    print(f"[Dispatcher] {agent_id}: STALE after {elapsed:.0f} min, resetting")
-                    lock_data["agents"][agent_id]["status"] = "idle"
-                    lock_data["agents"][agent_id]["task_id"] = None
-                    lock_data["agents"][agent_id]["started_at"] = None
-                    stale_reset_agents.append(agent_id)
+            if not started:
+                stale_reset_agents.append(agent_id)
+                lock_data["agents"][agent_id]["status"] = "idle"
+                lock_data["agents"][agent_id]["task_id"] = None
+                lock_data["agents"][agent_id]["started_at"] = None
+                print(f"[Dispatcher] {agent_id}: STALE (no started_at), resetting")
+                continue
+
+            try:
+                start_dt = datetime.fromisoformat(started)
+                if start_dt.tzinfo is None:
+                    start_dt = start_dt.replace(tzinfo=timezone.utc)
+                elapsed = (now - start_dt).total_seconds() / 60
+            except (ValueError, TypeError):
+                stale_reset_agents.append(agent_id)
+                lock_data["agents"][agent_id]["status"] = "idle"
+                lock_data["agents"][agent_id]["task_id"] = None
+                lock_data["agents"][agent_id]["started_at"] = None
+                print(f"[Dispatcher] {agent_id}: STALE (invalid started_at), resetting")
+                continue
+
+            if elapsed > STALE_TIMEOUT_MIN:
+                print(f"[Dispatcher] {agent_id}: STALE after {elapsed:.0f} min, resetting")
+                lock_data["agents"][agent_id]["status"] = "idle"
+                lock_data["agents"][agent_id]["task_id"] = None
+                lock_data["agents"][agent_id]["started_at"] = None
+                stale_reset_agents.append(agent_id)
 
         assignments = []
         assigned_in_run = set()
         for agent_id, agent_info in lock_data["agents"].items():
-            if agent_id == "agent-7":
+            if agent_id == SUPERVISOR_ID:
                 continue
 
             if agent_info.get("status") in ("working", "assigned"):
@@ -377,12 +415,16 @@ def main():
         return 0
 
     finally:
-        if fcntl:
+        if lock_fd is not None:
+            if fcntl:
+                try:
+                    fcntl.flock(lock_fd, fcntl.LOCK_UN)
+                except Exception:
+                    pass
             try:
-                fcntl.flock(lock_fd, fcntl.LOCK_UN)
+                lock_fd.close()
             except Exception:
                 pass
-        lock_fd.close()
 
 
 if __name__ == "__main__":

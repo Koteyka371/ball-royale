@@ -28,11 +28,14 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: 'pip'
 
       - name: Dispatch agents
         run: python3 scripts/dispatch_agents.py
@@ -40,4 +43,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Show status
+        if: always()
         run: python3 scripts/status_agents.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -3,6 +3,12 @@ name: Auto-Merge PR (with CI check)
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+  check_suite:
+    types: [completed]
+
+concurrency:
+  group: auto-merge
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -12,23 +18,30 @@ jobs:
   auto-merge:
     runs-on: ubuntu-latest
     steps:
-      - name: Check CI status
+      - name: Check CI status and merge
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const pr = context.payload.pull_request;
+            if (!pr) {
+              console.log('No PR in context, skipping');
+              return;
+            }
+
             const labels = pr.labels.map(l => l.name);
             if (!labels.includes('automated')) {
               console.log('PR has no "automated" label, skipping auto-merge');
               return;
             }
 
+            console.log(`Checking PR #${pr.number} for auto-merge...`);
+
             const { data: checks } = await github.rest.checks.listForRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: pr.head.sha,
-              per_page: 30
+              per_page: 100
             });
 
             const blocking = ['failure', 'timed_out', 'cancelled', 'action_required', 'stale'];
@@ -43,14 +56,20 @@ jobs:
               }
             }
 
-            console.log('CI passed, waiting 30s for stability...');
+            console.log('All CI checks passed!');
+
+            console.log('Waiting 30s for stability...');
             await new Promise(r => setTimeout(r, 30000));
 
-            console.log('Merging PR...');
-            await github.rest.pulls.merge({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: pr.number,
-              merge_method: 'squash'
-            });
-            console.log('PR merged successfully!');
+            try {
+              await github.rest.pulls.merge({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+                merge_method: 'squash'
+              });
+              console.log('PR merged successfully!');
+            } catch (error) {
+              console.error(`Merge failed: ${error.message}`);
+              core.setFailed(error.message);
+            }

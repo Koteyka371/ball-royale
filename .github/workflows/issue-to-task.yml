@@ -4,18 +4,24 @@ on:
   issues:
     types: [opened, edited]
 
+permissions: {}
+
+concurrency:
+  group: issue-to-task
+  cancel-in-progress: false
+
 jobs:
   convert-issue:
     runs-on: ubuntu-latest
     if: contains(github.event.issue.labels.*.name, 'task')
-    
+
     permissions:
       contents: write
       pull-requests: write
-    
+
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Convert issue to task
         env:
@@ -27,14 +33,18 @@ jobs:
           import json
           import os
           import re
-          
+          import tempfile
+
           title = os.environ['ISSUE_TITLE']
           body = os.environ['ISSUE_BODY'] or ''
           number = os.environ['ISSUE_NUMBER']
-          
+
+          title = re.sub(r'[^\w\s-]', '', title)[:100]
+          body = re.sub(r'[^\w\s\n.,;:!?()-]', '', body)[:2000]
+
           task_id = re.sub(r'[^a-z0-9]+', '-', title.lower())[:50]
           task_id = f"issue-{number}-{task_id}"
-          
+
           area = 'content'
           if 'bug' in title.lower():
               area = 'meta'
@@ -46,13 +56,13 @@ jobs:
               area = 'tests'
           elif 'workflow' in title.lower() or 'script' in title.lower():
               area = 'meta'
-          
+
           risk = 'medium'
           if 'urgent' in title.lower() or 'critical' in title.lower():
               risk = 'high'
           elif 'simple' in title.lower() or 'easy' in title.lower():
               risk = 'low'
-          
+
           task = {
               "id": task_id,
               "status": "todo",
@@ -67,22 +77,33 @@ jobs:
                   "No regressions"
               ]
           }
-          
-          with open('agent_tasks.json', 'r') as f:
+
+          with open('agent_tasks.json', 'r', encoding='utf-8') as f:
               manifest = json.load(f)
-          
+
           existing_ids = {t['id'] for t in manifest.get('tasks', [])}
           if task_id not in existing_ids:
               manifest['tasks'].append(task)
-              with open('agent_tasks.json', 'w') as f:
-                  json.dump(manifest, f, indent=2, ensure_ascii=False)
+              dir_name = os.path.dirname(os.path.abspath('agent_tasks.json'))
+              tmp_path = None
+              try:
+                  with tempfile.NamedTemporaryFile('w', dir=dir_name, suffix='.tmp', delete=False, encoding='utf-8') as tmp:
+                      json.dump(manifest, tmp, indent=2, ensure_ascii=False)
+                      tmp.flush()
+                      os.fsync(tmp.fileno())
+                      tmp_path = tmp.name
+                  os.replace(tmp_path, 'agent_tasks.json')
+              except Exception:
+                  if tmp_path and os.path.exists(tmp_path):
+                      os.unlink(tmp_path)
+                  raise
               print(f"Added task: {task_id}")
           else:
               print(f"Task already exists: {task_id}")
           EOF
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "auto: add task from issue #${{ github.event.issue.number }}"

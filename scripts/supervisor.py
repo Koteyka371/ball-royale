@@ -11,6 +11,7 @@ import subprocess
 import urllib.request
 import urllib.error
 import time
+import tempfile
 from datetime import datetime, timezone
 
 try:
@@ -22,8 +23,8 @@ LOCK_FILE = "agent_lock.json"
 TASK_FILE = "agent_tasks.json"
 SUPERVISOR_LOCK = ".supervisor.lock"
 MAX_RETRIES = 5
-CYCLE_LIMIT = 30
 STALE_TIMEOUT_MIN = 45
+SUPERVISOR_ID = "agent-7"
 
 
 def load_json(path):
@@ -32,7 +33,6 @@ def load_json(path):
 
 
 def atomic_write_json(path, data):
-    import tempfile
     dir_name = os.path.dirname(os.path.abspath(path))
     tmp_path = None
     try:
@@ -59,14 +59,16 @@ def git_pull():
 
 
 def git_fetch():
-    subprocess.run(
+    result = subprocess.run(
         ["git", "fetch", "origin", "main"],
         capture_output=True, text=True, timeout=30
     )
+    return result.returncode == 0
 
 
 def git_reset_to_remote():
-    git_fetch()
+    if not git_fetch():
+        return False
     result = subprocess.run(
         ["git", "checkout", "origin/main", "--", LOCK_FILE],
         capture_output=True, text=True, timeout=10
@@ -75,7 +77,13 @@ def git_reset_to_remote():
 
 
 def git_commit_and_push(message):
-    subprocess.run(["git", "add", LOCK_FILE], capture_output=True, timeout=10)
+    add_result = subprocess.run(
+        ["git", "add", LOCK_FILE],
+        capture_output=True, text=True, timeout=10
+    )
+    if add_result.returncode != 0:
+        print(f"[Supervisor] git add failed: {add_result.stderr}")
+        return False
 
     diff_result = subprocess.run(
         ["git", "diff", "--cached", "--quiet"],
@@ -107,7 +115,8 @@ def verify_pushed():
         capture_output=True, text=True, timeout=10
     )
     if result.returncode != 0:
-        return True
+        print("[Supervisor] verify_pushed: git log failed, cannot verify")
+        return False
     return len(result.stdout.strip()) == 0
 
 
@@ -115,12 +124,13 @@ def save_and_push(new_data, message):
     for attempt in range(MAX_RETRIES):
         if not git_pull():
             if not git_reset_to_remote():
+                print("[Supervisor] Cannot sync with remote, aborting")
                 return False
 
         try:
             with open(LOCK_FILE, encoding="utf-8") as f:
                 current = json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError) as e:
+        except (FileNotFoundError, json.JSONDecodeError, PermissionError, UnicodeDecodeError) as e:
             print(f"[Supervisor] Failed to read {LOCK_FILE}: {e}")
             return False
 
@@ -172,7 +182,7 @@ def github_api(endpoint, method="GET", data=None, token=None):
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
             content = resp.read().decode("utf-8")
-            return json.loads(content) if content.strip() else {"message": "empty response"}
+            return json.loads(content) if content.strip() else None
     except urllib.error.HTTPError as e:
         error_body = e.read().decode("utf-8")
         print(f"[Supervisor] API {method} {endpoint}: {e.code} {error_body[:300]}")
@@ -187,16 +197,8 @@ def get_ci_status(sha):
         return "pending"
     token = os.environ.get("GITHUB_TOKEN", "")
 
-    pr_result = github_api(f"commits/{sha}/pull-request", token=token)
-    if pr_result:
-        mergeable = pr_result.get("mergeable")
-        merge_state = pr_result.get("mergeable_state", "")
-        if mergeable is False or mergeable == "dirty":
-            return "failure"
-        if mergeable is True and merge_state == "clean":
-            return "success"
-
-    url = f"https://api.github.com/repos/{os.environ.get('GITHUB_REPOSITORY', 'Koteyka371/ball-royale')}/commits/{sha}/check-runs?per_page=30"
+    repo = os.environ.get("GITHUB_REPOSITORY", "Koteyka371/ball-royale")
+    url = f"https://api.github.com/repos/{repo}/commits/{sha}/check-runs?per_page=100"
     req = urllib.request.Request(url, headers={
         "Authorization": f"token {token}",
         "Accept": "application/vnd.github.v3+json",
@@ -213,26 +215,34 @@ def get_ci_status(sha):
         return "pending"
 
     blocking_conclusions = {"failure", "timed_out", "cancelled", "action_required", "stale"}
+    has_failure = False
+    all_completed = True
+
     for run in check_runs:
         conclusion = run.get("conclusion")
         status = run.get("status", "")
         if conclusion in blocking_conclusions:
-            return "failure"
+            has_failure = True
         if status != "completed":
-            return "pending"
+            all_completed = False
 
+    if has_failure:
+        return "failure"
+    if not all_completed:
+        return "pending"
     return "success"
 
 
-def ensure_ci_waits(sha, max_minutes=60):
+def wait_for_ci(sha, max_minutes=60):
     if not sha:
         return True
 
     print(f"[Supervisor] Waiting for CI on {sha[:8]}...")
 
-    for i in range(0, max_minutes * 2, 15):
+    for i in range(0, max_minutes * 60, 15):
         status = get_ci_status(sha)
-        print(f"[Supervisor] CI status ({i//60}m{i%60}s): {status}")
+        elapsed = i // 60
+        print(f"[Supervisor] CI status ({elapsed}m{i%60}s): {status}")
 
         if status == "success":
             print("[Supervisor] CI passed!")
@@ -254,7 +264,7 @@ def invoke_jules(task_id, area, prompt, branch_name, token):
         print("[Supervisor] No Jules token available")
         return False
 
-    repo_url = f"https://github.com/Koteyka371/ball-royale"
+    repo_url = f"https://github.com/{os.environ.get('GITHUB_REPOSITORY', 'Koteyka371/ball-royale')}"
     full_prompt = (
         f"Project: Ball Royale — 2D battle royale with AI-controlled balls.\n"
         f"Repository: {repo_url}\n\n"
@@ -306,12 +316,11 @@ def invoke_jules(task_id, area, prompt, branch_name, token):
 
 def check_all_agents_idle(lock_data):
     for agent_id, info in lock_data.get("agents", {}).items():
-        if agent_id == "agent-7":
+        if agent_id == SUPERVISOR_ID:
             continue
         status = info.get("status")
         if status in ("working", "assigned"):
-            if not info.get("task_id"):
-                return False
+            return False
     return True
 
 
@@ -345,12 +354,17 @@ def merge_pr(pr_number):
     )
     if result is None:
         return False
+    if result.get("merged") is False:
+        print(f"[Supervisor] Merge response says not merged: {result.get('message', '')}")
+        return False
     return True
 
 
 def get_open_prs():
     result = github_api("pulls?state=open&per_page=100")
     if result is None:
+        return []
+    if isinstance(result, dict):
         return []
     return result
 
@@ -366,17 +380,10 @@ def get_task_for_pr(pr):
             if line.startswith("Task:") or line.startswith("Task ID:"):
                 task_id = line.split(":", 1)[1].strip()
                 break
-            if "task-" in line:
-                idx = line.index("task-")
-                end = idx
-                while end < len(line) and line[end] not in " \n,;:)]}":
-                    end += 1
-                task_id = line[idx:end]
-                break
     return task_id
 
 
-def mark_task_done(task_id, agent_id):
+def mark_task_done(task_id):
     if not task_id:
         return
 
@@ -392,6 +399,49 @@ def mark_task_done(task_id, agent_id):
         print(f"[Supervisor] Failed to mark task done: {e}")
 
 
+def reset_stale_agents(lock_data, now):
+    stale_resets = {}
+    for agent_id, agent_info in lock_data["agents"].items():
+        if agent_id == SUPERVISOR_ID:
+            continue
+
+        status = agent_info.get("status")
+        if status not in ("working", "assigned"):
+            continue
+
+        started = agent_info.get("started_at")
+        if not started:
+            stale_resets[agent_id] = {
+                "status": "idle",
+                "task_id": None,
+                "started_at": None,
+            }
+            continue
+
+        try:
+            start_dt = datetime.fromisoformat(started)
+            if start_dt.tzinfo is None:
+                start_dt = start_dt.replace(tzinfo=timezone.utc)
+            elapsed_min = (now - start_dt).total_seconds() / 60
+        except (ValueError, TypeError):
+            stale_resets[agent_id] = {
+                "status": "idle",
+                "task_id": None,
+                "started_at": None,
+            }
+            continue
+
+        if elapsed_min > STALE_TIMEOUT_MIN:
+            print(f"[Supervisor] {agent_id} stale ({elapsed_min:.0f} min), resetting")
+            stale_resets[agent_id] = {
+                "status": "idle",
+                "task_id": None,
+                "started_at": None,
+            }
+
+    return stale_resets
+
+
 def main():
     print("=" * 60)
     print("JULES SUPERVISOR (Agent 7)")
@@ -400,65 +450,49 @@ def main():
     if fcntl is None:
         print("[Supervisor] WARNING: fcntl not available, no file locking")
 
-    lock_fd = open(SUPERVISOR_LOCK, "w")
+    lock_fd = None
     try:
+        lock_fd = open(SUPERVISOR_LOCK, "w")
         if fcntl:
             try:
                 fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
             except (IOError, OSError):
                 print("[Supervisor] Another supervisor is running, exiting")
                 lock_fd.close()
+                lock_fd = None
                 return 0
         else:
             lock_fd.close()
+            lock_fd = None
 
         if not git_pull():
             git_reset_to_remote()
 
         try:
             lock_data = load_json(LOCK_FILE)
-        except (FileNotFoundError, json.JSONDecodeError) as e:
+        except (FileNotFoundError, json.JSONDecodeError, PermissionError, UnicodeDecodeError) as e:
             print(f"[Supervisor] Failed to load {LOCK_FILE}: {e}")
             return 1
 
         now = datetime.now(timezone.utc)
-        now_iso = now.isoformat()
+
+        stale_resets = reset_stale_agents(lock_data, now)
+
+        for agent_id, reset_data in stale_resets.items():
+            lock_data["agents"][agent_id] = {
+                **lock_data["agents"][agent_id],
+                **reset_data,
+            }
 
         updates = {"agents": {}}
         need_save = False
 
-        # Reset stale agents
-        for agent_id, agent_info in lock_data["agents"].items():
-            if agent_id == "agent-7":
-                continue
+        for agent_id, reset_data in stale_resets.items():
+            updates["agents"][agent_id] = lock_data["agents"][agent_id]
+            need_save = True
 
-            status = agent_info.get("status")
-            if status not in ("working", "assigned"):
-                continue
-
-            started = agent_info.get("started_at")
-            if not started:
-                continue
-
-            try:
-                start_dt = datetime.fromisoformat(started)
-                if start_dt.tzinfo is None:
-                    start_dt = start_dt.replace(tzinfo=timezone.utc)
-                elapsed_min = (now - start_dt).total_seconds() / 60
-            except (ValueError, TypeError):
-                continue
-
-            if elapsed_min > STALE_TIMEOUT_MIN:
-                print(f"[Supervisor] {agent_id} stale ({elapsed_min:.0f} min), resetting")
-                updates["agents"][agent_id] = {
-                    "status": "idle",
-                    "task_id": None,
-                    "started_at": None,
-                }
-                need_save = True
-
-        # Check if all agents idle → trigger dispatcher
         all_idle = check_all_agents_idle(lock_data)
+
         if all_idle:
             print("[Supervisor] All agents idle, triggering dispatcher...")
             token = os.environ.get("GITHUB_TOKEN", "")
@@ -466,15 +500,14 @@ def main():
                 trigger_dispatcher(token)
         else:
             working = [aid for aid, info in lock_data["agents"].items()
-                       if aid != "agent-7" and info.get("status") in ("working", "assigned")]
+                       if aid != SUPERVISOR_ID and info.get("status") in ("working", "assigned")]
             print(f"[Supervisor] Active agents: {', '.join(working)}")
 
-        # Check open PRs and merge if CI passed
         print("\n[Supervisor] Checking open PRs...")
         prs = get_open_prs()
         if prs:
             for pr in prs:
-                pr_num = pr["number"]
+                pr_num = pr.get("number")
                 pr_head = pr.get("head", {}).get("sha", "")
                 labels = [l.get("name", "") for l in pr.get("labels", [])]
                 is_automated = "automated" in labels
@@ -500,8 +533,8 @@ def main():
 
                 if task_status == "done":
                     print(f"    Task {task_id} already done, merging immediately")
-                    merge_pr(pr_num)
-                    mark_task_done(task_id, "")
+                    if merge_pr(pr_num):
+                        need_save = True
                     continue
 
                 ci_status = get_ci_status(pr_head)
@@ -509,58 +542,84 @@ def main():
                 if ci_status == "success":
                     print(f"    CI passed! Merging...")
                     if merge_pr(pr_num):
-                        mark_task_done(task_id, "")
+                        mark_task_done(task_id)
+                        need_save = True
                 elif ci_status == "failure":
                     print(f"    CI failed! Fixing via Jules API...")
                     jules_token = os.environ.get("JULES_API_KEY", "")
                     if jules_token:
+                        branch_name = pr.get("head", {}).get("ref", "")
                         agent_id = ""
-                        if pr.get("user", {}).get("login", "").startswith("jules"):
-                            branch = pr.get("head", {}).get("ref", "")
-                            agent_id = branch.split("-agent-")[-1].split("-")[0] if "-agent-" in branch else ""
-                            if agent_id and agent_id.isdigit():
-                                agent_id = f"agent-{agent_id}"
+                        if "-agent-" in branch_name:
+                            parts = branch_name.split("-agent-")
+                            if len(parts) > 1:
+                                agent_num = parts[-1].split("-")[0]
+                                if agent_num.isdigit():
+                                    agent_id = f"agent-{agent_num}"
 
                         agent_area = lock_data["agents"].get(agent_id, {}).get("area", "ai-core")
-                        branch_name = pr.get("head", {}).get("ref", "")
 
-                        fix_prompt = f"Fix CI failure for task {task_id}. Check the CI logs and fix the failing tests or code issues. Use branch '{branch_name}'."
-                        invoke_jules(task_id, agent_area, fix_prompt, branch_name, jules_token)
+                        fix_prompt = (
+                            f"Fix CI failure for task {task_id}. Check the CI logs "
+                            f"and fix the failing tests or code issues. "
+                            f"Use branch '{branch_name}'."
+                        )
+                        if invoke_jules(task_id, agent_area, fix_prompt, branch_name, jules_token):
+                            for i in range(0, 15 * 60, 30):
+                                time.sleep(30)
 
-                        for i in range(0, 15 * 60, 30):
-                            new_ci = get_ci_status(pr_head)
-                            if new_ci == "success":
-                                print(f"    Fixed! Merging...")
-                                merge_pr(pr_num)
-                                mark_task_done(task_id, agent_id)
-                                break
-                            elif new_ci == "failure":
-                                print(f"    Still failing ({i//60}m{i%60}s)")
-                            time.sleep(30)
+                                try:
+                                    pr_data = github_api(
+                                        f"pulls/{pr_num}",
+                                        token=os.environ.get("GITHUB_TOKEN", "")
+                                    )
+                                    if pr_data:
+                                        new_head = pr_data.get("head", {}).get("sha", "")
+                                        if new_head and new_head != pr_head:
+                                            pr_head = new_head
+                                            print(f"[Supervisor] PR head updated to {pr_head[:8]}")
+                                except Exception:
+                                    pass
+
+                                new_ci = get_ci_status(pr_head)
+                                elapsed = (i + 30) // 60
+                                print(f"[Supervisor] CI status ({elapsed}m): {new_ci}")
+
+                                if new_ci == "success":
+                                    print(f"    Fixed! Merging...")
+                                    if merge_pr(pr_num):
+                                        mark_task_done(task_id)
+                                        need_save = True
+                                    break
+                                elif new_ci == "failure" and i > 0:
+                                    print(f"    Still failing ({elapsed}m)")
                 else:
                     print(f"    CI pending...")
         else:
             print("[Supervisor] No open PRs")
 
-        # Save and push
         if need_save:
             if save_and_push(updates, f"supervisor: update {len(updates['agents'])} agents"):
                 print(f"\n[Supervisor] Saved {LOCK_FILE}")
             else:
                 print("\n[Supervisor] FAILED to save")
         else:
-            print("[Supervisor] No agent updates needed")
+            print("[Supervisor] No updates needed")
 
         print("\n[Supervisor] Done!")
         return 0
 
     finally:
-        if fcntl:
+        if lock_fd is not None:
+            if fcntl:
+                try:
+                    fcntl.flock(lock_fd, fcntl.LOCK_UN)
+                except Exception:
+                    pass
             try:
-                fcntl.flock(lock_fd, fcntl.LOCK_UN)
+                lock_fd.close()
             except Exception:
                 pass
-        lock_fd.close()
 
 
 if __name__ == "__main__":
