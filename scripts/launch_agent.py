@@ -169,7 +169,7 @@ Description: {task_desc}
 4. WORK: Complete the current task with tests
 5. EVOLVE: Fix bugs, improve code, invent new features (ONLY in your area)
 6. VALIDATE: python3 tests/simulate_battle.py 100 && python3 scripts/quality_metrics.py
-7. GENERATE: Add 3-5 new tasks to agent_tasks.json.
+7. GENERATE: Add as many new tasks as you want to agent_tasks.json (minimum 1).
    IMPORTANT: Each new task MUST have an "area" field matching one of:
    "ai-core", "behaviors", "tests", "content", "meta", "innovation"
    Set area based on what the task is about. The dispatcher uses this to assign tasks to agents.

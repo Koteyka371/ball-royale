@@ -53,7 +53,7 @@ pytest tests/ -v
 ```
 
 ### 5. Generate next tasks
-Add 3-5 new tasks to agent_tasks.json. YOUR ideas.
+Add as many new tasks as you want to agent_tasks.json (minimum 1). YOUR ideas.
 
 ### 6. Create PR
 Include everything: task + fixes + improvements + new tasks
