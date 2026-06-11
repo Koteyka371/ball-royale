@@ -227,8 +227,9 @@ def github_api(endpoint, method="GET", data=None, token=None, _retry_count=0):
             print(f"[{agent_id}] Rate limited, waiting {wait_time}s (retry {_retry_count + 1}/3)...")
             time.sleep(wait_time)
             return github_api(endpoint, method, data, token, _retry_count + 1)
-        if e.code != 404:
-            print(f"[{agent_id}] API {method} {endpoint}: {e.code} {error_body[:200]}")
+        if e.code == 404:
+            return None
+        print(f"[{agent_id}] API {method} {endpoint}: {e.code} {error_body[:200]}")
         return None
     except Exception as e:
         print(f"[{agent_id}] API error: {e}")
@@ -293,13 +294,13 @@ def check_pr_created(branch_name, token):
     repo = os.environ.get("GITHUB_REPOSITORY", "Koteyka371/ball-royale")
     owner = repo.split("/")[0]
     encoded_branch = urllib.parse.quote(branch_name, safe="")
-    url = f"https://api.github.com/repos/{repo}/pulls?head={owner}:{encoded_branch}&state=open"
-    req = urllib.request.Request(url, headers={
-        "Authorization": f"token {token}",
-        "Accept": "application/vnd.github.v3+json",
-    })
 
     for attempt in range(3):
+        url = f"https://api.github.com/repos/{repo}/pulls?head={owner}:{encoded_branch}&state=open"
+        req = urllib.request.Request(url, headers={
+            "Authorization": f"token {token}",
+            "Accept": "application/vnd.github.v3+json",
+        })
         try:
             with urllib.request.urlopen(req, timeout=15) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
@@ -428,7 +429,9 @@ def main():
                         "task_id": None,
                         "started_at": None,
                     }}}
-                    atomic_update(update, f"{agent_id}: reset invalid started_at")
+                    if not atomic_update(update, f"{agent_id}: reset invalid started_at"):
+                        print(f"[{agent_id}] Failed to reset invalid started_at")
+                        return 1
                     try:
                         lock_data = load_json(LOCK_FILE)
                         agent_info = lock_data.get("agents", {}).get(agent_id, {})
@@ -440,7 +443,9 @@ def main():
                     "task_id": None,
                     "started_at": None,
                 }}}
-                atomic_update(update, f"{agent_id}: reset stale in-progress")
+                if not atomic_update(update, f"{agent_id}: reset stale in-progress"):
+                    print(f"[{agent_id}] Failed to reset stale in-progress")
+                    return 1
                 try:
                     lock_data = load_json(LOCK_FILE)
                     agent_info = lock_data.get("agents", {}).get(agent_id, {})
@@ -458,7 +463,9 @@ def main():
                     "agents": {aid: {"cycles_today": 0} for aid in lock_data.get("agents", {})},
                     "last_reset": now.isoformat(),
                 }
-                atomic_update(update, "Day boundary: reset all cycles")
+                if not atomic_update(update, "Day boundary: reset all cycles"):
+                    print(f"[{agent_id}] Failed to reset day boundary")
+                    return 1
                 try:
                     lock_data = load_json(LOCK_FILE)
                     agent_info = lock_data.get("agents", {}).get(agent_id, {})
@@ -471,6 +478,10 @@ def main():
         cycles_today = agent_info.get("cycles_today", 0)
         if cycles_today >= CYCLE_LIMIT:
             print(f"[{agent_id}] Cycle limit reached ({CYCLE_LIMIT}/{CYCLE_LIMIT})")
+            return 0
+
+        if agent_info.get("status") in ("working", "assigned"):
+            print(f"[{agent_id}] Agent is busy (status={agent_info.get('status')}), skipping")
             return 0
 
         area = agent_info.get("area", AGENT_AREAS.get(agent_id, ""))
@@ -524,7 +535,9 @@ def main():
                 "task_id": task_id,
                 "started_at": None,
             }}}
-            atomic_update(update, f"{agent_id}: Jules accepted, cycles={cycles_today + 1}")
+            if not atomic_update(update, f"{agent_id}: Jules accepted, cycles={cycles_today + 1}"):
+                print(f"[{agent_id}] WARNING: Failed to update status after Jules success")
+                return 1
 
             branch_name = task_id
             print(f"[{agent_id}] Polling for PR (branch={branch_name})...")
@@ -544,7 +557,9 @@ def main():
                 "task_id": None,
                 "started_at": None,
             }}}
-            atomic_update(update, f"{agent_id}: Jules failed, resetting")
+            if not atomic_update(update, f"{agent_id}: Jules failed, resetting"):
+                print(f"[{agent_id}] WARNING: Failed to update status after Jules failure")
+                return 1
 
         print(f"[{agent_id}] Done!")
         return 0

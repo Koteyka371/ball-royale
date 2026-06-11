@@ -80,7 +80,7 @@ def git_pull():
     )
     if result.returncode != 0:
         print(f"[Dispatcher] git pull failed: {result.stderr}")
-        if "CONFLICT" in result.stderr or "merge" in result.stderr.lower():
+        if "conflict" in result.stderr.lower() or "merge" in result.stderr.lower():
             subprocess.run(["git", "merge", "--abort"], capture_output=True, timeout=10)
     return result.returncode == 0
 
@@ -104,7 +104,7 @@ def git_reset_to_remote():
 
 
 def git_commit_and_push(message):
-    subprocess.run(["git", "reset", "HEAD", "--", "."], capture_output=True, timeout=10)
+    subprocess.run(["git", "reset", "HEAD", "--", LOCK_FILE], capture_output=True, timeout=10)
 
     add_result = subprocess.run(
         ["git", "add", LOCK_FILE],
@@ -164,13 +164,14 @@ def atomic_update(new_data, message):
             return False
 
         for agent_id_key, state in new_data.get("agents", {}).items():
-            if agent_id_key in current.get("agents", {}):
-                current["agents"][agent_id_key] = {
-                    **current["agents"][agent_id_key],
-                    **state,
-                }
-            else:
-                current.setdefault("agents", {})[agent_id_key] = state
+        if agent_id_key in current.get("agents", {}):
+            current["agents"][agent_id_key] = {
+                **current["agents"][agent_id_key],
+                **state,
+            }
+        else:
+            state_with_defaults = {"cycles_today": 0, **state}
+            current.setdefault("agents", {})[agent_id_key] = state_with_defaults
 
         if "last_reset" in new_data:
             current["last_reset"] = new_data["last_reset"]
@@ -304,14 +305,25 @@ def main():
             lock_fd = None
 
         if not git_pull():
-            git_reset_to_remote()
+            if not git_reset_to_remote():
+                print("[Dispatcher] Cannot sync with remote, aborting")
+                return 1
 
         try:
             lock_data = load_json(LOCK_FILE)
+        except (FileNotFoundError, json.JSONDecodeError, PermissionError, UnicodeDecodeError) as e:
+            print(f"[Dispatcher] Failed to load {LOCK_FILE}: {e}")
+            return 1
+
+        try:
             tasks_data = load_json(TASK_FILE)
         except (FileNotFoundError, json.JSONDecodeError, PermissionError, UnicodeDecodeError) as e:
-            print(f"[Dispatcher] Failed to load data files: {e}")
-            return 1
+            print(f"[Dispatcher] Failed to load {TASK_FILE}: {e}")
+            tasks_data = {"tasks": []}
+
+        if not isinstance(tasks_data, dict) or "tasks" not in tasks_data:
+            print(f"[Dispatcher] Malformed {TASK_FILE}, using empty task list")
+            tasks_data = {"tasks": []}
 
         lock_data, day_changed = reset_daily_counters(lock_data)
 
@@ -363,6 +375,7 @@ def main():
 
         assignments = []
         assigned_in_run = set()
+        batch_time = datetime.now(timezone.utc).isoformat()
         for agent_id, agent_info in lock_data.get("agents", {}).items():
             if agent_id == SUPERVISOR_ID:
                 continue
@@ -387,6 +400,7 @@ def main():
                 print(f"[Dispatcher] {agent_id}: no tasks available in area={agent_area}")
 
         modified_agents = {}
+        agents = lock_data.get("agents", {})
         for aid in stale_reset_agents:
             modified_agents[aid] = {
                 "status": "idle",
@@ -397,7 +411,7 @@ def main():
             modified_agents[agent_id] = {
                 "task_id": task_id,
                 "status": "assigned",
-                "started_at": datetime.now(timezone.utc).isoformat(),
+                "started_at": batch_time,
             }
 
         update_data = {"agents": modified_agents}
@@ -415,15 +429,19 @@ def main():
 
         if assignments:
             print("\n[Dispatcher] Triggering agent workflows...")
+            failed_agents = []
             for agent_id, task_id in assignments:
                 if not trigger_agent_workflow(agent_id):
-                    rollback = {"agents": {agent_id: {
-                        "status": "idle",
-                        "task_id": None,
-                        "started_at": None,
-                    }}}
-                    atomic_update(rollback, f"dispatcher: rollback {agent_id} (trigger failed)")
+                    failed_agents.append(agent_id)
                 time.sleep(2)
+
+            if failed_agents:
+                rollback = {"agents": {aid: {
+                    "status": "idle",
+                    "task_id": None,
+                    "started_at": None,
+                }} for aid in failed_agents}
+                atomic_update(rollback, f"dispatcher: rollback {len(failed_agents)} failed triggers")
 
         print("\n[Dispatcher] Remaining tasks by area:")
         todo_tasks = [t for t in tasks_data.get("tasks", []) if t.get("status") == "todo"]

@@ -78,13 +78,20 @@ jobs:
               ]
           }
 
-          with open('agent_tasks.json', 'r', encoding='utf-8') as f:
-              manifest = json.load(f)
+          tasks_file = 'agent_tasks.json'
+          try:
+              with open(tasks_file, 'r', encoding='utf-8') as f:
+                  manifest = json.load(f)
+          except (FileNotFoundError, json.JSONDecodeError):
+              manifest = {"tasks": []}
+
+          if not isinstance(manifest, dict) or "tasks" not in manifest:
+              manifest = {"tasks": []}
 
           existing_ids = {t['id'] for t in manifest.get('tasks', [])}
           if task_id not in existing_ids:
               manifest['tasks'].append(task)
-              dir_name = os.path.dirname(os.path.abspath('agent_tasks.json'))
+              dir_name = os.path.dirname(os.path.abspath(tasks_file))
               tmp_path = None
               try:
                   with tempfile.NamedTemporaryFile('w', dir=dir_name, suffix='.tmp', delete=False, encoding='utf-8') as tmp:
@@ -92,7 +99,7 @@ jobs:
                       tmp.flush()
                       os.fsync(tmp.fileno())
                       tmp_path = tmp.name
-                  os.replace(tmp_path, 'agent_tasks.json')
+                  os.replace(tmp_path, tasks_file)
               except Exception:
                   if tmp_path and os.path.exists(tmp_path):
                       os.unlink(tmp_path)

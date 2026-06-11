@@ -29,17 +29,36 @@ jobs:
             if (!pr) {
               console.log('No PR in context (check_suite event), resolving PR...');
               const checkSuite = context.payload.check_suite;
-              if (!checkSuite || !checkSuite.pull_requests || checkSuite.pull_requests.length === 0) {
-                console.log('No PRs associated with this check suite, skipping');
+              const headSha = checkSuite ? checkSuite.head_sha : null;
+
+              if (checkSuite && checkSuite.pull_requests && checkSuite.pull_requests.length > 0) {
+                const prNumber = checkSuite.pull_requests[0].number;
+                const { data: resolvedPr } = await github.rest.pulls.get({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: prNumber
+                });
+                pr = resolvedPr;
+              } else if (headSha) {
+                console.log('Fallback: searching open PRs by head SHA...');
+                const { data: openPrs } = await github.rest.pulls.list({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  state: 'open',
+                  per_page: 100
+                });
+                const matchingPr = openPrs.find(p => p.head.sha === headSha);
+                if (matchingPr) {
+                  pr = matchingPr;
+                  console.log(`Found PR #${pr.number} by SHA fallback`);
+                } else {
+                  console.log('No matching PR found by SHA, skipping');
+                  return;
+                }
+              } else {
+                console.log('No PR or SHA available, skipping');
                 return;
               }
-              const prNumber = checkSuite.pull_requests[0].number;
-              const { data: resolvedPr } = await github.rest.pulls.get({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: prNumber
-              });
-              pr = resolvedPr;
             }
 
             if (pr.draft) {
@@ -50,6 +69,20 @@ jobs:
             if (pr.mergeable === false) {
               console.log('PR has merge conflicts, skipping auto-merge');
               return;
+            }
+
+            if (pr.mergeable === null) {
+              console.log('PR mergeable state unknown, waiting 30s...');
+              await new Promise(r => setTimeout(r, 30000));
+              const { data: refreshedPr } = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number
+              });
+              if (refreshedPr.mergeable === false) {
+                console.log('PR has merge conflicts after refresh, skipping');
+                return;
+              }
             }
 
             const labels = pr.labels.map(l => l.name);
@@ -71,11 +104,27 @@ jobs:
                 page: page
               });
               allCheckRuns = allCheckRuns.concat(checks.check_runs);
-              if (checks.check_runs.length < 100 || page >= 10) break;
+              if (checks.check_runs.length < 100) break;
               page++;
             }
 
             const blocking = ['failure', 'timed_out', 'cancelled', 'action_required'];
+            if (allCheckRuns.length === 0) {
+              console.log('No check runs found, waiting 30s...');
+              await new Promise(r => setTimeout(r, 30000));
+              const { data: retryChecks } = await github.rest.checks.listForRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: pr.head.sha,
+                per_page: 100
+              });
+              allCheckRuns = retryChecks.check_runs;
+              if (allCheckRuns.length === 0) {
+                console.log('Still no check runs, skipping merge');
+                return;
+              }
+            }
+
             for (const run of allCheckRuns) {
               if (blocking.includes(run.conclusion)) {
                 console.log(`CI failed: ${run.name} (${run.conclusion})`);

@@ -19,8 +19,20 @@ def load_json(path):
 
 
 def main():
-    lock_data = load_json(LOCK_FILE)
-    tasks_data = load_json(TASK_FILE)
+    try:
+        lock_data = load_json(LOCK_FILE)
+    except (FileNotFoundError, json.JSONDecodeError, PermissionError, UnicodeDecodeError) as e:
+        print(f"Failed to load {LOCK_FILE}: {e}")
+        return 1
+
+    try:
+        tasks_data = load_json(TASK_FILE)
+    except (FileNotFoundError, json.JSONDecodeError, PermissionError, UnicodeDecodeError) as e:
+        print(f"Failed to load {TASK_FILE}: {e}")
+        tasks_data = {"tasks": []}
+
+    if not isinstance(tasks_data, dict) or "tasks" not in tasks_data:
+        tasks_data = {"tasks": []}
 
     now = datetime.now(timezone.utc)
 
@@ -30,10 +42,11 @@ def main():
     print("=" * 70)
 
     tasks = tasks_data.get("tasks", [])
-    done = [t for t in tasks if t["status"] == "done"]
-    todo = [t for t in tasks if t["status"] == "todo"]
+    done = [t for t in tasks if t.get("status") == "done"]
+    todo = [t for t in tasks if t.get("status") == "todo"]
     print(f"\nTasks: {len(done)} done / {len(todo)} todo / {len(tasks)} total")
-    print(f"Progress: {len(done)/len(tasks)*100:.1f}%")
+    if tasks:
+        print(f"Progress: {len(done)/len(tasks)*100:.1f}%")
 
     print(f"\n{'Agent':<20s} {'Status':<12s} {'Area':<14s} {'Task':<30s} {'Cycles':<8s}")
     print("-" * 84)

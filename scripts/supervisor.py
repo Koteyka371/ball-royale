@@ -214,6 +214,11 @@ def get_ci_status(sha):
         try:
             with urllib.request.urlopen(req, timeout=15) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
+        except urllib.error.HTTPError as e:
+            if e.code == 401 or e.code == 403:
+                print(f"[Supervisor] CI status check auth error: {e.code}")
+                return "pending"
+            return "pending"
         except Exception:
             return "pending"
 
@@ -257,7 +262,8 @@ def invoke_jules(task_id, area, prompt, branch_name, token):
     full_prompt = (
         f"Project: Ball Royale — 2D battle royale with AI-controlled balls.\n"
         f"Repository: {repo_url}\n\n"
-        f"CONTEXT: You are a coding agent. You have full creative control.\n\n"
+        f"CONTEXT: You are a coding agent. You have full creative control.\n"
+        f"AREA: {area}\n\n"
         f"TASK: {prompt}\n\n"
         f"BRANCH: Use existing branch '{branch_name}' for your changes.\n\n"
         f"IMPORTANT RULES:\n"
@@ -371,6 +377,8 @@ def get_task_for_pr(pr):
             if line.startswith("Task:") or line.startswith("Task ID:"):
                 task_id = line.split(":", 1)[1].strip()
                 break
+    if not task_id:
+        print(f"[Supervisor] WARNING: Could not parse task_id from PR #{pr.get('number')}: {title[:60]}")
     return task_id
 
 
@@ -543,6 +551,20 @@ def main():
                     print(f"    Task {task_id} already done, merging immediately")
                     if merge_pr(pr_num):
                         pr_need_save = True
+                        agent_id_for_pr = ""
+                        branch_name_for_pr = pr.get("head", {}).get("ref", "")
+                        if "-agent-" in branch_name_for_pr:
+                            parts = branch_name_for_pr.split("-agent-")
+                            if len(parts) > 1:
+                                agent_num = parts[-1].split("-")[0]
+                                if agent_num.isdigit():
+                                    agent_id_for_pr = f"agent-{agent_num}"
+                        if agent_id_for_pr:
+                            pr_updates["agents"][agent_id_for_pr] = {
+                                "status": "idle",
+                                "task_id": None,
+                                "started_at": None,
+                            }
                     continue
 
                 ci_status = get_ci_status(pr_head)
@@ -552,6 +574,20 @@ def main():
                     if merge_pr(pr_num):
                         mark_task_done(task_id)
                         pr_need_save = True
+                        agent_id_for_pr = ""
+                        branch_name_for_pr = pr.get("head", {}).get("ref", "")
+                        if "-agent-" in branch_name_for_pr:
+                            parts = branch_name_for_pr.split("-agent-")
+                            if len(parts) > 1:
+                                agent_num = parts[-1].split("-")[0]
+                                if agent_num.isdigit():
+                                    agent_id_for_pr = f"agent-{agent_num}"
+                        if agent_id_for_pr:
+                            pr_updates["agents"][agent_id_for_pr] = {
+                                "status": "idle",
+                                "task_id": None,
+                                "started_at": None,
+                            }
                 elif ci_status == "failure":
                     print(f"    CI failed! Fixing via Jules API...")
                     jules_token = os.environ.get("JULES_API_KEY", "")
@@ -575,8 +611,6 @@ def main():
                         if invoke_jules(task_id, agent_area, fix_prompt, branch_name, jules_token):
                             consecutive_failures = 0
                             for i in range(0, 15 * 60, 30):
-                                time.sleep(30)
-
                                 try:
                                     pr_data = github_api(
                                         f"pulls/{pr_num}",
@@ -599,6 +633,11 @@ def main():
                                     if merge_pr(pr_num):
                                         mark_task_done(task_id)
                                         pr_need_save = True
+                                        pr_updates["agents"][agent_id] = {
+                                            "status": "idle",
+                                            "task_id": None,
+                                            "started_at": None,
+                                        }
                                     break
                                 elif new_ci == "failure":
                                     consecutive_failures += 1
@@ -606,6 +645,11 @@ def main():
                                         print(f"    Still failing after {consecutive_failures} checks, giving up")
                                         break
                                     print(f"    Still failing ({elapsed}m)")
+                                elif new_ci == "pending":
+                                    consecutive_failures = 0
+
+                                if i + 30 < 15 * 60:
+                                    time.sleep(30)
                 else:
                     print(f"    CI pending...")
         else:
