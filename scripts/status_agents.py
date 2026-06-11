@@ -62,8 +62,10 @@ def main():
         cycles = info.get("cycles_today", 0)
         total_cycles += cycles
 
-        if status == "working":
+        if status in ("working", "assigned"):
             active_agents += 1
+
+        if status == "working":
             status_display = "\033[92mworking\033[0m"
         elif status == "assigned":
             status_display = "\033[93massigned\033[0m"
@@ -85,7 +87,7 @@ def main():
     print("COMPLETED TASKS")
     print(f"{'='*70}")
     for t in done:
-        print(f"  [done] {t['id']}")
+        print(f"  [done] {t.get('id', '?')}")
 
     print()
 

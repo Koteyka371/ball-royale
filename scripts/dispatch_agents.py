@@ -164,14 +164,14 @@ def atomic_update(new_data, message):
             return False
 
         for agent_id_key, state in new_data.get("agents", {}).items():
-        if agent_id_key in current.get("agents", {}):
-            current["agents"][agent_id_key] = {
-                **current["agents"][agent_id_key],
-                **state,
-            }
-        else:
-            state_with_defaults = {"cycles_today": 0, **state}
-            current.setdefault("agents", {})[agent_id_key] = state_with_defaults
+            if agent_id_key in current.get("agents", {}):
+                current["agents"][agent_id_key] = {
+                    **current["agents"][agent_id_key],
+                    **state,
+                }
+            else:
+                state_with_defaults = {"cycles_today": 0, **state}
+                current.setdefault("agents", {})[agent_id_key] = state_with_defaults
 
         if "last_reset" in new_data:
             current["last_reset"] = new_data["last_reset"]
@@ -213,6 +213,7 @@ def reset_daily_counters(lock_data):
     if last.date() < now.date():
         print("[Dispatcher] New day — resetting cycle counters")
         for agent_id in lock_data.get("agents", {}):
+            lock_data["agents"][agent_id].setdefault("cycles_today", 0)
             lock_data["agents"][agent_id]["cycles_today"] = 0
         lock_data["last_reset"] = now.isoformat()
         return lock_data, True

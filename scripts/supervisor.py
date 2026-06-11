@@ -161,7 +161,7 @@ def save_and_push(new_data, message):
     return False
 
 
-def github_api(endpoint, method="GET", data=None, token=None):
+def github_api(endpoint, method="GET", data=None, token=None, _retry_count=0):
     if not token:
         token = os.environ.get("GITHUB_TOKEN", "")
     if not token:
@@ -188,6 +188,11 @@ def github_api(endpoint, method="GET", data=None, token=None):
             return json.loads(content) if content.strip() else None
     except urllib.error.HTTPError as e:
         error_body = e.read().decode("utf-8")
+        if e.code == 403 and "rate limit" in error_body.lower() and _retry_count < 3:
+            wait_time = 60 * (_retry_count + 1)
+            print(f"[Supervisor] Rate limited, waiting {wait_time}s (retry {_retry_count + 1}/3)...")
+            time.sleep(wait_time)
+            return github_api(endpoint, method, data, token, _retry_count + 1)
         print(f"[Supervisor] API {method} {endpoint}: {e.code} {error_body[:300]}")
         return None
     except Exception as e:
@@ -601,6 +606,10 @@ def main():
                                 if agent_num.isdigit():
                                     agent_id = f"agent-{agent_num}"
 
+                        if not agent_id:
+                            print(f"    Could not extract agent from branch '{branch_name}', skipping CI fix")
+                            continue
+
                         agent_area = lock_data.get("agents", {}).get(agent_id, {}).get("area", "ai-core")
 
                         fix_prompt = (
@@ -650,12 +659,21 @@ def main():
 
                                 if i + 30 < 15 * 60:
                                     time.sleep(30)
+                        else:
+                            print(f"    Jules API failed to trigger fix for {agent_id}")
+                            if agent_id:
+                                pr_updates["agents"][agent_id] = {
+                                    "status": "idle",
+                                    "task_id": None,
+                                    "started_at": None,
+                                }
+                                pr_need_save = True
                 else:
                     print(f"    CI pending...")
         else:
             print("[Supervisor] No open PRs")
 
-        if pr_need_save:
+        if pr_need_save and pr_updates.get("agents"):
             if save_and_push(pr_updates, f"supervisor: PR updates"):
                 print(f"\n[Supervisor] Saved {LOCK_FILE}")
             else:

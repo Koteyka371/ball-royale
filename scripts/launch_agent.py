@@ -334,7 +334,9 @@ def find_task_for_agent(agent_id_val, agent_area, lock_data, tasks_data):
         task_id = task.get("id")
         if not task_id:
             continue
-        mapped_area = AREA_TO_AGENT.get(task_area, task_area)
+        mapped_area = AREA_TO_AGENT.get(task_area)
+        if mapped_area is None:
+            continue
         if task_id not in assigned_remote and mapped_area == agent_area:
             return task_id
 
@@ -524,8 +526,6 @@ def main():
             print(f"[{agent_id}] Failed to update status")
             return 1
 
-        time.sleep(2)
-
         success = invoke_jules(task_id, area, prompt, token)
 
         if success:
@@ -542,12 +542,12 @@ def main():
             branch_name = task_id
             print(f"[{agent_id}] Polling for PR (branch={branch_name})...")
             for i in range(0, PR_POLL_MAX_MINUTES * 60, PR_POLL_INTERVAL):
-                time.sleep(PR_POLL_INTERVAL)
-                elapsed = i + PR_POLL_INTERVAL
                 if check_pr_created(branch_name, token):
                     print(f"[{agent_id}] PR found!")
                     break
+                elapsed = i + PR_POLL_INTERVAL
                 print(f"[{agent_id}] Waiting for PR ({elapsed//60}m{elapsed%60}s)...")
+                time.sleep(PR_POLL_INTERVAL)
             else:
                 print(f"[{agent_id}] PR not found after {PR_POLL_MAX_MINUTES} minutes")
         else:

@@ -45,6 +45,7 @@ jobs:
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   state: 'open',
+                  head: context.repo.owner + ':' + checkSuite.head_branch,
                   per_page: 100
                 });
                 const matchingPr = openPrs.find(p => p.head.sha === headSha);

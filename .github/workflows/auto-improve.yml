@@ -49,7 +49,7 @@ jobs:
         run: |
           BRANCH="auto/improve-$(date +%Y%m%d-%H%M%S)"
           git checkout -b "$BRANCH"
-          git add -A
+          git add scripts/ docs/ src/ tests/ agent_tasks.json
           git commit -m "auto: project analysis and improvement"
           git push origin "$BRANCH"
           gh pr create \
