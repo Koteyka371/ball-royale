@@ -490,9 +490,10 @@ def main():
             print(f"[{agent_id}] Status: idle, nothing to do")
             return 0
 
-        token = os.environ.get("JULES_API_KEY", "")
+        token_env = "JULES_API_KEY_2" if agent_num >= 4 else "JULES_API_KEY"
+        token = os.environ.get(token_env, "")
         if not token:
-            print(f"[{agent_id}] No JULES_API_KEY, skipping")
+            print(f"[{agent_id}] No {token_env}, skipping")
             return 0
 
         task = None
