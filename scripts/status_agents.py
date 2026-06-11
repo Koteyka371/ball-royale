@@ -54,7 +54,7 @@ def main():
     total_cycles = 0
     active_agents = 0
 
-    for agent_id in sorted(lock_data["agents"].keys()):
+    for agent_id in sorted(lock_data.get("agents", {}).keys()):
         info = lock_data["agents"][agent_id]
         status = info.get("status", "idle")
         area = info.get("area", "?")

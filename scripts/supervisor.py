@@ -552,10 +552,18 @@ def main():
         all_idle = check_all_agents_idle(lock_data)
 
         if all_idle:
-            print("[Supervisor] All agents idle, triggering dispatcher...")
-            token = os.environ.get("GITHUB_TOKEN", "")
-            if token:
-                trigger_dispatcher(token)
+            try:
+                tasks_data = load_json(TASK_FILE)
+                todo_count = sum(1 for t in tasks_data.get("tasks", []) if t.get("status") == "todo")
+            except Exception:
+                todo_count = 0
+            if todo_count > 0:
+                print(f"[Supervisor] All agents idle, {todo_count} tasks remaining, triggering dispatcher...")
+                token = os.environ.get("GITHUB_TOKEN", "")
+                if token:
+                    trigger_dispatcher(token)
+            else:
+                print("[Supervisor] All agents idle, no tasks remaining")
         else:
             working = [aid for aid, info in lock_data.get("agents", {}).items()
                        if aid != SUPERVISOR_ID and isinstance(info, dict)

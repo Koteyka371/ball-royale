@@ -5,6 +5,7 @@ Agent 7 runs locally (supervisor), agents 1-6 trigger Jules API.
 Uses atomic git commits and shared dispatcher lock.
 """
 import json
+import re
 import sys
 import os
 import subprocess
@@ -24,7 +25,7 @@ LOCK_FILE = "agent_lock.json"
 TASK_FILE = "agent_tasks.json"
 DISPATCHER_LOCK = ".dispatcher.lock"
 MAX_RETRIES = 5
-CYCLE_LIMIT = 30
+MAX_CYCLES_PER_AGENT = 30
 STALE_TIMEOUT_MIN = 45
 PR_POLL_INTERVAL = 15
 PR_POLL_MAX_MINUTES = 5
@@ -42,7 +43,7 @@ AGENT_AREAS = {
 AREA_TO_AGENT = {
     "ai-core": "ai-core",
     "ai-behaviors": "behaviors",
-    "ai-ball-types": "tests",
+    "ai-ball-types": "behaviors",
     "ai-innovation": "innovation",
     "ai-meta": "meta",
     "ai-team": "content",
@@ -52,7 +53,7 @@ AREA_TO_AGENT = {
     "bugfix": "meta",
     "content": "content",
     "modes": "content",
-    "skills": "tests",
+    "skills": "content",
     "ui": "content",
     "visuals": "content",
     "innovation": "innovation",
@@ -195,6 +196,13 @@ def load_json(path):
         return json.load(f)
 
 
+def sanitize_branch_name(name):
+    name = re.sub(r'[^\w.\-/]', '-', name)
+    name = re.sub(r'-+', '-', name)
+    name = name.strip('-')
+    return name[:63] if name else "task-branch"
+
+
 def github_api(endpoint, method="GET", data=None, token=None, _retry_count=0):
     if not token:
         token = os.environ.get("GITHUB_TOKEN", "")
@@ -236,18 +244,18 @@ def github_api(endpoint, method="GET", data=None, token=None, _retry_count=0):
         return None
 
 
-def invoke_jules(task_id, area, prompt, token):
+def invoke_jules(task_id, area, prompt, branch_name, token):
     repo_url = f"https://github.com/{os.environ.get('GITHUB_REPOSITORY', 'Koteyka371/ball-royale')}"
     full_prompt = (
         f"Project: Ball Royale — 2D battle royale with AI-controlled balls.\n"
         f"Repository: {repo_url}\n\n"
         f"CONTEXT: You are a coding agent. You have full creative control.\n\n"
         f"TASK: {prompt}\n\n"
-        f"BRANCH: Create a new branch called '{task_id}' for your changes.\n\n"
+        f"BRANCH: Create a new branch called '{branch_name}' for your changes.\n\n"
         f"IMPORTANT RULES:\n"
-        f"1. Create branch '{task_id}' from main\n"
-        f"2. Work on the branch '{task_id}'\n"
-        f"3. Create feature branches from '{task_id}' for each change, merge back\n"
+        f"1. Create branch '{branch_name}' from main\n"
+        f"2. Work on the branch '{branch_name}'\n"
+        f"3. Create feature branches from '{branch_name}' for each change, merge back\n"
         f"4. Run `git pull origin main` before making changes\n"
         f"5. Commit with clear messages explaining your changes\n"
         f"6. Push branch to origin when done\n"
@@ -453,32 +461,9 @@ def main():
                 except Exception:
                     return 1
 
-        today = now.date()
-        last_reset = lock_data.get("last_reset")
-        try:
-            last_reset_dt = datetime.fromisoformat(last_reset)
-            if last_reset_dt.tzinfo is None:
-                last_reset_dt = last_reset_dt.replace(tzinfo=timezone.utc)
-            if last_reset_dt.date() < today:
-                update = {
-                    "agents": {aid: {"cycles_today": 0} for aid in lock_data.get("agents", {})},
-                    "last_reset": now.isoformat(),
-                }
-                if not atomic_update(update, "Day boundary: reset all cycles"):
-                    print(f"[{agent_id}] Failed to reset day boundary")
-                    return 1
-                try:
-                    lock_data = load_json(LOCK_FILE)
-                    agent_info = lock_data.get("agents", {}).get(agent_id, {})
-                except Exception:
-                    return 1
-                print(f"[{agent_id}] Day boundary detected, cycles reset")
-        except (ValueError, TypeError):
-            pass
-
         cycles_today = agent_info.get("cycles_today", 0)
-        if cycles_today >= CYCLE_LIMIT:
-            print(f"[{agent_id}] Cycle limit reached ({CYCLE_LIMIT}/{CYCLE_LIMIT})")
+        if cycles_today >= MAX_CYCLES_PER_AGENT:
+            print(f"[{agent_id}] Cycle limit reached ({MAX_CYCLES_PER_AGENT}/{MAX_CYCLES_PER_AGENT})")
             return 0
 
         if agent_info.get("status") in ("working", "assigned"):
@@ -525,7 +510,8 @@ def main():
             print(f"[{agent_id}] Failed to update status")
             return 1
 
-        success = invoke_jules(task_id, area, prompt, token)
+        branch_name = sanitize_branch_name(task_id)
+        success = invoke_jules(task_id, area, prompt, branch_name, token)
 
         if success:
             update = {"agents": {agent_id: {
@@ -537,7 +523,6 @@ def main():
                 print(f"[{agent_id}] WARNING: Failed to update status after Jules success")
                 return 1
 
-            branch_name = task_id
             print(f"[{agent_id}] Polling for PR (branch={branch_name})...")
             for i in range(0, PR_POLL_MAX_MINUTES * 60, PR_POLL_INTERVAL):
                 if check_pr_created(branch_name, token):

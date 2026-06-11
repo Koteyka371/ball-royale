@@ -21,7 +21,7 @@ except ImportError:
 LOCK_FILE = "agent_lock.json"
 TASK_FILE = "agent_tasks.json"
 DISPATCHER_LOCK = ".dispatcher.lock"
-MAX_CYCLES = 30
+MAX_CYCLES_PER_AGENT = 30
 MAX_RETRIES = 5
 STALE_TIMEOUT_MIN = 45
 SUPERVISOR_ID = "agent-7"
@@ -38,7 +38,7 @@ AGENT_AREAS = {
 AREA_TO_AGENT = {
     "ai-core": "ai-core",
     "ai-behaviors": "behaviors",
-    "ai-ball-types": "tests",
+    "ai-ball-types": "behaviors",
     "ai-innovation": "innovation",
     "ai-meta": "meta",
     "ai-team": "content",
@@ -48,7 +48,7 @@ AREA_TO_AGENT = {
     "bugfix": "meta",
     "content": "content",
     "modes": "content",
-    "skills": "tests",
+    "skills": "content",
     "ui": "content",
     "visuals": "content",
     "innovation": "innovation",
@@ -104,7 +104,7 @@ def git_reset_to_remote():
 
 
 def git_commit_and_push(message):
-    subprocess.run(["git", "reset", "HEAD", "--", LOCK_FILE], capture_output=True, timeout=10)
+    subprocess.run(["git", "reset", "--mixed", "HEAD", "--", LOCK_FILE], capture_output=True, timeout=10)
 
     add_result = subprocess.run(
         ["git", "add", LOCK_FILE],
@@ -387,8 +387,8 @@ def main():
                 print(f"[Dispatcher] {agent_id}: busy ({agent_info.get('status')})")
                 continue
 
-            if agent_info.get("cycles_today", 0) >= MAX_CYCLES:
-                print(f"[Dispatcher] {agent_id}: daily limit reached ({MAX_CYCLES} cycles)")
+            if agent_info.get("cycles_today", 0) >= MAX_CYCLES_PER_AGENT:
+                print(f"[Dispatcher] {agent_id}: daily limit reached ({MAX_CYCLES_PER_AGENT} cycles)")
                 continue
 
             agent_area = AGENT_AREAS.get(agent_id, agent_info.get("area", ""))
@@ -417,8 +417,7 @@ def main():
 
         if day_changed:
             for aid in lock_data.get("agents", {}):
-                if aid not in modified_agents:
-                    modified_agents[aid] = {"cycles_today": 0}
+                modified_agents[aid] = {"cycles_today": 0}
 
         update_data = {"agents": modified_agents}
         if day_changed:
