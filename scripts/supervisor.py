@@ -1,459 +1,567 @@
 #!/usr/bin/env python3
 """
-Jules Supervisor — monitors and fixes the agent system.
-Runs every 15 minutes via GitHub Actions.
-Checks agents, PRs, tasks. Fixes problems. Calls Jules API if code needs fixing.
+Agent 7 — Supervisor & Orchestrator.
+Monitors agent lock, verifies CI, merges PRs, fixes failed CI via Jules API,
+ensures task continuity, triggers dispatcher when needed.
 """
 import json
+import sys
 import os
 import subprocess
 import urllib.request
+import urllib.error
 import time
 from datetime import datetime, timezone
 
+try:
+    import fcntl
+except ImportError:
+    fcntl = None
+
 LOCK_FILE = "agent_lock.json"
 TASK_FILE = "agent_tasks.json"
-REPO = "Koteyka371/ball-royale"
-STALE_TIMEOUT_MIN = 30
+SUPERVISOR_LOCK = ".supervisor.lock"
+MAX_RETRIES = 5
+CYCLE_LIMIT = 30
+STALE_TIMEOUT_MIN = 45
 
 
 def load_json(path):
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 
+def atomic_write_json(path, data):
+    import tempfile
+    dir_name = os.path.dirname(os.path.abspath(path))
+    tmp_path = None
+    try:
+        with tempfile.NamedTemporaryFile("w", dir=dir_name, suffix=".tmp", delete=False, encoding="utf-8") as tmp:
+            json.dump(data, tmp, indent=2, ensure_ascii=False)
+            tmp.flush()
+            os.fsync(tmp.fileno())
+            tmp_path = tmp.name
+        os.replace(tmp_path, path)
+    except Exception:
+        if tmp_path and os.path.exists(tmp_path):
+            os.unlink(tmp_path)
+        raise
+
+
 def git_pull():
-    subprocess.run(
+    result = subprocess.run(
         ["git", "pull", "origin", "main", "--no-edit"],
+        capture_output=True, text=True, timeout=30
+    )
+    if result.returncode != 0:
+        print(f"[Supervisor] git pull failed: {result.stderr}")
+    return result.returncode == 0
+
+
+def git_fetch():
+    subprocess.run(
+        ["git", "fetch", "origin", "main"],
         capture_output=True, text=True, timeout=30
     )
 
 
-def save_and_push(lock_data, message):
-    with open(LOCK_FILE, "w") as f:
-        json.dump(lock_data, f, indent=2, ensure_ascii=False)
-    subprocess.run(["git", "add", LOCK_FILE], capture_output=True, timeout=10)
-    subprocess.run(["git", "commit", "-m", message], capture_output=True, timeout=10)
+def git_reset_to_remote():
+    git_fetch()
     result = subprocess.run(
-        ["git", "push", "origin", "main"],
-        capture_output=True, text=True, timeout=30
+        ["git", "checkout", "origin/main", "--", LOCK_FILE],
+        capture_output=True, text=True, timeout=10
     )
     return result.returncode == 0
 
 
-def github_get(path):
-    token = os.environ.get("GITHUB_TOKEN", "")
-    url = f"https://api.github.com/repos/{REPO}{path}"
+def git_commit_and_push(message):
+    subprocess.run(["git", "add", LOCK_FILE], capture_output=True, timeout=10)
+
+    diff_result = subprocess.run(
+        ["git", "diff", "--cached", "--quiet"],
+        capture_output=True, timeout=10
+    )
+    if diff_result.returncode == 0:
+        return True
+
+    commit_result = subprocess.run(
+        ["git", "commit", "-m", message],
+        capture_output=True, text=True, timeout=10
+    )
+    if commit_result.returncode != 0:
+        print(f"[Supervisor] git commit failed: {commit_result.stderr}")
+        return False
+
+    push_result = subprocess.run(
+        ["git", "push", "origin", "main"],
+        capture_output=True, text=True, timeout=30
+    )
+    if push_result.returncode != 0:
+        print(f"[Supervisor] git push failed: {push_result.stderr}")
+    return push_result.returncode == 0
+
+
+def verify_pushed():
+    result = subprocess.run(
+        ["git", "log", "origin/main..HEAD", "--oneline"],
+        capture_output=True, text=True, timeout=10
+    )
+    if result.returncode != 0:
+        return True
+    return len(result.stdout.strip()) == 0
+
+
+def save_and_push(new_data, message):
+    for attempt in range(MAX_RETRIES):
+        if not git_pull():
+            if not git_reset_to_remote():
+                return False
+
+        try:
+            with open(LOCK_FILE, encoding="utf-8") as f:
+                current = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            print(f"[Supervisor] Failed to read {LOCK_FILE}: {e}")
+            return False
+
+        for key, value in new_data.items():
+            if key in current and isinstance(current[key], dict) and isinstance(value, dict):
+                for k, v in value.items():
+                    if k in current[key] and isinstance(current[key][k], dict) and isinstance(v, dict):
+                        current[key][k] = {**current[key][k], **v}
+                    else:
+                        current[key][k] = v
+            else:
+                current[key] = value
+
+        atomic_write_json(LOCK_FILE, current)
+
+        if git_commit_and_push(message):
+            if verify_pushed():
+                return True
+            print(f"[Supervisor] Commit OK but push verify failed, retrying...")
+        else:
+            print(f"[Supervisor] Push failed ({attempt + 1}/{MAX_RETRIES})")
+        time.sleep(2)
+
+    print(f"[Supervisor] ERROR: Failed after {MAX_RETRIES} retries")
+    return False
+
+
+def github_api(endpoint, method="GET", data=None, token=None):
+    if not token:
+        token = os.environ.get("GITHUB_TOKEN", "")
+    if not token:
+        print("[Supervisor] No token available")
+        return None
+
+    repo = os.environ.get("GITHUB_REPOSITORY", "Koteyka371/ball-royale")
+    url = f"https://api.github.com/repos/{repo}/{endpoint}"
     headers = {
+        "Authorization": f"token {token}",
         "Accept": "application/vnd.github.v3+json",
     }
-    if token:
-        headers["Authorization"] = f"token {token}"
-    req = urllib.request.Request(url, headers=headers)
-    with urllib.request.urlopen(req, timeout=15) as resp:
-        return json.loads(resp.read().decode("utf-8"))
 
+    body = None
+    if data is not None:
+        headers["Content-Type"] = "application/json"
+        body = json.dumps(data).encode("utf-8")
 
-def github_request(path, method="GET", data=None):
-    token = os.environ.get("GITHUB_TOKEN", "")
-    url = f"https://api.github.com/repos/{REPO}{path}"
-    headers = {
-        "Accept": "application/vnd.github.v3+json",
-        "Content-Type": "application/json",
-    }
-    if token:
-        headers["Authorization"] = f"token {token}"
+    req = urllib.request.Request(url, data=body, headers=headers, method=method)
 
-    data_bytes = json.dumps(data).encode("utf-8") if data else None
-    req = urllib.request.Request(url, data=data_bytes, headers=headers, method=method)
     try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            return resp.read().decode("utf-8")
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            content = resp.read().decode("utf-8")
+            return json.loads(content) if content.strip() else {"message": "empty response"}
     except urllib.error.HTTPError as e:
-        body = e.read().decode("utf-8")
-        print(f"[Supervisor] GitHub API error {e.code}: {body[:200]}")
+        error_body = e.read().decode("utf-8")
+        print(f"[Supervisor] API {method} {endpoint}: {e.code} {error_body[:300]}")
+        return None
+    except Exception as e:
+        print(f"[Supervisor] API error: {e}")
         return None
 
 
-def check_agents_status(lock_data):
-    now = datetime.now(timezone.utc)
-    problems = []
-    actions = []
+def get_ci_status(sha):
+    if not sha:
+        return "pending"
+    token = os.environ.get("GITHUB_TOKEN", "")
 
-    for agent_id, info in lock_data["agents"].items():
-        status = info.get("status")
-        started = info.get("started_at")
-        task_id = info.get("task_id")
-        cycles = info.get("cycles_today", 0)
+    pr_result = github_api(f"commits/{sha}/pull-request", token=token)
+    if pr_result:
+        mergeable = pr_result.get("mergeable")
+        merge_state = pr_result.get("mergeable_state", "")
+        if mergeable is False or mergeable == "dirty":
+            return "failure"
+        if mergeable is True and merge_state == "clean":
+            return "success"
 
-        if status in ("assigned", "working") and started:
-            elapsed = (now - datetime.fromisoformat(started)).total_seconds() / 60
-            if elapsed > STALE_TIMEOUT_MIN:
-                problems.append(f"{agent_id}: STALE after {elapsed:.0f} min (status={status})")
-                actions.append({
-                    "type": "reset_agent",
-                    "agent_id": agent_id,
-                    "reason": f"stale after {elapsed:.0f} min"
-                })
-
-        if status == "idle" and task_id:
-            problems.append(f"{agent_id}: idle but has task {task_id}")
-            actions.append({
-                "type": "clear_task",
-                "agent_id": agent_id,
-                "reason": "idle with assigned task"
-            })
-
-        if cycles >= 30:
-            problems.append(f"{agent_id}: reached daily limit ({cycles}/30)")
-
-    return problems, actions
-
-
-def check_open_prs():
-    problems = []
-    actions = []
+    url = f"https://api.github.com/repos/{os.environ.get('GITHUB_REPOSITORY', 'Koteyka371/ball-royale')}/commits/{sha}/check-runs?per_page=30"
+    req = urllib.request.Request(url, headers={
+        "Authorization": f"token {token}",
+        "Accept": "application/vnd.github.v3+json",
+    })
 
     try:
-        prs = github_get("/pulls?state=open&per_page=30")
-    except Exception as e:
-        print(f"[Supervisor] Failed to fetch PRs: {e}")
-        return problems, actions
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+    except Exception:
+        return "pending"
 
-    if not prs:
-        return problems, actions
+    check_runs = data.get("check_runs", [])
+    if not check_runs:
+        return "pending"
 
-    for pr in prs:
-        pr_number = pr["number"]
-        title = pr.get("title", "")
-        labels = [l["name"] for l in pr.get("labels", [])]
-        mergeable = pr.get("mergeable")
-        author = pr.get("user", {}).get("login", "")
+    blocking_conclusions = {"failure", "timed_out", "cancelled", "action_required", "stale"}
+    for run in check_runs:
+        conclusion = run.get("conclusion")
+        status = run.get("status", "")
+        if conclusion in blocking_conclusions:
+            return "failure"
+        if status != "completed":
+            return "pending"
 
-        if author == "google-labs-jules[bot]" or "automated" in labels:
-            if "automated" not in labels:
-                problems.append(f"PR #{pr_number}: Jules PR without 'automated' label")
-                actions.append({
-                    "type": "add_label",
-                    "pr_number": pr_number,
-                    "label": "automated"
-                })
-
-            if mergeable == "MERGEABLE" and "automated" in labels:
-                problems.append(f"PR #{pr_number}: ready to merge ({title[:50]})")
-                actions.append({
-                    "type": "merge_pr",
-                    "pr_number": pr_number
-                })
-
-            ci_status = get_ci_status(pr_number)
-            if ci_status == "failure":
-                problems.append(f"PR #{pr_number}: CI FAILED ({title[:50]})")
-                actions.append({
-                    "type": "fix_code",
-                    "pr_number": pr_number,
-                    "title": title,
-                    "head_ref": pr.get("head", {}).get("ref", ""),
-                    "reason": "CI failed"
-                })
-
-    return problems, actions
+    return "success"
 
 
-def get_ci_status(pr_number):
-    try:
-        commits = github_get(f"/pulls/{pr_number}/commits?per_page=1")
-        if commits:
-            sha = commits[0]["sha"]
-            status_data = github_get(f"/commits/{sha}/status")
-            if status_data:
-                return status_data.get("state", "pending")
-
-            check_runs = github_get(f"/commits/{sha}/check-runs?per_page=1")
-            if check_runs and check_runs.get("total_count", 0) > 0:
-                all_passed = all(
-                    cr.get("conclusion") == "success"
-                    for cr in check_runs.get("check_runs", [])
-                )
-                any_failed = any(
-                    cr.get("conclusion") == "failure"
-                    for cr in check_runs.get("check_runs", [])
-                )
-                if any_failed:
-                    return "failure"
-                if all_passed:
-                    return "success"
-    except Exception as e:
-        print(f"[Supervisor] CI check error for PR #{pr_number}: {e}")
-    return "pending"
-
-
-def check_task_health(lock_data, tasks_data):
-    problems = []
-    actions = []
-
-    todo_tasks = [t for t in tasks_data.get("tasks", []) if t.get("status") == "todo"]
-    done_tasks = [t for t in tasks_data.get("tasks", []) if t.get("status") == "done"]
-
-    if len(todo_tasks) < 5:
-        problems.append(f"Low task pool: {len(todo_tasks)} todo / {len(done_tasks)} done / {len(tasks_data.get('tasks', []))} total")
-
-    for agent_id, info in lock_data["agents"].items():
-        task_id = info.get("task_id")
-        if task_id and info.get("status") == "idle":
-            task_found = any(t["id"] == task_id for t in tasks_data.get("tasks", []))
-            if task_found:
-                problems.append(f"{agent_id}: idle but task '{task_id}' still assigned")
-                actions.append({
-                    "type": "unassign_task",
-                    "agent_id": agent_id,
-                    "task_id": task_id
-                })
-
-    return problems, actions
-
-
-def check_all_agents_idle(lock_data):
-    active_agents = [
-        aid for aid, info in lock_data["agents"].items()
-        if info.get("status") in ("working", "assigned")
-    ]
-
-    if len(active_agents) == 0:
-        tasks_data = load_json(TASK_FILE)
-        todo_count = len([t for t in tasks_data["tasks"] if t.get("status") == "todo"])
-        if todo_count > 0:
-            return True, f"All agents idle, {todo_count} tasks available"
-        else:
-            return False, "All agents idle but no tasks"
-
-    return False, f"{len(active_agents)} agents active"
-
-
-def reset_agent(agent_id):
-    git_pull()
-    lock_data = load_json(LOCK_FILE)
-    if agent_id in lock_data["agents"]:
-        lock_data["agents"][agent_id]["status"] = "idle"
-        lock_data["agents"][agent_id]["task_id"] = None
-        lock_data["agents"][agent_id]["started_at"] = None
-        save_and_push(lock_data, f"supervisor: reset stale {agent_id}")
-        print(f"[Supervisor] Reset {agent_id}")
-
-
-def clear_agent_task(agent_id):
-    git_pull()
-    lock_data = load_json(LOCK_FILE)
-    if agent_id in lock_data["agents"]:
-        lock_data["agents"][agent_id]["task_id"] = None
-        lock_data["agents"][agent_id]["status"] = "idle"
-        save_and_push(lock_data, f"supervisor: clear task for {agent_id}")
-        print(f"[Supervisor] Cleared task for {agent_id}")
-
-
-def merge_pr(pr_number):
-    result = github_request(f"/pulls/{pr_number}/merge", method="PUT", data={
-        "merge_method": "squash"
-    })
-    if result is not None:
-        print(f"[Supervisor] Merged PR #{pr_number}")
+def ensure_ci_waits(sha, max_minutes=60):
+    if not sha:
         return True
+
+    print(f"[Supervisor] Waiting for CI on {sha[:8]}...")
+
+    for i in range(0, max_minutes * 2, 15):
+        status = get_ci_status(sha)
+        print(f"[Supervisor] CI status ({i//60}m{i%60}s): {status}")
+
+        if status == "success":
+            print("[Supervisor] CI passed!")
+            return True
+        elif status == "failure":
+            print("[Supervisor] CI failed")
+            return False
+
+        time.sleep(15)
+
+    print("[Supervisor] CI wait timeout")
     return False
 
 
-def add_label_to_pr(pr_number, label):
-    result = github_request(f"/issues/{pr_number}/labels", method="POST", data={
-        "labels": [label]
-    })
-    if result is not None:
-        print(f"[Supervisor] Added label '{label}' to PR #{pr_number}")
-        return True
-    return False
-
-
-def unassign_task(agent_id, task_id):
-    git_pull()
-    lock_data = load_json(LOCK_FILE)
-    if agent_id in lock_data["agents"]:
-        lock_data["agents"][agent_id]["task_id"] = None
-        lock_data["agents"][agent_id]["status"] = "idle"
-        save_and_push(lock_data, f"supervisor: unassign {task_id} from {agent_id}")
-        print(f"[Supervisor] Unassigned {task_id} from {agent_id}")
-
-
-def trigger_dispatcher():
-    result = github_request(
-        "/actions/workflows/jules-dispatcher.yml/dispatches",
-        method="POST",
-        data={"ref": "main"}
-    )
-    if result is not None:
-        print("[Supervisor] Triggered dispatcher")
-        return True
-    return False
-
-
-def fix_code_via_jules(pr_number, title, head_ref):
-    api_key = os.environ.get("JULES_API_KEY")
-    if not api_key:
-        print(f"[Supervisor] No JULES_API_KEY, cannot fix PR #{pr_number}")
+def invoke_jules(task_id, area, prompt, branch_name, token):
+    if not token:
+        token = os.environ.get("JULES_API_KEY", "")
+    if not token:
+        print("[Supervisor] No Jules token available")
         return False
 
-    prompt = f"""You are Jules Supervisor, fixing a broken PR.
+    repo_url = f"https://github.com/Koteyka371/ball-royale"
+    full_prompt = (
+        f"Project: Ball Royale — 2D battle royale with AI-controlled balls.\n"
+        f"Repository: {repo_url}\n\n"
+        f"CONTEXT: You are a coding agent. You have full creative control.\n\n"
+        f"TASK: {prompt}\n\n"
+        f"BRANCH: Use existing branch '{branch_name}' for your changes.\n\n"
+        f"IMPORTANT RULES:\n"
+        f"1. Work ONLY on the branch '{branch_name}'\n"
+        f"2. Create feature branches from '{branch_name}' for each change, merge back\n"
+        f"3. Run `git pull origin main` before making changes\n"
+        f"4. Commit with clear messages explaining your changes\n"
+        f"5. Push branch to origin when done\n"
+        f"6. DO NOT create a pull request\n"
+        f"7. DO NOT modify files outside the src/ directory (no workflow changes)\n"
+        f"8. Be creative — improve code, refactor, fix bugs you find, add tests\n"
+        f"9. After pushing, commit a small status update: echo '{task_id} in progress' >> AGENTS.md\n\n"
+        f"You have FULL FREEDOM to modify any file in src/ directory.\n"
+        f"Your work will be reviewed by the supervisor agent.\n"
+        f"Be ambitious, be creative, be the best AI programmer you can be!"
+    )
 
-## CURRENT PR
-Number: #{pr_number}
-Title: {title}
-Branch: {head_ref}
-
-## PROBLEM
-CI checks failed on this PR. You need to fix the failing tests or code.
-
-## YOUR TASK
-1. git pull origin main
-2. Read the failing code
-3. Fix the issue
-4. Run: pytest tests/ -v
-5. Commit and push to the branch: {head_ref}
-
-## RULES
-- Only fix what's broken
-- Don't change unrelated code
-- Keep the same code style
-- Make sure all tests pass before committing
-"""
-
-    payload = {
-        "prompt": prompt,
-        "sourceContext": {
-            "source": f"sources/github/{REPO}",
-            "githubRepoContext": {
-                "startingBranch": head_ref or "main"
-            }
-        },
-        "automationMode": "AUTO_CREATE_PR",
-        "title": f"Fix: {title}"
-    }
-
-    url = "https://jules.googleapis.com/v1alpha/sessions"
+    url = "https://jules.googleapis.com/jules"
     headers = {
+        "Authorization": f"Bearer {token}",
         "Content-Type": "application/json",
-        "x-goog-api-key": api_key,
+    }
+    payload = {
+        "repoUrl": repo_url,
+        "prompt": full_prompt,
     }
 
     data_bytes = json.dumps(payload).encode("utf-8")
     req = urllib.request.Request(url, data=data_bytes, headers=headers, method="POST")
 
     try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            result = resp.read().decode("utf-8")
-            print(f"[Supervisor] Jules invoked to fix PR #{pr_number}")
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            body = json.loads(resp.read().decode("utf-8"))
+            task_name = body.get("taskName", "")
+            print(f"[Supervisor] Jules accepted fix (task: {task_name})")
             return True
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode("utf-8")
+        print(f"[Supervisor] Jules API error: {e.code} {error_body[:200]}")
+        return False
     except Exception as e:
-        print(f"[Supervisor] Failed to invoke Jules for PR #{pr_number}: {e}")
+        print(f"[Supervisor] Jules API exception: {e}")
         return False
 
 
-def execute_actions(actions):
-    for action in actions:
-        action_type = action["type"]
+def check_all_agents_idle(lock_data):
+    for agent_id, info in lock_data.get("agents", {}).items():
+        if agent_id == "agent-7":
+            continue
+        status = info.get("status")
+        if status in ("working", "assigned"):
+            if not info.get("task_id"):
+                return False
+    return True
 
-        if action_type == "reset_agent":
-            reset_agent(action["agent_id"])
 
-        elif action_type == "clear_task":
-            clear_agent_task(action["agent_id"])
+def trigger_dispatcher(token):
+    repo = os.environ.get("GITHUB_REPOSITORY", "Koteyka371/ball-royale")
+    url = f"https://api.github.com/repos/{repo}/actions/workflows/jules-dispatcher.yml/dispatches"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"token {token}",
+    }
+    payload = {"ref": "main"}
 
-        elif action_type == "merge_pr":
-            merge_pr(action["pr_number"])
+    data_bytes = json.dumps(payload).encode("utf-8")
+    req = urllib.request.Request(url, data=data_bytes, headers=headers, method="POST")
 
-        elif action_type == "add_label":
-            add_label_to_pr(action["pr_number"], action["label"])
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            print("[Supervisor] Dispatcher triggered")
+            return True
+    except Exception as e:
+        print(f"[Supervisor] Failed to trigger dispatcher: {e}")
+        return False
 
-        elif action_type == "fix_code":
-            fix_code_via_jules(
-                action["pr_number"],
-                action["title"],
-                action.get("head_ref", "")
-            )
 
-        elif action_type == "unassign_task":
-            unassign_task(action["agent_id"], action["task_id"])
+def merge_pr(pr_number):
+    print(f"[Supervisor] Merging PR #{pr_number}...")
+    result = github_api(
+        f"pulls/{pr_number}/merge",
+        method="PUT",
+        data={"merge_method": "squash"},
+    )
+    if result is None:
+        return False
+    return True
 
-        elif action_type == "trigger_dispatcher":
-            trigger_dispatcher()
 
-        time.sleep(1)
+def get_open_prs():
+    result = github_api("pulls?state=open&per_page=100")
+    if result is None:
+        return []
+    return result
+
+
+def get_task_for_pr(pr):
+    title = pr.get("title", "")
+    body = pr.get("body", "")
+    task_id = ""
+    if title.startswith("[") and "]" in title:
+        task_id = title.split("]")[0].strip("[")
+    elif body:
+        for line in body.split("\n"):
+            if line.startswith("Task:") or line.startswith("Task ID:"):
+                task_id = line.split(":", 1)[1].strip()
+                break
+            if "task-" in line:
+                idx = line.index("task-")
+                end = idx
+                while end < len(line) and line[end] not in " \n,;:)]}":
+                    end += 1
+                task_id = line[idx:end]
+                break
+    return task_id
+
+
+def mark_task_done(task_id, agent_id):
+    if not task_id:
+        return
+
+    try:
+        tasks_data = load_json(TASK_FILE)
+        for task in tasks_data.get("tasks", []):
+            if task.get("id") == task_id:
+                task["status"] = "done"
+                break
+        atomic_write_json(TASK_FILE, tasks_data)
+        print(f"[Supervisor] Marked {task_id} as done in tasks file")
+    except Exception as e:
+        print(f"[Supervisor] Failed to mark task done: {e}")
 
 
 def main():
     print("=" * 60)
-    print("JULES SUPERVISOR")
-    print(f"Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}")
+    print("JULES SUPERVISOR (Agent 7)")
     print("=" * 60)
 
-    git_pull()
+    if fcntl is None:
+        print("[Supervisor] WARNING: fcntl not available, no file locking")
 
-    lock_data = load_json(LOCK_FILE)
-    tasks_data = load_json(TASK_FILE)
+    lock_fd = open(SUPERVISOR_LOCK, "w")
+    try:
+        if fcntl:
+            try:
+                fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except (IOError, OSError):
+                print("[Supervisor] Another supervisor is running, exiting")
+                lock_fd.close()
+                return 0
+        else:
+            lock_fd.close()
 
-    all_problems = []
-    all_actions = []
+        if not git_pull():
+            git_reset_to_remote()
 
-    print("\n[1] Checking agents...")
-    problems, actions = check_agents_status(lock_data)
-    all_problems.extend(problems)
-    all_actions.extend(actions)
+        try:
+            lock_data = load_json(LOCK_FILE)
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            print(f"[Supervisor] Failed to load {LOCK_FILE}: {e}")
+            return 1
 
-    print("\n[2] Checking open PRs...")
-    problems, actions = check_open_prs()
-    all_problems.extend(problems)
-    all_actions.extend(actions)
+        now = datetime.now(timezone.utc)
+        now_iso = now.isoformat()
 
-    print("\n[3] Checking task health...")
-    problems, actions = check_task_health(lock_data, tasks_data)
-    all_problems.extend(problems)
-    all_actions.extend(actions)
+        updates = {"agents": {}}
+        need_save = False
 
-    print("\n[4] Checking if dispatcher needed...")
-    need_dispatch, reason = check_all_agents_idle(lock_data)
-    if need_dispatch:
-        all_actions.append({"type": "trigger_dispatcher"})
-        all_problems.append(reason)
+        # Reset stale agents
+        for agent_id, agent_info in lock_data["agents"].items():
+            if agent_id == "agent-7":
+                continue
 
-    print("\n" + "=" * 60)
-    print("REPORT")
-    print("=" * 60)
-    if all_problems:
-        print(f"\nProblems found ({len(all_problems)}):")
-        for p in all_problems:
-            print(f"  - {p}")
-    else:
-        print("\nNo problems found!")
+            status = agent_info.get("status")
+            if status not in ("working", "assigned"):
+                continue
 
-    print(f"\nActions to take: {len(all_actions)}")
+            started = agent_info.get("started_at")
+            if not started:
+                continue
 
-    if all_actions:
-        print("\nExecuting actions...")
-        execute_actions(all_actions)
-    else:
-        print("Nothing to do.")
+            try:
+                start_dt = datetime.fromisoformat(started)
+                if start_dt.tzinfo is None:
+                    start_dt = start_dt.replace(tzinfo=timezone.utc)
+                elapsed_min = (now - start_dt).total_seconds() / 60
+            except (ValueError, TypeError):
+                continue
 
-    tasks_todo = len([t for t in tasks_data["tasks"] if t.get("status") == "todo"])
-    tasks_done = len([t for t in tasks_data["tasks"] if t.get("status") == "done"])
-    active = sum(1 for a in lock_data["agents"].values() if a.get("status") in ("working", "assigned"))
-    total_cycles = sum(a.get("cycles_today", 0) for a in lock_data["agents"].values())
+            if elapsed_min > STALE_TIMEOUT_MIN:
+                print(f"[Supervisor] {agent_id} stale ({elapsed_min:.0f} min), resetting")
+                updates["agents"][agent_id] = {
+                    "status": "idle",
+                    "task_id": None,
+                    "started_at": None,
+                }
+                need_save = True
 
-    print(f"\n{'='*60}")
-    print("STATUS")
-    print(f"{'='*60}")
-    print(f"  Tasks: {tasks_todo} todo / {tasks_done} done")
-    print(f"  Active agents: {active}/6")
-    print(f"  Cycles today: {total_cycles}/180")
+        # Check if all agents idle → trigger dispatcher
+        all_idle = check_all_agents_idle(lock_data)
+        if all_idle:
+            print("[Supervisor] All agents idle, triggering dispatcher...")
+            token = os.environ.get("GITHUB_TOKEN", "")
+            if token:
+                trigger_dispatcher(token)
+        else:
+            working = [aid for aid, info in lock_data["agents"].items()
+                       if aid != "agent-7" and info.get("status") in ("working", "assigned")]
+            print(f"[Supervisor] Active agents: {', '.join(working)}")
 
-    print("\n[Supervisor] Done!")
-    return 0
+        # Check open PRs and merge if CI passed
+        print("\n[Supervisor] Checking open PRs...")
+        prs = get_open_prs()
+        if prs:
+            for pr in prs:
+                pr_num = pr["number"]
+                pr_head = pr.get("head", {}).get("sha", "")
+                labels = [l.get("name", "") for l in pr.get("labels", [])]
+                is_automated = "automated" in labels
+
+                print(f"\n  PR #{pr_num}: {pr.get('title', '?')[:50]}")
+                print(f"    Labels: {labels}")
+                print(f"    Mergeable: {pr.get('mergeable', '?')}")
+
+                if not is_automated:
+                    print(f"    Skipped (no 'automated' label)")
+                    continue
+
+                task_id = get_task_for_pr(pr)
+                task_status = ""
+                try:
+                    tasks_data = load_json(TASK_FILE)
+                    for task in tasks_data.get("tasks", []):
+                        if task.get("id") == task_id:
+                            task_status = task.get("status", "")
+                            break
+                except Exception:
+                    pass
+
+                if task_status == "done":
+                    print(f"    Task {task_id} already done, merging immediately")
+                    merge_pr(pr_num)
+                    mark_task_done(task_id, "")
+                    continue
+
+                ci_status = get_ci_status(pr_head)
+
+                if ci_status == "success":
+                    print(f"    CI passed! Merging...")
+                    if merge_pr(pr_num):
+                        mark_task_done(task_id, "")
+                elif ci_status == "failure":
+                    print(f"    CI failed! Fixing via Jules API...")
+                    jules_token = os.environ.get("JULES_API_KEY", "")
+                    if jules_token:
+                        agent_id = ""
+                        if pr.get("user", {}).get("login", "").startswith("jules"):
+                            branch = pr.get("head", {}).get("ref", "")
+                            agent_id = branch.split("-agent-")[-1].split("-")[0] if "-agent-" in branch else ""
+                            if agent_id and agent_id.isdigit():
+                                agent_id = f"agent-{agent_id}"
+
+                        agent_area = lock_data["agents"].get(agent_id, {}).get("area", "ai-core")
+                        branch_name = pr.get("head", {}).get("ref", "")
+
+                        fix_prompt = f"Fix CI failure for task {task_id}. Check the CI logs and fix the failing tests or code issues. Use branch '{branch_name}'."
+                        invoke_jules(task_id, agent_area, fix_prompt, branch_name, jules_token)
+
+                        for i in range(0, 15 * 60, 30):
+                            new_ci = get_ci_status(pr_head)
+                            if new_ci == "success":
+                                print(f"    Fixed! Merging...")
+                                merge_pr(pr_num)
+                                mark_task_done(task_id, agent_id)
+                                break
+                            elif new_ci == "failure":
+                                print(f"    Still failing ({i//60}m{i%60}s)")
+                            time.sleep(30)
+                else:
+                    print(f"    CI pending...")
+        else:
+            print("[Supervisor] No open PRs")
+
+        # Save and push
+        if need_save:
+            if save_and_push(updates, f"supervisor: update {len(updates['agents'])} agents"):
+                print(f"\n[Supervisor] Saved {LOCK_FILE}")
+            else:
+                print("\n[Supervisor] FAILED to save")
+        else:
+            print("[Supervisor] No agent updates needed")
+
+        print("\n[Supervisor] Done!")
+        return 0
+
+    finally:
+        if fcntl:
+            try:
+                fcntl.flock(lock_fd, fcntl.LOCK_UN)
+            except Exception:
+                pass
+        lock_fd.close()
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    sys.exit(main())

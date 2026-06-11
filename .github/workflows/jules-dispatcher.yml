@@ -4,8 +4,12 @@ on:
   pull_request:
     types: [closed]
   schedule:
-    - cron: '*/30 * * * *'  # Every 30 minutes
+    - cron: '*/30 * * * *'
   workflow_dispatch:
+
+concurrency:
+  group: dispatcher
+  cancel-in-progress: false
 
 jobs:
   dispatch:

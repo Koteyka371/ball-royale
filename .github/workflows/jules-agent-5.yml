@@ -28,7 +28,8 @@ jobs:
       - name: Invoke Jules Agent 5
         run: python3 scripts/launch_agent.py agent-5
         env:
-          JULES_API_KEY: ${{ secrets.JULES_API_KEY_2 }}
+          JULES_API_KEY: ${{ secrets.JULES_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Show status
         run: python3 scripts/status_agents.py

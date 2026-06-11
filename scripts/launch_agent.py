@@ -1,83 +1,78 @@
 #!/usr/bin/env python3
 """
-Universal Jules Agent Launcher with atomic updates.
-Usage: python launch_agent.py <agent_id>
+Universal Agent Launcher — triggers Jules for any agent (1-7).
+Agent 7 runs locally (supervisor), agents 1-6 trigger Jules API.
+Uses atomic git commits and shared dispatcher lock.
 """
 import json
 import sys
 import os
 import subprocess
 import urllib.request
+import urllib.error
 import time
-from datetime import datetime, timezone
+import tempfile
+from datetime import datetime, timezone, timedelta
+
+try:
+    import fcntl
+except ImportError:
+    fcntl = None
 
 LOCK_FILE = "agent_lock.json"
 TASK_FILE = "agent_tasks.json"
-MAX_CYCLES = 30
 MAX_RETRIES = 5
+CYCLE_LIMIT = 30
+PR_POLL_INTERVAL = 15
+PR_POLL_MAX_MINUTES = 5
 
-AGENT_PROMPTS = {
-    "agent-1": {
-        "name": "Jules Core",
-        "focus": "AI core systems: BallBrain, Perception, Emotion, Decision, Action, Personality",
-        "innovation": [
-            "Emotional contagion (fear spreads between balls)",
-            "Dynamic personality evolution based on battle experience",
-            "Multi-layer threat assessment with memory",
-            "Adaptive difficulty based on player behavior",
-        ]
-    },
-    "agent-2": {
-        "name": "Jules Behaviors",
-        "focus": "AI behaviors: chase, flee, attack, kite, flank, group attack, collect booster",
-        "innovation": [
-            "Swarm intelligence (boid rules, flocking)",
-            "Tactical positioning and formation behaviors",
-            "Predictive movement (dodge, juke, zigzag)",
-            "Territorial behavior (claim and defend areas)",
-        ]
-    },
-    "agent-3": {
-        "name": "Jules Tests",
-        "focus": "Tests, ball type configs, quality assurance",
-        "innovation": [
-            "Stress tests for 1000+ balls",
-            "Behavior coverage matrix",
-            "Performance regression detection",
-            "Battle simulation scenarios",
-        ]
-    },
-    "agent-4": {
-        "name": "Jules Content",
-        "focus": "Game design docs, modes, arenas, content generation",
-        "innovation": [
-            "Procedural arena generation",
-            "Dynamic event system (storms, power-ups)",
-            "Loot table optimization",
-            "Achievement and progression system",
-        ]
-    },
-    "agent-5": {
-        "name": "Jules Meta",
-        "focus": "Workflows, scripts, automation, infrastructure",
-        "innovation": [
-            "Auto-scaling agent pool based on workload",
-            "PR quality scoring system",
-            "Automated code review pipeline",
-            "Dependency update automation",
-        ]
-    },
-    "agent-6": {
-        "name": "Jules Innovation",
-        "focus": "Experimental features: genetics, neural networks, new mechanics",
-        "innovation": [
-            "Ball genetics (offspring inherit traits, mutate)",
-            "Neural network controlled balls that learn",
-            "Ball relationships (rivalry, alliance, revenge)",
-            "Physics chain reactions and environmental hazards",
-        ]
-    },
+AGENT_AREAS = {
+    "agent-1": "ai-core",
+    "agent-2": "behaviors",
+    "agent-3": "tests",
+    "agent-4": "content",
+    "agent-5": "meta",
+    "agent-6": "innovation",
 }
+
+AREA_TO_AGENT = {
+    "ai-core": "ai-core",
+    "ai-behaviors": "behaviors",
+    "ai-ball-types": "tests",
+    "ai-innovation": "innovation",
+    "ai-meta": "meta",
+    "ai-team": "content",
+    "arena-mechanics": "content",
+    "arenas": "content",
+    "behaviors": "behaviors",
+    "bugfix": "meta",
+    "content": "content",
+    "modes": "content",
+    "skills": "tests",
+    "ui": "content",
+    "visuals": "content",
+    "innovation": "innovation",
+    "meta": "meta",
+    "tests": "tests",
+}
+
+DISPATCHER_LOCK = ".dispatcher.lock"
+
+
+def atomic_write_json(path, data):
+    dir_name = os.path.dirname(os.path.abspath(path))
+    tmp_path = None
+    try:
+        with tempfile.NamedTemporaryFile("w", dir=dir_name, suffix=".tmp", delete=False, encoding="utf-8") as tmp:
+            json.dump(data, tmp, indent=2, ensure_ascii=False)
+            tmp.flush()
+            os.fsync(tmp.fileno())
+            tmp_path = tmp.name
+        os.replace(tmp_path, path)
+    except Exception:
+        if tmp_path and os.path.exists(tmp_path):
+            os.unlink(tmp_path)
+        raise
 
 
 def git_pull():
@@ -88,276 +83,377 @@ def git_pull():
     return result.returncode == 0
 
 
-def git_commit_and_push(message):
-    subprocess.run(["git", "add", LOCK_FILE], capture_output=True, timeout=10)
-    result = subprocess.run(
-        ["git", "diff", "--cached", "--quiet"],
-        capture_output=True, timeout=10
-    )
-    if result.returncode == 0:
-        return True
-
+def git_fetch():
     subprocess.run(
-        ["git", "commit", "-m", message],
-        capture_output=True, text=True, timeout=10
-    )
-    result = subprocess.run(
-        ["git", "push", "origin", "main"],
+        ["git", "fetch", "origin", "main"],
         capture_output=True, text=True, timeout=30
+    )
+
+
+def git_reset_to_remote():
+    git_fetch()
+    result = subprocess.run(
+        ["git", "checkout", "origin/main", "--", LOCK_FILE],
+        capture_output=True, text=True, timeout=10
     )
     return result.returncode == 0
 
 
+def git_commit_and_push(message):
+    subprocess.run(["git", "add", LOCK_FILE], capture_output=True, timeout=10)
+
+    diff_result = subprocess.run(
+        ["git", "diff", "--cached", "--quiet"],
+        capture_output=True, timeout=10
+    )
+    if diff_result.returncode == 0:
+        return True
+
+    commit_result = subprocess.run(
+        ["git", "commit", "-m", message],
+        capture_output=True, text=True, timeout=10
+    )
+    if commit_result.returncode != 0:
+        print(f"[{agent_id}] git commit failed: {commit_result.stderr}")
+        return False
+
+    push_result = subprocess.run(
+        ["git", "push", "origin", "main"],
+        capture_output=True, text=True, timeout=30
+    )
+    if push_result.returncode != 0:
+        print(f"[{agent_id}] git push failed: {push_result.stderr}")
+    return push_result.returncode == 0
+
+
+def verify_pushed():
+    result = subprocess.run(
+        ["git", "log", "origin/main..HEAD", "--oneline"],
+        capture_output=True, text=True, timeout=10
+    )
+    if result.returncode != 0:
+        return True
+    return len(result.stdout.strip()) == 0
+
+
 def atomic_update(new_data, message):
     for attempt in range(MAX_RETRIES):
-        git_pull()
-        with open(LOCK_FILE) as f:
-            current = json.load(f)
-        for agent_id, state in new_data.get("agents", {}).items():
-            current["agents"][agent_id] = state
-        with open(LOCK_FILE, "w") as f:
-            json.dump(current, f, indent=2, ensure_ascii=False)
+        if not git_pull():
+            if not git_reset_to_remote():
+                print(f"[{agent_id}] Cannot sync with remote, aborting")
+                return False
+
+        try:
+            with open(LOCK_FILE, encoding="utf-8") as f:
+                current = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            print(f"[{agent_id}] Failed to read {LOCK_FILE}: {e}")
+            return False
+
+        for agent_key, state in new_data.get("agents", {}).items():
+            if agent_key in current.get("agents", {}):
+                for k, v in state.items():
+                    if k in current["agents"][agent_key] and isinstance(current["agents"][agent_key][k], dict) and isinstance(v, dict):
+                        current["agents"][agent_key][k] = {**current["agents"][agent_key][k], **v}
+                    else:
+                        current["agents"][agent_key][k] = v
+            else:
+                current.setdefault("agents", {})[agent_key] = state
+
+        atomic_write_json(LOCK_FILE, current)
+
         if git_commit_and_push(message):
-            return True
-        print(f"[Agent] Push failed, retrying ({attempt + 1}/{MAX_RETRIES})...")
+            if verify_pushed():
+                return True
+            print(f"[{agent_id}] Commit OK but push verify failed, retrying...")
+        else:
+            print(f"[{agent_id}] Push failed ({attempt + 1}/{MAX_RETRIES})")
         time.sleep(2)
+
+    print(f"[{agent_id}] ERROR: Failed after {MAX_RETRIES} retries")
     return False
 
 
 def load_json(path):
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 
-def get_task_info(task_id, tasks_data):
-    for t in tasks_data.get("tasks", []):
-        if t["id"] == task_id:
-            return t
-    return None
-
-
-def build_prompt(agent_id, agent_config, task_info, lock_data):
-    agent_meta = AGENT_PROMPTS.get(agent_id, {})
-    task_title = task_info["title"]
-    task_desc = task_info.get("description", "No description")
-
-    other_work = []
-    for aid, ainfo in lock_data["agents"].items():
-        if aid != agent_id and ainfo.get("status") == "working" and ainfo.get("task_id"):
-            other_work.append(f"- {aid}: {ainfo['task_id']}")
-    other_work_str = "\n".join(other_work) if other_work else "None"
-
-    prompt = f"""You are {agent_meta.get('name', 'Jules')}, an autonomous AI developer.
-You are working on Ball Royale — a 2D battle royale with AI-controlled balls.
-
-## YOUR ROLE
-Focus area: {agent_meta.get('focus', 'General development')}
-Innovation priorities:
-{chr(10).join('- ' + i for i in agent_meta.get('innovation', []))}
-
-## CURRENT TASK
-Title: {task_title}
-Description: {task_desc}
-
-## WHAT OTHER AGENTS ARE WORKING ON (DO NOT TOUCH THEIR FILES)
-{other_work_str}
-
-## YOUR RITUAL (every cycle)
-1. RUN: git pull origin main
-2. READ: AGENTS.md, docs/game_design.md, agent_tasks.json
-3. READ: relevant source files for your area
-4. WORK: Complete the current task with tests
-5. MARK DONE: Update agent_tasks.json — change the task's "status" from "todo" to "done"
-6. EVOLVE: Fix bugs, improve code, invent new features (ONLY in your area)
-7. VALIDATE: python3 tests/simulate_battle.py 100 && python3 scripts/quality_metrics.py
-8. GENERATE: Add as many new tasks as you want to agent_tasks.json (minimum 1).
-   IMPORTANT: Each new task MUST have an "area" field matching one of:
-   "ai-core", "behaviors", "tests", "content", "meta", "innovation"
-   Set area based on what the task is about. The dispatcher uses this to assign tasks to agents.
-9. COMMIT: git add -A && git commit -m "feat({agent_id}): {task_title}"
-10. BRANCH: git checkout -b {agent_id}/{task_id}
-11. PUSH: git push origin {agent_id}/{task_id}
-12. PR: Create PR via GitHub API with title containing the task_id
-
-## CRITICAL RULES
-- You MUST update agent_tasks.json to mark the task as "done" BEFORE committing
-- The PR title MUST contain the task_id in format: "[{task_id}] {title}"
-- When creating the PR, you MUST add the label "automated" to enable auto-merge
-- This lets the system trace which task the PR is for
-- If you skip marking the task as done, the system will reassign it and your work is wasted
-
-## RULES
-- ONLY modify files in your area
-- NEVER touch files another agent is working on
-- Fix anything broken even if not in the task
-- Leave code better than you found it
-- Be creative and bold
-- If you see something cool in another agent's work, INSTEAD of touching it,
-  generate a new task that builds upon it
-
-## TASK FORMAT (when generating new tasks)
-Each task in agent_tasks.json must have this structure:
-```json
-{{
-  "id": "unique-task-id",
-  "status": "todo",
-  "area": "ai-core|behaviors|tests|content|meta|innovation",
-  "risk": "low|medium|high",
-  "title": "Task title",
-  "description": "What to do",
-  "allowed_paths": ["src/ai/**"],
-  "acceptance": ["Criteria 1", "Criteria 2"]
-}}
-```
-The "area" field is CRITICAL — it tells the dispatcher which agent should work on this task."""
-
-    return prompt
-
-
-def check_pr_created(task_id):
-    """Check if a PR was created for this task."""
-    repo = "Koteyka371/ball-royale"
-    url = f"https://api.github.com/repos/{repo}/pulls?state=open&per_page=10"
+def github_api(endpoint, method="GET", data=None, token=None):
+    repo = os.environ.get("GITHUB_REPOSITORY", "Koteyka371/ball-royale")
+    url = f"https://api.github.com/repos/{repo}/{endpoint}"
     headers = {
+        "Authorization": f"token {token}",
         "Accept": "application/vnd.github.v3+json",
     }
 
+    body = None
+    if data is not None:
+        headers["Content-Type"] = "application/json"
+        body = json.dumps(data).encode("utf-8")
+
+    req = urllib.request.Request(url, data=body, headers=headers, method=method)
+
     try:
-        req = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            content = resp.read().decode("utf-8")
+            return json.loads(content) if content.strip() else {"message": "empty response"}
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode("utf-8")
+        if e.code == 403 and "rate limit" in error_body.lower():
+            print(f"[{agent_id}] Rate limited, waiting 60s...")
+            time.sleep(60)
+            return github_api(endpoint, method, data, token)
+        if e.code != 404:
+            print(f"[{agent_id}] API {method} {endpoint}: {e.code} {error_body[:200]}")
+        return None
+    except Exception as e:
+        print(f"[{agent_id}] API error: {e}")
+        return None
+
+
+def invoke_jules(task_id, area, prompt, token):
+    repo_url = f"https://github.com/{os.environ.get('GITHUB_REPOSITORY', 'Koteyka371/ball-royale')}"
+    full_prompt = (
+        f"Project: Ball Royale — 2D battle royale with AI-controlled balls.\n"
+        f"Repository: {repo_url}\n\n"
+        f"CONTEXT: You are a coding agent. You have full creative control.\n\n"
+        f"TASK: {prompt}\n\n"
+        f"BRANCH: Create a new branch called '{task_id}' for your changes.\n\n"
+        f"IMPORTANT RULES:\n"
+        f"1. Create branch '{task_id}' from main\n"
+        f"2. Work on the branch '{task_id}'\n"
+        f"3. Create feature branches from '{task_id}' for each change, merge back\n"
+        f"4. Run `git pull origin main` before making changes\n"
+        f"5. Commit with clear messages explaining your changes\n"
+        f"6. Push branch to origin when done\n"
+        f"7. Create a Pull Request with title: [{task_id}] {{descriptive title}}\n"
+        f"8. Set PR body to: Task: {task_id}\\n\\n{{description}}\n"
+        f"9. DO NOT modify files outside the src/ directory (no workflow changes)\n"
+        f"10. Be creative — improve code, refactor, fix bugs you find, add tests\n"
+        f"11. Label the PR with 'automated' label\n"
+        f"12. After PR is created, mark the task as done in agent_tasks.json\n\n"
+        f"You have FULL FREEDOM to modify any file in src/ directory.\n"
+        f"Your work will be reviewed and merged by the supervisor agent.\n"
+        f"Be ambitious, be creative, be the best AI programmer you can be!"
+    )
+
+    url = "https://jules.googleapis.com/jules"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "repoUrl": repo_url,
+        "prompt": full_prompt,
+    }
+
+    data_bytes = json.dumps(payload).encode("utf-8")
+    req = urllib.request.Request(url, data=data_bytes, headers=headers, method="POST")
+
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            body = json.loads(resp.read().decode("utf-8"))
+            task_name = body.get("taskName", "")
+            print(f"[{agent_id}] Jules accepted task (task: {task_name})")
+            return True
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode("utf-8")
+        print(f"[{agent_id}] Jules API error: {e.code} {error_body[:200]}")
+        return False
+    except Exception as e:
+        print(f"[{agent_id}] Jules API exception: {e}")
+        return False
+
+
+def check_pr_created(branch_name, token):
+    repo = os.environ.get("GITHUB_REPOSITORY", "Koteyka371/ball-royale")
+    url = f"https://api.github.com/repos/{repo}/pulls?head={branch_name}&state=open"
+    req = urllib.request.Request(url, headers={
+        "Authorization": f"token {token}",
+        "Accept": "application/vnd.github.v3+json",
+    })
+
+    try:
         with urllib.request.urlopen(req, timeout=15) as resp:
-            prs = json.loads(resp.read().decode("utf-8"))
-            for pr in prs:
-                title = pr.get("title", "")
-                if task_id in title:
-                    return True
+            data = json.loads(resp.read().decode("utf-8"))
+            if data:
+                print(f"[{agent_id}] PR created: #{data[0].get('number')}")
+                return True
             return False
+    except urllib.error.HTTPError as e:
+        if e.code == 403:
+            print(f"[{agent_id}] Rate limited, waiting 30s...")
+            time.sleep(30)
+            try:
+                with urllib.request.urlopen(req, timeout=15) as resp:
+                    data = json.loads(resp.read().decode("utf-8"))
+                    return bool(data)
+            except Exception:
+                return False
+        return False
     except Exception:
         return False
 
 
-def invoke_jules(api_key, prompt, title):
-    payload = {
-        "prompt": prompt,
-        "sourceContext": {
-            "source": "sources/github/Koteyka371/ball-royale",
-            "githubRepoContext": {"startingBranch": "main"}
-        },
-        "automationMode": "AUTO_CREATE_PR",
-        "title": title
-    }
-
-    url = "https://jules.googleapis.com/v1alpha/sessions"
-    headers = {
-        "Content-Type": "application/json",
-        "x-goog-api-key": api_key,
-    }
-    data_bytes = json.dumps(payload).encode("utf-8")
-    req = urllib.request.Request(url, data=data_bytes, headers=headers, method="POST")
-
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        return resp.read().decode("utf-8")
-
-
 def main():
+    global agent_id
+
     if len(sys.argv) < 2:
-        print("Usage: python launch_agent.py <agent_id>")
+        print("Usage: python launch_agent.py <agent-id>")
+        print("  agent-id: agent-1, agent-2, ..., agent-7")
         sys.exit(1)
 
     agent_id = sys.argv[1]
-    valid_agents = [f"agent-{i}" for i in range(1, 8)]  # 1-7
-    if agent_id not in valid_agents:
-        print(f"ERROR: Invalid agent_id '{agent_id}'. Must be: {valid_agents}")
+
+    if not agent_id.startswith("agent-") or not agent_id.split("-")[1].isdigit():
+        print(f"Invalid agent ID: {agent_id}")
         sys.exit(1)
 
-    git_pull()
-
-    lock_data = load_json(LOCK_FILE)
-    tasks_data = load_json(TASK_FILE)
-
-    agent_info = lock_data["agents"].get(agent_id)
-    if not agent_info:
-        print(f"ERROR: Agent {agent_id} not found in {LOCK_FILE}")
+    agent_num = int(agent_id.split("-")[1])
+    if agent_num < 1 or agent_num > 6:
+        print(f"Agent {agent_id} is not a Jules agent (1-6 only)")
         sys.exit(1)
 
-    task_id = agent_info.get("task_id")
-    if not task_id:
-        print(f"[{agent_id}] No task assigned. Run dispatch_agents.py first.")
-        sys.exit(0)
+    print("=" * 60)
+    print(f"LAUNCHING {agent_id.upper()}")
+    print("=" * 60)
 
-    if agent_info.get("cycles_today", 0) >= MAX_CYCLES:
-        print(f"[{agent_id}] Daily limit reached ({MAX_CYCLES} cycles)")
-        sys.exit(0)
-
-    task_info = get_task_info(task_id, tasks_data)
-    if not task_info:
-        print(f"[{agent_id}] Task {task_id} not found in {TASK_FILE}")
-        sys.exit(1)
-
-    print(f"[{agent_id}] Task: {task_id} — {task_info['title']}")
-
-    api_key_name = agent_info.get("api_key", "JULES_API_KEY")
-    api_key = os.environ.get(api_key_name, "")
-    if not api_key:
-        print(f"ERROR: {api_key_name} is not set!")
-        sys.exit(1)
-
-    prompt = build_prompt(agent_id, agent_info, task_info, lock_data)
-
-    # Mark as working (increment cycle AFTER success, not before)
-    update_data = {
-        "agents": {
-            agent_id: {
-                **agent_info,
-                "status": "working",
-                "started_at": datetime.now(timezone.utc).isoformat(),
-            }
-        }
-    }
-    if not atomic_update(update_data, f"agent-{agent_id.split('-')[1]}: start working"):
-        print(f"[{agent_id}] FAILED to update lock file")
-        sys.exit(1)
-
-    print(f"[{agent_id}] Invoking Jules API...")
+    lock_fd = open(DISPATCHER_LOCK, "w")
     try:
-        result = invoke_jules(api_key, prompt, f"Task: {task_info['title']}")
-        print(f"[{agent_id}] Jules response: {result[:200]}")
-        print(f"[{agent_id}] Invoked successfully!")
-
-        # Wait for Jules to create PR (Jules works asynchronously)
-        print(f"[{agent_id}] Waiting 60s for Jules to create PR...")
-        time.sleep(60)
-
-        # Check if PR was created
-        pr_created = check_pr_created(task_id)
-        if pr_created:
-            print(f"[{agent_id}] PR created successfully!")
+        if fcntl:
+            try:
+                fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except (IOError, OSError):
+                print(f"[{agent_id}] Dispatcher is running, waiting...")
+                fcntl.flock(lock_fd, fcntl.LOCK_EX)
         else:
-            print(f"[{agent_id}] WARNING: No PR found for task {task_id}")
+            lock_fd.close()
 
-        # NOW increment cycle count (after successful API call)
-        with open(LOCK_FILE) as f:
-            lock = json.load(f)
-        lock["agents"][agent_id]["cycles_today"] = lock["agents"][agent_id].get("cycles_today", 0) + 1
-        with open(LOCK_FILE, "w") as f:
-            json.dump(lock, f, indent=2, ensure_ascii=False)
-        git_commit_and_push(f"agent-{agent_id.split('-')[1]}: increment cycle")
+        if not git_pull():
+            git_reset_to_remote()
 
-    except Exception as e:
-        print(f"[{agent_id}] ERROR: {e}")
-        # Reset status on failure, do NOT increment cycle
-        update_fail = {
-            "agents": {
-                agent_id: {
-                    **agent_info,
-                    "status": "idle",
-                    "task_id": None,
-                    "started_at": None,
-                }
-            }
-        }
-        atomic_update(update_fail, f"agent-{agent_id.split('-')[1]}: failed, reset")
-        sys.exit(1)
+        lock_data = load_json(LOCK_FILE)
+        tasks_data = load_json(TASK_FILE)
+
+        agent_info = lock_data["agents"].get(agent_id)
+        if not agent_info:
+            print(f"[{agent_id}] NOT FOUND in {LOCK_FILE}")
+            sys.exit(1)
+
+        now = datetime.now(timezone.utc)
+        today = now.date()
+        last_reset = lock_data.get("last_reset")
+
+        try:
+            last_reset_dt = datetime.fromisoformat(last_reset)
+            if last_reset_dt.tzinfo is None:
+                last_reset_dt = last_reset_dt.replace(tzinfo=timezone.utc)
+            if last_reset_dt.date() < today:
+                lock_data["agents"][agent_id]["cycles_today"] = 0
+                agent_info["cycles_today"] = 0
+                print(f"[{agent_id}] Day boundary detected, resetting cycles to 0")
+        except (ValueError, TypeError):
+            pass
+
+        cycles_today = agent_info.get("cycles_today", 0)
+        if cycles_today >= CYCLE_LIMIT:
+            print(f"[{agent_id}] Cycle limit reached ({CYCLE_LIMIT}/{CYCLE_LIMIT})")
+            return 0
+
+        status = agent_info.get("status")
+        task_id = agent_info.get("task_id")
+        area = agent_info.get("area", AGENT_AREAS.get(agent_id, ""))
+
+        if status in ("working", "assigned"):
+            if task_id:
+                print(f"[{agent_id}] Already has task: {task_id} ({status})")
+                return 0
+            else:
+                print(f"[{agent_id}] Stale in-progress state (no task), resetting to idle")
+                agent_info["status"] = "idle"
+                agent_info["task_id"] = None
+                agent_info["started_at"] = None
+                update = {"agents": {agent_id: agent_info}}
+                atomic_update(update, f"{agent_id}: reset stale in-progress")
+
+        task_id = None
+        for task in tasks_data.get("tasks", []):
+            if task.get("status") != "todo":
+                continue
+            task_area = task.get("area", "")
+            mapped_area = AREA_TO_AGENT.get(task_area, task_area)
+            if mapped_area == area:
+                task_id = task.get("id")
+                break
+
+        if not task_id:
+            print(f"[{agent_id}] No tasks found for area {area}")
+            print(f"[{agent_id}] Status: idle, nothing to do")
+            return 0
+
+        token = os.environ.get("JULES_API_KEY", "")
+        if not token:
+            print(f"[{agent_id}] No JULES_API_KEY, skipping")
+            return 0
+
+        prompt = task.get("prompt", "No description provided")
+        print(f"[{agent_id}] Task: {task_id}")
+        print(f"[{agent_id}] Area: {area}")
+        print(f"[{agent_id}] Prompt: {prompt[:100]}...")
+        print(f"[{agent_id}] Starting work...")
+
+        now_iso = datetime.now(timezone.utc).isoformat()
+        update = {"agents": {agent_id: {
+            "status": "working",
+            "task_id": task_id,
+            "started_at": now_iso,
+        }}}
+        if not atomic_update(update, f"{agent_id}: start working on {task_id}"):
+            print(f"[{agent_id}] Failed to update status")
+            return 1
+
+        time.sleep(2)
+
+        success = invoke_jules(task_id, area, prompt, token)
+
+        if success:
+            update = {"agents": {agent_id: {
+                "status": "idle",
+                "cycles_today": cycles_today + 1,
+                "task_id": task_id,
+            }}}
+            atomic_update(update, f"{agent_id}: Jules accepted, cycles={cycles_today + 1}")
+
+            branch_name = task_id
+            print(f"[{agent_id}] Polling for PR (branch={branch_name})...")
+            for i in range(0, PR_POLL_MAX_MINUTES * 60, PR_POLL_INTERVAL):
+                time.sleep(PR_POLL_INTERVAL)
+                if check_pr_created(branch_name, token):
+                    print(f"[{agent_id}] PR found!")
+                    break
+                print(f"[{agent_id}] Waiting for PR ({i//60}m{i%60}s)...")
+            else:
+                print(f"[{agent_id}] PR not found after {PR_POLL_MAX_MINUTES} minutes")
+        else:
+            update = {"agents": {agent_id: {
+                "status": "idle",
+                "cycles_today": cycles_today,
+                "task_id": None,
+            }}}
+            atomic_update(update, f"{agent_id}: Jules failed, resetting")
+
+        print(f"[{agent_id}] Done!")
+        return 0
+
+    finally:
+        if fcntl:
+            try:
+                fcntl.flock(lock_fd, fcntl.LOCK_UN)
+            except Exception:
+                pass
+        lock_fd.close()
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

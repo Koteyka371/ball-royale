@@ -1,8 +1,8 @@
-name: Auto Merge Jules PR
+name: Auto-Merge PR (with CI check)
 
 on:
   pull_request:
-    types: [opened]
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: write
@@ -11,41 +11,46 @@ permissions:
 jobs:
   auto-merge:
     runs-on: ubuntu-latest
-    if: contains(github.event.pull_request.labels.*.name, 'automated')
     steps:
-      - name: Wait for CI to complete
-        run: |
-          echo "Waiting 90s for CI checks to start..."
-          sleep 90
-          
-          MERGEABLE=$(gh pr view ${{ github.event.pull_request.number }} \
-            --repo ${{ github.repository }} \
-            --json mergeable -q '.mergeable')
-          
-          echo "Mergeable state: $MERGEABLE"
-          
-          if [ "$MERGEABLE" = "MERGEABLE" ]; then
-            echo "PR is mergeable, proceeding..."
-          else
-            echo "PR not yet mergeable, waiting 60s more..."
-            sleep 60
-            
-            MERGEABLE=$(gh pr view ${{ github.event.pull_request.number }} \
-              --repo ${{ github.repository }} \
-              --json mergeable -q '.mergeable')
-            
-            if [ "$MERGEABLE" != "MERGEABLE" ]; then
-              echo "PR still not mergeable. Skipping."
-              exit 0
-            fi
-          fi
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check CI status
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
+            const labels = pr.labels.map(l => l.name);
+            if (!labels.includes('automated')) {
+              console.log('PR has no "automated" label, skipping auto-merge');
+              return;
+            }
 
-      - name: Merge PR
-        run: |
-          gh pr merge ${{ github.event.pull_request.number }} \
-            --repo ${{ github.repository }} \
-            --squash
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            const { data: checks } = await github.rest.checks.listForRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: pr.head.sha,
+              per_page: 30
+            });
+
+            const blocking = ['failure', 'timed_out', 'cancelled', 'action_required', 'stale'];
+            for (const run of checks.check_runs) {
+              if (blocking.includes(run.conclusion)) {
+                console.log(`CI failed: ${run.name} (${run.conclusion})`);
+                return;
+              }
+              if (run.status !== 'completed') {
+                console.log(`CI still running: ${run.name} (${run.status})`);
+                return;
+              }
+            }
+
+            console.log('CI passed, waiting 30s for stability...');
+            await new Promise(r => setTimeout(r, 30000));
+
+            console.log('Merging PR...');
+            await github.rest.pulls.merge({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              merge_method: 'squash'
+            });
+            console.log('PR merged successfully!');

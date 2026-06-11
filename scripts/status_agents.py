@@ -5,14 +5,16 @@ Usage: python status_agents.py
 """
 import json
 import sys
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 
 LOCK_FILE = "agent_lock.json"
 TASK_FILE = "agent_tasks.json"
+MAX_CYCLES_PER_AGENT = 30
+NUM_AGENTS = 7
 
 
 def load_json(path):
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -27,14 +29,12 @@ def main():
     print(f"Time: {now.strftime('%Y-%m-%d %H:%M:%S UTC')}")
     print("=" * 70)
 
-    # Task stats
     tasks = tasks_data.get("tasks", [])
     done = [t for t in tasks if t["status"] == "done"]
     todo = [t for t in tasks if t["status"] == "todo"]
     print(f"\nTasks: {len(done)} done / {len(todo)} todo / {len(tasks)} total")
     print(f"Progress: {len(done)/len(tasks)*100:.1f}%")
 
-    # Agent status
     print(f"\n{'Agent':<20s} {'Status':<12s} {'Area':<14s} {'Task':<30s} {'Cycles':<8s}")
     print("-" * 84)
 
@@ -57,20 +57,17 @@ def main():
         else:
             status_display = "\033[90midle\033[0m"
 
-        # Truncate task_id for display
         task_display = task_id[:28] if len(task_id) > 28 else task_id
 
-        print(f"{agent_id:<20s} {status_display:<21s} {area:<14s} {task_display:<30s} {cycles}/30")
+        print(f"{agent_id:<20s} {status_display:<21s} {area:<14s} {task_display:<30s} {cycles}/{MAX_CYCLES_PER_AGENT}")
 
     print("-" * 84)
-    print(f"\nActive agents: {active_agents}/6")
-    print(f"Total cycles today: {total_cycles}/180")
+    print(f"\nActive agents: {active_agents}/{NUM_AGENTS - 1}")
+    print(f"Total cycles today: {total_cycles}/{MAX_CYCLES_PER_AGENT * (NUM_AGENTS - 1)}")
 
-    # Rate limit warning
-    if total_cycles > 150:
-        print(f"\n\033[91mWARNING: Rate limit approaching! {total_cycles}/180 cycles used\033[0m")
+    if total_cycles > MAX_CYCLES_PER_AGENT * (NUM_AGENTS - 1) * 0.83:
+        print(f"\n\033[91mWARNING: Rate limit approaching! {total_cycles}/{MAX_CYCLES_PER_AGENT * (NUM_AGENTS - 1)} cycles used\033[0m")
 
-    # Show done tasks
     print(f"\n{'='*70}")
     print("COMPLETED TASKS")
     print(f"{'='*70}")

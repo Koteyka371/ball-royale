@@ -1,4 +1,4 @@
-name: CI
+name: CI Validation
 
 on:
   push:
@@ -6,39 +6,26 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - name: Checkout
+        uses: actions/checkout@v5
 
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
       - name: Validate task manifest
-        run: python scripts/validate_tasks.py agent_tasks.json
+        run: python3 scripts/validate_tasks.py
 
-  test:
-    runs-on: ubuntu-latest
-    needs: validate
-    steps:
-      - uses: actions/checkout@v5
+      - name: Run tests
+        run: python3 -m pytest tests/ -v --tb=short
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Run AI behavior tests
-        run: python scripts/test_ai_behaviors.py
-
-      - name: Run pytest (if tests exist)
-        run: |
-          if ls tests/test_*.py 1>/dev/null 2>&1; then
-            pip install pytest
-            pytest tests/ -v
-          else
-            echo "No pytest tests yet, skipping..."
-          fi
+      - name: Check code quality
+        run: python3 scripts/quality_metrics.py
