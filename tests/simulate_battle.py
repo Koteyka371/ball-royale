@@ -258,59 +258,12 @@ class BattleSimulation:
             # Pass self as world to BallBrain
             brain = BallBrain(ball, self)
 
-            perception_data = brain.perception()
-            emotion = brain.emotion(perception_data)
-            decision = brain.decision(perception_data, emotion)
+            # brain.process will call perception, emotion, decision and action
+            # The new action layer directly handles movement based on perception
+            brain.process(self._delta)
 
-            ball.current_action = decision
-            self.stats["actions_performed"][decision] += 1
-
-            enemies = perception_data.get("enemies", [])
-
-            # Movement
-            if decision == "flee" and enemies:
-                nearest = min(enemies, key=lambda e: (e.x - ball.x) ** 2 + (e.y - ball.y) ** 2)
-                dx, dy = ball.x - nearest.x, ball.y - nearest.y
-                dist = math.sqrt(dx * dx + dy * dy)
-                if dist > 0.01:
-                    ball.x += (dx / dist) * ball.speed * self._delta * 60
-                    ball.y += (dy / dist) * ball.speed * self._delta * 60
-
-            elif decision == "attack" and enemies:
-                target = min(enemies, key=lambda e: (e.x - ball.x) ** 2 + (e.y - ball.y) ** 2)
-                dx, dy = target.x - ball.x, target.y - ball.y
-                dist = math.sqrt(dx * dx + dy * dy)
-                if dist > 0.01:
-                    nx, ny = dx / dist, dy / dist
-                    step = ball.speed * self._delta * 60
-                    ball.x += nx * min(step, dist)
-                    ball.y += ny * min(step, dist)
-                if dist <= ball.radius + target.radius + 5:
-                    self._deal_damage(ball, target)
-
-            elif decision == "opportunistic":
-                active_boosters = [b for b in self.boosters if b.active]
-                if active_boosters:
-                    nearest = min(active_boosters, key=lambda b: (b.x - ball.x) ** 2 + (b.y - ball.y) ** 2)
-                    dx, dy = nearest.x - ball.x, nearest.y - ball.y
-                    dist = math.sqrt(dx * dx + dy * dy)
-                    if dist > 0.01:
-                        nx, ny = dx / dist, dy / dist
-                        step = ball.speed * self._delta * 60
-                        ball.x += nx * min(step, dist)
-                        ball.y += ny * min(step, dist)
-                    if dist <= ball.radius + 10:
-                        self._collect_booster(ball, nearest)
-
-            else:
-                ball.x += random.uniform(-1, 1) * ball.speed * 0.3
-                ball.y += random.uniform(-1, 1) * ball.speed * 0.3
-
-            ball.x = max(ball.radius, min(self.width - ball.radius, ball.x))
-            ball.y = max(ball.radius, min(self.height - ball.radius, ball.y))
-
-            if ball.skill_timer > 0:
-                ball.skill_timer -= self._delta
+            # Action Layer will set ball.current_action, record stats
+            self.stats["actions_performed"][ball.current_action] += 1
 
         if self.tick % 30 == 0:
             active = sum(1 for b in self.boosters if b.active)
@@ -438,7 +391,7 @@ def test_all_ball_types_represented():
 
 def test_battle_reduces_to_few():
     sim = BattleSimulation(num_balls=50, max_ticks=1000, seed=42)
-    stats = sim.run()
+    sim.run()
     alive = sum(1 for b in sim.balls if b.alive)
     assert alive < 50, f"Battle should reduce ball count, got {alive}"
 

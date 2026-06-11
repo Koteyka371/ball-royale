@@ -13,6 +13,13 @@ class MockBall:
         self.max_hp = max_hp
         self.personality = personality
         self.current_action = None
+        self.x = 0
+        self.y = 0
+        self.speed = 10
+        self.radius = 10
+        self.perception_radius = 100
+        self.ball_type = "mock"
+        self.alive = True
 
     def flee(self, delta):
         pass

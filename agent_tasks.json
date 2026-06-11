@@ -980,6 +980,57 @@
         "Chain reactions of fear or aggression work",
         "Tests pass"
       ]
+    },
+    {
+      "id": "add-skill-effects-vfx",
+      "status": "todo",
+      "area": "visuals",
+      "risk": "low",
+      "title": "Add Particle VFX for Ball Skills",
+      "description": "Implement Godot Particle2D nodes that trigger when a ball uses its special skill, such as wave attack or explosion.",
+      "allowed_paths": [
+        "src/visuals/**",
+        "src/ai/**/*.gd"
+      ],
+      "acceptance": [
+        "Particle effect plays when skill is used",
+        "Tests pass",
+        "No regressions in framerate"
+      ]
+    },
+    {
+      "id": "ai-neural-network-brain-phase3",
+      "status": "todo",
+      "area": "ai-innovation",
+      "risk": "high",
+      "title": "Evaluate NeuralNetworkBrain performance",
+      "description": "Run the NeuralNetworkBrain (Phase 2) alongside the standard BallBrain in simulate_battle.py to evaluate learning efficiency over 500 battles.",
+      "allowed_paths": [
+        "src/ai/**/*.py",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Simulation successfully tracks neural network performance",
+        "Neural brain wins at least 40% of its encounters against standard AI",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "arena-procedural-generation-rooms",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "medium",
+      "title": "Add procedural multi-room arenas",
+      "description": "Expand the arena generation algorithm to create multi-room maps connected by corridors, rather than a single large open space.",
+      "allowed_paths": [
+        "src/arena/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Multiple rooms are connected via corridors",
+        "Balls spawn distributed across rooms",
+        "Pathfinding works across corridors"
+      ]
     }
   ]
 }
