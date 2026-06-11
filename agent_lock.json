@@ -4,9 +4,9 @@
       "name": "Jules Core",
       "api_key": "JULES_API_KEY",
       "area": "ai-core",
-      "task_id": "ai-action-system",
-      "status": "assigned",
-      "started_at": "2026-06-11T17:22:05.118835+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "pr_number": null,
       "cycles_today": 0
     },
@@ -57,6 +57,16 @@
       "task_id": "ai-swarm-boids",
       "status": "assigned",
       "started_at": "2026-06-11T17:22:05.118835+00:00",
+      "pr_number": null,
+      "cycles_today": 0
+    },
+    "agent-7": {
+      "name": "Jules Supervisor",
+      "api_key": "JULES_API_KEY",
+      "area": "supervisor",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "pr_number": null,
       "cycles_today": 0
     }
