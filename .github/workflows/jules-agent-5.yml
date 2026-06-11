@@ -1,0 +1,34 @@
+name: Jules Agent 5
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  run-agent:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for agent's turn (stagger)
+        run: sleep 1200
+
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Pull latest
+        run: git pull origin main
+
+      - name: Invoke Jules Agent 5
+        run: python3 scripts/launch_agent.py agent-5
+        env:
+          JULES_API_KEY: ${{ secrets.JULES_API_KEY_2 }}
+
+      - name: Show status
+        run: python3 scripts/status_agents.py

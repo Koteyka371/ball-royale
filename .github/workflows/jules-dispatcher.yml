@@ -1,23 +1,26 @@
-name: Jules Infinite Loop #2
+name: Jules Dispatcher
 
 on:
   pull_request:
     types: [closed]
+  schedule:
+    - cron: '*/30 * * * *'  # Every 30 minutes
   workflow_dispatch:
 
 jobs:
-  run-jules:
+  dispatch:
     runs-on: ubuntu-latest
     if: |
       (github.event_name == 'pull_request' && github.event.pull_request.merged == true) ||
+      github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch'
     permissions:
       contents: write
       pull-requests: write
-    
+
     steps:
-      - name: Wait 10 minutes for Jules #1 to finish
-        run: sleep 600
+      - name: Wait 30s for previous cycle to settle
+        run: sleep 30
 
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -27,7 +30,10 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Invoke Jules
+      - name: Dispatch agents
+        run: python3 scripts/dispatch_agents.py
         env:
-          JULES_API_KEY: ${{ secrets.JULES_API_KEY_2 }}
-        run: python3 scripts/launch_jules_2.py
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Show status
+        run: python3 scripts/status_agents.py
