@@ -37,7 +37,7 @@ jobs:
           
           area = 'content'
           if 'bug' in title.lower():
-              area = 'bugfix'
+              area = 'meta'
           elif 'feature' in title.lower():
               area = 'content'
           elif 'ai' in title.lower():

@@ -27,7 +27,6 @@ cat AGENTS.md
 cat docs/game_design.md
 cat agent_tasks.json
 ls -la src/ tests/ scripts/ configs/
-cat .github/workflows/jules-loop.yml  # your own automation
 ```
 
 ### 2. Complete the task
@@ -35,7 +34,10 @@ cat .github/workflows/jules-loop.yml  # your own automation
 - Implement it with tests
 - Make tests pass
 
-### 3. Evolve (MANDATORY)
+### 3. Mark task as done (CRITICAL)
+Update `agent_tasks.json` — change the task's `"status"` from `"todo"` to `"done"`
+
+### 4. Evolve (MANDATORY)
 After the task, do AT LEAST ONE:
 - Fix any bug you find
 - Improve any code that could be better
@@ -45,18 +47,20 @@ After the task, do AT LEAST ONE:
 - Add new tools or scripts
 - Improve documentation
 
-### 4. Validate
+### 5. Validate
 ```bash
 python tests/simulate_battle.py 100
 python scripts/quality_metrics.py
 pytest tests/ -v
 ```
 
-### 5. Generate next tasks
+### 6. Generate next tasks
 Add as many new tasks as you want to agent_tasks.json (minimum 1). YOUR ideas.
 
-### 6. Create PR
-Include everything: task + fixes + improvements + new tasks
+### 7. Create PR
+- Title format: `[{task_id}] {title}` (e.g. `[ai-brain-architecture] Implement Ball Brain`)
+- Include everything: task + fixes + improvements + new tasks
+- The PR title MUST contain the task_id
 
 ## TOOLS
 

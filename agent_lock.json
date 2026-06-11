@@ -61,59 +61,6 @@
       "cycles_today": 0
     }
   },
-  "area_map": {
-    "ai-core": [
-      "ai-action-system",
-      "ai-personality-system"
-    ],
-    "behaviors": [
-      "ai-behavior-chase",
-      "ai-behavior-flee",
-      "ai-behavior-attack",
-      "ai-behavior-kite",
-      "ai-behavior-flank",
-      "ai-behavior-group-attack",
-      "ai-behavior-collect-booster"
-    ],
-    "tests": [
-      "ai-ball-warrior-ai",
-      "ai-ball-scout-ai",
-      "ai-ball-tank-ai",
-      "ai-ball-healer-ai",
-      "ai-ball-sniper-ai",
-      "ai-ball-bomber-ai",
-      "ai-ball-ninja-ai",
-      "ai-ball-king-ai"
-    ],
-    "content": [
-      "ai-difficulty-system",
-      "ai-team-coordination",
-      "idea-feature-034",
-      "idea-feature-035",
-      "idea-feature-036",
-      "idea-feature-037"
-    ],
-    "meta": [
-      "auto-implement-decision-skill",
-      "auto-implement-action-skill",
-      "auto-implement-spectator-mode-(наблюдатель)-game-mode",
-      "auto-implement-coach-mode-(тренер)-game-mode",
-      "auto-create-procedural-arenas-arena",
-      "add-particle-effects",
-      "implement-kill-feed-ui"
-    ],
-    "innovation": [
-      "ai-neural-network-learning",
-      "ai-swarm-boids",
-      "ai-physics-chain-reactions",
-      "ai-battle-commentator-text",
-      "ai-neural-network-brain-wrapper",
-      "ai-meta-evolution-phase",
-      "ai-emotional-contagion-logic",
-      "procedural-hazards",
-      "arena-shrinking-zone"
-    ]
-  },
   "max_cycles_per_day": 30,
   "last_reset": "2026-06-11T17:18:36.654235+00:00"
 }

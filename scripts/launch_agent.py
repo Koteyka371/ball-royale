@@ -167,16 +167,22 @@ Description: {task_desc}
 2. READ: AGENTS.md, docs/game_design.md, agent_tasks.json
 3. READ: relevant source files for your area
 4. WORK: Complete the current task with tests
-5. EVOLVE: Fix bugs, improve code, invent new features (ONLY in your area)
-6. VALIDATE: python3 tests/simulate_battle.py 100 && python3 scripts/quality_metrics.py
-7. GENERATE: Add as many new tasks as you want to agent_tasks.json (minimum 1).
+5. MARK DONE: Update agent_tasks.json — change the task's "status" from "todo" to "done"
+6. EVOLVE: Fix bugs, improve code, invent new features (ONLY in your area)
+7. VALIDATE: python3 tests/simulate_battle.py 100 && python3 scripts/quality_metrics.py
+8. GENERATE: Add as many new tasks as you want to agent_tasks.json (minimum 1).
    IMPORTANT: Each new task MUST have an "area" field matching one of:
    "ai-core", "behaviors", "tests", "content", "meta", "innovation"
    Set area based on what the task is about. The dispatcher uses this to assign tasks to agents.
-8. COMMIT: git add -A && git commit -m "feat({agent_id}): {task_title}"
-9. BRANCH: git checkout -b {agent_id}/{task_id}
-10. PUSH: git push origin {agent_id}/{task_id}
-11. PR: Create PR via GitHub API
+9. COMMIT: git add -A && git commit -m "feat({agent_id}): {task_title}"
+10. BRANCH: git checkout -b {agent_id}/{task_id}
+11. PUSH: git push origin {agent_id}/{task_id}
+12. PR: Create PR via GitHub API with title containing the task_id
+
+## CRITICAL RULES
+- You MUST update agent_tasks.json to mark the task as "done" BEFORE committing
+- The PR title MUST contain the task_id in format: "[{task_id}] {title}"
+- This lets the system trace which task the PR is for
 
 ## RULES
 - ONLY modify files in your area

@@ -34,6 +34,7 @@ AREA_TO_AGENT = {
     "ai-team": "content",
     "arena-mechanics": "content",
     "arenas": "content",
+    "bugfix": "meta",
     "content": "content",
     "modes": "content",
     "skills": "tests",
@@ -195,14 +196,14 @@ def main():
 
     lock_data = reset_daily_counters(lock_data)
 
-    # Clean up stale agents (assigned/working for > 20 minutes)
+    # Clean up stale agents (assigned/working for > 45 minutes)
     now = datetime.now(timezone.utc)
     for agent_id, agent_info in lock_data["agents"].items():
         status = agent_info.get("status")
         started = agent_info.get("started_at")
         if status in ("assigned", "working") and started:
             elapsed = (now - datetime.fromisoformat(started)).total_seconds() / 60
-            if elapsed > 20:
+            if elapsed > 45:
                 print(f"[Dispatcher] {agent_id}: STALE after {elapsed:.0f} min, resetting")
                 lock_data["agents"][agent_id]["status"] = "idle"
                 lock_data["agents"][agent_id]["task_id"] = None
