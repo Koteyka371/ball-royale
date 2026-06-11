@@ -39,25 +39,18 @@ jobs:
             echo "has_changes=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Create Pull Request
+      - name: Commit and push
         if: steps.changes.outputs.has_changes == 'true'
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: 'auto: generate new tasks from game_design.md'
-          title: '[Auto] Weekly task generation'
-          body: |
-            ## Auto-generated tasks
-            
-            This PR was created automatically by the project analysis system.
-            
-            ### Changes:
-            - New tasks generated from `docs/game_design.md`
-            - Project statistics updated
-            
-            ### Next steps:
-            - Review new tasks in `agent_tasks.json`
-            - Prioritize based on project goals
-            - Start implementing!
-          branch: auto/improve-tasks
-          labels: automated
+        run: |
+          BRANCH="auto/improve-$(date +%Y%m%d-%H%M%S)"
+          git checkout -b "$BRANCH"
+          git add -A
+          git commit -m "auto: generate new tasks from game_design.md"
+          git push origin "$BRANCH"
+          gh pr create \
+            --title "[Auto] Task generation $(date +%Y-%m-%d)" \
+            --body "Auto-generated tasks from project analysis" \
+            --branch "$BRANCH" \
+            --label automated
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
