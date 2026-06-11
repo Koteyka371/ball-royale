@@ -362,7 +362,10 @@ def trigger_dispatcher(token):
         return False
 
 
-def merge_pr(pr_number):
+def merge_pr(pr_number, mergeable=None):
+    if mergeable is False:
+        print(f"[Supervisor] PR #{pr_number} has conflicts, skipping merge")
+        return False
     print(f"[Supervisor] Merging PR #{pr_number}...")
     result = github_api(
         f"pulls/{pr_number}/merge",
@@ -677,7 +680,7 @@ def main():
 
                                 if new_ci == "success":
                                     print(f"    Fixed! Merging...")
-                                    if merge_pr(pr_num):
+                                    if merge_pr(pr_num, mergeable=pr_data.get("mergeable")):
                                         mark_task_done(task_id)
                                         pr_need_save = True
                                         pr_updates["agents"][agent_id] = {
@@ -694,6 +697,9 @@ def main():
                                     print(f"    Still failing ({elapsed}m)")
                                 elif new_ci == "pending":
                                     consecutive_failures = 0
+                                elif new_ci == "error":
+                                    print(f"    CI auth error, aborting fix loop")
+                                    break
 
                                 if i + 30 < 15 * 60:
                                     time.sleep(30)

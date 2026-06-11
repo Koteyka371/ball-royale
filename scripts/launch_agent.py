@@ -85,6 +85,10 @@ def git_pull():
         ["git", "pull", "origin", "main", "--no-edit"],
         capture_output=True, text=True, timeout=30
     )
+    if result.returncode != 0:
+        print(f"[{agent_id}] git pull failed: {result.stderr}")
+        if "conflict" in result.stderr.lower() or "merge" in result.stderr.lower():
+            subprocess.run(["git", "merge", "--abort"], capture_output=True, timeout=10)
     return result.returncode == 0
 
 
@@ -107,6 +111,8 @@ def git_reset_to_remote():
 
 
 def git_commit_and_push(message):
+    subprocess.run(["git", "reset", "--mixed", "HEAD", "--", LOCK_FILE], capture_output=True, timeout=10)
+
     add_result = subprocess.run(
         ["git", "add", LOCK_FILE],
         capture_output=True, text=True, timeout=10
@@ -341,6 +347,8 @@ def find_task_for_agent(agent_id_val, agent_area, lock_data, tasks_data):
         task_id = task.get("id")
         if not task_id:
             continue
+        if task.get("claimed_by"):
+            continue
         mapped_area = AREA_TO_AGENT.get(task_area)
         if mapped_area is None:
             continue
@@ -445,6 +453,9 @@ def main():
                         lock_data = load_json(LOCK_FILE)
                         agent_info = lock_data.get("agents", {}).get(agent_id, {})
                     except Exception:
+                        atomic_update({"agents": {agent_id: {
+                            "status": "idle", "task_id": None, "started_at": None,
+                        }}}, f"{agent_id}: reset on exception")
                         return 1
             else:
                 update = {"agents": {agent_id: {
