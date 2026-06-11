@@ -60,7 +60,8 @@ def main():
         area = info.get("area", "?")
         task_id = info.get("task_id") or "-"
         cycles = info.get("cycles_today", 0)
-        total_cycles += cycles
+        if agent_id != "agent-7":
+            total_cycles += cycles
 
         if status in ("working", "assigned"):
             active_agents += 1

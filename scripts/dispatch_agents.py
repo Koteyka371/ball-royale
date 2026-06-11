@@ -236,6 +236,8 @@ def find_task_for_agent(agent_id, agent_area, lock_data, tasks_data, assigned_in
         task_id = task.get("id")
         if not task_id:
             continue
+        if task.get("claimed_by"):
+            continue
         mapped_area = AREA_TO_AGENT.get(task_area)
         if mapped_area is None:
             print(f"[Dispatcher] WARNING: Task {task_id} has unknown area '{task_area}', skipping")
@@ -417,7 +419,7 @@ def main():
 
         if day_changed:
             for aid in lock_data.get("agents", {}):
-                modified_agents[aid] = {"cycles_today": 0}
+                modified_agents[aid] = {**modified_agents.get(aid, {}), "cycles_today": 0}
 
         update_data = {"agents": modified_agents}
         if day_changed:

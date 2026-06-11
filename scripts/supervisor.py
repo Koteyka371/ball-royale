@@ -55,6 +55,8 @@ def git_pull():
     )
     if result.returncode != 0:
         print(f"[Supervisor] git pull failed: {result.stderr}")
+        if "conflict" in result.stderr.lower() or "merge" in result.stderr.lower():
+            subprocess.run(["git", "merge", "--abort"], capture_output=True, timeout=10)
     return result.returncode == 0
 
 
@@ -77,6 +79,8 @@ def git_reset_to_remote():
 
 
 def git_commit_and_push(message):
+    subprocess.run(["git", "reset", "--mixed", "HEAD", "--", LOCK_FILE], capture_output=True, timeout=10)
+
     add_result = subprocess.run(
         ["git", "add", LOCK_FILE],
         capture_output=True, text=True, timeout=10
@@ -222,7 +226,7 @@ def get_ci_status(sha):
         except urllib.error.HTTPError as e:
             if e.code == 401 or e.code == 403:
                 print(f"[Supervisor] CI status check auth error: {e.code}")
-                return "pending"
+                return "error"
             return "pending"
         except Exception:
             return "pending"
@@ -406,10 +410,15 @@ def mark_task_done(task_id):
         git_pull()
 
         tasks_data = load_json(TASK_FILE)
+        found = False
         for task in tasks_data.get("tasks", []):
             if task.get("id") == task_id:
                 task["status"] = "done"
+                found = True
                 break
+        if not found:
+            print(f"[Supervisor] WARNING: Task {task_id} not found in tasks file")
+            return
         atomic_write_json(TASK_FILE, tasks_data)
         print(f"[Supervisor] Marked {task_id} as done in tasks file")
 
@@ -698,7 +707,10 @@ def main():
                                 }
                                 pr_need_save = True
                 else:
-                    print(f"    CI pending...")
+                    if ci_status == "error":
+                        print(f"    CI auth error, skipping this PR")
+                    else:
+                        print(f"    CI pending...")
         else:
             print("[Supervisor] No open PRs")
 

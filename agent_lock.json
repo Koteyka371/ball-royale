@@ -2,7 +2,6 @@
   "agents": {
     "agent-1": {
       "name": "Jules Core",
-      "api_key": "JULES_API_KEY",
       "area": "ai-core",
       "task_id": null,
       "status": "idle",
@@ -11,7 +10,6 @@
     },
     "agent-2": {
       "name": "Jules Behaviors",
-      "api_key": "JULES_API_KEY",
       "area": "behaviors",
       "task_id": null,
       "status": "idle",
@@ -20,7 +18,6 @@
     },
     "agent-3": {
       "name": "Jules Tests",
-      "api_key": "JULES_API_KEY",
       "area": "tests",
       "task_id": null,
       "status": "idle",
@@ -29,7 +26,6 @@
     },
     "agent-4": {
       "name": "Jules Content",
-      "api_key": "JULES_API_KEY",
       "area": "content",
       "task_id": null,
       "status": "idle",
@@ -38,7 +34,6 @@
     },
     "agent-5": {
       "name": "Jules Meta",
-      "api_key": "JULES_API_KEY",
       "area": "meta",
       "task_id": null,
       "status": "idle",
@@ -47,7 +42,6 @@
     },
     "agent-6": {
       "name": "Jules Innovation",
-      "api_key": "JULES_API_KEY",
       "area": "innovation",
       "task_id": null,
       "status": "idle",
@@ -56,7 +50,6 @@
     },
     "agent-7": {
       "name": "Jules Supervisor",
-      "api_key": "JULES_API_KEY",
       "area": "supervisor",
       "task_id": null,
       "status": "idle",
