@@ -222,6 +222,10 @@ def main():
 
         assignments = []
     for agent_id, agent_info in lock_data["agents"].items():
+        # Skip agent-7 (supervisor) — it manages itself
+        if agent_id == "agent-7":
+            continue
+
         if agent_info.get("status") == "working":
             print(f"[Dispatcher] {agent_id}: already working on {agent_info.get('task_id')}")
             continue

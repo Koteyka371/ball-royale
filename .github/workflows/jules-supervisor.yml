@@ -1,0 +1,34 @@
+name: Jules Supervisor
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'  # Every 15 minutes
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  supervise:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Pull latest
+        run: git pull origin main
+
+      - name: Run Supervisor
+        run: python3 scripts/supervisor.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JULES_API_KEY: ${{ secrets.JULES_API_KEY }}
+
+      - name: Show status
+        run: python3 scripts/status_agents.py

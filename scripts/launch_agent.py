@@ -264,7 +264,7 @@ def main():
         sys.exit(1)
 
     agent_id = sys.argv[1]
-    valid_agents = [f"agent-{i}" for i in range(1, 7)]
+    valid_agents = [f"agent-{i}" for i in range(1, 8)]  # 1-7
     if agent_id not in valid_agents:
         print(f"ERROR: Invalid agent_id '{agent_id}'. Must be: {valid_agents}")
         sys.exit(1)
