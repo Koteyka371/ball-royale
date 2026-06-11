@@ -41,8 +41,20 @@ BALL_TYPES = {
                   "perception_radius": 220, "aggression": 1.0, "color": "crimson",
                   "skill": "rage_burst", "skill_cooldown": 5.5},
     "juggernaut": {"hp": 300, "speed": 0.8, "damage": 30, "radius": 22,
-                   "perception_radius": 150, "aggression": 0.4, "color": "darkred",
-                   "skill": "ground_pound", "skill_cooldown": 8.0},
+                    "perception_radius": 150, "aggression": 0.4, "color": "darkred",
+                    "skill": "ground_pound", "skill_cooldown": 8.0},
+    "phantom": {"hp": 65, "speed": 3.0, "damage": 22, "radius": 8,
+                "perception_radius": 320, "aggression": 0.7, "color": "cyan",
+                "skill": "phase_through", "skill_cooldown": 4.0},
+    "rogue": {"hp": 75, "speed": 2.8, "damage": 18, "radius": 10,
+              "perception_radius": 280, "aggression": 0.75, "color": "brown",
+              "skill": "steal_boost", "skill_cooldown": 4.5},
+    "swarm": {"hp": 40, "speed": 3.2, "damage": 10, "radius": 6,
+              "perception_radius": 200, "aggression": 0.6, "color": "yellow",
+              "skill": "clone", "skill_cooldown": 10.0},
+    "guardian": {"hp": 180, "speed": 1.0, "damage": 10, "radius": 16,
+                 "perception_radius": 180, "aggression": 0.3, "color": "gold",
+                 "skill": "protect_ally", "skill_cooldown": 6.0},
 }
 
 
@@ -175,6 +187,7 @@ class BattleSimulation:
         self.max_ticks = max_ticks
         self.num_balls = num_balls
         self.grid = SpatialGrid(arena_size, arena_size)
+        self.brains = {}  # ball_id -> BallBrain, created once per ball
         self.tick = 0
         self.kill_log: List[Dict[str, Any]] = []
         self.stats: Dict[str, Any] = {
@@ -186,6 +199,10 @@ class BattleSimulation:
 
         self._spawn_balls()
         self._spawn_boosters(num_balls // 5)
+
+        # Create brains once for each ball (persistent across ticks)
+        for ball in self.balls:
+            self.brains[ball.id] = BallBrain(ball, self)
 
     def _spawn_balls(self):
         types = list(BALL_TYPES.keys())
@@ -255,11 +272,10 @@ class BattleSimulation:
             if not ball.alive:
                 continue
 
-            # Pass self as world to BallBrain
-            brain = BallBrain(ball, self)
+            brain = self.brains.get(ball.id)
+            if not brain:
+                continue
 
-            # brain.process will call perception, emotion, decision and action
-            # The new action layer directly handles movement based on perception
             brain.process(self._delta)
 
             # Action Layer will set ball.current_action, record stats

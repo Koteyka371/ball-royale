@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """
 Jules Dispatcher — assigns tasks to agents and triggers workflows.
-Uses the 'area' field from each task in agent_tasks.json for dynamic assignment.
+Uses atomic git commits to prevent race conditions on agent_lock.json.
 """
 import json
 import sys
 import os
+import subprocess
 import urllib.request
 import time
 from datetime import datetime, timezone
@@ -13,8 +14,8 @@ from datetime import datetime, timezone
 LOCK_FILE = "agent_lock.json"
 TASK_FILE = "agent_tasks.json"
 MAX_CYCLES = 30
+MAX_RETRIES = 5
 
-# Agent → area mapping
 AGENT_AREAS = {
     "agent-1": "ai-core",
     "agent-2": "behaviors",
@@ -24,7 +25,6 @@ AGENT_AREAS = {
     "agent-6": "innovation",
 }
 
-# Task area → Agent area mapping (task areas from agent_tasks.json)
 AREA_TO_AGENT = {
     "ai-core": "ai-core",
     "ai-behaviors": "behaviors",
@@ -39,17 +39,78 @@ AREA_TO_AGENT = {
     "skills": "tests",
     "ui": "content",
     "visuals": "content",
+    "innovation": "innovation",
+    "meta": "meta",
+    "tests": "tests",
 }
+
+
+def git_pull():
+    """Pull latest changes from remote."""
+    result = subprocess.run(
+        ["git", "pull", "origin", "main", "--no-edit"],
+        capture_output=True, text=True, timeout=30
+    )
+    if result.returncode != 0:
+        print(f"[Dispatcher] git pull failed: {result.stderr}")
+    return result.returncode == 0
+
+
+def git_commit_and_push(message):
+    """Atomically commit and push changes. Returns True on success."""
+    subprocess.run(["git", "add", LOCK_FILE], capture_output=True, timeout=10)
+
+    result = subprocess.run(
+        ["git", "diff", "--cached", "--quiet"],
+        capture_output=True, timeout=10
+    )
+    if result.returncode == 0:
+        return True  # No changes to commit
+
+    subprocess.run(
+        ["git", "commit", "-m", message],
+        capture_output=True, text=True, timeout=10
+    )
+
+    result = subprocess.run(
+        ["git", "push", "origin", "main"],
+        capture_output=True, text=True, timeout=30
+    )
+    return result.returncode == 0
+
+
+def atomic_update(new_data, message):
+    """Pull, update lock file, commit, push with retry."""
+    for attempt in range(MAX_RETRIES):
+        git_pull()
+
+        # Load fresh data after pull
+        with open(LOCK_FILE) as f:
+            current = json.load(f)
+
+        # Merge: only update agent states, keep everything else
+        for agent_id, state in new_data.get("agents", {}).items():
+            current["agents"][agent_id] = state
+        if "last_reset" in new_data:
+            current["last_reset"] = new_data["last_reset"]
+
+        # Write
+        with open(LOCK_FILE, "w") as f:
+            json.dump(current, f, indent=2, ensure_ascii=False)
+
+        if git_commit_and_push(message):
+            return True
+
+        print(f"[Dispatcher] Push failed, retrying ({attempt + 1}/{MAX_RETRIES})...")
+        time.sleep(2)
+
+    print(f"[Dispatcher] ERROR: Failed after {MAX_RETRIES} retries")
+    return False
 
 
 def load_json(path):
     with open(path) as f:
         return json.load(f)
-
-
-def save_json(path, data):
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
 
 
 def reset_daily_counters(lock_data):
@@ -74,17 +135,14 @@ def find_task_for_agent(agent_id, agent_area, lock_data, tasks_data):
     """Find the best unassigned task matching this agent's area."""
     todo_tasks = [t for t in tasks_data.get("tasks", []) if t.get("status") == "todo"]
 
-    # Get already assigned tasks (by any agent)
     assigned = set()
     for aid, ainfo in lock_data["agents"].items():
         if ainfo.get("task_id") and ainfo.get("status") in ("working", "assigned"):
             assigned.add(ainfo["task_id"])
 
-    # Find first todo task in our area that isn't assigned
     for task in todo_tasks:
         task_area = task.get("area", "")
         task_id = task["id"]
-        # Map task area to agent area
         mapped_area = AREA_TO_AGENT.get(task_area, task_area)
         if task_id not in assigned and mapped_area == agent_area:
             return task_id
@@ -130,30 +188,41 @@ def main():
     print("JULES DISPATCHER")
     print("=" * 60)
 
-    # Load data
+    git_pull()
+
     lock_data = load_json(LOCK_FILE)
     tasks_data = load_json(TASK_FILE)
 
-    # Reset daily counters
     lock_data = reset_daily_counters(lock_data)
 
-    # Find tasks for each idle agent
+    # Clean up stale agents (assigned/working for > 20 minutes)
+    now = datetime.now(timezone.utc)
+    for agent_id, agent_info in lock_data["agents"].items():
+        status = agent_info.get("status")
+        started = agent_info.get("started_at")
+        if status in ("assigned", "working") and started:
+            elapsed = (now - datetime.fromisoformat(started)).total_seconds() / 60
+            if elapsed > 20:
+                print(f"[Dispatcher] {agent_id}: STALE after {elapsed:.0f} min, resetting")
+                lock_data["agents"][agent_id]["status"] = "idle"
+                lock_data["agents"][agent_id]["task_id"] = None
+                lock_data["agents"][agent_id]["started_at"] = None
+
     assignments = []
     for agent_id, agent_info in lock_data["agents"].items():
-        # Skip if already working
         if agent_info.get("status") == "working":
             print(f"[Dispatcher] {agent_id}: already working on {agent_info.get('task_id')}")
             continue
 
-        # Skip if hit daily limit
+        if agent_info.get("status") == "assigned":
+            print(f"[Dispatcher] {agent_id}: already assigned {agent_info.get('task_id')}")
+            continue
+
         if agent_info.get("cycles_today", 0) >= MAX_CYCLES:
             print(f"[Dispatcher] {agent_id}: daily limit reached ({MAX_CYCLES} cycles)")
             continue
 
-        # Get agent's area
         agent_area = AGENT_AREAS.get(agent_id, agent_info.get("area", ""))
-
-        # Find task
         task_id = find_task_for_agent(agent_id, agent_area, lock_data, tasks_data)
         if task_id:
             assignments.append((agent_id, task_id))
@@ -161,26 +230,30 @@ def main():
         else:
             print(f"[Dispatcher] {agent_id}: no tasks available in area={agent_area}")
 
-    # Apply assignments
-    for agent_id, task_id in assignments:
-        lock_data["agents"][agent_id]["task_id"] = task_id
-        lock_data["agents"][agent_id]["status"] = "assigned"
-        lock_data["agents"][agent_id]["started_at"] = datetime.now(timezone.utc).isoformat()
+    if assignments:
+        update_data = {"agents": {}}
+        for agent_id, task_id in assignments:
+            update_data["agents"][agent_id] = {
+                **lock_data["agents"][agent_id],
+                "task_id": task_id,
+                "status": "assigned",
+                "started_at": datetime.now(timezone.utc).isoformat(),
+            }
 
-    # Save lock file
-    save_json(LOCK_FILE, lock_data)
-    print(f"\n[Dispatcher] Saved {LOCK_FILE} with {len(assignments)} assignments")
+        if atomic_update(update_data, f"dispatcher: assign {len(assignments)} tasks"):
+            print(f"\n[Dispatcher] Saved {LOCK_FILE} with {len(assignments)} assignments")
+        else:
+            print("\n[Dispatcher] FAILED to save assignments")
+            return 1
+    else:
+        print("[Dispatcher] No tasks to assign")
 
-    # Trigger workflows
     if assignments:
         print("\n[Dispatcher] Triggering agent workflows...")
         for agent_id, task_id in assignments:
             trigger_agent_workflow(agent_id)
-            time.sleep(2)  # Small delay between triggers
-    else:
-        print("[Dispatcher] No tasks to assign")
+            time.sleep(2)
 
-    # Show remaining tasks per area
     print("\n[Dispatcher] Remaining tasks by area:")
     todo_tasks = [t for t in tasks_data.get("tasks", []) if t.get("status") == "todo"]
     area_counts = {}
@@ -188,7 +261,7 @@ def main():
         area = t.get("area", "unknown")
         area_counts[area] = area_counts.get(area, 0) + 1
     for area, count in sorted(area_counts.items()):
-        print(f"  {area}: {count} tasks")
+        print(f"  {area}: {count}")
 
     print("\n[Dispatcher] Done!")
     return 0

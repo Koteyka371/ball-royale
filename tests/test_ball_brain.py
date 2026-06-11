@@ -102,11 +102,11 @@ def test_decision_layer():
     world = MockWorld()
     brain = BallBrain(ball, world)
 
-    # Neutral state, nothing around -> personality
+    # Neutral state, nothing around -> personality behavior (attack for warrior)
     perception_data = brain.perception()
     emotion = brain.emotion(perception_data)
     decision = brain.decision(perception_data, emotion)
-    assert decision == "warrior"
+    assert decision == "attack"
 
     # High danger -> defend
     world.entities["enemies"] = [MockBall() for _ in range(4)] # danger_level = 0.8
@@ -129,7 +129,7 @@ def test_decision_layer():
     perception_data = brain.perception()
     emotion = brain.emotion(perception_data)
     decision = brain.decision(perception_data, emotion)
-    assert decision == "opportunistic"
+    assert decision == "collect_booster"
 
 
 def test_action_layer():

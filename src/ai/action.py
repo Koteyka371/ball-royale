@@ -20,13 +20,13 @@ class Action:
 
         if strategy == "flee":
             self._flee(delta)
-        elif strategy in ["attack", "chase"]:
+        elif strategy in ("attack", "chase"):
             self._attack(delta)
         elif strategy == "defend":
             self._defend(delta)
-        elif strategy in ["opportunistic", "collect booster"]:
+        elif strategy in ("opportunistic", "collect_booster", "collect booster"):
             self._collect_booster(delta)
-        elif strategy == "use skill":
+        elif strategy in ("use_skill", "use skill"):
             self._use_skill()
         else:
             self._idle(delta)

@@ -11,13 +11,13 @@ permissions:
 jobs:
   auto-merge:
     runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'automated')
     steps:
       - name: Wait for CI to complete
         run: |
           echo "Waiting 90s for CI checks to start..."
           sleep 90
           
-          # Check if PR is mergeable
           MERGEABLE=$(gh pr view ${{ github.event.pull_request.number }} \
             --repo ${{ github.repository }} \
             --json mergeable -q '.mergeable')
@@ -35,7 +35,7 @@ jobs:
               --json mergeable -q '.mergeable')
             
             if [ "$MERGEABLE" != "MERGEABLE" ]; then
-              echo "PR still not mergeable after extra wait. Skipping."
+              echo "PR still not mergeable. Skipping."
               exit 0
             fi
           fi

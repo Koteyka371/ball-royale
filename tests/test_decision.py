@@ -1,16 +1,16 @@
 import sys
 import os
 
-# Add src to the sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
 from ai.decision import Decision
 
 class MockBall:
-    def __init__(self, hp=100, max_hp=100, personality="idle"):
+    def __init__(self, hp=100, max_hp=100, personality="idle", skill_timer=0.0):
         self.hp = hp
         self.max_hp = max_hp
         self.personality = personality
+        self.skill_timer = skill_timer
 
     def get_hp_percent(self):
         if self.max_hp == 0:
@@ -22,75 +22,88 @@ class MockWorld:
 
 def test_decision_fear_flee():
     ball = MockBall(hp=20, max_hp=100)
-    world = MockWorld()
-    decision = Decision(ball, world)
-
-    # Even if there are enemies and boosters, fear should prioritize flee
+    decision = Decision(ball, MockWorld())
     perception = {
-        "danger_level": 0.5,
-        "opportunity_level": 0.8,
-        "enemies": [1, 2],
-        "boosters": [1, 2, 3]
+        "danger_level": 0.5, "opportunity_level": 0.8,
+        "threat_level": 2.0, "opportunity_score": 0.6,
+        "enemies": [1, 2], "boosters": [1, 2, 3], "allies": []
     }
     action = decision.choose_action(perception, "fear")
     assert action == "flee"
 
 def test_decision_defend_high_danger():
     ball = MockBall(hp=100, max_hp=100, personality="idle")
-    world = MockWorld()
-    decision = Decision(ball, world)
-
-    # High danger level (>0.7) should prioritize defend over attack
+    decision = Decision(ball, MockWorld())
     perception = {
-        "danger_level": 0.8,
-        "opportunity_level": 0.1,
-        "enemies": [1, 2, 3, 4],
-        "boosters": []
+        "danger_level": 0.8, "opportunity_level": 0.1,
+        "threat_level": 3.0, "opportunity_score": 0.1,
+        "enemies": [1, 2, 3, 4], "boosters": [], "allies": []
     }
     action = decision.choose_action(perception, "neutral")
     assert action == "defend"
 
-def test_decision_greed_opportunistic():
+def test_decision_greed_collect_booster():
     ball = MockBall(hp=100, max_hp=100)
-    world = MockWorld()
-    decision = Decision(ball, world)
-
-    # Greed with boosters should prioritize opportunistic
+    decision = Decision(ball, MockWorld())
     perception = {
-        "danger_level": 0.1,
-        "opportunity_level": 0.9,
-        "enemies": [1],
-        "boosters": [1, 2]
+        "danger_level": 0.1, "opportunity_level": 0.9,
+        "threat_level": 0.5, "opportunity_score": 0.8,
+        "enemies": [1], "boosters": [1, 2], "allies": []
     }
     action = decision.choose_action(perception, "greed")
-    assert action == "opportunistic"
+    assert action == "collect_booster"
 
 def test_decision_rage_attack():
     ball = MockBall(hp=100, max_hp=100, personality="idle")
-    world = MockWorld()
-    decision = Decision(ball, world)
-
-    # Rage should prioritize attack
+    decision = Decision(ball, MockWorld())
     perception = {
-        "danger_level": 0.3,
-        "opportunity_level": 0.0,
-        "enemies": [1],
-        "boosters": []
+        "danger_level": 0.3, "opportunity_level": 0.0,
+        "threat_level": 1.0, "opportunity_score": 0.0,
+        "enemies": [1], "boosters": [], "allies": []
     }
     action = decision.choose_action(perception, "rage")
     assert action == "attack"
 
 def test_decision_fallback_personality():
     ball = MockBall(hp=100, max_hp=100, personality="scout")
-    world = MockWorld()
-    decision = Decision(ball, world)
-
-    # Empty perception, neutral emotion -> should fall back to personality
+    decision = Decision(ball, MockWorld())
     perception = {
-        "danger_level": 0.0,
-        "opportunity_level": 0.0,
-        "enemies": [],
-        "boosters": []
+        "danger_level": 0.0, "opportunity_level": 0.0,
+        "threat_level": 0.0, "opportunity_score": 0.0,
+        "enemies": [], "boosters": [], "allies": []
     }
     action = decision.choose_action(perception, "neutral")
-    assert action == "scout"
+    assert action == "collect_booster"
+
+def test_decision_use_skill():
+    ball = MockBall(hp=80, max_hp=100, skill_timer=0.0)
+    decision = Decision(ball, MockWorld())
+    perception = {
+        "danger_level": 0.4, "opportunity_level": 0.0,
+        "threat_level": 2.0, "opportunity_score": 0.0,
+        "enemies": [1, 2], "boosters": [], "allies": []
+    }
+    action = decision.choose_action(perception, "neutral")
+    assert action == "use_skill"
+
+def test_decision_chase_assassin():
+    ball = MockBall(hp=100, max_hp=100, personality="assassin")
+    decision = Decision(ball, MockWorld())
+    perception = {
+        "danger_level": 0.3, "opportunity_level": 0.0,
+        "threat_level": 1.0, "opportunity_score": 0.0,
+        "enemies": [1], "boosters": [], "allies": []
+    }
+    action = decision.choose_action(perception, "neutral")
+    assert action == "chase"
+
+def test_decision_no_enemies_personality_fallback():
+    ball = MockBall(hp=100, max_hp=100, personality="warrior")
+    decision = Decision(ball, MockWorld())
+    perception = {
+        "danger_level": 0.0, "opportunity_level": 0.0,
+        "threat_level": 0.0, "opportunity_score": 0.0,
+        "enemies": [], "boosters": [], "allies": []
+    }
+    action = decision.choose_action(perception, "neutral")
+    assert action == "attack"

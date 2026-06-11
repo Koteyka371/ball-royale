@@ -1,23 +1,36 @@
 from typing import Any, Dict
 
+
 class Decision:
     """
     Decision system that evaluates options and chooses an action.
-    Weighs threat level, opportunity, personality, emotional state.
-    Returns best action: chase, flee, attack, use skill, collect booster, defend.
+    Uses threat_level, opportunity_score, personality, emotional state.
+    Returns best action: flee, defend, attack, use_skill, collect_booster, chase, idle.
     """
+
+    PERSONALITY_BEHAVIORS = {
+        "warrior": "attack",
+        "tank": "defend",
+        "assassin": "chase",
+        "healer": "defend",
+        "sniper": "attack",
+        "bomber": "attack",
+        "berserker": "attack",
+        "juggernaut": "defend",
+        "rogue": "chase",
+        "guardian": "defend",
+        "phantom": "chase",
+        "swarm": "chase",
+        "scout": "collect_booster",
+        "aggressive": "attack",
+        "defender": "defend",
+    }
 
     def __init__(self, ball: Any, world: Any):
         self.ball = ball
         self.world = world
 
     def choose_action(self, perception_data: Dict[str, Any], emotion_state: str) -> str:
-        """
-        Chooses the best action by scoring different possible actions based on
-        current perception and emotion state.
-        Returns the highest scoring action.
-        """
-        # Calculate HP percentage
         hp_percent = 1.0
         if hasattr(self.ball, "get_hp_percent"):
             hp_percent = self.ball.get_hp_percent()
@@ -27,87 +40,100 @@ class Decision:
         scores = {
             "flee": 0.0,
             "defend": 0.0,
-            "opportunistic": 0.0,
+            "collect_booster": 0.0,
             "attack": 0.0,
-            "idle": 0.0
+            "chase": 0.0,
+            "use_skill": 0.0,
+            "idle": 0.0,
         }
 
         danger_level = perception_data.get("danger_level", 0.0)
+        threat_level = perception_data.get("threat_level", 0.0)
         opportunity_level = perception_data.get("opportunity_level", 0.0)
+        opportunity_score = perception_data.get("opportunity_score", 0.0)
         enemies = perception_data.get("enemies", [])
         boosters = perception_data.get("boosters", [])
+        allies = perception_data.get("allies", [])
 
         personality = getattr(self.ball, "personality", "idle")
+        skill_timer = getattr(self.ball, "skill_timer", 0.0)
 
-        # Flee scoring
+        # === FLEE ===
         if hp_percent < 0.3:
-            scores["flee"] += 50.0  # High priority if HP is low
+            scores["flee"] += 50.0
         if emotion_state == "fear":
-            scores["flee"] += 100.0 # Emotion override
+            scores["flee"] += 100.0
         if emotion_state == "cowardice":
             scores["flee"] += 80.0
+        scores["flee"] += threat_level * 5.0
 
-        scores["flee"] += danger_level * 10.0
-
-        # Defend scoring
+        # === DEFEND ===
         if danger_level > 0.7:
             scores["defend"] += 100.0
-        if personality == "tank" or personality == "defender":
-            scores["defend"] += 20.0
-
+        if threat_level > 5.0:
+            scores["defend"] += 50.0
+        if personality in ("tank", "defender", "guardian", "juggernaut"):
+            scores["defend"] += 30.0
         scores["defend"] += danger_level * 20.0
 
-        # Opportunistic scoring
+        # === COLLECT BOOSTER ===
         if len(boosters) > 0:
-            scores["opportunistic"] += 30.0 + opportunity_level * 10.0
+            scores["collect_booster"] += 30.0 + opportunity_score * 10.0
         if emotion_state == "greed":
-            scores["opportunistic"] += 100.0  # Greed overrides other things if there are boosters
+            scores["collect_booster"] += 100.0
+        if personality in ("scout", "rogue"):
+            scores["collect_booster"] += 20.0
+        if len(boosters) == 0:
+            scores["collect_booster"] = -1000.0
 
-        if personality == "scout":
-            scores["opportunistic"] += 20.0
-
-        # Attack scoring
+        # === ATTACK ===
         if len(enemies) > 0:
             scores["attack"] += 10.0
-
-        # Give a slight bump to attack if danger is high but not enough to defend?
-        # The test specifically wants "defend" if danger_level > 0.7, so make sure attack doesn't win here!
         if danger_level > 0.7:
-            scores["attack"] -= 50.0  # Strongly discourage attack if it's too dangerous to not defend
-
-        if emotion_state == "rage" or emotion_state == "bloodlust":
+            scores["attack"] -= 50.0
+        if emotion_state in ("rage", "bloodlust"):
             scores["attack"] += 100.0
-
-        if personality == "warrior" or personality == "aggressive":
+        if personality in ("warrior", "aggressive", "berserker", "bomber"):
             scores["attack"] += 30.0
-
-        # Idle scoring (fallback)
-        scores["idle"] = 1.0
-
-        # Add a baseline score based on personality if it matches an action
-        if personality in scores:
-            scores[personality] += 15.0
-
-        # If there are no boosters, opportunistic shouldn't be chosen
-        if len(boosters) == 0:
-            scores["opportunistic"] = -1000.0
-
-        # If there are no enemies, attack shouldn't be chosen
         if len(enemies) == 0:
             scores["attack"] = -1000.0
+
+        # === CHASE ===
+        if len(enemies) > 0:
+            scores["chase"] += 15.0
+        if personality in ("assassin", "rogue", "phantom", "swarm"):
+            scores["chase"] += 40.0
+        if emotion_state == "bloodlust":
+            scores["chase"] += 80.0
+        if len(enemies) == 0:
+            scores["chase"] = -1000.0
+
+        # === USE SKILL ===
+        if skill_timer <= 0 and len(enemies) > 0:
+            scores["use_skill"] += 40.0
+            if hp_percent < 0.5:
+                scores["use_skill"] += 30.0
+        if skill_timer > 0:
+            scores["use_skill"] = -1000.0
+
+        # === IDLE ===
+        scores["idle"] = 1.0
+
+        # Personality baseline
+        if personality in scores:
+            scores[personality] += 15.0
 
         # Find highest score
         best_action = "idle"
         best_score = -9999.0
 
-        # Iterate in a deterministic order (to break ties consistently)
-        for action in ["flee", "defend", "opportunistic", "attack", "idle"]:
+        for action in ["flee", "defend", "collect_booster", "attack", "chase", "use_skill", "idle"]:
             if scores[action] > best_score:
                 best_score = scores[action]
                 best_action = action
 
-        # Fall back to personality if best action is just idle
+        # Fall back to personality behavior instead of returning personality name
         if best_action == "idle":
-            return personality
+            return self.PERSONALITY_BEHAVIORS.get(personality, "idle")
 
         return best_action

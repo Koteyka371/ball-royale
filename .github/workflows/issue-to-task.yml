@@ -11,6 +11,7 @@ jobs:
     
     permissions:
       contents: write
+      pull-requests: write
     
     steps:
       - name: Checkout repository
@@ -22,7 +23,6 @@ jobs:
           ISSUE_BODY: ${{ github.event.issue.body }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
-          # Create task from issue
           python3 << 'EOF'
           import json
           import os
@@ -32,27 +32,27 @@ jobs:
           body = os.environ['ISSUE_BODY'] or ''
           number = os.environ['ISSUE_NUMBER']
           
-          # Generate task ID from title
           task_id = re.sub(r'[^a-z0-9]+', '-', title.lower())[:50]
           task_id = f"issue-{number}-{task_id}"
           
-          # Determine area from labels or title
           area = 'content'
           if 'bug' in title.lower():
               area = 'bugfix'
           elif 'feature' in title.lower():
-              area = 'feature'
+              area = 'content'
           elif 'ai' in title.lower():
               area = 'ai-core'
+          elif 'test' in title.lower():
+              area = 'tests'
+          elif 'workflow' in title.lower() or 'script' in title.lower():
+              area = 'meta'
           
-          # Determine risk
           risk = 'medium'
           if 'urgent' in title.lower() or 'critical' in title.lower():
               risk = 'high'
           elif 'simple' in title.lower() or 'easy' in title.lower():
               risk = 'low'
           
-          # Create task
           task = {
               "id": task_id,
               "status": "todo",
@@ -68,11 +68,9 @@ jobs:
               ]
           }
           
-          # Load and update manifest
           with open('agent_tasks.json', 'r') as f:
               manifest = json.load(f)
           
-          # Check for duplicate
           existing_ids = {t['id'] for t in manifest.get('tasks', [])}
           if task_id not in existing_ids:
               manifest['tasks'].append(task)
@@ -83,10 +81,13 @@ jobs:
               print(f"Task already exists: {task_id}")
           EOF
 
-      - name: Commit changes
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add agent_tasks.json
-          git diff --staged --quiet || git commit -m "auto: add task from issue #${{ github.event.issue.number }}"
-          git push
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "auto: add task from issue #${{ github.event.issue.number }}"
+          title: "[Task] ${{ github.event.issue.title }}"
+          body: |
+            Auto-generated task from issue #${{ github.event.issue.number }}
+          branch: auto/task-issue-${{ github.event.issue.number }}
+          labels: automated

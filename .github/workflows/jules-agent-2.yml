@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Wait for agent's turn (stagger)
-        run: sleep 300
+        run: sleep 120
 
       - name: Checkout repository
         uses: actions/checkout@v5

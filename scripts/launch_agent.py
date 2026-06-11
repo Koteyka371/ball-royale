@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 """
-Universal Jules Agent Launcher.
+Universal Jules Agent Launcher with atomic updates.
 Usage: python launch_agent.py <agent_id>
-Example: python launch_agent.py agent-1
-
-Reads agent_lock.json to find assigned task, invokes Jules API, creates PR.
 """
 import json
 import sys
 import os
+import subprocess
 import urllib.request
+import time
 from datetime import datetime, timezone
 
 LOCK_FILE = "agent_lock.json"
 TASK_FILE = "agent_tasks.json"
 MAX_CYCLES = 30
+MAX_RETRIES = 5
 
 AGENT_PROMPTS = {
     "agent-1": {
@@ -80,18 +80,56 @@ AGENT_PROMPTS = {
 }
 
 
+def git_pull():
+    result = subprocess.run(
+        ["git", "pull", "origin", "main", "--no-edit"],
+        capture_output=True, text=True, timeout=30
+    )
+    return result.returncode == 0
+
+
+def git_commit_and_push(message):
+    subprocess.run(["git", "add", LOCK_FILE], capture_output=True, timeout=10)
+    result = subprocess.run(
+        ["git", "diff", "--cached", "--quiet"],
+        capture_output=True, timeout=10
+    )
+    if result.returncode == 0:
+        return True
+
+    subprocess.run(
+        ["git", "commit", "-m", message],
+        capture_output=True, text=True, timeout=10
+    )
+    result = subprocess.run(
+        ["git", "push", "origin", "main"],
+        capture_output=True, text=True, timeout=30
+    )
+    return result.returncode == 0
+
+
+def atomic_update(new_data, message):
+    for attempt in range(MAX_RETRIES):
+        git_pull()
+        with open(LOCK_FILE) as f:
+            current = json.load(f)
+        for agent_id, state in new_data.get("agents", {}).items():
+            current["agents"][agent_id] = state
+        with open(LOCK_FILE, "w") as f:
+            json.dump(current, f, indent=2, ensure_ascii=False)
+        if git_commit_and_push(message):
+            return True
+        print(f"[Agent] Push failed, retrying ({attempt + 1}/{MAX_RETRIES})...")
+        time.sleep(2)
+    return False
+
+
 def load_json(path):
     with open(path) as f:
         return json.load(f)
 
 
-def save_json(path, data):
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
-
-
 def get_task_info(task_id, tasks_data):
-    """Get full task info from agent_tasks.json."""
     for t in tasks_data.get("tasks", []):
         if t["id"] == task_id:
             return t
@@ -99,17 +137,14 @@ def get_task_info(task_id, tasks_data):
 
 
 def build_prompt(agent_id, agent_config, task_info, lock_data):
-    """Build the Jules prompt for this agent."""
     agent_meta = AGENT_PROMPTS.get(agent_id, {})
     task_title = task_info["title"]
     task_desc = task_info.get("description", "No description")
 
-    # List what other agents are working on (to avoid conflicts)
     other_work = []
     for aid, ainfo in lock_data["agents"].items():
         if aid != agent_id and ainfo.get("status") == "working" and ainfo.get("task_id"):
             other_work.append(f"- {aid}: {ainfo['task_id']}")
-
     other_work_str = "\n".join(other_work) if other_work else "None"
 
     prompt = f"""You are {agent_meta.get('name', 'Jules')}, an autonomous AI developer.
@@ -155,7 +190,7 @@ Description: {task_desc}
 ## TASK FORMAT (when generating new tasks)
 Each task in agent_tasks.json must have this structure:
 ```json
-{
+{{
   "id": "unique-task-id",
   "status": "todo",
   "area": "ai-core|behaviors|tests|content|meta|innovation",
@@ -164,7 +199,7 @@ Each task in agent_tasks.json must have this structure:
   "description": "What to do",
   "allowed_paths": ["src/ai/**"],
   "acceptance": ["Criteria 1", "Criteria 2"]
-}
+}}
 ```
 The "area" field is CRITICAL — it tells the dispatcher which agent should work on this task."""
 
@@ -172,7 +207,6 @@ The "area" field is CRITICAL — it tells the dispatcher which agent should work
 
 
 def invoke_jules(api_key, prompt, title):
-    """Invoke Jules API and return response."""
     payload = {
         "prompt": prompt,
         "sourceContext": {
@@ -198,16 +232,16 @@ def invoke_jules(api_key, prompt, title):
 def main():
     if len(sys.argv) < 2:
         print("Usage: python launch_agent.py <agent_id>")
-        print("Example: python launch_agent.py agent-1")
         sys.exit(1)
 
     agent_id = sys.argv[1]
     valid_agents = [f"agent-{i}" for i in range(1, 7)]
     if agent_id not in valid_agents:
-        print(f"ERROR: Invalid agent_id '{agent_id}'. Must be one of: {valid_agents}")
+        print(f"ERROR: Invalid agent_id '{agent_id}'. Must be: {valid_agents}")
         sys.exit(1)
 
-    # Load data
+    git_pull()
+
     lock_data = load_json(LOCK_FILE)
     tasks_data = load_json(TASK_FILE)
 
@@ -216,18 +250,15 @@ def main():
         print(f"ERROR: Agent {agent_id} not found in {LOCK_FILE}")
         sys.exit(1)
 
-    # Check if agent has a task
     task_id = agent_info.get("task_id")
     if not task_id:
         print(f"[{agent_id}] No task assigned. Run dispatch_agents.py first.")
         sys.exit(0)
 
-    # Check cycle limit
     if agent_info.get("cycles_today", 0) >= MAX_CYCLES:
         print(f"[{agent_id}] Daily limit reached ({MAX_CYCLES} cycles)")
         sys.exit(0)
 
-    # Get task info
     task_info = get_task_info(task_id, tasks_data)
     if not task_info:
         print(f"[{agent_id}] Task {task_id} not found in {TASK_FILE}")
@@ -235,34 +266,56 @@ def main():
 
     print(f"[{agent_id}] Task: {task_id} — {task_info['title']}")
 
-    # Get API key
     api_key_name = agent_info.get("api_key", "JULES_API_KEY")
     api_key = os.environ.get(api_key_name, "")
     if not api_key:
         print(f"ERROR: {api_key_name} is not set!")
         sys.exit(1)
 
-    # Build prompt
     prompt = build_prompt(agent_id, agent_info, task_info, lock_data)
 
-    # Mark as working
-    lock_data["agents"][agent_id]["status"] = "working"
-    lock_data["agents"][agent_id]["cycles_today"] = agent_info.get("cycles_today", 0) + 1
-    lock_data["agents"][agent_id]["started_at"] = datetime.now(timezone.utc).isoformat()
-    save_json(LOCK_FILE, lock_data)
+    # Mark as working (increment cycle AFTER success, not before)
+    update_data = {
+        "agents": {
+            agent_id: {
+                **agent_info,
+                "status": "working",
+                "started_at": datetime.now(timezone.utc).isoformat(),
+            }
+        }
+    }
+    if not atomic_update(update_data, f"agent-{agent_id.split('-')[1]}: start working"):
+        print(f"[{agent_id}] FAILED to update lock file")
+        sys.exit(1)
 
-    # Invoke Jules
     print(f"[{agent_id}] Invoking Jules API...")
     try:
         result = invoke_jules(api_key, prompt, f"Task: {task_info['title']}")
         print(f"[{agent_id}] Jules response: {result[:200]}")
         print(f"[{agent_id}] Invoked successfully!")
+
+        # NOW increment cycle count (after successful API call)
+        with open(LOCK_FILE) as f:
+            lock = json.load(f)
+        lock["agents"][agent_id]["cycles_today"] = lock["agents"][agent_id].get("cycles_today", 0) + 1
+        with open(LOCK_FILE, "w") as f:
+            json.dump(lock, f, indent=2, ensure_ascii=False)
+        git_commit_and_push(f"agent-{agent_id.split('-')[1]}: increment cycle")
+
     except Exception as e:
         print(f"[{agent_id}] ERROR: {e}")
-        # Reset status on failure
-        lock_data["agents"][agent_id]["status"] = "idle"
-        lock_data["agents"][agent_id]["task_id"] = None
-        save_json(LOCK_FILE, lock_data)
+        # Reset status on failure, do NOT increment cycle
+        update_fail = {
+            "agents": {
+                agent_id: {
+                    **agent_info,
+                    "status": "idle",
+                    "task_id": None,
+                    "started_at": None,
+                }
+            }
+        }
+        atomic_update(update_fail, f"agent-{agent_id.split('-')[1]}: failed, reset")
         sys.exit(1)
 
 
