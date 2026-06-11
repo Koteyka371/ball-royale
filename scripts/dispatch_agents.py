@@ -9,10 +9,12 @@ import os
 import subprocess
 import urllib.request
 import time
+import fcntl
 from datetime import datetime, timezone
 
 LOCK_FILE = "agent_lock.json"
 TASK_FILE = "agent_tasks.json"
+DISPATCHER_LOCK = ".dispatcher.lock"
 MAX_CYCLES = 30
 MAX_RETRIES = 5
 
@@ -189,27 +191,36 @@ def main():
     print("JULES DISPATCHER")
     print("=" * 60)
 
-    git_pull()
+    # Acquire dispatcher lock to prevent concurrent runs
+    lock_fd = open(DISPATCHER_LOCK, "w")
+    try:
+        fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except (IOError, OSError):
+        print("[Dispatcher] Another dispatcher is running, exiting")
+        return 0
 
-    lock_data = load_json(LOCK_FILE)
-    tasks_data = load_json(TASK_FILE)
+    try:
+        git_pull()
 
-    lock_data = reset_daily_counters(lock_data)
+        lock_data = load_json(LOCK_FILE)
+        tasks_data = load_json(TASK_FILE)
 
-    # Clean up stale agents (assigned/working for > 45 minutes)
-    now = datetime.now(timezone.utc)
-    for agent_id, agent_info in lock_data["agents"].items():
-        status = agent_info.get("status")
-        started = agent_info.get("started_at")
-        if status in ("assigned", "working") and started:
-            elapsed = (now - datetime.fromisoformat(started)).total_seconds() / 60
-            if elapsed > 45:
-                print(f"[Dispatcher] {agent_id}: STALE after {elapsed:.0f} min, resetting")
-                lock_data["agents"][agent_id]["status"] = "idle"
-                lock_data["agents"][agent_id]["task_id"] = None
-                lock_data["agents"][agent_id]["started_at"] = None
+        lock_data = reset_daily_counters(lock_data)
 
-    assignments = []
+        # Clean up stale agents (assigned/working for > 45 minutes)
+        now = datetime.now(timezone.utc)
+        for agent_id, agent_info in lock_data["agents"].items():
+            status = agent_info.get("status")
+            started = agent_info.get("started_at")
+            if status in ("assigned", "working") and started:
+                elapsed = (now - datetime.fromisoformat(started)).total_seconds() / 60
+                if elapsed > 45:
+                    print(f"[Dispatcher] {agent_id}: STALE after {elapsed:.0f} min, resetting")
+                    lock_data["agents"][agent_id]["status"] = "idle"
+                    lock_data["agents"][agent_id]["task_id"] = None
+                    lock_data["agents"][agent_id]["started_at"] = None
+
+        assignments = []
     for agent_id, agent_info in lock_data["agents"].items():
         if agent_info.get("status") == "working":
             print(f"[Dispatcher] {agent_id}: already working on {agent_info.get('task_id')}")
@@ -266,6 +277,10 @@ def main():
 
     print("\n[Dispatcher] Done!")
     return 0
+
+    finally:
+        fcntl.flock(lock_fd, fcntl.LOCK_UN)
+        lock_fd.close()
 
 
 if __name__ == "__main__":

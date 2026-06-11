@@ -182,7 +182,9 @@ Description: {task_desc}
 ## CRITICAL RULES
 - You MUST update agent_tasks.json to mark the task as "done" BEFORE committing
 - The PR title MUST contain the task_id in format: "[{task_id}] {title}"
+- When creating the PR, you MUST add the label "automated" to enable auto-merge
 - This lets the system trace which task the PR is for
+- If you skip marking the task as done, the system will reassign it and your work is wasted
 
 ## RULES
 - ONLY modify files in your area
@@ -210,6 +212,27 @@ Each task in agent_tasks.json must have this structure:
 The "area" field is CRITICAL — it tells the dispatcher which agent should work on this task."""
 
     return prompt
+
+
+def check_pr_created(task_id):
+    """Check if a PR was created for this task."""
+    repo = "Koteyka371/ball-royale"
+    url = f"https://api.github.com/repos/{repo}/pulls?state=open&per_page=10"
+    headers = {
+        "Accept": "application/vnd.github.v3+json",
+    }
+
+    try:
+        req = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            prs = json.loads(resp.read().decode("utf-8"))
+            for pr in prs:
+                title = pr.get("title", "")
+                if task_id in title:
+                    return True
+            return False
+    except Exception:
+        return False
 
 
 def invoke_jules(api_key, prompt, title):
@@ -299,6 +322,17 @@ def main():
         result = invoke_jules(api_key, prompt, f"Task: {task_info['title']}")
         print(f"[{agent_id}] Jules response: {result[:200]}")
         print(f"[{agent_id}] Invoked successfully!")
+
+        # Wait for Jules to create PR (Jules works asynchronously)
+        print(f"[{agent_id}] Waiting 60s for Jules to create PR...")
+        time.sleep(60)
+
+        # Check if PR was created
+        pr_created = check_pr_created(task_id)
+        if pr_created:
+            print(f"[{agent_id}] PR created successfully!")
+        else:
+            print(f"[{agent_id}] WARNING: No PR found for task {task_id}")
 
         # NOW increment cycle count (after successful API call)
         with open(LOCK_FILE) as f:
