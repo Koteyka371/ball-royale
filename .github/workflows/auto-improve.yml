@@ -50,7 +50,7 @@ jobs:
           BRANCH="auto/improve-$(date +%Y%m%d-%H%M%S)"
           git checkout -b "$BRANCH"
           git add -A
-          git commit -m "auto: generate new tasks from game_design.md"
+          git commit -m "auto: project analysis and improvement"
           git push origin "$BRANCH"
           gh pr create \
             --title "[Auto] Task generation $(date +%Y-%m-%d)" \

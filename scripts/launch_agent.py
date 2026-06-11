@@ -10,6 +10,7 @@ import os
 import subprocess
 import urllib.request
 import urllib.error
+import urllib.parse
 import time
 import tempfile
 from datetime import datetime, timezone
@@ -114,7 +115,7 @@ def git_commit_and_push(message):
         return False
 
     diff_result = subprocess.run(
-        ["git", "diff", "--cached", "--quiet"],
+        ["git", "diff", "--cached", "--quiet", "--", LOCK_FILE],
         capture_output=True, timeout=10
     )
     if diff_result.returncode == 0:
@@ -171,6 +172,9 @@ def atomic_update(new_data, message):
                         current["agents"][agent_key][k] = v
             else:
                 current.setdefault("agents", {})[agent_key] = state
+
+        if "last_reset" in new_data:
+            current["last_reset"] = new_data["last_reset"]
 
         atomic_write_json(LOCK_FILE, current)
 
@@ -288,7 +292,8 @@ def invoke_jules(task_id, area, prompt, token):
 def check_pr_created(branch_name, token):
     repo = os.environ.get("GITHUB_REPOSITORY", "Koteyka371/ball-royale")
     owner = repo.split("/")[0]
-    url = f"https://api.github.com/repos/{repo}/pulls?head={owner}:{branch_name}&state=open"
+    encoded_branch = urllib.parse.quote(branch_name, safe="")
+    url = f"https://api.github.com/repos/{repo}/pulls?head={owner}:{encoded_branch}&state=open"
     req = urllib.request.Request(url, headers={
         "Authorization": f"token {token}",
         "Accept": "application/vnd.github.v3+json",
@@ -317,10 +322,10 @@ def find_task_for_agent(agent_id_val, agent_area, lock_data, tasks_data):
     todo_tasks = [t for t in tasks_data.get("tasks", []) if t.get("status") == "todo"]
 
     assigned_remote = set()
-    for aid, ainfo in lock_data["agents"].items():
+    for aid, ainfo in lock_data.get("agents", {}).items():
         if aid == SUPERVISOR_ID:
             continue
-        if ainfo.get("task_id") and ainfo.get("status") in ("working", "assigned"):
+        if isinstance(ainfo, dict) and ainfo.get("task_id") and ainfo.get("status") in ("working", "assigned"):
             assigned_remote.add(ainfo["task_id"])
 
     for task in todo_tasks:
@@ -358,9 +363,12 @@ def main():
     print(f"LAUNCHING {agent_id.upper()}")
     print("=" * 60)
 
+    if fcntl is None:
+        print(f"[{agent_id}] WARNING: fcntl not available, no file locking")
+
     lock_fd = None
     try:
-        lock_fd = open(DISPATCHER_LOCK, "w")
+        lock_fd = open(DISPATCHER_LOCK, "a+")
         if fcntl:
             try:
                 fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -372,7 +380,9 @@ def main():
             lock_fd = None
 
         if not git_pull():
-            git_reset_to_remote()
+            if not git_reset_to_remote():
+                print(f"[{agent_id}] Cannot sync with remote, aborting")
+                return 1
 
         try:
             lock_data = load_json(LOCK_FILE)
@@ -381,8 +391,8 @@ def main():
             print(f"[{agent_id}] Failed to load data files: {e}")
             sys.exit(1)
 
-        agent_info = lock_data["agents"].get(agent_id)
-        if not agent_info:
+        agent_info = lock_data.get("agents", {}).get(agent_id)
+        if not agent_info or not isinstance(agent_info, dict):
             print(f"[{agent_id}] NOT FOUND in {LOCK_FILE}")
             sys.exit(1)
 
@@ -398,30 +408,44 @@ def main():
                     elapsed_min = (now - start_dt).total_seconds() / 60
                     if elapsed_min > STALE_TIMEOUT_MIN:
                         print(f"[{agent_id}] Stale ({elapsed_min:.0f} min), resetting")
-                        agent_info["status"] = "idle"
-                        agent_info["task_id"] = None
-                        agent_info["started_at"] = None
-                        update = {"agents": {agent_id: agent_info}}
+                        update = {"agents": {agent_id: {
+                            "status": "idle",
+                            "task_id": None,
+                            "started_at": None,
+                        }}}
                         if not atomic_update(update, f"{agent_id}: reset stale"):
                             print(f"[{agent_id}] Failed to reset stale state")
                             return 1
-                        lock_data = load_json(LOCK_FILE)
-                        agent_info = lock_data["agents"].get(agent_id, {})
+                        try:
+                            lock_data = load_json(LOCK_FILE)
+                            agent_info = lock_data.get("agents", {}).get(agent_id, {})
+                        except Exception as e:
+                            print(f"[{agent_id}] Failed to reload lock data: {e}")
+                            return 1
                 except (ValueError, TypeError):
-                    agent_info["status"] = "idle"
-                    agent_info["task_id"] = None
-                    agent_info["started_at"] = None
-                    update = {"agents": {agent_id: agent_info}}
+                    update = {"agents": {agent_id: {
+                        "status": "idle",
+                        "task_id": None,
+                        "started_at": None,
+                    }}}
                     atomic_update(update, f"{agent_id}: reset invalid started_at")
-                    lock_data = load_json(LOCK_FILE)
-                    agent_info = lock_data["agents"].get(agent_id, {})
+                    try:
+                        lock_data = load_json(LOCK_FILE)
+                        agent_info = lock_data.get("agents", {}).get(agent_id, {})
+                    except Exception:
+                        return 1
             else:
-                agent_info["status"] = "idle"
-                agent_info["task_id"] = None
-                update = {"agents": {agent_id: agent_info}}
+                update = {"agents": {agent_id: {
+                    "status": "idle",
+                    "task_id": None,
+                    "started_at": None,
+                }}}
                 atomic_update(update, f"{agent_id}: reset stale in-progress")
-                lock_data = load_json(LOCK_FILE)
-                agent_info = lock_data["agents"].get(agent_id, {})
+                try:
+                    lock_data = load_json(LOCK_FILE)
+                    agent_info = lock_data.get("agents", {}).get(agent_id, {})
+                except Exception:
+                    return 1
 
         today = now.date()
         last_reset = lock_data.get("last_reset")
@@ -430,13 +454,16 @@ def main():
             if last_reset_dt.tzinfo is None:
                 last_reset_dt = last_reset_dt.replace(tzinfo=timezone.utc)
             if last_reset_dt.date() < today:
-                for aid in lock_data["agents"]:
-                    lock_data["agents"][aid]["cycles_today"] = 0
-                lock_data["last_reset"] = now.isoformat()
-                update = {"agents": {aid: {"cycles_today": 0} for aid in lock_data["agents"]}, "last_reset": now.isoformat()}
+                update = {
+                    "agents": {aid: {"cycles_today": 0} for aid in lock_data.get("agents", {})},
+                    "last_reset": now.isoformat(),
+                }
                 atomic_update(update, "Day boundary: reset all cycles")
-                lock_data = load_json(LOCK_FILE)
-                agent_info = lock_data["agents"].get(agent_id, {})
+                try:
+                    lock_data = load_json(LOCK_FILE)
+                    agent_info = lock_data.get("agents", {}).get(agent_id, {})
+                except Exception:
+                    return 1
                 print(f"[{agent_id}] Day boundary detected, cycles reset")
         except (ValueError, TypeError):
             pass
@@ -495,6 +522,7 @@ def main():
                 "status": "idle",
                 "cycles_today": cycles_today + 1,
                 "task_id": task_id,
+                "started_at": None,
             }}}
             atomic_update(update, f"{agent_id}: Jules accepted, cycles={cycles_today + 1}")
 
@@ -514,6 +542,7 @@ def main():
                 "status": "idle",
                 "cycles_today": cycles_today,
                 "task_id": None,
+                "started_at": None,
             }}}
             atomic_update(update, f"{agent_id}: Jules failed, resetting")
 

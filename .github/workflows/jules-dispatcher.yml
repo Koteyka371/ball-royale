@@ -23,9 +23,6 @@ jobs:
       pull-requests: write
 
     steps:
-      - name: Wait 30s for previous cycle to settle
-        run: sleep 30
-
       - name: Checkout repository
         uses: actions/checkout@v5
         with:

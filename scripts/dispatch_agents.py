@@ -80,6 +80,8 @@ def git_pull():
     )
     if result.returncode != 0:
         print(f"[Dispatcher] git pull failed: {result.stderr}")
+        if "CONFLICT" in result.stderr or "merge" in result.stderr.lower():
+            subprocess.run(["git", "merge", "--abort"], capture_output=True, timeout=10)
     return result.returncode == 0
 
 
@@ -102,6 +104,8 @@ def git_reset_to_remote():
 
 
 def git_commit_and_push(message):
+    subprocess.run(["git", "reset", "HEAD", "--", "."], capture_output=True, timeout=10)
+
     add_result = subprocess.run(
         ["git", "add", LOCK_FILE],
         capture_output=True, text=True, timeout=10
@@ -111,7 +115,7 @@ def git_commit_and_push(message):
         return False
 
     diff_result = subprocess.run(
-        ["git", "diff", "--cached", "--quiet"],
+        ["git", "diff", "--cached", "--quiet", "--", LOCK_FILE],
         capture_output=True, timeout=10
     )
     if diff_result.returncode == 0:
@@ -207,7 +211,7 @@ def reset_daily_counters(lock_data):
 
     if last.date() < now.date():
         print("[Dispatcher] New day — resetting cycle counters")
-        for agent_id in lock_data["agents"]:
+        for agent_id in lock_data.get("agents", {}):
             lock_data["agents"][agent_id]["cycles_today"] = 0
         lock_data["last_reset"] = now.isoformat()
         return lock_data, True
@@ -219,10 +223,10 @@ def find_task_for_agent(agent_id, agent_area, lock_data, tasks_data, assigned_in
     todo_tasks = [t for t in tasks_data.get("tasks", []) if t.get("status") == "todo"]
 
     assigned_remote = set()
-    for aid, ainfo in lock_data["agents"].items():
+    for aid, ainfo in lock_data.get("agents", {}).items():
         if aid == SUPERVISOR_ID:
             continue
-        if ainfo.get("task_id") and ainfo.get("status") in ("working", "assigned"):
+        if isinstance(ainfo, dict) and ainfo.get("task_id") and ainfo.get("status") in ("working", "assigned"):
             assigned_remote.add(ainfo["task_id"])
 
     for task in todo_tasks:
@@ -232,6 +236,7 @@ def find_task_for_agent(agent_id, agent_area, lock_data, tasks_data, assigned_in
             continue
         mapped_area = AREA_TO_AGENT.get(task_area)
         if mapped_area is None:
+            print(f"[Dispatcher] WARNING: Task {task_id} has unknown area '{task_area}', skipping")
             continue
         if task_id not in assigned_remote and task_id not in assigned_in_run and mapped_area == agent_area:
             return task_id
@@ -312,8 +317,15 @@ def main():
 
         now = datetime.now(timezone.utc)
         stale_reset_agents = []
-        for agent_id, agent_info in lock_data["agents"].items():
+        agents = lock_data.get("agents", {})
+        if not isinstance(agents, dict):
+            print("[Dispatcher] Invalid agents data in lock file")
+            return 1
+
+        for agent_id, agent_info in agents.items():
             if agent_id == SUPERVISOR_ID:
+                continue
+            if not isinstance(agent_info, dict):
                 continue
 
             status = agent_info.get("status")
@@ -351,8 +363,10 @@ def main():
 
         assignments = []
         assigned_in_run = set()
-        for agent_id, agent_info in lock_data["agents"].items():
+        for agent_id, agent_info in lock_data.get("agents", {}).items():
             if agent_id == SUPERVISOR_ID:
+                continue
+            if not isinstance(agent_info, dict):
                 continue
 
             if agent_info.get("status") in ("working", "assigned"):
@@ -374,10 +388,13 @@ def main():
 
         modified_agents = {}
         for aid in stale_reset_agents:
-            modified_agents[aid] = lock_data["agents"][aid]
+            modified_agents[aid] = {
+                "status": "idle",
+                "task_id": None,
+                "started_at": None,
+            }
         for agent_id, task_id in assignments:
             modified_agents[agent_id] = {
-                **lock_data["agents"][agent_id],
                 "task_id": task_id,
                 "status": "assigned",
                 "started_at": datetime.now(timezone.utc).isoformat(),
@@ -399,7 +416,13 @@ def main():
         if assignments:
             print("\n[Dispatcher] Triggering agent workflows...")
             for agent_id, task_id in assignments:
-                trigger_agent_workflow(agent_id)
+                if not trigger_agent_workflow(agent_id):
+                    rollback = {"agents": {agent_id: {
+                        "status": "idle",
+                        "task_id": None,
+                        "started_at": None,
+                    }}}
+                    atomic_update(rollback, f"dispatcher: rollback {agent_id} (trigger failed)")
                 time.sleep(2)
 
         print("\n[Dispatcher] Remaining tasks by area:")
