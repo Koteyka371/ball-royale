@@ -403,6 +403,8 @@ def mark_task_done(task_id):
         return
 
     try:
+        git_pull()
+
         tasks_data = load_json(TASK_FILE)
         for task in tasks_data.get("tasks", []):
             if task.get("id") == task_id:
@@ -422,8 +424,18 @@ def mark_task_done(task_id):
                 capture_output=True, text=True, timeout=10
             )
             if commit_result.returncode == 0:
-                subprocess.run(["git", "push", "origin", "main"], capture_output=True, timeout=30)
-                print(f"[Supervisor] Committed task status update")
+                for attempt in range(3):
+                    push_result = subprocess.run(
+                        ["git", "push", "origin", "main"],
+                        capture_output=True, text=True, timeout=30
+                    )
+                    if push_result.returncode == 0:
+                        print(f"[Supervisor] Committed task status update")
+                        break
+                    print(f"[Supervisor] Push failed (attempt {attempt + 1}/3): {push_result.stderr}")
+                    time.sleep(2)
+                else:
+                    print(f"[Supervisor] Failed to push task status after 3 attempts")
             else:
                 print(f"[Supervisor] Failed to commit task status: {commit_result.stderr}")
     except Exception as e:
@@ -503,7 +515,9 @@ def main():
             lock_fd = None
 
         if not git_pull():
-            git_reset_to_remote()
+            if not git_reset_to_remote():
+                print("[Supervisor] Cannot sync with remote, aborting")
+                return 1
 
         try:
             lock_data = load_json(LOCK_FILE)
