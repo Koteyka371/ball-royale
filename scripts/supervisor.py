@@ -410,6 +410,22 @@ def mark_task_done(task_id):
                 break
         atomic_write_json(TASK_FILE, tasks_data)
         print(f"[Supervisor] Marked {task_id} as done in tasks file")
+
+        subprocess.run(["git", "add", TASK_FILE], capture_output=True, timeout=10)
+        diff_result = subprocess.run(
+            ["git", "diff", "--cached", "--quiet", "--", TASK_FILE],
+            capture_output=True, timeout=10
+        )
+        if diff_result.returncode != 0:
+            commit_result = subprocess.run(
+                ["git", "commit", "-m", f"supervisor: mark {task_id} done"],
+                capture_output=True, text=True, timeout=10
+            )
+            if commit_result.returncode == 0:
+                subprocess.run(["git", "push", "origin", "main"], capture_output=True, timeout=30)
+                print(f"[Supervisor] Committed task status update")
+            else:
+                print(f"[Supervisor] Failed to commit task status: {commit_result.stderr}")
     except Exception as e:
         print(f"[Supervisor] Failed to mark task done: {e}")
 

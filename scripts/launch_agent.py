@@ -510,7 +510,7 @@ def main():
             print(f"[{agent_id}] Task {task_id} not found in task file")
             return 0
 
-        prompt = task.get("prompt", "No description provided")
+        prompt = task.get("description", "No description provided")
         print(f"[{agent_id}] Task: {task_id}")
         print(f"[{agent_id}] Area: {area}")
         print(f"[{agent_id}] Prompt: {prompt[:100]}...")

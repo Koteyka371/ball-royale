@@ -12,7 +12,7 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    if: "!contains(github.event.head_commit.message, 'dispatcher:') && !contains(github.event.head_commit.message, 'supervisor:') && !contains(github.event.head_commit.message, 'Day boundary:') && !contains(github.event.head_commit.message, 'auto:') && !contains(github.event.head_commit.message, 'agent-')"
+    if: "!contains(github.event.head_commit.message, 'dispatcher:') && !contains(github.event.head_commit.message, 'supervisor:') && !contains(github.event.head_commit.message, 'Day boundary:') && !contains(github.event.head_commit.message, 'auto:') && !startsWith(github.event.head_commit.message, 'agent-')"
     steps:
       - name: Checkout
         uses: actions/checkout@v5
