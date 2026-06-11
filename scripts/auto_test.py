@@ -32,7 +32,7 @@ def run_tests(test_dir: Path = Path("tests")) -> dict[str, Any]:
     # Run pytest
     try:
         result = subprocess.run(
-            [sys.executable, "-m", "pytest", str(test_dir), "-v", "--tb=short"],
+            ["pytest", str(test_dir), "-v", "--tb=short"],
             capture_output=True,
             text=True,
             timeout=120
@@ -100,7 +100,7 @@ def check_code_quality() -> dict[str, Any]:
     # Check ruff
     try:
         result = subprocess.run(
-            [sys.executable, "-m", "ruff", "check", "src/"],
+            ["ruff", "check", "src/", "tests/"],
             capture_output=True,
             text=True,
             timeout=30
@@ -117,7 +117,8 @@ def check_code_quality() -> dict[str, Any]:
     # Check mypy
     try:
         result = subprocess.run(
-            [sys.executable, "-m", "mypy", "--explicit-package-bases", "src/"],
+            ["mypy", "--explicit-package-bases", "src/", "tests/"],
+            env={"MYPYPATH": "src", **__import__("os").environ},
             capture_output=True,
             text=True,
             timeout=30
