@@ -24,9 +24,9 @@
       "name": "Jules Tests",
       "api_key": "JULES_API_KEY",
       "area": "tests",
-      "task_id": "ai-ball-scout-ai",
-      "status": "assigned",
-      "started_at": "2026-06-11T17:22:05.118835+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "pr_number": null,
       "cycles_today": 0
     },
