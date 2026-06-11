@@ -26,6 +26,11 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - check_suite trigger on auto-merge.yml
 - Pip caching on all Python workflows
 - fetch-depth: 1 on checkout steps
+- auto-merge SHA fallback when check_suite.pull_requests empty
+- auto-merge mergeable null handling (re-fetch after 30s)
+- auto-merge empty check-runs retry after 30s
+- issue-to-task graceful handling of missing/malformed agent_tasks.json
+- status_agents.py try/except on load_json
 
 ### Changed
 - Jules prompt now enforces self-evolution after each task
@@ -41,36 +46,38 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Lock file opened with a+ mode (not truncated)
 - Lock file descriptors properly closed in finally blocks
 - SUPERVISOR_ID constant instead of hardcoded "agent-7"
+- auto-improve.yml scripts use || true to prevent cascade failure
+- dispatch_agents.py git reset scoped to LOCK_FILE only
 
 ### Fixed
-- supervisor.py: CI fix polling now refreshes SHA after each cycle
-- supervisor.py: wait_for_ci uses correct range (max_minutes * 60)
-- supervisor.py: get_ci_status scans ALL check-runs before returning pending
-- supervisor.py: Removed non-existent commits/{sha}/pull-request endpoint
-- supervisor.py: check_all_agents_idle returns False when any agent working
-- supervisor.py: verify_pushed returns False on git error
-- supervisor.py: get_open_prs filters dict responses
-- supervisor.py: lock_data updated after stale reset computation
-- supervisor.py: merge_pr checks merged field + return value checked
-- launch_agent.py: Day boundary updates last_reset + includes in atomic_update
-- launch_agent.py: Self-recovery for stale agents (>45 min)
-- launch_agent.py: Rate limit retry bounded (max 3)
-- launch_agent.py: Task deduplication via assigned_remote set
-- launch_agent.py: git_fetch returns result.returncode
-- launch_agent.py: PR polling uses owner:branch format
-- launch_agent.py: Day boundary resets ALL agents
-- dispatch_agents.py: Lock file opened with a+ (not truncated)
-- dispatch_agents.py: git add return value checked
-- dispatch_agents.py: Unparseable started_at resets agent
-- dispatch_agents.py: AREA_TO_AGENT fallback returns None
-- dispatch_agents.py: No in-place mutation before commit
-- Workflows: Concurrency groups on all 6 agent workflows
-- Workflows: auto-merge triggers on check_suite completion
-- Workflows: auto-merge merge call wrapped in try/catch
-- Workflows: issue-to-task top-level permissions: {}
-- Workflows: All use checkout@v5 with pip caching
-- Workflows: auto-merge per_page=100
-- Workflows: ci.yml skips automated commits
+- supervisor.py: CI fix polling now checks status BEFORE sleep (was sleeping first)
+- supervisor.py: pr_updates populated after merges (agents were stuck working 45 min)
+- supervisor.py: consecutive_failures reset on 'pending' status
+- supervisor.py: get_ci_status distinguishes auth errors from pending
+- supervisor.py: Agent ID extracted from PR branch for status updates
+- supervisor.py: Area added to invoke_jules prompt
+- launch_agent.py: atomic_update return checked on Jules success/failure paths
+- launch_agent.py: Stale-reset atomic_update return checked
+- launch_agent.py: Day-boundary atomic_update return checked
+- launch_agent.py: Agent busy status check before task assignment
+- launch_agent.py: 404 no longer retried 3 times (was wasting 30s)
+- launch_agent.py: check_pr_created creates fresh request per retry
+- dispatch_agents.py: git_reset_to_remote return checked on initial sync
+- dispatch_agents.py: git reset scoped to LOCK_FILE (was unstaging ALL files)
+- dispatch_agents.py: CONFLICT check case-insensitive
+- dispatch_agents.py: Rollbacks batched in single atomic_update
+- dispatch_agents.py: started_at uses batch timestamp
+- dispatch_agents.py: New agents get default cycles_today=0
+- dispatch_agents.py: Malformed TASK_FILE handled gracefully
+- auto-merge.yml: check_suite fallback searches PRs by SHA
+- auto-merge.yml: mergeable null handled with re-fetch
+- auto-merge.yml: Empty check-runs triggers retry after 30s
+- auto-merge.yml: Removed page >= 10 cap on check-runs pagination
+- auto-improve.yml: Scripts use || true to prevent sequential failure
+- issue-to-task.yml: Missing agent_tasks.json creates empty manifest
+- status_agents.py: load_json wrapped in try/except
+- status_agents.py: Division by zero prevented
+- status_agents.py: Task status accessed safely with .get()
 
 ## [0.1.0] - 2026-06-05
 
