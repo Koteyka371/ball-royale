@@ -415,6 +415,11 @@ def main():
                 "started_at": batch_time,
             }
 
+        if day_changed:
+            for aid in lock_data.get("agents", {}):
+                if aid not in modified_agents:
+                    modified_agents[aid] = {"cycles_today": 0}
+
         update_data = {"agents": modified_agents}
         if day_changed:
             update_data["last_reset"] = lock_data["last_reset"]

@@ -314,6 +314,17 @@ def invoke_jules(task_id, area, prompt, branch_name, token):
         return False
 
 
+def find_agent_by_task_id(lock_data, task_id):
+    if not task_id:
+        return ""
+    for agent_id, info in lock_data.get("agents", {}).items():
+        if agent_id == SUPERVISOR_ID:
+            continue
+        if isinstance(info, dict) and info.get("task_id") == task_id:
+            return agent_id
+    return ""
+
+
 def check_all_agents_idle(lock_data):
     for agent_id, info in lock_data.get("agents", {}).items():
         if agent_id == SUPERVISOR_ID:
@@ -556,14 +567,7 @@ def main():
                     print(f"    Task {task_id} already done, merging immediately")
                     if merge_pr(pr_num):
                         pr_need_save = True
-                        agent_id_for_pr = ""
-                        branch_name_for_pr = pr.get("head", {}).get("ref", "")
-                        if "-agent-" in branch_name_for_pr:
-                            parts = branch_name_for_pr.split("-agent-")
-                            if len(parts) > 1:
-                                agent_num = parts[-1].split("-")[0]
-                                if agent_num.isdigit():
-                                    agent_id_for_pr = f"agent-{agent_num}"
+                        agent_id_for_pr = find_agent_by_task_id(lock_data, task_id)
                         if agent_id_for_pr:
                             pr_updates["agents"][agent_id_for_pr] = {
                                 "status": "idle",
@@ -579,14 +583,7 @@ def main():
                     if merge_pr(pr_num):
                         mark_task_done(task_id)
                         pr_need_save = True
-                        agent_id_for_pr = ""
-                        branch_name_for_pr = pr.get("head", {}).get("ref", "")
-                        if "-agent-" in branch_name_for_pr:
-                            parts = branch_name_for_pr.split("-agent-")
-                            if len(parts) > 1:
-                                agent_num = parts[-1].split("-")[0]
-                                if agent_num.isdigit():
-                                    agent_id_for_pr = f"agent-{agent_num}"
+                        agent_id_for_pr = find_agent_by_task_id(lock_data, task_id)
                         if agent_id_for_pr:
                             pr_updates["agents"][agent_id_for_pr] = {
                                 "status": "idle",
@@ -598,16 +595,10 @@ def main():
                     jules_token = os.environ.get("JULES_API_KEY", "")
                     if jules_token:
                         branch_name = pr.get("head", {}).get("ref", "")
-                        agent_id = ""
-                        if "-agent-" in branch_name:
-                            parts = branch_name.split("-agent-")
-                            if len(parts) > 1:
-                                agent_num = parts[-1].split("-")[0]
-                                if agent_num.isdigit():
-                                    agent_id = f"agent-{agent_num}"
+                        agent_id = find_agent_by_task_id(lock_data, task_id)
 
                         if not agent_id:
-                            print(f"    Could not extract agent from branch '{branch_name}', skipping CI fix")
+                            print(f"    Could not find agent for task '{task_id}', skipping CI fix")
                             continue
 
                         agent_area = lock_data.get("agents", {}).get(agent_id, {}).get("area", "ai-core")
