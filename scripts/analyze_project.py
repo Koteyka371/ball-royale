@@ -62,7 +62,7 @@ def analyze_code_coverage(src_dir: Path) -> dict[str, Any]:
     if not src_dir.exists():
         return {"files": 0, "lines": 0, "status": "no source code yet"}
     
-    files = list(src_dir.glob("**/*.gd"))
+    files = list(src_dir.glob("**/*.py"))
     total_lines = 0
     for f in files:
         with open(f, "r", encoding="utf-8") as fh:
