@@ -277,7 +277,7 @@ def invoke_jules(task_id, area, prompt, branch_name, token):
 
     url = "https://jules.googleapis.com/jules"
     headers = {
-        "Authorization": f"Bearer {token}",
+        "x-goog-api-key": token,
         "Content-Type": "application/json",
     }
     payload = {
