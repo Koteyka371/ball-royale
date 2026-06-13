@@ -276,37 +276,35 @@ def invoke_jules(task_id, area, prompt, branch_name, token):
         print("[Supervisor] No Jules token available")
         return False
 
-    repo_url = f"https://github.com/{os.environ.get('GITHUB_REPOSITORY', 'Koteyka371/ball-royale')}"
+    repo = os.environ.get('GITHUB_REPOSITORY', 'Koteyka371/ball-royale')
     full_prompt = (
-        f"Project: Ball Royale — 2D battle royale with AI-controlled balls.\n"
-        f"Repository: {repo_url}\n\n"
-        f"CONTEXT: You are a coding agent. You have full creative control.\n"
-        f"AREA: {area}\n\n"
+        f"Project: Ball Royale — 2D battle royale with AI-controlled balls.\n\n"
+        f"AREA: {area}\n"
         f"TASK: {prompt}\n\n"
         f"BRANCH: Use existing branch '{branch_name}' for your changes.\n\n"
-        f"IMPORTANT RULES:\n"
-        f"1. Work ONLY on the branch '{branch_name}'\n"
-        f"2. Create feature branches from '{branch_name}' for each change, merge back\n"
-        f"3. Run `git pull origin main` before making changes\n"
-        f"4. Commit with clear messages explaining your changes\n"
-        f"5. Push branch to origin when done\n"
-        f"6. DO NOT create a pull request\n"
-        f"7. DO NOT modify files outside the src/ directory (no workflow changes)\n"
-        f"8. Be creative — improve code, refactor, fix bugs you find, add tests\n"
-        f"9. After pushing, commit a small status update: echo '{task_id} in progress' >> AGENTS.md\n\n"
-        f"You have FULL FREEDOM to modify any file in src/ directory.\n"
-        f"Your work will be reviewed by the supervisor agent.\n"
-        f"Be ambitious, be creative, be the best AI programmer you can be!"
+        f"RULES:\n"
+        f"1. Work ONLY on branch '{branch_name}'\n"
+        f"2. Commit with clear messages\n"
+        f"3. Push branch when done\n"
+        f"4. DO NOT modify files outside src/\n"
+        f"5. Fix the failing tests or code issues\n"
     )
 
-    url = "https://jules.googleapis.com/jules"
+    url = "https://jules.googleapis.com/v1alpha/sessions"
     headers = {
         "x-goog-api-key": token,
         "Content-Type": "application/json",
     }
     payload = {
-        "repoUrl": repo_url,
         "prompt": full_prompt,
+        "title": f"[{task_id}] CI fix - {area}",
+        "sourceContext": {
+            "source": f"sources/github/{repo}",
+            "githubRepoContext": {
+                "startingBranch": branch_name
+            }
+        },
+        "requirePlanApproval": False,
     }
 
     data_bytes = json.dumps(payload).encode("utf-8")
@@ -315,12 +313,12 @@ def invoke_jules(task_id, area, prompt, branch_name, token):
     try:
         with urllib.request.urlopen(req, timeout=60) as resp:
             body = json.loads(resp.read().decode("utf-8"))
-            task_name = body.get("taskName", "")
-            print(f"[Supervisor] Jules accepted fix (task: {task_name})")
+            session_name = body.get("name", "")
+            print(f"[Supervisor] Jules accepted fix (session: {session_name})")
             return True
     except urllib.error.HTTPError as e:
         error_body = e.read().decode("utf-8")
-        print(f"[Supervisor] Jules API error: {e.code} {error_body[:200]}")
+        print(f"[Supervisor] Jules API error: {e.code} {error_body[:300]}")
         return False
     except Exception as e:
         print(f"[Supervisor] Jules API exception: {e}")

@@ -251,38 +251,37 @@ def github_api(endpoint, method="GET", data=None, token=None, _retry_count=0):
 
 
 def invoke_jules(task_id, area, prompt, branch_name, token):
-    repo_url = f"https://github.com/{os.environ.get('GITHUB_REPOSITORY', 'Koteyka371/ball-royale')}"
+    repo = os.environ.get('GITHUB_REPOSITORY', 'Koteyka371/ball-royale')
     full_prompt = (
-        f"Project: Ball Royale — 2D battle royale with AI-controlled balls.\n"
-        f"Repository: {repo_url}\n\n"
-        f"CONTEXT: You are a coding agent. You have full creative control.\n\n"
+        f"Project: Ball Royale — 2D battle royale with AI-controlled balls.\n\n"
         f"TASK: {prompt}\n\n"
         f"BRANCH: Create a new branch called '{branch_name}' for your changes.\n\n"
         f"IMPORTANT RULES:\n"
         f"1. Create branch '{branch_name}' from main\n"
-        f"2. Work on the branch '{branch_name}'\n"
-        f"3. Create feature branches from '{branch_name}' for each change, merge back\n"
-        f"4. Run `git pull origin main` before making changes\n"
-        f"5. Commit with clear messages explaining your changes\n"
-        f"6. Push branch to origin when done\n"
-        f"7. Create a Pull Request with title: [{task_id}] {{descriptive title}}\n"
-        f"8. Set PR body to: Task: {task_id}\\n\\n{{description}}\n"
-        f"9. DO NOT modify files outside the src/ directory (no workflow changes)\n"
-        f"10. Be creative — improve code, refactor, fix bugs you find, add tests\n"
-        f"11. Label the PR with 'automated' label\n\n"
-        f"You have FULL FREEDOM to modify any file in src/ directory.\n"
-        f"Your work will be reviewed and merged by the supervisor agent.\n"
-        f"Be ambitious, be creative, be the best AI programmer you can be!"
+        f"2. Commit with clear messages explaining your changes\n"
+        f"3. Push branch to origin when done\n"
+        f"4. Create a Pull Request with title: [{task_id}] descriptive title\n"
+        f"5. Set PR body to: Task: {task_id}\n"
+        f"6. DO NOT modify files outside the src/ directory (no workflow changes)\n"
+        f"7. Be creative — improve code, refactor, fix bugs you find, add tests\n"
+        f"8. Label the PR with 'automated' label\n"
     )
 
-    url = "https://jules.googleapis.com/jules"
+    url = "https://jules.googleapis.com/v1alpha/sessions"
     headers = {
         "x-goog-api-key": token,
         "Content-Type": "application/json",
     }
     payload = {
-        "repoUrl": repo_url,
         "prompt": full_prompt,
+        "title": f"[{task_id}] {area}",
+        "sourceContext": {
+            "source": f"sources/github/{repo}",
+            "githubRepoContext": {
+                "startingBranch": "main"
+            }
+        },
+        "requirePlanApproval": False,
     }
 
     data_bytes = json.dumps(payload).encode("utf-8")
@@ -291,12 +290,12 @@ def invoke_jules(task_id, area, prompt, branch_name, token):
     try:
         with urllib.request.urlopen(req, timeout=60) as resp:
             body = json.loads(resp.read().decode("utf-8"))
-            task_name = body.get("taskName", "")
-            print(f"[{agent_id}] Jules accepted task (task: {task_name})")
+            session_name = body.get("name", "")
+            print(f"[{agent_id}] Jules accepted task (session: {session_name})")
             return True
     except urllib.error.HTTPError as e:
         error_body = e.read().decode("utf-8")
-        print(f"[{agent_id}] Jules API error: {e.code} {error_body[:200]}")
+        print(f"[{agent_id}] Jules API error: {e.code} {error_body[:300]}")
         return False
     except Exception as e:
         print(f"[{agent_id}] Jules API exception: {e}")
