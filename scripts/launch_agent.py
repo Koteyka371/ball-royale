@@ -342,6 +342,8 @@ def find_task_for_agent(agent_id_val, agent_area, lock_data, tasks_data):
         if isinstance(ainfo, dict) and ainfo.get("task_id") and ainfo.get("status") in ("working", "assigned"):
             assigned_remote.add(ainfo["task_id"])
 
+    done_tasks = {t.get("id") for t in tasks_data.get("tasks", []) if t.get("status") == "done"}
+
     for task in todo_tasks:
         task_area = task.get("area", "")
         task_id = task.get("id")
@@ -349,11 +351,21 @@ def find_task_for_agent(agent_id_val, agent_area, lock_data, tasks_data):
             continue
         if task.get("claimed_by"):
             continue
+        
+        # Check task dependencies
+        dependencies = task.get("depends_on", [])
+        if isinstance(dependencies, list):
+            unmet = [dep for dep in dependencies if dep not in done_tasks]
+            if unmet:
+                continue
+
         mapped_area = AREA_TO_AGENT.get(task_area)
         if mapped_area is None:
             continue
-        if task_id not in assigned_remote and mapped_area == agent_area:
-            return task_id
+        
+        if task_id not in assigned_remote:
+            if agent_area == "any" or mapped_area == agent_area:
+                return task_id
 
     return None
 
@@ -477,13 +489,16 @@ def main():
             print(f"[{agent_id}] Cycle limit reached ({MAX_CYCLES_PER_AGENT}/{MAX_CYCLES_PER_AGENT})")
             return 0
 
-        if agent_info.get("status") in ("working", "assigned"):
-            print(f"[{agent_id}] Agent is busy (status={agent_info.get('status')}), skipping")
+        if agent_info.get("status") == "working":
+            print(f"[{agent_id}] Agent is busy (status=working), skipping")
             return 0
 
+        task_id = agent_info.get("task_id")
         area = agent_info.get("area", AGENT_AREAS.get(agent_id, ""))
-
-        task_id = find_task_for_agent(agent_id, area, lock_data, tasks_data)
+        if not task_id:
+            task_id = find_task_for_agent(agent_id, area, lock_data, tasks_data)
+            if not task_id:
+                task_id = find_task_for_agent(agent_id, "any", lock_data, tasks_data)
 
         if not task_id:
             print(f"[{agent_id}] No tasks found for area {area}")
@@ -507,8 +522,9 @@ def main():
             return 0
 
         prompt = task.get("description", "No description provided")
+        task_area = task.get("area", area)
         print(f"[{agent_id}] Task: {task_id}")
-        print(f"[{agent_id}] Area: {area}")
+        print(f"[{agent_id}] Area: {task_area} (agent default: {area})")
         print(f"[{agent_id}] Prompt: {prompt[:100]}...")
         print(f"[{agent_id}] Starting work...")
 
@@ -523,7 +539,7 @@ def main():
             return 1
 
         branch_name = sanitize_branch_name(task_id)
-        success = invoke_jules(task_id, area, prompt, branch_name, token)
+        success = invoke_jules(task_id, task_area, prompt, branch_name, token)
 
         if success:
             update = {"agents": {agent_id: {

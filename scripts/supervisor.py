@@ -410,6 +410,37 @@ def get_task_for_pr(pr):
     return task_id
 
 
+def update_changelog(task_id, title, description):
+    changelog_path = "docs/agent_changelog.md"
+    os.makedirs(os.path.dirname(changelog_path), exist_ok=True)
+    
+    header = ""
+    if not os.path.exists(changelog_path):
+        header = "# Ball Royale — Agent Changelog\n\nTracked history of successful tasks completed by autonomous agents.\n\n"
+        
+    date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    entry = f"## [{task_id}] {title} — *{date_str}*\n\n{description}\n\n---\n\n"
+    
+    existing = ""
+    if os.path.exists(changelog_path):
+        with open(changelog_path, "r", encoding="utf-8") as f:
+            existing = f.read()
+            
+    new_content = ""
+    if existing.startswith("# Ball Royale — Agent Changelog"):
+        idx = existing.find("##")
+        if idx != -1:
+            new_content = existing[:idx] + entry + existing[idx:]
+        else:
+            new_content = existing.strip() + "\n\n" + entry
+    else:
+        new_content = header + entry + existing
+        
+    with open(changelog_path, "w", encoding="utf-8") as f:
+        f.write(new_content)
+    print(f"[Supervisor] Appended task {task_id} to {changelog_path}")
+
+
 def mark_task_done(task_id):
     if not task_id:
         return
@@ -419,20 +450,32 @@ def mark_task_done(task_id):
 
         tasks_data = load_json(TASK_FILE)
         found = False
+        task_obj = None
         for task in tasks_data.get("tasks", []):
             if task.get("id") == task_id:
                 task["status"] = "done"
+                task_obj = task
                 found = True
                 break
         if not found:
             print(f"[Supervisor] WARNING: Task {task_id} not found in tasks file")
             return
+            
         atomic_write_json(TASK_FILE, tasks_data)
         print(f"[Supervisor] Marked {task_id} as done in tasks file")
 
+        # Update the agent changelog
+        if task_obj:
+            try:
+                update_changelog(task_id, task_obj.get("title", f"Task {task_id}"), task_obj.get("description", ""))
+            except Exception as e:
+                print(f"[Supervisor] WARNING: Failed to update changelog: {e}")
+
         subprocess.run(["git", "add", TASK_FILE], capture_output=True, timeout=10)
+        subprocess.run(["git", "add", "docs/agent_changelog.md"], capture_output=True, timeout=10)
+        
         diff_result = subprocess.run(
-            ["git", "diff", "--cached", "--quiet", "--", TASK_FILE],
+            ["git", "diff", "--cached", "--quiet"],
             capture_output=True, timeout=10
         )
         if diff_result.returncode != 0:
@@ -447,7 +490,7 @@ def mark_task_done(task_id):
                         capture_output=True, text=True, timeout=30
                     )
                     if push_result.returncode == 0:
-                        print(f"[Supervisor] Committed task status update")
+                        print(f"[Supervisor] Committed task status update and changelog")
                         break
                     print(f"[Supervisor] Push failed (attempt {attempt + 1}/3): {push_result.stderr}")
                     time.sleep(2)

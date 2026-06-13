@@ -231,6 +231,8 @@ def find_task_for_agent(agent_id, agent_area, lock_data, tasks_data, assigned_in
         if isinstance(ainfo, dict) and ainfo.get("task_id") and ainfo.get("status") in ("working", "assigned"):
             assigned_remote.add(ainfo["task_id"])
 
+    done_tasks = {t.get("id") for t in tasks_data.get("tasks", []) if t.get("status") == "done"}
+
     for task in todo_tasks:
         task_area = task.get("area", "")
         task_id = task.get("id")
@@ -238,12 +240,22 @@ def find_task_for_agent(agent_id, agent_area, lock_data, tasks_data, assigned_in
             continue
         if task.get("claimed_by"):
             continue
+        
+        # Check task dependencies
+        dependencies = task.get("depends_on", [])
+        if isinstance(dependencies, list):
+            unmet = [dep for dep in dependencies if dep not in done_tasks]
+            if unmet:
+                continue
+
         mapped_area = AREA_TO_AGENT.get(task_area)
         if mapped_area is None:
             print(f"[Dispatcher] WARNING: Task {task_id} has unknown area '{task_area}', skipping")
             continue
-        if task_id not in assigned_remote and task_id not in assigned_in_run and mapped_area == agent_area:
-            return task_id
+        
+        if task_id not in assigned_remote and task_id not in assigned_in_run:
+            if agent_area == "any" or mapped_area == agent_area:
+                return task_id
 
     return None
 
@@ -395,12 +407,16 @@ def main():
 
             agent_area = AGENT_AREAS.get(agent_id, agent_info.get("area", ""))
             task_id = find_task_for_agent(agent_id, agent_area, lock_data, tasks_data, assigned_in_run)
+            if not task_id:
+                # Fallback to any available task if primary area has no tasks
+                task_id = find_task_for_agent(agent_id, "any", lock_data, tasks_data, assigned_in_run)
+
             if task_id:
                 assignments.append((agent_id, task_id))
                 assigned_in_run.add(task_id)
                 print(f"[Dispatcher] {agent_id}: assigned {task_id} (area={agent_area})")
             else:
-                print(f"[Dispatcher] {agent_id}: no tasks available in area={agent_area}")
+                print(f"[Dispatcher] {agent_id}: no tasks available (area={agent_area} or any)")
 
         modified_agents = {}
         agents = lock_data.get("agents", {})
