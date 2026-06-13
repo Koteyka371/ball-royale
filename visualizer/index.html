@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.26.1/full/pyodide.js"></script>
     <style>
         :root {
             --bg-color: #0b0c10;
@@ -443,6 +444,17 @@
             <p>Drag & Drop Replay File</p>
             <span>or click to browse local files</span>
             <input type="file" id="fileInput" accept=".json" style="display: none;">
+        </div>
+
+        <!-- Web Simulation Panel -->
+        <div class="web-sim-panel" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+            <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--primary-color);">Web Simulator (WASM)</div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <label style="font-size: 12px; min-width: 80px;">Balls Count:</label>
+                <input type="number" id="simBallCount" value="50" min="10" max="150" style="flex-grow: 1; background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); color: #fff; padding: 4px 8px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 13px;">
+            </div>
+            <button class="btn primary" id="btnRunSim" style="width: 100%; justify-content: center; font-size: 12px; padding: 10px;">Run Web Simulation</button>
+            <div id="simStatus" style="font-size: 11px; text-align: center; color: rgba(255,255,255,0.5); display: none;">Initializing...</div>
         </div>
 
         <div class="stats-panel">
@@ -937,6 +949,107 @@
                 playSpeed = parseInt(btn.dataset.speed);
             });
         });
+
+        // Web Simulator WASM integration via Pyodide
+        let pyodideInstance = null;
+
+        async function runWebSimulation() {
+            const simStatus = document.getElementById("simStatus");
+            const btnRunSim = document.getElementById("btnRunSim");
+            const simBallCount = document.getElementById("simBallCount");
+            
+            const numBalls = parseInt(simBallCount.value) || 50;
+
+            btnRunSim.disabled = true;
+            simStatus.style.display = "block";
+            simStatus.textContent = "Loading WebAssembly Python...";
+
+            try {
+                if (!pyodideInstance) {
+                    pyodideInstance = await loadPyodide();
+                    simStatus.textContent = "Fetching simulation scripts...";
+                    
+                    const files = [
+                        "ai/ball_brain.py",
+                        "ai/perception.py",
+                        "ai/emotion.py",
+                        "ai/decision.py",
+                        "ai/action.py",
+                        "tests/simulate_battle.py"
+                    ];
+                    
+                    // Create directories
+                    try { pyodideInstance.FS.mkdir("ai"); } catch(e) {}
+                    try { pyodideInstance.FS.mkdir("tests"); } catch(e) {}
+
+                    for (const file of files) {
+                        let fetchUrl = "";
+                        if (file.startsWith("ai/")) {
+                            fetchUrl = "../src/" + file;
+                        } else {
+                            fetchUrl = "../" + file;
+                        }
+                        
+                        const response = await fetch(fetchUrl);
+                        if (!response.ok) {
+                            throw new Error(`Failed to fetch ${fetchUrl}: ${response.statusText}`);
+                        }
+                        const text = await response.text();
+                        pyodideInstance.FS.writeFile(file, text);
+                    }
+                }
+
+                simStatus.textContent = "Simulating Battle Royale...";
+                
+                // Run python simulation code
+                const runCode = `
+import sys
+import json
+if "" not in sys.path:
+    sys.path.insert(0, "")
+
+from tests.simulate_battle import BattleSimulation
+
+sim = BattleSimulation(num_balls=${numBalls}, max_ticks=1000, seed=42)
+stats = sim.run(record=True)
+
+replay_data = {
+    "arena": {
+        "width": sim.world.width,
+        "height": sim.world.height
+    },
+    "ball_types": {
+        t: {"radius": 12} for t in ["warrior", "tank", "assassin", "healer", "sniper", "bomber", "berserker", "juggernaut", "phantom", "rogue", "swarm", "guardian"]
+    },
+    "history": sim.history,
+    "kill_log": sim.kill_log
+}
+replay_json = json.dumps(replay_data)
+`;
+                await pyodideInstance.runPythonAsync(runCode);
+                const replayStr = pyodideInstance.globals.get("replay_json");
+                replayData = JSON.parse(replayStr);
+                initReplay();
+
+                simStatus.textContent = "Simulation completed!";
+                setTimeout(() => {
+                    simStatus.style.display = "none";
+                }, 3000);
+            } catch (err) {
+                console.error(err);
+                simStatus.textContent = "Failed to run simulation";
+                simStatus.style.color = "var(--danger-color)";
+                alert(
+                    "Web Simulation failed.\n\n" + 
+                    "Note: Fetching python files directly from local file:/// is blocked by browser security (CORS).\n" + 
+                    "To use the WASM simulator locally, run a local server (e.g. python -m http.server) or use GitHub Pages."
+                );
+            } finally {
+                btnRunSim.disabled = false;
+            }
+        }
+
+        document.getElementById("btnRunSim").addEventListener("click", runWebSimulation);
     </script>
 </body>
 </html>

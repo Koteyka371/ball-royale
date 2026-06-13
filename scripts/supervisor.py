@@ -362,7 +362,7 @@ def trigger_dispatcher(token):
         return False
 
 
-def merge_pr(pr_number, mergeable=None):
+def merge_pr(pr_number, branch_name="", mergeable=None):
     if mergeable is False:
         print(f"[Supervisor] PR #{pr_number} has conflicts, skipping merge")
         return False
@@ -377,6 +377,11 @@ def merge_pr(pr_number, mergeable=None):
     if result.get("merged") is not True:
         print(f"[Supervisor] Merge response says not merged: {result.get('message', '')}")
         return False
+    
+    if branch_name and branch_name not in ("main", "master"):
+        print(f"[Supervisor] Deleting merged branch '{branch_name}'...")
+        github_api(f"git/refs/heads/{branch_name}", method="DELETE")
+        
     return True
 
 
@@ -615,7 +620,8 @@ def main():
 
                 if task_status == "done":
                     print(f"    Task {task_id} already done, merging immediately")
-                    if merge_pr(pr_num):
+                    branch_name = pr.get("head", {}).get("ref", "")
+                    if merge_pr(pr_num, branch_name=branch_name):
                         pr_need_save = True
                         agent_id_for_pr = find_agent_by_task_id(lock_data, task_id)
                         if agent_id_for_pr:
@@ -630,7 +636,8 @@ def main():
 
                 if ci_status == "success":
                     print(f"    CI passed! Merging...")
-                    if merge_pr(pr_num):
+                    branch_name = pr.get("head", {}).get("ref", "")
+                    if merge_pr(pr_num, branch_name=branch_name):
                         mark_task_done(task_id)
                         pr_need_save = True
                         agent_id_for_pr = find_agent_by_task_id(lock_data, task_id)
@@ -680,7 +687,8 @@ def main():
 
                                 if new_ci == "success":
                                     print(f"    Fixed! Merging...")
-                                    if merge_pr(pr_num, mergeable=pr_data.get("mergeable")):
+                                    target_branch = pr_data.get("head", {}).get("ref", "") if pr_data else branch_name
+                                    if merge_pr(pr_num, branch_name=target_branch, mergeable=pr_data.get("mergeable") if pr_data else None):
                                         mark_task_done(task_id)
                                         pr_need_save = True
                                         pr_updates["agents"][agent_id] = {

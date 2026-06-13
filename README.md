@@ -1,5 +1,11 @@
 # Ball Royale
 
+[![CI Validation](https://github.com/Koteyka371/ball-royale/actions/workflows/ci.yml/badge.svg)](https://github.com/Koteyka371/ball-royale/actions/workflows/ci.yml)
+[![Jules Dispatcher](https://github.com/Koteyka371/ball-royale/actions/workflows/jules-dispatcher.yml/badge.svg)](https://github.com/Koteyka371/ball-royale/actions/workflows/jules-dispatcher.yml)
+[![Jules Supervisor](https://github.com/Koteyka371/ball-royale/actions/workflows/jules-supervisor.yml/badge.svg)](https://github.com/Koteyka371/ball-royale/actions/workflows/jules-supervisor.yml)
+[![Auto-Improve](https://github.com/Koteyka371/ball-royale/actions/workflows/auto-improve.yml/badge.svg)](https://github.com/Koteyka371/ball-royale/actions/workflows/auto-improve.yml)
+[![Pages Deployment](https://github.com/Koteyka371/ball-royale/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/Koteyka371/ball-royale/actions/workflows/deploy-pages.yml)
+
 2D арена-батл-рояль с самуправляемыми шариками. Все шарики управляются встроенным ИИ.
 
 ## Features
