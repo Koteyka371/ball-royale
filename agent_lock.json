@@ -43,9 +43,9 @@
     "agent-6": {
       "name": "Jules Innovation",
       "area": "innovation",
-      "task_id": "ai-neural-network-learning",
-      "status": "assigned",
-      "started_at": "2026-06-13T04:42:44.453393+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 0
     },
     "agent-7": {
