@@ -3,6 +3,10 @@ name: Jules Supervisor
 on:
   schedule:
     - cron: '*/15 * * * *'
+  workflow_run:
+    workflows: ["CI Validation"]
+    types:
+      - completed
   workflow_dispatch:
 
 concurrency:
