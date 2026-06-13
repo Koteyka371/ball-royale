@@ -31,10 +31,21 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
+      - name: Copy Python files for WASM simulator
+        run: |
+          mkdir -p visualizer/data/ai
+          mkdir -p visualizer/data/tests
+          cp src/ai/ball_brain.py    visualizer/data/ai/
+          cp src/ai/perception.py    visualizer/data/ai/
+          cp src/ai/emotion.py       visualizer/data/ai/
+          cp src/ai/decision.py      visualizer/data/ai/
+          cp src/ai/action.py        visualizer/data/ai/
+          cp tests/simulate_battle.py visualizer/data/tests/
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: 'visualizer'
 
       - name: Deploy to GitHub Pages
         id: deployment

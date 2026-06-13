@@ -982,19 +982,24 @@
                     try { pyodideInstance.FS.mkdir("ai"); } catch(e) {}
                     try { pyodideInstance.FS.mkdir("tests"); } catch(e) {}
 
+                    // Fetch with fallback: try GitHub Pages path first, then local dev path
+                    async function fetchWithFallback(file) {
+                        // Path 1: GitHub Pages (files copied into data/ by deploy workflow)
+                        const pagesUrl = "data/" + file;
+                        // Path 2: Local dev server (running from repo root)
+                        const localUrl = file.startsWith("ai/") ? ("../src/" + file) : ("../" + file);
+
+                        for (const url of [pagesUrl, localUrl]) {
+                            try {
+                                const resp = await fetch(url);
+                                if (resp.ok) return await resp.text();
+                            } catch(e) { /* try next */ }
+                        }
+                        throw new Error(`Failed to fetch ${file} from any path`);
+                    }
+
                     for (const file of files) {
-                        let fetchUrl = "";
-                        if (file.startsWith("ai/")) {
-                            fetchUrl = "../src/" + file;
-                        } else {
-                            fetchUrl = "../" + file;
-                        }
-                        
-                        const response = await fetch(fetchUrl);
-                        if (!response.ok) {
-                            throw new Error(`Failed to fetch ${fetchUrl}: ${response.statusText}`);
-                        }
-                        const text = await response.text();
+                        const text = await fetchWithFallback(file);
                         pyodideInstance.FS.writeFile(file, text);
                     }
                 }
