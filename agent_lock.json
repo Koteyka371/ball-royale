@@ -6,7 +6,7 @@
       "task_id": "ai-action-system",
       "status": "working",
       "started_at": "2026-06-13T20:48:40.292035+00:00",
-      "cycles_today": 1
+      "cycles_today": 2
     },
     "agent-2": {
       "name": "Jules Behaviors",
