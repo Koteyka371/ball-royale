@@ -244,8 +244,15 @@ def get_ci_status(sha):
     blocking_conclusions = {"failure", "timed_out", "cancelled", "action_required"}
     has_failure = False
     all_completed = True
+    has_validation_run = False
 
     for run in all_check_runs:
+        name = run.get("name", "")
+        # Only care about the validation suite check-runs
+        if "validate" not in name.lower() and "ci validation" not in name.lower():
+            continue
+
+        has_validation_run = True
         conclusion = run.get("conclusion")
         status = run.get("status", "")
         if conclusion in blocking_conclusions:
@@ -253,6 +260,8 @@ def get_ci_status(sha):
         if status != "completed":
             all_completed = False
 
+    if not has_validation_run:
+        return "pending"
     if has_failure:
         return "failure"
     if not all_completed:

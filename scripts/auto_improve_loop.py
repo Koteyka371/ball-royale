@@ -108,12 +108,21 @@ def main():
                     if len(parts) >= 2:
                         failures.append(parts[0])
             
-            for fail in failures[:3]: # Limit to max 3 failing test tasks to avoid flooding
-                test_name = fail.split("::")[-1]
-                task_id = f"bugfix-{test_name.replace('_', '-')}"
-                title = f"Fix failing test {test_name}"
-                desc = f"The test {fail} is failing. Investigate and fix the logic so that it passes."
-                if add_task(manifest, task_id, title, desc, "meta", "medium", acceptance=[f"Test {test_name} passes successfully"]):
+            if failures:
+                for fail in failures[:3]: # Limit to max 3 failing test tasks to avoid flooding
+                    test_name = fail.split("::")[-1]
+                    task_id = f"bugfix-{test_name.replace('_', '-')}"
+                    title = f"Fix failing test {test_name}"
+                    desc = f"The test {fail} is failing. Investigate and fix the logic so that it passes."
+                    if add_task(manifest, task_id, title, desc, "meta", "medium", acceptance=[f"Test {test_name} passes successfully"]):
+                        modified = True
+            else:
+                # pytest crashed, syntax error, or setup failed
+                task_id = "bugfix-pytest-crash"
+                title = "Fix test suite runner / pytest crash"
+                err_summary = (result.stderr or result.stdout or "Unknown crash").strip()[:300]
+                desc = f"The test suite failed to run (return code {result.returncode}). Possible syntax error or broken setup:\n\n{err_summary}"
+                if add_task(manifest, task_id, title, desc, "meta", "high", acceptance=["pytest runs successfully"]):
                     modified = True
         else:
             print("[Auto-Improve] All tests passed, no bugfix tasks generated")
