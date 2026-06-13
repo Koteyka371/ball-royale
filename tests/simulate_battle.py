@@ -316,15 +316,44 @@ class BattleSimulation:
             ball.speed += booster.value * 0.01
         booster.active = False
 
-    def run(self) -> Dict:
+    def run(self, record: bool = False) -> Dict:
         self._delta = 0.016
         start = time.time()
+        self.history = []
 
         for _ in range(self.max_ticks):
             alive = sum(1 for b in self.balls if b.alive)
             if alive <= 1:
                 break
             self._tick()
+
+            if record:
+                frame_balls = []
+                for b in self.balls:
+                    if b.alive:
+                        frame_balls.append({
+                            "id": b.id,
+                            "type": b.ball_type,
+                            "x": round(b.x, 1),
+                            "y": round(b.y, 1),
+                            "hp": round(b.hp, 1),
+                            "max_hp": b.max_hp,
+                            "action": b.current_action,
+                            "color": b.color
+                        })
+                frame_boosters = []
+                for bo in self.boosters:
+                    if bo.active:
+                        frame_boosters.append({
+                            "x": round(bo.x, 1),
+                            "y": round(bo.y, 1),
+                            "kind": bo.kind
+                        })
+                self.history.append({
+                    "tick": self.tick,
+                    "balls": frame_balls,
+                    "boosters": frame_boosters
+                })
 
         elapsed = time.time() - start
         alive_balls = [b for b in self.balls if b.alive]
@@ -413,8 +442,35 @@ def test_battle_reduces_to_few():
 
 
 if __name__ == "__main__":
-    n = int(sys.argv[1]) if len(sys.argv) > 1 else 100
-    print(f"Running simulation with {n} balls...")
-    sim = BattleSimulation(num_balls=n, max_ticks=1000, seed=42)
-    stats = sim.run()
+    import argparse
+    import json
+
+    parser = argparse.ArgumentParser(description="Run Ball Royale Battle Simulation.")
+    parser.add_argument("num_balls", type=int, nargs="?", default=100, help="Number of balls.")
+    parser.add_argument("--export", type=str, default="", help="Path to export JSON replay file.")
+    parser.add_argument("--ticks", type=int, default=1000, help="Max ticks for battle.")
+    args = parser.parse_args()
+
+    print(f"Running simulation with {args.num_balls} balls...")
+    sim = BattleSimulation(num_balls=args.num_balls, max_ticks=args.ticks, seed=42)
+    
+    record = bool(args.export)
+    stats = sim.run(record=record)
     sim.print_report()
+
+    if args.export:
+        replay_data = {
+            "arena": {
+                "width": sim.width,
+                "height": sim.height
+            },
+            "ball_types": BALL_TYPES,
+            "kill_log": sim.kill_log,
+            "history": sim.history
+        }
+        try:
+            with open(args.export, "w", encoding="utf-8") as f:
+                json.dump(replay_data, f, indent=2)
+            print(f"Replay successfully exported to: {args.export}")
+        except Exception as e:
+            print(f"Error exporting replay: {e}")

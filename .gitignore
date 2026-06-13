@@ -29,3 +29,8 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Agent locks & Replays
+.dispatcher.lock
+.supervisor.lock
+replay.json

@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ball Royale — Battle Visualizer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0c10;
+            --panel-bg: rgba(31, 40, 51, 0.4);
+            --border-color: rgba(102, 252, 241, 0.2);
+            --primary-color: #66fcf1;
+            --secondary-color: #45f3ff;
+            --text-color: #c5c6c7;
+            --text-title: #ffffff;
+            --danger-color: #ff4a5a;
+            --success-color: #2ecc71;
+            --accent-glow: 0 0 15px rgba(102, 252, 241, 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(102, 252, 241, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(255, 74, 90, 0.05) 0%, transparent 40%);
+        }
+
+        /* Sidebar style */
+        .sidebar {
+            width: 380px;
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            border-right: 1px solid var(--border-color);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            z-index: 10;
+            box-shadow: 5px 0 25px rgba(0, 0, 0, 0.5);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            box-shadow: var(--accent-glow);
+            animation: pulse 2s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 10px rgba(102, 252, 241, 0.3); }
+            100% { transform: scale(1.1); box-shadow: 0 0 20px rgba(102, 252, 241, 0.6); }
+        }
+
+        .logo-text h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-title);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .logo-text span {
+            font-size: 11px;
+            color: var(--primary-color);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .drop-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .drop-zone.dragover {
+            border-color: var(--primary-color);
+            background: rgba(102, 252, 241, 0.1);
+            box-shadow: inset 0 0 15px rgba(102, 252, 241, 0.1);
+            transform: scale(0.98);
+        }
+
+        .drop-zone svg {
+            width: 40px;
+            height: 40px;
+            fill: var(--primary-color);
+            transition: transform 0.3s ease;
+        }
+
+        .drop-zone:hover svg {
+            transform: translateY(-5px);
+        }
+
+        .drop-zone p {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .drop-zone span {
+            font-size: 11px;
+            opacity: 0.6;
+        }
+
+        .stats-panel {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 16px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .stat-box {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.6;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-title);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .leaderboard-title, .feed-title {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .scrollable-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .scrollable-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .scrollable-list::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 2px;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 6px;
+            border-left: 3px solid transparent;
+            font-size: 13px;
+        }
+
+        .leaderboard-item .ball-name {
+            font-weight: 500;
+            color: var(--text-title);
+        }
+
+        .leaderboard-item .ball-kills {
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(102, 252, 241, 0.1);
+            color: var(--primary-color);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .feed-item {
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.01);
+            border-radius: 6px;
+            font-size: 11px;
+            line-height: 1.4;
+            border-left: 2px solid var(--danger-color);
+        }
+
+        /* Main View area */
+        .main-view {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background: #000;
+        }
+
+        .canvas-container {
+            flex-grow: 1;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+        }
+
+        .canvas-container:active {
+            cursor: grabbing;
+        }
+
+        canvas {
+            background: radial-gradient(circle, #151a24 0%, #0d1017 100%);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+            transform-origin: center;
+            transition: transform 0.05s ease-out;
+        }
+
+        /* Top Bar Overlay */
+        .top-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 10px 16px;
+            pointer-events: auto;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .zoom-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: var(--text-title);
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .icon-btn:hover {
+            background: var(--primary-color);
+            color: var(--bg-color);
+            border-color: var(--primary-color);
+            box-shadow: var(--accent-glow);
+        }
+
+        /* Playback bar at bottom */
+        .bottom-controls {
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            border-top: 1px solid var(--border-color);
+            padding: 16px 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 10;
+        }
+
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .time-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            min-width: 60px;
+        }
+
+        .scrubber-bar {
+            flex-grow: 1;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .scrubber-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            width: 0%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .scrubber-bar:hover {
+            height: 8px;
+        }
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .btn-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: var(--text-title);
+            cursor: pointer;
+            padding: 8px 16px;
+            font-weight: 500;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn.primary {
+            background: var(--primary-color);
+            color: var(--bg-color);
+            border-color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .btn.primary:hover {
+            background: var(--secondary-color);
+            box-shadow: var(--accent-glow);
+        }
+
+        .speed-btn {
+            padding: 6px 10px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            border-radius: 4px;
+        }
+
+        .speed-btn.active {
+            background: var(--primary-color);
+            color: var(--bg-color);
+            border-color: var(--primary-color);
+            box-shadow: var(--accent-glow);
+        }
+        
+        .no-data-msg {
+            color: rgba(255, 255, 255, 0.3);
+            text-align: center;
+            font-size: 14px;
+            padding: 20px;
+            margin-top: auto;
+            margin-bottom: auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="logo-container">
+            <div class="logo-icon"></div>
+            <div class="logo-text">
+                <h1>Ball Royale</h1>
+                <span>Battle Visualizer</span>
+            </div>
+        </div>
+
+        <div class="drop-zone" id="dropZone">
+            <svg viewBox="0 0 24 24">
+                <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+            </svg>
+            <p>Drag & Drop Replay File</p>
+            <span>or click to browse local files</span>
+            <input type="file" id="fileInput" accept=".json" style="display: none;">
+        </div>
+
+        <div class="stats-panel">
+            <div class="stat-box">
+                <span class="stat-label">Tick / Time</span>
+                <span class="stat-value" id="statTick">0 / 0.0s</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">Alive Balls</span>
+                <span class="stat-value" id="statAlive">0</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">Total Kills</span>
+                <span class="stat-value" id="statKills">0</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">Winner</span>
+                <span class="stat-value" id="statWinner" style="color: var(--primary-color); font-size: 14px;">TBD</span>
+            </div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div style="display: flex; flex-direction: column; flex-grow: 1; height: 180px;">
+            <div class="leaderboard-title">
+                <span>Leaderboard</span>
+                <span style="opacity: 0.6;">Kills</span>
+            </div>
+            <div class="scrollable-list" id="leaderboardList">
+                <div class="no-data-msg">No replay loaded</div>
+            </div>
+        </div>
+
+        <!-- Kill Feed -->
+        <div style="display: flex; flex-direction: column; flex-grow: 1; height: 180px;">
+            <div class="feed-title">Kill Feed</div>
+            <div class="scrollable-list" id="killFeedList">
+                <div class="no-data-msg">No events</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN VIEW -->
+    <div class="main-view">
+        <div class="top-overlay">
+            <div class="glass-panel" id="arenaPanel">
+                <span>Arena: <strong id="valArena">0x0</strong></span>
+            </div>
+            <div class="zoom-controls">
+                <button class="icon-btn" id="btnZoomIn" title="Zoom In">+</button>
+                <button class="icon-btn" id="btnZoomOut" title="Zoom Out">-</button>
+                <button class="icon-btn" id="btnResetZoom" title="Reset Zoom">⟲</button>
+            </div>
+        </div>
+
+        <div class="canvas-container" id="canvasContainer">
+            <canvas id="arenaCanvas" width="800" height="800"></canvas>
+        </div>
+
+        <!-- BOTTOM CONTROLS -->
+        <div class="bottom-controls">
+            <div class="progress-container">
+                <span class="time-label" id="currentTime">00:00</span>
+                <div class="scrubber-bar" id="scrubberBar">
+                    <div class="scrubber-fill" id="scrubberFill"></div>
+                </div>
+                <span class="time-label" id="totalTime" style="text-align: right;">00:00</span>
+            </div>
+
+            <div class="control-row">
+                <div class="btn-group">
+                    <button class="btn primary" id="btnPlay">Play</button>
+                    <button class="btn" id="btnStepPrev" title="Step Back">◀</button>
+                    <button class="btn" id="btnStepNext" title="Step Forward">▶</button>
+                    <button class="btn" id="btnRestart">Restart</button>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn speed-btn active" data-speed="1">1x</button>
+                    <button class="btn speed-btn" data-speed="2">2x</button>
+                    <button class="btn speed-btn" data-speed="4">4x</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("arenaCanvas");
+        const ctx = canvas.getContext("2d");
+        const container = document.getElementById("canvasContainer");
+
+        // App state
+        let replayData = null;
+        let currentFrameIndex = 0;
+        let isPlaying = false;
+        let playSpeed = 1; // frames per animation tick
+        let animationFrameId = null;
+        let zoom = 1;
+        let panX = 0;
+        let panY = 0;
+        let isDragging = false;
+        let startDragX = 0;
+        let startDragY = 0;
+
+        // Colors Mapping
+        const defaultColors = {
+            warrior: "#ff4a5a",
+            tank: "#8a95a5",
+            assassin: "#a327ff",
+            healer: "#2ecc71",
+            sniper: "#00b4d8",
+            bomber: "#ff9f1c",
+            berserker: "#d90429",
+            juggernaut: "#6a040f",
+            phantom: "#00f5d4",
+            rogue: "#8d99ae",
+            swarm: "#ffea00",
+            guardian: "#ffb703"
+        };
+
+        // File loading events
+        const dropZone = document.getElementById("dropZone");
+        const fileInput = document.getElementById("fileInput");
+
+        dropZone.addEventListener("click", () => fileInput.click());
+        fileInput.addEventListener("change", (e) => handleFiles(e.target.files));
+
+        dropZone.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            dropZone.classList.add("dragover");
+        });
+
+        dropZone.addEventListener("dragleave", () => {
+            dropZone.classList.remove("dragover");
+        });
+
+        dropZone.addEventListener("drop", (e) => {
+            e.preventDefault();
+            dropZone.classList.remove("dragover");
+            handleFiles(e.dataTransfer.files);
+        });
+
+        function handleFiles(files) {
+            if (files.length === 0) return;
+            const file = files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    replayData = JSON.parse(e.target.result);
+                    initReplay();
+                } catch (err) {
+                    alert("Failed to parse JSON file: " + err.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Initialize replay data
+        function initReplay() {
+            if (!replayData || !replayData.history || replayData.history.length === 0) {
+                alert("Invalid replay file structure.");
+                return;
+            }
+
+            currentFrameIndex = 0;
+            isPlaying = false;
+            document.getElementById("btnPlay").textContent = "Play";
+            
+            // Set Arena Size
+            const width = replayData.arena?.width || 2000;
+            const height = replayData.arena?.height || 2000;
+            canvas.width = width;
+            canvas.height = height;
+            document.getElementById("valArena").textContent = `${width}x${height}`;
+
+            // Fit zoom to container
+            resetZoom();
+
+            // Populate metadata
+            updateUI();
+            renderFrame();
+        }
+
+        function resetZoom() {
+            const margin = 40;
+            const zoomX = (container.clientWidth - margin) / canvas.width;
+            const zoomY = (container.clientHeight - margin) / canvas.height;
+            zoom = Math.min(zoomX, zoomY, 1);
+            panX = (container.clientWidth - canvas.width * zoom) / 2;
+            panY = (container.clientHeight - canvas.height * zoom) / 2;
+            applyTransform();
+        }
+
+        function applyTransform() {
+            canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
+        }
+
+        // Zoom / Pan events
+        container.addEventListener("mousedown", (e) => {
+            if (e.target !== container && e.target !== canvas) return;
+            isDragging = true;
+            startDragX = e.clientX - panX;
+            startDragY = e.clientY - panY;
+        });
+
+        window.addEventListener("mousemove", (e) => {
+            if (!isDragging) return;
+            panX = e.clientX - startDragX;
+            panY = e.clientY - startDragY;
+            applyTransform();
+        });
+
+        window.addEventListener("mouseup", () => {
+            isDragging = false;
+        });
+
+        container.addEventListener("wheel", (e) => {
+            e.preventDefault();
+            const zoomFactor = 1.1;
+            const oldZoom = zoom;
+            if (e.deltaY < 0) {
+                zoom = Math.min(zoom * zoomFactor, 8);
+            } else {
+                zoom = Math.max(zoom / zoomFactor, 0.05);
+            }
+            
+            // Zoom to mouse cursor pointer
+            const rect = container.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            panX = mouseX - (mouseX - panX) * (zoom / oldZoom);
+            panY = mouseY - (mouseY - panY) * (zoom / oldZoom);
+            
+            applyTransform();
+        });
+
+        document.getElementById("btnZoomIn").addEventListener("click", () => {
+            zoom = Math.min(zoom * 1.2, 8);
+            applyTransform();
+        });
+
+        document.getElementById("btnZoomOut").addEventListener("click", () => {
+            zoom = Math.max(zoom / 1.2, 0.05);
+            applyTransform();
+        });
+
+        document.getElementById("btnResetZoom").addEventListener("click", resetZoom);
+
+        // Rendering Logic
+        function renderFrame() {
+            if (!replayData) return;
+            const frame = replayData.history[currentFrameIndex];
+            if (!frame) return;
+
+            // Clear Canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw grid
+            ctx.strokeStyle = "rgba(102, 252, 241, 0.03)";
+            ctx.lineWidth = 1;
+            const step = 100;
+            for (let x = 0; x < canvas.width; x += step) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += step) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+
+            // Draw boosters
+            frame.boosters.forEach(bo => {
+                ctx.beginPath();
+                ctx.arc(bo.x, bo.y, 8, 0, Math.PI * 2);
+                let color = "#ffffff";
+                if (bo.kind === "health") color = "#2ecc71";
+                else if (bo.kind === "damage") color = "#ff4a5a";
+                else if (bo.kind === "speed") color = "#45f3ff";
+                
+                ctx.fillStyle = color;
+                ctx.shadowColor = color;
+                ctx.shadowBlur = 8;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            });
+
+            // Draw Balls
+            frame.balls.forEach(ball => {
+                const radius = replayData.ball_types?.[ball.type]?.radius || 12;
+                const color = defaultColors[ball.type] || ball.color || "#ffffff";
+
+                // Draw special visual effects for actions
+                if (ball.action === "use_skill" || ball.action === "use skill") {
+                    ctx.beginPath();
+                    ctx.arc(ball.x, ball.y, radius * 3, 0, Math.PI * 2);
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([4, 4]);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+
+                // Outer aura
+                ctx.beginPath();
+                ctx.arc(ball.x, ball.y, radius + 4, 0, Math.PI * 2);
+                ctx.strokeStyle = color + "20";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Ball body
+                ctx.beginPath();
+                ctx.arc(ball.x, ball.y, radius, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.fill();
+
+                // HP Bar
+                const barW = radius * 2;
+                const barH = 3;
+                const barX = ball.x - radius;
+                const barY = ball.y - radius - 10;
+                const hpPercent = ball.hp / ball.max_hp;
+
+                // BG
+                ctx.fillStyle = "rgba(0,0,0,0.5)";
+                ctx.fillRect(barX, barY, barW, barH);
+                // Fill
+                ctx.fillStyle = hpPercent > 0.5 ? "#2ecc71" : (hpPercent > 0.25 ? "#f1c40f" : "#e74c3c");
+                ctx.fillRect(barX, barY, barW * hpPercent, barH);
+
+                // Text labels (if zoomed enough)
+                if (zoom > 0.5) {
+                    ctx.fillStyle = "#ffffff";
+                    ctx.font = "10px Space Grotesk";
+                    ctx.textAlign = "center";
+                    ctx.fillText(`${ball.type.toUpperCase()}`, ball.x, ball.y + 4);
+                }
+            });
+
+            // Update stats
+            document.getElementById("statTick").textContent = `${frame.tick} / ${replayData.history.length}`;
+            document.getElementById("statAlive").textContent = frame.balls.length;
+
+            const scrubberFill = document.getElementById("scrubberFill");
+            const percent = (currentFrameIndex / (replayData.history.length - 1)) * 100;
+            scrubberFill.style.width = `${percent}%`;
+
+            const totalS = (replayData.history.length * 0.016).toFixed(1);
+            const currentS = (currentFrameIndex * 0.016).toFixed(1);
+            document.getElementById("currentTime").textContent = `00:${currentS.padStart(4, "0")}`;
+            document.getElementById("totalTime").textContent = `00:${totalS.padStart(4, "0")}`;
+        }
+
+        // Leaderboard & Kill feed updates
+        function updateUI() {
+            if (!replayData) return;
+
+            // Winner update
+            const totalKills = replayData.kill_log?.length || 0;
+            document.getElementById("statKills").textContent = totalKills;
+
+            const finalFrame = replayData.history[replayData.history.length - 1];
+            if (finalFrame && finalFrame.balls.length === 1) {
+                document.getElementById("statWinner").textContent = finalFrame.balls[0].type.toUpperCase();
+            } else {
+                document.getElementById("statWinner").textContent = "NOBODY";
+            }
+
+            // Kills Count
+            const killsMap = {};
+            replayData.kill_log?.forEach(k => {
+                killsMap[k.killer_id] = (killsMap[k.killer_id] || 0) + 1;
+            });
+
+            const leaderList = document.getElementById("leaderboardList");
+            leaderList.innerHTML = "";
+            
+            // Build a list of all balls represented
+            const ballsList = [];
+            const initialFrame = replayData.history[0];
+            initialFrame.balls.forEach(b => {
+                const finalRecord = finalFrame.balls.find(fb => fb.id === b.id);
+                ballsList.push({
+                    id: b.id,
+                    type: b.type,
+                    kills: killsMap[b.id] || 0,
+                    alive: !!finalRecord,
+                    color: defaultColors[b.type] || b.color
+                });
+            });
+
+            ballsList.sort((a,b) => b.kills - a.kills || b.alive - a.alive);
+
+            ballsList.slice(0, 15).forEach(b => {
+                const item = document.createElement("div");
+                item.className = "leaderboard-item";
+                item.style.borderLeftColor = b.color;
+                if (!b.alive) item.style.opacity = "0.5";
+                
+                item.innerHTML = `
+                    <span class="ball-name">${b.type.toUpperCase()}-${b.id} ${b.alive ? "🟢" : "💀"}</span>
+                    <span class="ball-kills">${b.kills} KILLS</span>
+                `;
+                leaderList.appendChild(item);
+            });
+
+            // Kill Feed
+            const feedList = document.getElementById("killFeedList");
+            feedList.innerHTML = "";
+            if (replayData.kill_log && replayData.kill_log.length > 0) {
+                replayData.kill_log.forEach(k => {
+                    const item = document.createElement("div");
+                    item.className = "feed-item";
+                    item.style.borderLeftColor = defaultColors[k.killer_type] || "#ffffff";
+                    item.innerHTML = `Tick ${k.tick}: <strong style="color: ${defaultColors[k.killer_type]}">${k.killer_type.toUpperCase()}-${k.killer_id}</strong> killed <strong style="color: ${defaultColors[k.victim_type]}">${k.victim_type.toUpperCase()}-${k.victim_id}</strong>`;
+                    feedList.appendChild(item);
+                });
+            } else {
+                feedList.innerHTML = `<div class="no-data-msg">No kills recorded</div>`;
+            }
+        }
+
+        // Playback Loop
+        function tickAnimation() {
+            if (!isPlaying) return;
+            currentFrameIndex += playSpeed;
+            if (currentFrameIndex >= replayData.history.length) {
+                currentFrameIndex = replayData.history.length - 1;
+                isPlaying = false;
+                document.getElementById("btnPlay").textContent = "Play";
+            }
+            renderFrame();
+            if (isPlaying) {
+                animationFrameId = requestAnimationFrame(tickAnimation);
+            }
+        }
+
+        // Buttons handlers
+        const btnPlay = document.getElementById("btnPlay");
+        btnPlay.addEventListener("click", () => {
+            if (!replayData) return;
+            if (isPlaying) {
+                isPlaying = false;
+                btnPlay.textContent = "Play";
+                if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            } else {
+                if (currentFrameIndex >= replayData.history.length - 1) {
+                    currentFrameIndex = 0;
+                }
+                isPlaying = true;
+                btnPlay.textContent = "Pause";
+                tickAnimation();
+            }
+        });
+
+        document.getElementById("btnRestart").addEventListener("click", () => {
+            currentFrameIndex = 0;
+            renderFrame();
+        });
+
+        document.getElementById("btnStepNext").addEventListener("click", () => {
+            if (!replayData) return;
+            currentFrameIndex = Math.min(currentFrameIndex + 1, replayData.history.length - 1);
+            renderFrame();
+        });
+
+        document.getElementById("btnStepPrev").addEventListener("click", () => {
+            if (!replayData) return;
+            currentFrameIndex = Math.max(currentFrameIndex - 1, 0);
+            renderFrame();
+        });
+
+        // Scrubber
+        const scrubberBar = document.getElementById("scrubberBar");
+        scrubberBar.addEventListener("click", (e) => {
+            if (!replayData) return;
+            const rect = scrubberBar.getBoundingClientRect();
+            const clickPercent = (e.clientX - rect.left) / rect.width;
+            currentFrameIndex = Math.floor(clickPercent * (replayData.history.length - 1));
+            renderFrame();
+        });
+
+        // Speed selectors
+        const speedBtns = document.querySelectorAll(".speed-btn");
+        speedBtns.forEach(btn => {
+            btn.addEventListener("click", () => {
+                speedBtns.forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                playSpeed = parseInt(btn.dataset.speed);
+            });
+        });
+    </script>
+</body>
+</html>

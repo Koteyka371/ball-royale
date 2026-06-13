@@ -1031,6 +1031,38 @@
         "Balls spawn distributed across rooms",
         "Pathfinding works across corridors"
       ]
+    },
+    {
+      "id": "visualizer-skills-effects",
+      "status": "todo",
+      "area": "visuals",
+      "risk": "low",
+      "title": "Implement visual effects for all ball skills in HTML5 Canvas",
+      "description": "Enhance visualizer/index.html to draw unique particle animations and visual elements when balls trigger specific skills (e.g. Shield draws a glowing cyan circle around the tank, Wave Attack draws red shockwaves, Dash leaves ghost trail particles).",
+      "allowed_paths": [
+        "visualizer/index.html"
+      ],
+      "acceptance": [
+        "Visual effects are rendered for all 12 class skills",
+        "Effects match the duration of the skill or vanish cleanly",
+        "No memory leaks on HTML5 Canvas over long replays"
+      ]
+    },
+    {
+      "id": "visualizer-interactive-spectator",
+      "status": "todo",
+      "area": "ui",
+      "risk": "low",
+      "title": "Add interactive inspection mode to Visualizer",
+      "description": "Allow clicking on any ball during playback to highlight it, display its active state, current health, target enemy, and emotional level in a detailed inspector panel on the page.",
+      "allowed_paths": [
+        "visualizer/index.html"
+      ],
+      "acceptance": [
+        "Clicking a ball selects and highlights it",
+        "Highlighted ball displays detailed real-time telemetry in sidebar",
+        "Deselect works by clicking on empty space"
+      ]
     }
   ]
 }
