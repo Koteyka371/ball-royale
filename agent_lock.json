@@ -12,8 +12,8 @@
       "name": "Jules Behaviors",
       "area": "behaviors",
       "task_id": "ai-behavior-chase",
-      "status": "assigned",
-      "started_at": "2026-06-14T18:12:43.365061+00:00",
+      "status": "working",
+      "started_at": "2026-06-14T18:14:58.980036+00:00",
       "cycles_today": 6
     },
     "agent-3": {
