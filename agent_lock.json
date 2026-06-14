@@ -14,7 +14,7 @@
       "task_id": "ai-behavior-chase",
       "status": "working",
       "started_at": "2026-06-14T08:18:49.213226+00:00",
-      "cycles_today": 1
+      "cycles_today": 2
     },
     "agent-3": {
       "name": "Jules Tests",
