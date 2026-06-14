@@ -4,8 +4,8 @@
       "name": "Jules Core",
       "area": "ai-core",
       "task_id": "ai-action-system",
-      "status": "assigned",
-      "started_at": "2026-06-14T20:05:58.087515+00:00",
+      "status": "working",
+      "started_at": "2026-06-14T20:06:13.291315+00:00",
       "cycles_today": 7
     },
     "agent-2": {
