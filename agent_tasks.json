@@ -1148,6 +1148,91 @@
         "Tests pass",
         "No regressions"
       ]
+    },
+    {
+      "id": "idea-feature-064",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "12+ ball types",
+      "description": "Implement 12+ ball types as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "12+ ball types implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-feature-065",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "6 game modes",
+      "description": "Implement 6 game modes as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "6 game modes implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-feature-066",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "10+ arenas",
+      "description": "Implement 10+ arenas as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "10+ arenas implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-feature-067",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "AI difficulty levels",
+      "description": "Implement AI difficulty levels as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "AI difficulty levels implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-feature-068",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Camera system",
+      "description": "Implement Camera system as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Camera system implemented",
+        "Tests pass",
+        "No regressions"
+      ]
     }
   ]
 }
