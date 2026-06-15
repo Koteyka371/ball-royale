@@ -9,13 +9,17 @@ from scripts.auto_improve_loop import load_json, save_json, add_task
 
 TASK_FILE = Path("agent_tasks.json")
 
-FILES_TO_SYNC = [
-    ("src/ai/perception.py", "src/ai/perception.gd"),
-    ("src/ai/emotion.py", "src/ai/emotion.gd"),
-    ("src/ai/decision.py", "src/ai/decision.gd"),
-    ("src/ai/action.py", "src/ai/action.gd"),
-    ("src/ai/ball_brain.py", "src/ai/ball_brain.gd"),
-]
+def get_files_to_sync():
+    files = []
+    ai_dir = Path("src/ai")
+    if ai_dir.exists():
+        for py_path in ai_dir.glob("*.py"):
+            if py_path.name == "__init__.py":
+                continue
+            gd_path = py_path.with_suffix(".gd")
+            if gd_path.exists():
+                files.append((str(py_path), str(gd_path)))
+    return files
 
 def extract_python_methods(filepath):
     try:
@@ -46,7 +50,7 @@ def run_sync_check():
     manifest = load_json(TASK_FILE)
     modified = False
 
-    for py_file, gd_file in FILES_TO_SYNC:
+    for py_file, gd_file in get_files_to_sync():
         py_path = Path(py_file)
         gd_path = Path(gd_file)
         
