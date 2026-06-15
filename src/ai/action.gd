@@ -166,6 +166,16 @@ func _collect_booster(delta: float):
 
 func _use_skill():
     if self.ball.has_method("use_skill"):
+        var difficulty = "medium"
+        if "difficulty" in self.ball:
+            difficulty = self.ball.difficulty
+
+        if difficulty == "easy":
+            if randf() < 0.3:
+                # 30% chance to fail skill usage on easy difficulty
+                _idle(0.016)
+                return
+
         self.ball.use_skill()
 
 func _idle(delta: float):

@@ -111,6 +111,19 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
             best_action = action
 
     if best_action == "idle":
-        return personality
+        best_action = personality
+
+    var difficulty = "medium"
+    if "difficulty" in self.ball:
+        difficulty = self.ball.difficulty
+
+    var valid_actions = ["flee", "defend", "opportunistic", "attack", "chase", "use skill", "idle"]
+
+    if difficulty == "chaos":
+        if randf() < 0.5:
+            return valid_actions[randi() % valid_actions.size()]
+    elif difficulty == "easy":
+        if randf() < 0.2:
+            return valid_actions[randi() % valid_actions.size()]
 
     return best_action

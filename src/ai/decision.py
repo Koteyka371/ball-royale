@@ -49,11 +49,11 @@ class Decision:
 
         danger_level = perception_data.get("danger_level", 0.0)
         threat_level = perception_data.get("threat_level", 0.0)
-        opportunity_level = perception_data.get("opportunity_level", 0.0)
+        perception_data.get("opportunity_level", 0.0)
         opportunity_score = perception_data.get("opportunity_score", 0.0)
         enemies = perception_data.get("enemies", [])
         boosters = perception_data.get("boosters", [])
-        allies = perception_data.get("allies", [])
+        perception_data.get("allies", [])
 
         personality = getattr(self.ball, "personality", "idle")
         skill_timer = getattr(self.ball, "skill_timer", 0.0)
@@ -134,6 +134,17 @@ class Decision:
 
         # Fall back to personality behavior instead of returning personality name
         if best_action == "idle":
-            return self.PERSONALITY_BEHAVIORS.get(personality, "idle")
+            best_action = self.PERSONALITY_BEHAVIORS.get(personality, "idle")
+
+        difficulty = getattr(self.ball, "difficulty", "medium")
+        valid_actions = ["flee", "defend", "collect_booster", "attack", "chase", "use_skill", "idle"]
+
+        import random
+        if difficulty == "chaos":
+            if random.random() < 0.5:
+                return random.choice(valid_actions)
+        elif difficulty == "easy":
+            if random.random() < 0.2:
+                return random.choice(valid_actions)
 
         return best_action

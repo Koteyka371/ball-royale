@@ -57,8 +57,8 @@ BALL_TYPES = {
                  "skill": "protect_ally", "skill_cooldown": 6.0},
 }
 
-import json
 try:
+    import json
     _config_path = os.path.join(os.path.dirname(__file__), "../src/ai/balance_config.json")
     if os.path.exists(_config_path):
         with open(_config_path, "r", encoding="utf-8") as _f:

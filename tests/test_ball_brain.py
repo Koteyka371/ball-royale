@@ -12,6 +12,7 @@ class MockBall:
         self.hp = hp
         self.max_hp = max_hp
         self.personality = personality
+        self.difficulty = "hard" # Ensure existing tests process synchronously
         self.current_action = None
         self.x = 0
         self.y = 0

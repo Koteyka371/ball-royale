@@ -119,6 +119,13 @@ class Action:
 
     def _use_skill(self) -> None:
         if hasattr(self.ball, "use_skill"):
+            difficulty = getattr(self.ball, "difficulty", "medium")
+            if difficulty == "easy":
+                import random
+                if random.random() < 0.3:
+                    # 30% chance to fail skill usage on easy difficulty
+                    self._idle(0.016)
+                    return
             self.ball.use_skill()
 
     def _idle(self, delta: float) -> None:
