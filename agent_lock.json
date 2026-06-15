@@ -30,7 +30,7 @@
       "task_id": "ai-team-coordination",
       "status": "working",
       "started_at": "2026-06-15T07:37:21.412613+00:00",
-      "cycles_today": 1
+      "cycles_today": 2
     },
     "agent-5": {
       "name": "Jules Meta",
