@@ -3,49 +3,49 @@
     "agent-1": {
       "name": "Jules Core",
       "area": "ai-core",
-      "task_id": "ai-action-system",
-      "status": "working",
-      "started_at": "2026-06-15T07:31:14.967615+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 2
     },
     "agent-2": {
       "name": "Jules Behaviors",
       "area": "behaviors",
-      "task_id": "ai-behavior-chase",
-      "status": "working",
-      "started_at": "2026-06-15T07:33:15.395478+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 2
     },
     "agent-3": {
       "name": "Jules Tests",
       "area": "tests",
-      "task_id": "ai-personality-system",
-      "status": "working",
-      "started_at": "2026-06-15T07:35:16.827548+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 2
     },
     "agent-4": {
       "name": "Jules Content",
       "area": "content",
-      "task_id": "ai-team-coordination",
-      "status": "working",
-      "started_at": "2026-06-15T07:37:21.412613+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 2
     },
     "agent-5": {
       "name": "Jules Meta",
       "area": "meta",
-      "task_id": "ai-difficulty-system",
-      "status": "working",
-      "started_at": "2026-06-15T07:39:28.741533+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 2
     },
     "agent-6": {
       "name": "Jules Innovation",
       "area": "innovation",
-      "task_id": "ai-neural-network-learning",
-      "status": "working",
-      "started_at": "2026-06-15T07:41:30.159386+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 2
     },
     "agent-7": {
