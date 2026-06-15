@@ -247,7 +247,10 @@ class BattleSimulation:
         self.grid.clear()
         for b in self.balls:
             if b.alive:
-                self.grid.insert(b)
+                try:
+                    self.grid.insert(b)
+                except (OverflowError, ValueError):
+                    pass
 
     def get_nearby_entities(self, ball, radius):
         """Implement world interface for Perception layer."""

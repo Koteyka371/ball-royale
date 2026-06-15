@@ -22,6 +22,21 @@ class BallBrain:
 
     def process(self, delta: float) -> None:
         """Main processing loop through the 4 layers."""
+        # Check and fix NaN coordinates early before they hit the spatial grid
+        import math
+        if hasattr(self.ball, "x"):
+            try:
+                if math.isnan(self.ball.x) or math.isinf(self.ball.x):
+                    self.ball.x = 0.0
+            except TypeError:
+                pass
+        if hasattr(self.ball, "y"):
+            try:
+                if math.isnan(self.ball.y) or math.isinf(self.ball.y):
+                    self.ball.y = 0.0
+            except TypeError:
+                pass
+
         perception_data = self.perception()
         emotion_state = self.emotion(perception_data)
         decision = self.decision(perception_data, emotion_state)

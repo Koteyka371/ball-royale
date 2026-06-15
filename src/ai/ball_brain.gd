@@ -24,6 +24,13 @@ func _init(ball_ref, world_ref):
 
 # Main processing loop
 func process(delta):
+    if "x" in self.ball:
+        if is_nan(self.ball.x) or is_inf(self.ball.x):
+            self.ball.x = 0.0
+    if "y" in self.ball:
+        if is_nan(self.ball.y) or is_inf(self.ball.y):
+            self.ball.y = 0.0
+
     var perception_data = perception()
     var emotion_state = emotion(perception_data)
     var decision = decision(perception_data, emotion_state)

@@ -229,6 +229,11 @@ class Action:
     def _clamp_position(self) -> None:
         if hasattr(self.world, "width") and hasattr(self.world, "height"):
             radius = getattr(self.ball, "radius", 10.0)
+
+            # Additional safety check against NaN values propagated from external sources
+            if math.isnan(self.ball.x) or math.isinf(self.ball.x): self.ball.x = self.world.width / 2.0
+            if math.isnan(self.ball.y) or math.isinf(self.ball.y): self.ball.y = self.world.height / 2.0
+
             self.ball.x = max(radius, min(self.world.width - radius, self.ball.x))
             self.ball.y = max(radius, min(self.world.height - radius, self.ball.y))
 

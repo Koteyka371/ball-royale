@@ -282,6 +282,10 @@ func _clamp_position():
     if self.world != null and "width" in self.world and "height" in self.world:
         var radius = 10.0
         if "radius" in self.ball: radius = self.ball.radius
+
+        if is_nan(self.ball.x) or is_inf(self.ball.x): self.ball.x = self.world.width / 2.0
+        if is_nan(self.ball.y) or is_inf(self.ball.y): self.ball.y = self.world.height / 2.0
+
         self.ball.x = max(radius, min(self.world.width - radius, self.ball.x))
         self.ball.y = max(radius, min(self.world.height - radius, self.ball.y))
 
