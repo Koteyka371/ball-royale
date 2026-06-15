@@ -282,6 +282,7 @@ def invoke_jules(task_id, area, prompt, branch_name, token):
             }
         },
         "requirePlanApproval": False,
+        "automationMode": "AUTO_CREATE_PR",
     }
 
     data_bytes = json.dumps(payload).encode("utf-8")
@@ -565,6 +566,15 @@ def main():
                 time.sleep(PR_POLL_INTERVAL)
             else:
                 print(f"[{agent_id}] PR not found after {PR_POLL_MAX_MINUTES} minutes")
+                update = {"agents": {agent_id: {
+                    "status": "idle",
+                    "cycles_today": cycles_today,
+                    "task_id": None,
+                    "started_at": None,
+                }}}
+                if not atomic_update(update, f"{agent_id}: PR timeout, resetting"):
+                    print(f"[{agent_id}] WARNING: Failed to update status after PR timeout")
+                    return 1
         else:
             update = {"agents": {agent_id: {
                 "status": "idle",

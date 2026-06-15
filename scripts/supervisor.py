@@ -305,6 +305,7 @@ def invoke_jules(task_id, area, prompt, branch_name, token):
             }
         },
         "requirePlanApproval": False,
+        "automationMode": "AUTO_CREATE_PR",
     }
 
     data_bytes = json.dumps(payload).encode("utf-8")
