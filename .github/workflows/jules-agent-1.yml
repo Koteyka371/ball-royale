@@ -38,6 +38,7 @@ jobs:
         run: python3 scripts/launch_agent.py agent-1
         env:
           JULES_API_KEY: ${{ secrets.JULES_API_KEY }}
+          JULES_API_KEY_2: ${{ secrets.JULES_API_KEY_2 }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Show status

@@ -1063,6 +1063,91 @@
         "Highlighted ball displays detailed real-time telemetry in sidebar",
         "Deselect works by clicking on empty space"
       ]
+    },
+    {
+      "id": "idea-feature-059",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Advanced behaviors (kite, flank, group attack)",
+      "description": "Implement Advanced behaviors (kite, flank, group attack) as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Advanced behaviors (kite, flank, group attack) implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-feature-060",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Emotion system (fear, rage, greed)",
+      "description": "Implement Emotion system (fear, rage, greed) as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Emotion system (fear, rage, greed) implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-feature-061",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Skill usage AI",
+      "description": "Implement Skill usage AI as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Skill usage AI implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-feature-062",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Team coordination",
+      "description": "Implement Team coordination as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Team coordination implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-feature-063",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "8 ball types",
+      "description": "Implement 8 ball types as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "8 ball types implemented",
+        "Tests pass",
+        "No regressions"
+      ]
     }
   ]
 }

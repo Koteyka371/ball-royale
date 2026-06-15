@@ -699,15 +699,29 @@ def main():
                             }
                 elif ci_status == "failure":
                     print(f"    CI failed! Fixing via Jules API...")
-                    jules_token = os.environ.get("JULES_API_KEY", "")
+                    branch_name = pr.get("head", {}).get("ref", "")
+                    agent_id = find_agent_by_task_id(lock_data, task_id)
+
+                    if not agent_id:
+                        print(f"    Could not find agent for task '{task_id}', skipping CI fix")
+                        continue
+
+                    # Determine primary and fallback token based on agent number
+                    agent_num = 1
+                    try:
+                        agent_num = int(agent_id.split("-")[1])
+                    except (IndexError, ValueError):
+                        pass
+
+                    token_env = "JULES_API_KEY_2" if agent_num >= 4 else "JULES_API_KEY"
+                    jules_token = os.environ.get(token_env, "")
+                    if not jules_token:
+                        fallback_env = "JULES_API_KEY" if token_env == "JULES_API_KEY_2" else "JULES_API_KEY_2"
+                        jules_token = os.environ.get(fallback_env, "")
+                        if jules_token:
+                            print(f"[Supervisor] Primary {token_env} missing, using fallback {fallback_env} for {agent_id}")
+
                     if jules_token:
-                        branch_name = pr.get("head", {}).get("ref", "")
-                        agent_id = find_agent_by_task_id(lock_data, task_id)
-
-                        if not agent_id:
-                            print(f"    Could not find agent for task '{task_id}', skipping CI fix")
-                            continue
-
                         agent_area = lock_data.get("agents", {}).get(agent_id, {}).get("area", "ai-core")
 
                         fix_prompt = (

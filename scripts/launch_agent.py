@@ -507,8 +507,13 @@ def main():
         token_env = "JULES_API_KEY_2" if agent_num >= 4 else "JULES_API_KEY"
         token = os.environ.get(token_env, "")
         if not token:
-            print(f"[{agent_id}] No {token_env}, skipping")
-            return 0
+            fallback_env = "JULES_API_KEY" if token_env == "JULES_API_KEY_2" else "JULES_API_KEY_2"
+            token = os.environ.get(fallback_env, "")
+            if token:
+                print(f"[{agent_id}] Primary {token_env} is missing, using fallback {fallback_env}")
+            else:
+                print(f"[{agent_id}] No token available (checked both JULES_API_KEY and JULES_API_KEY_2), skipping")
+                return 0
 
         task = None
         for t in tasks_data.get("tasks", []):
