@@ -28,6 +28,47 @@ func execute(strategy: String, delta: float):
     _clamp_position()
     _update_skill_timer(delta)
 
+func _get_allies() -> Array:
+    var perception_radius = 250.0
+    if "perception_radius" in self.ball:
+        perception_radius = self.ball.perception_radius
+
+    if self.world != null and self.world.has_method("get_nearby_entities"):
+        var entities = self.world.get_nearby_entities(self.ball, perception_radius)
+        if typeof(entities) == TYPE_DICTIONARY and entities.has("allies"):
+            return entities["allies"]
+        elif typeof(entities) == TYPE_ARRAY:
+            var allies = []
+            for e in entities:
+                if e.has_method("get_ball_type") or "ball_type" in e:
+                    var e_type = e.ball_type if "ball_type" in e else e.get_ball_type()
+                    var b_type = self.ball.ball_type if "ball_type" in self.ball else self.ball.get_ball_type()
+                    if e_type == b_type and e.id != self.ball.id:
+                        if ("alive" in e and e.alive) or (e.has_method("is_alive") and e.is_alive()):
+                            allies.append(e)
+            return allies
+    return []
+
+func _steer_avoid_obstacles(exclude_target = null) -> Vector2:
+    var steer = Vector2(0, 0)
+    var obstacles = _get_enemies() + _get_allies()
+    var ball_radius = 10.0
+    if "radius" in self.ball: ball_radius = self.ball.radius
+    for o in obstacles:
+        if exclude_target != null and "id" in o and "id" in exclude_target and o.id == exclude_target.id:
+            continue
+
+        var dx = self.ball.x - o.x
+        var dy = self.ball.y - o.y
+        var dist = sqrt(dx*dx + dy*dy)
+        var o_radius = 10.0
+        if "radius" in o: o_radius = o.radius
+        var avoid_dist = ball_radius + o_radius + 20.0
+        if dist > 0.001 and dist < avoid_dist:
+            steer.x += (dx / dist) * (avoid_dist - dist)
+            steer.y += (dy / dist) * (avoid_dist - dist)
+    return steer
+
 func _get_enemies() -> Array:
     var perception_radius = 250.0
     if "perception_radius" in self.ball:
@@ -84,10 +125,21 @@ func _flee(delta: float):
         var dy = self.ball.y - nearest.y
         var dist = sqrt(dx*dx + dy*dy)
         if dist > 0.01:
+            var nx = dx / dist
+            var ny = dy / dist
+            var steer = _steer_avoid_obstacles()
+            nx += steer.x
+            ny += steer.y
+            var length = sqrt(nx*nx + ny*ny)
+            if length > 0.001:
+                nx /= length
+                ny /= length
+
             var speed = 2.0
             if "speed" in self.ball: speed = self.ball.speed
-            self.ball.x += (dx / dist) * speed * delta * 60
-            self.ball.y += (dy / dist) * speed * delta * 60
+            var step = speed * delta * 60
+            self.ball.x += nx * step
+            self.ball.y += ny * step
     else:
         _idle(delta)
 
@@ -106,20 +158,27 @@ func _attack(delta: float):
         var dy = target.y - self.ball.y
         var dist = sqrt(dx*dx + dy*dy)
 
-        var speed = 2.0
-        if "speed" in self.ball: speed = self.ball.speed
-
-        if dist > 0.01:
-            var nx = dx / dist
-            var ny = dy / dist
-            var step = speed * delta * 60
-            self.ball.x += nx * min(step, dist)
-            self.ball.y += ny * min(step, dist)
-
         var target_radius = 10.0
         if "radius" in target: target_radius = target.radius
         var ball_radius = 10.0
         if "radius" in self.ball: ball_radius = self.ball.radius
+
+        if dist > ball_radius + target_radius + 5:
+            var nx = dx / dist
+            var ny = dy / dist
+            var steer = _steer_avoid_obstacles(target)
+            nx += steer.x
+            ny += steer.y
+            var length = sqrt(nx*nx + ny*ny)
+            if length > 0.001:
+                nx /= length
+                ny /= length
+
+            var speed = 2.0
+            if "speed" in self.ball: speed = self.ball.speed
+            var step = speed * delta * 60
+            self.ball.x += nx * min(step, dist)
+            self.ball.y += ny * min(step, dist)
 
         if dist <= ball_radius + target_radius + 5:
             if self.world != null and self.world.has_method("_deal_damage"):
@@ -145,18 +204,25 @@ func _collect_booster(delta: float):
         var dy = nearest.y - self.ball.y
         var dist = sqrt(dx*dx + dy*dy)
 
-        var speed = 2.0
-        if "speed" in self.ball: speed = self.ball.speed
+        var ball_radius = 10.0
+        if "radius" in self.ball: ball_radius = self.ball.radius
 
-        if dist > 0.01:
+        if dist > ball_radius + 10:
             var nx = dx / dist
             var ny = dy / dist
+            var steer = _steer_avoid_obstacles()
+            nx += steer.x
+            ny += steer.y
+            var length = sqrt(nx*nx + ny*ny)
+            if length > 0.001:
+                nx /= length
+                ny /= length
+
+            var speed = 2.0
+            if "speed" in self.ball: speed = self.ball.speed
             var step = speed * delta * 60
             self.ball.x += nx * min(step, dist)
             self.ball.y += ny * min(step, dist)
-
-        var ball_radius = 10.0
-        if "radius" in self.ball: ball_radius = self.ball.radius
 
         if dist <= ball_radius + 10:
             if self.world != null and self.world.has_method("_collect_booster"):

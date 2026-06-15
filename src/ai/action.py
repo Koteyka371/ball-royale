@@ -34,6 +34,37 @@ class Action:
         self._clamp_position()
         self._update_skill_timer(delta)
 
+    def _get_allies(self) -> list:
+        perception_radius = getattr(self.ball, "perception_radius", 250)
+        if hasattr(self.world, "get_nearby_entities"):
+            entities = self.world.get_nearby_entities(self.ball, perception_radius)
+            if isinstance(entities, dict):
+                return entities.get("allies", [])
+            else:
+                return [e for e in entities if getattr(e, "ball_type", None) == getattr(self.ball, "ball_type", None) and getattr(e, "id", None) != getattr(self.ball, "id", None) and getattr(e, "alive", True)]
+        return []
+
+    def _steer_avoid_obstacles(self, exclude_target: Any = None) -> tuple[float, float]:
+        steer_x, steer_y = 0.0, 0.0
+        obstacles = self._get_enemies() + self._get_allies()
+        ball_radius = getattr(self.ball, "radius", 10.0)
+
+        exclude_id = getattr(exclude_target, "id", None) if exclude_target else None
+
+        for o in obstacles:
+            if exclude_id is not None and getattr(o, "id", None) == exclude_id:
+                continue
+
+            dx = self.ball.x - o.x
+            dy = self.ball.y - o.y
+            dist = math.sqrt(dx*dx + dy*dy)
+            o_radius = getattr(o, "radius", 10.0)
+            avoid_dist = ball_radius + o_radius + 20.0
+            if 0.001 < dist < avoid_dist:
+                steer_x += (dx / dist) * (avoid_dist - dist)
+                steer_y += (dy / dist) * (avoid_dist - dist)
+        return steer_x, steer_y
+
     def _get_enemies(self) -> list:
         perception_radius = getattr(self.ball, "perception_radius", 250)
         if hasattr(self.world, "get_nearby_entities"):
@@ -68,8 +99,19 @@ class Action:
             dx, dy = self.ball.x - nearest.x, self.ball.y - nearest.y
             dist = math.sqrt(dx * dx + dy * dy)
             if dist > 0.01:
-                self.ball.x += (dx / dist) * getattr(self.ball, "speed", 2.0) * delta * 60
-                self.ball.y += (dy / dist) * getattr(self.ball, "speed", 2.0) * delta * 60
+                nx = dx / dist
+                ny = dy / dist
+                sx, sy = self._steer_avoid_obstacles()
+                nx += sx
+                ny += sy
+                length = math.sqrt(nx*nx + ny*ny)
+                if length > 0.001:
+                    nx /= length
+                    ny /= length
+
+                step = getattr(self.ball, "speed", 2.0) * delta * 60
+                self.ball.x += nx * step
+                self.ball.y += ny * step
         else:
             self._idle(delta)
 
@@ -79,14 +121,23 @@ class Action:
             target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
             dx, dy = target.x - self.ball.x, target.y - self.ball.y
             dist = math.sqrt(dx * dx + dy * dy)
-            if dist > 0.01:
-                nx, ny = dx / dist, dy / dist
-                step = getattr(self.ball, "speed", 2.0) * delta * 60
-                self.ball.x += nx * min(step, dist)
-                self.ball.y += ny * min(step, dist)
 
             target_radius = getattr(target, "radius", 10.0)
             ball_radius = getattr(self.ball, "radius", 10.0)
+
+            if dist > ball_radius + target_radius + 5:
+                nx, ny = dx / dist, dy / dist
+                sx, sy = self._steer_avoid_obstacles(exclude_target=target)
+                nx += sx
+                ny += sy
+                length = math.sqrt(nx*nx + ny*ny)
+                if length > 0.001:
+                    nx /= length
+                    ny /= length
+
+                step = getattr(self.ball, "speed", 2.0) * delta * 60
+                self.ball.x += nx * min(step, dist)
+                self.ball.y += ny * min(step, dist)
 
             if dist <= ball_radius + target_radius + 5:
                 if hasattr(self.world, "_deal_damage"):
@@ -104,13 +155,23 @@ class Action:
             nearest = min(boosters, key=lambda b: (b.x - self.ball.x) ** 2 + (b.y - self.ball.y) ** 2)
             dx, dy = nearest.x - self.ball.x, nearest.y - self.ball.y
             dist = math.sqrt(dx * dx + dy * dy)
-            if dist > 0.01:
+
+            ball_radius = getattr(self.ball, "radius", 10.0)
+
+            if dist > ball_radius + 10:
                 nx, ny = dx / dist, dy / dist
+                sx, sy = self._steer_avoid_obstacles()
+                nx += sx
+                ny += sy
+                length = math.sqrt(nx*nx + ny*ny)
+                if length > 0.001:
+                    nx /= length
+                    ny /= length
+
                 step = getattr(self.ball, "speed", 2.0) * delta * 60
                 self.ball.x += nx * min(step, dist)
                 self.ball.y += ny * min(step, dist)
 
-            ball_radius = getattr(self.ball, "radius", 10.0)
             if dist <= ball_radius + 10:
                 if hasattr(self.world, "_collect_booster"):
                     self.world._collect_booster(self.ball, nearest)
