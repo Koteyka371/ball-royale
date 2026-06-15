@@ -74,6 +74,8 @@ class Decision:
             scores["defend"] += 50.0
         if personality in ("tank", "defender", "guardian", "juggernaut"):
             scores["defend"] += 30.0
+        if emotion_state == "heroism":
+            scores["defend"] += 150.0
         scores["defend"] += danger_level * 20.0
 
         # === COLLECT BOOSTER ===

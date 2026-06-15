@@ -56,10 +56,10 @@ def extract_features(design_text: str) -> list[dict[str, str]]:
             })
     
     # Find skills
-    skill_pattern = r'\d+\.\s*(.+?)\s*\((.+?)\)'
+    skill_pattern = r'-\s*\*\*Skill\*\*:\s*([^\(]+?)\s*\((.+?)\)'
     for match in re.finditer(skill_pattern, design_text):
-        name = match.group(1)
-        desc = match.group(2)
+        name = match.group(1).strip()
+        desc = match.group(2).strip()
         features.append({
             "title": f"Implement {name} skill",
             "description": f"Create {name} skill: {desc}",

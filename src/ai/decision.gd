@@ -62,6 +62,8 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
         scores["defend"] += 100.0
     if personality == "tank" or personality == "defender":
         scores["defend"] += 20.0
+    if emotion_state == "heroism":
+        scores["defend"] += 150.0
 
     scores["defend"] += danger_level * 20.0
 
