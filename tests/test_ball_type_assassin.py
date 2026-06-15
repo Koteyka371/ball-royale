@@ -15,7 +15,7 @@ def test_assassin_initialization():
     assert ball.hp == 70
     assert ball.max_hp == 70
     assert ball.alive is True
-    assert ball.personality == "assassin"
+    assert ball.personality.character == "aggressive"
 
 
 def test_assassin_hp_percent():

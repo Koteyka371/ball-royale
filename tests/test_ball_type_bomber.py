@@ -15,7 +15,7 @@ def test_bomber_initialization():
     assert ball.hp == 90
     assert ball.max_hp == 90
     assert ball.alive is True
-    assert ball.personality == "bomber"
+    assert ball.personality.character == "reckless"
 
 
 def test_bomber_hp_percent():

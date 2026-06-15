@@ -49,13 +49,23 @@ class Decision:
 
         danger_level = perception_data.get("danger_level", 0.0)
         threat_level = perception_data.get("threat_level", 0.0)
-        opportunity_level = perception_data.get("opportunity_level", 0.0)
+        perception_data.get("opportunity_level", 0.0)
         opportunity_score = perception_data.get("opportunity_score", 0.0)
         enemies = perception_data.get("enemies", [])
         boosters = perception_data.get("boosters", [])
-        allies = perception_data.get("allies", [])
+        perception_data.get("allies", [])
 
-        personality = getattr(self.ball, "personality", "idle")
+        personality_obj = getattr(self.ball, "personality", None)
+        if hasattr(personality_obj, "get_decision_modifiers"):
+            # Use getattr to invoke the method safely without type checker complaining
+            get_mod = getattr(personality_obj, "get_decision_modifiers")
+            modifiers = get_mod()
+            for action, mod in modifiers.items():
+                if action in scores:
+                    scores[action] += mod
+        else:
+            pass
+
         skill_timer = getattr(self.ball, "skill_timer", 0.0)
 
         # === FLEE ===
@@ -72,7 +82,7 @@ class Decision:
             scores["defend"] += 100.0
         if threat_level > 5.0:
             scores["defend"] += 50.0
-        if personality in ("tank", "defender", "guardian", "juggernaut"):
+        if getattr(self.ball, "ball_type", "") in ("tank", "defender", "guardian", "juggernaut"):
             scores["defend"] += 30.0
         scores["defend"] += danger_level * 20.0
 
@@ -81,7 +91,7 @@ class Decision:
             scores["collect_booster"] += 30.0 + opportunity_score * 10.0
         if emotion_state == "greed":
             scores["collect_booster"] += 100.0
-        if personality in ("scout", "rogue"):
+        if getattr(self.ball, "ball_type", "") in ("scout", "rogue"):
             scores["collect_booster"] += 20.0
         if len(boosters) == 0:
             scores["collect_booster"] = -1000.0
@@ -93,7 +103,7 @@ class Decision:
             scores["attack"] -= 50.0
         if emotion_state in ("rage", "bloodlust"):
             scores["attack"] += 100.0
-        if personality in ("warrior", "aggressive", "berserker", "bomber"):
+        if getattr(self.ball, "ball_type", "") in ("warrior", "aggressive", "berserker", "bomber"):
             scores["attack"] += 30.0
         if len(enemies) == 0:
             scores["attack"] = -1000.0
@@ -101,7 +111,7 @@ class Decision:
         # === CHASE ===
         if len(enemies) > 0:
             scores["chase"] += 15.0
-        if personality in ("assassin", "rogue", "phantom", "swarm"):
+        if getattr(self.ball, "ball_type", "") in ("assassin", "rogue", "phantom", "swarm"):
             scores["chase"] += 40.0
         if emotion_state == "bloodlust":
             scores["chase"] += 80.0
@@ -119,9 +129,7 @@ class Decision:
         # === IDLE ===
         scores["idle"] = 1.0
 
-        # Personality baseline
-        if personality in scores:
-            scores[personality] += 15.0
+
 
         # Find highest score
         best_action = "idle"
@@ -134,6 +142,6 @@ class Decision:
 
         # Fall back to personality behavior instead of returning personality name
         if best_action == "idle":
-            return self.PERSONALITY_BEHAVIORS.get(personality, "idle")
+            return self.PERSONALITY_BEHAVIORS.get(getattr(self.ball, "ball_type", ""), "idle")
 
         return best_action

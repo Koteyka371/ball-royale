@@ -5,6 +5,7 @@ Tests AI logic, performance, and emergent behavior.
 """
 
 import random
+import json
 import math
 import time
 import sys
@@ -16,6 +17,7 @@ from collections import Counter
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
 from ai.ball_brain import BallBrain
+from ai.personality import get_default_personality
 
 
 BALL_TYPES = {
@@ -57,7 +59,6 @@ BALL_TYPES = {
                  "skill": "protect_ally", "skill_cooldown": 6.0},
 }
 
-import json
 try:
     _config_path = os.path.join(os.path.dirname(__file__), "../src/ai/balance_config.json")
     if os.path.exists(_config_path):
@@ -134,7 +135,11 @@ class Ball:
     kills: int = 0
     first_hit_taken: bool = False
     current_action: str = "idle"
-    personality: str = "idle"
+    personality: Any = None
+
+    def __post_init__(self):
+        if self.personality is None:
+            self.personality = get_default_personality(self.ball_type)
 
     def get_hp_percent(self) -> float:
         return self.hp / self.max_hp if self.max_hp > 0 else 0.0
@@ -156,6 +161,10 @@ class SpatialGrid:
         self.cells: Dict[int, List[Ball]] = {}
 
     def _key(self, x: float, y: float) -> int:
+        if math.isinf(x) or math.isnan(x):
+            x = 0.0
+        if math.isinf(y) or math.isnan(y):
+            y = 0.0
         col = int(x / self.cell_size)
         row = int(y / self.cell_size)
         return row * self.cols + col
@@ -170,6 +179,10 @@ class SpatialGrid:
         self.cells[key].append(ball)
 
     def get_nearby(self, x: float, y: float, radius: float) -> List[Ball]:
+        if math.isinf(x) or math.isnan(x):
+            x = 0.0
+        if math.isinf(y) or math.isnan(y):
+            y = 0.0
         result = []
         min_col = max(0, int((x - radius) / self.cell_size))
         max_col = min(self.cols - 1, int((x + radius) / self.cell_size))
@@ -456,7 +469,6 @@ def test_battle_reduces_to_few():
 
 if __name__ == "__main__":
     import argparse
-    import json
 
     parser = argparse.ArgumentParser(description="Run Ball Royale Battle Simulation.")
     parser.add_argument("num_balls", type=int, nargs="?", default=100, help="Number of balls.")

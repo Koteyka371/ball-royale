@@ -15,7 +15,7 @@ def test_guardian_initialization():
     assert ball.hp == 180
     assert ball.max_hp == 180
     assert ball.alive is True
-    assert ball.personality == "guardian"
+    assert ball.personality.character == "cautious"
 
 
 def test_guardian_hp_percent():

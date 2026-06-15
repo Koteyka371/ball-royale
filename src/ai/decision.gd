@@ -43,9 +43,18 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     if perception_data.has("boosters"):
         boosters = perception_data["boosters"]
 
-    var personality = "idle"
-    if "personality" in self.ball:
-        personality = self.ball.personality
+    var ball_type = ""
+    if "ball_type" in self.ball:
+        ball_type = self.ball.ball_type
+
+    var personality_char = "idle"
+    if "personality" in self.ball and typeof(self.ball.personality) == TYPE_OBJECT and self.ball.personality.has_method("get_decision_modifiers"):
+        personality_char = self.ball.personality.character
+        var modifiers = self.ball.personality.get_decision_modifiers()
+        for action in modifiers.keys():
+            if scores.has(action):
+                scores[action] += modifiers[action]
+
 
     # Flee scoring
     if hp_percent < 0.3:
@@ -60,7 +69,7 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     # Defend scoring
     if danger_level > 0.7:
         scores["defend"] += 100.0
-    if personality == "tank" or personality == "defender":
+    if ball_type == "tank" or ball_type == "defender":
         scores["defend"] += 20.0
 
     scores["defend"] += danger_level * 20.0
@@ -71,7 +80,7 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     if emotion_state == "greed":
         scores["opportunistic"] += 100.0
 
-    if personality == "scout":
+    if ball_type == "scout":
         scores["opportunistic"] += 20.0
 
     # Attack scoring
@@ -84,15 +93,13 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     if emotion_state == "rage" or emotion_state == "bloodlust":
         scores["attack"] += 100.0
 
-    if personality == "warrior" or personality == "aggressive":
+    if ball_type == "warrior" or ball_type == "aggressive":
         scores["attack"] += 30.0
 
     # Idle scoring
     scores["idle"] = 1.0
 
-    # Baseline score based on personality
-    if scores.has(personality):
-        scores[personality] += 15.0
+
 
     # Validation filters
     if boosters.size() == 0:
@@ -111,6 +118,6 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
             best_action = action
 
     if best_action == "idle":
-        return personality
+        return ball_type
 
     return best_action

@@ -1,3 +1,4 @@
+from ai.personality import get_default_personality
 """
 Auto-generated ball type: Rogue
 Steals boosters from enemies, tricky fighter
@@ -28,7 +29,7 @@ class Rogue:
         self.first_hit_taken = False
         self.current_action = "idle"
         self.skill_timer = 0.0
-        self.personality = "rogue"
+        self.personality = get_default_personality("rogue")
 
     def get_hp_percent(self) -> float:
         return self.hp / self.max_hp if self.max_hp > 0 else 0.0

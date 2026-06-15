@@ -1,3 +1,4 @@
+from ai.personality import get_default_personality
 """
 Auto-generated ball type: Bomber
 Area damage, uses Explosion to hit multiple enemies
@@ -28,7 +29,7 @@ class Bomber:
         self.first_hit_taken = False
         self.current_action = "idle"
         self.skill_timer = 0.0
-        self.personality = "bomber"
+        self.personality = get_default_personality("bomber")
 
     def get_hp_percent(self) -> float:
         return self.hp / self.max_hp if self.max_hp > 0 else 0.0

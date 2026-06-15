@@ -15,7 +15,7 @@ def test_tank_initialization():
     assert ball.hp == 200
     assert ball.max_hp == 200
     assert ball.alive is True
-    assert ball.personality == "tank"
+    assert ball.personality.character == "cautious"
 
 
 def test_tank_hp_percent():

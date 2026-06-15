@@ -11,14 +11,19 @@ class MockBall:
     def __init__(self, hp=100, max_hp=100, personality="idle"):
         self.hp = hp
         self.max_hp = max_hp
-        self.personality = personality
+        from ai.personality import Personality
+        if isinstance(personality, str):
+            self.personality = Personality(personality)
+            self.ball_type = personality  # assuming test uses "warrior" directly as personality string here
+        else:
+            self.personality = personality
+            self.ball_type = personality.character
         self.current_action = None
         self.x = 0
         self.y = 0
         self.speed = 10
         self.radius = 10
         self.perception_radius = 100
-        self.ball_type = "mock"
         self.alive = True
 
     def flee(self, delta):

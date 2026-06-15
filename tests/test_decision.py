@@ -4,12 +4,17 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
 from ai.decision import Decision
+from ai.personality import Personality
 
 class MockBall:
-    def __init__(self, hp=100, max_hp=100, personality="idle", skill_timer=0.0):
+    def __init__(self, hp=100, max_hp=100, personality="idle", skill_timer=0.0, ball_type=None):
         self.hp = hp
         self.max_hp = max_hp
-        self.personality = personality
+        if isinstance(personality, str):
+            self.personality = Personality(personality)
+        else:
+            self.personality = personality
+        self.ball_type = ball_type if ball_type is not None else (personality if isinstance(personality, str) else personality.character)
         self.skill_timer = skill_timer
 
     def get_hp_percent(self):
@@ -65,7 +70,7 @@ def test_decision_rage_attack():
     assert action == "attack"
 
 def test_decision_fallback_personality():
-    ball = MockBall(hp=100, max_hp=100, personality="scout")
+    ball = MockBall(hp=100, max_hp=100, personality="idle", ball_type="scout")
     decision = Decision(ball, MockWorld())
     perception = {
         "danger_level": 0.0, "opportunity_level": 0.0,
