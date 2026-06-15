@@ -127,10 +127,32 @@ class Decision:
         best_action = "idle"
         best_score = -9999.0
 
-        for action in ["flee", "defend", "collect_booster", "attack", "chase", "use_skill", "idle"]:
+        valid_actions = []
+        action_order = ["flee", "defend", "collect_booster", "attack", "chase", "use_skill", "idle"]
+
+        for action in action_order:
+            if scores[action] > -1000.0:
+                valid_actions.append(action)
             if scores[action] > best_score:
                 best_score = scores[action]
                 best_action = action
+
+        # Apply difficulty noise
+        difficulty = getattr(self.ball, "difficulty", "hard")
+        import random
+
+        if difficulty == "chaos":
+            best_action = random.choice(valid_actions) if valid_actions else "idle"
+        elif difficulty == "easy":
+            # 50% chance to pick a random sub-optimal valid action
+            if random.random() < 0.5 and len(valid_actions) > 1:
+                valid_actions.remove(best_action)
+                best_action = random.choice(valid_actions)
+        elif difficulty == "medium":
+            # 20% chance to pick a random sub-optimal valid action
+            if random.random() < 0.2 and len(valid_actions) > 1:
+                valid_actions.remove(best_action)
+                best_action = random.choice(valid_actions)
 
         # Fall back to personality behavior instead of returning personality name
         if best_action == "idle":

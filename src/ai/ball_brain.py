@@ -19,13 +19,30 @@ class BallBrain:
         self.emotion_layer = Emotion(self.ball, self.world)
         self.decision_layer = Decision(self.ball, self.world)
         self.action_layer = Action(self.ball, self.world)
+        self.reaction_timer = 0.0
+        self.current_strategy = "idle"
 
     def process(self, delta: float) -> None:
         """Main processing loop through the 4 layers."""
-        perception_data = self.perception()
-        emotion_state = self.emotion(perception_data)
-        decision = self.decision(perception_data, emotion_state)
-        self.action(decision, delta)
+        difficulty = getattr(self.ball, "difficulty", "hard")
+
+        delays = {
+            "easy": 0.5,
+            "medium": 0.2,
+            "hard": 0.05,
+            "chaos": 0.0
+        }
+        reaction_delay = delays.get(difficulty, 0.05)
+
+        self.reaction_timer -= delta
+
+        if self.reaction_timer <= 0 or difficulty == "chaos":
+            perception_data = self.perception()
+            emotion_state = self.emotion(perception_data)
+            self.current_strategy = self.decision(perception_data, emotion_state)
+            self.reaction_timer = reaction_delay
+
+        self.action(self.current_strategy, delta)
 
     def perception(self) -> Dict[str, Any]:
         """
