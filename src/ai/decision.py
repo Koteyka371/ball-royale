@@ -13,8 +13,8 @@ class Decision:
         "tank": "defend",
         "assassin": "chase",
         "healer": "defend",
-        "sniper": "attack",
-        "bomber": "attack",
+        "sniper": "kite",
+        "bomber": "kite",
         "berserker": "attack",
         "juggernaut": "defend",
         "rogue": "chase",
@@ -43,6 +43,7 @@ class Decision:
             "collect_booster": 0.0,
             "attack": 0.0,
             "chase": 0.0,
+            "kite": 0.0,
             "use_skill": 0.0,
             "idle": 0.0,
         }
@@ -108,6 +109,14 @@ class Decision:
         if len(enemies) == 0:
             scores["chase"] = -1000.0
 
+        # === KITE ===
+        if len(enemies) > 0:
+            scores["kite"] += 15.0
+        if personality in ("sniper", "bomber"):
+            scores["kite"] += 40.0
+        if len(enemies) == 0:
+            scores["kite"] = -1000.0
+
         # === USE SKILL ===
         if skill_timer <= 0 and len(enemies) > 0:
             scores["use_skill"] += 40.0
@@ -127,7 +136,7 @@ class Decision:
         best_action = "idle"
         best_score = -9999.0
 
-        for action in ["flee", "defend", "collect_booster", "attack", "chase", "use_skill", "idle"]:
+        for action in ["flee", "defend", "collect_booster", "attack", "chase", "kite", "use_skill", "idle"]:
             if scores[action] > best_score:
                 best_score = scores[action]
                 best_action = action

@@ -16,6 +16,8 @@ func execute(strategy: String, delta: float):
         _flee(delta)
     elif strategy == "attack" or strategy == "chase":
         _attack(delta)
+    elif strategy == "kite":
+        _kite(delta)
     elif strategy == "defend":
         _defend(delta)
     elif strategy == "opportunistic" or strategy == "collect booster":
@@ -122,6 +124,52 @@ func _attack(delta: float):
         if "radius" in self.ball: ball_radius = self.ball.radius
 
         if dist <= ball_radius + target_radius + 5:
+            if self.world != null and self.world.has_method("_deal_damage"):
+                self.world._deal_damage(self.ball, target)
+    else:
+        _idle(delta)
+
+func _kite(delta: float):
+    var enemies = _get_enemies()
+    if enemies.size() > 0:
+        var target = null
+        var min_dist_sq = INF
+        for e in enemies:
+            var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+            if dist_sq < min_dist_sq:
+                min_dist_sq = dist_sq
+                target = e
+
+        var dx = target.x - self.ball.x
+        var dy = target.y - self.ball.y
+        var dist = sqrt(dx*dx + dy*dy)
+
+        var perception_radius = 250.0
+        if "perception_radius" in self.ball:
+            perception_radius = self.ball.perception_radius
+        var optimal_dist = perception_radius * 0.5
+
+        var speed = 2.0
+        if "speed" in self.ball: speed = self.ball.speed
+
+        if dist > 0.01:
+            var nx = dx / dist
+            var ny = dy / dist
+            var step = speed * delta * 60
+
+            if dist > optimal_dist + 10.0:
+                self.ball.x += nx * min(step, dist)
+                self.ball.y += ny * min(step, dist)
+            elif dist < optimal_dist - 10.0:
+                self.ball.x -= nx * step
+                self.ball.y -= ny * step
+
+        var target_radius = 10.0
+        if "radius" in target: target_radius = target.radius
+        var ball_radius = 10.0
+        if "radius" in self.ball: ball_radius = self.ball.radius
+
+        if dist <= optimal_dist + ball_radius + target_radius + 5:
             if self.world != null and self.world.has_method("_deal_damage"):
                 self.world._deal_damage(self.ball, target)
     else:

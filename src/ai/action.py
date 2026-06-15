@@ -22,6 +22,8 @@ class Action:
             self._flee(delta)
         elif strategy in ("attack", "chase"):
             self._attack(delta)
+        elif strategy == "kite":
+            self._kite(delta)
         elif strategy == "defend":
             self._defend(delta)
         elif strategy in ("opportunistic", "collect_booster", "collect booster"):
@@ -89,6 +91,41 @@ class Action:
             ball_radius = getattr(self.ball, "radius", 10.0)
 
             if dist <= ball_radius + target_radius + 5:
+                if hasattr(self.world, "_deal_damage"):
+                    self.world._deal_damage(self.ball, target)
+        else:
+            self._idle(delta)
+
+    def _kite(self, delta: float) -> None:
+        enemies = self._get_enemies()
+        if enemies:
+            target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+            dx, dy = target.x - self.ball.x, target.y - self.ball.y
+            dist = math.sqrt(dx * dx + dy * dy)
+
+            perception_radius = getattr(self.ball, "perception_radius", 250)
+            optimal_dist = perception_radius * 0.5
+
+            speed = getattr(self.ball, "speed", 2.0)
+            step = speed * delta * 60
+
+            if dist > 0.01:
+                nx, ny = dx / dist, dy / dist
+                if dist > optimal_dist + 10:
+                    # Chase
+                    self.ball.x += nx * min(step, dist)
+                    self.ball.y += ny * min(step, dist)
+                elif dist < optimal_dist - 10:
+                    # Back away
+                    self.ball.x -= nx * step
+                    self.ball.y -= ny * step
+
+            target_radius = getattr(target, "radius", 10.0)
+            ball_radius = getattr(self.ball, "radius", 10.0)
+
+            # ranged classes can attack from slightly further, but for simulation deal damage if close
+            # Or deal damage to the target since we're kiting
+            if dist <= optimal_dist + ball_radius + target_radius + 5:
                 if hasattr(self.world, "_deal_damage"):
                     self.world._deal_damage(self.ball, target)
         else:
