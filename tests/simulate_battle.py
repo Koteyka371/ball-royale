@@ -156,8 +156,11 @@ class SpatialGrid:
         self.cells: Dict[int, List[Ball]] = {}
 
     def _key(self, x: float, y: float) -> int:
-        col = int(x / self.cell_size)
-        row = int(y / self.cell_size)
+        try:
+            col = int(x / self.cell_size)
+            row = int(y / self.cell_size)
+        except (OverflowError, ValueError):
+            return 0
         return row * self.cols + col
 
     def clear(self):
@@ -171,10 +174,13 @@ class SpatialGrid:
 
     def get_nearby(self, x: float, y: float, radius: float) -> List[Ball]:
         result = []
-        min_col = max(0, int((x - radius) / self.cell_size))
-        max_col = min(self.cols - 1, int((x + radius) / self.cell_size))
-        min_row = max(0, int((y - radius) / self.cell_size))
-        max_row = min(self.rows - 1, int((y + radius) / self.cell_size))
+        try:
+            min_col = max(0, int((x - radius) / self.cell_size))
+            max_col = min(self.cols - 1, int((x + radius) / self.cell_size))
+            min_row = max(0, int((y - radius) / self.cell_size))
+            max_row = min(self.rows - 1, int((y + radius) / self.cell_size))
+        except (OverflowError, ValueError):
+            return []
         r2 = radius * radius
         for row in range(min_row, max_row + 1):
             for col in range(min_col, max_col + 1):
