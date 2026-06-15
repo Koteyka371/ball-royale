@@ -86,7 +86,7 @@
       "task_id": "balance-buff-assassin",
       "status": "working",
       "started_at": "2026-06-15T23:54:43.080464+00:00",
-      "cycles_today": 0
+      "cycles_today": 1
     },
     "agent-11": {
       "name": "Jules Worker 11",
