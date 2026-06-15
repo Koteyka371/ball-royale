@@ -102,7 +102,7 @@
       "task_id": "ai-behavior-kite",
       "status": "working",
       "started_at": "2026-06-15T21:42:18.431516+00:00",
-      "cycles_today": 0
+      "cycles_today": 1
     }
   },
   "last_reset": "2026-06-15T01:59:34.397000+00:00"
