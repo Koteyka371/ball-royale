@@ -69,6 +69,71 @@ func _get_boosters() -> Array:
                     boosters.append(b)
     return boosters
 
+func _apply_movement(target_dx: float, target_dy: float, speed_multiplier: float, delta: float, clamp_to_target: bool = true):
+    if is_nan(target_dx) or is_nan(target_dy) or is_inf(target_dx) or is_inf(target_dy):
+        return
+
+    var dist = sqrt(target_dx * target_dx + target_dy * target_dy)
+    if dist < 0.001:
+        return
+
+    var nx = target_dx / dist
+    var ny = target_dy / dist
+
+    # Simple obstacle avoidance (repulsive force)
+    var repulse_x = 0.0
+    var repulse_y = 0.0
+    var ball_radius = 10.0
+    if "radius" in self.ball: ball_radius = self.ball.radius
+    var perception_radius = 250.0
+    if "perception_radius" in self.ball: perception_radius = self.ball.perception_radius
+
+    if self.world != null and self.world.has_method("get_nearby_entities"):
+        var entities = self.world.get_nearby_entities(self.ball, perception_radius)
+        var all_entities = []
+        if typeof(entities) == TYPE_DICTIONARY:
+            if entities.has("allies"): all_entities.append_array(entities["allies"])
+            if entities.has("enemies"): all_entities.append_array(entities["enemies"])
+        elif typeof(entities) == TYPE_ARRAY:
+            for e in entities:
+                if ("alive" in e and e.alive) or (e.has_method("is_alive") and e.is_alive()):
+                    all_entities.append(e)
+
+        for e in all_entities:
+            if e == self.ball:
+                continue
+            var edx = self.ball.x - e.x
+            var edy = self.ball.y - e.y
+            var edist = sqrt(edx * edx + edy * edy)
+            var eradius = 10.0
+            if "radius" in e: eradius = e.radius
+            var safety_threshold = ball_radius + eradius + 5.0
+
+            if edist > 0.001 and edist < safety_threshold:
+                var force = (safety_threshold - edist) / safety_threshold
+                repulse_x += (edx / edist) * force
+                repulse_y += (edy / edist) * force
+
+    # Combine forces
+    var final_nx = nx * speed_multiplier + repulse_x
+    var final_ny = ny * speed_multiplier + repulse_y
+
+    var final_dist = sqrt(final_nx * final_nx + final_ny * final_ny)
+    if final_dist > 0.001:
+        final_nx /= final_dist
+        final_ny /= final_dist
+
+    var speed = 2.0
+    if "speed" in self.ball: speed = self.ball.speed
+    var step = speed * delta * 60.0
+
+    if clamp_to_target and speed_multiplier > 0:
+        step = min(step, dist)
+
+    self.ball.x += final_nx * step
+    self.ball.y += final_ny * step
+
+
 func _flee(delta: float):
     var enemies = _get_enemies()
     if enemies.size() > 0:
@@ -82,14 +147,10 @@ func _flee(delta: float):
 
         var dx = self.ball.x - nearest.x
         var dy = self.ball.y - nearest.y
-        var dist = sqrt(dx*dx + dy*dy)
-        if dist > 0.01:
-            var speed = 2.0
-            if "speed" in self.ball: speed = self.ball.speed
-            self.ball.x += (dx / dist) * speed * delta * 60
-            self.ball.y += (dy / dist) * speed * delta * 60
+        _apply_movement(dx, dy, 1.0, delta, false)
     else:
         _idle(delta)
+
 
 func _attack(delta: float):
     var enemies = _get_enemies()
@@ -104,31 +165,33 @@ func _attack(delta: float):
 
         var dx = target.x - self.ball.x
         var dy = target.y - self.ball.y
-        var dist = sqrt(dx*dx + dy*dy)
-
-        var speed = 2.0
-        if "speed" in self.ball: speed = self.ball.speed
-
-        if dist > 0.01:
-            var nx = dx / dist
-            var ny = dy / dist
-            var step = speed * delta * 60
-            self.ball.x += nx * min(step, dist)
-            self.ball.y += ny * min(step, dist)
 
         var target_radius = 10.0
         if "radius" in target: target_radius = target.radius
         var ball_radius = 10.0
         if "radius" in self.ball: ball_radius = self.ball.radius
+        var target_range = ball_radius + target_radius + 5.0
 
-        if dist <= ball_radius + target_radius + 5:
+        var dist = sqrt(dx*dx + dy*dy)
+
+        if dist > target_range:
+            _apply_movement(dx, dy, 1.0, delta, true)
+
+            # Recalculate distance after movement
+            dx = target.x - self.ball.x
+            dy = target.y - self.ball.y
+            dist = sqrt(dx*dx + dy*dy)
+
+        if dist <= target_range + 0.01:
             if self.world != null and self.world.has_method("_deal_damage"):
                 self.world._deal_damage(self.ball, target)
     else:
         _idle(delta)
 
+
 func _defend(delta: float):
     _idle(delta * 0.5)
+
 
 func _collect_booster(delta: float):
     var boosters = _get_boosters()
@@ -143,30 +206,38 @@ func _collect_booster(delta: float):
 
         var dx = nearest.x - self.ball.x
         var dy = nearest.y - self.ball.y
-        var dist = sqrt(dx*dx + dy*dy)
-
-        var speed = 2.0
-        if "speed" in self.ball: speed = self.ball.speed
-
-        if dist > 0.01:
-            var nx = dx / dist
-            var ny = dy / dist
-            var step = speed * delta * 60
-            self.ball.x += nx * min(step, dist)
-            self.ball.y += ny * min(step, dist)
 
         var ball_radius = 10.0
         if "radius" in self.ball: ball_radius = self.ball.radius
+        var target_range = ball_radius + 10.0
 
-        if dist <= ball_radius + 10:
+        var dist = sqrt(dx*dx + dy*dy)
+
+        if dist > target_range:
+            _apply_movement(dx, dy, 1.0, delta, true)
+
+            # Recalculate distance after movement
+            dx = nearest.x - self.ball.x
+            dy = nearest.y - self.ball.y
+            dist = sqrt(dx*dx + dy*dy)
+
+        if dist <= target_range + 0.01:
             if self.world != null and self.world.has_method("_collect_booster"):
                 self.world._collect_booster(self.ball, nearest)
     else:
         _idle(delta)
 
+
 func _use_skill():
-    if self.ball.has_method("use_skill"):
-        self.ball.use_skill()
+    var skill_timer = 0.0
+    if "skill_timer" in self.ball: skill_timer = self.ball.skill_timer
+
+    if skill_timer <= 0:
+        if self.ball.has_method("use_skill"):
+            self.ball.use_skill()
+            var skill_cooldown = 5.0
+            if "skill_cooldown" in self.ball: skill_cooldown = self.ball.skill_cooldown
+            self.ball.skill_timer = skill_cooldown
 
 func _idle(delta: float):
     var speed = 2.0

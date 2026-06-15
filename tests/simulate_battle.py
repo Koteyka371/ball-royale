@@ -9,6 +9,7 @@ import math
 import time
 import sys
 import os
+import json
 from dataclasses import dataclass
 from typing import List, Dict, Optional, Tuple, Any
 from collections import Counter
@@ -57,7 +58,6 @@ BALL_TYPES = {
                  "skill": "protect_ally", "skill_cooldown": 6.0},
 }
 
-import json
 try:
     _config_path = os.path.join(os.path.dirname(__file__), "../src/ai/balance_config.json")
     if os.path.exists(_config_path):
@@ -156,6 +156,10 @@ class SpatialGrid:
         self.cells: Dict[int, List[Ball]] = {}
 
     def _key(self, x: float, y: float) -> int:
+        if math.isnan(x) or math.isinf(x):
+            x = 0.0
+        if math.isnan(y) or math.isinf(y):
+            y = 0.0
         col = int(x / self.cell_size)
         row = int(y / self.cell_size)
         return row * self.cols + col
@@ -170,6 +174,10 @@ class SpatialGrid:
         self.cells[key].append(ball)
 
     def get_nearby(self, x: float, y: float, radius: float) -> List[Ball]:
+        if math.isnan(x) or math.isinf(x):
+            x = 0.0
+        if math.isnan(y) or math.isinf(y):
+            y = 0.0
         result = []
         min_col = max(0, int((x - radius) / self.cell_size))
         max_col = min(self.cols - 1, int((x + radius) / self.cell_size))

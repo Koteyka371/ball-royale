@@ -115,7 +115,7 @@
     },
     {
       "id": "ai-action-system",
-      "status": "todo",
+      "status": "done",
       "area": "ai-core",
       "risk": "medium",
       "title": "Implement Action execution system",
@@ -1253,6 +1253,59 @@
       "acceptance": [
         "Feature implemented successfully",
         "Tests pass"
+      ]
+    },
+    {
+      "id": "ai-pathfinding-optimizations",
+      "status": "todo",
+      "area": "ai-core",
+      "risk": "medium",
+      "title": "Optimize AI obstacle avoidance and pathfinding",
+      "description": "Improve the `_apply_movement` repulsor logic in `Action` by leveraging spatial grid queries to avoid checking distance against all entities in the perception radius, thereby significantly boosting simulation performance.",
+      "allowed_paths": [
+        "src/ai/action.py",
+        "src/ai/action.gd",
+        "tests/test_action.py"
+      ],
+      "acceptance": [
+        "Obstacle avoidance queries use efficient spatial lookup",
+        "No regressions in pathfinding logic",
+        "Simulation performance test shows improvement"
+      ]
+    },
+    {
+      "id": "ai-target-prediction",
+      "status": "todo",
+      "area": "ai-core",
+      "risk": "low",
+      "title": "Implement Target Prediction for Chasing",
+      "description": "When AI is in chase/attack state, implement logic to predict enemy movement based on velocity and lead the target rather than moving directly towards their current position.",
+      "allowed_paths": [
+        "src/ai/action.py",
+        "src/ai/action.gd",
+        "tests/test_action.py"
+      ],
+      "acceptance": [
+        "Chasing behavior applies lead to target based on target speed",
+        "Tests verify predictive pathing"
+      ]
+    },
+    {
+      "id": "arena-hazards-implementation",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "medium",
+      "title": "Implement basic arena hazards (spikes, poison)",
+      "description": "Introduce static arena hazards that deal damage to entities stepping into them, and update the AI Perception layer to detect traps so the Action layer can avoid them.",
+      "allowed_paths": [
+        "src/ai/perception.py",
+        "src/ai/action.py",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Hazards deal damage",
+        "Perception returns traps",
+        "Action obstacle avoidance repulses from traps"
       ]
     }
   ]

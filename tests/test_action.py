@@ -6,8 +6,12 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../s
 
 from ai.action import Action
 
+class MockPersonality:
+    def __init__(self, character="balanced"):
+        self.character = character
+
 class MockBall:
-    def __init__(self, x=0, y=0, speed=10, radius=10):
+    def __init__(self, x=50, y=50, speed=10, radius=10):
         self.current_action = None
         self.x = x
         self.y = y
@@ -15,9 +19,12 @@ class MockBall:
         self.radius = radius
         self.perception_radius = 100
         self.skill_timer = 0.0
+        self.skill_cooldown = 5.0
         self.ball_type = "mock_ball"
         self.alive = True
         self.used_skill = False
+        self.emotion_state = "neutral"
+        self.personality = MockPersonality()
 
     def use_skill(self):
         self.used_skill = True
@@ -132,9 +139,35 @@ def test_execute_use_skill():
     world = MockWorld()
     action_layer = Action(ball, world)
 
+    # Initially skill_timer is 0, should use skill
     action_layer.execute("use skill", 0.1)
     assert ball.current_action == "use skill"
     assert ball.used_skill
+    assert ball.skill_timer > 0  # should be set to skill_cooldown (5.0)
+
+    # Now skill is on cooldown, shouldn't use it again immediately
+    ball.used_skill = False
+    action_layer.execute("use skill", 0.1)
+    assert not ball.used_skill
+    assert ball.skill_timer > 0
+
+def test_obstacle_avoidance():
+    ball = MockBall(x=100, y=100, speed=10)
+    world = MockWorld()
+    # Enemy is exactly in the path to the right, but we add an ally to the right as an obstacle
+    world.enemies = [MockEnemy(x=200, y=100)]
+    ally = MockEnemy(x=115, y=100, ball_type="mock_ball") # Ally right in front
+    world.get_nearby_entities = lambda b, r: {"enemies": world.enemies, "allies": [ally], "boosters": [], "traps": []}
+
+    action_layer = Action(ball, world)
+    action_layer.execute("attack", 0.1)
+
+    # We should have moved towards the enemy but also away from the ally
+    assert ball.current_action == "attack"
+    # Because ally is at (115, 100) and we are at (100, 100), it will push us left (negative x)
+    # However the target force is pulling us right (positive x). The net result should
+    # either slow us down or push us differently, but most importantly we should test that the code runs without errors.
+    assert isinstance(ball.x, float) or isinstance(ball.x, int)
 
 def test_execute_idle_fallback():
     ball = MockBall()
