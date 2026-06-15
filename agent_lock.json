@@ -76,8 +76,8 @@
       "name": "Jules Worker 9",
       "area": "behaviors",
       "task_id": "ai-behavior-attack",
-      "status": "assigned",
-      "started_at": "2026-06-15T23:44:03.182343+00:00",
+      "status": "working",
+      "started_at": "2026-06-15T23:54:36.187996+00:00",
       "cycles_today": 0
     },
     "agent-10": {
