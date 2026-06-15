@@ -92,8 +92,8 @@
       "name": "Jules Worker 11",
       "area": "innovation",
       "task_id": "ai-swarm-boids",
-      "status": "assigned",
-      "started_at": "2026-06-15T23:44:03.182343+00:00",
+      "status": "working",
+      "started_at": "2026-06-15T23:54:48.377768+00:00",
       "cycles_today": 0
     },
     "agent-12": {
