@@ -1148,6 +1148,76 @@
         "Tests pass",
         "No regressions"
       ]
+    },
+    {
+      "id": "ai-behavior-swarm",
+      "status": "todo",
+      "area": "ai-innovation",
+      "risk": "medium",
+      "title": "Implement 'swarm' team coordination behavior",
+      "description": "Add a team coordination behavior where allies stack together around a target. Modify Decision layer to evaluate ally proximity.",
+      "allowed_paths": [
+        "src/ai/**/*.py",
+        "src/ai/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Swarm strategy evaluated in Decision layer",
+        "Action layer clusters allies",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "ai-behavior-flank-v2",
+      "status": "todo",
+      "area": "ai-innovation",
+      "risk": "medium",
+      "title": "Implement 'flank' AI behavior strategy",
+      "description": "Add a new 'flank' behavior strategy to ActionLayer where balls circle their target before engaging.",
+      "allowed_paths": [
+        "src/ai/**/*.py",
+        "src/ai/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Flank behavior calculates proper sweeping angle",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "ai-behavior-kite-v2",
+      "status": "todo",
+      "area": "ai-innovation",
+      "risk": "medium",
+      "title": "Implement 'kite' AI behavior strategy",
+      "description": "Add a new 'kite' behavior strategy to ActionLayer for ranged units to maintain max distance while attacking.",
+      "allowed_paths": [
+        "src/ai/**/*.py",
+        "src/ai/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Kite behavior maintains safe distance",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "ai-behavior-swarm-v2",
+      "status": "todo",
+      "area": "ai-innovation",
+      "risk": "medium",
+      "title": "Implement 'swarm' team coordination behavior",
+      "description": "Add a team coordination behavior where allies stack together around a target. Modify Decision layer to evaluate ally proximity.",
+      "allowed_paths": [
+        "src/ai/**/*.py",
+        "src/ai/**/*.gd",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Swarm strategy evaluated in Decision layer",
+        "Action layer clusters allies",
+        "Tests pass"
+      ]
     }
   ]
 }

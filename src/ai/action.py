@@ -44,6 +44,40 @@ class Action:
                 return [e for e in entities if getattr(e, "ball_type", None) != self.ball.ball_type and getattr(e, "alive", True)]
         return []
 
+    def _get_avoidance_vector(self) -> tuple[float, float]:
+        ax, ay = 0.0, 0.0
+        perception_radius = getattr(self.ball, "perception_radius", 250)
+
+        if hasattr(self.world, "get_nearby_entities"):
+            entities_dict = self.world.get_nearby_entities(self.ball, perception_radius)
+            if isinstance(entities_dict, dict):
+                entities = entities_dict.get("enemies", []) + entities_dict.get("allies", [])
+            else:
+                entities = [e for e in entities_dict if getattr(e, "alive", True) and e != self.ball]
+        else:
+            return ax, ay
+
+        ball_radius = getattr(self.ball, "radius", 10.0)
+
+        for e in entities:
+            if e is self.ball:
+                continue
+
+            e_radius = getattr(e, "radius", 10.0)
+            avoidance_threshold = ball_radius + e_radius + 5.0
+
+            dx = self.ball.x - e.x
+            dy = self.ball.y - e.y
+            dist_sq = dx * dx + dy * dy
+
+            if dist_sq > 0 and dist_sq < avoidance_threshold * avoidance_threshold:
+                dist = math.sqrt(dist_sq)
+                force = (avoidance_threshold - dist) / avoidance_threshold
+                ax += (dx / dist) * force
+                ay += (dy / dist) * force
+
+        return ax, ay
+
     def _get_boosters(self) -> list:
         perception_radius = getattr(self.ball, "perception_radius", 250)
         if hasattr(self.world, "get_nearby_entities"):
@@ -68,8 +102,21 @@ class Action:
             dx, dy = self.ball.x - nearest.x, self.ball.y - nearest.y
             dist = math.sqrt(dx * dx + dy * dy)
             if dist > 0.01:
-                self.ball.x += (dx / dist) * getattr(self.ball, "speed", 2.0) * delta * 60
-                self.ball.y += (dy / dist) * getattr(self.ball, "speed", 2.0) * delta * 60
+                nx, ny = dx / dist, dy / dist
+                ax, ay = self._get_avoidance_vector()
+
+                nx += ax
+                ny += ay
+
+                mag = math.sqrt(nx * nx + ny * ny)
+                if mag > 0:
+                    nx /= mag
+                    ny /= mag
+
+                step = getattr(self.ball, "speed", 2.0) * delta * 60
+                # Do NOT clamp to distance since we're fleeing
+                self.ball.x += nx * step
+                self.ball.y += ny * step
         else:
             self._idle(delta)
 
@@ -79,16 +126,33 @@ class Action:
             target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
             dx, dy = target.x - self.ball.x, target.y - self.ball.y
             dist = math.sqrt(dx * dx + dy * dy)
-            if dist > 0.01:
-                nx, ny = dx / dist, dy / dist
-                step = getattr(self.ball, "speed", 2.0) * delta * 60
-                self.ball.x += nx * min(step, dist)
-                self.ball.y += ny * min(step, dist)
 
             target_radius = getattr(target, "radius", 10.0)
             ball_radius = getattr(self.ball, "radius", 10.0)
+            target_range = ball_radius + target_radius + 5.0
 
-            if dist <= ball_radius + target_radius + 5:
+            if dist > target_range:
+                nx, ny = dx / dist, dy / dist
+                ax, ay = self._get_avoidance_vector()
+
+                nx += ax
+                ny += ay
+
+                mag = math.sqrt(nx * nx + ny * ny)
+                if mag > 0:
+                    nx /= mag
+                    ny /= mag
+
+                step = getattr(self.ball, "speed", 2.0) * delta * 60
+                step = min(step, dist)
+                self.ball.x += nx * step
+                self.ball.y += ny * step
+
+                # Recalculate distance after movement
+                dx, dy = target.x - self.ball.x, target.y - self.ball.y
+                dist = math.sqrt(dx * dx + dy * dy)
+
+            if dist <= target_range + 0.01:
                 if hasattr(self.world, "_deal_damage"):
                     self.world._deal_damage(self.ball, target)
         else:
@@ -104,14 +168,32 @@ class Action:
             nearest = min(boosters, key=lambda b: (b.x - self.ball.x) ** 2 + (b.y - self.ball.y) ** 2)
             dx, dy = nearest.x - self.ball.x, nearest.y - self.ball.y
             dist = math.sqrt(dx * dx + dy * dy)
-            if dist > 0.01:
-                nx, ny = dx / dist, dy / dist
-                step = getattr(self.ball, "speed", 2.0) * delta * 60
-                self.ball.x += nx * min(step, dist)
-                self.ball.y += ny * min(step, dist)
 
             ball_radius = getattr(self.ball, "radius", 10.0)
-            if dist <= ball_radius + 10:
+            target_range = ball_radius + 10.0
+
+            if dist > target_range:
+                nx, ny = dx / dist, dy / dist
+                ax, ay = self._get_avoidance_vector()
+
+                nx += ax
+                ny += ay
+
+                mag = math.sqrt(nx * nx + ny * ny)
+                if mag > 0:
+                    nx /= mag
+                    ny /= mag
+
+                step = getattr(self.ball, "speed", 2.0) * delta * 60
+                step = min(step, dist)
+                self.ball.x += nx * step
+                self.ball.y += ny * step
+
+                # Recalculate distance after movement
+                dx, dy = nearest.x - self.ball.x, nearest.y - self.ball.y
+                dist = math.sqrt(dx * dx + dy * dy)
+
+            if dist <= target_range + 0.01:
                 if hasattr(self.world, "_collect_booster"):
                     self.world._collect_booster(self.ball, nearest)
         else:
