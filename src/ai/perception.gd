@@ -9,6 +9,11 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func scan() -> Dictionary:
+    if is_nan(self.ball.x) or is_inf(self.ball.x):
+        self.ball.x = 100.0
+    if is_nan(self.ball.y) or is_inf(self.ball.y):
+        self.ball.y = 100.0
+
     var perception_radius = 300.0
     if "perception_radius" in self.ball:
         perception_radius = self.ball.perception_radius

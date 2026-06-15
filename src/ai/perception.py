@@ -17,6 +17,11 @@ class Perception:
         Scans the environment within the ball's perception radius.
         Returns a dictionary with entities, distances, and scores.
         """
+        if math.isnan(self.ball.x) or math.isinf(self.ball.x):
+            self.ball.x = 100.0
+        if math.isnan(self.ball.y) or math.isinf(self.ball.y):
+            self.ball.y = 100.0
+
         perception_radius = getattr(self.ball, "perception_radius", 300.0)
 
         data: Dict[str, Any] = {
