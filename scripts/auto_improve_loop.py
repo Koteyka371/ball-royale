@@ -113,7 +113,8 @@ def main():
                     test_name = fail.split("::")[-1]
                     task_id = f"bugfix-{test_name.replace('_', '-')}"
                     title = f"Fix failing test {test_name}"
-                    desc = f"The test {fail} is failing. Investigate and fix the logic so that it passes."
+                    stdout_tail = result.stdout.strip()[-1500:]
+                    desc = f"The test {fail} is failing. Investigate and fix the logic so that it passes.\n\nPytest Output Snippet:\n```\n{stdout_tail}\n```"
                     if add_task(manifest, task_id, title, desc, "meta", "medium", acceptance=[f"Test {test_name} passes successfully"]):
                         modified = True
             else:
