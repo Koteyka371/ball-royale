@@ -241,6 +241,11 @@ func _idle(delta: float):
     self.ball.y += randf_range(-1.0, 1.0) * speed * 0.3
 
 func _clamp_position():
+    if is_nan(self.ball.x) or is_inf(self.ball.x):
+        self.ball.x = 100.0
+    if is_nan(self.ball.y) or is_inf(self.ball.y):
+        self.ball.y = 100.0
+
     if self.world != null and "width" in self.world and "height" in self.world:
         var radius = 10.0
         if "radius" in self.ball: radius = self.ball.radius

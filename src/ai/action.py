@@ -188,6 +188,11 @@ class Action:
         self.ball.y += random.uniform(-1, 1) * speed * 0.3
 
     def _clamp_position(self) -> None:
+        if math.isnan(self.ball.x) or math.isinf(self.ball.x):
+            self.ball.x = 100.0
+        if math.isnan(self.ball.y) or math.isinf(self.ball.y):
+            self.ball.y = 100.0
+
         if hasattr(self.world, "width") and hasattr(self.world, "height"):
             radius = getattr(self.ball, "radius", 10.0)
             self.ball.x = max(radius, min(self.world.width - radius, self.ball.x))
