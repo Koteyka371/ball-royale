@@ -68,8 +68,8 @@
       "name": "Jules Worker 8",
       "area": "tests",
       "task_id": "ai-behavior-flee",
-      "status": "assigned",
-      "started_at": "2026-06-15T23:44:03.182343+00:00",
+      "status": "working",
+      "started_at": "2026-06-15T23:54:31.853520+00:00",
       "cycles_today": 0
     },
     "agent-9": {
