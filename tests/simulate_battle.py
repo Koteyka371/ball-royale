@@ -156,6 +156,9 @@ class SpatialGrid:
         self.cells: Dict[int, List[Ball]] = {}
 
     def _key(self, x: float, y: float) -> int:
+        import math
+        if math.isnan(x) or math.isinf(x): x = 0.0
+        if math.isnan(y) or math.isinf(y): y = 0.0
         col = int(x / self.cell_size)
         row = int(y / self.cell_size)
         return row * self.cols + col
@@ -170,6 +173,9 @@ class SpatialGrid:
         self.cells[key].append(ball)
 
     def get_nearby(self, x: float, y: float, radius: float) -> List[Ball]:
+        import math
+        if math.isnan(x) or math.isinf(x): x = 0.0
+        if math.isnan(y) or math.isinf(y): y = 0.0
         result = []
         min_col = max(0, int((x - radius) / self.cell_size))
         max_col = min(self.cols - 1, int((x + radius) / self.cell_size))
