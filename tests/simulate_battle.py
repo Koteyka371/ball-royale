@@ -245,8 +245,13 @@ class BattleSimulation:
 
     def _rebuild_grid(self):
         self.grid.clear()
+        import math
         for b in self.balls:
             if b.alive:
+                if math.isnan(b.x) or math.isinf(b.x):
+                    b.x = self.width / 2
+                if math.isnan(b.y) or math.isinf(b.y):
+                    b.y = self.height / 2
                 self.grid.insert(b)
 
     def get_nearby_entities(self, ball, radius):

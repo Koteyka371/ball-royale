@@ -49,6 +49,27 @@ func _get_enemies() -> Array:
             return enemies
     return []
 
+func _get_allies() -> Array:
+    var perception_radius = 250.0
+    if "perception_radius" in self.ball:
+        perception_radius = self.ball.perception_radius
+
+    if self.world != null and self.world.has_method("get_nearby_entities"):
+        var entities = self.world.get_nearby_entities(self.ball, perception_radius)
+        if typeof(entities) == TYPE_DICTIONARY and entities.has("allies"):
+            return entities["allies"]
+        elif typeof(entities) == TYPE_ARRAY:
+            var allies = []
+            for e in entities:
+                if e.has_method("get_ball_type") or "ball_type" in e:
+                    var e_type = e.ball_type if "ball_type" in e else e.get_ball_type()
+                    var b_type = self.ball.ball_type if "ball_type" in self.ball else self.ball.get_ball_type()
+                    if e_type == b_type and e != self.ball:
+                        if ("alive" in e and e.alive) or (e.has_method("is_alive") and e.is_alive()):
+                            allies.append(e)
+            return allies
+    return []
+
 func _get_boosters() -> Array:
     var perception_radius = 250.0
     if "perception_radius" in self.ball:
@@ -71,25 +92,87 @@ func _get_boosters() -> Array:
 
 func _flee(delta: float):
     var enemies = _get_enemies()
-    if enemies.size() > 0:
-        var nearest = null
-        var min_dist_sq = INF
-        for e in enemies:
-            var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
-            if dist_sq < min_dist_sq:
-                min_dist_sq = dist_sq
-                nearest = e
-
-        var dx = self.ball.x - nearest.x
-        var dy = self.ball.y - nearest.y
-        var dist = sqrt(dx*dx + dy*dy)
-        if dist > 0.01:
-            var speed = 2.0
-            if "speed" in self.ball: speed = self.ball.speed
-            self.ball.x += (dx / dist) * speed * delta * 60
-            self.ball.y += (dy / dist) * speed * delta * 60
-    else:
+    if enemies.size() == 0:
         _idle(delta)
+        return
+
+    var nearest = null
+    var min_dist_sq = INF
+    for e in enemies:
+        var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+        if dist_sq < min_dist_sq:
+            min_dist_sq = dist_sq
+            nearest = e
+
+    var dx = self.ball.x - nearest.x
+    var dy = self.ball.y - nearest.y
+    var dist = sqrt(dx*dx + dy*dy)
+
+    var perception_radius = 250.0
+    if "perception_radius" in self.ball:
+        perception_radius = self.ball.perception_radius
+
+    if dist > perception_radius * 0.8:
+        _idle(delta)
+        return
+
+    if dist < 0.01:
+        dist = 0.01
+
+    var flee_nx = dx / dist
+    var flee_ny = dy / dist
+
+    var allies = _get_allies()
+    var ally_nx = 0.0
+    var ally_ny = 0.0
+
+    if allies.size() > 0:
+        var nearest_ally = null
+        var min_adist_sq = INF
+        for a in allies:
+            var adist_sq = pow(a.x - self.ball.x, 2) + pow(a.y - self.ball.y, 2)
+            if adist_sq < min_adist_sq:
+                min_adist_sq = adist_sq
+                nearest_ally = a
+
+        var adx = nearest_ally.x - self.ball.x
+        var ady = nearest_ally.y - self.ball.y
+        var adist = sqrt(adx*adx + ady*ady)
+        if adist > 0.01:
+            ally_nx = adx / adist
+            ally_ny = ady / adist
+
+    var safe_nx = 0.0
+    var safe_ny = 0.0
+    if self.world != null and "width" in self.world and "height" in self.world:
+        var center_x = self.world.width / 2.0
+        var center_y = self.world.height / 2.0
+        var cdx = center_x - self.ball.x
+        var cdy = center_y - self.ball.y
+        var cdist = sqrt(cdx*cdx + cdy*cdy)
+
+        var min_center_dim = center_x
+        if center_y < center_x:
+            min_center_dim = center_y
+
+        if cdist > min_center_dim * 0.3 and cdist > 0.01:
+            safe_nx = cdx / cdist
+            safe_ny = cdy / cdist
+
+    var comb_nx = flee_nx * 1.0 + ally_nx * 0.4 + safe_nx * 0.3
+    var comb_ny = flee_ny * 1.0 + ally_ny * 0.4 + safe_ny * 0.3
+
+    var comb_dist = sqrt(comb_nx*comb_nx + comb_ny*comb_ny)
+    if comb_dist > 0.01:
+        comb_nx /= comb_dist
+        comb_ny /= comb_dist
+
+    var speed = 2.0
+    if "speed" in self.ball: speed = self.ball.speed
+    var boosted_speed = speed * 1.5
+
+    self.ball.x += comb_nx * boosted_speed * delta * 60.0
+    self.ball.y += comb_ny * boosted_speed * delta * 60.0
 
 func _attack(delta: float):
     var enemies = _get_enemies()
@@ -178,6 +261,12 @@ func _clamp_position():
     if self.world != null and "width" in self.world and "height" in self.world:
         var radius = 10.0
         if "radius" in self.ball: radius = self.ball.radius
+
+        if is_nan(self.ball.x) or is_inf(self.ball.x):
+            self.ball.x = self.world.width / 2.0
+        if is_nan(self.ball.y) or is_inf(self.ball.y):
+            self.ball.y = self.world.height / 2.0
+
         self.ball.x = max(radius, min(self.world.width - radius, self.ball.x))
         self.ball.y = max(radius, min(self.world.height - radius, self.ball.y))
 
