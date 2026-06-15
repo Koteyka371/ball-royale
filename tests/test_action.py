@@ -15,6 +15,8 @@ class MockBall:
         self.radius = radius
         self.perception_radius = 100
         self.skill_timer = 0.0
+        self.skill_cooldown = 5.0
+        self.attack_timer = 0.0
         self.ball_type = "mock_ball"
         self.alive = True
         self.used_skill = False
@@ -97,6 +99,49 @@ def test_execute_attack():
     action_layer2 = Action(ball2, world2)
     action_layer2.execute("attack", 0.1)
     assert world2.dealt_damage # Should deal damage
+
+def test_attack_respects_cooldown():
+    ball = MockBall(x=100, y=100)
+    ball.attack_timer = 0.5 # Cooldown active
+    world = MockWorld()
+    world.enemies = [MockEnemy(x=115, y=100)] # Enemy is close
+    action_layer = Action(ball, world)
+
+    action_layer.execute("attack", 0.1)
+    assert not world.dealt_damage # Should NOT deal damage
+    assert ball.attack_timer == 0.4 # Cooldown should decrease
+
+def test_attack_timing_by_type():
+    ball_scout = MockBall(x=100, y=100)
+    ball_scout.ball_type = "scout"
+    world_scout = MockWorld()
+    world_scout.enemies = [MockEnemy(x=115, y=100)]
+    Action(ball_scout, world_scout).execute("attack", 0.0) # 0 delta to avoid subtraction
+    assert ball_scout.attack_timer == 0.5
+
+    ball_tank = MockBall(x=100, y=100)
+    ball_tank.ball_type = "tank"
+    world_tank = MockWorld()
+    world_tank.enemies = [MockEnemy(x=115, y=100)]
+    Action(ball_tank, world_tank).execute("attack", 0.0)
+    assert ball_tank.attack_timer == 2.0
+
+    ball_default = MockBall(x=100, y=100)
+    ball_default.ball_type = "unknown"
+    world_default = MockWorld()
+    world_default.enemies = [MockEnemy(x=115, y=100)]
+    Action(ball_default, world_default).execute("attack", 0.0)
+    assert ball_default.attack_timer == 1.0
+
+def test_optimal_skill_usage():
+    ball = MockBall(x=100, y=100)
+    world = MockWorld()
+    world.enemies = [MockEnemy(x=150, y=100)] # Enemy is within 50 range (100 + 10 + 10 + 50 = 170)
+    action_layer = Action(ball, world)
+
+    action_layer.execute("attack", 0.0)
+    assert ball.used_skill
+    assert ball.skill_timer == 5.0 # Reset to cooldown
 
 def test_execute_defend():
     ball = MockBall(x=100, y=100)

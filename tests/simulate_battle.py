@@ -9,6 +9,7 @@ import math
 import time
 import sys
 import os
+import json
 from dataclasses import dataclass
 from typing import List, Dict, Optional, Tuple, Any
 from collections import Counter
@@ -57,7 +58,6 @@ BALL_TYPES = {
                  "skill": "protect_ally", "skill_cooldown": 6.0},
 }
 
-import json
 try:
     _config_path = os.path.join(os.path.dirname(__file__), "../src/ai/balance_config.json")
     if os.path.exists(_config_path):
@@ -130,6 +130,7 @@ class Ball:
     skill: str
     skill_cooldown: float
     skill_timer: float = 0.0
+    attack_timer: float = 0.0
     alive: bool = True
     kills: int = 0
     first_hit_taken: bool = False
@@ -156,9 +157,12 @@ class SpatialGrid:
         self.cells: Dict[int, List[Ball]] = {}
 
     def _key(self, x: float, y: float) -> int:
-        col = int(x / self.cell_size)
-        row = int(y / self.cell_size)
-        return row * self.cols + col
+        try:
+            col = int(x / self.cell_size)
+            row = int(y / self.cell_size)
+            return row * self.cols + col
+        except (ValueError, OverflowError):
+            return 0
 
     def clear(self):
         self.cells.clear()
@@ -171,19 +175,22 @@ class SpatialGrid:
 
     def get_nearby(self, x: float, y: float, radius: float) -> List[Ball]:
         result = []
-        min_col = max(0, int((x - radius) / self.cell_size))
-        max_col = min(self.cols - 1, int((x + radius) / self.cell_size))
-        min_row = max(0, int((y - radius) / self.cell_size))
-        max_row = min(self.rows - 1, int((y + radius) / self.cell_size))
-        r2 = radius * radius
-        for row in range(min_row, max_row + 1):
-            for col in range(min_col, max_col + 1):
-                key = row * self.cols + col
-                for ball in self.cells.get(key, []):
-                    dx = ball.x - x
-                    dy = ball.y - y
-                    if dx * dx + dy * dy <= r2:
-                        result.append(ball)
+        try:
+            min_col = max(0, int((x - radius) / self.cell_size))
+            max_col = min(self.cols - 1, int((x + radius) / self.cell_size))
+            min_row = max(0, int((y - radius) / self.cell_size))
+            max_row = min(self.rows - 1, int((y + radius) / self.cell_size))
+            r2 = radius * radius
+            for row in range(min_row, max_row + 1):
+                for col in range(min_col, max_col + 1):
+                    key = row * self.cols + col
+                    for ball in self.cells.get(key, []):
+                        dx = ball.x - x
+                        dy = ball.y - y
+                        if dx * dx + dy * dy <= r2:
+                            result.append(ball)
+        except (ValueError, OverflowError):
+            pass
         return result
 
 

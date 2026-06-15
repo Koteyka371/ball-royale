@@ -79,18 +79,38 @@ class Action:
             target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
             dx, dy = target.x - self.ball.x, target.y - self.ball.y
             dist = math.sqrt(dx * dx + dy * dy)
+
             if dist > 0.01:
                 nx, ny = dx / dist, dy / dist
                 step = getattr(self.ball, "speed", 2.0) * delta * 60
                 self.ball.x += nx * min(step, dist)
                 self.ball.y += ny * min(step, dist)
 
+            # Recalculate distance after movement
+            dist = math.sqrt((target.x - self.ball.x)**2 + (target.y - self.ball.y)**2)
+
             target_radius = getattr(target, "radius", 10.0)
             ball_radius = getattr(self.ball, "radius", 10.0)
 
+            # Use skill optimally if available and in range
+            if dist <= ball_radius + target_radius + 50.0:
+                if getattr(self.ball, "skill_timer", 0) <= 0:
+                    self._use_skill()
+                    self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
+
+            # Attack timing logic
             if dist <= ball_radius + target_radius + 5:
-                if hasattr(self.world, "_deal_damage"):
-                    self.world._deal_damage(self.ball, target)
+                if getattr(self.ball, "attack_timer", 0) <= 0:
+                    if hasattr(self.world, "_deal_damage"):
+                        self.world._deal_damage(self.ball, target)
+
+                    ball_type = getattr(self.ball, "ball_type", "")
+                    if ball_type == "scout":
+                        self.ball.attack_timer = 0.5
+                    elif ball_type == "tank":
+                        self.ball.attack_timer = 2.0
+                    else:
+                        self.ball.attack_timer = 1.0
         else:
             self._idle(delta)
 
@@ -135,3 +155,5 @@ class Action:
     def _update_skill_timer(self, delta: float) -> None:
         if hasattr(self.ball, "skill_timer") and self.ball.skill_timer > 0:
             self.ball.skill_timer -= delta
+        if hasattr(self.ball, "attack_timer") and self.ball.attack_timer > 0:
+            self.ball.attack_timer -= delta

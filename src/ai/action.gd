@@ -116,14 +116,36 @@ func _attack(delta: float):
             self.ball.x += nx * min(step, dist)
             self.ball.y += ny * min(step, dist)
 
+        # Recalculate distance after movement
+        dist = sqrt(pow(target.x - self.ball.x, 2) + pow(target.y - self.ball.y, 2))
+
         var target_radius = 10.0
         if "radius" in target: target_radius = target.radius
         var ball_radius = 10.0
         if "radius" in self.ball: ball_radius = self.ball.radius
 
-        if dist <= ball_radius + target_radius + 5:
-            if self.world != null and self.world.has_method("_deal_damage"):
-                self.world._deal_damage(self.ball, target)
+        # Use skill optimally if available and in range
+        if dist <= ball_radius + target_radius + 50.0:
+            if not ("skill_timer" in self.ball) or self.ball.skill_timer <= 0:
+                _use_skill()
+                self.ball.skill_timer = self.ball.skill_cooldown if "skill_cooldown" in self.ball else 5.0
+
+        # Attack timing logic
+        if dist <= ball_radius + target_radius + 5.0:
+            if not ("attack_timer" in self.ball) or self.ball.attack_timer <= 0:
+                if self.world != null and self.world.has_method("_deal_damage"):
+                    self.world._deal_damage(self.ball, target)
+
+                var b_type = ""
+                if "ball_type" in self.ball:
+                    b_type = self.ball.ball_type
+
+                if b_type == "scout":
+                    self.ball.attack_timer = 0.5
+                elif b_type == "tank":
+                    self.ball.attack_timer = 2.0
+                else:
+                    self.ball.attack_timer = 1.0
     else:
         _idle(delta)
 
@@ -184,3 +206,5 @@ func _clamp_position():
 func _update_skill_timer(delta: float):
     if "skill_timer" in self.ball and self.ball.skill_timer > 0:
         self.ball.skill_timer -= delta
+    if "attack_timer" in self.ball and self.ball.attack_timer > 0:
+        self.ball.attack_timer -= delta
