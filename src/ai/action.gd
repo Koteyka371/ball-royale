@@ -12,6 +12,26 @@ func execute(strategy: String, delta: float):
     if "current_action" in self.ball:
         self.ball.current_action = strategy
 
+    if self.ball.has_method("set_meta"):
+        self.ball.set_meta("team_message", null)
+
+        var hp_percent = 1.0
+        if self.ball.has_method("get_hp_percent"):
+            hp_percent = self.ball.get_hp_percent()
+        elif "hp" in self.ball and "max_hp" in self.ball:
+            hp_percent = float(self.ball.hp) / float(self.ball.max_hp)
+
+        var personality = "idle"
+        if "personality" in self.ball:
+            personality = self.ball.personality
+
+        if hp_percent < 0.3:
+            self.ball.set_meta("team_message", {"type": "request_help", "x": self.ball.x, "y": self.ball.y})
+        elif personality == "healer":
+            self.ball.set_meta("team_message", {"type": "wounded_call", "x": self.ball.x, "y": self.ball.y})
+        elif strategy == "defend" and personality == "tank":
+            self.ball.set_meta("team_message", {"type": "hold_position", "x": self.ball.x, "y": self.ball.y})
+
     if strategy == "flee":
         _flee(delta)
     elif strategy == "attack" or strategy == "chase":
@@ -101,6 +121,17 @@ func _attack(delta: float):
             if dist_sq < min_dist_sq:
                 min_dist_sq = dist_sq
                 target = e
+
+        var personality = "idle"
+        if "personality" in self.ball:
+            personality = self.ball.personality
+
+        if personality == "sniper" and self.ball.has_method("set_meta"):
+            var has_msg = false
+            if self.ball.has_meta("team_message"):
+                has_msg = self.ball.get_meta("team_message") != null
+            if not has_msg:
+                self.ball.set_meta("team_message", {"type": "target_spotted", "x": target.x, "y": target.y})
 
         var dx = target.x - self.ball.x
         var dy = target.y - self.ball.y

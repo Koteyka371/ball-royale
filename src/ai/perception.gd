@@ -73,6 +73,8 @@ func scan() -> Dictionary:
                 data["distances"][booster.id] = dist
         opp += max(0.0, 1.0 - (dist / perception_radius)) * 1.0
 
+    var team_messages = []
+
     for ally in data["allies"]:
         var dist = 0.0
         if "x" in ally and "y" in ally:
@@ -82,11 +84,16 @@ func scan() -> Dictionary:
             if "id" in ally:
                 data["distances"][ally.id] = dist
         opp += max(0.0, 1.0 - (dist / perception_radius)) * 0.5
+        if ally.has_method("has_meta") and ally.has_meta("team_message"):
+            var msg = ally.get_meta("team_message")
+            if msg != null:
+                team_messages.append(msg)
 
     data["threat_level"] = threat
     data["opportunity_score"] = opp
 
     data["danger_level"] = data["enemies"].size() * 0.2
     data["opportunity_level"] = data["boosters"].size() * 0.3 + data["allies"].size() * 0.1
+    data["team_messages"] = team_messages
 
     return data
