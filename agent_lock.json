@@ -100,8 +100,8 @@
       "name": "Jules Worker 12",
       "area": "ai-core",
       "task_id": "ai-behavior-kite",
-      "status": "assigned",
-      "started_at": "2026-06-15T21:31:29.757375+00:00",
+      "status": "working",
+      "started_at": "2026-06-15T21:42:18.431516+00:00",
       "cycles_today": 0
     }
   },
