@@ -17,18 +17,31 @@ class Action:
         Executes the chosen strategy.
         """
         self.ball.current_action = strategy
+        self.ball.team_message = ""
 
+        personality = getattr(self.ball, "personality", "")
         if strategy == "flee":
+            self.ball.team_message = "request_help"
             self._flee(delta)
         elif strategy in ("attack", "chase"):
+            if personality == "sniper":
+                self.ball.team_message = "threat"
+            else:
+                self.ball.team_message = "coordinate_attack"
             self._attack(delta)
         elif strategy == "defend":
+            if personality == "tank":
+                self.ball.team_message = "hold_position"
             self._defend(delta)
         elif strategy in ("opportunistic", "collect_booster", "collect booster"):
             self._collect_booster(delta)
         elif strategy in ("use_skill", "use skill"):
+            if personality == "healer":
+                self.ball.team_message = "call_for_wounded"
             self._use_skill()
         else:
+            if personality == "healer":
+                self.ball.team_message = "call_for_wounded"
             self._idle(delta)
 
         self._clamp_position()

@@ -30,6 +30,7 @@ class Perception:
             # For backward compatibility with existing layers
             "danger_level": 0.0,
             "opportunity_level": 0.0,
+            "team_messages": [],
         }
 
         if not self.world or not hasattr(self.world, "get_nearby_entities"):
@@ -79,6 +80,9 @@ class Perception:
             if hasattr(ally, "id"):
                 data["distances"][ally.id] = dist
             opp += max(0.0, 1.0 - (dist / perception_radius)) * 0.5
+            msg = getattr(ally, "team_message", "")
+            if msg:
+                data["team_messages"].append(msg)
 
         data["threat_level"] = threat
         data["opportunity_score"] = opp

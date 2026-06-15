@@ -22,8 +22,10 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     var scores = {
         "flee": 0.0,
         "defend": 0.0,
-        "opportunistic": 0.0,
+        "collect_booster": 0.0,
         "attack": 0.0,
+        "chase": 0.0,
+        "use_skill": 0.0,
         "idle": 0.0
     }
 
@@ -43,6 +45,10 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     if perception_data.has("boosters"):
         boosters = perception_data["boosters"]
 
+    var team_messages = []
+    if perception_data.has("team_messages"):
+        team_messages = perception_data["team_messages"]
+
     var personality = "idle"
     if "personality" in self.ball:
         personality = self.ball.personality
@@ -56,6 +62,10 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
         scores["flee"] += 80.0
 
     scores["flee"] += danger_level * 10.0
+    if "call_for_wounded" in team_messages and hp_percent < 0.6:
+        scores["flee"] += 60.0
+    if "request_help" in team_messages and hp_percent < 0.4:
+        scores["flee"] += 40.0
 
     # Defend scoring
     if danger_level > 0.7:
@@ -64,15 +74,19 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
         scores["defend"] += 20.0
 
     scores["defend"] += danger_level * 20.0
+    if "hold_position" in team_messages:
+        scores["defend"] += 80.0
+    if "request_help" in team_messages and hp_percent >= 0.4:
+        scores["defend"] += 50.0
 
-    # Opportunistic scoring
+    # Collect booster scoring
     if boosters.size() > 0:
-        scores["opportunistic"] += 30.0 + opportunity_level * 10.0
+        scores["collect_booster"] += 30.0 + opportunity_level * 10.0
     if emotion_state == "greed":
-        scores["opportunistic"] += 100.0
+        scores["collect_booster"] += 100.0
 
     if personality == "scout":
-        scores["opportunistic"] += 20.0
+        scores["collect_booster"] += 20.0
 
     # Attack scoring
     if enemies.size() > 0:
@@ -86,6 +100,34 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
 
     if personality == "warrior" or personality == "aggressive":
         scores["attack"] += 30.0
+    if "coordinate_attack" in team_messages:
+        scores["attack"] += 60.0
+    if "threat" in team_messages:
+        scores["attack"] += 40.0
+
+    # Chase scoring
+    if enemies.size() > 0:
+        scores["chase"] += 15.0
+    if personality in ["assassin", "rogue", "phantom", "swarm"]:
+        scores["chase"] += 40.0
+    if emotion_state == "bloodlust":
+        scores["chase"] += 80.0
+    if "coordinate_attack" in team_messages:
+        scores["chase"] += 60.0
+    if "threat" in team_messages:
+        scores["chase"] += 40.0
+
+    # Use skill scoring
+    var skill_timer = 0.0
+    if "skill_timer" in self.ball:
+        skill_timer = self.ball.skill_timer
+
+    if skill_timer <= 0 and enemies.size() > 0:
+        scores["use_skill"] += 40.0
+        if hp_percent < 0.5:
+            scores["use_skill"] += 30.0
+    if skill_timer > 0:
+        scores["use_skill"] = -1000.0
 
     # Idle scoring
     scores["idle"] = 1.0
@@ -96,15 +138,16 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
 
     # Validation filters
     if boosters.size() == 0:
-        scores["opportunistic"] = -1000.0
+        scores["collect_booster"] = -1000.0
 
     if enemies.size() == 0:
         scores["attack"] = -1000.0
+        scores["chase"] = -1000.0
 
     var best_action = "idle"
     var best_score = -9999.0
 
-    var order = ["flee", "defend", "opportunistic", "attack", "idle"]
+    var order = ["flee", "defend", "collect_booster", "attack", "chase", "use_skill", "idle"]
     for action in order:
         if scores[action] > best_score:
             best_score = scores[action]

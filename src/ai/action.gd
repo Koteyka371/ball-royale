@@ -11,18 +11,40 @@ func _init(ball_ref, world_ref):
 func execute(strategy: String, delta: float):
     if "current_action" in self.ball:
         self.ball.current_action = strategy
+    if self.ball.has_method("set_meta"):
+        self.ball.set_meta("team_message", "")
+
+    var personality = ""
+    if "personality" in self.ball:
+        personality = self.ball.personality
 
     if strategy == "flee":
+        if self.ball.has_method("set_meta"):
+            self.ball.set_meta("team_message", "request_help")
         _flee(delta)
     elif strategy == "attack" or strategy == "chase":
+        if self.ball.has_method("set_meta"):
+            if personality == "sniper":
+                self.ball.set_meta("team_message", "threat")
+            else:
+                self.ball.set_meta("team_message", "coordinate_attack")
         _attack(delta)
     elif strategy == "defend":
+        if self.ball.has_method("set_meta"):
+            if personality == "tank":
+                self.ball.set_meta("team_message", "hold_position")
         _defend(delta)
     elif strategy == "opportunistic" or strategy == "collect booster":
         _collect_booster(delta)
     elif strategy == "use skill":
+        if self.ball.has_method("set_meta"):
+            if personality == "healer":
+                self.ball.set_meta("team_message", "call_for_wounded")
         _use_skill()
     else:
+        if self.ball.has_method("set_meta"):
+            if personality == "healer":
+                self.ball.set_meta("team_message", "call_for_wounded")
         _idle(delta)
 
     _clamp_position()

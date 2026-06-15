@@ -54,6 +54,7 @@ class Decision:
         enemies = perception_data.get("enemies", [])
         boosters = perception_data.get("boosters", [])
         allies = perception_data.get("allies", [])
+        team_messages = perception_data.get("team_messages", [])
 
         personality = getattr(self.ball, "personality", "idle")
         skill_timer = getattr(self.ball, "skill_timer", 0.0)
@@ -66,6 +67,10 @@ class Decision:
         if emotion_state == "cowardice":
             scores["flee"] += 80.0
         scores["flee"] += threat_level * 5.0
+        if "call_for_wounded" in team_messages and hp_percent < 0.6:
+            scores["flee"] += 60.0
+        if "request_help" in team_messages and hp_percent < 0.4:
+            scores["flee"] += 40.0
 
         # === DEFEND ===
         if danger_level > 0.7:
@@ -75,6 +80,10 @@ class Decision:
         if personality in ("tank", "defender", "guardian", "juggernaut"):
             scores["defend"] += 30.0
         scores["defend"] += danger_level * 20.0
+        if "hold_position" in team_messages:
+            scores["defend"] += 80.0
+        if "request_help" in team_messages and hp_percent >= 0.4:
+            scores["defend"] += 50.0
 
         # === COLLECT BOOSTER ===
         if len(boosters) > 0:
@@ -95,6 +104,10 @@ class Decision:
             scores["attack"] += 100.0
         if personality in ("warrior", "aggressive", "berserker", "bomber"):
             scores["attack"] += 30.0
+        if "coordinate_attack" in team_messages:
+            scores["attack"] += 60.0
+        if "threat" in team_messages:
+            scores["attack"] += 40.0
         if len(enemies) == 0:
             scores["attack"] = -1000.0
 
@@ -105,6 +118,10 @@ class Decision:
             scores["chase"] += 40.0
         if emotion_state == "bloodlust":
             scores["chase"] += 80.0
+        if "coordinate_attack" in team_messages:
+            scores["chase"] += 60.0
+        if "threat" in team_messages:
+            scores["chase"] += 40.0
         if len(enemies) == 0:
             scores["chase"] = -1000.0
 
