@@ -1148,6 +1148,96 @@
         "Tests pass",
         "No regressions"
       ]
+    },
+    {
+      "id": "balance-buff-assassin",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'assassin'",
+      "description": "The 'assassin' class is winning only 0.0% of the time (expected ~8.3%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-healer",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'healer'",
+      "description": "The 'healer' class is winning only 0.0% of the time (expected ~8.3%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-rogue",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'rogue'",
+      "description": "The 'rogue' class is winning only 0.0% of the time (expected ~8.3%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-swarm",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'swarm'",
+      "description": "The 'swarm' class is winning only 0.0% of the time (expected ~8.3%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-guardian",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'guardian'",
+      "description": "The 'guardian' class is winning only 0.0% of the time (expected ~8.3%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "sync-gd-perception-calc-dist",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Sync GDScript: Implement 'calc_dist' in perception.gd",
+      "description": "The Python class in perception.py implements 'calc_dist', but the GDScript counterpart perception.gd is missing it. Please implement the same logic in GDScript.",
+      "allowed_paths": [
+        "src/ai/perception.gd"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }

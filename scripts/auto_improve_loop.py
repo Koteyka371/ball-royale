@@ -91,6 +91,34 @@ def main():
                 pass
         if todo_count > 0:
             print(f"[Auto-Improve] Generated {todo_count} tasks from TODO comments")
+            
+        # Ruff Linting check
+        try:
+            ruff_result = subprocess.run(["ruff", "check", "src/", "--format", "json"], capture_output=True, text=True)
+            if ruff_result.returncode != 0 and ruff_result.stdout:
+                try:
+                    violations = json.loads(ruff_result.stdout)
+                    lint_count = 0
+                    for v in violations[:5]:  # Limit to 5 tasks to avoid spamming
+                        code = v.get("code", "LINT")
+                        msg = v.get("message", "Lint warning")
+                        location = v.get("location", {})
+                        row = location.get("row", 1)
+                        filepath = v.get("filename", "unknown")
+                        filename = Path(filepath).name
+                        clean_filename = filename.replace(".", "-").replace("_", "-")
+                        task_id = f"lint-{code.lower()}-{clean_filename}-{row}"
+                        title = f"Fix lint {code} in {filename}"
+                        desc = f"Ruff reported: {msg} in {filepath} line {row}"
+                        if add_task(manifest, task_id, title, desc, "meta", "low", acceptance=["Lint warning resolved"]):
+                            modified = True
+                            lint_count += 1
+                    if lint_count > 0:
+                        print(f"[Auto-Improve] Generated {lint_count} linting tasks from Ruff")
+                except Exception as je:
+                    print(f"Failed to parse Ruff json: {je}")
+        except FileNotFoundError:
+            print("[Auto-Improve] Ruff not installed, skipping linter checks")
     except Exception as e:
         print(f"Error checking code quality: {e}")
 
