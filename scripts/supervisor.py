@@ -24,7 +24,7 @@ TASK_FILE = "agent_tasks.json"
 SUPERVISOR_LOCK = ".supervisor.lock"
 MAX_RETRIES = 5
 STALE_TIMEOUT_MIN = 45
-SUPERVISOR_ID = "agent-7"
+SUPERVISOR_ID = "supervisor"
 
 
 def load_json(path):
@@ -659,6 +659,13 @@ def main():
                     continue
 
                 task_id = get_task_for_pr(pr)
+                
+                if task_id == "Auto":
+                    print(f"    Auto PR detected! Merging immediately to propagate tasks to main.")
+                    branch_name = pr.get("head", {}).get("ref", "")
+                    merge_pr(pr_num, branch_name=branch_name)
+                    continue
+
                 task_status = ""
                 try:
                     tasks_data = load_json(TASK_FILE)
@@ -714,7 +721,7 @@ def main():
                     except (IndexError, ValueError):
                         pass
 
-                    token_env = "JULES_API_KEY_2" if agent_num >= 4 else "JULES_API_KEY"
+                    token_env = "JULES_API_KEY_2" if agent_num % 2 == 0 else "JULES_API_KEY"
                     jules_token = os.environ.get(token_env, "")
                     if not jules_token:
                         fallback_env = "JULES_API_KEY" if token_env == "JULES_API_KEY_2" else "JULES_API_KEY_2"

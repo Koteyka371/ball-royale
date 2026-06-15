@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Agent Status Dashboard — shows what all 6 agents are doing.
+Agent Status Dashboard — shows what all 12 agents are doing.
 Usage: python status_agents.py
 """
 import json
@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 LOCK_FILE = "agent_lock.json"
 TASK_FILE = "agent_tasks.json"
 MAX_CYCLES_PER_AGENT = 30
-NUM_AGENTS = 7
+NUM_AGENTS = 13
 
 
 def load_json(path):
@@ -60,7 +60,7 @@ def main():
         area = info.get("area", "?")
         task_id = info.get("task_id") or "-"
         cycles = info.get("cycles_today", 0)
-        if agent_id != "agent-7":
+        if agent_id != "supervisor":
             total_cycles += cycles
 
         if status in ("working", "assigned"):

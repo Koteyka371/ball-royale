@@ -24,7 +24,7 @@ DISPATCHER_LOCK = ".dispatcher.lock"
 MAX_CYCLES_PER_AGENT = 30
 MAX_RETRIES = 5
 STALE_TIMEOUT_MIN = 45
-SUPERVISOR_ID = "agent-7"
+SUPERVISOR_ID = "supervisor"
 
 AGENT_AREAS = {
     "agent-1": "ai-core",
@@ -33,6 +33,12 @@ AGENT_AREAS = {
     "agent-4": "content",
     "agent-5": "meta",
     "agent-6": "innovation",
+    "agent-7": "content",
+    "agent-8": "tests",
+    "agent-9": "behaviors",
+    "agent-10": "meta",
+    "agent-11": "innovation",
+    "agent-12": "ai-core",
 }
 
 AREA_TO_AGENT = {

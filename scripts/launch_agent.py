@@ -385,7 +385,7 @@ def main():
         sys.exit(1)
 
     agent_num = int(agent_id.split("-")[1])
-    if agent_num < 1 or agent_num > 6:
+    if agent_num < 1 or agent_num > 12:
         print(f"Agent {agent_id} is not a Jules agent (1-6 only)")
         sys.exit(1)
 
@@ -505,7 +505,7 @@ def main():
             print(f"[{agent_id}] Status: idle, nothing to do")
             return 0
 
-        token_env = "JULES_API_KEY_2" if agent_num >= 4 else "JULES_API_KEY"
+        token_env = "JULES_API_KEY_2" if agent_num % 2 == 0 else "JULES_API_KEY"
         token = os.environ.get(token_env, "")
         if not token:
             fallback_env = "JULES_API_KEY" if token_env == "JULES_API_KEY_2" else "JULES_API_KEY_2"
