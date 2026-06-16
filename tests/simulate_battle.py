@@ -25,9 +25,9 @@ BALL_TYPES = {
     "tank": {"hp": 200, "speed": 1.2, "damage": 8, "radius": 18,
              "perception_radius": 200, "aggression": 0.5, "color": "gray",
              "skill": "shield", "skill_cooldown": 8.0},
-    "assassin": {"hp": 70, "speed": 3.5, "damage": 25, "radius": 8,
+    "assassin": {"hp": 85, "speed": 4.0, "damage": 35, "radius": 8,
                  "perception_radius": 300, "aggression": 0.8, "color": "purple",
-                 "skill": "dash", "skill_cooldown": 3.0},
+                 "skill": "dash", "skill_cooldown": 2.0},
     "healer": {"hp": 80, "speed": 1.8, "damage": 5, "radius": 10,
                "perception_radius": 350, "aggression": 0.2, "color": "green",
                "skill": "heal_ally", "skill_cooldown": 4.0},
@@ -156,9 +156,18 @@ class SpatialGrid:
         self.cells: Dict[int, List[Ball]] = {}
 
     def _key(self, x: float, y: float) -> int:
-        col = int(x / self.cell_size)
-        row = int(y / self.cell_size)
-        return row * self.cols + col
+        try:
+            if math.isnan(x) or math.isinf(x):
+                col = 0
+            else:
+                col = int(x / self.cell_size)
+            if math.isnan(y) or math.isinf(y):
+                row = 0
+            else:
+                row = int(y / self.cell_size)
+            return row * self.cols + col
+        except (OverflowError, ValueError):
+            return 0
 
     def clear(self):
         self.cells.clear()
@@ -171,10 +180,24 @@ class SpatialGrid:
 
     def get_nearby(self, x: float, y: float, radius: float) -> List[Ball]:
         result = []
-        min_col = max(0, int((x - radius) / self.cell_size))
-        max_col = min(self.cols - 1, int((x + radius) / self.cell_size))
-        min_row = max(0, int((y - radius) / self.cell_size))
-        max_row = min(self.rows - 1, int((y + radius) / self.cell_size))
+        try:
+            if math.isnan(x) or math.isinf(x):
+                min_col = 0
+                max_col = self.cols - 1
+            else:
+                min_col = max(0, int((x - radius) / self.cell_size))
+                max_col = min(self.cols - 1, int((x + radius) / self.cell_size))
+
+            if math.isnan(y) or math.isinf(y):
+                min_row = 0
+                max_row = self.rows - 1
+            else:
+                min_row = max(0, int((y - radius) / self.cell_size))
+                max_row = min(self.rows - 1, int((y + radius) / self.cell_size))
+        except (OverflowError, ValueError):
+            min_col, max_col = 0, self.cols - 1
+            min_row, max_row = 0, self.rows - 1
+
         r2 = radius * radius
         for row in range(min_row, max_row + 1):
             for col in range(min_col, max_col + 1):
@@ -182,8 +205,9 @@ class SpatialGrid:
                 for ball in self.cells.get(key, []):
                     dx = ball.x - x
                     dy = ball.y - y
-                    if dx * dx + dy * dy <= r2:
-                        result.append(ball)
+                    if not (math.isnan(dx) or math.isnan(dy) or math.isinf(dx) or math.isinf(dy)):
+                        if dx * dx + dy * dy <= r2:
+                            result.append(ball)
         return result
 
 

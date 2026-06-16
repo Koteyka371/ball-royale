@@ -14,9 +14,9 @@
       "description": "Heavy defender, high HP, uses Shield to absorb damage"
     },
     "assassin": {
-      "hp": 70, "speed": 3.5, "damage": 25, "radius": 8,
+      "hp": 85, "speed": 4.0, "damage": 35, "radius": 8,
       "perception_radius": 300, "aggression": 0.8, "color": "purple",
-      "skill": "dash", "skill_cooldown": 3.0,
+      "skill": "dash", "skill_cooldown": 2.0,
       "description": "Fast killer, low HP, uses Dash to close distance"
     },
     "healer": {

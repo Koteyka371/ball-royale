@@ -7,15 +7,15 @@ Fast killer, low HP, uses Dash to close distance
 
 class Assassin:
     BALL_TYPE = "assassin"
-    HP = 70
-    SPEED = 3.5
-    DAMAGE = 25
+    HP = 85
+    SPEED = 4.0
+    DAMAGE = 35
     RADIUS = 8
     PERCEPTION_RADIUS = 300
     AGGRESSION = 0.8
     COLOR = "purple"
     SKILL = "dash"
-    SKILL_COOLDOWN = 3.0
+    SKILL_COOLDOWN = 2.0
 
     def __init__(self, ball_id: int, x: float = 0.0, y: float = 0.0):
         self.id = ball_id
