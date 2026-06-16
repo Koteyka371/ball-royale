@@ -27,6 +27,78 @@ func execute(strategy: String, delta: float):
 
     _clamp_position()
     _update_skill_timer(delta)
+    _emit_team_messages(strategy)
+
+func _emit_team_messages(strategy: String):
+    var msg_type = null
+    var target_id = null
+
+    var hp_percent = 1.0
+    if self.ball.has_method("get_hp_percent"):
+        hp_percent = self.ball.get_hp_percent()
+    elif "hp" in self.ball and "max_hp" in self.ball:
+        hp_percent = float(self.ball.hp) / float(self.ball.max_hp)
+
+    var personality = "idle"
+    if "personality" in self.ball:
+        personality = self.ball.personality
+
+    if hp_percent < 0.3:
+        msg_type = "help"
+    elif strategy == "defend" and personality == "tank":
+        msg_type = "hold"
+    elif personality == "healer" and strategy != "flee":
+        msg_type = "heal_call"
+    elif strategy == "attack" or strategy == "chase":
+        var enemies = _get_enemies()
+        if enemies.size() > 0:
+            var target = null
+            var min_dist_sq = INF
+            for e in enemies:
+                var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                if dist_sq < min_dist_sq:
+                    min_dist_sq = dist_sq
+                    target = e
+
+            if target != null and "id" in target:
+                target_id = target.id
+            if personality == "sniper":
+                msg_type = "threat"
+            else:
+                msg_type = "target"
+
+    if msg_type != null:
+        var msg = {"type": msg_type, "target_id": target_id}
+        if self.ball.has_method("set_meta"):
+            self.ball.set_meta("team_message", msg)
+        else:
+            self.ball.team_message = msg
+    else:
+        if self.ball.has_method("has_meta") and self.ball.has_meta("team_message"):
+            self.ball.remove_meta("team_message")
+        elif "team_message" in self.ball:
+            self.ball.team_message = null
+
+func _get_allies() -> Array:
+    var perception_radius = 250.0
+    if "perception_radius" in self.ball:
+        perception_radius = self.ball.perception_radius
+
+    if self.world != null and self.world.has_method("get_nearby_entities"):
+        var entities = self.world.get_nearby_entities(self.ball, perception_radius)
+        if typeof(entities) == TYPE_DICTIONARY and entities.has("allies"):
+            return entities["allies"]
+        elif typeof(entities) == TYPE_ARRAY:
+            var allies = []
+            for a in entities:
+                if a.has_method("get_ball_type") or "ball_type" in a:
+                    var a_type = a.ball_type if "ball_type" in a else a.get_ball_type()
+                    var b_type = self.ball.ball_type if "ball_type" in self.ball else self.ball.get_ball_type()
+                    if a_type == b_type:
+                        if ("alive" in a and a.alive) or (a.has_method("is_alive") and a.is_alive()):
+                            allies.append(a)
+            return allies
+    return []
 
 func _get_enemies() -> Array:
     var perception_radius = 250.0
@@ -94,13 +166,35 @@ func _flee(delta: float):
 func _attack(delta: float):
     var enemies = _get_enemies()
     if enemies.size() > 0:
+        var allies = _get_allies()
+        var priority_target_id = null
+        for ally in allies:
+            var msg = null
+            if ally.has_method("get_meta") and ally.has_meta("team_message"):
+                msg = ally.get_meta("team_message")
+            elif "team_message" in ally:
+                msg = ally.team_message
+
+            if msg != null and typeof(msg) == TYPE_DICTIONARY:
+                if msg.has("type") and (msg["type"] == "target" or msg["type"] == "threat"):
+                    if msg.has("target_id") and msg["target_id"] != null:
+                        priority_target_id = msg["target_id"]
+                        break
+
         var target = null
-        var min_dist_sq = INF
-        for e in enemies:
-            var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
-            if dist_sq < min_dist_sq:
-                min_dist_sq = dist_sq
-                target = e
+        if priority_target_id != null:
+            for e in enemies:
+                if "id" in e and e.id == priority_target_id:
+                    target = e
+                    break
+
+        if target == null:
+            var min_dist_sq = INF
+            for e in enemies:
+                var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                if dist_sq < min_dist_sq:
+                    min_dist_sq = dist_sq
+                    target = e
 
         var dx = target.x - self.ball.x
         var dy = target.y - self.ball.y
@@ -128,7 +222,36 @@ func _attack(delta: float):
         _idle(delta)
 
 func _defend(delta: float):
-    _idle(delta * 0.5)
+    var allies = _get_allies()
+    var target_ally = null
+    for ally in allies:
+        var msg = null
+        if ally.has_method("get_meta") and ally.has_meta("team_message"):
+            msg = ally.get_meta("team_message")
+        elif "team_message" in ally:
+            msg = ally.team_message
+
+        if msg != null and typeof(msg) == TYPE_DICTIONARY:
+            if msg.has("type") and (msg["type"] == "help" or msg["type"] == "hold" or msg["type"] == "heal_call"):
+                target_ally = ally
+                break
+
+    if target_ally != null:
+        var dx = target_ally.x - self.ball.x
+        var dy = target_ally.y - self.ball.y
+        var dist = sqrt(dx*dx + dy*dy)
+        if dist > 30.0:
+            var speed = 2.0
+            if "speed" in self.ball: speed = self.ball.speed
+            var nx = dx / dist
+            var ny = dy / dist
+            var step = speed * delta * 60
+            self.ball.x += nx * min(step, dist)
+            self.ball.y += ny * min(step, dist)
+        else:
+            _idle(delta * 0.2)
+    else:
+        _idle(delta * 0.5)
 
 func _collect_booster(delta: float):
     var boosters = _get_boosters()

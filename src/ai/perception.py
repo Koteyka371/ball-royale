@@ -24,6 +24,7 @@ class Perception:
             "allies": [],
             "boosters": [],
             "traps": [],
+            "team_messages": [],
             "distances": {}, # Maps entity id to distance
             "threat_level": 0.0,
             "opportunity_score": 0.0,
@@ -79,6 +80,10 @@ class Perception:
             if hasattr(ally, "id"):
                 data["distances"][ally.id] = dist
             opp += max(0.0, 1.0 - (dist / perception_radius)) * 0.5
+
+            msg = getattr(ally, "team_message", None)
+            if msg and isinstance(msg, dict):
+                data["team_messages"].append(msg)
 
         data["threat_level"] = threat
         data["opportunity_score"] = opp

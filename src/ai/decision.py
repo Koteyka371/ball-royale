@@ -54,6 +54,7 @@ class Decision:
         enemies = perception_data.get("enemies", [])
         boosters = perception_data.get("boosters", [])
         allies = perception_data.get("allies", [])
+        team_messages = perception_data.get("team_messages", [])
 
         personality = getattr(self.ball, "personality", "idle")
         skill_timer = getattr(self.ball, "skill_timer", 0.0)
@@ -67,6 +68,22 @@ class Decision:
             scores["flee"] += 80.0
         scores["flee"] += threat_level * 5.0
 
+        # Process team messages
+        has_help_call = False
+        has_hold_call = False
+        has_target_call = False
+        has_heal_call = False
+        for msg in team_messages:
+            msg_type = msg.get("type")
+            if msg_type == "help":
+                has_help_call = True
+            elif msg_type == "hold":
+                has_hold_call = True
+            elif msg_type in ("target", "threat"):
+                has_target_call = True
+            elif msg_type == "heal_call":
+                has_heal_call = True
+
         # === DEFEND ===
         if danger_level > 0.7:
             scores["defend"] += 100.0
@@ -75,6 +92,16 @@ class Decision:
         if personality in ("tank", "defender", "guardian", "juggernaut"):
             scores["defend"] += 30.0
         scores["defend"] += danger_level * 20.0
+
+        if has_help_call:
+            if personality in ("tank", "defender", "guardian", "juggernaut"):
+                scores["defend"] += 120.0
+            else:
+                scores["defend"] += 40.0
+        if has_hold_call and personality not in ("tank", "warrior", "assassin"):
+            scores["defend"] += 60.0
+        if has_heal_call and hp_percent < 0.5:
+            scores["defend"] += 150.0
 
         # === COLLECT BOOSTER ===
         if len(boosters) > 0:
@@ -89,6 +116,8 @@ class Decision:
         # === ATTACK ===
         if len(enemies) > 0:
             scores["attack"] += 10.0
+            if has_target_call:
+                scores["attack"] += 50.0
         if danger_level > 0.7:
             scores["attack"] -= 50.0
         if emotion_state in ("rage", "bloodlust"):
@@ -101,6 +130,8 @@ class Decision:
         # === CHASE ===
         if len(enemies) > 0:
             scores["chase"] += 15.0
+            if has_target_call:
+                scores["chase"] += 50.0
         if personality in ("assassin", "rogue", "phantom", "swarm"):
             scores["chase"] += 40.0
         if emotion_state == "bloodlust":

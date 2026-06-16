@@ -33,6 +33,54 @@ class Action:
 
         self._clamp_position()
         self._update_skill_timer(delta)
+        self._emit_team_messages(strategy)
+
+    def _emit_team_messages(self, strategy: str) -> None:
+        """
+        Emits information to allies depending on ball state and personality.
+        """
+        message = None
+        target_id = None
+
+        hp_percent = 1.0
+        if hasattr(self.ball, "get_hp_percent"):
+            hp_percent = self.ball.get_hp_percent()
+        elif hasattr(self.ball, "hp") and hasattr(self.ball, "max_hp"):
+            hp_percent = float(self.ball.hp) / float(self.ball.max_hp)
+
+        personality = getattr(self.ball, "personality", "idle")
+
+        if hp_percent < 0.3:
+            message = "help"
+        elif strategy == "defend" and personality == "tank":
+            message = "hold"
+        elif personality == "healer" and strategy != "flee":
+            message = "heal_call"
+        elif strategy in ("attack", "chase"):
+            enemies = self._get_enemies()
+            if enemies:
+                target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+                target_id = getattr(target, "id", None)
+                if personality == "sniper":
+                    message = "threat"
+                else:
+                    message = "target"
+
+        if message:
+            self.ball.team_message = {"type": message, "target_id": target_id}
+        else:
+            if hasattr(self.ball, "team_message"):
+                self.ball.team_message = None
+
+    def _get_allies(self) -> list:
+        perception_radius = getattr(self.ball, "perception_radius", 250)
+        if hasattr(self.world, "get_nearby_entities"):
+            entities = self.world.get_nearby_entities(self.ball, perception_radius)
+            if isinstance(entities, dict):
+                return entities.get("allies", [])
+            else:
+                return [e for e in entities if getattr(e, "ball_type", None) == self.ball.ball_type and getattr(e, "alive", True)]
+        return []
 
     def _get_enemies(self) -> list:
         perception_radius = getattr(self.ball, "perception_radius", 250)
@@ -76,7 +124,26 @@ class Action:
     def _attack(self, delta: float) -> None:
         enemies = self._get_enemies()
         if enemies:
-            target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+            # Check for called out targets from allies
+            allies = self._get_allies()
+            priority_target_id = None
+            for ally in allies:
+                msg = getattr(ally, "team_message", None)
+                if msg and isinstance(msg, dict) and msg.get("type") in ("target", "threat"):
+                    priority_target_id = msg.get("target_id")
+                    if priority_target_id is not None:
+                        break
+
+            target = None
+            if priority_target_id is not None:
+                for e in enemies:
+                    if getattr(e, "id", None) == priority_target_id:
+                        target = e
+                        break
+
+            if not target:
+                target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+
             dx, dy = target.x - self.ball.x, target.y - self.ball.y
             dist = math.sqrt(dx * dx + dy * dy)
             if dist > 0.01:
@@ -95,8 +162,29 @@ class Action:
             self._idle(delta)
 
     def _defend(self, delta: float) -> None:
-        # Defend might mean moving less or using shield. For now, small random moves or static
-        self._idle(delta * 0.5)
+        # Defend: move towards allies needing help, a holding tank, or a healer calling for wounded
+        allies = self._get_allies()
+        target_ally = None
+        for ally in allies:
+            msg = getattr(ally, "team_message", None)
+            if msg and isinstance(msg, dict):
+                msg_type = msg.get("type")
+                if msg_type in ("help", "hold", "heal_call"):
+                    target_ally = ally
+                    break
+
+        if target_ally:
+            dx, dy = target_ally.x - self.ball.x, target_ally.y - self.ball.y
+            dist = math.sqrt(dx * dx + dy * dy)
+            if dist > 30.0:  # Don't overlap completely
+                nx, ny = dx / dist, dy / dist
+                step = getattr(self.ball, "speed", 2.0) * delta * 60
+                self.ball.x += nx * min(step, dist)
+                self.ball.y += ny * min(step, dist)
+            else:
+                self._idle(delta * 0.2)
+        else:
+            self._idle(delta * 0.5)
 
     def _collect_booster(self, delta: float) -> None:
         boosters = self._get_boosters()
