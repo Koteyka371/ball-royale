@@ -37,8 +37,10 @@ class Action:
 
         if strategy == "flee":
             self._flee(delta)
-        elif strategy in ("attack", "chase"):
+        elif strategy == "attack":
             self._attack(delta)
+        elif strategy == "chase":
+            self._chase(delta)
         elif strategy == "defend":
             self._defend(delta)
         elif strategy in ("opportunistic", "collect_booster", "collect booster"):
@@ -148,6 +150,61 @@ class Action:
 
         self.ball.x += comb_nx * boosted_speed * delta * 60
         self.ball.y += comb_ny * boosted_speed * delta * 60
+
+    def _chase(self, delta: float) -> None:
+        enemies = self._get_enemies()
+        if not enemies:
+            self._idle(delta)
+            return
+
+        target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+
+        # Basic pathfinding / steering:
+        # Move towards target, but be repelled by obstacles (other entities)
+        target_dx = target.x - self.ball.x
+        target_dy = target.y - self.ball.y
+        dist_to_target = math.sqrt(target_dx * target_dx + target_dy * target_dy)
+
+        target_radius = getattr(target, "radius", 10.0)
+        ball_radius = getattr(self.ball, "radius", 10.0)
+        attack_range = ball_radius + target_radius + 5
+
+        # Stop moving if in attack range
+        if dist_to_target <= attack_range:
+            # We are close enough, attack
+            if hasattr(self.world, "_deal_damage"):
+                self.world._deal_damage(self.ball, target)
+            return
+
+        nx, ny = 0.0, 0.0
+        if dist_to_target > 0.01:
+            nx = target_dx / dist_to_target
+            ny = target_dy / dist_to_target
+
+        # Obstacle avoidance: repel from nearby allies and other enemies
+        repel_x, repel_y = 0.0, 0.0
+        all_entities = self._get_allies() + [e for e in enemies if e != target]
+        for entity in all_entities:
+            edx = self.ball.x - entity.x
+            edy = self.ball.y - entity.y
+            edist = math.sqrt(edx * edx + edy * edy)
+            if edist > 0.01 and edist < (ball_radius + getattr(entity, "radius", 10.0)) * 2:
+                # Repel force inversely proportional to distance
+                repel_force = 1.0 / edist
+                repel_x += (edx / edist) * repel_force
+                repel_y += (edy / edist) * repel_force
+
+        # Combine vectors
+        comb_nx = nx + repel_x * 10.0
+        comb_ny = ny + repel_y * 10.0
+        comb_dist = math.sqrt(comb_nx * comb_nx + comb_ny * comb_ny)
+        if comb_dist > 0.01:
+            comb_nx /= comb_dist
+            comb_ny /= comb_dist
+
+        step = getattr(self.ball, "speed", 2.0) * delta * 60
+        self.ball.x += comb_nx * step
+        self.ball.y += comb_ny * step
 
     def _attack(self, delta: float) -> None:
         enemies = self._get_enemies()

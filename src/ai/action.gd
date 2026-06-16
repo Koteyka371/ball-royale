@@ -34,8 +34,10 @@ func execute(strategy: String, delta: float):
 
     if strategy == "flee":
         _flee(delta)
-    elif strategy == "attack" or strategy == "chase":
+    elif strategy == "attack":
         _attack(delta)
+    elif strategy == "chase":
+        _chase(delta)
     elif strategy == "defend":
         _defend(delta)
     elif strategy == "opportunistic" or strategy == "collect booster":
@@ -193,6 +195,74 @@ func _flee(delta: float):
 
     self.ball.x += comb_nx * boosted_speed * delta * 60.0
     self.ball.y += comb_ny * boosted_speed * delta * 60.0
+
+func _chase(delta: float):
+    var enemies = _get_enemies()
+    if enemies.size() == 0:
+        _idle(delta)
+        return
+
+    var target = null
+    var min_dist_sq = INF
+    for e in enemies:
+        var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+        if dist_sq < min_dist_sq:
+            min_dist_sq = dist_sq
+            target = e
+
+    var target_dx = target.x - self.ball.x
+    var target_dy = target.y - self.ball.y
+    var dist_to_target = sqrt(target_dx*target_dx + target_dy*target_dy)
+
+    var target_radius = 10.0
+    if "radius" in target: target_radius = target.radius
+    var ball_radius = 10.0
+    if "radius" in self.ball: ball_radius = self.ball.radius
+    var attack_range = ball_radius + target_radius + 5.0
+
+    if dist_to_target <= attack_range:
+        if self.world != null and self.world.has_method("_deal_damage"):
+            self.world._deal_damage(self.ball, target)
+        return
+
+    var nx = 0.0
+    var ny = 0.0
+    if dist_to_target > 0.01:
+        nx = target_dx / dist_to_target
+        ny = target_dy / dist_to_target
+
+    var repel_x = 0.0
+    var repel_y = 0.0
+    var all_entities = _get_allies()
+    for e in enemies:
+        if e != target:
+            all_entities.append(e)
+
+    for entity in all_entities:
+        var edx = self.ball.x - entity.x
+        var edy = self.ball.y - entity.y
+        var edist = sqrt(edx*edx + edy*edy)
+        var entity_radius = 10.0
+        if "radius" in entity: entity_radius = entity.radius
+
+        if edist > 0.01 and edist < (ball_radius + entity_radius) * 2.0:
+            var repel_force = 1.0 / edist
+            repel_x += (edx / edist) * repel_force
+            repel_y += (edy / edist) * repel_force
+
+    var comb_nx = nx + repel_x * 10.0
+    var comb_ny = ny + repel_y * 10.0
+    var comb_dist = sqrt(comb_nx*comb_nx + comb_ny*comb_ny)
+    if comb_dist > 0.01:
+        comb_nx /= comb_dist
+        comb_ny /= comb_dist
+
+    var speed = 2.0
+    if "speed" in self.ball: speed = self.ball.speed
+    var step = speed * delta * 60.0
+
+    self.ball.x += comb_nx * step
+    self.ball.y += comb_ny * step
 
 func _attack(delta: float):
     var enemies = _get_enemies()
