@@ -22,7 +22,7 @@
       "task_id": "ai-behavior-group-attack",
       "status": "working",
       "started_at": "2026-06-16T19:06:38.111264+00:00",
-      "cycles_today": 0
+      "cycles_today": 1
     },
     "agent-4": {
       "name": "Jules Content",
