@@ -217,3 +217,38 @@ def test_execute_idle_fallback():
 
     action_layer.execute("unknown_strategy", 0.1)
     assert ball.current_action == "unknown_strategy"
+
+def test_execute_attack_timing():
+    ball = MockBall(x=100, y=100)
+    ball.ball_type = "tank" # Slow attack (1.5s)
+    world = MockWorld()
+    world.enemies = [MockEnemy(x=115, y=100)] # Close enemy
+    action_layer = Action(ball, world)
+
+    # First attack, should deal damage and set cooldown
+    action_layer.execute("attack", 0.1)
+    assert world.dealt_damage
+    assert ball.attack_timer > 1.0 # Should be 1.5
+
+    # Reset damage flag
+    world.dealt_damage = False
+
+    # Second attack immediately, should be on cooldown
+    action_layer.execute("attack", 0.1)
+    assert not world.dealt_damage
+    assert ball.attack_timer < 1.5 # Should have decreased by delta
+
+def test_execute_attack_skill():
+    ball = MockBall(x=100, y=100)
+    ball.ball_type = "bomber"
+    world = MockWorld()
+    world.enemies = [
+        MockEnemy(x=110, y=100),
+        MockEnemy(x=105, y=105)
+    ]
+    action_layer = Action(ball, world)
+
+    action_layer.execute("attack", 0.1)
+
+    assert ball.used_skill
+    assert ball.skill_timer > 0.0
