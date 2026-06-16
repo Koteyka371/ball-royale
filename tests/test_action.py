@@ -41,6 +41,7 @@ class MockWorld:
         self.width = 1000
         self.height = 1000
         self.enemies = []
+        self.allies = []
         self.boosters = []
         self.dealt_damage = False
         self.collected_booster = False
@@ -48,7 +49,7 @@ class MockWorld:
     def get_nearby_entities(self, ball, radius):
         return {
             "enemies": self.enemies,
-            "allies": [],
+            "allies": self.allies,
             "boosters": self.boosters,
             "traps": []
         }
@@ -73,10 +74,54 @@ def test_execute_flee():
     world.enemies = [MockEnemy(x=90, y=100)] # Enemy is to the left
     action_layer = Action(ball, world)
 
+    # Ball expects perception_radius = 100
+    # Distance to enemy = 10 (< 100*0.8=80), so it should flee.
+    # Repulsion vector is (1, 0)
+    # Attraction vector (towards center (500, 500)) is ~ (0.7, 0.7)
     action_layer.execute("flee", 0.1)
     assert ball.current_action == "flee"
     assert ball.x > 100 # Should move to the right (away from enemy)
-    assert ball.y == 100
+    assert ball.y > 100 # Should also move towards center (down/right in this coord system if y grows down)
+
+def test_execute_flee_safe_distance():
+    ball = MockBall(x=100, y=100)
+    ball.perception_radius = 100
+    world = MockWorld()
+    # Enemy is far away (distance 90, which is > 100*0.8=80)
+    world.enemies = [MockEnemy(x=10, y=100)]
+    action_layer = Action(ball, world)
+
+    # Store old positions
+    old_x = ball.x
+    old_y = ball.y
+    action_layer.execute("flee", 0.1)
+
+    # It should just idle, which is small random movement
+    # Distance moved should be very small compared to speed*1.5 boost
+    dist_moved = ((ball.x - old_x)**2 + (ball.y - old_y)**2)**0.5
+    # Max idle movement = speed * 0.3 * sqrt(2) ~= 3 * 1.414 ~= 4.2
+    assert dist_moved < 5.0
+
+def test_execute_flee_towards_allies():
+    ball = MockBall(x=100, y=100)
+    world = MockWorld()
+    world.enemies = [MockEnemy(x=90, y=100)] # Enemy is left
+
+    # We define an ally above
+    class MockAlly:
+        def __init__(self, x, y):
+            self.x = x
+            self.y = y
+            self.ball_type = "mock_ball"
+            self.alive = True
+
+    world.allies = [MockAlly(x=100, y=0)] # Ally is up
+    action_layer = Action(ball, world)
+
+    action_layer.execute("flee", 0.1)
+    # Vector should combine repulsion (to the right, +x) and attraction (up, -y)
+    assert ball.x > 100
+    assert ball.y < 100
 
 def test_execute_attack():
     ball = MockBall(x=100, y=100)
