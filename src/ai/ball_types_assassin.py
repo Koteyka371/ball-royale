@@ -8,8 +8,8 @@ Fast killer, low HP, uses Dash to close distance
 class Assassin:
     BALL_TYPE = "assassin"
     HP = 70
-    SPEED = 3.5
-    DAMAGE = 25
+    SPEED = 4.5
+    DAMAGE = 40
     RADIUS = 8
     PERCEPTION_RADIUS = 300
     AGGRESSION = 0.8
