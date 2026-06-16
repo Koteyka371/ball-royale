@@ -206,7 +206,10 @@ class Action:
             self._idle(delta)
             return
 
-        target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+        if getattr(self.ball, "ball_type", "") == "tank":
+            target = max(enemies, key=lambda e: getattr(e, "hp", 0))
+        else:
+            target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
 
         # Basic pathfinding / steering:
         # Move towards target, but be repelled by obstacles (other entities)
@@ -258,7 +261,10 @@ class Action:
     def _attack(self, delta: float) -> None:
         enemies = self._get_enemies()
         if enemies:
-            target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+            if getattr(self.ball, "ball_type", "") == "tank":
+                target = max(enemies, key=lambda e: getattr(e, "hp", 0))
+            else:
+                target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
 
             personality = getattr(self.ball, "personality", "idle")
             if personality == "sniper" and getattr(self.ball, "team_message", None) is None:
