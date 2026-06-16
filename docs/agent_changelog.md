@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [ai-ball-scout-ai] Implement Scout AI profile — *2026-06-16 19:35:48 UTC*
+
+Scout AI: curious personality, seeks boosters, attacks weak enemies, flees from strong ones, uses Dash to escape or chase.
+
+---
+
 ## [ai-swarm-boids] Create Swarm intelligence boid rules — *2026-06-16 19:31:28 UTC*
 
 Implement boid rules (separation, alignment, cohesion) for the swarm ball type. This will make swarm balls group together and move dynamically like a flock of birds.

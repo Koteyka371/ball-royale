@@ -305,7 +305,7 @@
     },
     {
       "id": "ai-ball-scout-ai",
-      "status": "todo",
+      "status": "done",
       "area": "ai-ball-types",
       "risk": "medium",
       "title": "Implement Scout AI profile",
