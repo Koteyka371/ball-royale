@@ -20,9 +20,9 @@
       "description": "Fast killer, low HP, uses Dash to close distance"
     },
     "healer": {
-      "hp": 80, "speed": 1.8, "damage": 5, "radius": 10,
+      "hp": 120, "speed": 2.2, "damage": 5, "radius": 10,
       "perception_radius": 350, "aggression": 0.2, "color": "green",
-      "skill": "heal_ally", "skill_cooldown": 4.0,
+      "skill": "heal_ally", "skill_cooldown": 2.5,
       "description": "Support ball, heals allies, avoids combat"
     },
     "sniper": {

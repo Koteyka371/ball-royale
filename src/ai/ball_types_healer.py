@@ -7,15 +7,15 @@ Support ball, heals allies, avoids combat
 
 class Healer:
     BALL_TYPE = "healer"
-    HP = 80
-    SPEED = 1.8
+    HP = 120
+    SPEED = 2.2
     DAMAGE = 5
     RADIUS = 10
     PERCEPTION_RADIUS = 350
     AGGRESSION = 0.2
     COLOR = "green"
     SKILL = "heal_ally"
-    SKILL_COOLDOWN = 4.0
+    SKILL_COOLDOWN = 2.5
 
     def __init__(self, ball_id: int, x: float = 0.0, y: float = 0.0):
         self.id = ball_id
