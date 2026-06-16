@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [ai-action-system] Implement Action execution system — *2026-06-16 15:27:31 UTC*
+
+Create Action class that executes chosen behavior: move to target, attack, use skill, flee, collect booster. Handles pathfinding, timing, and cooldowns.
+
+---
+
 ## [ai-behavior-chase] Implement Chase behavior — *2026-06-16 15:27:27 UTC*
 
 Ball moves towards nearest enemy. Uses pathfinding to avoid obstacles. Stops when in attack range. Can be modified by fear (runs away) or greed (chases booster instead).

@@ -115,7 +115,7 @@
     },
     {
       "id": "ai-action-system",
-      "status": "todo",
+      "status": "done",
       "area": "ai-core",
       "risk": "medium",
       "title": "Implement Action execution system",
