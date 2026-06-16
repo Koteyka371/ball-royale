@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [balance-buff-healer] Balance: Buff underpowered 'healer' — *2026-06-16 15:35:37 UTC*
+
+The 'healer' class is winning only 0.0% of the time (expected ~8.3%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.
+
+---
+
 ## [ai-action-system] Implement Action execution system — *2026-06-16 15:27:31 UTC*
 
 Create Action class that executes chosen behavior: move to target, attack, use skill, flee, collect booster. Handles pathfinding, timing, and cooldowns.

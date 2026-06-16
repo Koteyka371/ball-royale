@@ -1166,7 +1166,7 @@
     },
     {
       "id": "balance-buff-healer",
-      "status": "todo",
+      "status": "done",
       "area": "meta",
       "risk": "medium",
       "title": "Balance: Buff underpowered 'healer'",
