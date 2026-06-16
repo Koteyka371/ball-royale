@@ -1,3 +1,4 @@
+import random
 from typing import Any, Dict
 
 
@@ -49,11 +50,11 @@ class Decision:
 
         danger_level = perception_data.get("danger_level", 0.0)
         threat_level = perception_data.get("threat_level", 0.0)
-        opportunity_level = perception_data.get("opportunity_level", 0.0)
+        opportunity_level = perception_data.get("opportunity_level", 0.0) # noqa: F841
         opportunity_score = perception_data.get("opportunity_score", 0.0)
         enemies = perception_data.get("enemies", [])
         boosters = perception_data.get("boosters", [])
-        allies = perception_data.get("allies", [])
+        allies = perception_data.get("allies", []) # noqa: F841
 
         personality = getattr(self.ball, "personality", "idle")
         skill_timer = getattr(self.ball, "skill_timer", 0.0)
@@ -109,10 +110,20 @@ class Decision:
             scores["chase"] = -1000.0
 
         # === USE SKILL ===
+        difficulty = getattr(self.ball, "difficulty", "medium")
         if skill_timer <= 0 and len(enemies) > 0:
-            scores["use_skill"] += 40.0
-            if hp_percent < 0.5:
-                scores["use_skill"] += 30.0
+            if difficulty == "easy":
+                scores["use_skill"] += 20.0
+                if hp_percent < 0.3:
+                    scores["use_skill"] += 30.0
+            elif difficulty == "hard":
+                scores["use_skill"] += 60.0
+                if hp_percent < 0.6:
+                    scores["use_skill"] += 40.0
+            else:
+                scores["use_skill"] += 40.0
+                if hp_percent < 0.5:
+                    scores["use_skill"] += 30.0
         if skill_timer > 0:
             scores["use_skill"] = -1000.0
 
@@ -122,6 +133,15 @@ class Decision:
         # Personality baseline
         if personality in scores:
             scores[personality] += 15.0
+
+        # Decision Quality (Noise based on difficulty)
+        if difficulty == "chaos":
+            for k in scores.keys():
+                scores[k] = random.uniform(-100, 100)
+        elif difficulty == "easy":
+            for k in scores.keys():
+                if scores[k] > -500:
+                    scores[k] += random.uniform(-20, 20)
 
         # Find highest score
         best_action = "idle"
