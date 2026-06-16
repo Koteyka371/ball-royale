@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [ai-behavior-collect-booster] Implement Collect Booster behavior — *2026-06-16 22:24:14 UTC*
+
+Ball moves towards nearest booster. Ignores enemies when collecting (greed). Can be interrupted if enemy gets too close.
+
+---
+
 ## [ai-ball-scout-ai] Implement Scout AI profile — *2026-06-16 19:35:48 UTC*
 
 Scout AI: curious personality, seeks boosters, attacks weak enemies, flees from strong ones, uses Dash to escape or chase.
