@@ -16,6 +16,9 @@ class Action:
         """
         Executes the chosen strategy.
         """
+        old_x = getattr(self.ball, "x", 0.0)
+        old_y = getattr(self.ball, "y", 0.0)
+
         self.ball.current_action = strategy
         self.ball.team_message = None  # Clear previous message
 
@@ -53,6 +56,85 @@ class Action:
         self._clamp_position()
         self._update_skill_timer(delta)
 
+        if delta > 0:
+            self.ball.vx = (self.ball.x - old_x) / delta
+            self.ball.vy = (self.ball.y - old_y) / delta
+
+
+
+    def _apply_boid_rules(self, nx: float, ny: float) -> tuple[float, float]:
+        b_type = getattr(self.ball, "ball_type", "")
+        if b_type != "swarm":
+            return nx, ny
+
+        allies = self._get_allies()
+        if not allies:
+            return nx, ny
+
+        cohesion_weight = 0.5
+        alignment_weight = 0.5
+        separation_weight = 1.0
+
+        center_x, center_y = 0.0, 0.0
+        align_vx, align_vy = 0.0, 0.0
+        sep_nx, sep_ny = 0.0, 0.0
+
+        count = 0
+        perception_radius = getattr(self.ball, "perception_radius", 250)
+
+        for ally in allies:
+            dx = self.ball.x - ally.x
+            dy = self.ball.y - ally.y
+            dist_sq = dx*dx + dy*dy
+
+            if 0.0001 < dist_sq < perception_radius * perception_radius:
+                count += 1
+                dist = math.sqrt(dist_sq)
+
+                center_x += ally.x
+                center_y += ally.y
+
+                align_vx += getattr(ally, "vx", 0.0)
+                align_vy += getattr(ally, "vy", 0.0)
+
+                sep_dist = (getattr(self.ball, "radius", 10.0) + getattr(ally, "radius", 10.0)) * 2.0
+                if dist < sep_dist:
+                    sep_nx += (dx / dist) / dist
+                    sep_ny += (dy / dist) / dist
+
+        if count > 0:
+            center_x /= count
+            center_y /= count
+
+            coh_dx = center_x - self.ball.x
+            coh_dy = center_y - self.ball.y
+            coh_dist_sq = coh_dx*coh_dx + coh_dy*coh_dy
+            if coh_dist_sq > 0.0001:
+                coh_dist = math.sqrt(coh_dist_sq)
+                coh_nx = coh_dx / coh_dist
+                coh_ny = coh_dy / coh_dist
+            else:
+                coh_nx, coh_ny = 0.0, 0.0
+
+            align_vx /= count
+            align_vy /= count
+            align_speed_sq = align_vx*align_vx + align_vy*align_vy
+            if align_speed_sq > 0.0001:
+                align_speed = math.sqrt(align_speed_sq)
+                al_nx = align_vx / align_speed
+                al_ny = align_vy / align_speed
+            else:
+                al_nx, al_ny = 0.0, 0.0
+
+            comb_nx = nx + coh_nx * cohesion_weight + al_nx * alignment_weight + sep_nx * separation_weight
+            comb_ny = ny + coh_ny * cohesion_weight + al_ny * alignment_weight + sep_ny * separation_weight
+
+            comb_dist_sq = comb_nx*comb_nx + comb_ny*comb_ny
+            if comb_dist_sq > 0.0001:
+                comb_dist = math.sqrt(comb_dist_sq)
+                return comb_nx / comb_dist, comb_ny / comb_dist
+
+        return nx, ny
 
     def _apply_obstacle_avoidance(self, nx: float, ny: float, target: Any = None) -> tuple[float, float]:
         """Applies a repulsive force from nearby entities to avoid collisions."""
@@ -194,6 +276,8 @@ class Action:
         else:
             comb_nx, comb_ny = flee_nx, flee_ny
 
+        comb_nx, comb_ny = self._apply_boid_rules(comb_nx, comb_ny)
+
         base_speed = getattr(self.ball, "speed", 2.0)
         boosted_speed = base_speed * 1.5
 
@@ -251,6 +335,8 @@ class Action:
             comb_nx /= comb_dist
             comb_ny /= comb_dist
 
+        comb_nx, comb_ny = self._apply_boid_rules(comb_nx, comb_ny)
+
         step = getattr(self.ball, "speed", 2.0) * delta * 60
         self.ball.x += comb_nx * step
         self.ball.y += comb_ny * step
@@ -270,6 +356,7 @@ class Action:
                 dist = math.sqrt(dist_sq)
                 nx, ny = dx / dist, dy / dist
                 nx, ny = self._apply_obstacle_avoidance(nx, ny, target)
+                nx, ny = self._apply_boid_rules(nx, ny)
 
                 step = getattr(self.ball, "speed", 2.0) * delta * 60
                 self.ball.x += nx * min(step, dist)
@@ -330,6 +417,7 @@ class Action:
                 dist = math.sqrt(dist_sq)
                 nx, ny = dx / dist, dy / dist
                 nx, ny = self._apply_obstacle_avoidance(nx, ny, nearest)
+                nx, ny = self._apply_boid_rules(nx, ny)
 
                 step = getattr(self.ball, "speed", 2.0) * delta * 60
                 self.ball.x += nx * min(step, dist)
@@ -356,8 +444,20 @@ class Action:
 
     def _idle(self, delta: float) -> None:
         speed = getattr(self.ball, "speed", 2.0)
-        self.ball.x += random.uniform(-1, 1) * speed * 0.3
-        self.ball.y += random.uniform(-1, 1) * speed * 0.3
+        nx = random.uniform(-1, 1)
+        ny = random.uniform(-1, 1)
+        dist_sq = nx*nx + ny*ny
+        if dist_sq > 0.0001:
+            dist = math.sqrt(dist_sq)
+            nx /= dist
+            ny /= dist
+        else:
+            nx, ny = 0.0, 0.0
+
+        nx, ny = self._apply_boid_rules(nx, ny)
+
+        self.ball.x += nx * speed * 0.3
+        self.ball.y += ny * speed * 0.3
 
     def _clamp_position(self) -> None:
         radius = getattr(self.ball, "radius", 10.0)
