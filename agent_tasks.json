@@ -37,18 +37,17 @@
   },
   "tasks": [
     {
-      "task_id": "web-visualizer-improvements",
       "title": "Improve Web Visualizer (index.html)",
       "description": "The user requested improvements to visualizer/index.html. We need to add better UI controls (pause/play, timeline slider, speed control), show the winner clearly, fix any bugs, improve the rendering quality (e.g. better shadows, text showing ball HP or class), and make it fully responsive. Ensure all JS is clean and robust.",
       "status": "todo",
-      "priority": "high",
-      "risk_level": "medium",
-      "assigned_to": null,
-      "tags": [
-        "ui",
-        "visualizer",
-        "frontend",
-        "js"
+      "id": "web-visualizer-improvements",
+      "risk": "medium",
+      "area": "frontend",
+      "allowed_paths": [
+        "visualizer/**"
+      ],
+      "acceptance": [
+        "Visualizer works"
       ]
     },
     {
@@ -556,7 +555,7 @@
     },
     {
       "id": "auto-implement-**target-strong**-\u2014-\u0430\u0442\u0430\u043a\u0443\u0435\u0442-\u0441\u0430\u043c\u043e\u0433\u043e-\u0441\u0438\u043b\u044c\u043d",
-      "status": "todo",
+      "status": "done",
       "area": "skills",
       "risk": "medium",
       "allowed_paths": [

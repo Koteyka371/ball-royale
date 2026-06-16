@@ -298,7 +298,9 @@ class Action:
                 target_msg = msg
                 break
 
-        if target_msg:
+        if getattr(self.ball, "ball_type", "") == "tank":
+            target = max(enemies, key=lambda e: getattr(e, "hp", 0.0))
+        elif target_msg:
             tx, ty = target_msg.get("x", self.ball.x), target_msg.get("y", self.ball.y)
             target = min(enemies, key=lambda e: (e.x - tx) ** 2 + (e.y - ty) ** 2)
         else:
@@ -368,11 +370,16 @@ class Action:
                     target_msg = msg
                     break
 
-            if target_msg:
+            if getattr(self.ball, "ball_type", "") == "tank":
+                target = max(enemies, key=lambda e: getattr(e, "hp", 0.0))
+            elif target_msg:
                 tx, ty = target_msg.get("x", self.ball.x), target_msg.get("y", self.ball.y)
                 target = min(enemies, key=lambda e: (e.x - tx) ** 2 + (e.y - ty) ** 2)
             else:
-                target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+                if getattr(self.ball, "ball_type", "") == "tank":
+                    target = max(enemies, key=lambda e: getattr(e, "hp", 0.0))
+                else:
+                    target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
 
             personality = getattr(self.ball, "personality", "idle")
             if personality in ("warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "swarm", "aggressive") and getattr(self.ball, "team_message", None) is None:
@@ -436,7 +443,10 @@ class Action:
         if personality in ("tank", "defender", "guardian", "juggernaut"):
             enemies = self._get_enemies()
             if enemies:
-                target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+                if getattr(self.ball, "ball_type", "") == "tank":
+                    target = max(enemies, key=lambda e: getattr(e, "hp", 0.0))
+                else:
+                    target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
                 dx, dy = target.x - self.ball.x, target.y - self.ball.y
                 dist_sq = dx * dx + dy * dy
                 if dist_sq > 0.0001:

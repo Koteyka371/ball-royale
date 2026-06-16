@@ -387,7 +387,21 @@ func _chase(delta: float):
     var target = null
     var min_dist_sq = INF
 
-    if target_msg != null:
+    var b_type = ""
+    if "ball_type" in self.ball:
+        b_type = self.ball.ball_type
+    elif self.ball.has_method("get_ball_type"):
+        b_type = self.ball.get_ball_type()
+
+    if b_type == "tank":
+        var max_hp = -1.0
+        for e in enemies:
+            var e_hp = 0.0
+            if "hp" in e: e_hp = e.hp
+            if e_hp > max_hp:
+                max_hp = e_hp
+                target = e
+    elif target_msg != null:
         var tx = target_msg.get("x", self.ball.x)
         var ty = target_msg.get("y", self.ball.y)
         for e in enemies:
@@ -486,7 +500,21 @@ func _attack(delta: float):
         var target = null
         var min_dist_sq = INF
 
-        if target_msg != null:
+        var b_type = ""
+        if "ball_type" in self.ball:
+            b_type = self.ball.ball_type
+        elif self.ball.has_method("get_ball_type"):
+            b_type = self.ball.get_ball_type()
+
+        if b_type == "tank":
+            var max_hp = -1.0
+            for e in enemies:
+                var e_hp = 0.0
+                if "hp" in e: e_hp = e.hp
+                if e_hp > max_hp:
+                    max_hp = e_hp
+                    target = e
+        elif target_msg != null:
             var tx = target_msg.get("x", self.ball.x)
             var ty = target_msg.get("y", self.ball.y)
             for e in enemies:
@@ -625,11 +653,26 @@ func _defend(delta: float):
         if enemies.size() > 0:
             var target = null
             var min_dist_sq = INF
-            for e in enemies:
-                var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
-                if dist_sq < min_dist_sq:
-                    min_dist_sq = dist_sq
-                    target = e
+            var b_type = ""
+            if "ball_type" in self.ball:
+                b_type = self.ball.ball_type
+            elif self.ball.has_method("get_ball_type"):
+                b_type = self.ball.get_ball_type()
+
+            if b_type == "tank":
+                var max_hp = -1.0
+                for e in enemies:
+                    var e_hp = 0.0
+                    if "hp" in e: e_hp = e.hp
+                    if e_hp > max_hp:
+                        max_hp = e_hp
+                        target = e
+            else:
+                for e in enemies:
+                    var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                    if dist_sq < min_dist_sq:
+                        min_dist_sq = dist_sq
+                        target = e
 
             var dx = target.x - self.ball.x
             var dy = target.y - self.ball.y
