@@ -316,7 +316,11 @@ class Action:
 
         target_radius = getattr(target, "radius", 10.0)
         ball_radius = getattr(self.ball, "radius", 10.0)
-        attack_range = ball_radius + target_radius + 5
+        b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
+        if b_type == "sniper":
+            attack_range = 150.0
+        else:
+            attack_range = ball_radius + target_radius + 5
 
         # Stop moving if in attack range
         if dist_to_target <= attack_range:
@@ -383,12 +387,31 @@ class Action:
             if dist_sq > 0.0001:
                 dist = math.sqrt(dist_sq)
                 nx, ny = dx / dist, dy / dist
-                nx, ny = self._apply_obstacle_avoidance(nx, ny, target)
-                nx, ny = self._apply_boid_rules(nx, ny)
 
-                step = getattr(self.ball, "speed", 2.0) * delta * 60
-                self.ball.x += nx * min(step, dist)
-                self.ball.y += ny * min(step, dist)
+                target_radius = getattr(target, "radius", 10.0)
+                ball_radius = getattr(self.ball, "radius", 10.0)
+                b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
+
+                if b_type == "sniper":
+                    attack_range = 150.0
+                else:
+                    attack_range = ball_radius + target_radius + 5
+
+                if b_type == "sniper":
+                    if dist > attack_range:
+                        pass # Move towards
+                    elif dist < attack_range * 0.8:
+                        nx, ny = -nx, -ny # Kite away
+                    else:
+                        nx, ny = 0.0, 0.0 # Maintain distance
+
+                if nx != 0.0 or ny != 0.0:
+                    nx, ny = self._apply_obstacle_avoidance(nx, ny, target)
+                    nx, ny = self._apply_boid_rules(nx, ny)
+
+                    step = getattr(self.ball, "speed", 2.0) * delta * 60
+                    self.ball.x += nx * min(step, dist)
+                    self.ball.y += ny * min(step, dist)
 
             # Recalculate distance after movement
             dx, dy = target.x - self.ball.x, target.y - self.ball.y
@@ -397,8 +420,13 @@ class Action:
 
             target_radius = getattr(target, "radius", 10.0)
             ball_radius = getattr(self.ball, "radius", 10.0)
+            b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
+            if b_type == "sniper":
+                attack_range = 150.0
+            else:
+                attack_range = ball_radius + target_radius + 5
 
-            if dist <= ball_radius + target_radius + 5:
+            if dist <= attack_range:
                 # Uses skill when available and optimal
                 skill_timer = getattr(self.ball, "skill_timer", 0.0)
                 if skill_timer <= 0:
