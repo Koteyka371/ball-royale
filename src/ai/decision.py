@@ -58,6 +58,22 @@ class Decision:
 
         personality = getattr(self.ball, "personality", "idle")
         skill_timer = getattr(self.ball, "skill_timer", 0.0)
+        team_messages = perception_data.get("team_messages", [])
+
+        # Process team messages
+        for msg in team_messages:
+            if isinstance(msg, dict):
+                msg_type = msg.get("type")
+                if msg_type == "hold_position":
+                    scores["defend"] += 30.0
+                elif msg_type == "target_spotted":
+                    scores["attack"] += 20.0
+                    scores["chase"] += 20.0
+                elif msg_type == "request_help":
+                    scores["defend"] += 40.0
+                elif msg_type == "wounded_call":
+                    if personality == "healer":
+                        scores["defend"] += 50.0
 
         # === FLEE ===
         if hp_percent < 0.3:

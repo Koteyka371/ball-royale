@@ -49,6 +49,24 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     if "personality" in self.ball:
         personality = self.ball.personality
 
+    var team_messages = []
+    if perception_data.has("team_messages"):
+        team_messages = perception_data["team_messages"]
+
+    # Process team messages
+    for msg in team_messages:
+        if typeof(msg) == TYPE_DICTIONARY and msg.has("type"):
+            var msg_type = msg["type"]
+            if msg_type == "hold_position":
+                scores["defend"] += 30.0
+            elif msg_type == "target_spotted":
+                scores["attack"] += 20.0
+            elif msg_type == "request_help":
+                scores["defend"] += 40.0
+            elif msg_type == "wounded_call":
+                if personality == "healer":
+                    scores["defend"] += 50.0
+
     # Flee scoring
     if hp_percent < 0.3:
         scores["flee"] += 50.0

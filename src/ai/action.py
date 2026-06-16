@@ -17,6 +17,23 @@ class Action:
         Executes the chosen strategy.
         """
         self.ball.current_action = strategy
+        self.ball.team_message = None  # Clear previous message
+
+        # Emit messages based on state or strategy
+        hp_percent = 1.0
+        if hasattr(self.ball, "get_hp_percent"):
+            hp_percent = self.ball.get_hp_percent()
+        elif hasattr(self.ball, "hp") and hasattr(self.ball, "max_hp"):
+            hp_percent = float(self.ball.hp) / float(self.ball.max_hp)
+
+        personality = getattr(self.ball, "personality", "idle")
+
+        if hp_percent < 0.3:
+            self.ball.team_message = {"type": "request_help", "x": self.ball.x, "y": self.ball.y}
+        elif personality == "healer":
+            self.ball.team_message = {"type": "wounded_call", "x": self.ball.x, "y": self.ball.y}
+        elif strategy == "defend" and personality == "tank":
+            self.ball.team_message = {"type": "hold_position", "x": self.ball.x, "y": self.ball.y}
 
         if strategy == "flee":
             self._flee(delta)
@@ -136,6 +153,11 @@ class Action:
         enemies = self._get_enemies()
         if enemies:
             target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+
+            personality = getattr(self.ball, "personality", "idle")
+            if personality == "sniper" and getattr(self.ball, "team_message", None) is None:
+                self.ball.team_message = {"type": "target_spotted", "x": target.x, "y": target.y}
+
             dx, dy = target.x - self.ball.x, target.y - self.ball.y
             dist = math.sqrt(dx * dx + dy * dy)
             if dist > 0.01:
