@@ -43,9 +43,9 @@
     "agent-6": {
       "name": "Jules Innovation",
       "area": "innovation",
-      "task_id": "ai-neural-network-learning",
-      "status": "assigned",
-      "started_at": "2026-06-16T21:59:56.958331+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 0
     },
     "supervisor": {
@@ -75,17 +75,17 @@
     "agent-9": {
       "name": "Jules Worker 9",
       "area": "behaviors",
-      "task_id": "ai-ball-tank-ai",
-      "status": "assigned",
-      "started_at": "2026-06-16T21:59:56.958331+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 0
     },
     "agent-10": {
       "name": "Jules Worker 10",
       "area": "meta",
-      "task_id": "ai-ball-healer-ai",
-      "status": "working",
-      "started_at": "2026-06-16T22:10:39.426280+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 0
     },
     "agent-11": {
