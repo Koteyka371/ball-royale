@@ -12,6 +12,9 @@ func execute(strategy: String, delta: float):
     if "current_action" in self.ball:
         self.ball.current_action = strategy
 
+    var old_x = self.ball.x
+    var old_y = self.ball.y
+
     if self.ball.has_method("set_meta"):
         self.ball.set_meta("team_message", null)
 
@@ -47,6 +50,31 @@ func execute(strategy: String, delta: float):
 
     _clamp_position()
     _update_skill_timer(delta)
+
+    if delta > 0:
+        var dx = self.ball.x - old_x
+        var dy = self.ball.y - old_y
+        var dist = sqrt(dx*dx + dy*dy)
+        if dist > 0.01:
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("facing_x", dx / dist)
+                self.ball.set_meta("facing_y", dy / dist)
+            elif "facing_x" in self.ball:
+                self.ball.facing_x = dx / dist
+                self.ball.facing_y = dy / dist
+        else:
+            var has_facing = false
+            if self.ball.has_method("has_meta") and self.ball.has_meta("facing_x"):
+                has_facing = true
+            elif "facing_x" in self.ball:
+                has_facing = true
+            if not has_facing:
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("facing_x", 0.0)
+                    self.ball.set_meta("facing_y", 1.0)
+                elif "facing_x" in self.ball:
+                    self.ball.facing_x = 0.0
+                    self.ball.facing_y = 1.0
 
 func _get_enemies() -> Array:
     var perception_radius = 250.0
@@ -216,6 +244,15 @@ func _attack(delta: float):
             if not has_msg:
                 self.ball.set_meta("team_message", {"type": "target_spotted", "x": target.x, "y": target.y})
 
+        var target_facing_x = 0.0
+        var target_facing_y = 1.0
+        if target.has_method("has_meta") and target.has_meta("facing_x"):
+            target_facing_x = target.get_meta("facing_x")
+            target_facing_y = target.get_meta("facing_y")
+        elif "facing_x" in target:
+            target_facing_x = target.facing_x
+            target_facing_y = target.facing_y
+
         var dx = target.x - self.ball.x
         var dy = target.y - self.ball.y
         var dist = sqrt(dx*dx + dy*dy)
@@ -223,21 +260,67 @@ func _attack(delta: float):
         var speed = 2.0
         if "speed" in self.ball: speed = self.ball.speed
 
-        if dist > 0.01:
-            var nx = dx / dist
-            var ny = dy / dist
-            var step = speed * delta * 60
-            self.ball.x += nx * min(step, dist)
-            self.ball.y += ny * min(step, dist)
-
         var target_radius = 10.0
         if "radius" in target: target_radius = target.radius
         var ball_radius = 10.0
         if "radius" in self.ball: ball_radius = self.ball.radius
 
-        if dist <= ball_radius + target_radius + 5:
+        var is_flanking = false
+        var behind_target = false
+
+        if dist > 0.01:
+            var nx = dx / dist
+            var ny = dy / dist
+
+            var dot_prod = nx * target_facing_x + ny * target_facing_y
+            behind_target = dot_prod > 0.5
+
+            var step = speed * delta * 60.0
+
+            if (personality == "ninja" or personality == "scout") and not behind_target and dist > ball_radius + target_radius + 15.0:
+                is_flanking = true
+                var behind_x = target.x - target_facing_x * (target_radius + ball_radius + 20.0)
+                var behind_y = target.y - target_facing_y * (target_radius + ball_radius + 20.0)
+                var bdx = behind_x - self.ball.x
+                var bdy = behind_y - self.ball.y
+                var bdist = sqrt(bdx*bdx + bdy*bdy)
+                if bdist > 0.01:
+                    nx = bdx / bdist
+                    ny = bdy / bdist
+                    step *= 1.5
+
+            var move_dist = dist
+            if is_flanking:
+                var bdx = (target.x - target_facing_x * (target_radius + ball_radius + 20.0)) - self.ball.x
+                var bdy = (target.y - target_facing_y * (target_radius + ball_radius + 20.0)) - self.ball.y
+                move_dist = sqrt(bdx*bdx + bdy*bdy)
+
+            self.ball.x += nx * min(step, move_dist)
+            self.ball.y += ny * min(step, move_dist)
+
+        dx = target.x - self.ball.x
+        dy = target.y - self.ball.y
+        dist = sqrt(dx*dx + dy*dy)
+
+        if dist <= ball_radius + target_radius + 5.0:
             if self.world != null and self.world.has_method("_deal_damage"):
+                var original_damage = 0.0
+                if "damage" in self.ball:
+                    original_damage = self.ball.damage
+
+                if dist > 0.01:
+                    var nx = dx / dist
+                    var ny = dy / dist
+                    var dot_prod = nx * target_facing_x + ny * target_facing_y
+                    behind_target = dot_prod > 0.5
+
+                if behind_target and (personality == "ninja" or personality == "scout"):
+                    self.ball.damage = original_damage * 2.0
+
                 self.world._deal_damage(self.ball, target)
+
+                if behind_target and (personality == "ninja" or personality == "scout"):
+                    self.ball.damage = original_damage
     else:
         _idle(delta)
 

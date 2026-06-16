@@ -22,6 +22,7 @@ class Decision:
         "guardian": "defend",
         "phantom": "chase",
         "swarm": "chase",
+        "ninja": "chase",
         "scout": "collect_booster",
         "aggressive": "attack",
         "defender": "defend",
@@ -118,7 +119,7 @@ class Decision:
         # === CHASE ===
         if len(enemies) > 0:
             scores["chase"] += 15.0
-        if personality in ("assassin", "rogue", "phantom", "swarm"):
+        if personality in ("assassin", "rogue", "phantom", "swarm", "ninja"):
             scores["chase"] += 40.0
         if emotion_state == "bloodlust":
             scores["chase"] += 80.0

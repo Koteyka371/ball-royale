@@ -19,6 +19,8 @@ class Action:
         self.ball.current_action = strategy
         self.ball.team_message = None  # Clear previous message
 
+        old_x, old_y = self.ball.x, self.ball.y
+
         # Emit messages based on state or strategy
         hp_percent = 1.0
         if hasattr(self.ball, "get_hp_percent"):
@@ -50,6 +52,18 @@ class Action:
 
         self._clamp_position()
         self._update_skill_timer(delta)
+
+        # Track movement for facing direction
+        if delta > 0:
+            dx = self.ball.x - old_x
+            dy = self.ball.y - old_y
+            dist = math.sqrt(dx*dx + dy*dy)
+            if dist > 0.01:
+                self.ball.facing_x = dx / dist
+                self.ball.facing_y = dy / dist
+            elif not hasattr(self.ball, "facing_x"):
+                self.ball.facing_x = 0.0
+                self.ball.facing_y = 1.0
 
     def _get_enemies(self) -> list:
         perception_radius = getattr(self.ball, "perception_radius", 250)
@@ -158,20 +172,60 @@ class Action:
             if personality == "sniper" and getattr(self.ball, "team_message", None) is None:
                 self.ball.team_message = {"type": "target_spotted", "x": target.x, "y": target.y}
 
+            target_facing_x = getattr(target, "facing_x", 0.0)
+            target_facing_y = getattr(target, "facing_y", 1.0)
+
             dx, dy = target.x - self.ball.x, target.y - self.ball.y
             dist = math.sqrt(dx * dx + dy * dy)
-            if dist > 0.01:
-                nx, ny = dx / dist, dy / dist
-                step = getattr(self.ball, "speed", 2.0) * delta * 60
-                self.ball.x += nx * min(step, dist)
-                self.ball.y += ny * min(step, dist)
-
             target_radius = getattr(target, "radius", 10.0)
             ball_radius = getattr(self.ball, "radius", 10.0)
 
+            is_flanking = False
+            behind_target = False
+
+            if dist > 0.01:
+                nx, ny = dx / dist, dy / dist
+
+                # Check if we are behind the target (dot product > 0.5 roughly)
+                dot_prod = nx * target_facing_x + ny * target_facing_y
+                behind_target = dot_prod > 0.5
+
+                step = getattr(self.ball, "speed", 2.0) * delta * 60
+
+                if personality in ("ninja", "scout") and not behind_target and dist > ball_radius + target_radius + 15:
+                    is_flanking = True
+                    # Steer towards a point behind the target
+                    behind_x = target.x - target_facing_x * (target_radius + ball_radius + 20)
+                    behind_y = target.y - target_facing_y * (target_radius + ball_radius + 20)
+                    bdx, bdy = behind_x - self.ball.x, behind_y - self.ball.y
+                    bdist = math.sqrt(bdx*bdx + bdy*bdy)
+                    if bdist > 0.01:
+                        nx, ny = bdx / bdist, bdy / bdist
+                        step *= 1.5 # Move faster while flanking
+
+                self.ball.x += nx * min(step, dist if not is_flanking else bdist)
+                self.ball.y += ny * min(step, dist if not is_flanking else bdist)
+
+            # Recalculate distance after moving to see if we can hit
+            dx, dy = target.x - self.ball.x, target.y - self.ball.y
+            dist = math.sqrt(dx * dx + dy * dy)
+
             if dist <= ball_radius + target_radius + 5:
                 if hasattr(self.world, "_deal_damage"):
+                    original_damage = getattr(self.ball, "damage", 0)
+                    # Recalculate behind_target at hit time
+                    if dist > 0.01:
+                        nx, ny = dx / dist, dy / dist
+                        dot_prod = nx * target_facing_x + ny * target_facing_y
+                        behind_target = dot_prod > 0.5
+
+                    if behind_target and personality in ("ninja", "scout"):
+                        self.ball.damage = original_damage * 2.0
+
                     self.world._deal_damage(self.ball, target)
+
+                    if behind_target and personality in ("ninja", "scout"):
+                        self.ball.damage = original_damage
         else:
             self._idle(delta)
 

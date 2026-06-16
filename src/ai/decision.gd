@@ -110,7 +110,7 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     # Chase scoring
     if enemies.size() > 0:
         scores["chase"] += 15.0
-    if personality == "assassin" or personality == "rogue" or personality == "phantom" or personality == "swarm":
+    if personality == "assassin" or personality == "rogue" or personality == "phantom" or personality == "swarm" or personality == "ninja":
         scores["chase"] += 40.0
     if emotion_state == "bloodlust":
         scores["chase"] += 80.0

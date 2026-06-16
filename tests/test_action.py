@@ -29,6 +29,8 @@ class MockEnemy:
         self.radius = radius
         self.ball_type = ball_type
         self.alive = alive
+        self.facing_x = 0.0
+        self.facing_y = 1.0
 
 class MockBooster:
     def __init__(self, x=10, y=0, active=True):
@@ -55,6 +57,7 @@ class MockWorld:
 
     def _deal_damage(self, ball, target):
         self.dealt_damage = True
+        self.last_damage_dealt = getattr(ball, "damage", 0)
 
     def _collect_booster(self, ball, booster):
         self.collected_booster = True
@@ -145,3 +148,44 @@ def test_execute_idle_fallback():
 
     action_layer.execute("unknown_strategy", 0.1)
     assert ball.current_action == "unknown_strategy"
+
+def test_flanking_ninja():
+    ball = MockBall(x=100, y=100)
+    ball.personality = "ninja"
+    ball.damage = 10
+
+    world = MockWorld()
+    enemy = MockEnemy(x=100, y=150)
+    # Enemy is facing down (0, 1)
+    enemy.facing_x = 0.0
+    enemy.facing_y = 1.0
+    world.enemies = [enemy]
+
+    action_layer = Action(ball, world)
+
+    # Ball is above enemy (y=100 vs y=150). Enemy faces down.
+    # The dot product of vector from ball to enemy (0, 1) and enemy facing (0, 1) is 1.0 > 0.5.
+    # Therefore, ball is considered behind the enemy! It should just move straight and deal double damage.
+
+    # Move ball closer so it can hit
+    ball.y = 135
+    action_layer.execute("attack", 0.1)
+    assert world.dealt_damage
+    assert world.last_damage_dealt == 20  # Double damage from behind
+
+    # Now test flanking movement when NOT behind target
+    ball2 = MockBall(x=100, y=200)
+    ball2.personality = "ninja"
+    # Enemy faces down, ball is below enemy (y=200 vs y=150). Vector from ball to enemy is (0, -1).
+    # Dot product is -1.0. Ball is IN FRONT of enemy.
+    world2 = MockWorld()
+    world2.enemies = [enemy]
+
+    action_layer2 = Action(ball2, world2)
+    # Ensure ball starts with no facing so it gets created
+    action_layer2.execute("attack", 0.1)
+
+    # It should steer towards behind the enemy (which is y < 150)
+    # The point behind the enemy is roughly x=100, y=150 - (10+10+20) = 110.
+    # Ball should move UP towards y=110, so its y should decrease.
+    assert ball2.y < 200
