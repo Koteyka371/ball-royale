@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [ai-personality-system] Implement Personality system — *2026-06-16 15:41:18 UTC*
+
+Create Personality class that defines ball's character: aggressive, cautious, supportive, reckless, cunning. Each ball type has default personality. Personality influences decision weights.
+
+---
+
 ## [balance-buff-healer] Balance: Buff underpowered 'healer' — *2026-06-16 15:35:37 UTC*
 
 The 'healer' class is winning only 0.0% of the time (expected ~8.3%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.

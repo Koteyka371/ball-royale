@@ -134,7 +134,7 @@
     },
     {
       "id": "ai-personality-system",
-      "status": "todo",
+      "status": "done",
       "area": "ai-core",
       "risk": "low",
       "title": "Implement Personality system",
