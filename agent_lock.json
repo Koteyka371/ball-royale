@@ -84,8 +84,8 @@
       "name": "Jules Worker 10",
       "area": "meta",
       "task_id": "balance-buff-healer",
-      "status": "assigned",
-      "started_at": "2026-06-16T15:08:45.851993+00:00",
+      "status": "working",
+      "started_at": "2026-06-16T15:19:32.786801+00:00",
       "cycles_today": 0
     },
     "agent-11": {
