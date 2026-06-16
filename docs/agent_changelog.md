@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [ai-behavior-kite] Implement Kite behavior — *2026-06-16 22:26:31 UTC*
+
+Ball maintains distance from enemy while attacking. Moves back when enemy approaches, attacks when enemy retreats. Used by Sniper and ranged types.
+
+---
+
 ## [ai-behavior-collect-booster] Implement Collect Booster behavior — *2026-06-16 22:24:14 UTC*
 
 Ball moves towards nearest booster. Ignores enemies when collecting (greed). Can be interrupted if enemy gets too close.

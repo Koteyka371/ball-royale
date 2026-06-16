@@ -233,7 +233,7 @@
     },
     {
       "id": "ai-behavior-kite",
-      "status": "todo",
+      "status": "done",
       "area": "ai-behaviors",
       "risk": "medium",
       "title": "Implement Kite behavior",
