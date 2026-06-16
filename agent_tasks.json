@@ -248,7 +248,7 @@
     },
     {
       "id": "ai-behavior-group-attack",
-      "status": "todo",
+      "status": "done",
       "area": "ai-behaviors",
       "risk": "medium",
       "title": "Implement Group Attack behavior",
