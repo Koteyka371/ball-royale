@@ -52,6 +52,9 @@ BALL_TYPES = {
     "swarm": {"hp": 40, "speed": 3.2, "damage": 10, "radius": 6,
               "perception_radius": 200, "aggression": 0.6, "color": "yellow",
               "skill": "clone", "skill_cooldown": 10.0},
+    "neural": {"hp": 100, "speed": 2.2, "damage": 15, "radius": 10,
+              "perception_radius": 300, "aggression": 0.5, "color": "white",
+              "skill": "dash", "skill_cooldown": 4.0},
     "guardian": {"hp": 180, "speed": 1.0, "damage": 10, "radius": 16,
                  "perception_radius": 180, "aggression": 0.3, "color": "gold",
                  "skill": "protect_ally", "skill_cooldown": 6.0},
@@ -382,6 +385,33 @@ class BattleSimulation:
         elapsed = time.time() - start
         alive_balls = [b for b in self.balls if b.alive]
 
+
+        # Dynamic Learning for Neural Balls
+        neural_balls = [b for b in self.balls if b.ball_type == "neural"]
+        if neural_balls:
+            fitnesses = []
+            for b in neural_balls:
+                survival_score = 100 if b.alive else 0
+                kill_score = b.kills * 50
+                hp_score = (b.hp / b.max_hp) * 20 if b.alive else 0
+                fitness = survival_score + kill_score + hp_score
+                if hasattr(b, "nn_weights"):
+                    fitnesses.append((b.nn_weights, fitness))
+
+            if fitnesses:
+                fitnesses.sort(key=lambda x: x[1], reverse=True)
+                elite = [w for w, _ in fitnesses[:max(1, len(fitnesses)//4)]]
+                best_weights = elite[0]
+
+                # Save best weights
+                import json
+                import os
+                weights_path = os.path.join(os.path.dirname(__file__), "../src/ai/nn_weights.json")
+                try:
+                    with open(weights_path, "w") as f:
+                        json.dump(best_weights, f)
+                except Exception:
+                    pass
         self.stats["ticks"] = self.tick
         self.stats["survivors"] = len(alive_balls)
         self.stats["battle_duration"] = round(elapsed, 3)

@@ -1,4 +1,7 @@
 import random
+import math
+import os
+import json
 from typing import Any, Dict
 
 
@@ -59,6 +62,60 @@ class Decision:
         personality = getattr(self.ball, "personality", "idle")
         skill_timer = getattr(self.ball, "skill_timer", 0.0)
         team_messages = perception_data.get("team_messages", [])
+
+
+        if getattr(self.ball, "ball_type", "") == "neural":
+            # Load weights if not cached
+            if not hasattr(self.ball, "nn_weights"):
+                weights_path = os.path.join(os.path.dirname(__file__), "nn_weights.json")
+                if os.path.exists(weights_path):
+                    with open(weights_path, "r") as f:
+                        self.ball.nn_weights = json.load(f)
+                else:
+                    # Fallback random weights if no file exists
+                    self.ball.nn_weights = [random.uniform(-1.0, 1.0) for _ in range(94)]
+
+
+            # Forward pass
+            inputs = [
+                hp_percent,
+                perception_data.get("danger_level", 0.0),
+                perception_data.get("opportunity_score", 0.0),
+                perception_data.get("threat_level", 0.0)
+            ]
+            weights = self.ball.nn_weights
+
+            # Architecture: 4 -> 8 -> 6
+            hidden = []
+            idx = 0
+
+            # Hidden layer
+            for h in range(8):
+                h_val = 0.0
+                for i in range(4):
+                    h_val += inputs[i] * weights[idx]
+                    idx += 1
+                # Bias
+                h_val += weights[idx]
+                idx += 1
+                # Tanh activation
+                hidden.append(math.tanh(h_val))
+
+            # Output layer
+            outputs = []
+            for o in range(6):
+                o_val = 0.0
+                for h in range(8):
+                    o_val += hidden[h] * weights[idx]
+                    idx += 1
+                # Bias
+                o_val += weights[idx]
+                idx += 1
+                outputs.append(o_val)
+
+            actions = ["flee", "defend", "collect_booster", "attack", "chase", "use_skill"]
+            best_idx = outputs.index(max(outputs))
+            return actions[best_idx]
 
         # Process team messages
         for msg in team_messages:

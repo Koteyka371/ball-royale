@@ -53,6 +53,55 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     if perception_data.has("team_messages"):
         team_messages = perception_data["team_messages"]
 
+
+    if "ball_type" in self.ball and self.ball.ball_type == "neural":
+        if not self.ball.has_meta("nn_weights"):
+            var f = FileAccess.open("res://src/ai/nn_weights.json", FileAccess.READ)
+            if f:
+                var json = JSON.new()
+                if json.parse(f.get_as_text()) == OK:
+                    self.ball.set_meta("nn_weights", json.get_data())
+                f.close()
+
+        if self.ball.has_meta("nn_weights"):
+            var weights = self.ball.get_meta("nn_weights")
+            var inputs = [hp_percent, danger_level, opportunity_level, danger_level] # Threat is akin to danger in gd perception
+            if perception_data.has("opportunity_score"):
+                inputs[2] = perception_data["opportunity_score"]
+            if perception_data.has("threat_level"):
+                inputs[3] = perception_data["threat_level"]
+
+            var hidden = []
+            var idx = 0
+
+            for h in range(8):
+                var h_val = 0.0
+                for i in range(4):
+                    h_val += inputs[i] * float(weights[idx])
+                    idx += 1
+                h_val += float(weights[idx])
+                idx += 1
+                hidden.append(tanh(h_val))
+
+            var outputs = []
+            for o in range(6):
+                var o_val = 0.0
+                for h in range(8):
+                    o_val += hidden[h] * float(weights[idx])
+                    idx += 1
+                o_val += float(weights[idx])
+                idx += 1
+                outputs.append(o_val)
+
+            var actions = ["flee", "defend", "opportunistic", "attack", "chase", "use skill"]
+            var max_val = outputs[0]
+            var max_idx = 0
+            for i in range(1, 6):
+                if outputs[i] > max_val:
+                    max_val = outputs[i]
+                    max_idx = i
+            return actions[max_idx]
+
     # Process team messages
     for msg in team_messages:
         if typeof(msg) == TYPE_DICTIONARY and msg.has("type"):
