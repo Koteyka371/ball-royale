@@ -9,15 +9,15 @@ from ai.personality import Personality
 
 class Swarm:
     BALL_TYPE = "swarm"
-    HP = 40
-    SPEED = 3.2
-    DAMAGE = 10
+    HP = 60
+    SPEED = 3.8
+    DAMAGE = 15
     RADIUS = 6
     PERCEPTION_RADIUS = 200
     AGGRESSION = 0.6
     COLOR = "lime"
     SKILL = "clone"
-    SKILL_COOLDOWN = 10.0
+    SKILL_COOLDOWN = 6.0
 
     def __init__(self, ball_id: int, x: float = 0.0, y: float = 0.0):
         self.id = ball_id

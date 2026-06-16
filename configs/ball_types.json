@@ -62,9 +62,9 @@
       "description": "Can phase through enemies, hit and run"
     },
     "swarm": {
-      "hp": 40, "speed": 3.2, "damage": 10, "radius": 6,
+      "hp": 60, "speed": 3.8, "damage": 15, "radius": 6,
       "perception_radius": 200, "aggression": 0.6, "color": "lime",
-      "skill": "clone", "skill_cooldown": 10.0,
+      "skill": "clone", "skill_cooldown": 6.0,
       "description": "Weak alone but can clone itself"
     },
     "juggernaut": {
