@@ -79,18 +79,46 @@ class Action:
             target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
             dx, dy = target.x - self.ball.x, target.y - self.ball.y
             dist = math.sqrt(dx * dx + dy * dy)
-            if dist > 0.01:
+
+            ball_type = getattr(self.ball, "ball_type", "")
+            is_ranged = ball_type in ("sniper", "healer")
+            p_radius = getattr(self.ball, "perception_radius", 250)
+
+            if is_ranged:
+                optimal_dist = p_radius * 0.5
+                tolerance = p_radius * 0.1
+
+            if dist > 0.01 and not math.isnan(dist) and not math.isinf(dist):
                 nx, ny = dx / dist, dy / dist
+                if math.isnan(nx) or math.isnan(ny) or math.isinf(nx) or math.isinf(ny):
+                    nx, ny = 0.0, 0.0
                 step = getattr(self.ball, "speed", 2.0) * delta * 60
-                self.ball.x += nx * min(step, dist)
-                self.ball.y += ny * min(step, dist)
+
+                if is_ranged:
+                    if dist < optimal_dist - tolerance:
+                        # Move away
+                        self.ball.x -= nx * step
+                        self.ball.y -= ny * step
+                    elif dist > optimal_dist + tolerance:
+                        # Move towards
+                        self.ball.x += nx * min(step, dist)
+                        self.ball.y += ny * min(step, dist)
+                    # Else stay roughly put (kite)
+                else:
+                    self.ball.x += nx * min(step, dist)
+                    self.ball.y += ny * min(step, dist)
 
             target_radius = getattr(target, "radius", 10.0)
             ball_radius = getattr(self.ball, "radius", 10.0)
 
-            if dist <= ball_radius + target_radius + 5:
-                if hasattr(self.world, "_deal_damage"):
-                    self.world._deal_damage(self.ball, target)
+            if is_ranged:
+                if dist <= p_radius * 0.8:
+                    if hasattr(self.world, "_deal_damage"):
+                        self.world._deal_damage(self.ball, target)
+            else:
+                if dist <= ball_radius + target_radius + 5:
+                    if hasattr(self.world, "_deal_damage"):
+                        self.world._deal_damage(self.ball, target)
         else:
             self._idle(delta)
 
@@ -127,6 +155,11 @@ class Action:
         self.ball.y += random.uniform(-1, 1) * speed * 0.3
 
     def _clamp_position(self) -> None:
+        if math.isnan(self.ball.x) or math.isinf(self.ball.x):
+            self.ball.x = 0.0
+        if math.isnan(self.ball.y) or math.isinf(self.ball.y):
+            self.ball.y = 0.0
+
         if hasattr(self.world, "width") and hasattr(self.world, "height"):
             radius = getattr(self.ball, "radius", 10.0)
             self.ball.x = max(radius, min(self.world.width - radius, self.ball.x))

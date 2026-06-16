@@ -98,6 +98,46 @@ def test_execute_attack():
     action_layer2.execute("attack", 0.1)
     assert world2.dealt_damage # Should deal damage
 
+def test_execute_attack_ranged_kiting_retreat():
+    ball = MockBall(x=100, y=100)
+    ball.ball_type = "sniper"
+    ball.perception_radius = 200
+    # optimal distance = 100, tolerance = 20. move away if dist < 80.
+    world = MockWorld()
+    world.enemies = [MockEnemy(x=150, y=100)] # dist = 50
+    action_layer = Action(ball, world)
+
+    action_layer.execute("attack", 0.1)
+    assert ball.current_action == "attack"
+    assert ball.x < 100 # moved away (left)
+    assert ball.y == 100
+
+def test_execute_attack_ranged_kiting_advance():
+    ball = MockBall(x=100, y=100)
+    ball.ball_type = "sniper"
+    ball.perception_radius = 200
+    # optimal distance = 100, tolerance = 20. move towards if dist > 120.
+    world = MockWorld()
+    world.enemies = [MockEnemy(x=250, y=100)] # dist = 150
+    action_layer = Action(ball, world)
+
+    action_layer.execute("attack", 0.1)
+    assert ball.current_action == "attack"
+    assert ball.x > 100 # moved towards (right)
+    assert ball.y == 100
+
+def test_execute_attack_ranged_damage():
+    ball = MockBall(x=100, y=100)
+    ball.ball_type = "sniper"
+    ball.perception_radius = 200
+    # deals damage if dist <= 160
+    world = MockWorld()
+    world.enemies = [MockEnemy(x=240, y=100)] # dist = 140
+    action_layer = Action(ball, world)
+
+    action_layer.execute("attack", 0.1)
+    assert world.dealt_damage # should deal damage
+
 def test_execute_defend():
     ball = MockBall(x=100, y=100)
     world = MockWorld()

@@ -109,21 +109,50 @@ func _attack(delta: float):
         var speed = 2.0
         if "speed" in self.ball: speed = self.ball.speed
 
+        var b_type = self.ball.ball_type if "ball_type" in self.ball else ""
+        if self.ball.has_method("get_ball_type"):
+            b_type = self.ball.get_ball_type()
+
+        var is_ranged = ["sniper", "healer"].has(b_type)
+        var p_radius = 250.0
+        if "perception_radius" in self.ball:
+            p_radius = self.ball.perception_radius
+
+        var optimal_dist = p_radius * 0.5
+        var tolerance = p_radius * 0.1
+
         if dist > 0.01:
             var nx = dx / dist
             var ny = dy / dist
             var step = speed * delta * 60
-            self.ball.x += nx * min(step, dist)
-            self.ball.y += ny * min(step, dist)
+
+            if is_ranged:
+                if dist < optimal_dist - tolerance:
+                    # Move away
+                    self.ball.x -= nx * step
+                    self.ball.y -= ny * step
+                elif dist > optimal_dist + tolerance:
+                    # Move towards
+                    self.ball.x += nx * min(step, dist)
+                    self.ball.y += ny * min(step, dist)
+                # Else stay put (kite)
+            else:
+                self.ball.x += nx * min(step, dist)
+                self.ball.y += ny * min(step, dist)
 
         var target_radius = 10.0
         if "radius" in target: target_radius = target.radius
         var ball_radius = 10.0
         if "radius" in self.ball: ball_radius = self.ball.radius
 
-        if dist <= ball_radius + target_radius + 5:
-            if self.world != null and self.world.has_method("_deal_damage"):
-                self.world._deal_damage(self.ball, target)
+        if is_ranged:
+            if dist <= p_radius * 0.8:
+                if self.world != null and self.world.has_method("_deal_damage"):
+                    self.world._deal_damage(self.ball, target)
+        else:
+            if dist <= ball_radius + target_radius + 5:
+                if self.world != null and self.world.has_method("_deal_damage"):
+                    self.world._deal_damage(self.ball, target)
     else:
         _idle(delta)
 
