@@ -87,8 +87,17 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     if personality == "warrior" or personality == "aggressive":
         scores["attack"] += 30.0
 
+
     # Idle scoring
     scores["idle"] = 1.0
+
+    # Add personality modifiers
+    if typeof(personality) == TYPE_OBJECT and personality.has_method("get_decision_modifiers"):
+        var modifiers = personality.get_decision_modifiers()
+        for action_key in modifiers.keys():
+            if scores.has(action_key):
+                scores[action_key] += modifiers[action_key]
+
 
     # Baseline score based on personality
     if scores.has(personality):
@@ -110,7 +119,14 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
             best_score = scores[action]
             best_action = action
 
+
     if best_action == "idle":
-        return personality
+        if typeof(personality) == TYPE_OBJECT and "original_type" in personality:
+            return personality.original_type
+        if typeof(personality) == TYPE_OBJECT:
+            return personality.character
+        if typeof(personality) == TYPE_STRING:
+            return personality
+        return "idle"
 
     return best_action

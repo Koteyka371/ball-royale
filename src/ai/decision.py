@@ -49,11 +49,11 @@ class Decision:
 
         danger_level = perception_data.get("danger_level", 0.0)
         threat_level = perception_data.get("threat_level", 0.0)
-        opportunity_level = perception_data.get("opportunity_level", 0.0)
+        opportunity_level = perception_data.get("opportunity_level", 0.0)  # noqa: F841
         opportunity_score = perception_data.get("opportunity_score", 0.0)
         enemies = perception_data.get("enemies", [])
         boosters = perception_data.get("boosters", [])
-        allies = perception_data.get("allies", [])
+        allies = perception_data.get("allies", [])  # noqa: F841
 
         personality = getattr(self.ball, "personality", "idle")
         skill_timer = getattr(self.ball, "skill_timer", 0.0)
@@ -119,6 +119,14 @@ class Decision:
         # === IDLE ===
         scores["idle"] = 1.0
 
+        # Add personality modifiers
+        if hasattr(personality, "get_decision_modifiers"):
+            modifiers = personality.get_decision_modifiers()
+            for action_key, mod_val in modifiers.items():
+                if action_key in scores:
+                    scores[action_key] += mod_val
+
+
         # Personality baseline
         if personality in scores:
             scores[personality] += 15.0
@@ -132,8 +140,11 @@ class Decision:
                 best_score = scores[action]
                 best_action = action
 
+
         # Fall back to personality behavior instead of returning personality name
         if best_action == "idle":
-            return self.PERSONALITY_BEHAVIORS.get(personality, "idle")
+            # Extract the original string type for backward compatibility
+            orig_type = getattr(personality, "original_type", getattr(personality, "character", str(personality)))
+            return self.PERSONALITY_BEHAVIORS.get(orig_type, "idle")
 
         return best_action
