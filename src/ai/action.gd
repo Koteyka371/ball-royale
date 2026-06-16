@@ -264,13 +264,43 @@ func _chase(delta: float):
         _idle(delta)
         return
 
+    var target_msg = null
+    var allies = _get_allies()
+    for ally in allies:
+        var msg = null
+        if ally.has_method("get_meta") and ally.has_meta("team_message"):
+            msg = ally.get_meta("team_message")
+        if typeof(msg) == TYPE_DICTIONARY and msg.has("type") and msg["type"] == "target_spotted":
+            target_msg = msg
+            break
+
     var target = null
     var min_dist_sq = INF
-    for e in enemies:
-        var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
-        if dist_sq < min_dist_sq:
-            min_dist_sq = dist_sq
-            target = e
+
+    if target_msg != null:
+        var tx = target_msg.get("x", self.ball.x)
+        var ty = target_msg.get("y", self.ball.y)
+        for e in enemies:
+            var dist_sq = pow(e.x - tx, 2) + pow(e.y - ty, 2)
+            if dist_sq < min_dist_sq:
+                min_dist_sq = dist_sq
+                target = e
+    else:
+        for e in enemies:
+            var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+            if dist_sq < min_dist_sq:
+                min_dist_sq = dist_sq
+                target = e
+
+    var personality = "idle"
+    if "personality" in self.ball:
+        personality = self.ball.personality
+    if personality in ["warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "swarm", "aggressive"]:
+        var has_msg = false
+        if self.ball.has_method("has_meta") and self.ball.has_meta("team_message"):
+            has_msg = self.ball.get_meta("team_message") != null
+        if not has_msg and self.ball.has_method("set_meta"):
+            self.ball.set_meta("team_message", {"type": "target_spotted", "x": target.x, "y": target.y})
 
     var target_dx = target.x - self.ball.x
     var target_dy = target.y - self.ball.y
@@ -329,23 +359,43 @@ func _chase(delta: float):
 func _attack(delta: float):
     var enemies = _get_enemies()
     if enemies.size() > 0:
+        var target_msg = null
+        var allies = _get_allies()
+        for ally in allies:
+            var msg = null
+            if ally.has_method("get_meta") and ally.has_meta("team_message"):
+                msg = ally.get_meta("team_message")
+            if typeof(msg) == TYPE_DICTIONARY and msg.has("type") and msg["type"] == "target_spotted":
+                target_msg = msg
+                break
+
         var target = null
         var min_dist_sq = INF
-        for e in enemies:
-            var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
-            if dist_sq < min_dist_sq:
-                min_dist_sq = dist_sq
-                target = e
+
+        if target_msg != null:
+            var tx = target_msg.get("x", self.ball.x)
+            var ty = target_msg.get("y", self.ball.y)
+            for e in enemies:
+                var dist_sq = pow(e.x - tx, 2) + pow(e.y - ty, 2)
+                if dist_sq < min_dist_sq:
+                    min_dist_sq = dist_sq
+                    target = e
+        else:
+            for e in enemies:
+                var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                if dist_sq < min_dist_sq:
+                    min_dist_sq = dist_sq
+                    target = e
 
         var personality = "idle"
         if "personality" in self.ball:
             personality = self.ball.personality
 
-        if personality == "sniper" and self.ball.has_method("set_meta"):
+        if personality in ["warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "swarm", "aggressive"]:
             var has_msg = false
-            if self.ball.has_meta("team_message"):
+            if self.ball.has_method("has_meta") and self.ball.has_meta("team_message"):
                 has_msg = self.ball.get_meta("team_message") != null
-            if not has_msg:
+            if not has_msg and self.ball.has_method("set_meta"):
                 self.ball.set_meta("team_message", {"type": "target_spotted", "x": target.x, "y": target.y})
 
         var dx = target.x - self.ball.x
@@ -449,6 +499,67 @@ func _attack(delta: float):
         _idle(delta)
 
 func _defend(delta: float):
+    var personality = "idle"
+    if "personality" in self.ball:
+        personality = self.ball.personality
+    if personality in ["tank", "defender", "guardian", "juggernaut"]:
+        var enemies = _get_enemies()
+        if enemies.size() > 0:
+            var target = null
+            var min_dist_sq = INF
+            for e in enemies:
+                var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                if dist_sq < min_dist_sq:
+                    min_dist_sq = dist_sq
+                    target = e
+
+            var dx = target.x - self.ball.x
+            var dy = target.y - self.ball.y
+            var dist_sq = dx*dx + dy*dy
+            if dist_sq > 0.0001:
+                var dist = sqrt(dist_sq)
+                var nx = dx / dist
+                var ny = dy / dist
+                var avoid_vec = _apply_obstacle_avoidance(nx, ny, target)
+                nx = avoid_vec[0]
+                ny = avoid_vec[1]
+                var speed = 2.0
+                if "speed" in self.ball: speed = self.ball.speed
+                var step = speed * 0.5 * delta * 60.0
+                self.ball.x += nx * min(step, dist)
+                self.ball.y += ny * min(step, dist)
+            return
+    elif personality == "healer":
+        var allies = _get_allies()
+        var target_ally = null
+        var lowest_hp = 0.8
+        for ally in allies:
+            var ally_hp_pct = 1.0
+            if ally.has_method("get_hp_percent"):
+                ally_hp_pct = ally.get_hp_percent()
+            elif "hp" in ally and "max_hp" in ally:
+                ally_hp_pct = float(ally.hp) / float(ally.max_hp)
+            if ally_hp_pct < lowest_hp:
+                lowest_hp = ally_hp_pct
+                target_ally = ally
+        if target_ally != null:
+            var dx = target_ally.x - self.ball.x
+            var dy = target_ally.y - self.ball.y
+            var dist_sq = dx*dx + dy*dy
+            if dist_sq > 0.0001:
+                var dist = sqrt(dist_sq)
+                var nx = dx / dist
+                var ny = dy / dist
+                var avoid_vec = _apply_obstacle_avoidance(nx, ny, target_ally)
+                nx = avoid_vec[0]
+                ny = avoid_vec[1]
+                var speed = 2.0
+                if "speed" in self.ball: speed = self.ball.speed
+                var step = speed * delta * 60.0
+                self.ball.x += nx * min(step, dist)
+                self.ball.y += ny * min(step, dist)
+            return
+
     _idle(delta * 0.5)
 
 func _collect_booster(delta: float):
