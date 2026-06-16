@@ -206,7 +206,23 @@ class Action:
             self._idle(delta)
             return
 
-        target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+        target_msg = None
+        allies = self._get_allies()
+        for ally in allies:
+            msg = getattr(ally, "team_message", None)
+            if msg and isinstance(msg, dict) and msg.get("type") == "target_spotted":
+                target_msg = msg
+                break
+
+        if target_msg:
+            tx, ty = target_msg.get("x", self.ball.x), target_msg.get("y", self.ball.y)
+            target = min(enemies, key=lambda e: (e.x - tx) ** 2 + (e.y - ty) ** 2)
+        else:
+            target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+
+        personality = getattr(self.ball, "personality", "idle")
+        if personality in ("warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "swarm", "aggressive") and getattr(self.ball, "team_message", None) is None:
+            self.ball.team_message = {"type": "target_spotted", "x": target.x, "y": target.y}
 
         # Basic pathfinding / steering:
         # Move towards target, but be repelled by obstacles (other entities)
@@ -258,10 +274,22 @@ class Action:
     def _attack(self, delta: float) -> None:
         enemies = self._get_enemies()
         if enemies:
-            target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+            target_msg = None
+            allies = self._get_allies()
+            for ally in allies:
+                msg = getattr(ally, "team_message", None)
+                if msg and isinstance(msg, dict) and msg.get("type") == "target_spotted":
+                    target_msg = msg
+                    break
+
+            if target_msg:
+                tx, ty = target_msg.get("x", self.ball.x), target_msg.get("y", self.ball.y)
+                target = min(enemies, key=lambda e: (e.x - tx) ** 2 + (e.y - ty) ** 2)
+            else:
+                target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
 
             personality = getattr(self.ball, "personality", "idle")
-            if personality == "sniper" and getattr(self.ball, "team_message", None) is None:
+            if personality in ("warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "swarm", "aggressive") and getattr(self.ball, "team_message", None) is None:
                 self.ball.team_message = {"type": "target_spotted", "x": target.x, "y": target.y}
 
             dx, dy = target.x - self.ball.x, target.y - self.ball.y
@@ -317,7 +345,51 @@ class Action:
             self._idle(delta)
 
     def _defend(self, delta: float) -> None:
-        # Defend might mean moving less or using shield. For now, small random moves or static
+        personality = getattr(self.ball, "personality", "idle")
+        if personality in ("tank", "defender", "guardian", "juggernaut"):
+            enemies = self._get_enemies()
+            if enemies:
+                target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+                dx, dy = target.x - self.ball.x, target.y - self.ball.y
+                dist_sq = dx * dx + dy * dy
+                if dist_sq > 0.0001:
+                    dist = math.sqrt(dist_sq)
+                    nx, ny = dx / dist, dy / dist
+                    nx, ny = self._apply_obstacle_avoidance(nx, ny, target)
+                    speed = getattr(self.ball, "speed", 2.0)
+                    step = speed * 0.5 * delta * 60
+                    self.ball.x += nx * min(step, dist)
+                    self.ball.y += ny * min(step, dist)
+                return
+        elif personality == "healer":
+            allies = self._get_allies()
+            target_ally = None
+            lowest_hp = 0.8
+            for ally in allies:
+                ally_hp_pct = 1.0
+                if hasattr(ally, "get_hp_percent"):
+                    ally_hp_pct = ally.get_hp_percent()
+                elif hasattr(ally, "hp") and hasattr(ally, "max_hp"):
+                    ally_hp_pct = float(ally.hp) / float(ally.max_hp)
+
+                if ally_hp_pct < lowest_hp:
+                    lowest_hp = ally_hp_pct
+                    target_ally = ally
+
+            if target_ally:
+                dx, dy = target_ally.x - self.ball.x, target_ally.y - self.ball.y
+                dist_sq = dx * dx + dy * dy
+                if dist_sq > 0.0001:
+                    dist = math.sqrt(dist_sq)
+                    nx, ny = dx / dist, dy / dist
+                    nx, ny = self._apply_obstacle_avoidance(nx, ny, target_ally)
+                    speed = getattr(self.ball, "speed", 2.0)
+                    step = speed * delta * 60
+                    self.ball.x += nx * min(step, dist)
+                    self.ball.y += ny * min(step, dist)
+                return
+
+        # Defend fallback
         self._idle(delta * 0.5)
 
     def _collect_booster(self, delta: float) -> None:
