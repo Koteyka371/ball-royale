@@ -61,6 +61,37 @@ class Action:
                         boosters.append(b)
         return boosters
 
+    def _apply_obstacle_avoidance(self, nx: float, ny: float) -> tuple[float, float]:
+        perception_radius = getattr(self.ball, "perception_radius", 250)
+        entities = []
+        if hasattr(self.world, "get_nearby_entities"):
+            nearby = self.world.get_nearby_entities(self.ball, perception_radius)
+            if isinstance(nearby, dict):
+                entities.extend(nearby.get("enemies", []))
+                entities.extend(nearby.get("allies", []))
+            else:
+                entities = nearby
+
+        rx, ry = 0.0, 0.0
+        ball_radius = getattr(self.ball, "radius", 10.0)
+
+        for e in entities:
+            if getattr(e, "alive", True):
+                e_radius = getattr(e, "radius", 10.0)
+                safety_threshold = ball_radius + e_radius + 5.0
+                dx, dy = self.ball.x - e.x, self.ball.y - e.y
+                dist = math.sqrt(dx*dx + dy*dy)
+                if 0.01 < dist < safety_threshold:
+                    force = (safety_threshold - dist) / safety_threshold
+                    rx += (dx / dist) * force
+                    ry += (dy / dist) * force
+
+        fx, fy = nx + rx, ny + ry
+        mag = math.sqrt(fx*fx + fy*fy)
+        if mag > 0:
+            return fx / mag, fy / mag
+        return nx, ny
+
     def _flee(self, delta: float) -> None:
         enemies = self._get_enemies()
         if enemies:
@@ -68,8 +99,11 @@ class Action:
             dx, dy = self.ball.x - nearest.x, self.ball.y - nearest.y
             dist = math.sqrt(dx * dx + dy * dy)
             if dist > 0.01:
-                self.ball.x += (dx / dist) * getattr(self.ball, "speed", 2.0) * delta * 60
-                self.ball.y += (dy / dist) * getattr(self.ball, "speed", 2.0) * delta * 60
+                nx, ny = dx / dist, dy / dist
+                nx, ny = self._apply_obstacle_avoidance(nx, ny)
+                step = getattr(self.ball, "speed", 2.0) * delta * 60
+                self.ball.x += nx * step
+                self.ball.y += ny * step
         else:
             self._idle(delta)
 
@@ -81,14 +115,18 @@ class Action:
             dist = math.sqrt(dx * dx + dy * dy)
             if dist > 0.01:
                 nx, ny = dx / dist, dy / dist
+                nx, ny = self._apply_obstacle_avoidance(nx, ny)
                 step = getattr(self.ball, "speed", 2.0) * delta * 60
                 self.ball.x += nx * min(step, dist)
                 self.ball.y += ny * min(step, dist)
 
+            # Recalculate distance after movement
+            dx, dy = target.x - self.ball.x, target.y - self.ball.y
+            dist_new = math.sqrt(dx * dx + dy * dy)
             target_radius = getattr(target, "radius", 10.0)
             ball_radius = getattr(self.ball, "radius", 10.0)
 
-            if dist <= ball_radius + target_radius + 5:
+            if dist_new <= ball_radius + target_radius + 5.01:
                 if hasattr(self.world, "_deal_damage"):
                     self.world._deal_damage(self.ball, target)
         else:
@@ -106,20 +144,28 @@ class Action:
             dist = math.sqrt(dx * dx + dy * dy)
             if dist > 0.01:
                 nx, ny = dx / dist, dy / dist
+                nx, ny = self._apply_obstacle_avoidance(nx, ny)
                 step = getattr(self.ball, "speed", 2.0) * delta * 60
                 self.ball.x += nx * min(step, dist)
                 self.ball.y += ny * min(step, dist)
 
+            # Recalculate distance after movement
+            dx, dy = nearest.x - self.ball.x, nearest.y - self.ball.y
+            dist_new = math.sqrt(dx * dx + dy * dy)
             ball_radius = getattr(self.ball, "radius", 10.0)
-            if dist <= ball_radius + 10:
+            if dist_new <= ball_radius + 10.01:
                 if hasattr(self.world, "_collect_booster"):
                     self.world._collect_booster(self.ball, nearest)
         else:
             self._idle(delta)
 
     def _use_skill(self) -> None:
-        if hasattr(self.ball, "use_skill"):
-            self.ball.use_skill()
+        skill_timer = getattr(self.ball, "skill_timer", 0.0)
+        if skill_timer <= 0:
+            if hasattr(self.ball, "use_skill"):
+                self.ball.use_skill()
+            if hasattr(self.ball, "skill_cooldown"):
+                self.ball.skill_timer = self.ball.skill_cooldown
 
     def _idle(self, delta: float) -> None:
         speed = getattr(self.ball, "speed", 2.0)
