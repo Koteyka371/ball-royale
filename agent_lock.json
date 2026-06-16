@@ -19,10 +19,10 @@
     "agent-3": {
       "name": "Jules Tests",
       "area": "tests",
-      "task_id": "ai-personality-system",
-      "status": "working",
-      "started_at": "2026-06-15T23:48:18.280450+00:00",
-      "cycles_today": 5
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
+      "cycles_today": 4
     },
     "agent-4": {
       "name": "Jules Content",
