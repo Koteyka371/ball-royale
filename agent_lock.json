@@ -20,8 +20,8 @@
       "name": "Jules Tests",
       "area": "tests",
       "task_id": "ai-behavior-collect-booster",
-      "status": "assigned",
-      "started_at": "2026-06-16T21:59:56.958331+00:00",
+      "status": "working",
+      "started_at": "2026-06-16T22:04:15.322317+00:00",
       "cycles_today": 0
     },
     "agent-4": {
