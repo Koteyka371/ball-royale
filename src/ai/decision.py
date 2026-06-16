@@ -50,11 +50,11 @@ class Decision:
 
         danger_level = perception_data.get("danger_level", 0.0)
         threat_level = perception_data.get("threat_level", 0.0)
-        opportunity_level = perception_data.get("opportunity_level", 0.0) # noqa: F841
+        opportunity_level = perception_data.get("opportunity_level", 0.0)
         opportunity_score = perception_data.get("opportunity_score", 0.0)
         enemies = perception_data.get("enemies", [])
         boosters = perception_data.get("boosters", [])
-        allies = perception_data.get("allies", []) # noqa: F841
+        allies = perception_data.get("allies", [])
 
         personality = getattr(self.ball, "personality", "idle")
         skill_timer = getattr(self.ball, "skill_timer", 0.0)
@@ -92,10 +92,14 @@ class Decision:
         if personality in ("tank", "defender", "guardian", "juggernaut"):
             scores["defend"] += 30.0
         scores["defend"] += danger_level * 20.0
+        if emotion_state == "heroism":
+            scores["defend"] += 80.0
+        if hp_percent < 0.5 and len(allies) > 0:
+            scores["defend"] += len(allies) * 10.0
 
         # === COLLECT BOOSTER ===
         if len(boosters) > 0:
-            scores["collect_booster"] += 30.0 + opportunity_score * 10.0
+            scores["collect_booster"] += 30.0 + (opportunity_score + opportunity_level) * 10.0
         if emotion_state == "greed":
             scores["collect_booster"] += 100.0
         if personality in ("scout", "rogue"):
@@ -110,8 +114,12 @@ class Decision:
             scores["attack"] -= 50.0
         if emotion_state in ("rage", "bloodlust"):
             scores["attack"] += 100.0
+        if emotion_state == "heroism":
+            scores["attack"] += 50.0
         if personality in ("warrior", "aggressive", "berserker", "bomber"):
             scores["attack"] += 30.0
+        if len(allies) > len(enemies):
+            scores["attack"] += (len(allies) - len(enemies)) * 15.0
         if len(enemies) == 0:
             scores["attack"] = -1000.0
 

@@ -107,3 +107,30 @@ def test_decision_no_enemies_personality_fallback():
     }
     action = decision.choose_action(perception, "neutral")
     assert action == "attack"
+
+def test_decision_heroism_emotion():
+    ball = MockBall(hp=100, max_hp=100, personality="idle")
+    decision = Decision(ball, MockWorld())
+    perception = {
+        "danger_level": 0.1, "opportunity_level": 0.0,
+        "threat_level": 0.1, "opportunity_score": 0.0,
+        "enemies": [1], "boosters": [], "allies": [2]
+    }
+    action = decision.choose_action(perception, "heroism")
+    # Defend should be favored strongly, or attack depending on exact scores.
+    # Heroism adds +80 to defend, +50 to attack. With 1 ally, defend gets another +0 (since hp_percent=1.0).
+    # Since danger is low, defend = 80 + 2 = 82. Attack = 10 + 50 = 60.
+    assert action == "defend"
+
+def test_decision_ally_advantage():
+    ball = MockBall(hp=100, max_hp=100, personality="idle")
+    decision = Decision(ball, MockWorld())
+    perception = {
+        "danger_level": 0.1, "opportunity_level": 0.0,
+        "threat_level": 0.1, "opportunity_score": 0.0,
+        "enemies": [1], "boosters": [], "allies": [2, 3, 4]
+    }
+    action = decision.choose_action(perception, "neutral")
+    # 3 allies vs 1 enemy. Attack gets +10 (1 enemy) + (3 - 1) * 15 = 40.
+    # Idle is 1. Defend is 2.
+    assert action == "attack"
