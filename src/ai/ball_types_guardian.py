@@ -9,15 +9,15 @@ from ai.personality import Personality
 
 class Guardian:
     BALL_TYPE = "guardian"
-    HP = 180
-    SPEED = 1.0
-    DAMAGE = 10
+    HP = 220
+    SPEED = 1.3
+    DAMAGE = 18
     RADIUS = 16
     PERCEPTION_RADIUS = 180
     AGGRESSION = 0.3
     COLOR = "gold"
     SKILL = "protect_ally"
-    SKILL_COOLDOWN = 6.0
+    SKILL_COOLDOWN = 4.5
 
     def __init__(self, ball_id: int, x: float = 0.0, y: float = 0.0):
         self.id = ball_id
