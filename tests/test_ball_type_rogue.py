@@ -36,7 +36,7 @@ def test_rogue_take_damage():
 def test_rogue_skill():
     ball = Rogue(ball_id=1)
     assert ball.use_skill() is True
-    assert ball.skill_timer == 4.5
+    assert ball.skill_timer == 2.0
     assert ball.use_skill() is False
 
 
