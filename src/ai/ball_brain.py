@@ -1,3 +1,4 @@
+import random
 from typing import Any, Dict
 
 from .perception import Perception
@@ -20,12 +21,32 @@ class BallBrain:
         self.decision_layer = Decision(self.ball, self.world)
         self.action_layer = Action(self.ball, self.world)
 
+        self._reaction_timer = 0.0
+        self._current_decision = "idle"
+
     def process(self, delta: float) -> None:
         """Main processing loop through the 4 layers."""
-        perception_data = self.perception()
-        emotion_state = self.emotion(perception_data)
-        decision = self.decision(perception_data, emotion_state)
-        self.action(decision, delta)
+        self._reaction_timer -= delta
+
+        if self._reaction_timer <= 0:
+            perception_data = self.perception()
+            emotion_state = self.emotion(perception_data)
+            decision = self.decision(perception_data, emotion_state)
+            self._current_decision = decision
+
+            difficulty = getattr(self.ball, "difficulty", "medium")
+            if difficulty == "easy":
+                self._reaction_timer = 0.5
+            elif difficulty == "medium":
+                self._reaction_timer = 0.1
+            elif difficulty == "hard":
+                self._reaction_timer = 0.0
+            elif difficulty == "chaos":
+                self._reaction_timer = random.uniform(0.0, 0.2)
+            else:
+                self._reaction_timer = 0.1
+
+        self.action(self._current_decision, delta)
 
     def perception(self) -> Dict[str, Any]:
         """

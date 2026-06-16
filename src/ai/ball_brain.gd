@@ -14,6 +14,9 @@ var emotion_layer = null
 var decision_layer = null
 var action_layer = null
 
+var _reaction_timer = 0.0
+var _current_decision = "idle"
+
 func _init(ball_ref, world_ref):
     self.ball = ball_ref
     self.world = world_ref
@@ -24,10 +27,30 @@ func _init(ball_ref, world_ref):
 
 # Main processing loop
 func process(delta):
-    var perception_data = perception()
-    var emotion_state = emotion(perception_data)
-    var decision = decision(perception_data, emotion_state)
-    action(decision, delta)
+    self._reaction_timer -= delta
+
+    if self._reaction_timer <= 0:
+        var perception_data = perception()
+        var emotion_state = emotion(perception_data)
+        var decision = decision(perception_data, emotion_state)
+        self._current_decision = decision
+
+        var difficulty = "medium"
+        if "difficulty" in self.ball:
+            difficulty = self.ball.difficulty
+
+        if difficulty == "easy":
+            self._reaction_timer = 0.5
+        elif difficulty == "medium":
+            self._reaction_timer = 0.1
+        elif difficulty == "hard":
+            self._reaction_timer = 0.0
+        elif difficulty == "chaos":
+            self._reaction_timer = randf_range(0.0, 0.2)
+        else:
+            self._reaction_timer = 0.1
+
+    action(self._current_decision, delta)
 
 # 1. PERCEPTION LAYER
 # Scans environment for entities via Perception layer

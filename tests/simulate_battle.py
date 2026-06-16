@@ -57,7 +57,7 @@ BALL_TYPES = {
                  "skill": "protect_ally", "skill_cooldown": 6.0},
 }
 
-import json
+import json  # noqa: E402
 try:
     _config_path = os.path.join(os.path.dirname(__file__), "../src/ai/balance_config.json")
     if os.path.exists(_config_path):
@@ -156,6 +156,9 @@ class SpatialGrid:
         self.cells: Dict[int, List[Ball]] = {}
 
     def _key(self, x: float, y: float) -> int:
+        import math
+        if math.isnan(x) or math.isnan(y) or math.isinf(x) or math.isinf(y):
+            return 0
         col = int(x / self.cell_size)
         row = int(y / self.cell_size)
         return row * self.cols + col
@@ -170,7 +173,10 @@ class SpatialGrid:
         self.cells[key].append(ball)
 
     def get_nearby(self, x: float, y: float, radius: float) -> List[Ball]:
-        result = []
+        import math
+        result: List[Ball] = []
+        if math.isnan(x) or math.isnan(y) or math.isinf(x) or math.isinf(y):
+            return result
         min_col = max(0, int((x - radius) / self.cell_size))
         max_col = min(self.cols - 1, int((x + radius) / self.cell_size))
         min_row = max(0, int((y - radius) / self.cell_size))

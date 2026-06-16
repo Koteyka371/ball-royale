@@ -24,6 +24,8 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
         "defend": 0.0,
         "opportunistic": 0.0,
         "attack": 0.0,
+        "chase": 0.0,
+        "use skill": 0.0,
         "idle": 0.0
     }
 
@@ -87,6 +89,40 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     if personality == "warrior" or personality == "aggressive":
         scores["attack"] += 30.0
 
+    # Chase scoring
+    if enemies.size() > 0:
+        scores["chase"] += 15.0
+    if personality == "assassin" or personality == "rogue" or personality == "phantom" or personality == "swarm":
+        scores["chase"] += 40.0
+    if emotion_state == "bloodlust":
+        scores["chase"] += 80.0
+
+    # Use skill scoring
+    var difficulty = "medium"
+    if "difficulty" in self.ball:
+        difficulty = self.ball.difficulty
+
+    var skill_timer = 0.0
+    if "skill_timer" in self.ball:
+        skill_timer = self.ball.skill_timer
+
+    if skill_timer <= 0 and enemies.size() > 0:
+        if difficulty == "easy":
+            scores["use skill"] += 20.0
+            if hp_percent < 0.3:
+                scores["use skill"] += 30.0
+        elif difficulty == "hard":
+            scores["use skill"] += 60.0
+            if hp_percent < 0.6:
+                scores["use skill"] += 40.0
+        else:
+            scores["use skill"] += 40.0
+            if hp_percent < 0.5:
+                scores["use skill"] += 30.0
+
+    if skill_timer > 0:
+        scores["use skill"] = -1000.0
+
     # Idle scoring
     scores["idle"] = 1.0
 
@@ -100,11 +136,21 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
 
     if enemies.size() == 0:
         scores["attack"] = -1000.0
+        scores["chase"] = -1000.0
+
+    # Decision Quality (Noise based on difficulty)
+    if difficulty == "chaos":
+        for k in scores.keys():
+            scores[k] = randf_range(-100.0, 100.0)
+    elif difficulty == "easy":
+        for k in scores.keys():
+            if scores[k] > -500.0:
+                scores[k] += randf_range(-20.0, 20.0)
 
     var best_action = "idle"
     var best_score = -9999.0
 
-    var order = ["flee", "defend", "opportunistic", "attack", "idle"]
+    var order = ["flee", "defend", "opportunistic", "attack", "chase", "use skill", "idle"]
     for action in order:
         if scores[action] > best_score:
             best_score = scores[action]
