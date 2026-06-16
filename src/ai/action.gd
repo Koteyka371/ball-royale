@@ -9,6 +9,9 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+    var old_x = self.ball.x
+    var old_y = self.ball.y
+
     if "current_action" in self.ball:
         self.ball.current_action = strategy
 
@@ -49,6 +52,109 @@ func execute(strategy: String, delta: float):
 
     _clamp_position()
     _update_skill_timer(delta)
+
+    if delta > 0:
+        var vx = (self.ball.x - old_x) / delta
+        var vy = (self.ball.y - old_y) / delta
+        if "vx" in self.ball:
+            self.ball.vx = vx
+            self.ball.vy = vy
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("vx", vx)
+            self.ball.set_meta("vy", vy)
+
+
+func _apply_boid_rules(nx: float, ny: float) -> Array:
+    var b_type = ""
+    if "ball_type" in self.ball:
+        b_type = self.ball.ball_type
+    elif self.ball.has_method("get_ball_type"):
+        b_type = self.ball.get_ball_type()
+
+    if b_type != "swarm":
+        return [nx, ny]
+
+    var allies = _get_allies()
+    if allies.size() == 0:
+        return [nx, ny]
+
+    var cohesion_weight = 0.5
+    var alignment_weight = 0.5
+    var separation_weight = 1.0
+
+    var center_x = 0.0
+    var center_y = 0.0
+    var align_vx = 0.0
+    var align_vy = 0.0
+    var sep_nx = 0.0
+    var sep_ny = 0.0
+
+    var count = 0
+    var perception_radius = 250.0
+    if "perception_radius" in self.ball:
+        perception_radius = self.ball.perception_radius
+
+    for ally in allies:
+        var dx = self.ball.x - ally.x
+        var dy = self.ball.y - ally.y
+        var dist_sq = dx*dx + dy*dy
+
+        if dist_sq > 0.0001 and dist_sq < perception_radius * perception_radius:
+            count += 1
+            var dist = sqrt(dist_sq)
+
+            center_x += ally.x
+            center_y += ally.y
+
+            if "vx" in ally: align_vx += ally.vx
+            elif ally.has_method("get_meta") and ally.has_meta("vx"): align_vx += ally.get_meta("vx")
+
+            if "vy" in ally: align_vy += ally.vy
+            elif ally.has_method("get_meta") and ally.has_meta("vy"): align_vy += ally.get_meta("vy")
+
+            var ball_radius = 10.0
+            if "radius" in self.ball: ball_radius = self.ball.radius
+            var ally_radius = 10.0
+            if "radius" in ally: ally_radius = ally.radius
+
+            var sep_dist = (ball_radius + ally_radius) * 2.0
+            if dist < sep_dist:
+                sep_nx += (dx / dist) / dist
+                sep_ny += (dy / dist) / dist
+
+    if count > 0:
+        center_x /= count
+        center_y /= count
+
+        var coh_dx = center_x - self.ball.x
+        var coh_dy = center_y - self.ball.y
+        var coh_dist_sq = coh_dx*coh_dx + coh_dy*coh_dy
+        var coh_nx = 0.0
+        var coh_ny = 0.0
+        if coh_dist_sq > 0.0001:
+            var coh_dist = sqrt(coh_dist_sq)
+            coh_nx = coh_dx / coh_dist
+            coh_ny = coh_dy / coh_dist
+
+        align_vx /= count
+        align_vy /= count
+        var align_speed_sq = align_vx*align_vx + align_vy*align_vy
+        var al_nx = 0.0
+        var al_ny = 0.0
+        if align_speed_sq > 0.0001:
+            var align_speed = sqrt(align_speed_sq)
+            al_nx = align_vx / align_speed
+            al_ny = align_vy / align_speed
+
+        var comb_nx = nx + coh_nx * cohesion_weight + al_nx * alignment_weight + sep_nx * separation_weight
+        var comb_ny = ny + coh_ny * cohesion_weight + al_ny * alignment_weight + sep_ny * separation_weight
+
+        var comb_dist_sq = comb_nx*comb_nx + comb_ny*comb_ny
+        if comb_dist_sq > 0.0001:
+            var comb_dist = sqrt(comb_dist_sq)
+            return [comb_nx / comb_dist, comb_ny / comb_dist]
+
+    return [nx, ny]
 
 func _apply_obstacle_avoidance(nx: float, ny: float, target = null) -> Array:
     var all_entities = []
@@ -251,6 +357,10 @@ func _flee(delta: float):
         comb_nx = flee_nx
         comb_ny = flee_ny
 
+    var boid_vec = _apply_boid_rules(comb_nx, comb_ny)
+    comb_nx = boid_vec[0]
+    comb_ny = boid_vec[1]
+
     var speed = 2.0
     if "speed" in self.ball: speed = self.ball.speed
     var boosted_speed = speed * 1.5
@@ -349,6 +459,10 @@ func _chase(delta: float):
         comb_nx /= comb_dist
         comb_ny /= comb_dist
 
+    var boid_vec = _apply_boid_rules(comb_nx, comb_ny)
+    comb_nx = boid_vec[0]
+    comb_ny = boid_vec[1]
+
     var speed = 2.0
     if "speed" in self.ball: speed = self.ball.speed
     var step = speed * delta * 60.0
@@ -414,6 +528,10 @@ func _attack(delta: float):
             var avoid_vec = _apply_obstacle_avoidance(nx, ny, target)
             nx = avoid_vec[0]
             ny = avoid_vec[1]
+
+            var boid_vec = _apply_boid_rules(nx, ny)
+            nx = boid_vec[0]
+            ny = boid_vec[1]
 
             var step = speed * delta * 60
             self.ball.x += nx * min(step, dist)
@@ -590,6 +708,10 @@ func _collect_booster(delta: float):
             nx = avoid_vec[0]
             ny = avoid_vec[1]
 
+            var boid_vec = _apply_boid_rules(nx, ny)
+            nx = boid_vec[0]
+            ny = boid_vec[1]
+
             var step = speed * delta * 60
             self.ball.x += nx * min(step, dist)
             self.ball.y += ny * min(step, dist)
@@ -625,8 +747,23 @@ func _use_skill():
 func _idle(delta: float):
     var speed = 2.0
     if "speed" in self.ball: speed = self.ball.speed
-    self.ball.x += randf_range(-1.0, 1.0) * speed * 0.3
-    self.ball.y += randf_range(-1.0, 1.0) * speed * 0.3
+    var nx = randf_range(-1.0, 1.0)
+    var ny = randf_range(-1.0, 1.0)
+    var dist_sq = nx*nx + ny*ny
+    if dist_sq > 0.0001:
+        var dist = sqrt(dist_sq)
+        nx /= dist
+        ny /= dist
+    else:
+        nx = 0.0
+        ny = 0.0
+
+    var boid_vec = _apply_boid_rules(nx, ny)
+    nx = boid_vec[0]
+    ny = boid_vec[1]
+
+    self.ball.x += nx * speed * 0.3
+    self.ball.y += ny * speed * 0.3
 
 func _clamp_position():
     if self.world != null and "width" in self.world and "height" in self.world:
