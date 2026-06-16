@@ -55,6 +55,9 @@ BALL_TYPES = {
     "guardian": {"hp": 180, "speed": 1.0, "damage": 10, "radius": 16,
                  "perception_radius": 180, "aggression": 0.3, "color": "gold",
                  "skill": "protect_ally", "skill_cooldown": 6.0},
+    "scout": {"hp": 80, "speed": 3.8, "damage": 20, "radius": 9,
+              "perception_radius": 350, "aggression": 0.5, "color": "lightblue",
+              "skill": "dash", "skill_cooldown": 3.5},
 }
 
 import json  # noqa: E402

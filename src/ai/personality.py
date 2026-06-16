@@ -3,7 +3,7 @@ from typing import Dict
 class Personality:
     """
     Defines the character of a ball and its decision modifiers.
-    Available characters: aggressive, cautious, supportive, reckless, cunning.
+    Available characters: aggressive, cautious, supportive, reckless, cunning, curious.
     """
     def __init__(self, character: str = "idle"):
         self.character = character
@@ -40,6 +40,11 @@ class Personality:
             mods["collect_booster"] += 20.0
             mods["chase"] += 20.0
             mods["defend"] -= 10.0
+        elif self.character == "curious":
+            mods["collect_booster"] += 30.0
+            mods["chase"] += 15.0
+            mods["flee"] += 15.0
+            mods["defend"] -= 20.0
 
         return mods
 

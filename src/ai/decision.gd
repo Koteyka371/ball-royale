@@ -85,6 +85,19 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
 
     scores["flee"] += danger_level * 10.0
 
+    if personality == "curious":
+        var strong_enemies = 0
+        for e in enemies:
+            var e_hp_pct = 1.0
+            if e.has_method("get_hp_percent"):
+                e_hp_pct = e.get_hp_percent()
+            elif "hp" in e and "max_hp" in e and float(e.max_hp) > 0:
+                e_hp_pct = float(e.hp) / float(e.max_hp)
+            if e_hp_pct >= 0.3:
+                strong_enemies += 1
+        if strong_enemies > 0:
+            scores["flee"] += strong_enemies * 20.0
+
     # Defend scoring
     if danger_level > 0.7:
         scores["defend"] += 100.0
@@ -125,6 +138,19 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     if allies.size() > enemies.size():
         scores["attack"] += (allies.size() - enemies.size()) * 15.0
 
+    if personality == "curious":
+        var weak_enemies = 0
+        for e in enemies:
+            var e_hp_pct = 1.0
+            if e.has_method("get_hp_percent"):
+                e_hp_pct = e.get_hp_percent()
+            elif "hp" in e and "max_hp" in e and float(e.max_hp) > 0:
+                e_hp_pct = float(e.hp) / float(e.max_hp)
+            if e_hp_pct < 0.3:
+                weak_enemies += 1
+        if weak_enemies > 0:
+            scores["attack"] += weak_enemies * 20.0
+
     # Chase scoring
     if enemies.size() > 0:
         scores["chase"] += 15.0
@@ -132,6 +158,19 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
         scores["chase"] += 40.0
     if emotion_state == "bloodlust":
         scores["chase"] += 80.0
+
+    if personality == "curious":
+        var weak_enemies = 0
+        for e in enemies:
+            var e_hp_pct = 1.0
+            if e.has_method("get_hp_percent"):
+                e_hp_pct = e.get_hp_percent()
+            elif "hp" in e and "max_hp" in e and float(e.max_hp) > 0:
+                e_hp_pct = float(e.hp) / float(e.max_hp)
+            if e_hp_pct < 0.3:
+                weak_enemies += 1
+        if weak_enemies > 0:
+            scores["chase"] += weak_enemies * 25.0
 
     # Use skill scoring
     var difficulty = "medium"
@@ -141,6 +180,9 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     var skill_timer = 0.0
     if "skill_timer" in self.ball:
         skill_timer = self.ball.skill_timer
+
+    var intent_flee = scores["flee"] > max(scores["defend"], max(scores["attack"], max(scores["chase"], scores.get("collect_booster", 0.0))))
+    var intent_chase = scores["chase"] > max(scores["flee"], max(scores["defend"], max(scores["attack"], scores.get("collect_booster", 0.0))))
 
     if skill_timer <= 0 and enemies.size() > 0:
         if difficulty == "easy":
@@ -155,6 +197,12 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
             scores["use_skill"] += 40.0
             if hp_percent < 0.5:
                 scores["use_skill"] += 30.0
+
+        var skill_name = ""
+        if "skill" in self.ball:
+            skill_name = self.ball.skill
+        if skill_name == "dash" and (intent_flee or intent_chase):
+            scores["use_skill"] += 50.0
 
     if skill_timer > 0:
         scores["use_skill"] = -1000.0
