@@ -223,19 +223,123 @@ func _attack(delta: float):
         var speed = 2.0
         if "speed" in self.ball: speed = self.ball.speed
 
+        var nx = 0.0
+        var ny = 0.0
         if dist > 0.01:
-            var nx = dx / dist
-            var ny = dy / dist
-            var step = speed * delta * 60
+            nx = dx / dist
+            ny = dy / dist
+
+        # --- BOIDS LOGIC FOR SWARM ---
+        if personality == "swarm":
+            var allies = _get_allies()
+            var swarm_allies = []
+            for a in allies:
+                var a_pers = ""
+                if "personality" in a:
+                    a_pers = a.personality
+                if a_pers == "swarm":
+                    swarm_allies.append(a)
+
+            if swarm_allies.size() > 0:
+                var sep_x = 0.0
+                var sep_y = 0.0
+                var align_x = 0.0
+                var align_y = 0.0
+                var coh_x = 0.0
+                var coh_y = 0.0
+
+                var ball_radius = 10.0
+                if "radius" in self.ball: ball_radius = self.ball.radius
+                var perception = 250.0
+                if "perception_radius" in self.ball: perception = self.ball.perception_radius
+
+                var sep_count = 0
+                var coh_count = 0
+                var align_count = 0
+
+                for a in swarm_allies:
+                    var adx = self.ball.x - a.x
+                    var ady = self.ball.y - a.y
+                    var adist = sqrt(adx*adx + ady*ady)
+
+                    # Separation
+                    if adist > 0.0001 and adist < ball_radius * 3.0:
+                        sep_x += adx / adist
+                        sep_y += ady / adist
+                        sep_count += 1
+
+                    # Alignment
+                    if adist < perception * 0.5:
+                        if a.has_method("get_meta") and a.has_meta("vx"):
+                            align_x += a.get_meta("vx")
+                        elif "vx" in a:
+                            align_x += a.vx
+                        if a.has_method("get_meta") and a.has_meta("vy"):
+                            align_y += a.get_meta("vy")
+                        elif "vy" in a:
+                            align_y += a.vy
+                        align_count += 1
+
+                    # Cohesion
+                    if adist < perception * 0.5:
+                        coh_x += a.x
+                        coh_y += a.y
+                        coh_count += 1
+
+                if sep_count > 0:
+                    sep_x /= sep_count
+                    sep_y /= sep_count
+
+                if align_count > 0:
+                    align_x /= align_count
+                    align_y /= align_count
+
+                if coh_count > 0:
+                    coh_x /= coh_count
+                    coh_y /= coh_count
+                    # Vector from self to center of mass
+                    coh_x = coh_x - self.ball.x
+                    coh_y = coh_y - self.ball.y
+                    var coh_dist = sqrt(coh_x*coh_x + coh_y*coh_y)
+                    if coh_dist > 0.0001:
+                        coh_x /= coh_dist
+                        coh_y /= coh_dist
+
+                # Combine weights: 1.0 Target, 1.5 Separation, 0.5 Alignment, 0.5 Cohesion
+                nx = nx * 1.0 + sep_x * 1.5 + align_x * 0.5 + coh_x * 0.5
+                ny = ny * 1.0 + sep_y * 1.5 + align_y * 0.5 + coh_y * 0.5
+
+                # Normalize again
+                var comb_dist = sqrt(nx*nx + ny*ny)
+                if comb_dist > 0.0001:
+                    nx /= comb_dist
+                    ny /= comb_dist
+
+        if dist > 0.01:
+            var step = speed * delta * 60.0
+
+            # Save velocity for alignment
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("vx", nx)
+                self.ball.set_meta("vy", ny)
+            else:
+                if "vx" in self.ball: self.ball.vx = nx
+                if "vy" in self.ball: self.ball.vy = ny
+
             self.ball.x += nx * min(step, dist)
             self.ball.y += ny * min(step, dist)
+
+            # Update distance for damage check
+            dx = target.x - self.ball.x
+            dy = target.y - self.ball.y
+            dist = sqrt(dx*dx + dy*dy)
 
         var target_radius = 10.0
         if "radius" in target: target_radius = target.radius
         var ball_radius = 10.0
         if "radius" in self.ball: ball_radius = self.ball.radius
 
-        if dist <= ball_radius + target_radius + 5:
+        if dist <= ball_radius + target_radius + 5.0 + 0.01:
             if self.world != null and self.world.has_method("_deal_damage"):
                 self.world._deal_damage(self.ball, target)
     else:

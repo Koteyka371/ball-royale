@@ -160,16 +160,99 @@ class Action:
 
             dx, dy = target.x - self.ball.x, target.y - self.ball.y
             dist = math.sqrt(dx * dx + dy * dy)
+
+            nx, ny = 0.0, 0.0
             if dist > 0.01:
                 nx, ny = dx / dist, dy / dist
+
+            # --- BOIDS LOGIC FOR SWARM ---
+            if personality == "swarm":
+                allies = self._get_allies()
+                swarm_allies = [a for a in allies if getattr(a, "personality", "") == "swarm"]
+
+                if swarm_allies:
+                    sep_x, sep_y = 0.0, 0.0
+                    align_x, align_y = 0.0, 0.0
+                    coh_x, coh_y = 0.0, 0.0
+
+                    ball_radius = getattr(self.ball, "radius", 10.0)
+                    perception = getattr(self.ball, "perception_radius", 250.0)
+
+                    sep_count = 0
+                    coh_count = 0
+                    align_count = 0
+
+                    for a in swarm_allies:
+                        adx = self.ball.x - a.x
+                        ady = self.ball.y - a.y
+                        adist = math.sqrt(adx*adx + ady*ady)
+
+                        # Separation
+                        if adist > 0.0001 and adist < ball_radius * 3.0:
+                            sep_x += adx / adist
+                            sep_y += ady / adist
+                            sep_count += 1
+
+                        # Alignment
+                        if adist < perception * 0.5:
+                            align_x += getattr(a, "vx", 0.0)
+                            align_y += getattr(a, "vy", 0.0)
+                            align_count += 1
+
+                        # Cohesion
+                        if adist < perception * 0.5:
+                            coh_x += a.x
+                            coh_y += a.y
+                            coh_count += 1
+
+                    if sep_count > 0:
+                        sep_x /= sep_count
+                        sep_y /= sep_count
+
+                    if align_count > 0:
+                        align_x /= align_count
+                        align_y /= align_count
+
+                    if coh_count > 0:
+                        coh_x /= coh_count
+                        coh_y /= coh_count
+                        # Vector from self to center of mass
+                        coh_x = coh_x - self.ball.x
+                        coh_y = coh_y - self.ball.y
+                        coh_dist = math.sqrt(coh_x*coh_x + coh_y*coh_y)
+                        if coh_dist > 0.0001:
+                            coh_x /= coh_dist
+                            coh_y /= coh_dist
+
+                    # Combine weights: 1.0 Target, 1.5 Separation, 0.5 Alignment, 0.5 Cohesion
+                    nx = nx * 1.0 + sep_x * 1.5 + align_x * 0.5 + coh_x * 0.5
+                    ny = ny * 1.0 + sep_y * 1.5 + align_y * 0.5 + coh_y * 0.5
+
+                    # Normalize again
+                    comb_dist = math.sqrt(nx*nx + ny*ny)
+                    if comb_dist > 0.0001:
+                        nx /= comb_dist
+                        ny /= comb_dist
+
+            if dist > 0.01:
                 step = getattr(self.ball, "speed", 2.0) * delta * 60
+
+                # Save velocity for alignment
+                self.ball.vx = nx
+                self.ball.vy = ny
+
                 self.ball.x += nx * min(step, dist)
                 self.ball.y += ny * min(step, dist)
+
+                # Update distance for damage check
+                dx = target.x - self.ball.x
+                dy = target.y - self.ball.y
+                dist = math.sqrt(dx * dx + dy * dy)
 
             target_radius = getattr(target, "radius", 10.0)
             ball_radius = getattr(self.ball, "radius", 10.0)
 
-            if dist <= ball_radius + target_radius + 5:
+            if dist <= ball_radius + target_radius + 5 + 0.01:
                 if hasattr(self.world, "_deal_damage"):
                     self.world._deal_damage(self.ball, target)
         else:
