@@ -69,6 +69,89 @@ func _get_boosters() -> Array:
                     boosters.append(b)
     return boosters
 
+func _calculate_steering(target_x: float, target_y: float, target_ent = null, flee: bool = false) -> Vector2:
+    var dx = target_x - self.ball.x
+    var dy = target_y - self.ball.y
+    var dist = sqrt(dx * dx + dy * dy)
+
+    var nx = 0.0
+    var ny = 0.0
+    if dist > 0.0:
+        nx = dx / dist
+        ny = dy / dist
+        if flee:
+            nx = -nx
+            ny = -ny
+
+    var perception_radius = 250.0
+    if "perception_radius" in self.ball:
+        perception_radius = self.ball.perception_radius
+
+    var entities = []
+    if self.world != null and self.world.has_method("get_nearby_entities"):
+        var entities_dict = self.world.get_nearby_entities(self.ball, perception_radius)
+        if typeof(entities_dict) == TYPE_DICTIONARY:
+            if entities_dict.has("enemies"):
+                entities.append_array(entities_dict["enemies"])
+            if entities_dict.has("allies"):
+                entities.append_array(entities_dict["allies"])
+            if entities_dict.has("boosters"):
+                entities.append_array(entities_dict["boosters"])
+            if entities_dict.has("traps"):
+                entities.append_array(entities_dict["traps"])
+        elif typeof(entities_dict) == TYPE_ARRAY:
+            entities.append_array(entities_dict)
+
+    var repulse_x = 0.0
+    var repulse_y = 0.0
+
+    for e in entities:
+        if e == target_ent or e == self.ball:
+            continue
+
+        if not ("x" in e and "y" in e):
+            continue
+
+        var ex = e.x
+        var ey = e.y
+        if is_nan(ex) or is_nan(ey):
+            continue
+
+        var edx = self.ball.x - ex
+        var edy = self.ball.y - ey
+        var edist = sqrt(edx * edx + edy * edy)
+
+        var avoid_radius = 10.0 + 10.0 + 10.0
+        if "radius" in self.ball:
+            avoid_radius = self.ball.radius + 10.0
+        if "radius" in e:
+            avoid_radius += e.radius
+
+        if edist > 0.0 and edist < avoid_radius:
+            repulse_x += (edx / edist) * (avoid_radius - edist)
+            repulse_y += (edy / edist) * (avoid_radius - edist)
+        elif edist == 0.0:
+            repulse_x += randf_range(-1.0, 1.0)
+            repulse_y += randf_range(-1.0, 1.0)
+
+    var combined_x = nx + repulse_x * 0.5
+    var combined_y = ny + repulse_y * 0.5
+
+    var cdist = sqrt(combined_x * combined_x + combined_y * combined_y)
+    if cdist > 0.0:
+        combined_x /= cdist
+        combined_y /= cdist
+    else:
+        combined_x = 0.0
+        combined_y = 0.0
+
+    if is_nan(combined_x) or is_inf(combined_x):
+        combined_x = 0.0
+    if is_nan(combined_y) or is_inf(combined_y):
+        combined_y = 0.0
+
+    return Vector2(combined_x, combined_y)
+
 func _flee(delta: float):
     var enemies = _get_enemies()
     if enemies.size() > 0:
@@ -80,14 +163,12 @@ func _flee(delta: float):
                 min_dist_sq = dist_sq
                 nearest = e
 
-        var dx = self.ball.x - nearest.x
-        var dy = self.ball.y - nearest.y
-        var dist = sqrt(dx*dx + dy*dy)
-        if dist > 0.01:
-            var speed = 2.0
-            if "speed" in self.ball: speed = self.ball.speed
-            self.ball.x += (dx / dist) * speed * delta * 60
-            self.ball.y += (dy / dist) * speed * delta * 60
+        var dir = _calculate_steering(nearest.x, nearest.y, nearest, true)
+        var speed = 2.0
+        if "speed" in self.ball: speed = self.ball.speed
+
+        self.ball.x += dir.x * speed * delta * 60
+        self.ball.y += dir.y * speed * delta * 60
     else:
         _idle(delta)
 
@@ -109,19 +190,21 @@ func _attack(delta: float):
         var speed = 2.0
         if "speed" in self.ball: speed = self.ball.speed
 
-        if dist > 0.01:
-            var nx = dx / dist
-            var ny = dy / dist
-            var step = speed * delta * 60
-            self.ball.x += nx * min(step, dist)
-            self.ball.y += ny * min(step, dist)
-
         var target_radius = 10.0
         if "radius" in target: target_radius = target.radius
         var ball_radius = 10.0
         if "radius" in self.ball: ball_radius = self.ball.radius
+        var attack_range = ball_radius + target_radius + 5.0
 
-        if dist <= ball_radius + target_radius + 5:
+        if dist > attack_range:
+            var dir = _calculate_steering(target.x, target.y, target, false)
+            var step = speed * delta * 60
+
+            var move_dist = min(step, dist - attack_range)
+            self.ball.x += dir.x * move_dist
+            self.ball.y += dir.y * move_dist
+
+        if dist <= attack_range:
             if self.world != null and self.world.has_method("_deal_damage"):
                 self.world._deal_damage(self.ball, target)
     else:
@@ -148,17 +231,17 @@ func _collect_booster(delta: float):
         var speed = 2.0
         if "speed" in self.ball: speed = self.ball.speed
 
-        if dist > 0.01:
-            var nx = dx / dist
-            var ny = dy / dist
-            var step = speed * delta * 60
-            self.ball.x += nx * min(step, dist)
-            self.ball.y += ny * min(step, dist)
-
         var ball_radius = 10.0
         if "radius" in self.ball: ball_radius = self.ball.radius
+        var collect_range = ball_radius + 10.0
 
-        if dist <= ball_radius + 10:
+        if dist > 0.01:
+            var dir = _calculate_steering(nearest.x, nearest.y, nearest, false)
+            var step = speed * delta * 60
+            self.ball.x += dir.x * min(step, dist)
+            self.ball.y += dir.y * min(step, dist)
+
+        if dist <= collect_range:
             if self.world != null and self.world.has_method("_collect_booster"):
                 self.world._collect_booster(self.ball, nearest)
     else:
@@ -176,6 +259,11 @@ func _idle(delta: float):
 
 func _clamp_position():
     if self.world != null and "width" in self.world and "height" in self.world:
+        if is_nan(self.ball.x) or is_inf(self.ball.x):
+            self.ball.x = self.world.width / 2.0
+        if is_nan(self.ball.y) or is_inf(self.ball.y):
+            self.ball.y = self.world.height / 2.0
+
         var radius = 10.0
         if "radius" in self.ball: radius = self.ball.radius
         self.ball.x = max(radius, min(self.world.width - radius, self.ball.x))

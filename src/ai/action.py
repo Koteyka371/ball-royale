@@ -61,15 +61,85 @@ class Action:
                         boosters.append(b)
         return boosters
 
+    def _calculate_steering(self, target_x: float, target_y: float, target_ent: Any = None, flee: bool = False) -> tuple[float, float]:
+        dx = target_x - self.ball.x
+        dy = target_y - self.ball.y
+        dist = math.sqrt(dx * dx + dy * dy)
+
+        if dist > 0:
+            nx = dx / dist
+            ny = dy / dist
+            if flee:
+                nx = -nx
+                ny = -ny
+        else:
+            nx, ny = 0.0, 0.0
+
+        perception_radius = getattr(self.ball, "perception_radius", 250)
+        entities = []
+        if hasattr(self.world, "get_nearby_entities"):
+            entities_dict = self.world.get_nearby_entities(self.ball, perception_radius)
+            if isinstance(entities_dict, dict):
+                entities.extend(entities_dict.get("enemies", []))
+                entities.extend(entities_dict.get("allies", []))
+                entities.extend(entities_dict.get("boosters", []))
+                entities.extend(entities_dict.get("traps", []))
+            elif isinstance(entities_dict, list):
+                entities.extend(entities_dict)
+
+        repulse_x = 0.0
+        repulse_y = 0.0
+
+        for e in entities:
+            if e is target_ent or e is self.ball:
+                continue
+
+            ex = getattr(e, "x", None)
+            ey = getattr(e, "y", None)
+            if ex is None or ey is None:
+                continue
+
+            if math.isnan(ex) or math.isnan(ey):
+                continue
+
+            edx = self.ball.x - ex
+            edy = self.ball.y - ey
+            edist = math.sqrt(edx * edx + edy * edy)
+
+            avoid_radius = getattr(self.ball, "radius", 10.0) + getattr(e, "radius", 10.0) + 10.0
+            if edist > 0 and edist < avoid_radius:
+                repulse_x += (edx / edist) * (avoid_radius - edist)
+                repulse_y += (edy / edist) * (avoid_radius - edist)
+            elif edist == 0:
+                repulse_x += random.uniform(-1, 1)
+                repulse_y += random.uniform(-1, 1)
+
+        combined_x = nx + repulse_x * 0.5
+        combined_y = ny + repulse_y * 0.5
+
+        cdist = math.sqrt(combined_x * combined_x + combined_y * combined_y)
+        if cdist > 0:
+            combined_x /= cdist
+            combined_y /= cdist
+        else:
+            combined_x, combined_y = 0.0, 0.0
+
+        if math.isnan(combined_x) or math.isinf(combined_x):
+            combined_x = 0.0
+        if math.isnan(combined_y) or math.isinf(combined_y):
+            combined_y = 0.0
+
+        return combined_x, combined_y
+
     def _flee(self, delta: float) -> None:
         enemies = self._get_enemies()
         if enemies:
             nearest = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
-            dx, dy = self.ball.x - nearest.x, self.ball.y - nearest.y
-            dist = math.sqrt(dx * dx + dy * dy)
-            if dist > 0.01:
-                self.ball.x += (dx / dist) * getattr(self.ball, "speed", 2.0) * delta * 60
-                self.ball.y += (dy / dist) * getattr(self.ball, "speed", 2.0) * delta * 60
+            nx, ny = self._calculate_steering(nearest.x, nearest.y, nearest, flee=True)
+
+            step = getattr(self.ball, "speed", 2.0) * delta * 60
+            self.ball.x += nx * step
+            self.ball.y += ny * step
         else:
             self._idle(delta)
 
@@ -79,16 +149,21 @@ class Action:
             target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
             dx, dy = target.x - self.ball.x, target.y - self.ball.y
             dist = math.sqrt(dx * dx + dy * dy)
-            if dist > 0.01:
-                nx, ny = dx / dist, dy / dist
-                step = getattr(self.ball, "speed", 2.0) * delta * 60
-                self.ball.x += nx * min(step, dist)
-                self.ball.y += ny * min(step, dist)
 
             target_radius = getattr(target, "radius", 10.0)
             ball_radius = getattr(self.ball, "radius", 10.0)
+            attack_range = ball_radius + target_radius + 5
 
-            if dist <= ball_radius + target_radius + 5:
+            if dist > attack_range:
+                nx, ny = self._calculate_steering(target.x, target.y, target, flee=False)
+                step = getattr(self.ball, "speed", 2.0) * delta * 60
+
+                # Prevent overshooting the attack range
+                move_dist = min(step, dist - attack_range)
+                self.ball.x += nx * move_dist
+                self.ball.y += ny * move_dist
+
+            if dist <= attack_range:
                 if hasattr(self.world, "_deal_damage"):
                     self.world._deal_damage(self.ball, target)
         else:
@@ -104,14 +179,17 @@ class Action:
             nearest = min(boosters, key=lambda b: (b.x - self.ball.x) ** 2 + (b.y - self.ball.y) ** 2)
             dx, dy = nearest.x - self.ball.x, nearest.y - self.ball.y
             dist = math.sqrt(dx * dx + dy * dy)
+
+            ball_radius = getattr(self.ball, "radius", 10.0)
+            collect_range = ball_radius + 10.0
+
             if dist > 0.01:
-                nx, ny = dx / dist, dy / dist
+                nx, ny = self._calculate_steering(nearest.x, nearest.y, nearest, flee=False)
                 step = getattr(self.ball, "speed", 2.0) * delta * 60
                 self.ball.x += nx * min(step, dist)
                 self.ball.y += ny * min(step, dist)
 
-            ball_radius = getattr(self.ball, "radius", 10.0)
-            if dist <= ball_radius + 10:
+            if dist <= collect_range:
                 if hasattr(self.world, "_collect_booster"):
                     self.world._collect_booster(self.ball, nearest)
         else:
@@ -128,6 +206,11 @@ class Action:
 
     def _clamp_position(self) -> None:
         if hasattr(self.world, "width") and hasattr(self.world, "height"):
+            if math.isnan(self.ball.x) or math.isinf(self.ball.x):
+                self.ball.x = self.world.width / 2.0
+            if math.isnan(self.ball.y) or math.isinf(self.ball.y):
+                self.ball.y = self.world.height / 2.0
+
             radius = getattr(self.ball, "radius", 10.0)
             self.ball.x = max(radius, min(self.world.width - radius, self.ball.x))
             self.ball.y = max(radius, min(self.world.height - radius, self.ball.y))
