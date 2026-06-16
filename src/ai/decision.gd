@@ -148,6 +148,12 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     if scores.has(personality):
         scores[personality] += 15.0
 
+    if typeof(personality) == TYPE_OBJECT and personality.has_method("get_decision_modifiers"):
+        var mods = personality.get_decision_modifiers()
+        for k in mods.keys():
+            if scores.has(k):
+                scores[k] += mods[k]
+
     # Validation filters
     if boosters.size() == 0:
         scores["opportunistic"] = -1000.0

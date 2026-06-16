@@ -15,7 +15,7 @@ def test_healer_initialization():
     assert ball.hp == 120
     assert ball.max_hp == 120
     assert ball.alive is True
-    assert ball.personality == "healer"
+    assert ball.personality == "supportive"
 
 
 def test_healer_hp_percent():

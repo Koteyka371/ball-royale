@@ -5,6 +5,8 @@ Fast killer, low HP, uses Dash to close distance
 
 
 
+from ai.personality import Personality
+
 class Assassin:
     BALL_TYPE = "assassin"
     HP = 70
@@ -28,7 +30,7 @@ class Assassin:
         self.first_hit_taken = False
         self.current_action = "idle"
         self.skill_timer = 0.0
-        self.personality = "assassin"
+        self.personality = Personality("cunning")
 
     def get_hp_percent(self) -> float:
         return self.hp / self.max_hp if self.max_hp > 0 else 0.0

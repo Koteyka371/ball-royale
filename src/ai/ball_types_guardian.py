@@ -5,6 +5,8 @@ Protects nearby allies, high HP bodyguard
 
 
 
+from ai.personality import Personality
+
 class Guardian:
     BALL_TYPE = "guardian"
     HP = 180
@@ -28,7 +30,7 @@ class Guardian:
         self.first_hit_taken = False
         self.current_action = "idle"
         self.skill_timer = 0.0
-        self.personality = "guardian"
+        self.personality = Personality("supportive")
 
     def get_hp_percent(self) -> float:
         return self.hp / self.max_hp if self.max_hp > 0 else 0.0

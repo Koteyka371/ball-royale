@@ -15,7 +15,7 @@ def test_berserker_initialization():
     assert ball.hp == 100
     assert ball.max_hp == 100
     assert ball.alive is True
-    assert ball.personality == "berserker"
+    assert ball.personality == "reckless"
 
 
 def test_berserker_hp_percent():

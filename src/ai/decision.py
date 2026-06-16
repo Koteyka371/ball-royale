@@ -150,6 +150,12 @@ class Decision:
         if personality in scores:
             scores[personality] += 15.0
 
+        if hasattr(personality, "get_decision_modifiers"):
+            mods = personality.get_decision_modifiers()
+            for action_key, mod_val in mods.items():
+                if action_key in scores:
+                    scores[action_key] += mod_val
+
         # Decision Quality (Noise based on difficulty)
         if difficulty == "chaos":
             for k in scores.keys():

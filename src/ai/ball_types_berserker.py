@@ -5,6 +5,8 @@ Maximum aggression, damage increases as HP drops
 
 
 
+from ai.personality import Personality
+
 class Berserker:
     BALL_TYPE = "berserker"
     HP = 100
@@ -28,7 +30,7 @@ class Berserker:
         self.first_hit_taken = False
         self.current_action = "idle"
         self.skill_timer = 0.0
-        self.personality = "berserker"
+        self.personality = Personality("reckless")
 
     def get_hp_percent(self) -> float:
         return self.hp / self.max_hp if self.max_hp > 0 else 0.0

@@ -5,6 +5,8 @@ Heavy defender, high HP, uses Shield to absorb damage
 
 
 
+from ai.personality import Personality
+
 class Tank:
     BALL_TYPE = "tank"
     HP = 200
@@ -28,7 +30,7 @@ class Tank:
         self.first_hit_taken = False
         self.current_action = "idle"
         self.skill_timer = 0.0
-        self.personality = "tank"
+        self.personality = Personality("supportive")
 
     def get_hp_percent(self) -> float:
         return self.hp / self.max_hp if self.max_hp > 0 else 0.0
