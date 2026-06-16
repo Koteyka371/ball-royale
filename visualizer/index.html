@@ -1046,6 +1046,7 @@ replay_json = json.dumps(replay_data)
                 simStatus.style.color = "var(--danger-color)";
                 alert(
                     "Web Simulation failed.\n\n" + 
+                    "Error: " + err + "\n\n" +
                     "Note: Fetching python files directly from local file:/// is blocked by browser security (CORS).\n" + 
                     "To use the WASM simulator locally, run a local server (e.g. python -m http.server) or use GitHub Pages."
                 );
