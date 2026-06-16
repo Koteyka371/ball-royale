@@ -619,8 +619,11 @@
             }
 
             currentFrameIndex = 0;
-            isPlaying = false;
-            document.getElementById("btnPlay").textContent = "Play";
+            isPlaying = true;
+            document.getElementById("btnPlay").textContent = "Pause";
+            if (!animationId) {
+                animationId = requestAnimationFrame(gameLoop);
+            }
             
             // Set Arena Size
             const width = replayData.arena?.width || 2000;
@@ -639,8 +642,8 @@
 
         function resetZoom() {
             const margin = 40;
-            const zoomX = (container.clientWidth - margin) / canvas.width;
-            const zoomY = (container.clientHeight - margin) / canvas.height;
+            const zoomX = Math.max(0.1, (container.clientWidth - margin) / canvas.width);
+            const zoomY = Math.max(0.1, (container.clientHeight - margin) / canvas.height);
             zoom = Math.min(zoomX, zoomY, 1);
             panX = (container.clientWidth - canvas.width * zoom) / 2;
             panY = (container.clientHeight - canvas.height * zoom) / 2;
