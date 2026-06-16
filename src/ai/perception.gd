@@ -21,6 +21,7 @@ func scan() -> Dictionary:
         "distances": {}, # Need custom handling to map objects to distances
         "threat_level": 0.0,
         "opportunity_score": 0.0,
+        "team_messages": [],
         "danger_level": 0.0,
         "opportunity_level": 0.0
     }
@@ -82,6 +83,11 @@ func scan() -> Dictionary:
             if "id" in ally:
                 data["distances"][ally.id] = dist
         opp += max(0.0, 1.0 - (dist / perception_radius)) * 0.5
+
+        if ally.has_method("has_meta") and ally.has_meta("team_message"):
+            data["team_messages"].append(ally.get_meta("team_message"))
+        elif "team_message" in ally and ally.team_message != null and ally.team_message != "":
+            data["team_messages"].append(ally.team_message)
 
     data["threat_level"] = threat
     data["opportunity_score"] = opp

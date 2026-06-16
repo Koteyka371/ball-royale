@@ -54,9 +54,29 @@ class Decision:
         enemies = perception_data.get("enemies", [])
         boosters = perception_data.get("boosters", [])
         allies = perception_data.get("allies", [])
+        team_messages = perception_data.get("team_messages", [])
 
         personality = getattr(self.ball, "personality", "idle")
         skill_timer = getattr(self.ball, "skill_timer", 0.0)
+
+        # Emit Team Message based on state
+        team_message = ""
+        if hp_percent < 0.3:
+            team_message = "help"
+        elif personality in ("tank", "defender", "guardian", "juggernaut"):
+            if len(enemies) > 0:
+                team_message = "hold_position"
+        elif personality == "healer":
+            if hp_percent < 0.8:
+                team_message = "need_healing"
+            else:
+                team_message = "hold_position"
+        elif personality == "sniper" and len(enemies) > 0:
+            team_message = "threat"
+        elif len(enemies) > 0 and hp_percent > 0.8:
+            team_message = "target"
+
+        self.ball.team_message = team_message
 
         # === FLEE ===
         if hp_percent < 0.3:
@@ -118,6 +138,24 @@ class Decision:
 
         # === IDLE ===
         scores["idle"] = 1.0
+
+        # Process Team Messages
+        for msg in team_messages:
+            if msg == "help":
+                scores["defend"] += 20.0
+                if personality == "healer":
+                    scores["use_skill"] += 30.0
+            elif msg == "hold_position":
+                scores["defend"] += 20.0
+            elif msg == "threat":
+                scores["attack"] += 15.0
+                scores["defend"] += 10.0
+            elif msg == "target":
+                scores["attack"] += 25.0
+                scores["chase"] += 20.0
+            elif msg == "need_healing":
+                if hp_percent < 0.8:
+                    scores["defend"] += 15.0 # Group up for healing
 
         # Personality baseline
         if personality in scores:

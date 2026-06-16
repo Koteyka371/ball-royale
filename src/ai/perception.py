@@ -27,6 +27,7 @@ class Perception:
             "distances": {}, # Maps entity id to distance
             "threat_level": 0.0,
             "opportunity_score": 0.0,
+            "team_messages": [],
             # For backward compatibility with existing layers
             "danger_level": 0.0,
             "opportunity_level": 0.0,
@@ -79,6 +80,9 @@ class Perception:
             if hasattr(ally, "id"):
                 data["distances"][ally.id] = dist
             opp += max(0.0, 1.0 - (dist / perception_radius)) * 0.5
+
+            if hasattr(ally, "team_message") and ally.team_message:
+                data["team_messages"].append(ally.team_message)
 
         data["threat_level"] = threat
         data["opportunity_score"] = opp

@@ -107,3 +107,47 @@ def test_decision_no_enemies_personality_fallback():
     }
     action = decision.choose_action(perception, "neutral")
     assert action == "attack"
+
+def test_decision_team_message_help():
+    ball = MockBall(hp=100, max_hp=100, personality="idle")
+    decision = Decision(ball, MockWorld())
+    perception = {
+        "danger_level": 0.0, "opportunity_level": 0.0,
+        "threat_level": 0.0, "opportunity_score": 0.0,
+        "enemies": [], "boosters": [], "allies": [], "team_messages": ["help"]
+    }
+    action = decision.choose_action(perception, "neutral")
+    assert action == "defend"
+
+def test_decision_team_message_target():
+    ball = MockBall(hp=100, max_hp=100, personality="idle", skill_timer=10.0)
+    decision = Decision(ball, MockWorld())
+    perception = {
+        "danger_level": 0.0, "opportunity_level": 0.0,
+        "threat_level": 0.0, "opportunity_score": 0.0,
+        "enemies": [1], "boosters": [], "allies": [], "team_messages": ["target"]
+    }
+    action = decision.choose_action(perception, "neutral")
+    assert action in ["attack", "chase"]
+
+def test_decision_emit_help():
+    ball = MockBall(hp=20, max_hp=100, personality="idle")
+    decision = Decision(ball, MockWorld())
+    perception = {
+        "danger_level": 0.0, "opportunity_level": 0.0,
+        "threat_level": 0.0, "opportunity_score": 0.0,
+        "enemies": [], "boosters": [], "allies": []
+    }
+    decision.choose_action(perception, "fear")
+    assert ball.team_message == "help"
+
+def test_decision_emit_target():
+    ball = MockBall(hp=100, max_hp=100, personality="idle")
+    decision = Decision(ball, MockWorld())
+    perception = {
+        "danger_level": 0.0, "opportunity_level": 0.0,
+        "threat_level": 0.0, "opportunity_score": 0.0,
+        "enemies": [1], "boosters": [], "allies": []
+    }
+    decision.choose_action(perception, "neutral")
+    assert ball.team_message == "target"

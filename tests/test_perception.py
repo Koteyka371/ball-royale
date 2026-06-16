@@ -12,6 +12,11 @@ class MockEntity:
         self.x = x
         self.y = y
 
+class MockAlly(MockEntity):
+    def __init__(self, id, x, y, team_message=""):
+        super().__init__(id, x, y)
+        self.team_message = team_message
+
 class MockWorld:
     def __init__(self):
         self.entities = {
@@ -44,7 +49,7 @@ def test_perception_scan_distances_and_scores():
     # Distance 80 (0.2 max)
     world.entities["boosters"] = [MockEntity("b1", 80, 0)]
     # Distance 20 (0.8 max)
-    world.entities["allies"] = [MockEntity("a1", -20, 0)]
+    world.entities["allies"] = [MockAlly("a1", -20, 0, team_message="help")]
 
     perception = Perception(ball, world)
     data = perception.scan()
@@ -65,6 +70,8 @@ def test_perception_scan_distances_and_scores():
     # ally: max(0, 1 - 20/100) * 0.5 = 0.8 * 0.5 = 0.4
     # Total opp: 0.6
     assert abs(data["opportunity_score"] - 0.6) < 0.001
+
+    assert data["team_messages"] == ["help"]
 
     # Backward compatibility
     assert data["danger_level"] == 0.2
