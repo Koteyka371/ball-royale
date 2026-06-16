@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [ai-swarm-boids] Create Swarm intelligence boid rules — *2026-06-16 19:31:28 UTC*
+
+Implement boid rules (separation, alignment, cohesion) for the swarm ball type. This will make swarm balls group together and move dynamically like a flock of birds.
+
+---
+
 ## [balance-buff-rogue] Balance: Buff underpowered 'rogue' — *2026-06-16 19:26:33 UTC*
 
 The 'rogue' class is winning only 0.0% of the time (expected ~8.3%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.
