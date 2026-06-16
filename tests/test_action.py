@@ -30,6 +30,14 @@ class MockEnemy:
         self.ball_type = ball_type
         self.alive = alive
 
+class MockAlly:
+    def __init__(self, x=10, y=0, radius=10, ball_type="mock_ball", alive=True):
+        self.x = x
+        self.y = y
+        self.radius = radius
+        self.ball_type = ball_type
+        self.alive = alive
+
 class MockBooster:
     def __init__(self, x=10, y=0, active=True):
         self.x = x
@@ -79,6 +87,70 @@ def test_execute_flee():
     # y is no longer exactly 100 because the "pull towards center" logic alters the movement vector.
     # The center is 500,500, so y should increase slightly.
     assert ball.y >= 100
+
+def test_execute_chase():
+    # Test simple chase
+    ball = MockBall(x=100, y=100)
+    world = MockWorld()
+    world.enemies = [MockEnemy(x=200, y=100)] # Enemy to the right
+    action_layer = Action(ball, world)
+
+    action_layer.execute("chase", 0.1)
+    assert ball.current_action == "chase"
+    assert ball.x > 100 # Moved right towards enemy
+    assert ball.y == 100
+    assert not world.dealt_damage # Should not deal damage, too far
+
+    # Test stopping at attack range
+    ball2 = MockBall(x=100, y=100)
+    world2 = MockWorld()
+    world2.enemies = [MockEnemy(x=115, y=100)] # Enemy is close (10+10+5 = 25 attack range. distance is 15 <= 25)
+    action_layer2 = Action(ball2, world2)
+    action_layer2.execute("chase", 0.1)
+    assert world2.dealt_damage # Should deal damage
+
+    # Test obstacle avoidance
+    ball3 = MockBall(x=100, y=100)
+    world3 = MockWorld()
+    # Target is right. Obstacle is right but slightly closer
+    target = MockEnemy(x=200, y=100)
+    obstacle = MockEnemy(x=125, y=100)
+    world3.enemies = [target, obstacle]
+    action_layer3 = Action(ball3, world3)
+    action_layer3.execute("chase", 0.1)
+    # Should move right, but the obstacle is exactly in the way, meaning repel will push away from it.
+    # We should have repel_x < 0 pushing ball left, neutralizing or overcoming target push
+    # To test more reliably, put obstacle slightly off-axis
+
+    ball4 = MockBall(x=100, y=100)
+    world4 = MockWorld()
+    # The obstacle must be further than the target, otherwise it becomes the target!
+    # Target is close-ish, say 150, 100.
+    target4 = MockEnemy(x=150, y=100)
+    # Obstacle is further away but on the way: 120, 110. Wait, 120 is closer than 150!
+    # If obstacle is closer, it becomes the target. We want to test repulsion from an entity that IS NOT the target.
+    # What if the obstacle is an ally? Yes!
+    obstacle4 = MockAlly(x=110, y=110) # Ally down-right
+    world4.enemies = [target4]
+    world4.allies = [obstacle4]
+
+    # Need to modify MockWorld to return allies
+    def mock_get_nearby(ball, radius):
+        return {
+            "enemies": world4.enemies,
+            "allies": world4.allies,
+            "boosters": [],
+            "traps": []
+        }
+    world4.get_nearby_entities = mock_get_nearby
+
+    action_layer4 = Action(ball4, world4)
+    action_layer4.execute("chase", 0.1)
+
+    # Repel from ally at (110,110) pushes ball up-left (negative Y)
+    # Target at (150,100) pulls ball right (neutral Y)
+    # So ball y should be < 100
+    assert ball4.y < 100
 
 def test_execute_attack():
     ball = MockBall(x=100, y=100)
