@@ -172,7 +172,7 @@
     },
     {
       "id": "ai-behavior-flee",
-      "status": "todo",
+      "status": "done",
       "area": "ai-behaviors",
       "risk": "low",
       "title": "Implement Flee behavior",
