@@ -236,8 +236,67 @@ func _attack(delta: float):
         if "radius" in self.ball: ball_radius = self.ball.radius
 
         if dist <= ball_radius + target_radius + 5:
-            if self.world != null and self.world.has_method("_deal_damage"):
-                self.world._deal_damage(self.ball, target)
+            var skill_timer = 0.0
+            if "skill_timer" in self.ball:
+                skill_timer = self.ball.skill_timer
+
+            if skill_timer <= 0:
+                var optimal = true
+                var b_type = ""
+                if "ball_type" in self.ball:
+                    b_type = self.ball.ball_type
+                elif self.ball.has_method("get_ball_type"):
+                    b_type = self.ball.get_ball_type()
+
+                if b_type == "bomber":
+                    var close_enemies = 0
+                    for e in enemies:
+                        var e_radius = 10.0
+                        if "radius" in e: e_radius = e.radius
+                        var edx = e.x - self.ball.x
+                        var edy = e.y - self.ball.y
+                        if sqrt(edx*edx + edy*edy) <= ball_radius + e_radius + 15:
+                            close_enemies += 1
+                    optimal = close_enemies >= 2
+
+                if optimal:
+                    if self.ball.has_method("use_skill"):
+                        self.ball.use_skill()
+                    var cooldown = 5.0
+                    if "skill_cooldown" in self.ball:
+                        cooldown = self.ball.skill_cooldown
+                    self.ball.skill_timer = cooldown
+
+            var attack_timer = 0.0
+            if "attack_timer" in self.ball:
+                attack_timer = self.ball.attack_timer
+            elif self.ball.has_meta("attack_timer"):
+                attack_timer = self.ball.get_meta("attack_timer")
+
+            if attack_timer <= 0:
+                if self.world != null and self.world.has_method("_deal_damage"):
+                    self.world._deal_damage(self.ball, target)
+
+                var cooldown = 0.5
+                var b_type = ""
+                if "ball_type" in self.ball:
+                    b_type = self.ball.ball_type.to_lower()
+                elif self.ball.has_method("get_ball_type"):
+                    b_type = self.ball.get_ball_type().to_lower()
+
+                if b_type in ["scout", "assassin", "phantom", "swarm", "rogue"]:
+                    cooldown = 0.3
+                elif b_type in ["tank", "juggernaut", "guardian"]:
+                    cooldown = 1.5
+                else:
+                    var speed = 2.0
+                    if "speed" in self.ball: speed = self.ball.speed
+                    cooldown = max(0.2, 2.0 / speed if speed > 0 else 1.0)
+
+                if "attack_timer" in self.ball:
+                    self.ball.attack_timer = cooldown
+                elif self.ball.has_method("set_meta"):
+                    self.ball.set_meta("attack_timer", cooldown)
     else:
         _idle(delta)
 
@@ -304,3 +363,16 @@ func _clamp_position():
 func _update_skill_timer(delta: float):
     if "skill_timer" in self.ball and self.ball.skill_timer > 0:
         self.ball.skill_timer -= delta
+
+    var attack_timer = 0.0
+    if "attack_timer" in self.ball:
+        attack_timer = self.ball.attack_timer
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("attack_timer"):
+        attack_timer = self.ball.get_meta("attack_timer")
+
+    if attack_timer > 0:
+        attack_timer -= delta
+        if "attack_timer" in self.ball:
+            self.ball.attack_timer = attack_timer
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("attack_timer", attack_timer)
