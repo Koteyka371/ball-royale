@@ -1020,8 +1020,8 @@ stats = sim.run(record=True)
 
 replay_data = {
     "arena": {
-        "width": sim.world.width,
-        "height": sim.world.height
+        "width": sim.width,
+        "height": sim.height
     },
     "ball_types": {
         t: {"radius": 12} for t in ["warrior", "tank", "assassin", "healer", "sniper", "bomber", "berserker", "juggernaut", "phantom", "rogue", "swarm", "guardian"]
