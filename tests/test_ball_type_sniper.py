@@ -15,7 +15,7 @@ def test_sniper_initialization():
     assert ball.hp == 60
     assert ball.max_hp == 60
     assert ball.alive is True
-    assert ball.personality == "sniper"
+    assert ball.personality == "cautious"
 
 
 def test_sniper_hp_percent():

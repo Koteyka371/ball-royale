@@ -5,6 +5,8 @@ Support ball, heals allies, avoids combat
 
 
 
+from ai.personality import Personality
+
 class Healer:
     BALL_TYPE = "healer"
     HP = 80
@@ -28,7 +30,7 @@ class Healer:
         self.first_hit_taken = False
         self.current_action = "idle"
         self.skill_timer = 0.0
-        self.personality = "healer"
+        self.personality = Personality("supportive")
 
     def get_hp_percent(self) -> float:
         return self.hp / self.max_hp if self.max_hp > 0 else 0.0

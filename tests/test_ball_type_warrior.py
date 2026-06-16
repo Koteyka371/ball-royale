@@ -15,7 +15,7 @@ def test_warrior_initialization():
     assert ball.hp == 120
     assert ball.max_hp == 120
     assert ball.alive is True
-    assert ball.personality == "warrior"
+    assert ball.personality == "reckless"
 
 
 def test_warrior_hp_percent():

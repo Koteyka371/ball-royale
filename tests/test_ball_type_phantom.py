@@ -15,7 +15,7 @@ def test_phantom_initialization():
     assert ball.hp == 65
     assert ball.max_hp == 65
     assert ball.alive is True
-    assert ball.personality == "phantom"
+    assert ball.personality == "cunning"
 
 
 def test_phantom_hp_percent():

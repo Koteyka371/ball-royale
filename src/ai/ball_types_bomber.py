@@ -5,6 +5,8 @@ Area damage, uses Explosion to hit multiple enemies
 
 
 
+from ai.personality import Personality
+
 class Bomber:
     BALL_TYPE = "bomber"
     HP = 90
@@ -28,7 +30,7 @@ class Bomber:
         self.first_hit_taken = False
         self.current_action = "idle"
         self.skill_timer = 0.0
-        self.personality = "bomber"
+        self.personality = Personality("reckless")
 
     def get_hp_percent(self) -> float:
         return self.hp / self.max_hp if self.max_hp > 0 else 0.0

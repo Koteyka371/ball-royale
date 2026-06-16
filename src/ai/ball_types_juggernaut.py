@@ -5,6 +5,8 @@ Slow but devastating, area damage on impact
 
 
 
+from ai.personality import Personality
+
 class Juggernaut:
     BALL_TYPE = "juggernaut"
     HP = 300
@@ -28,7 +30,7 @@ class Juggernaut:
         self.first_hit_taken = False
         self.current_action = "idle"
         self.skill_timer = 0.0
-        self.personality = "juggernaut"
+        self.personality = Personality("supportive")
 
     def get_hp_percent(self) -> float:
         return self.hp / self.max_hp if self.max_hp > 0 else 0.0

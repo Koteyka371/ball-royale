@@ -5,6 +5,8 @@ Long range killer, high damage, low HP
 
 
 
+from ai.personality import Personality
+
 class Sniper:
     BALL_TYPE = "sniper"
     HP = 60
@@ -28,7 +30,7 @@ class Sniper:
         self.first_hit_taken = False
         self.current_action = "idle"
         self.skill_timer = 0.0
-        self.personality = "sniper"
+        self.personality = Personality("cautious")
 
     def get_hp_percent(self) -> float:
         return self.hp / self.max_hp if self.max_hp > 0 else 0.0

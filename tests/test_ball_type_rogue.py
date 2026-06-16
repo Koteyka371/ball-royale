@@ -15,7 +15,7 @@ def test_rogue_initialization():
     assert ball.hp == 75
     assert ball.max_hp == 75
     assert ball.alive is True
-    assert ball.personality == "rogue"
+    assert ball.personality == "cunning"
 
 
 def test_rogue_hp_percent():
