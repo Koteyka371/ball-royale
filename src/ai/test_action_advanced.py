@@ -97,3 +97,43 @@ def test_obstacle_avoidance_offset():
     assert ball.x > 50
     # It should be pushed in the -y direction away from the obstacle
     assert ball.y < 50
+
+def test_collect_booster_interrupt():
+    ball = MockBall(x=100, y=100)
+    world = MockWorld()
+    # Booster is to the right
+    booster = MockEntity(x=200, y=100, ball_type="booster")
+    # Enemy is close enough to trigger interrupt: dist < ball_radius + enemy_radius + 30
+    # 100 to 140 is dist=40. 10 + 10 + 30 = 50. So 40 < 50.
+    enemy = MockEntity(x=140, y=100, ball_type="enemy")
+    world.entities = [booster, enemy]
+
+    action = Action(ball, world)
+
+    # Normally, it would move towards booster (x > 100).
+    # But because it's interrupted, it flees (moves AWAY from enemy).
+    # Fleeing from an enemy at x=140 pushes the ball towards x < 100.
+    action.execute("collect_booster", 0.1)
+
+    assert ball.x < 100
+
+def test_collect_booster_ignore_enemies():
+    ball = MockBall(x=100, y=100)
+    world = MockWorld()
+    # Booster is to the right
+    booster = MockEntity(x=200, y=100, ball_type="booster")
+    # Enemy is between ball and booster, but slightly far enough away to NOT trigger interrupt
+    # dist = 60. Threshold = 50.
+    enemy = MockEntity(x=160, y=105, ball_type="enemy")
+    world.entities = [booster, enemy]
+
+    action = Action(ball, world)
+
+    # If the enemy was treated as an obstacle, the ball's y would shift significantly to avoid it.
+    # Since ignore_enemies=True is passed, it should move straight toward the booster.
+    # We can track the y to see if it deviated.
+    # The booster is at y=100, ball at y=100. It should stay at y=100.
+    action.execute("collect_booster", 0.1)
+
+    assert ball.x > 100
+    assert ball.y == 100
