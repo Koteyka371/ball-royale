@@ -53,6 +53,48 @@ class Action:
         self._clamp_position()
         self._update_skill_timer(delta)
 
+
+    def _apply_obstacle_avoidance(self, nx: float, ny: float, target: Any = None) -> tuple[float, float]:
+        """Applies a repulsive force from nearby entities to avoid collisions."""
+        all_entities = []
+        perception_radius = getattr(self.ball, "perception_radius", 250)
+
+        if hasattr(self.world, "get_nearby_entities"):
+            entities = self.world.get_nearby_entities(self.ball, perception_radius)
+            if isinstance(entities, dict):
+                for key in ["enemies", "allies"]:
+                    all_entities.extend(entities.get(key, []))
+            else:
+                all_entities = [e for e in entities if getattr(e, "alive", True) and e != self.ball]
+
+        repulse_nx, repulse_ny = 0.0, 0.0
+        ball_radius = getattr(self.ball, "radius", 10.0)
+
+        for entity in all_entities:
+            if entity == target or entity == self.ball:
+                continue
+
+            entity_radius = getattr(entity, "radius", 10.0)
+            dx = self.ball.x - entity.x
+            dy = self.ball.y - entity.y
+            dist_sq = dx*dx + dy*dy
+
+            safe_dist = ball_radius + entity_radius + 5.0
+            if dist_sq > 0.0001 and dist_sq < safe_dist * safe_dist:
+                dist = math.sqrt(dist_sq)
+                force = 1.0 - (dist / safe_dist)
+                repulse_nx += (dx / dist) * force
+                repulse_ny += (dy / dist) * force
+
+        comb_nx = nx + repulse_nx * 0.5
+        comb_ny = ny + repulse_ny * 0.5
+
+        comb_dist_sq = comb_nx*comb_nx + comb_ny*comb_ny
+        if comb_dist_sq > 0.0001:
+            comb_dist = math.sqrt(comb_dist_sq)
+            return comb_nx / comb_dist, comb_ny / comb_dist
+        return nx, ny
+
     def _get_enemies(self) -> list:
         perception_radius = getattr(self.ball, "perception_radius", 250)
         if hasattr(self.world, "get_nearby_entities"):
@@ -98,7 +140,8 @@ class Action:
 
         nearest = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
         dx, dy = self.ball.x - nearest.x, self.ball.y - nearest.y
-        dist = math.sqrt(dx * dx + dy * dy)
+        dist_sq = dx * dx + dy * dy
+        dist = math.sqrt(dist_sq) if dist_sq > 0.0001 else 0.01
 
         perception_radius = getattr(self.ball, "perception_radius", 250)
         if dist > perception_radius * 0.8:
@@ -117,8 +160,9 @@ class Action:
         if allies:
             nearest_ally = min(allies, key=lambda a: (a.x - self.ball.x) ** 2 + (a.y - self.ball.y) ** 2)
             adx, ady = nearest_ally.x - self.ball.x, nearest_ally.y - self.ball.y
-            adist = math.sqrt(adx * adx + ady * ady)
-            if adist > 0.01:
+            adist_sq = adx * adx + ady * ady
+            if adist_sq > 0.0001:
+                adist = math.sqrt(adist_sq)
                 ally_nx = adx / adist
                 ally_ny = ady / adist
 
@@ -128,22 +172,27 @@ class Action:
             center_x = self.world.width / 2
             center_y = self.world.height / 2
             cdx, cdy = center_x - self.ball.x, center_y - self.ball.y
-            cdist = math.sqrt(cdx * cdx + cdy * cdy)
+            cdist_sq = cdx * cdx + cdy * cdy
 
-            # Start pulling strongly if we are more than 30% away from the center
-            if cdist > min(center_x, center_y) * 0.3 and cdist > 0.01:
-                safe_nx = cdx / cdist
-                safe_ny = cdy / cdist
+            if cdist_sq > 0.0001:
+                cdist = math.sqrt(cdist_sq)
+                # Start pulling strongly if we are more than 30% away from the center
+                if cdist > min(center_x, center_y) * 0.3:
+                    safe_nx = cdx / cdist
+                    safe_ny = cdy / cdist
 
         # Combine vectors
         # Heavily prioritize fleeing from threat, with moderate pull towards allies and safe zone
         comb_nx = flee_nx * 1.0 + ally_nx * 0.4 + safe_nx * 0.3
         comb_ny = flee_ny * 1.0 + ally_ny * 0.4 + safe_ny * 0.3
 
-        comb_dist = math.sqrt(comb_nx * comb_nx + comb_ny * comb_ny)
-        if comb_dist > 0.01:
+        comb_dist_sq = comb_nx * comb_nx + comb_ny * comb_ny
+        if comb_dist_sq > 0.0001:
+            comb_dist = math.sqrt(comb_dist_sq)
             comb_nx /= comb_dist
             comb_ny /= comb_dist
+        else:
+            comb_nx, comb_ny = flee_nx, flee_ny
 
         base_speed = getattr(self.ball, "speed", 2.0)
         boosted_speed = base_speed * 1.5
@@ -216,12 +265,20 @@ class Action:
                 self.ball.team_message = {"type": "target_spotted", "x": target.x, "y": target.y}
 
             dx, dy = target.x - self.ball.x, target.y - self.ball.y
-            dist = math.sqrt(dx * dx + dy * dy)
-            if dist > 0.01:
+            dist_sq = dx * dx + dy * dy
+            if dist_sq > 0.0001:
+                dist = math.sqrt(dist_sq)
                 nx, ny = dx / dist, dy / dist
+                nx, ny = self._apply_obstacle_avoidance(nx, ny, target)
+
                 step = getattr(self.ball, "speed", 2.0) * delta * 60
                 self.ball.x += nx * min(step, dist)
                 self.ball.y += ny * min(step, dist)
+
+            # Recalculate distance after movement
+            dx, dy = target.x - self.ball.x, target.y - self.ball.y
+            dist_sq = dx * dx + dy * dy
+            dist = math.sqrt(dist_sq) if dist_sq > 0.0001 else 0.0
 
             target_radius = getattr(target, "radius", 10.0)
             ball_radius = getattr(self.ball, "radius", 10.0)
@@ -241,12 +298,20 @@ class Action:
         if boosters:
             nearest = min(boosters, key=lambda b: (b.x - self.ball.x) ** 2 + (b.y - self.ball.y) ** 2)
             dx, dy = nearest.x - self.ball.x, nearest.y - self.ball.y
-            dist = math.sqrt(dx * dx + dy * dy)
-            if dist > 0.01:
+            dist_sq = dx * dx + dy * dy
+            if dist_sq > 0.0001:
+                dist = math.sqrt(dist_sq)
                 nx, ny = dx / dist, dy / dist
+                nx, ny = self._apply_obstacle_avoidance(nx, ny, nearest)
+
                 step = getattr(self.ball, "speed", 2.0) * delta * 60
                 self.ball.x += nx * min(step, dist)
                 self.ball.y += ny * min(step, dist)
+
+            # Recalculate distance after movement
+            dx, dy = nearest.x - self.ball.x, nearest.y - self.ball.y
+            dist_sq = dx * dx + dy * dy
+            dist = math.sqrt(dist_sq) if dist_sq > 0.0001 else 0.0
 
             ball_radius = getattr(self.ball, "radius", 10.0)
             if dist <= ball_radius + 10:
@@ -256,8 +321,11 @@ class Action:
             self._idle(delta)
 
     def _use_skill(self) -> None:
-        if hasattr(self.ball, "use_skill"):
+        skill_timer = getattr(self.ball, "skill_timer", 0.0)
+        if skill_timer <= 0 and hasattr(self.ball, "use_skill"):
             self.ball.use_skill()
+            if hasattr(self.ball, "skill_cooldown"):
+                self.ball.skill_timer = self.ball.skill_cooldown
 
     def _idle(self, delta: float) -> None:
         speed = getattr(self.ball, "speed", 2.0)
