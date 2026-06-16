@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [balance-buff-swarm] Balance: Buff underpowered 'swarm' — *2026-06-16 19:22:55 UTC*
+
+The 'swarm' class is winning only 0.0% of the time (expected ~8.3%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.
+
+---
+
 ## [ai-behavior-attack] Implement Attack behavior — *2026-06-16 16:24:22 UTC*
 
 Ball attacks when in range. Timing varies by ball type (fast for Scout, slow for Tank). Can chain attacks. Uses skill when available and optimal.
