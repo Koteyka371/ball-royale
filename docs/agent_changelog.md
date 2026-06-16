@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [balance-buff-rogue] Balance: Buff underpowered 'rogue' — *2026-06-16 19:26:33 UTC*
+
+The 'rogue' class is winning only 0.0% of the time (expected ~8.3%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.
+
+---
+
 ## [ai-behavior-group-attack] Implement Group Attack behavior — *2026-06-16 19:24:36 UTC*
 
 Multiple balls coordinate to attack same target. Balls signal intent and converge. Tank takes aggro, damage dealers attack, healer supports.
