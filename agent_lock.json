@@ -102,7 +102,7 @@
       "task_id": "ai-ball-scout-ai",
       "status": "working",
       "started_at": "2026-06-16T19:13:14.781383+00:00",
-      "cycles_today": 0
+      "cycles_today": 1
     }
   },
   "last_reset": "2026-06-16T03:57:50.313853+00:00"
