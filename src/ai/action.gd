@@ -69,6 +69,37 @@ func _get_boosters() -> Array:
                     boosters.append(b)
     return boosters
 
+func _calculate_repulsion(exclude_target = null) -> Vector2:
+    var rx = 0.0
+    var ry = 0.0
+    var perception_radius = 250.0
+    if "perception_radius" in self.ball:
+        perception_radius = self.ball.perception_radius
+
+    if self.world != null and self.world.has_method("get_nearby_entities"):
+        var entities = self.world.get_nearby_entities(self.ball, perception_radius)
+        if typeof(entities) == TYPE_DICTIONARY:
+            var obstacles = []
+            if entities.has("enemies"): obstacles.append_array(entities["enemies"])
+            if entities.has("allies"): obstacles.append_array(entities["allies"])
+            if entities.has("traps"): obstacles.append_array(entities["traps"])
+
+            for obs in obstacles:
+                if obs == exclude_target:
+                    continue
+                var dx = self.ball.x - obs.x
+                var dy = self.ball.y - obs.y
+                var dist_sq = dx*dx + dy*dy
+                if dist_sq > 0.0001:
+                    var dist = sqrt(dist_sq)
+                    var weight = 1.0 / dist
+                    rx += (dx / dist) * weight
+                    ry += (dy / dist) * weight
+
+    if is_nan(rx) or is_inf(rx): rx = 0.0
+    if is_nan(ry) or is_inf(ry): ry = 0.0
+    return Vector2(rx, ry)
+
 func _flee(delta: float):
     var enemies = _get_enemies()
     if enemies.size() > 0:
@@ -83,11 +114,24 @@ func _flee(delta: float):
         var dx = self.ball.x - nearest.x
         var dy = self.ball.y - nearest.y
         var dist = sqrt(dx*dx + dy*dy)
+
+        var repulsion = _calculate_repulsion()
+        var rx = repulsion.x
+        var ry = repulsion.y
+
         if dist > 0.01:
+            var dir_x = (dx / dist) + rx * 20.0
+            var dir_y = (dy / dist) + ry * 20.0
+
+            var dir_dist = sqrt(dir_x*dir_x + dir_y*dir_y)
+            if dir_dist > 0.0001:
+                dir_x /= dir_dist
+                dir_y /= dir_dist
+
             var speed = 2.0
             if "speed" in self.ball: speed = self.ball.speed
-            self.ball.x += (dx / dist) * speed * delta * 60
-            self.ball.y += (dy / dist) * speed * delta * 60
+            self.ball.x += dir_x * speed * delta * 60
+            self.ball.y += dir_y * speed * delta * 60
     else:
         _idle(delta)
 
@@ -109,19 +153,31 @@ func _attack(delta: float):
         var speed = 2.0
         if "speed" in self.ball: speed = self.ball.speed
 
-        if dist > 0.01:
-            var nx = dx / dist
-            var ny = dy / dist
-            var step = speed * delta * 60
-            self.ball.x += nx * min(step, dist)
-            self.ball.y += ny * min(step, dist)
-
         var target_radius = 10.0
         if "radius" in target: target_radius = target.radius
         var ball_radius = 10.0
         if "radius" in self.ball: ball_radius = self.ball.radius
+        var attack_range = ball_radius + target_radius + 5
 
-        if dist <= ball_radius + target_radius + 5:
+        var repulsion = _calculate_repulsion(target)
+        var rx = repulsion.x
+        var ry = repulsion.y
+
+        if dist > attack_range:
+            var dir_x = (dx / dist) + rx * 10.0
+            var dir_y = (dy / dist) + ry * 10.0
+
+            var dir_dist = sqrt(dir_x*dir_x + dir_y*dir_y)
+            if dir_dist > 0.0001:
+                dir_x /= dir_dist
+                dir_y /= dir_dist
+
+            var step = speed * delta * 60
+            var move_dist = min(step, dist - attack_range + 2)
+            self.ball.x += dir_x * move_dist
+            self.ball.y += dir_y * move_dist
+
+        if dist <= attack_range:
             if self.world != null and self.world.has_method("_deal_damage"):
                 self.world._deal_damage(self.ball, target)
     else:
@@ -148,17 +204,29 @@ func _collect_booster(delta: float):
         var speed = 2.0
         if "speed" in self.ball: speed = self.ball.speed
 
-        if dist > 0.01:
-            var nx = dx / dist
-            var ny = dy / dist
-            var step = speed * delta * 60
-            self.ball.x += nx * min(step, dist)
-            self.ball.y += ny * min(step, dist)
-
         var ball_radius = 10.0
         if "radius" in self.ball: ball_radius = self.ball.radius
+        var collect_range = ball_radius + 10
 
-        if dist <= ball_radius + 10:
+        var repulsion = _calculate_repulsion(nearest)
+        var rx = repulsion.x
+        var ry = repulsion.y
+
+        if dist > collect_range:
+            var dir_x = (dx / dist) + rx * 10.0
+            var dir_y = (dy / dist) + ry * 10.0
+
+            var dir_dist = sqrt(dir_x*dir_x + dir_y*dir_y)
+            if dir_dist > 0.0001:
+                dir_x /= dir_dist
+                dir_y /= dir_dist
+
+            var step = speed * delta * 60
+            var move_dist = min(step, dist - collect_range + 2)
+            self.ball.x += dir_x * move_dist
+            self.ball.y += dir_y * move_dist
+
+        if dist <= collect_range:
             if self.world != null and self.world.has_method("_collect_booster"):
                 self.world._collect_booster(self.ball, nearest)
     else:
@@ -175,6 +243,11 @@ func _idle(delta: float):
     self.ball.y += randf_range(-1.0, 1.0) * speed * 0.3
 
 func _clamp_position():
+    if is_nan(self.ball.x) or is_inf(self.ball.x):
+        self.ball.x = 0.0
+    if is_nan(self.ball.y) or is_inf(self.ball.y):
+        self.ball.y = 0.0
+
     if self.world != null and "width" in self.world and "height" in self.world:
         var radius = 10.0
         if "radius" in self.ball: radius = self.ball.radius

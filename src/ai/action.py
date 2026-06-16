@@ -61,15 +61,54 @@ class Action:
                         boosters.append(b)
         return boosters
 
+    def _calculate_repulsion(self, exclude_target: Any = None) -> tuple[float, float]:
+        """Calculates a repulsion vector from obstacles (enemies, allies, traps)."""
+        rx, ry = 0.0, 0.0
+        perception_radius = getattr(self.ball, "perception_radius", 250)
+
+        if hasattr(self.world, "get_nearby_entities"):
+            entities = self.world.get_nearby_entities(self.ball, perception_radius)
+            if isinstance(entities, dict):
+                obstacles = entities.get("enemies", []) + entities.get("allies", []) + entities.get("traps", [])
+
+                for obs in obstacles:
+                    if obs == exclude_target:
+                        continue
+
+                    dx = self.ball.x - obs.x
+                    dy = self.ball.y - obs.y
+                    dist_sq = dx*dx + dy*dy
+                    if dist_sq > 0.0001:
+                        dist = math.sqrt(dist_sq)
+                        # Repel stronger when closer
+                        weight = 1.0 / dist
+                        rx += (dx / dist) * weight
+                        ry += (dy / dist) * weight
+
+        if math.isnan(rx) or math.isinf(rx): rx = 0.0
+        if math.isnan(ry) or math.isinf(ry): ry = 0.0
+        return rx, ry
+
     def _flee(self, delta: float) -> None:
         enemies = self._get_enemies()
         if enemies:
             nearest = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
             dx, dy = self.ball.x - nearest.x, self.ball.y - nearest.y
             dist = math.sqrt(dx * dx + dy * dy)
+
+            rx, ry = self._calculate_repulsion()
+
             if dist > 0.01:
-                self.ball.x += (dx / dist) * getattr(self.ball, "speed", 2.0) * delta * 60
-                self.ball.y += (dy / dist) * getattr(self.ball, "speed", 2.0) * delta * 60
+                dir_x = (dx / dist) + rx * 20.0
+                dir_y = (dy / dist) + ry * 20.0
+
+                dir_dist = math.sqrt(dir_x*dir_x + dir_y*dir_y)
+                if dir_dist > 0.0001:
+                    dir_x /= dir_dist
+                    dir_y /= dir_dist
+
+                self.ball.x += dir_x * getattr(self.ball, "speed", 2.0) * delta * 60
+                self.ball.y += dir_y * getattr(self.ball, "speed", 2.0) * delta * 60
         else:
             self._idle(delta)
 
@@ -79,16 +118,29 @@ class Action:
             target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
             dx, dy = target.x - self.ball.x, target.y - self.ball.y
             dist = math.sqrt(dx * dx + dy * dy)
-            if dist > 0.01:
-                nx, ny = dx / dist, dy / dist
-                step = getattr(self.ball, "speed", 2.0) * delta * 60
-                self.ball.x += nx * min(step, dist)
-                self.ball.y += ny * min(step, dist)
+
+            rx, ry = self._calculate_repulsion(target)
 
             target_radius = getattr(target, "radius", 10.0)
             ball_radius = getattr(self.ball, "radius", 10.0)
+            attack_range = ball_radius + target_radius + 5
 
-            if dist <= ball_radius + target_radius + 5:
+            if dist > attack_range:
+                dir_x = (dx / dist) + rx * 10.0
+                dir_y = (dy / dist) + ry * 10.0
+
+                dir_dist = math.sqrt(dir_x*dir_x + dir_y*dir_y)
+                if dir_dist > 0.0001:
+                    dir_x /= dir_dist
+                    dir_y /= dir_dist
+
+                step = getattr(self.ball, "speed", 2.0) * delta * 60
+                move_dist = min(step, dist - attack_range + 2) # Don't overshoot
+
+                self.ball.x += dir_x * move_dist
+                self.ball.y += dir_y * move_dist
+
+            if dist <= attack_range:
                 if hasattr(self.world, "_deal_damage"):
                     self.world._deal_damage(self.ball, target)
         else:
@@ -104,14 +156,28 @@ class Action:
             nearest = min(boosters, key=lambda b: (b.x - self.ball.x) ** 2 + (b.y - self.ball.y) ** 2)
             dx, dy = nearest.x - self.ball.x, nearest.y - self.ball.y
             dist = math.sqrt(dx * dx + dy * dy)
-            if dist > 0.01:
-                nx, ny = dx / dist, dy / dist
-                step = getattr(self.ball, "speed", 2.0) * delta * 60
-                self.ball.x += nx * min(step, dist)
-                self.ball.y += ny * min(step, dist)
+
+            rx, ry = self._calculate_repulsion(nearest)
 
             ball_radius = getattr(self.ball, "radius", 10.0)
-            if dist <= ball_radius + 10:
+            collect_range = ball_radius + 10
+
+            if dist > collect_range:
+                dir_x = (dx / dist) + rx * 10.0
+                dir_y = (dy / dist) + ry * 10.0
+
+                dir_dist = math.sqrt(dir_x*dir_x + dir_y*dir_y)
+                if dir_dist > 0.0001:
+                    dir_x /= dir_dist
+                    dir_y /= dir_dist
+
+                step = getattr(self.ball, "speed", 2.0) * delta * 60
+                move_dist = min(step, dist - collect_range + 2)
+
+                self.ball.x += dir_x * move_dist
+                self.ball.y += dir_y * move_dist
+
+            if dist <= collect_range:
                 if hasattr(self.world, "_collect_booster"):
                     self.world._collect_booster(self.ball, nearest)
         else:
@@ -127,6 +193,11 @@ class Action:
         self.ball.y += random.uniform(-1, 1) * speed * 0.3
 
     def _clamp_position(self) -> None:
+        if math.isnan(self.ball.x) or math.isinf(self.ball.x):
+            self.ball.x = 0.0
+        if math.isnan(self.ball.y) or math.isinf(self.ball.y):
+            self.ball.y = 0.0
+
         if hasattr(self.world, "width") and hasattr(self.world, "height"):
             radius = getattr(self.ball, "radius", 10.0)
             self.ball.x = max(radius, min(self.world.width - radius, self.ball.x))
