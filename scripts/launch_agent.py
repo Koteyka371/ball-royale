@@ -385,8 +385,8 @@ def main():
         sys.exit(1)
 
     agent_num = int(agent_id.split("-")[1])
-    if agent_num < 1 or agent_num > 12:
-        print(f"Agent {agent_id} is not a Jules agent (1-6 only)")
+    if agent_num < 1 or agent_num > 20:
+        print(f"Agent {agent_id} is not a Jules agent (1-20 only)")
         sys.exit(1)
 
     print("=" * 60)

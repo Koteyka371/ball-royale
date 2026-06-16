@@ -39,6 +39,14 @@ AGENT_AREAS = {
     "agent-10": "meta",
     "agent-11": "innovation",
     "agent-12": "ai-core",
+    "agent-20": "content",
+    "agent-19": "tests",
+    "agent-18": "behaviors",
+    "agent-17": "ai-core",
+    "agent-16": "innovation",
+    "agent-15": "meta",
+    "agent-14": "content",
+    "agent-13": "tests",
 }
 
 AREA_TO_AGENT = {
