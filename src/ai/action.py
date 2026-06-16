@@ -16,6 +16,10 @@ class Action:
         """
         Executes the chosen strategy.
         """
+        import math
+        if math.isnan(self.ball.x) or math.isnan(self.ball.y) or math.isinf(self.ball.x) or math.isinf(self.ball.y):
+            self.ball.x, self.ball.y = 0.0, 0.0
+
         self.ball.current_action = strategy
 
         if strategy == "flee":
@@ -173,6 +177,10 @@ class Action:
         self.ball.y += random.uniform(-1, 1) * speed * 0.3
 
     def _clamp_position(self) -> None:
+        import math
+        if math.isnan(self.ball.x) or math.isnan(self.ball.y) or math.isinf(self.ball.x) or math.isinf(self.ball.y):
+            self.ball.x, self.ball.y = 0.0, 0.0
+
         if hasattr(self.world, "width") and hasattr(self.world, "height"):
             radius = getattr(self.ball, "radius", 10.0)
             self.ball.x = max(radius, min(self.world.width - radius, self.ball.x))

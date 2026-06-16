@@ -9,6 +9,10 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+    if is_nan(self.ball.x) or is_nan(self.ball.y) or is_inf(self.ball.x) or is_inf(self.ball.y):
+        self.ball.x = 0.0
+        self.ball.y = 0.0
+
     if "current_action" in self.ball:
         self.ball.current_action = strategy
 
@@ -244,6 +248,10 @@ func _idle(delta: float):
     self.ball.y += randf_range(-1.0, 1.0) * speed * 0.3
 
 func _clamp_position():
+    if is_nan(self.ball.x) or is_nan(self.ball.y) or is_inf(self.ball.x) or is_inf(self.ball.y):
+        self.ball.x = 0.0
+        self.ball.y = 0.0
+
     if self.world != null and "width" in self.world and "height" in self.world:
         var radius = 10.0
         if "radius" in self.ball: radius = self.ball.radius

@@ -1,3 +1,4 @@
+import json
 """
 Ball Royale — Battle Simulation Engine
 Simulates 50-1000 balls fighting without rendering.
@@ -57,7 +58,6 @@ BALL_TYPES = {
                  "skill": "protect_ally", "skill_cooldown": 6.0},
 }
 
-import json
 try:
     _config_path = os.path.join(os.path.dirname(__file__), "../src/ai/balance_config.json")
     if os.path.exists(_config_path):
@@ -156,9 +156,15 @@ class SpatialGrid:
         self.cells: Dict[int, List[Ball]] = {}
 
     def _key(self, x: float, y: float) -> int:
-        col = int(x / self.cell_size)
-        row = int(y / self.cell_size)
-        return row * self.cols + col
+        try:
+            import math
+            if math.isnan(x) or math.isnan(y) or math.isinf(x) or math.isinf(y):
+                return 0
+            col = int(x / self.cell_size)
+            row = int(y / self.cell_size)
+            return row * self.cols + col
+        except (ValueError, OverflowError):
+            return 0
 
     def clear(self):
         self.cells.clear()
@@ -170,11 +176,17 @@ class SpatialGrid:
         self.cells[key].append(ball)
 
     def get_nearby(self, x: float, y: float, radius: float) -> List[Ball]:
+        import math
         result = []
-        min_col = max(0, int((x - radius) / self.cell_size))
-        max_col = min(self.cols - 1, int((x + radius) / self.cell_size))
-        min_row = max(0, int((y - radius) / self.cell_size))
-        max_row = min(self.rows - 1, int((y + radius) / self.cell_size))
+        try:
+            if math.isnan(x) or math.isnan(y) or math.isinf(x) or math.isinf(y):
+                return []
+            min_col = max(0, int((x - radius) / self.cell_size))
+            max_col = min(self.cols - 1, int((x + radius) / self.cell_size))
+            min_row = max(0, int((y - radius) / self.cell_size))
+            max_row = min(self.rows - 1, int((y + radius) / self.cell_size))
+        except (ValueError, OverflowError):
+            return []
         r2 = radius * radius
         for row in range(min_row, max_row + 1):
             for col in range(min_col, max_col + 1):
