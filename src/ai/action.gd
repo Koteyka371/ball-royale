@@ -109,21 +109,48 @@ func _attack(delta: float):
         var speed = 2.0
         if "speed" in self.ball: speed = self.ball.speed
 
-        if dist > 0.01:
-            var nx = dx / dist
-            var ny = dy / dist
-            var step = speed * delta * 60
-            self.ball.x += nx * min(step, dist)
-            self.ball.y += ny * min(step, dist)
+        var ball_type = ""
+        if "ball_type" in self.ball: ball_type = self.ball.ball_type
+        elif self.ball.has_method("get_ball_type"): ball_type = self.ball.get_ball_type()
 
-        var target_radius = 10.0
-        if "radius" in target: target_radius = target.radius
-        var ball_radius = 10.0
-        if "radius" in self.ball: ball_radius = self.ball.radius
+        if ball_type in ["sniper", "bomber", "healer"]:
+            var perception_radius = 250.0
+            if "perception_radius" in self.ball:
+                perception_radius = self.ball.perception_radius
 
-        if dist <= ball_radius + target_radius + 5:
-            if self.world != null and self.world.has_method("_deal_damage"):
-                self.world._deal_damage(self.ball, target)
+            var optimal_dist = perception_radius * 0.5
+
+            if dist > 0.01:
+                var nx = dx / dist
+                var ny = dy / dist
+                var step = speed * delta * 60
+
+                if dist < optimal_dist - 15.0:
+                    self.ball.x -= nx * step
+                    self.ball.y -= ny * step
+                elif dist > optimal_dist + 15.0:
+                    self.ball.x += nx * min(step, dist)
+                    self.ball.y += ny * min(step, dist)
+
+            if dist <= optimal_dist + 15.0:
+                if self.world != null and self.world.has_method("_deal_damage"):
+                    self.world._deal_damage(self.ball, target)
+        else:
+            if dist > 0.01:
+                var nx = dx / dist
+                var ny = dy / dist
+                var step = speed * delta * 60
+                self.ball.x += nx * min(step, dist)
+                self.ball.y += ny * min(step, dist)
+
+            var target_radius = 10.0
+            if "radius" in target: target_radius = target.radius
+            var ball_radius = 10.0
+            if "radius" in self.ball: ball_radius = self.ball.radius
+
+            if dist <= ball_radius + target_radius + 5:
+                if self.world != null and self.world.has_method("_deal_damage"):
+                    self.world._deal_damage(self.ball, target)
     else:
         _idle(delta)
 

@@ -79,18 +79,42 @@ class Action:
             target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
             dx, dy = target.x - self.ball.x, target.y - self.ball.y
             dist = math.sqrt(dx * dx + dy * dy)
-            if dist > 0.01:
-                nx, ny = dx / dist, dy / dist
-                step = getattr(self.ball, "speed", 2.0) * delta * 60
-                self.ball.x += nx * min(step, dist)
-                self.ball.y += ny * min(step, dist)
 
-            target_radius = getattr(target, "radius", 10.0)
-            ball_radius = getattr(self.ball, "radius", 10.0)
+            ball_type = getattr(self.ball, "ball_type", "")
+            if ball_type in ("sniper", "bomber", "healer"):
+                perception_radius = getattr(self.ball, "perception_radius", 250)
+                optimal_dist = perception_radius * 0.5
 
-            if dist <= ball_radius + target_radius + 5:
-                if hasattr(self.world, "_deal_damage"):
-                    self.world._deal_damage(self.ball, target)
+                if dist > 0.01:
+                    nx, ny = dx / dist, dy / dist
+                    step = getattr(self.ball, "speed", 2.0) * delta * 60
+
+                    if dist < optimal_dist - 15:
+                        # Kite back (move away)
+                        self.ball.x -= nx * step
+                        self.ball.y -= ny * step
+                    elif dist > optimal_dist + 15:
+                        # Pursue (move towards)
+                        self.ball.x += nx * min(step, dist)
+                        self.ball.y += ny * min(step, dist)
+                    # else: inside optimal range, stand still
+
+                if dist <= optimal_dist + 15:
+                    if hasattr(self.world, "_deal_damage"):
+                        self.world._deal_damage(self.ball, target)
+            else:
+                if dist > 0.01:
+                    nx, ny = dx / dist, dy / dist
+                    step = getattr(self.ball, "speed", 2.0) * delta * 60
+                    self.ball.x += nx * min(step, dist)
+                    self.ball.y += ny * min(step, dist)
+
+                target_radius = getattr(target, "radius", 10.0)
+                ball_radius = getattr(self.ball, "radius", 10.0)
+
+                if dist <= ball_radius + target_radius + 5:
+                    if hasattr(self.world, "_deal_damage"):
+                        self.world._deal_damage(self.ball, target)
         else:
             self._idle(delta)
 

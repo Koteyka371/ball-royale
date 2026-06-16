@@ -98,6 +98,44 @@ def test_execute_attack():
     action_layer2.execute("attack", 0.1)
     assert world2.dealt_damage # Should deal damage
 
+def test_execute_attack_sniper_kiting():
+    # Test kiting (moving away when too close)
+    ball = MockBall(x=100, y=100)
+    ball.ball_type = "sniper"
+    ball.perception_radius = 200 # optimal_dist = 100
+    world = MockWorld()
+    world.enemies = [MockEnemy(x=150, y=100)] # Enemy is 50 units away (too close, < 100 - 15)
+    action_layer = Action(ball, world)
+
+    action_layer.execute("attack", 0.1)
+    assert ball.current_action == "attack"
+    assert ball.x < 100 # Should kite back to the left
+    assert world.dealt_damage # Within optimal_dist + 5 (105), distance is 50
+
+    # Test pursuing (moving towards when too far)
+    ball2 = MockBall(x=100, y=100)
+    ball2.ball_type = "sniper"
+    ball2.perception_radius = 200 # optimal_dist = 100
+    world2 = MockWorld()
+    world2.enemies = [MockEnemy(x=250, y=100)] # Enemy is 150 units away (too far, > 100 + 15)
+    action_layer2 = Action(ball2, world2)
+
+    action_layer2.execute("attack", 0.1)
+    assert ball2.x > 100 # Should move towards enemy
+    assert not world2.dealt_damage # Outside optimal_dist + 5 (105), distance is 150
+
+    # Test optimal distance (stand still)
+    ball3 = MockBall(x=100, y=100)
+    ball3.ball_type = "sniper"
+    ball3.perception_radius = 200 # optimal_dist = 100
+    world3 = MockWorld()
+    world3.enemies = [MockEnemy(x=200, y=100)] # Enemy is 100 units away (perfect)
+    action_layer3 = Action(ball3, world3)
+
+    action_layer3.execute("attack", 0.1)
+    assert ball3.x == 100 # Should stand still
+    assert world3.dealt_damage # Within optimal_dist + 5 (105), distance is 100
+
 def test_execute_defend():
     ball = MockBall(x=100, y=100)
     world = MockWorld()
