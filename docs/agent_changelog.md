@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [ai-behavior-chase] Implement Chase behavior — *2026-06-16 15:27:27 UTC*
+
+Ball moves towards nearest enemy. Uses pathfinding to avoid obstacles. Stops when in attack range. Can be modified by fear (runs away) or greed (chases booster instead).
+
+---
+
 ## [ai-team-coordination] Implement Team coordination AI — *2026-06-16 12:47:06 UTC*
 
 Balls in same team share information: call out targets, request help, coordinate attacks. Tank signals to hold position, Healer calls for wounded, Sniper calls out threats.
