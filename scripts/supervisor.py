@@ -648,17 +648,16 @@ def main():
                 pr_num = pr.get("number")
                 pr_head = pr.get("head", {}).get("sha", "")
                 labels = [l.get("name", "") for l in pr.get("labels", [])]
-                is_automated = "automated" in labels
+                task_id = get_task_for_pr(pr)
+                is_automated = "automated" in labels or bool(task_id)
 
                 print(f"\n  PR #{pr_num}: {pr.get('title', '?')[:50]}")
                 print(f"    Labels: {labels}")
                 print(f"    Mergeable: {pr.get('mergeable', '?')}")
 
                 if not is_automated:
-                    print(f"    Skipped (no 'automated' label)")
+                    print(f"    Skipped (no 'automated' label and no task_id)")
                     continue
-
-                task_id = get_task_for_pr(pr)
                 
                 if task_id == "Auto":
                     print(f"    Auto PR detected! Merging immediately to propagate tasks to main.")
@@ -677,9 +676,25 @@ def main():
                     pass
 
                 if task_status == "done":
-                    print(f"    Task {task_id} already done, merging immediately")
+                    print(f"    Task {task_id} already done, CLOSING duplicate PR immediately")
                     branch_name = pr.get("head", {}).get("ref", "")
-                    if merge_pr(pr_num, branch_name=branch_name):
+                    
+                    # Close the PR via API
+                    token = os.environ.get("GITHUB_TOKEN", "")
+                    repo = os.environ.get("GITHUB_REPOSITORY", "Koteyka371/ball-royale")
+                    try:
+                        url = f"https://api.github.com/repos/{repo}/pulls/{pr_num}"
+                        data = json.dumps({"state": "closed"}).encode("utf-8")
+                        req = urllib.request.Request(url, data=data, headers={"Authorization": f"token {token}", "Accept": "application/vnd.github.v3+json"}, method="PATCH")
+                        urllib.request.urlopen(req, timeout=15)
+                        
+                        # Also delete the branch
+                        if branch_name:
+                            subprocess.run(["git", "push", "origin", f"--delete", branch_name], capture_output=True)
+                    except Exception as e:
+                        print(f"    Failed to close PR #{pr_num}: {e}")
+                        
+                    if True: # simulate success block
                         pr_need_save = True
                         agent_id_for_pr = find_agent_by_task_id(lock_data, task_id)
                         if agent_id_for_pr:

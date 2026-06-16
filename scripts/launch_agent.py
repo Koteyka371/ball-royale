@@ -303,13 +303,11 @@ def invoke_jules(task_id, area, prompt, branch_name, token):
         return False
 
 
-def check_pr_created(branch_name, token):
+def check_pr_created(task_id, token, agent_id_log):
     repo = os.environ.get("GITHUB_REPOSITORY", "Koteyka371/ball-royale")
-    owner = repo.split("/")[0]
-    encoded_branch = urllib.parse.quote(branch_name, safe="")
 
     for attempt in range(3):
-        url = f"https://api.github.com/repos/{repo}/pulls?head={owner}:{encoded_branch}&state=open"
+        url = f"https://api.github.com/repos/{repo}/pulls?state=open&sort=created&direction=desc&per_page=10"
         req = urllib.request.Request(url, headers={
             "Authorization": f"token {token}",
             "Accept": "application/vnd.github.v3+json",
@@ -317,13 +315,15 @@ def check_pr_created(branch_name, token):
         try:
             with urllib.request.urlopen(req, timeout=15) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
-                if data:
-                    print(f"[{agent_id}] PR created: #{data[0].get('number')}")
-                    return True
+                for pr in data:
+                    title = pr.get("title", "")
+                    if title.startswith(f"[{task_id}]"):
+                        print(f"[{agent_id_log}] PR created: #{pr.get('number')} - {title}")
+                        return True
                 return False
         except urllib.error.HTTPError as e:
             if e.code == 403 and attempt < 2:
-                print(f"[{agent_id}] Rate limited, waiting 30s...")
+                print(f"[{agent_id_log}] Rate limited, waiting 30s...")
                 time.sleep(30)
             else:
                 return False
@@ -558,7 +558,7 @@ def main():
 
             print(f"[{agent_id}] Polling for PR (branch={branch_name})...")
             for i in range(0, PR_POLL_MAX_MINUTES * 60, PR_POLL_INTERVAL):
-                if check_pr_created(branch_name, token):
+                if check_pr_created(task_id, token, agent_id):
                     print(f"[{agent_id}] PR found!")
                     break
                 elapsed = i + PR_POLL_INTERVAL
