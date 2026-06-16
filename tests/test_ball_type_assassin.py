@@ -12,22 +12,22 @@ from ai.ball_types_assassin import Assassin
 def test_assassin_initialization():
     ball = Assassin(ball_id=1, x=100, y=200)
     assert ball.id == 1
-    assert ball.hp == 70
-    assert ball.max_hp == 70
+    assert ball.hp == 85
+    assert ball.max_hp == 85
     assert ball.alive is True
     assert ball.personality == "assassin"
 
 
 def test_assassin_hp_percent():
     ball = Assassin(ball_id=1)
-    ball.hp = 35
-    assert abs(ball.get_hp_percent() - 35/70) < 0.01
+    ball.hp = 42.5
+    assert abs(ball.get_hp_percent() - 42.5/85.0) < 0.01
 
 
 def test_assassin_take_damage():
     ball = Assassin(ball_id=1)
     ball.take_damage(10)
-    assert ball.hp == 60
+    assert ball.hp == 75
     assert ball.alive is True
     ball.take_damage(170)
     assert ball.alive is False
@@ -36,7 +36,7 @@ def test_assassin_take_damage():
 def test_assassin_skill():
     ball = Assassin(ball_id=1)
     assert ball.use_skill() is True
-    assert ball.skill_timer == 3.0
+    assert ball.skill_timer == 2.0
     assert ball.use_skill() is False
 
 
