@@ -78,7 +78,7 @@
       "task_id": "ai-ball-warrior-ai",
       "status": "working",
       "started_at": "2026-06-16T19:13:00.596999+00:00",
-      "cycles_today": 0
+      "cycles_today": 1
     },
     "agent-10": {
       "name": "Jules Worker 10",
