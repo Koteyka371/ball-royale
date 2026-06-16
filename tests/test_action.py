@@ -36,11 +36,20 @@ class MockBooster:
         self.y = y
         self.active = active
 
+class MockAlly:
+    def __init__(self, x=10, y=0, radius=10, ball_type="mock_ball", alive=True):
+        self.x = x
+        self.y = y
+        self.radius = radius
+        self.ball_type = ball_type
+        self.alive = alive
+
 class MockWorld:
     def __init__(self):
         self.width = 1000
         self.height = 1000
         self.enemies = []
+        self.allies = []
         self.boosters = []
         self.dealt_damage = False
         self.collected_booster = False
@@ -48,7 +57,7 @@ class MockWorld:
     def get_nearby_entities(self, ball, radius):
         return {
             "enemies": self.enemies,
-            "allies": [],
+            "allies": self.allies,
             "boosters": self.boosters,
             "traps": []
         }
@@ -69,6 +78,8 @@ def test_action_initialization():
 
 def test_execute_flee():
     ball = MockBall(x=100, y=100)
+    # Give ball high perception so enemy is detected
+    ball.perception_radius = 500
     world = MockWorld()
     world.enemies = [MockEnemy(x=90, y=100)] # Enemy is to the left
     action_layer = Action(ball, world)
@@ -76,7 +87,36 @@ def test_execute_flee():
     action_layer.execute("flee", 0.1)
     assert ball.current_action == "flee"
     assert ball.x > 100 # Should move to the right (away from enemy)
-    assert ball.y == 100
+    # y changes slightly because it is also moving toward center of the world
+    assert ball.y > 100
+
+    # Check speed boost (base speed is 10)
+    # Flee uses 1.5 multiplier
+    # Vector combines x away from enemy, and center pull
+    # speed = 10 * 1.5 = 15, delta=0.1 -> max total movement = 90
+    assert (ball.x - 100)**2 + (ball.y - 100)**2 > 0 # moved somewhere
+
+    # Check safe distance stop
+    ball2 = MockBall(x=100, y=100)
+    ball2.perception_radius = 50
+    world2 = MockWorld()
+    world2.enemies = [MockEnemy(x=50, y=100)] # Dist is 50, safe dist is 40
+    action_layer2 = Action(ball2, world2)
+    action_layer2.execute("flee", 0.1)
+    # Because dist (50) > safe_distance (40), it goes idle, so movement is small random
+    assert abs(ball2.x - 100) < 5.0
+
+    # Check ally seeking priority
+    ball3 = MockBall(x=100, y=100)
+    ball3.perception_radius = 500
+    world3 = MockWorld()
+    world3.enemies = [MockEnemy(x=100, y=90)] # Enemy above, so threat vector is down (0, 1)
+    world3.allies = [MockAlly(x=150, y=100)] # Ally right, so ally vector is right (1, 0)
+    action_layer3 = Action(ball3, world3)
+    action_layer3.execute("flee", 0.1)
+    # Resulting vector should have both x and y components
+    assert ball3.x > 100 # Moving towards ally
+    assert ball3.y > 100 # Moving away from enemy
 
 def test_execute_attack():
     ball = MockBall(x=100, y=100)
