@@ -94,7 +94,7 @@
       "task_id": "ai-swarm-boids",
       "status": "working",
       "started_at": "2026-06-16T19:13:03.982547+00:00",
-      "cycles_today": 0
+      "cycles_today": 1
     },
     "agent-12": {
       "name": "Jules Worker 12",
