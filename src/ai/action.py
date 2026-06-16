@@ -61,17 +61,63 @@ class Action:
                         boosters.append(b)
         return boosters
 
+    def _get_allies(self) -> list:
+        perception_radius = getattr(self.ball, "perception_radius", 250)
+        if hasattr(self.world, "get_nearby_entities"):
+            entities = self.world.get_nearby_entities(self.ball, perception_radius)
+            if isinstance(entities, dict):
+                return entities.get("allies", [])
+            else:
+                return [e for e in entities if getattr(e, "ball_type", None) == self.ball.ball_type and getattr(e, "alive", True) and getattr(e, "id", None) != getattr(self.ball, "id", None)]
+        return []
+
     def _flee(self, delta: float) -> None:
         enemies = self._get_enemies()
-        if enemies:
-            nearest = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
-            dx, dy = self.ball.x - nearest.x, self.ball.y - nearest.y
-            dist = math.sqrt(dx * dx + dy * dy)
-            if dist > 0.01:
-                self.ball.x += (dx / dist) * getattr(self.ball, "speed", 2.0) * delta * 60
-                self.ball.y += (dy / dist) * getattr(self.ball, "speed", 2.0) * delta * 60
-        else:
+        if not enemies:
             self._idle(delta)
+            return
+
+        nearest = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+        dx, dy = self.ball.x - nearest.x, self.ball.y - nearest.y
+        dist = math.sqrt(dx * dx + dy * dy)
+
+        # Stop when safe
+        if dist > 200.0:
+            self._idle(delta)
+            return
+
+        flee_vx, flee_vy = 0.0, 0.0
+        if dist > 0.01:
+            flee_vx += dx / dist
+            flee_vy += dy / dist
+
+        allies = self._get_allies()
+        if allies:
+            nearest_ally = min(allies, key=lambda a: (a.x - self.ball.x) ** 2 + (a.y - self.ball.y) ** 2)
+            dx_a, dy_a = nearest_ally.x - self.ball.x, nearest_ally.y - self.ball.y
+            dist_a = math.sqrt(dx_a * dx_a + dy_a * dy_a)
+            if dist_a > 0.01:
+                flee_vx += (dx_a / dist_a) * 0.5
+                flee_vy += (dy_a / dist_a) * 0.5
+        else:
+            # Towards center if no allies
+            center_x = getattr(self.world, "width", 1000) / 2.0
+            center_y = getattr(self.world, "height", 1000) / 2.0
+            dx_c, dy_c = center_x - self.ball.x, center_y - self.ball.y
+            dist_c = math.sqrt(dx_c * dx_c + dy_c * dy_c)
+            if dist_c > 0.01:
+                flee_vx += (dx_c / dist_c) * 0.5
+                flee_vy += (dy_c / dist_c) * 0.5
+
+        mag = math.sqrt(flee_vx * flee_vx + flee_vy * flee_vy)
+        if mag > 0.01:
+            flee_vx /= mag
+            flee_vy /= mag
+
+        # Speed boost
+        speed = getattr(self.ball, "speed", 2.0) * 1.5
+        self.ball.x += flee_vx * speed * delta * 60
+        self.ball.y += flee_vy * speed * delta * 60
 
     def _attack(self, delta: float) -> None:
         enemies = self._get_enemies()
