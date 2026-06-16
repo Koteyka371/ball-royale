@@ -27,6 +27,7 @@ func execute(strategy: String, delta: float):
 
     _clamp_position()
     _update_skill_timer(delta)
+    _update_attack_timer(delta)
 
 func _get_enemies() -> Array:
     var perception_radius = 250.0
@@ -116,14 +117,41 @@ func _attack(delta: float):
             self.ball.x += nx * min(step, dist)
             self.ball.y += ny * min(step, dist)
 
+        var dx_new = target.x - self.ball.x
+        var dy_new = target.y - self.ball.y
+        var dist_new = sqrt(dx_new*dx_new + dy_new*dy_new)
+
         var target_radius = 10.0
         if "radius" in target: target_radius = target.radius
         var ball_radius = 10.0
         if "radius" in self.ball: ball_radius = self.ball.radius
 
-        if dist <= ball_radius + target_radius + 5:
-            if self.world != null and self.world.has_method("_deal_damage"):
-                self.world._deal_damage(self.ball, target)
+        if dist_new <= ball_radius + target_radius + 5.0:
+            var skill_timer = 0.0
+            if "skill_timer" in self.ball: skill_timer = self.ball.skill_timer
+            if skill_timer <= 0 and self.ball.has_method("use_skill"):
+                self.ball.use_skill()
+                if "skill_cooldown" in self.ball:
+                    self.ball.skill_timer = self.ball.skill_cooldown
+                else:
+                    self.ball.skill_timer = 5.0
+
+            var attack_timer = 0.0
+            if "attack_timer" in self.ball: attack_timer = self.ball.attack_timer
+
+            if attack_timer <= 0:
+                if self.world != null and self.world.has_method("_deal_damage"):
+                    self.world._deal_damage(self.ball, target)
+
+                var b_type = ""
+                if "ball_type" in self.ball: b_type = self.ball.ball_type
+
+                if b_type == "scout":
+                    self.ball.attack_timer = 0.5
+                elif b_type == "tank":
+                    self.ball.attack_timer = 2.0
+                else:
+                    self.ball.attack_timer = 1.0
     else:
         _idle(delta)
 
@@ -165,8 +193,15 @@ func _collect_booster(delta: float):
         _idle(delta)
 
 func _use_skill():
-    if self.ball.has_method("use_skill"):
+    var skill_timer = 0.0
+    if "skill_timer" in self.ball: skill_timer = self.ball.skill_timer
+
+    if skill_timer <= 0 and self.ball.has_method("use_skill"):
         self.ball.use_skill()
+        if "skill_cooldown" in self.ball:
+            self.ball.skill_timer = self.ball.skill_cooldown
+        else:
+            self.ball.skill_timer = 5.0
 
 func _idle(delta: float):
     var speed = 2.0
@@ -184,3 +219,7 @@ func _clamp_position():
 func _update_skill_timer(delta: float):
     if "skill_timer" in self.ball and self.ball.skill_timer > 0:
         self.ball.skill_timer -= delta
+
+func _update_attack_timer(delta: float):
+    if "attack_timer" in self.ball and self.ball.attack_timer > 0:
+        self.ball.attack_timer -= delta

@@ -33,6 +33,7 @@ class Action:
 
         self._clamp_position()
         self._update_skill_timer(delta)
+        self._update_attack_timer(delta)
 
     def _get_enemies(self) -> list:
         perception_radius = getattr(self.ball, "perception_radius", 250)
@@ -85,12 +86,31 @@ class Action:
                 self.ball.x += nx * min(step, dist)
                 self.ball.y += ny * min(step, dist)
 
+            # Recalculate distance after movement
+            dx, dy = target.x - self.ball.x, target.y - self.ball.y
+            dist_new = math.sqrt(dx * dx + dy * dy)
+
             target_radius = getattr(target, "radius", 10.0)
             ball_radius = getattr(self.ball, "radius", 10.0)
 
-            if dist <= ball_radius + target_radius + 5:
-                if hasattr(self.world, "_deal_damage"):
-                    self.world._deal_damage(self.ball, target)
+            if dist_new <= ball_radius + target_radius + 5.0:
+                skill_timer = getattr(self.ball, "skill_timer", 0.0)
+                if skill_timer <= 0 and hasattr(self.ball, "use_skill"):
+                    self.ball.use_skill()
+                    self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
+
+                attack_timer = getattr(self.ball, "attack_timer", 0.0)
+                if attack_timer <= 0:
+                    if hasattr(self.world, "_deal_damage"):
+                        self.world._deal_damage(self.ball, target)
+
+                    b_type = getattr(self.ball, "ball_type", "")
+                    if b_type == "scout":
+                        self.ball.attack_timer = 0.5
+                    elif b_type == "tank":
+                        self.ball.attack_timer = 2.0
+                    else:
+                        self.ball.attack_timer = 1.0
         else:
             self._idle(delta)
 
@@ -118,8 +138,10 @@ class Action:
             self._idle(delta)
 
     def _use_skill(self) -> None:
-        if hasattr(self.ball, "use_skill"):
+        skill_timer = getattr(self.ball, "skill_timer", 0.0)
+        if skill_timer <= 0 and hasattr(self.ball, "use_skill"):
             self.ball.use_skill()
+            self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
 
     def _idle(self, delta: float) -> None:
         speed = getattr(self.ball, "speed", 2.0)
@@ -135,3 +157,7 @@ class Action:
     def _update_skill_timer(self, delta: float) -> None:
         if hasattr(self.ball, "skill_timer") and self.ball.skill_timer > 0:
             self.ball.skill_timer -= delta
+
+    def _update_attack_timer(self, delta: float) -> None:
+        if hasattr(self.ball, "attack_timer") and self.ball.attack_timer > 0:
+            self.ball.attack_timer -= delta
