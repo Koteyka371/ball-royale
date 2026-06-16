@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [auto-implement-decision-skill] Implement DECISION skill — *2026-06-16 16:07:30 UTC*
+
+Create DECISION skill: Решение
+
+---
+
 ## [balance-buff-assassin] Balance: Buff underpowered 'assassin' — *2026-06-16 16:04:21 UTC*
 
 The 'assassin' class is winning only 0.0% of the time (expected ~8.3%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.
