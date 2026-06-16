@@ -136,7 +136,7 @@ class Action:
 
         return nx, ny
 
-    def _apply_obstacle_avoidance(self, nx: float, ny: float, target: Any = None) -> tuple[float, float]:
+    def _apply_obstacle_avoidance(self, nx: float, ny: float, target: Any = None, ignore_enemies: bool = False) -> tuple[float, float]:
         """Applies a repulsive force from nearby entities to avoid collisions."""
         all_entities = []
         perception_radius = getattr(self.ball, "perception_radius", 250)
@@ -145,9 +145,24 @@ class Action:
             entities = self.world.get_nearby_entities(self.ball, perception_radius)
             if isinstance(entities, dict):
                 for key in ["enemies", "allies"]:
+                    if ignore_enemies and key == "enemies":
+                        continue
                     all_entities.extend(entities.get(key, []))
             else:
                 all_entities = [e for e in entities if getattr(e, "alive", True) and e != self.ball]
+                if ignore_enemies:
+                    # Filter out enemies, but keep allies, boosters, and neutral obstacles.
+                    # An enemy is defined as having a ball_type that isn't the ball's type,
+                    # AND it is not a 'booster' or similar neutral item.
+                    # Simplest heuristic here: if we are supposed to ignore enemies,
+                    # only ignore those whose ball_type is different AND not a known neutral/booster.
+                    filtered = []
+                    for e in all_entities:
+                        b_type = getattr(e, "ball_type", None)
+                        is_enemy = (b_type is not None and b_type != self.ball.ball_type and b_type != "booster")
+                        if not is_enemy:
+                            filtered.append(e)
+                    all_entities = filtered
 
         repulse_nx, repulse_ny = 0.0, 0.0
         ball_radius = getattr(self.ball, "radius", 10.0)
@@ -482,13 +497,30 @@ class Action:
     def _collect_booster(self, delta: float) -> None:
         boosters = self._get_boosters()
         if boosters:
+            # Check for nearby enemies to interrupt collection
+            enemies = self._get_enemies()
+            ball_radius = getattr(self.ball, "radius", 10.0)
+            if enemies:
+                nearest_enemy = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+                enemy_radius = getattr(nearest_enemy, "radius", 10.0)
+                dx_enemy = nearest_enemy.x - self.ball.x
+                dy_enemy = nearest_enemy.y - self.ball.y
+                dist_enemy_sq = dx_enemy * dx_enemy + dy_enemy * dy_enemy
+                if dist_enemy_sq > 0.0001:
+                    import math
+                    dist_enemy = math.sqrt(dist_enemy_sq)
+                    if dist_enemy < ball_radius + enemy_radius + 30.0:
+                        self._flee(delta)
+                        return
+
             nearest = min(boosters, key=lambda b: (b.x - self.ball.x) ** 2 + (b.y - self.ball.y) ** 2)
             dx, dy = nearest.x - self.ball.x, nearest.y - self.ball.y
             dist_sq = dx * dx + dy * dy
             if dist_sq > 0.0001:
+                import math
                 dist = math.sqrt(dist_sq)
                 nx, ny = dx / dist, dy / dist
-                nx, ny = self._apply_obstacle_avoidance(nx, ny, nearest)
+                nx, ny = self._apply_obstacle_avoidance(nx, ny, nearest, ignore_enemies=True)
                 nx, ny = self._apply_boid_rules(nx, ny)
 
                 step = getattr(self.ball, "speed", 2.0) * delta * 60
@@ -498,6 +530,7 @@ class Action:
             # Recalculate distance after movement
             dx, dy = nearest.x - self.ball.x, nearest.y - self.ball.y
             dist_sq = dx * dx + dy * dy
+            import math
             dist = math.sqrt(dist_sq) if dist_sq > 0.0001 else 0.0
 
             ball_radius = getattr(self.ball, "radius", 10.0)

@@ -156,7 +156,7 @@ func _apply_boid_rules(nx: float, ny: float) -> Array:
 
     return [nx, ny]
 
-func _apply_obstacle_avoidance(nx: float, ny: float, target = null) -> Array:
+func _apply_obstacle_avoidance(nx: float, ny: float, target=null, ignore_enemies: bool = false) -> Array:
     var all_entities = []
     var perception_radius = 250.0
     if "perception_radius" in self.ball:
@@ -165,13 +165,41 @@ func _apply_obstacle_avoidance(nx: float, ny: float, target = null) -> Array:
     if self.world != null and self.world.has_method("get_nearby_entities"):
         var entities = self.world.get_nearby_entities(self.ball, perception_radius)
         if typeof(entities) == TYPE_DICTIONARY:
-            if entities.has("enemies"):
-                for e in entities["enemies"]: all_entities.append(e)
+            if entities.has("enemies") and not ignore_enemies:
+                for e in entities["enemies"]:
+                    all_entities.append(e)
             if entities.has("allies"):
-                for a in entities["allies"]: all_entities.append(a)
+                for e in entities["allies"]:
+                    all_entities.append(e)
         elif typeof(entities) == TYPE_ARRAY:
             for e in entities:
-                if (("alive" in e and e.alive) or (e.has_method("is_alive") and e.is_alive())) and e != self.ball:
+                var is_alive = true
+                if "alive" in e: is_alive = e.alive
+
+                var is_enemy = false
+                if "ball_type" in self.ball and "ball_type" in e:
+                    var e_type = e.ball_type
+                    is_enemy = (self.ball.ball_type != e_type and e_type != "booster")
+
+                if is_alive and e != self.ball:
+                    if ignore_enemies and is_enemy:
+                        continue
+                    all_entities.append(e)
+            if entities.has("allies"):
+                for e in entities["allies"]:
+                    all_entities.append(e)
+        elif typeof(entities) == TYPE_ARRAY:
+            for e in entities:
+                var is_alive = true
+                if "alive" in e: is_alive = e.alive
+
+                var is_enemy = false
+                if "ball_type" in self.ball and "ball_type" in e:
+                    is_enemy = (self.ball.ball_type != e.ball_type)
+
+                if is_alive and e != self.ball:
+                    if ignore_enemies and is_enemy:
+                        continue
                     all_entities.append(e)
 
     var repulse_nx = 0.0
@@ -683,6 +711,28 @@ func _defend(delta: float):
 func _collect_booster(delta: float):
     var boosters = _get_boosters()
     if boosters.size() > 0:
+        var ball_radius = 10.0
+        if "radius" in self.ball: ball_radius = self.ball.radius
+
+        var enemies = _get_enemies()
+        if enemies.size() > 0:
+            var nearest_enemy = null
+            var min_dist_enemy_sq = INF
+            for e in enemies:
+                var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                if dist_sq < min_dist_enemy_sq:
+                    min_dist_enemy_sq = dist_sq
+                    nearest_enemy = e
+
+            var enemy_radius = 10.0
+            if "radius" in nearest_enemy: enemy_radius = nearest_enemy.radius
+
+            if min_dist_enemy_sq > 0.0001:
+                var dist_enemy = sqrt(min_dist_enemy_sq)
+                if dist_enemy < ball_radius + enemy_radius + 30.0:
+                    _flee(delta)
+                    return
+
         var nearest = null
         var min_dist_sq = INF
         for b in boosters:
@@ -704,7 +754,7 @@ func _collect_booster(delta: float):
         if dist_sq > 0.0001:
             var nx = dx / dist
             var ny = dy / dist
-            var avoid_vec = _apply_obstacle_avoidance(nx, ny, nearest)
+            var avoid_vec = _apply_obstacle_avoidance(nx, ny, nearest, true)
             nx = avoid_vec[0]
             ny = avoid_vec[1]
 

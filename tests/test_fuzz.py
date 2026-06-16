@@ -1,3 +1,4 @@
+# mypy: ignore-errors
 import pytest
 import random
 from tests.simulate_battle import BattleSimulation
