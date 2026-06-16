@@ -457,7 +457,7 @@
     },
     {
       "id": "ai-team-coordination",
-      "status": "todo",
+      "status": "done",
       "area": "ai-team",
       "risk": "high",
       "title": "Implement Team coordination AI",
