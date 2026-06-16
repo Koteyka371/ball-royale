@@ -99,10 +99,10 @@
     "agent-12": {
       "name": "Jules Worker 12",
       "area": "ai-core",
-      "task_id": "ai-behavior-flank",
-      "status": "working",
-      "started_at": "2026-06-16T15:19:44.515320+00:00",
-      "cycles_today": 1
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
+      "cycles_today": 0
     }
   },
   "last_reset": "2026-06-16T03:57:50.313853+00:00"
