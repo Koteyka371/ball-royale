@@ -92,8 +92,8 @@
       "name": "Jules Worker 11",
       "area": "innovation",
       "task_id": "ai-neural-network-learning-v2",
-      "status": "assigned",
-      "started_at": "2026-06-16T21:59:56.958331+00:00",
+      "status": "working",
+      "started_at": "2026-06-16T22:10:43.034898+00:00",
       "cycles_today": 0
     },
     "agent-12": {
