@@ -1,6 +1,5 @@
-import pytest
+import pytest  # type: ignore
 import random
-import math
 from tests.simulate_battle import BattleSimulation
 
 # The fuzzer creates extreme game states and ensures the game doesn't crash or hang

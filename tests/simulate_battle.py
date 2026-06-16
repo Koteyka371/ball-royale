@@ -12,6 +12,7 @@ import os
 from dataclasses import dataclass
 from typing import List, Dict, Optional, Tuple, Any
 from collections import Counter
+import json
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
@@ -57,7 +58,6 @@ BALL_TYPES = {
                  "skill": "protect_ally", "skill_cooldown": 6.0},
 }
 
-import json
 try:
     _config_path = os.path.join(os.path.dirname(__file__), "../src/ai/balance_config.json")
     if os.path.exists(_config_path):
@@ -156,6 +156,8 @@ class SpatialGrid:
         self.cells: Dict[int, List[Ball]] = {}
 
     def _key(self, x: float, y: float) -> int:
+        if math.isnan(x) or math.isnan(y) or math.isinf(x) or math.isinf(y):
+            return 0
         col = int(x / self.cell_size)
         row = int(y / self.cell_size)
         return row * self.cols + col
@@ -170,7 +172,9 @@ class SpatialGrid:
         self.cells[key].append(ball)
 
     def get_nearby(self, x: float, y: float, radius: float) -> List[Ball]:
-        result = []
+        result: List[Ball] = []
+        if math.isnan(x) or math.isnan(y) or math.isinf(x) or math.isinf(y):
+            return result
         min_col = max(0, int((x - radius) / self.cell_size))
         max_col = min(self.cols - 1, int((x + radius) / self.cell_size))
         min_row = max(0, int((y - radius) / self.cell_size))
@@ -456,7 +460,6 @@ def test_battle_reduces_to_few():
 
 if __name__ == "__main__":
     import argparse
-    import json
 
     parser = argparse.ArgumentParser(description="Run Ball Royale Battle Simulation.")
     parser.add_argument("num_balls", type=int, nargs="?", default=100, help="Number of balls.")

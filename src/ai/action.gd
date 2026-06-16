@@ -69,6 +69,76 @@ func _get_boosters() -> Array:
                     boosters.append(b)
     return boosters
 
+func _apply_movement(dx: float, dy: float, dist: float, delta: float, clamp_to_target: bool = true, target = null):
+    if dist <= 0.01:
+        return
+
+    var nx = dx / dist
+    var ny = dy / dist
+
+    var perception_radius = 250.0
+    if "perception_radius" in self.ball:
+        perception_radius = self.ball.perception_radius
+
+    var nearby_entities = []
+    if self.world != null and self.world.has_method("get_nearby_entities"):
+        var entities = self.world.get_nearby_entities(self.ball, perception_radius)
+        if typeof(entities) == TYPE_DICTIONARY:
+            if entities.has("enemies"): nearby_entities.append_array(entities["enemies"])
+            if entities.has("allies"): nearby_entities.append_array(entities["allies"])
+            if entities.has("traps"): nearby_entities.append_array(entities["traps"])
+        elif typeof(entities) == TYPE_ARRAY:
+            nearby_entities = entities
+
+    var ball_radius = 10.0
+    if "radius" in self.ball: ball_radius = self.ball.radius
+
+    var repulsion_x = 0.0
+    var repulsion_y = 0.0
+
+    for e in nearby_entities:
+        if e == target or e == self.ball:
+            continue
+        if "alive" in e and not e.alive:
+            continue
+
+        var e_radius = 10.0
+        if "radius" in e: e_radius = e.radius
+        var threshold = ball_radius + e_radius + 5.0
+
+        var ex = 0.0
+        if "x" in e: ex = e.x
+        var ey = 0.0
+        if "y" in e: ey = e.y
+
+        var edx = self.ball.x - ex
+        var edy = self.ball.y - ey
+        var edist = sqrt(edx*edx + edy*edy)
+
+        if edist > 0 and edist < threshold:
+            var force = (threshold - edist) / threshold
+            repulsion_x += (edx / edist) * force
+            repulsion_y += (edy / edist) * force
+
+    nx += repulsion_x
+    ny += repulsion_y
+
+    var ndist = sqrt(nx*nx + ny*ny)
+    if ndist > 0.01:
+        nx /= ndist
+        ny /= ndist
+
+    var speed = 2.0
+    if "speed" in self.ball: speed = self.ball.speed
+    var step = speed * delta * 60
+
+    var move_dist = step
+    if clamp_to_target:
+        move_dist = min(step, dist)
+
+    self.ball.x += nx * move_dist
+    self.ball.y += ny * move_dist
+
 func _flee(delta: float):
     var enemies = _get_enemies()
     if enemies.size() > 0:
@@ -83,11 +153,7 @@ func _flee(delta: float):
         var dx = self.ball.x - nearest.x
         var dy = self.ball.y - nearest.y
         var dist = sqrt(dx*dx + dy*dy)
-        if dist > 0.01:
-            var speed = 2.0
-            if "speed" in self.ball: speed = self.ball.speed
-            self.ball.x += (dx / dist) * speed * delta * 60
-            self.ball.y += (dy / dist) * speed * delta * 60
+        _apply_movement(dx, dy, dist, delta, false, nearest)
     else:
         _idle(delta)
 
@@ -106,22 +172,18 @@ func _attack(delta: float):
         var dy = target.y - self.ball.y
         var dist = sqrt(dx*dx + dy*dy)
 
-        var speed = 2.0
-        if "speed" in self.ball: speed = self.ball.speed
+        _apply_movement(dx, dy, dist, delta, true, target)
 
-        if dist > 0.01:
-            var nx = dx / dist
-            var ny = dy / dist
-            var step = speed * delta * 60
-            self.ball.x += nx * min(step, dist)
-            self.ball.y += ny * min(step, dist)
+        var dx_new = target.x - self.ball.x
+        var dy_new = target.y - self.ball.y
+        var dist_new = sqrt(dx_new*dx_new + dy_new*dy_new)
 
         var target_radius = 10.0
         if "radius" in target: target_radius = target.radius
         var ball_radius = 10.0
         if "radius" in self.ball: ball_radius = self.ball.radius
 
-        if dist <= ball_radius + target_radius + 5:
+        if dist_new <= ball_radius + target_radius + 5:
             if self.world != null and self.world.has_method("_deal_damage"):
                 self.world._deal_damage(self.ball, target)
     else:
@@ -145,28 +207,31 @@ func _collect_booster(delta: float):
         var dy = nearest.y - self.ball.y
         var dist = sqrt(dx*dx + dy*dy)
 
-        var speed = 2.0
-        if "speed" in self.ball: speed = self.ball.speed
+        _apply_movement(dx, dy, dist, delta, true, nearest)
 
-        if dist > 0.01:
-            var nx = dx / dist
-            var ny = dy / dist
-            var step = speed * delta * 60
-            self.ball.x += nx * min(step, dist)
-            self.ball.y += ny * min(step, dist)
+        var dx_new = nearest.x - self.ball.x
+        var dy_new = nearest.y - self.ball.y
+        var dist_new = sqrt(dx_new*dx_new + dy_new*dy_new)
 
         var ball_radius = 10.0
         if "radius" in self.ball: ball_radius = self.ball.radius
 
-        if dist <= ball_radius + 10:
+        if dist_new <= ball_radius + 10:
             if self.world != null and self.world.has_method("_collect_booster"):
                 self.world._collect_booster(self.ball, nearest)
     else:
         _idle(delta)
 
 func _use_skill():
-    if self.ball.has_method("use_skill"):
-        self.ball.use_skill()
+    var skill_timer = 0.0
+    if "skill_timer" in self.ball: skill_timer = self.ball.skill_timer
+
+    if skill_timer <= 0:
+        if self.ball.has_method("use_skill"):
+            self.ball.use_skill()
+            var skill_cooldown = 5.0
+            if "skill_cooldown" in self.ball: skill_cooldown = self.ball.skill_cooldown
+            self.ball.skill_timer = skill_cooldown
 
 func _idle(delta: float):
     var speed = 2.0
@@ -175,6 +240,15 @@ func _idle(delta: float):
     self.ball.y += randf_range(-1.0, 1.0) * speed * 0.3
 
 func _clamp_position():
+    if is_nan(self.ball.x) or is_inf(self.ball.x):
+        var r = 10.0
+        if "radius" in self.ball: r = self.ball.radius
+        self.ball.x = r
+    if is_nan(self.ball.y) or is_inf(self.ball.y):
+        var r = 10.0
+        if "radius" in self.ball: r = self.ball.radius
+        self.ball.y = r
+
     if self.world != null and "width" in self.world and "height" in self.world:
         var radius = 10.0
         if "radius" in self.ball: radius = self.ball.radius
