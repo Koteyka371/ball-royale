@@ -16,7 +16,31 @@ class Action:
         """
         Executes the chosen strategy.
         """
+
         self.ball.current_action = strategy
+
+        # Reset team message by default
+        self.ball.team_message = None
+
+        hp_percent = 1.0
+        if hasattr(self.ball, "get_hp_percent"):
+            hp_percent = self.ball.get_hp_percent()
+        elif hasattr(self.ball, "hp") and hasattr(self.ball, "max_hp"):
+            hp_percent = float(self.ball.hp) / float(self.ball.max_hp)
+
+        personality = getattr(self.ball, "personality", "idle")
+
+        if hp_percent < 0.3 or strategy == "flee":
+            self.ball.team_message = {"type": "request_help", "x": self.ball.x, "y": self.ball.y}
+        elif strategy == "defend" and personality in ("tank", "defender", "guardian", "juggernaut"):
+            self.ball.team_message = {"type": "hold_position", "x": self.ball.x, "y": self.ball.y}
+        elif strategy == "defend" and personality == "healer":
+            self.ball.team_message = {"type": "call_for_wounded", "x": self.ball.x, "y": self.ball.y}
+        elif strategy in ("attack", "chase") and personality == "sniper":
+            self.ball.team_message = {"type": "threat_spotted", "x": self.ball.x, "y": self.ball.y}
+        elif strategy in ("attack", "chase"):
+            self.ball.team_message = {"type": "focus_target", "x": self.ball.x, "y": self.ball.y}
+
 
         if strategy == "flee":
             self._flee(delta)
@@ -42,6 +66,17 @@ class Action:
                 return entities.get("enemies", [])
             else:
                 return [e for e in entities if getattr(e, "ball_type", None) != self.ball.ball_type and getattr(e, "alive", True)]
+        return []
+
+
+    def _get_allies(self) -> list:
+        perception_radius = getattr(self.ball, "perception_radius", 250)
+        if hasattr(self.world, "get_nearby_entities"):
+            entities = self.world.get_nearby_entities(self.ball, perception_radius)
+            if isinstance(entities, dict):
+                return [e for e in entities.get("allies", []) if getattr(e, "alive", True)]
+            else:
+                return [e for e in entities if getattr(e, "ball_type", None) == self.ball.ball_type and getattr(e, "alive", True) and e != self.ball]
         return []
 
     def _get_boosters(self) -> list:
@@ -73,11 +108,28 @@ class Action:
         else:
             self._idle(delta)
 
+
     def _attack(self, delta: float) -> None:
         enemies = self._get_enemies()
-        if enemies:
+        allies = self._get_allies()
+
+        target = None
+
+        # Check team messages for targets
+        for ally in allies:
+            msg = getattr(ally, "team_message", None)
+            if msg and msg.get("type") in ("focus_target", "threat_spotted"):
+                # Find enemy closest to the spotted location
+                if enemies:
+                    target = min(enemies, key=lambda e: (e.x - msg.get("x", 0)) ** 2 + (e.y - msg.get("y", 0)) ** 2)
+                break
+
+        if not target and enemies:
             target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+
+        if target:
             dx, dy = target.x - self.ball.x, target.y - self.ball.y
+
             dist = math.sqrt(dx * dx + dy * dy)
             if dist > 0.01:
                 nx, ny = dx / dist, dy / dist
@@ -94,9 +146,40 @@ class Action:
         else:
             self._idle(delta)
 
+
     def _defend(self, delta: float) -> None:
-        # Defend might mean moving less or using shield. For now, small random moves or static
-        self._idle(delta * 0.5)
+        allies = self._get_allies()
+        target_x, target_y = None, None
+
+        hp_percent = 1.0
+        if hasattr(self.ball, "get_hp_percent"):
+            hp_percent = self.ball.get_hp_percent()
+        elif hasattr(self.ball, "hp") and hasattr(self.ball, "max_hp"):
+            hp_percent = float(self.ball.hp) / float(self.ball.max_hp)
+
+        for ally in allies:
+            msg = getattr(ally, "team_message", None)
+            if msg:
+                if msg.get("type") == "hold_position":
+                    target_x, target_y = msg.get("x"), msg.get("y")
+                    break
+                elif msg.get("type") == "call_for_wounded" and hp_percent < 0.8:
+                    target_x, target_y = msg.get("x"), msg.get("y")
+                    break
+
+        if target_x is not None and target_y is not None:
+            dx, dy = target_x - self.ball.x, target_y - self.ball.y
+            dist = math.sqrt(dx * dx + dy * dy)
+            if dist > 20.0:
+                nx, ny = dx / dist, dy / dist
+                step = getattr(self.ball, "speed", 2.0) * delta * 60
+                self.ball.x += nx * min(step, dist)
+                self.ball.y += ny * min(step, dist)
+            else:
+                self._idle(delta * 0.5)
+        else:
+            self._idle(delta * 0.5)
+
 
     def _collect_booster(self, delta: float) -> None:
         boosters = self._get_boosters()

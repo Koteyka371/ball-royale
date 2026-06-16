@@ -86,7 +86,15 @@ func scan() -> Dictionary:
     data["threat_level"] = threat
     data["opportunity_score"] = opp
 
+    data["team_messages"] = []
+    for ally in data["allies"]:
+        if ally.has_method("has_meta") and ally.has_meta("team_message"):
+            var msg = ally.get_meta("team_message")
+            if msg != null:
+                data["team_messages"].append(msg)
+
     data["danger_level"] = data["enemies"].size() * 0.2
+
     data["opportunity_level"] = data["boosters"].size() * 0.3 + data["allies"].size() * 0.1
 
     return data

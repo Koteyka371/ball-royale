@@ -35,8 +35,14 @@ class Emotion:
             self.has_taken_first_hit_previously = True
             return "cowardice"
 
-        # 3. Heroism: ally < 30% HP
+        # 3. Heroism: ally < 30% HP or request_help message
+        team_messages = perception_data.get("team_messages", [])
+        for msg in team_messages:
+            if msg.get("type") == "request_help":
+                return "heroism"
+
         allies = perception_data.get("allies", [])
+
         for ally in allies:
             ally_hp_percent = 1.0
             if hasattr(ally, "get_hp_percent"):

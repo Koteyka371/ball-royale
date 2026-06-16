@@ -30,8 +30,17 @@ func get_state(perception_data: Dictionary) -> String:
         self.has_taken_first_hit_previously = true
         return "cowardice"
 
-    # 3. Heroism: ally < 30% HP
+    # 3. Heroism: ally < 30% HP or request_help
+    var team_messages = []
+    if perception_data.has("team_messages"):
+        team_messages = perception_data["team_messages"]
+
+    for msg in team_messages:
+        if msg != null and msg.has("type") and msg.type == "request_help":
+            return "heroism"
+
     var allies = []
+
     if perception_data.has("allies"):
         allies = perception_data["allies"]
 

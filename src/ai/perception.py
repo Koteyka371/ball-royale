@@ -83,8 +83,16 @@ class Perception:
         data["threat_level"] = threat
         data["opportunity_score"] = opp
 
+        # Collect team messages
+        data["team_messages"] = []
+        for ally in data["allies"]:
+            msg = getattr(ally, "team_message", None)
+            if msg:
+                data["team_messages"].append(msg)
+
         # Backward compatibility for existing logic
         data["danger_level"] = len(data["enemies"]) * 0.2
+
         data["opportunity_level"] = len(data["boosters"]) * 0.3 + len(data["allies"]) * 0.1
 
         return data

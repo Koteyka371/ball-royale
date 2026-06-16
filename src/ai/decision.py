@@ -54,9 +54,11 @@ class Decision:
         enemies = perception_data.get("enemies", [])
         boosters = perception_data.get("boosters", [])
         allies = perception_data.get("allies", [])
+        team_messages = perception_data.get("team_messages", [])
 
         personality = getattr(self.ball, "personality", "idle")
         skill_timer = getattr(self.ball, "skill_timer", 0.0)
+
 
         # === FLEE ===
         if hp_percent < 0.3:
@@ -75,6 +77,13 @@ class Decision:
         if personality in ("tank", "defender", "guardian", "juggernaut"):
             scores["defend"] += 30.0
         scores["defend"] += danger_level * 20.0
+
+        for msg in team_messages:
+            if msg.get("type") == "hold_position":
+                scores["defend"] += 40.0
+            elif msg.get("type") == "call_for_wounded" and hp_percent < 0.8:
+                scores["defend"] += 60.0
+
 
         # === COLLECT BOOSTER ===
         if len(boosters) > 0:
@@ -95,8 +104,14 @@ class Decision:
             scores["attack"] += 100.0
         if personality in ("warrior", "aggressive", "berserker", "bomber"):
             scores["attack"] += 30.0
+
+        for msg in team_messages:
+            if msg.get("type") in ("focus_target", "threat_spotted"):
+                scores["attack"] += 30.0
+
         if len(enemies) == 0:
             scores["attack"] = -1000.0
+
 
         # === CHASE ===
         if len(enemies) > 0:
@@ -105,8 +120,14 @@ class Decision:
             scores["chase"] += 40.0
         if emotion_state == "bloodlust":
             scores["chase"] += 80.0
+
+        for msg in team_messages:
+            if msg.get("type") in ("focus_target", "threat_spotted"):
+                scores["chase"] += 20.0
+
         if len(enemies) == 0:
             scores["chase"] = -1000.0
+
 
         # === USE SKILL ===
         if skill_timer <= 0 and len(enemies) > 0:

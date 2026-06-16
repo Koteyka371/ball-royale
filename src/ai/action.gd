@@ -9,8 +9,38 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+
     if "current_action" in self.ball:
         self.ball.current_action = strategy
+
+    if self.ball.has_method("set_meta"):
+        self.ball.set_meta("team_message", null)
+
+    var hp_percent = 1.0
+    if self.ball.has_method("get_hp_percent"):
+        hp_percent = self.ball.get_hp_percent()
+    elif "hp" in self.ball and "max_hp" in self.ball:
+        hp_percent = float(self.ball.hp) / float(self.ball.max_hp)
+
+    var personality = "idle"
+    if "personality" in self.ball:
+        personality = self.ball.personality
+
+    var msg_type = null
+    if hp_percent < 0.3 or strategy == "flee":
+        msg_type = "request_help"
+    elif strategy == "defend" and (personality == "tank" or personality == "defender" or personality == "guardian" or personality == "juggernaut"):
+        msg_type = "hold_position"
+    elif strategy == "defend" and personality == "healer":
+        msg_type = "call_for_wounded"
+    elif (strategy == "attack" or strategy == "chase") and personality == "sniper":
+        msg_type = "threat_spotted"
+    elif strategy == "attack" or strategy == "chase":
+        msg_type = "focus_target"
+
+    if msg_type != null and self.ball.has_method("set_meta"):
+        self.ball.set_meta("team_message", {"type": msg_type, "x": self.ball.x, "y": self.ball.y})
+
 
     if strategy == "flee":
         _flee(delta)
@@ -47,6 +77,32 @@ func _get_enemies() -> Array:
                         if ("alive" in e and e.alive) or (e.has_method("is_alive") and e.is_alive()):
                             enemies.append(e)
             return enemies
+    return []
+
+
+func _get_allies() -> Array:
+    var perception_radius = 250.0
+    if "perception_radius" in self.ball:
+        perception_radius = self.ball.perception_radius
+
+    if self.world != null and self.world.has_method("get_nearby_entities"):
+        var entities = self.world.get_nearby_entities(self.ball, perception_radius)
+        if typeof(entities) == TYPE_DICTIONARY and entities.has("allies"):
+            var allies = []
+            for a in entities["allies"]:
+                if ("alive" in a and a.alive) or (a.has_method("is_alive") and a.is_alive()):
+                    allies.append(a)
+            return allies
+        elif typeof(entities) == TYPE_ARRAY:
+            var allies = []
+            for e in entities:
+                if e.has_method("get_ball_type") or "ball_type" in e:
+                    var e_type = e.ball_type if "ball_type" in e else e.get_ball_type()
+                    var b_type = self.ball.ball_type if "ball_type" in self.ball else self.ball.get_ball_type()
+                    if e_type == b_type and e != self.ball:
+                        if ("alive" in e and e.alive) or (e.has_method("is_alive") and e.is_alive()):
+                            allies.append(e)
+            return allies
     return []
 
 func _get_boosters() -> Array:
@@ -91,16 +147,33 @@ func _flee(delta: float):
     else:
         _idle(delta)
 
+
 func _attack(delta: float):
     var enemies = _get_enemies()
+    var allies = _get_allies()
+
     if enemies.size() > 0:
         var target = null
-        var min_dist_sq = INF
-        for e in enemies:
-            var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
-            if dist_sq < min_dist_sq:
-                min_dist_sq = dist_sq
-                target = e
+
+        for ally in allies:
+            if ally.has_method("has_meta") and ally.has_meta("team_message"):
+                var msg = ally.get_meta("team_message")
+                if msg != null and (msg.type == "focus_target" or msg.type == "threat_spotted"):
+                    var min_dist_sq_msg = INF
+                    for e in enemies:
+                        var dist_sq = pow(e.x - msg.x, 2) + pow(e.y - msg.y, 2)
+                        if dist_sq < min_dist_sq_msg:
+                            min_dist_sq_msg = dist_sq
+                            target = e
+                    break
+
+        if target == null:
+            var min_dist_sq = INF
+            for e in enemies:
+                var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                if dist_sq < min_dist_sq:
+                    min_dist_sq = dist_sq
+                    target = e
 
         var dx = target.x - self.ball.x
         var dy = target.y - self.ball.y
@@ -127,8 +200,48 @@ func _attack(delta: float):
     else:
         _idle(delta)
 
+
 func _defend(delta: float):
-    _idle(delta * 0.5)
+    var allies = _get_allies()
+    var target_x = null
+    var target_y = null
+
+    var hp_percent = 1.0
+    if self.ball.has_method("get_hp_percent"):
+        hp_percent = self.ball.get_hp_percent()
+    elif "hp" in self.ball and "max_hp" in self.ball:
+        hp_percent = float(self.ball.hp) / float(self.ball.max_hp)
+
+    for ally in allies:
+        if ally.has_method("has_meta") and ally.has_meta("team_message"):
+            var msg = ally.get_meta("team_message")
+            if msg != null:
+                if msg.type == "hold_position":
+                    target_x = msg.x
+                    target_y = msg.y
+                    break
+                elif msg.type == "call_for_wounded" and hp_percent < 0.8:
+                    target_x = msg.x
+                    target_y = msg.y
+                    break
+
+    if target_x != null and target_y != null:
+        var dx = target_x - self.ball.x
+        var dy = target_y - self.ball.y
+        var dist = sqrt(dx*dx + dy*dy)
+        if dist > 20.0:
+            var speed = 2.0
+            if "speed" in self.ball: speed = self.ball.speed
+            var nx = dx / dist
+            var ny = dy / dist
+            var step = speed * delta * 60
+            self.ball.x += nx * min(step, dist)
+            self.ball.y += ny * min(step, dist)
+        else:
+            _idle(delta * 0.5)
+    else:
+        _idle(delta * 0.5)
+
 
 func _collect_booster(delta: float):
     var boosters = _get_boosters()

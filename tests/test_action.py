@@ -41,6 +41,7 @@ class MockWorld:
         self.width = 1000
         self.height = 1000
         self.enemies = []
+        self.allies = []
         self.boosters = []
         self.dealt_damage = False
         self.collected_booster = False
@@ -48,7 +49,7 @@ class MockWorld:
     def get_nearby_entities(self, ball, radius):
         return {
             "enemies": self.enemies,
-            "allies": [],
+            "allies": self.allies,
             "boosters": self.boosters,
             "traps": []
         }
@@ -59,7 +60,16 @@ class MockWorld:
     def _collect_booster(self, ball, booster):
         self.collected_booster = True
 
+class MockAlly:
+    def __init__(self, x=10, y=0, ball_type="mock_ball", alive=True):
+        self.x = x
+        self.y = y
+        self.ball_type = ball_type
+        self.alive = alive
+        self.team_message = None
+
 def test_action_initialization():
+
     ball = MockBall()
     world = MockWorld()
     action_layer = Action(ball, world)
@@ -98,7 +108,36 @@ def test_execute_attack():
     action_layer2.execute("attack", 0.1)
     assert world2.dealt_damage # Should deal damage
 
+
+def test_execute_emit_team_messages():
+    ball = MockBall()
+    world = MockWorld()
+    action_layer = Action(ball, world)
+
+    ball.hp = 10
+    ball.max_hp = 100
+    action_layer.execute("defend", 0.1)
+    assert ball.team_message["type"] == "request_help"
+
+    ball.hp = 100
+    ball.personality = "tank"
+    action_layer.execute("defend", 0.1)
+    assert ball.team_message["type"] == "hold_position"
+
+    ball.personality = "healer"
+    action_layer.execute("defend", 0.1)
+    assert ball.team_message["type"] == "call_for_wounded"
+
+    ball.personality = "sniper"
+    action_layer.execute("attack", 0.1)
+    assert ball.team_message["type"] == "threat_spotted"
+
+    ball.personality = "warrior"
+    action_layer.execute("attack", 0.1)
+    assert ball.team_message["type"] == "focus_target"
+
 def test_execute_defend():
+
     ball = MockBall(x=100, y=100)
     world = MockWorld()
     action_layer = Action(ball, world)
@@ -107,7 +146,83 @@ def test_execute_defend():
     assert ball.current_action == "defend"
     # Idle random movement, difficult to assert exact position
 
+
+def test_execute_attack_with_team_message():
+    ball = MockBall(x=100, y=100)
+    world = MockWorld()
+
+    # Normally it would target the closer enemy
+    world.enemies = [MockEnemy(x=120, y=100), MockEnemy(x=200, y=100)]
+
+    # Ally is targeting the far enemy
+    ally = MockAlly(x=200, y=100)
+    ally.team_message = {"type": "focus_target", "x": 200, "y": 100}
+    world.allies = [ally]
+
+    action_layer = Action(ball, world)
+    action_layer.execute("attack", 0.1)
+
+    # Ball should move towards the far enemy due to the message
+    assert ball.current_action == "attack"
+    assert ball.x > 100
+    assert ball.y == 100
+
+def test_execute_defend_with_team_message():
+    ball = MockBall(x=100, y=100)
+    world = MockWorld()
+
+    ally = MockAlly(x=100, y=200)
+    ally.team_message = {"type": "hold_position", "x": 100, "y": 200}
+    world.allies = [ally]
+
+    action_layer = Action(ball, world)
+    action_layer.execute("defend", 0.1)
+
+    # Ball should move towards the hold_position point
+    assert ball.current_action == "defend"
+    assert ball.x == 100
+    assert ball.y > 100
+
+def test_execute_defend_with_call_for_wounded():
+    ball = MockBall(x=100, y=100)
+    ball.hp = 10
+    ball.max_hp = 100
+    world = MockWorld()
+
+    ally = MockAlly(x=100, y=200)
+    ally.team_message = {"type": "call_for_wounded", "x": 100, "y": 200}
+    world.allies = [ally]
+
+    action_layer = Action(ball, world)
+    action_layer.execute("defend", 0.1)
+
+    # Ball should move towards the call_for_wounded point since it is wounded
+    assert ball.current_action == "defend"
+    assert ball.x == 100
+    assert ball.y > 100
+
+def test_execute_defend_with_call_for_wounded_not_wounded():
+    ball = MockBall(x=100, y=100)
+    ball.hp = 100
+    ball.max_hp = 100
+    world = MockWorld()
+
+    ally = MockAlly(x=100, y=200)
+    ally.team_message = {"type": "call_for_wounded", "x": 100, "y": 200}
+    world.allies = [ally]
+
+    action_layer = Action(ball, world)
+    # Store original position
+    start_x, start_y = ball.x, ball.y
+    action_layer.execute("defend", 0.1)
+
+    # Should ignore call_for_wounded and idle (random small movement)
+    # The random movement is small enough that it shouldn't reach the target y
+    assert ball.current_action == "defend"
+    assert ball.y < 110 # Has not moved significantly towards 200
+
 def test_execute_collect_booster():
+
     ball = MockBall(x=100, y=100)
     world = MockWorld()
     world.boosters = [MockBooster(x=200, y=100)] # Booster is to the right, far away

@@ -43,7 +43,12 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     if perception_data.has("boosters"):
         boosters = perception_data["boosters"]
 
+    var team_messages = []
+    if perception_data.has("team_messages"):
+        team_messages = perception_data["team_messages"]
+
     var personality = "idle"
+
     if "personality" in self.ball:
         personality = self.ball.personality
 
@@ -64,6 +69,14 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
         scores["defend"] += 20.0
 
     scores["defend"] += danger_level * 20.0
+
+    for msg in team_messages:
+        if msg != null and msg.has("type"):
+            if msg.type == "hold_position":
+                scores["defend"] += 40.0
+            elif msg.type == "call_for_wounded" and hp_percent < 0.8:
+                scores["defend"] += 60.0
+
 
     # Opportunistic scoring
     if boosters.size() > 0:
@@ -86,6 +99,13 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
 
     if personality == "warrior" or personality == "aggressive":
         scores["attack"] += 30.0
+
+    for msg in team_messages:
+        if msg != null and msg.has("type") and (msg.type == "focus_target" or msg.type == "threat_spotted"):
+            scores["attack"] += 30.0
+            if scores.has("chase"):
+                scores["chase"] += 20.0
+
 
     # Idle scoring
     scores["idle"] = 1.0
