@@ -10,14 +10,14 @@ from ai.personality import Personality
 class Rogue:
     BALL_TYPE = "rogue"
     HP = 75
-    SPEED = 2.8
-    DAMAGE = 18
+    SPEED = 4.2
+    DAMAGE = 35
     RADIUS = 10
     PERCEPTION_RADIUS = 280
     AGGRESSION = 0.75
     COLOR = "yellow"
     SKILL = "steal_boost"
-    SKILL_COOLDOWN = 4.5
+    SKILL_COOLDOWN = 2.0
 
     def __init__(self, ball_id: int, x: float = 0.0, y: float = 0.0):
         self.id = ball_id
