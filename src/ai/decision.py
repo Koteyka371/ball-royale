@@ -49,11 +49,9 @@ class Decision:
 
         danger_level = perception_data.get("danger_level", 0.0)
         threat_level = perception_data.get("threat_level", 0.0)
-        opportunity_level = perception_data.get("opportunity_level", 0.0)
         opportunity_score = perception_data.get("opportunity_score", 0.0)
         enemies = perception_data.get("enemies", [])
         boosters = perception_data.get("boosters", [])
-        allies = perception_data.get("allies", [])
 
         personality = getattr(self.ball, "personality", "idle")
         skill_timer = getattr(self.ball, "skill_timer", 0.0)
