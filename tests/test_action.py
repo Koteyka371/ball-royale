@@ -276,3 +276,87 @@ def test_boid_rules_swarm():
     # In python implementation, separation weight might be overwhelmed by cohesion+alignment
     # Let's just assert that it modifies the input vector
     assert nx != 0.0 or ny != 0.0
+def test_sniper_attack_kiting():
+    world = MockWorld()
+    ball = MockBall(0, 0)
+    ball.ball_type = "sniper"
+    action = Action(ball, world)
+
+    # Distance < 200 (should kite away)
+    enemy = MockEnemy(100, 0)
+    world.enemies = [enemy]
+    action._attack(1.0/60)
+
+    assert ball.x < 0  # Moved away
+    assert world.dealt_damage == True # Also attacks since range is 300
+
+def test_sniper_attack_maintain():
+    world = MockWorld()
+    ball = MockBall(0, 0)
+    ball.ball_type = "sniper"
+    action = Action(ball, world)
+
+    # Distance 250 (between 200 and 300)
+    enemy = MockEnemy(250, 0)
+    world.enemies = [enemy]
+    action._attack(1.0/60)
+
+    assert ball.x == 0  # Did not move
+    assert world.dealt_damage == True # In range 300
+
+def test_sniper_attack_range():
+    world = MockWorld()
+    ball = MockBall(0, 0)
+    ball.ball_type = "sniper"
+    action = Action(ball, world)
+
+    # Distance > 300 (should move toward)
+    enemy = MockEnemy(350, 0)
+    world.enemies = [enemy]
+    action._attack(1.0/60)
+
+    assert ball.x > 0  # Moved toward
+    assert world.dealt_damage == False # Out of range 300
+
+
+def test_sniper_chase_kiting():
+    world = MockWorld()
+    ball = MockBall(0, 0)
+    ball.ball_type = "sniper"
+    action = Action(ball, world)
+
+    # Distance < 200 (should kite away in chase too)
+    enemy = MockEnemy(100, 0)
+    world.enemies = [enemy]
+    action._chase(1.0/60)
+
+    assert ball.x < 0  # Moved away
+    assert world.dealt_damage == True # Also attacks since range is 300
+
+def test_sniper_chase_maintain():
+    world = MockWorld()
+    ball = MockBall(0, 0)
+    ball.ball_type = "sniper"
+    action = Action(ball, world)
+
+    # Distance 250 (between 200 and 300)
+    enemy = MockEnemy(250, 0)
+    world.enemies = [enemy]
+    action._chase(1.0/60)
+
+    assert ball.x == 0  # Did not move
+    assert world.dealt_damage == True # In range 300
+
+def test_sniper_chase_range():
+    world = MockWorld()
+    ball = MockBall(0, 0)
+    ball.ball_type = "sniper"
+    action = Action(ball, world)
+
+    # Distance > 300 (should move toward)
+    enemy = MockEnemy(350, 0)
+    world.enemies = [enemy]
+    action._chase(1.0/60)
+
+    assert ball.x > 0  # Moved toward
+    assert world.dealt_damage == False # Out of range 300

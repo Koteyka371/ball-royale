@@ -316,19 +316,28 @@ class Action:
 
         target_radius = getattr(target, "radius", 10.0)
         ball_radius = getattr(self.ball, "radius", 10.0)
-        attack_range = ball_radius + target_radius + 5
+
+        is_sniper = getattr(self.ball, "ball_type", "").lower() == "sniper"
+        if is_sniper:
+            attack_range = 300.0
+        else:
+            attack_range = ball_radius + target_radius + 5
 
         # Stop moving if in attack range
         if dist_to_target <= attack_range:
             # We are close enough, attack
             if hasattr(self.world, "_deal_damage"):
                 self.world._deal_damage(self.ball, target)
-            return
+            if not is_sniper or dist_to_target >= 200.0:
+                return
 
         nx, ny = 0.0, 0.0
         if dist_to_target > 0.01:
             nx = target_dx / dist_to_target
             ny = target_dy / dist_to_target
+
+            if is_sniper and dist_to_target < 200.0:
+                nx, ny = -nx, -ny
 
         # Obstacle avoidance: repel from nearby allies and other enemies
         repel_x, repel_y = 0.0, 0.0
@@ -354,8 +363,12 @@ class Action:
         comb_nx, comb_ny = self._apply_boid_rules(comb_nx, comb_ny)
 
         step = getattr(self.ball, "speed", 2.0) * delta * 60
-        self.ball.x += comb_nx * step
-        self.ball.y += comb_ny * step
+        if is_sniper and dist_to_target < 200.0:
+            self.ball.x += comb_nx * step
+            self.ball.y += comb_ny * step
+        else:
+            self.ball.x += comb_nx * min(step, dist_to_target)
+            self.ball.y += comb_ny * min(step, dist_to_target)
 
     def _attack(self, delta: float) -> None:
         enemies = self._get_enemies()
@@ -380,15 +393,29 @@ class Action:
 
             dx, dy = target.x - self.ball.x, target.y - self.ball.y
             dist_sq = dx * dx + dy * dy
+            is_sniper = getattr(self.ball, "ball_type", "").lower() == "sniper"
+
             if dist_sq > 0.0001:
                 dist = math.sqrt(dist_sq)
                 nx, ny = dx / dist, dy / dist
-                nx, ny = self._apply_obstacle_avoidance(nx, ny, target)
-                nx, ny = self._apply_boid_rules(nx, ny)
 
-                step = getattr(self.ball, "speed", 2.0) * delta * 60
-                self.ball.x += nx * min(step, dist)
-                self.ball.y += ny * min(step, dist)
+                if is_sniper:
+                    if dist < 200.0:
+                        nx, ny = -nx, -ny
+                    elif dist <= 300.0:
+                        nx, ny = 0.0, 0.0
+
+                if nx != 0.0 or ny != 0.0:
+                    nx, ny = self._apply_obstacle_avoidance(nx, ny, target)
+                    nx, ny = self._apply_boid_rules(nx, ny)
+
+                    step = getattr(self.ball, "speed", 2.0) * delta * 60
+                    if is_sniper and dist < 200.0:
+                        self.ball.x += nx * step
+                        self.ball.y += ny * step
+                    else:
+                        self.ball.x += nx * min(step, dist)
+                        self.ball.y += ny * min(step, dist)
 
             # Recalculate distance after movement
             dx, dy = target.x - self.ball.x, target.y - self.ball.y
@@ -398,15 +425,19 @@ class Action:
             target_radius = getattr(target, "radius", 10.0)
             ball_radius = getattr(self.ball, "radius", 10.0)
 
-            if dist <= ball_radius + target_radius + 5:
+            attack_range = 300.0 if is_sniper else (ball_radius + target_radius + 5)
+
+            if dist <= attack_range:
                 # Uses skill when available and optimal
                 skill_timer = getattr(self.ball, "skill_timer", 0.0)
                 if skill_timer <= 0:
                     optimal = True
-                    b_type = getattr(self.ball, "ball_type", "")
+                    b_type = getattr(self.ball, "ball_type", "").lower()
                     if b_type == "bomber":
                         close_enemies = sum(1 for e in enemies if math.sqrt((e.x - self.ball.x)**2 + (e.y - self.ball.y)**2) <= ball_radius + getattr(e, "radius", 10.0) + 15)
                         optimal = close_enemies >= 2
+                    elif b_type == "sniper":
+                        optimal = dist > 150.0
 
                     if optimal:
                         if hasattr(self.ball, "use_skill"):

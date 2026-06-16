@@ -420,18 +420,31 @@ func _chase(delta: float):
     if "radius" in target: target_radius = target.radius
     var ball_radius = 10.0
     if "radius" in self.ball: ball_radius = self.ball.radius
+
+    var is_sniper = false
+    if "ball_type" in self.ball and self.ball.ball_type.to_lower() == "sniper":
+        is_sniper = true
+    elif self.ball.has_method("get_ball_type") and self.ball.get_ball_type().to_lower() == "sniper":
+        is_sniper = true
+
     var attack_range = ball_radius + target_radius + 5.0
+    if is_sniper:
+        attack_range = 300.0
 
     if dist_to_target <= attack_range:
         if self.world != null and self.world.has_method("_deal_damage"):
             self.world._deal_damage(self.ball, target)
-        return
+        if not is_sniper or dist_to_target >= 200.0:
+            return
 
     var nx = 0.0
     var ny = 0.0
     if dist_to_target > 0.01:
         nx = target_dx / dist_to_target
         ny = target_dy / dist_to_target
+        if is_sniper and dist_to_target < 200.0:
+            nx = -nx
+            ny = -ny
 
     var repel_x = 0.0
     var repel_y = 0.0
@@ -467,8 +480,12 @@ func _chase(delta: float):
     if "speed" in self.ball: speed = self.ball.speed
     var step = speed * delta * 60.0
 
-    self.ball.x += comb_nx * step
-    self.ball.y += comb_ny * step
+    if is_sniper and dist_to_target < 200.0:
+        self.ball.x += comb_nx * step
+        self.ball.y += comb_ny * step
+    else:
+        self.ball.x += comb_nx * min(step, dist_to_target)
+        self.ball.y += comb_ny * min(step, dist_to_target)
 
 func _attack(delta: float):
     var enemies = _get_enemies()
@@ -515,6 +532,13 @@ func _attack(delta: float):
         var dx = target.x - self.ball.x
         var dy = target.y - self.ball.y
         var dist_sq = dx*dx + dy*dy
+
+        var is_sniper = false
+        if "ball_type" in self.ball and self.ball.ball_type.to_lower() == "sniper":
+            is_sniper = true
+        elif self.ball.has_method("get_ball_type") and self.ball.get_ball_type().to_lower() == "sniper":
+            is_sniper = true
+
         var dist = 0.0
         if dist_sq > 0.0001:
             dist = sqrt(dist_sq)
@@ -525,17 +549,31 @@ func _attack(delta: float):
         if dist_sq > 0.0001:
             var nx = dx / dist
             var ny = dy / dist
-            var avoid_vec = _apply_obstacle_avoidance(nx, ny, target)
-            nx = avoid_vec[0]
-            ny = avoid_vec[1]
 
-            var boid_vec = _apply_boid_rules(nx, ny)
-            nx = boid_vec[0]
-            ny = boid_vec[1]
+            if is_sniper:
+                if dist < 200.0:
+                    nx = -nx
+                    ny = -ny
+                elif dist <= 300.0:
+                    nx = 0.0
+                    ny = 0.0
 
-            var step = speed * delta * 60
-            self.ball.x += nx * min(step, dist)
-            self.ball.y += ny * min(step, dist)
+            if nx != 0.0 or ny != 0.0:
+                var avoid_vec = _apply_obstacle_avoidance(nx, ny, target)
+                nx = avoid_vec[0]
+                ny = avoid_vec[1]
+
+                var boid_vec = _apply_boid_rules(nx, ny)
+                nx = boid_vec[0]
+                ny = boid_vec[1]
+
+                var step = speed * delta * 60
+                if is_sniper and dist < 200.0:
+                    self.ball.x += nx * step
+                    self.ball.y += ny * step
+                else:
+                    self.ball.x += nx * min(step, dist)
+                    self.ball.y += ny * min(step, dist)
 
         # Recalculate distance after movement
         dx = target.x - self.ball.x
@@ -551,7 +589,11 @@ func _attack(delta: float):
         var ball_radius = 10.0
         if "radius" in self.ball: ball_radius = self.ball.radius
 
-        if dist <= ball_radius + target_radius + 5:
+        var attack_range = ball_radius + target_radius + 5
+        if is_sniper:
+            attack_range = 300.0
+
+        if dist <= attack_range:
             var skill_timer = 0.0
             if "skill_timer" in self.ball:
                 skill_timer = self.ball.skill_timer
@@ -574,6 +616,8 @@ func _attack(delta: float):
                         if sqrt(edx*edx + edy*edy) <= ball_radius + e_radius + 15:
                             close_enemies += 1
                     optimal = close_enemies >= 2
+                elif b_type == "sniper":
+                    optimal = dist > 150.0
 
                 if optimal:
                     if self.ball.has_method("use_skill"):
