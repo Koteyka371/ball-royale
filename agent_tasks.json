@@ -191,7 +191,7 @@
     },
     {
       "id": "ai-behavior-attack",
-      "status": "todo",
+      "status": "done",
       "area": "ai-behaviors",
       "risk": "low",
       "title": "Implement Attack behavior",

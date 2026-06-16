@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [ai-behavior-attack] Implement Attack behavior — *2026-06-16 16:24:22 UTC*
+
+Ball attacks when in range. Timing varies by ball type (fast for Scout, slow for Tank). Can chain attacks. Uses skill when available and optimal.
+
+---
+
 ## [auto-implement-decision-skill] Implement DECISION skill — *2026-06-16 16:07:30 UTC*
 
 Create DECISION skill: Решение
