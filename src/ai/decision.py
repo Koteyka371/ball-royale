@@ -32,6 +32,34 @@ class Decision:
 
     def choose_action(self, perception_data: Dict[str, Any], emotion_state: str) -> str:
         hp_percent = 1.0
+
+        if getattr(self.ball, "ball_type", None) == "neural":
+            import json
+            import os
+            from .neural_network_brain import NeuralNetworkBrain
+
+            nn_weights = getattr(self.ball, 'nn_weights', None)
+            if not nn_weights:
+                weights_path = os.path.join(os.path.dirname(__file__), "nn_weights.json")
+                if os.path.exists(weights_path):
+                    with open(weights_path, "r") as f:
+                        nn_weights = json.load(f)
+                        self.ball.nn_weights = nn_weights
+
+            danger_level = perception_data.get("danger_level", 0.0)
+            threat_level = perception_data.get("threat_level", 0.0)
+            opportunity_score = perception_data.get("opportunity_score", 0.0)
+
+            brain = NeuralNetworkBrain(nn_weights)
+
+            _hp = 1.0
+            if hasattr(self.ball, "get_hp_percent"):
+                _hp = self.ball.get_hp_percent()
+            elif hasattr(self.ball, "hp") and hasattr(self.ball, "max_hp"):
+                _hp = float(self.ball.hp) / float(self.ball.max_hp)
+
+            return brain.evaluate(_hp, danger_level, opportunity_score, threat_level)
+
         if hasattr(self.ball, "get_hp_percent"):
             hp_percent = self.ball.get_hp_percent()
         elif hasattr(self.ball, "hp") and hasattr(self.ball, "max_hp"):

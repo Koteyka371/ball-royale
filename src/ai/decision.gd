@@ -13,6 +13,41 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func choose_action(perception_data: Dictionary, emotion_state: String) -> String:
+    if "ball_type" in self.ball and self.ball.ball_type == "neural":
+        var nn_weights = {}
+        if self.ball.has_meta("nn_weights"):
+            nn_weights = self.ball.get_meta("nn_weights")
+        else:
+            if FileAccess.file_exists("res://src/ai/nn_weights.json"):
+                var file = FileAccess.open("res://src/ai/nn_weights.json", FileAccess.READ)
+                var content = file.get_as_text()
+                var json = JSON.new()
+                if json.parse(content) == OK:
+                    nn_weights = json.get_data()
+                    self.ball.set_meta("nn_weights", nn_weights)
+
+        var danger_level = 0.0
+        if perception_data.has("danger_level"):
+            danger_level = perception_data["danger_level"]
+
+        var opportunity_score = 0.0
+        if perception_data.has("opportunity_score"):
+            opportunity_score = perception_data["opportunity_score"]
+
+        var threat_level = 0.0
+        if perception_data.has("threat_level"):
+            threat_level = perception_data["threat_level"]
+
+        var brain = NeuralNetworkBrain.new(nn_weights)
+
+        var _hp = 1.0
+        if self.ball.has_method("get_hp_percent"):
+            _hp = self.ball.get_hp_percent()
+        elif "hp" in self.ball and "max_hp" in self.ball:
+            _hp = float(self.ball.hp) / float(self.ball.max_hp)
+
+        return brain.evaluate(_hp, danger_level, opportunity_score, threat_level)
+
     var hp_percent = 1.0
     if self.ball.has_method("get_hp_percent"):
         hp_percent = self.ball.get_hp_percent()
