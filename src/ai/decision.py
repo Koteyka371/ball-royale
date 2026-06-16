@@ -84,6 +84,11 @@ class Decision:
             scores["flee"] += 80.0
         scores["flee"] += threat_level * 5.0
 
+        if personality == "curious":
+            strong_enemies = sum(1 for e in enemies if (e.hp / e.max_hp if hasattr(e, "hp") and hasattr(e, "max_hp") and e.max_hp > 0 else 1.0) >= 0.3)
+            if strong_enemies > 0:
+                scores["flee"] += strong_enemies * 20.0
+
         # === DEFEND ===
         if danger_level > 0.7:
             scores["defend"] += 100.0
@@ -120,6 +125,10 @@ class Decision:
             scores["attack"] += 30.0
         if len(allies) > len(enemies):
             scores["attack"] += (len(allies) - len(enemies)) * 15.0
+        if personality == "curious":
+            weak_enemies = sum(1 for e in enemies if (e.hp / e.max_hp if hasattr(e, "hp") and hasattr(e, "max_hp") and e.max_hp > 0 else 1.0) < 0.3)
+            if weak_enemies > 0:
+                scores["attack"] += weak_enemies * 20.0
         if len(enemies) == 0:
             scores["attack"] = -1000.0
 
@@ -130,11 +139,20 @@ class Decision:
             scores["chase"] += 40.0
         if emotion_state == "bloodlust":
             scores["chase"] += 80.0
+        if personality == "curious":
+            weak_enemies = sum(1 for e in enemies if (e.hp / e.max_hp if hasattr(e, "hp") and hasattr(e, "max_hp") and e.max_hp > 0 else 1.0) < 0.3)
+            if weak_enemies > 0:
+                scores["chase"] += weak_enemies * 25.0
         if len(enemies) == 0:
             scores["chase"] = -1000.0
 
         # === USE SKILL ===
         difficulty = getattr(self.ball, "difficulty", "medium")
+
+        # Determine intent (flee or chase)
+        intent_flee = scores["flee"] > max(scores["defend"], scores["attack"], scores["chase"], scores["collect_booster"])
+        intent_chase = scores["chase"] > max(scores["flee"], scores["defend"], scores["attack"], scores["collect_booster"])
+
         if skill_timer <= 0 and len(enemies) > 0:
             if difficulty == "easy":
                 scores["use_skill"] += 20.0
@@ -148,6 +166,10 @@ class Decision:
                 scores["use_skill"] += 40.0
                 if hp_percent < 0.5:
                     scores["use_skill"] += 30.0
+
+            if getattr(self.ball, "skill", "") == "dash" and (intent_flee or intent_chase):
+                scores["use_skill"] += 50.0
+
         if skill_timer > 0:
             scores["use_skill"] = -1000.0
 

@@ -72,6 +72,12 @@
       "perception_radius": 150, "aggression": 0.4, "color": "darkred",
       "skill": "ground_pound", "skill_cooldown": 8.0,
       "description": "Slow but devastating, area damage on impact"
+    },
+    "scout": {
+      "hp": 80, "speed": 3.8, "damage": 20, "radius": 9,
+      "perception_radius": 350, "aggression": 0.5, "color": "lightblue",
+      "skill": "dash", "skill_cooldown": 3.5,
+      "description": "Curious personality, seeks boosters, attacks weak enemies, flees from strong ones, uses Dash to escape or chase"
     }
   }
 }

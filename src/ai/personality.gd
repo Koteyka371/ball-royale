@@ -38,5 +38,10 @@ func get_decision_modifiers() -> Dictionary:
         mods["opportunistic"] += 20.0
         mods["chase"] += 20.0
         mods["defend"] -= 10.0
+    elif self.character == "curious":
+        mods["opportunistic"] += 30.0
+        mods["chase"] += 15.0
+        mods["flee"] += 15.0
+        mods["defend"] -= 20.0
 
     return mods
