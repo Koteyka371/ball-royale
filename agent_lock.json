@@ -38,7 +38,7 @@
       "task_id": "auto-implement-coach-mode-(тренер)-game-mode",
       "status": "working",
       "started_at": "2026-06-17T19:33:11.877366+00:00",
-      "cycles_today": 0
+      "cycles_today": 1
     },
     "agent-6": {
       "name": "Jules Innovation",
