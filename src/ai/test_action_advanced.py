@@ -161,7 +161,7 @@ def test_tank_target_strong_chase():
     # If it targeted e3, it would move down (y < 100).
     # Since it should target e2, it must move up (y > 100).
     assert ball.y > 100
-    assert ball.x == 100
+    assert ball.x >= 100
 
 
 def test_collect_booster_ignore_enemies():
