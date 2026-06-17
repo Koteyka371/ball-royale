@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [ai-emotional-contagion-logic] Implement Emotional Contagion Logic — *2026-06-17 21:54:12 UTC*
+
+Update Emotion layer so fear and aggression spread like a virus. If a ball flees, nearby balls have a chance to enter cowardice/fear state.
+
+---
+
 ## [ai-behavior-flank] Implement Flank behavior — *2026-06-17 21:34:57 UTC*
 
 Ball moves behind enemy for bonus damage. Uses stealth (Ninja) or speed (Scout) to get behind. Attacks from behind for critical hit.
