@@ -168,6 +168,18 @@
       "skill": "command",
       "skill_cooldown": 5.0,
       "description": "Leader personality, stays behind allies, uses Command to buff team, targets low HP allies to boost, avoids direct combat."
+    },
+    "spectator": {
+      "hp": 99999,
+      "speed": 5.0,
+      "damage": 0,
+      "radius": 5,
+      "perception_radius": 1000,
+      "aggression": 0.0,
+      "color": "white",
+      "skill": "observe",
+      "skill_cooldown": 1.0,
+      "description": "Spectator mode, invisible to other balls, observes the battle."
     }
   }
 }

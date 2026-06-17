@@ -267,6 +267,12 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
             if scores[k] > -500.0:
                 scores[k] += randf_range(-20.0, 20.0)
 
+    if b_type.to_lower() == "spectator":
+        scores["idle"] = 1000.0
+        for k in scores.keys():
+            if k != "idle":
+                scores[k] = -1000.0
+
     var best_action = "idle"
     var best_score = -9999.0
 

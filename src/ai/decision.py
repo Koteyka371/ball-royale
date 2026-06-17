@@ -26,6 +26,7 @@ class Decision:
         "king": "defend",
         "aggressive": "attack",
         "defender": "defend",
+        "spectator": "idle",
     }
 
     def __init__(self, ball: Any, world: Any):
@@ -215,6 +216,12 @@ class Decision:
             for k in scores.keys():
                 if scores[k] > -500:
                     scores[k] += random.uniform(-20, 20)
+
+        if b_type == "spectator":
+            scores["idle"] = 1000.0
+            for k in scores.keys():
+                if k != "idle":
+                    scores[k] = -1000.0
 
         # Find highest score
         best_action = "idle"
