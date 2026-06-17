@@ -725,17 +725,47 @@ func _attack(delta: float):
                 attack_timer = self.ball.get_meta("attack_timer")
 
             if attack_timer <= 0:
-                if self.world != null and self.world.has_method("_deal_damage"):
-                    self.world._deal_damage(self.ball, target)
-
-                var cooldown = 0.5
                 var b_type = ""
                 if "ball_type" in self.ball:
                     b_type = self.ball.ball_type.to_lower()
                 elif self.ball.has_method("get_ball_type"):
                     b_type = self.ball.get_ball_type().to_lower()
 
-                if b_type in ["scout", "assassin", "phantom", "swarm", "rogue"]:
+                var original_damage = 10.0
+                if "damage" in self.ball:
+                    original_damage = float(self.ball.damage)
+
+                if b_type == "ninja":
+                    var tvx = 0.0
+                    var tvy = 0.0
+                    if "vx" in target: tvx = float(target.vx)
+                    if "vy" in target: tvy = float(target.vy)
+                    var tv_dist_sq = tvx * tvx + tvy * tvy
+                    if tv_dist_sq > 0.0001:
+                        var tv_dist = sqrt(tv_dist_sq)
+                        var tnx = tvx / tv_dist
+                        var tny = tvy / tv_dist
+
+                        var adx = float(target.x) - float(self.ball.x)
+                        var ady = float(target.y) - float(self.ball.y)
+                        var adist_sq = adx * adx + ady * ady
+                        if adist_sq > 0.0001:
+                            var adist = sqrt(adist_sq)
+                            var anx = adx / adist
+                            var any = ady / adist
+
+                            var dot_product = anx * tnx + any * tny
+                            if dot_product > 0.5:
+                                self.ball.damage = original_damage * 2.0
+
+                if self.world != null and self.world.has_method("_deal_damage"):
+                    self.world._deal_damage(self.ball, target)
+
+                if b_type == "ninja":
+                    self.ball.damage = original_damage
+
+                var cooldown = 0.5
+                if b_type in ["scout", "assassin", "phantom", "swarm", "rogue", "ninja"]:
                     cooldown = 0.3
                 elif b_type in ["tank", "juggernaut", "guardian"]:
                     cooldown = 1.5

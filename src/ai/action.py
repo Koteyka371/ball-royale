@@ -492,11 +492,35 @@ class Action:
                 # Deal damage with attack timer
                 attack_timer = getattr(self.ball, "attack_timer", 0.0)
                 if attack_timer <= 0:
+                    b_type = getattr(self.ball, "ball_type", "").lower()
+                    original_damage = getattr(self.ball, "damage", 10.0)
+
+                    if b_type == "ninja":
+                        tvx = getattr(target, "vx", 0.0)
+                        tvy = getattr(target, "vy", 0.0)
+                        tv_dist_sq = tvx*tvx + tvy*tvy
+                        if tv_dist_sq > 0.0001:
+                            tv_dist = math.sqrt(tv_dist_sq)
+                            tnx, tny = tvx/tv_dist, tvy/tv_dist
+
+                            adx = target.x - self.ball.x
+                            ady = target.y - self.ball.y
+                            adist_sq = adx*adx + ady*ady
+                            if adist_sq > 0.0001:
+                                adist = math.sqrt(adist_sq)
+                                anx, any = adx/adist, ady/adist
+
+                                dot_product = anx * tnx + any * tny
+                                if dot_product > 0.5:
+                                    self.ball.damage = original_damage * 2.0
+
                     if hasattr(self.world, "_deal_damage"):
                         self.world._deal_damage(self.ball, target)
 
-                    b_type = getattr(self.ball, "ball_type", "").lower()
-                    if b_type in ("scout", "assassin", "phantom", "swarm", "rogue"):
+                    if b_type == "ninja":
+                        self.ball.damage = original_damage
+
+                    if b_type in ("scout", "assassin", "phantom", "swarm", "rogue", "ninja"):
                         cooldown = 0.3
                     elif b_type in ("tank", "juggernaut", "guardian"):
                         cooldown = 1.5
