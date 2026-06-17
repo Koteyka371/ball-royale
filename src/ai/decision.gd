@@ -61,6 +61,12 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     if perception_data.has("team_messages"):
         team_messages = perception_data["team_messages"]
 
+    var b_type = ""
+    if "ball_type" in self.ball:
+        b_type = self.ball.ball_type.to_lower()
+    elif self.ball.has_method("get_ball_type"):
+        b_type = self.ball.get_ball_type().to_lower()
+
     # Process team messages
     for msg in team_messages:
         if typeof(msg) == TYPE_DICTIONARY and msg.has("type"):
@@ -72,7 +78,7 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
             elif msg_type == "request_help":
                 scores["defend"] += 40.0
             elif msg_type == "wounded_call":
-                if personality == "healer":
+                if b_type == "healer":
                     scores["defend"] += 50.0
 
     # Flee scoring
@@ -228,16 +234,15 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
         scores["attack"] = -1000.0
         scores["chase"] = -1000.0
 
-    var b_type = ""
-    if "ball_type" in self.ball:
-        b_type = self.ball.ball_type
-    elif self.ball.has_method("get_ball_type"):
-        b_type = self.ball.get_ball_type()
-
     if b_type == "warrior":
         scores["flee"] = -1000.0
         scores["attack"] += 100.0
         scores["chase"] += 100.0
+
+    if b_type == "healer":
+        scores["attack"] = -1000.0
+        scores["chase"] = -1000.0
+        scores["flee"] += 50.0
 
     # Decision Quality (Noise based on difficulty)
     if difficulty == "chaos":

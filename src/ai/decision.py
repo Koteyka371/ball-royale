@@ -60,6 +60,8 @@ class Decision:
         skill_timer = getattr(self.ball, "skill_timer", 0.0)
         team_messages = perception_data.get("team_messages", [])
 
+        b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
+
         # Process team messages
         for msg in team_messages:
             if isinstance(msg, dict):
@@ -72,7 +74,7 @@ class Decision:
                 elif msg_type == "request_help":
                     scores["defend"] += 40.0
                 elif msg_type == "wounded_call":
-                    if personality == "healer":
+                    if b_type == "healer":
                         scores["defend"] += 50.0
 
         # === FLEE ===
@@ -187,11 +189,16 @@ class Decision:
                     scores[action_key] += mod_val
 
         # Warrior override: Never flees, high attack/chase priority
-        b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
         if b_type == "warrior":
             scores["flee"] = -1000.0
             scores["attack"] += 100.0
             scores["chase"] += 100.0
+
+        # Healer override: Avoids combat
+        if b_type == "healer":
+            scores["attack"] = -1000.0
+            scores["chase"] = -1000.0
+            scores["flee"] += 50.0
 
         # Decision Quality (Noise based on difficulty)
         if difficulty == "chaos":

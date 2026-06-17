@@ -28,9 +28,15 @@ func execute(strategy: String, delta: float):
         if "personality" in self.ball:
             personality = self.ball.personality
 
+        var b_type = ""
+        if "ball_type" in self.ball:
+            b_type = self.ball.ball_type.to_lower()
+        elif self.ball.has_method("get_ball_type"):
+            b_type = self.ball.get_ball_type().to_lower()
+
         if hp_percent < 0.3:
             self.ball.set_meta("team_message", {"type": "request_help", "x": self.ball.x, "y": self.ball.y})
-        elif personality == "healer":
+        elif b_type == "healer":
             self.ball.set_meta("team_message", {"type": "wounded_call", "x": self.ball.x, "y": self.ball.y})
         elif strategy == "defend" and personality == "tank":
             self.ball.set_meta("team_message", {"type": "hold_position", "x": self.ball.x, "y": self.ball.y})
@@ -775,7 +781,14 @@ func _defend(delta: float):
                     elif self.ball.has_method("set_meta"):
                         self.ball.set_meta("attack_timer", cooldown)
             return
-    elif personality == "healer":
+
+    var b_type_defend = ""
+    if "ball_type" in self.ball:
+        b_type_defend = self.ball.ball_type.to_lower()
+    elif self.ball.has_method("get_ball_type"):
+        b_type_defend = self.ball.get_ball_type().to_lower()
+
+    if b_type_defend == "healer":
         var allies = _get_allies()
         var target_ally = null
         var lowest_hp = 0.8
@@ -805,45 +818,43 @@ func _defend(delta: float):
                 self.ball.x += nx * min(step, dist)
                 self.ball.y += ny * min(step, dist)
 
-            dx = target.x - self.ball.x
-            dy = target.y - self.ball.y
+            dx = target_ally.x - self.ball.x
+            dy = target_ally.y - self.ball.y
             dist_sq = dx*dx + dy*dy
             var dist_after = 0.0
             if dist_sq > 0.0001:
                 dist_after = sqrt(dist_sq)
 
             var target_radius = 10.0
-            if "radius" in target: target_radius = target.radius
+            if "radius" in target_ally: target_radius = target_ally.radius
             var ball_radius = 10.0
             if "radius" in self.ball: ball_radius = self.ball.radius
 
             if dist_after <= ball_radius + target_radius + 5:
-                var attack_timer = 0.0
-                if "attack_timer" in self.ball:
-                    attack_timer = self.ball.attack_timer
-                elif self.ball.has_meta("attack_timer"):
-                    attack_timer = self.ball.get_meta("attack_timer")
+                var skill_timer = 0.0
+                if "skill_timer" in self.ball:
+                    skill_timer = self.ball.skill_timer
+                elif self.ball.has_meta("skill_timer"):
+                    skill_timer = self.ball.get_meta("skill_timer")
 
-                if attack_timer <= 0:
-                    if self.world != null and self.world.has_method("_deal_damage"):
-                        self.world._deal_damage(self.ball, target)
+                if skill_timer <= 0:
+                    var dmg = 5.0
+                    if "damage" in self.ball: dmg = self.ball.damage
+                    var heal_amount = dmg * 3.0
 
-                    var cooldown = 1.5
-                    var b_type = ""
-                    if "ball_type" in self.ball:
-                        b_type = self.ball.ball_type.to_lower()
-                    elif self.ball.has_method("get_ball_type"):
-                        b_type = self.ball.get_ball_type().to_lower()
+                    if "hp" in target_ally and "max_hp" in target_ally:
+                        target_ally.hp = min(target_ally.max_hp, target_ally.hp + heal_amount)
 
-                    if not (b_type in ["tank", "juggernaut", "guardian"]):
-                        var spd = 2.0
-                        if "speed" in self.ball: spd = self.ball.speed
-                        cooldown = max(0.2, 2.0 / spd if spd > 0 else 1.0)
+                    if self.ball.has_method("use_skill"):
+                        self.ball.use_skill()
 
-                    if "attack_timer" in self.ball:
-                        self.ball.attack_timer = cooldown
+                    var cooldown = 2.5
+                    if "skill_cooldown" in self.ball: cooldown = self.ball.skill_cooldown
+
+                    if "skill_timer" in self.ball:
+                        self.ball.skill_timer = cooldown
                     elif self.ball.has_method("set_meta"):
-                        self.ball.set_meta("attack_timer", cooldown)
+                        self.ball.set_meta("skill_timer", cooldown)
             return
 
     _idle(delta * 0.5)

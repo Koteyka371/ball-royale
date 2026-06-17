@@ -30,10 +30,11 @@ class Action:
             hp_percent = float(self.ball.hp) / float(self.ball.max_hp)
 
         personality = getattr(self.ball, "personality", "idle")
+        b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
 
         if hp_percent < 0.3:
             self.ball.team_message = {"type": "request_help", "x": self.ball.x, "y": self.ball.y}
-        elif personality == "healer":
+        elif b_type == "healer":
             self.ball.team_message = {"type": "wounded_call", "x": self.ball.x, "y": self.ball.y}
         elif strategy == "defend" and personality == "tank":
             self.ball.team_message = {"type": "hold_position", "x": self.ball.x, "y": self.ball.y}
@@ -532,15 +533,16 @@ class Action:
                         if hasattr(self.world, "_deal_damage"):
                             self.world._deal_damage(self.ball, target)
 
-                        b_type = getattr(self.ball, "ball_type", "").lower()
-                        if b_type in ("tank", "juggernaut", "guardian"):
+                        b_type_tank = getattr(self.ball, "ball_type", "").lower()
+                        if b_type_tank in ("tank", "juggernaut", "guardian"):
                             cooldown = 1.5
                         else:
                             speed = getattr(self.ball, "speed", 2.0)
                             cooldown = max(0.2, 2.0 / speed if speed > 0 else 1.0)
                         self.ball.attack_timer = cooldown
                 return
-        elif personality == "healer":
+        b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
+        if b_type == "healer":
             allies = self._get_allies()
             target_ally = None
             lowest_hp = 0.8
@@ -568,25 +570,23 @@ class Action:
                     self.ball.y += ny * min(step, dist)
 
                 # Recalculate distance after movement
-                dx, dy = target.x - self.ball.x, target.y - self.ball.y
+                dx, dy = target_ally.x - self.ball.x, target_ally.y - self.ball.y
                 dist_sq = dx * dx + dy * dy
                 dist = math.sqrt(dist_sq) if dist_sq > 0.0001 else 0.0
 
-                target_radius = getattr(target, "radius", 10.0)
+                target_radius = getattr(target_ally, "radius", 10.0)
                 ball_radius = getattr(self.ball, "radius", 10.0)
                 if dist <= ball_radius + target_radius + 5:
-                    attack_timer = getattr(self.ball, "attack_timer", 0.0)
-                    if attack_timer <= 0:
-                        if hasattr(self.world, "_deal_damage"):
-                            self.world._deal_damage(self.ball, target)
+                    skill_timer = getattr(self.ball, "skill_timer", 0.0)
+                    if skill_timer <= 0:
+                        heal_amount = getattr(self.ball, "damage", 5.0) * 3.0
+                        if hasattr(target_ally, "hp") and hasattr(target_ally, "max_hp"):
+                            target_ally.hp = min(target_ally.max_hp, target_ally.hp + heal_amount)
 
-                        b_type = getattr(self.ball, "ball_type", "").lower()
-                        if b_type in ("tank", "juggernaut", "guardian"):
-                            cooldown = 1.5
-                        else:
-                            speed = getattr(self.ball, "speed", 2.0)
-                            cooldown = max(0.2, 2.0 / speed if speed > 0 else 1.0)
-                        self.ball.attack_timer = cooldown
+                        if hasattr(self.ball, "use_skill"):
+                            self.ball.use_skill()
+
+                        self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 2.5)
                 return
 
         # Defend fallback
