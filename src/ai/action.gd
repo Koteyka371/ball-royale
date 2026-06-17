@@ -424,11 +424,24 @@ func _chase(delta: float):
                 min_dist_sq = dist_sq
                 target = e
     else:
-        for e in enemies:
-            var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
-            if dist_sq < min_dist_sq:
-                min_dist_sq = dist_sq
-                target = e
+        var b_type = ""
+        if "ball_type" in self.ball:
+            b_type = self.ball.ball_type.to_lower()
+        if b_type == "tank":
+            var max_hp = -1.0
+            for e in enemies:
+                var hp = 0.0
+                if "hp" in e:
+                    hp = e.hp
+                if hp > max_hp:
+                    max_hp = hp
+                    target = e
+        else:
+            for e in enemies:
+                var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                if dist_sq < min_dist_sq:
+                    min_dist_sq = dist_sq
+                    target = e
 
     var personality = "idle"
     if "personality" in self.ball:
@@ -523,11 +536,24 @@ func _attack(delta: float):
                     min_dist_sq = dist_sq
                     target = e
         else:
-            for e in enemies:
-                var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
-                if dist_sq < min_dist_sq:
-                    min_dist_sq = dist_sq
-                    target = e
+            var b_type = ""
+            if "ball_type" in self.ball:
+                b_type = self.ball.ball_type.to_lower()
+            if b_type == "tank":
+                var max_hp = -1.0
+                for e in enemies:
+                    var hp = 0.0
+                    if "hp" in e:
+                        hp = e.hp
+                    if hp > max_hp:
+                        max_hp = hp
+                        target = e
+            else:
+                for e in enemies:
+                    var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                    if dist_sq < min_dist_sq:
+                        min_dist_sq = dist_sq
+                        target = e
 
         var personality = "idle"
         if "personality" in self.ball:
@@ -653,11 +679,24 @@ func _defend(delta: float):
         if enemies.size() > 0:
             var target = null
             var min_dist_sq = INF
-            for e in enemies:
-                var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
-                if dist_sq < min_dist_sq:
-                    min_dist_sq = dist_sq
-                    target = e
+            var b_type = ""
+            if "ball_type" in self.ball:
+                b_type = self.ball.ball_type.to_lower()
+            if b_type == "tank":
+                var max_hp = -1.0
+                for e in enemies:
+                    var hp = 0.0
+                    if "hp" in e:
+                        hp = e.hp
+                    if hp > max_hp:
+                        max_hp = hp
+                        target = e
+            else:
+                for e in enemies:
+                    var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                    if dist_sq < min_dist_sq:
+                        min_dist_sq = dist_sq
+                        target = e
 
             var dx = target.x - self.ball.x
             var dy = target.y - self.ball.y
