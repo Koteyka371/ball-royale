@@ -78,7 +78,7 @@
       "task_id": "idea-feature-037",
       "status": "working",
       "started_at": "2026-06-17T21:39:15.354981+00:00",
-      "cycles_today": 0
+      "cycles_today": 1
     },
     "agent-10": {
       "name": "Jules Worker 10",
