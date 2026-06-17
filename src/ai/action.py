@@ -319,7 +319,7 @@ class Action:
         else:
             b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
             if b_type == "tank":
-                target = max(enemies, key=lambda e: getattr(e, "hp", 0.0))
+                target = max(enemies, key=lambda e: getattr(e, "max_hp", getattr(e, "hp", 0.0)))
             else:
                 target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
 
@@ -407,7 +407,7 @@ class Action:
             else:
                 b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
                 if b_type == "tank":
-                    target = max(enemies, key=lambda e: getattr(e, "hp", 0.0))
+                    target = max(enemies, key=lambda e: getattr(e, "max_hp", getattr(e, "hp", 0.0)))
                 else:
                     target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
 
@@ -519,7 +519,7 @@ class Action:
             if enemies:
                 b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
                 if b_type == "tank":
-                    target = max(enemies, key=lambda e: getattr(e, "hp", 0.0))
+                    target = max(enemies, key=lambda e: getattr(e, "max_hp", getattr(e, "hp", 0.0)))
                 else:
                     target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
                 dx, dy = target.x - self.ball.x, target.y - self.ball.y

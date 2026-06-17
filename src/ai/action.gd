@@ -431,7 +431,9 @@ func _chase(delta: float):
             var max_hp = -1.0
             for e in enemies:
                 var hp = 0.0
-                if "hp" in e:
+                if "max_hp" in e:
+                    hp = e.max_hp
+                elif "hp" in e:
                     hp = e.hp
                 if hp > max_hp:
                     max_hp = hp

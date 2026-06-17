@@ -105,7 +105,8 @@ class BallBrain:
 
         if weights is None or biases is None:
             # Try to load them if not injected by trainer
-            import json, os
+            import json
+            import os
             filepath = os.path.join(os.path.dirname(__file__), "nn_weights.json")
             if os.path.exists(filepath):
                 try:
