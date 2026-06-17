@@ -45,7 +45,7 @@ def test_sniper_actions():
     ball.flee(0.016)
     assert ball.current_action == "flee"
     ball.attack(0.016)
-    assert ball.current_action == "attack"
+    assert ball.current_action == "kite"
     ball.defend(0.016)
     assert ball.current_action == "defend"
     ball.collect_booster(0.016)

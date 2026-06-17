@@ -105,7 +105,8 @@ class BallBrain:
 
         if weights is None or biases is None:
             # Try to load them if not injected by trainer
-            import json, os
+            import json
+            import os
             filepath = os.path.join(os.path.dirname(__file__), "nn_weights.json")
             if os.path.exists(filepath):
                 try:
@@ -124,7 +125,7 @@ class BallBrain:
             return self.decision(perception_data, self.emotion(perception_data))
 
         # 3. Predict
-        actions = ["flee", "defend", "collect_booster", "attack", "chase", "use_skill"]
+        actions = ["flee", "defend", "collect_booster", "attack", "chase", "use_skill", "kite"]
         best_score = -9999.0
         best_action = "idle"
 

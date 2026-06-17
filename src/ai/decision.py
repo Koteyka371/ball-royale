@@ -14,7 +14,7 @@ class Decision:
         "tank": "defend",
         "assassin": "chase",
         "healer": "defend",
-        "sniper": "attack",
+        "sniper": "kite",
         "bomber": "attack",
         "berserker": "attack",
         "juggernaut": "defend",
@@ -46,6 +46,7 @@ class Decision:
             "attack": 0.0,
             "chase": 0.0,
             "use_skill": 0.0,
+            "kite": 0.0,
             "idle": 0.0,
         }
 
@@ -145,6 +146,11 @@ class Decision:
             scores["chase"] += 40.0
         if emotion_state == "bloodlust":
             scores["chase"] += 80.0
+
+        # === KITE ===
+        b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
+        if b_type == "sniper" and len(enemies) > 0:
+            scores["kite"] += 100.0
         if personality == "curious":
             weak_enemies = sum(1 for e in enemies if (e.hp / e.max_hp if hasattr(e, "hp") and hasattr(e, "max_hp") and e.max_hp > 0 else 1.0) < 0.3)
             if weak_enemies > 0:
@@ -214,7 +220,7 @@ class Decision:
         best_action = "idle"
         best_score = -9999.0
 
-        for action in ["flee", "defend", "collect_booster", "attack", "chase", "use_skill", "idle"]:
+        for action in ["flee", "defend", "collect_booster", "attack", "chase", "use_skill", "kite", "idle"]:
             if scores[action] > best_score:
                 best_score = scores[action]
                 best_action = action

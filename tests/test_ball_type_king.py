@@ -1,4 +1,3 @@
-import pytest
 from ai.ball_types_king import King
 
 def test_king_initialization():

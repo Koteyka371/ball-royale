@@ -42,6 +42,8 @@ class Action:
             self._flee(delta)
         elif strategy == "attack":
             self._attack(delta)
+        elif strategy == "kite":
+            self._kite(delta)
         elif strategy == "chase":
             self._chase(delta)
         elif strategy == "defend":
@@ -423,32 +425,16 @@ class Action:
 
                 target_radius = getattr(target, "radius", 10.0)
                 ball_radius = getattr(self.ball, "radius", 10.0)
-                b_type_attack = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
 
-                if b_type_attack == "sniper":
-                    attack_range = 150.0
-                else:
-                    attack_range = ball_radius + target_radius + 5
-
-                if b_type_attack == "sniper":
-                    if dist > attack_range:
-                        pass # Move towards
-                    elif dist < attack_range * 0.8:
-                        nx, ny = -nx, -ny # Kite away
-                    else:
-                        nx, ny = 0.0, 0.0 # Maintain distance
+                attack_range = ball_radius + target_radius + 5
 
                 if nx != 0.0 or ny != 0.0:
                     nx, ny = self._apply_obstacle_avoidance(nx, ny, target)
                     nx, ny = self._apply_boid_rules(nx, ny)
 
                     step = getattr(self.ball, "speed", 2.0) * delta * 60
-                    if b_type_attack == "sniper" and dist < attack_range * 0.8:
-                        self.ball.x += nx * step
-                        self.ball.y += ny * step
-                    else:
-                        self.ball.x += nx * min(step, dist)
-                        self.ball.y += ny * min(step, dist)
+                    self.ball.x += nx * min(step, dist)
+                    self.ball.y += ny * min(step, dist)
 
             # Recalculate distance after movement
             dx, dy = target.x - self.ball.x, target.y - self.ball.y
@@ -457,11 +443,7 @@ class Action:
 
             target_radius = getattr(target, "radius", 10.0)
             ball_radius = getattr(self.ball, "radius", 10.0)
-            b_type_attack = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
-            if b_type_attack == "sniper":
-                attack_range = 150.0
-            else:
-                attack_range = ball_radius + target_radius + 5
+            attack_range = ball_radius + target_radius + 5
 
             if dist <= attack_range:
                 # Uses skill when available and optimal
@@ -697,3 +679,77 @@ class Action:
             self.ball.skill_timer -= delta
         if hasattr(self.ball, "attack_timer") and self.ball.attack_timer > 0:
             self.ball.attack_timer -= delta
+
+    def _kite(self, delta: float) -> None:
+        enemies = self._get_enemies()
+        if enemies:
+            target_msg = None
+            allies = self._get_allies()
+            for ally in allies:
+                msg = getattr(ally, "team_message", None)
+                if msg and isinstance(msg, dict) and msg.get("type") == "target_spotted":
+                    target_msg = msg
+                    break
+
+            if target_msg:
+                tx, ty = target_msg.get("x", self.ball.x), target_msg.get("y", self.ball.y)
+                target = min(enemies, key=lambda e: (e.x - tx) ** 2 + (e.y - ty) ** 2)
+            else:
+                target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+
+            if getattr(self.ball, "team_message", None) is None:
+                self.ball.team_message = {"type": "target_spotted", "x": target.x, "y": target.y}
+
+            dx, dy = target.x - self.ball.x, target.y - self.ball.y
+            dist_sq = dx * dx + dy * dy
+            if dist_sq > 0.0001:
+                dist = math.sqrt(dist_sq)
+                nx, ny = dx / dist, dy / dist
+
+                attack_range = 150.0
+
+                if dist > attack_range:
+                    pass # Move towards
+                elif dist < attack_range * 0.8:
+                    nx, ny = -nx, -ny # Kite away
+                else:
+                    nx, ny = 0.0, 0.0 # Maintain distance
+
+                if nx != 0.0 or ny != 0.0:
+                    nx, ny = self._apply_obstacle_avoidance(nx, ny, target)
+                    nx, ny = self._apply_boid_rules(nx, ny)
+
+                    step = getattr(self.ball, "speed", 2.0) * delta * 60
+                    if dist < attack_range * 0.8:
+                        self.ball.x += nx * step
+                        self.ball.y += ny * step
+                    else:
+                        self.ball.x += nx * min(step, dist)
+                        self.ball.y += ny * min(step, dist)
+
+            # Recalculate distance after movement
+            dx, dy = target.x - self.ball.x, target.y - self.ball.y
+            dist_sq = dx * dx + dy * dy
+            dist = math.sqrt(dist_sq) if dist_sq > 0.0001 else 0.0
+
+            attack_range = 150.0
+
+            if dist <= attack_range:
+                # Uses skill when available and optimal
+                skill_timer = getattr(self.ball, "skill_timer", 0.0)
+                if skill_timer <= 0:
+                    if hasattr(self.ball, "use_skill"):
+                        self.ball.use_skill()
+                    self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
+
+                # Deal damage with attack timer
+                attack_timer = getattr(self.ball, "attack_timer", 0.0)
+                if attack_timer <= 0:
+                    if hasattr(self.world, "_deal_damage"):
+                        self.world._deal_damage(self.ball, target)
+
+                    speed = getattr(self.ball, "speed", 2.0)
+                    cooldown = max(0.2, 2.0 / speed if speed > 0 else 1.0)
+                    self.ball.attack_timer = cooldown
+        else:
+            self._idle(delta)

@@ -141,7 +141,7 @@ func _neural_decision(perception_data: Dictionary) -> String:
     if weights == null or biases == null:
         return decision(perception_data, emotion(perception_data))
 
-    var actions = ["flee", "defend", "collect_booster", "attack", "chase", "use_skill"]
+    var actions = ["flee", "defend", "collect_booster", "attack", "chase", "use_skill", "kite"]
     var best_score = -9999.0
     var best_action = "idle"
 

@@ -33,7 +33,7 @@ def test_sniper_kites_enemy():
 
     action = Action(sniper, world)
     orig_x = sniper.x
-    action.execute("attack", 0.1)
+    action.execute("kite", 0.1)
 
     assert sniper.x < orig_x, f"Expected sniper to move left, but x moved from {orig_x} to {sniper.x}"
 
@@ -47,7 +47,7 @@ def test_sniper_maintains_distance():
     action = Action(sniper, world)
     orig_x = sniper.x
     orig_y = sniper.y
-    action.execute("attack", 0.1)
+    action.execute("kite", 0.1)
 
     assert math.isclose(sniper.x, orig_x), f"Expected sniper to stay, but moved to {sniper.x}"
     assert math.isclose(sniper.y, orig_y), f"Expected sniper to stay, but moved to {sniper.y}"
@@ -60,7 +60,7 @@ def test_sniper_chases_far_enemy():
 
     action = Action(sniper, world)
     orig_x = sniper.x
-    action.execute("attack", 0.1)
+    action.execute("kite", 0.1)
 
     assert sniper.x > orig_x, f"Expected sniper to move right, but x moved from {orig_x} to {sniper.x}"
 

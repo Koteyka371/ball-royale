@@ -39,6 +39,8 @@ func execute(strategy: String, delta: float):
         _flee(delta)
     elif strategy == "attack":
         _attack(delta)
+    elif strategy == "kite":
+        _kite(delta)
     elif strategy == "chase":
         _chase(delta)
     elif strategy == "defend":
@@ -602,22 +604,10 @@ func _attack(delta: float):
         if "radius" in self.ball: ball_radius = self.ball.radius
 
         var attack_range = ball_radius + target_radius + 5.0
-        if b_type_attack == "sniper":
-            attack_range = 150.0
 
         if dist_sq > 0.0001:
             var nx = dx / dist
             var ny = dy / dist
-
-            if b_type_attack == "sniper":
-                if dist > attack_range:
-                    pass
-                elif dist < attack_range * 0.8:
-                    nx = -nx
-                    ny = -ny
-                else:
-                    nx = 0.0
-                    ny = 0.0
 
             if nx != 0.0 or ny != 0.0:
                 var avoid_vec = _apply_obstacle_avoidance(nx, ny, target)
@@ -629,12 +619,8 @@ func _attack(delta: float):
                 ny = boid_vec[1]
 
                 var step = speed * delta * 60
-                if b_type_attack == "sniper" and dist < attack_range * 0.8:
-                    self.ball.x += nx * step
-                    self.ball.y += ny * step
-                else:
-                    self.ball.x += nx * min(step, dist)
-                    self.ball.y += ny * min(step, dist)
+                self.ball.x += nx * min(step, dist)
+                self.ball.y += ny * min(step, dist)
 
         # Recalculate distance after movement
         dx = target.x - self.ball.x
@@ -1044,3 +1030,121 @@ func _update_skill_timer(delta: float):
             self.ball.attack_timer = attack_timer
         elif self.ball.has_method("set_meta"):
             self.ball.set_meta("attack_timer", attack_timer)
+
+func _kite(delta: float):
+    var enemies = _get_enemies()
+    if enemies.size() > 0:
+        var target_msg = null
+        var allies = _get_allies()
+        for ally in allies:
+            var msg = null
+            if ally.has_method("get_meta") and ally.has_meta("team_message"):
+                msg = ally.get_meta("team_message")
+            if typeof(msg) == TYPE_DICTIONARY and msg.has("type") and msg["type"] == "target_spotted":
+                target_msg = msg
+                break
+
+        var target = null
+        var min_dist_sq = INF
+
+        if target_msg != null:
+            var tx = target_msg.get("x", self.ball.x)
+            var ty = target_msg.get("y", self.ball.y)
+            for e in enemies:
+                var dist_sq = pow(e.x - tx, 2) + pow(e.y - ty, 2)
+                if dist_sq < min_dist_sq:
+                    min_dist_sq = dist_sq
+                    target = e
+        else:
+            for e in enemies:
+                var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                if dist_sq < min_dist_sq:
+                    min_dist_sq = dist_sq
+                    target = e
+
+        var has_msg = false
+        if self.ball.has_method("has_meta") and self.ball.has_meta("team_message"):
+            has_msg = self.ball.get_meta("team_message") != null
+        if not has_msg and self.ball.has_method("set_meta"):
+            self.ball.set_meta("team_message", {"type": "target_spotted", "x": target.x, "y": target.y})
+
+        var dx = target.x - self.ball.x
+        var dy = target.y - self.ball.y
+        var dist_sq = dx*dx + dy*dy
+        var dist = 0.0
+        if dist_sq > 0.0001:
+            dist = sqrt(dist_sq)
+
+        var speed = 2.0
+        if "speed" in self.ball: speed = self.ball.speed
+
+        var attack_range = 150.0
+
+        if dist_sq > 0.0001:
+            var nx = dx / dist
+            var ny = dy / dist
+
+            if dist > attack_range:
+                pass
+            elif dist < attack_range * 0.8:
+                nx = -nx
+                ny = -ny
+            else:
+                nx = 0.0
+                ny = 0.0
+
+            if nx != 0.0 or ny != 0.0:
+                var avoid_vec = _apply_obstacle_avoidance(nx, ny, target)
+                nx = avoid_vec[0]
+                ny = avoid_vec[1]
+
+                var boid_vec = _apply_boid_rules(nx, ny)
+                nx = boid_vec[0]
+                ny = boid_vec[1]
+
+                var step = speed * delta * 60.0
+                if dist < attack_range * 0.8:
+                    self.ball.x += nx * step
+                    self.ball.y += ny * step
+                else:
+                    self.ball.x += nx * min(step, dist)
+                    self.ball.y += ny * min(step, dist)
+
+        dx = target.x - self.ball.x
+        dy = target.y - self.ball.y
+        dist_sq = dx*dx + dy*dy
+        var dist_after = 0.0
+        if dist_sq > 0.0001:
+            dist_after = sqrt(dist_sq)
+
+        attack_range = 150.0
+
+        if dist_after <= attack_range:
+            var skill_timer = 0.0
+            if "skill_timer" in self.ball:
+                skill_timer = self.ball.skill_timer
+
+            if skill_timer <= 0:
+                if self.ball.has_method("use_skill"):
+                    self.ball.use_skill()
+                var cd = 5.0
+                if "skill_cooldown" in self.ball: cd = self.ball.skill_cooldown
+                self.ball.skill_timer = cd
+
+            var attack_timer = 0.0
+            if "attack_timer" in self.ball:
+                attack_timer = self.ball.attack_timer
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("attack_timer"):
+                attack_timer = self.ball.get_meta("attack_timer")
+
+            if attack_timer <= 0:
+                if self.world != null and self.world.has_method("_deal_damage"):
+                    self.world._deal_damage(self.ball, target)
+
+                var cooldown = max(0.2, 2.0 / speed if speed > 0 else 1.0)
+                if "attack_timer" in self.ball:
+                    self.ball.attack_timer = cooldown
+                elif self.ball.has_method("set_meta"):
+                    self.ball.set_meta("attack_timer", cooldown)
+    else:
+        _idle(delta)
