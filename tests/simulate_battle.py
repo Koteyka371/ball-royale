@@ -424,6 +424,23 @@ class BattleSimulation:
             print("  Alive by type:", dict(s['ball_types_alive']))
         print(f"{'='*60}")
 
+        if hasattr(self, 'kill_log') and self.kill_log:
+            try:
+                import os
+                import sys
+                sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
+                from ai.commentator import BattleCommentator
+                commentator = BattleCommentator()
+                lines = commentator.generate_commentary(self.kill_log, self.stats)
+                print(f"\n{'='*60}")
+                print("  BATTLE COMMENTARY")
+                print(f"{'='*60}")
+                for line in lines[-10:]:
+                    print(f"  > {line}")
+                print(f"{'='*60}")
+            except ImportError:
+                pass
+
 
 # ─── Tests ────────────────────────────────────────────────────────────────────
 
