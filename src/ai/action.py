@@ -540,7 +540,7 @@ class Action:
                             cooldown = max(0.2, 2.0 / speed if speed > 0 else 1.0)
                         self.ball.attack_timer = cooldown
                 return
-        elif personality == "healer":
+        elif personality in ("healer", "leader"):
             allies = self._get_allies()
             target_ally = None
             lowest_hp = 0.8
@@ -642,6 +642,10 @@ class Action:
         skill_timer = getattr(self.ball, "skill_timer", 0.0)
         if skill_timer <= 0 and hasattr(self.ball, "use_skill"):
             self.ball.use_skill()
+
+            if getattr(self.ball, "skill", "") == "command":
+                self.ball.team_message = {"type": "buff_command", "radius": 200}
+
             if hasattr(self.ball, "skill_cooldown"):
                 self.ball.skill_timer = self.ball.skill_cooldown
 
