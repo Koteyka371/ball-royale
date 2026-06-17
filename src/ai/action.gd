@@ -47,7 +47,7 @@ func execute(strategy: String, delta: float):
         _defend(delta)
     elif strategy == "opportunistic" or strategy == "collect booster":
         _collect_booster(delta)
-    elif strategy == "use skill":
+    elif strategy == "use skill" or strategy == "use_skill" or strategy == "action_skill" or strategy == "Действие":
         _use_skill()
     else:
         _idle(delta)
@@ -1007,6 +1007,11 @@ func _use_skill():
                 self.ball.set_meta("team_message", {"type": "buff_command", "radius": 200})
             elif "team_message" in self.ball:
                 self.ball.team_message = {"type": "buff_command", "radius": 200}
+        elif skill_name == "Действие" or skill_name == "action_skill":
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("team_message", {"type": "action_skill_used", "radius": 150})
+            elif "team_message" in self.ball:
+                self.ball.team_message = {"type": "action_skill_used", "radius": 150}
 
         if "skill_cooldown" in self.ball:
             self.ball.skill_timer = self.ball.skill_cooldown

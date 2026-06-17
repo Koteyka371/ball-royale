@@ -212,6 +212,31 @@ def test_execute_use_skill():
     assert ball.current_action == "use skill"
     assert ball.used_skill
 
+def test_execute_action_skill_deystvie():
+    ball = MockBall()
+    ball.skill = "Действие"
+    ball.skill_cooldown = 10.0
+    world = MockWorld()
+    action_layer = Action(ball, world)
+
+    action_layer.execute("Действие", 0.1)
+    assert ball.current_action == "Действие"
+    assert ball.used_skill
+    assert ball.skill_timer == 10.0 - 0.1
+    assert ball.team_message == {"type": "action_skill_used", "radius": 150}
+
+    # test "action_skill" alias
+    ball2 = MockBall()
+    ball2.skill = "action_skill"
+    ball2.skill_cooldown = 5.0
+    action_layer2 = Action(ball2, world)
+    action_layer2.execute("action_skill", 0.1)
+    assert ball2.current_action == "action_skill"
+    assert ball2.used_skill
+    assert ball2.skill_timer == 5.0 - 0.1
+    assert ball2.team_message == {"type": "action_skill_used", "radius": 150}
+
+
 def test_execute_idle_fallback():
     ball = MockBall()
     world = MockWorld()
