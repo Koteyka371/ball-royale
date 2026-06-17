@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [ai-neural-network-learning] Implement Neural Network module for learning — *2026-06-17 04:23:57 UTC*
+
+Create a simple neural network that allows balls to learn from their successes (kills, survival time) and failures over multiple rounds. The weights should adjust dynamically to improve decision making.
+
+---
+
 ## [web-visualizer-improvements] Improve Web Visualizer (index.html) — *2026-06-17 04:16:57 UTC*
 
 The user requested improvements to visualizer/index.html. We need to add better UI controls (pause/play, timeline slider, speed control), show the winner clearly, fix any bugs, improve the rendering quality (e.g. better shadows, text showing ball HP or class), and make it fully responsive. Ensure all JS is clean and robust.

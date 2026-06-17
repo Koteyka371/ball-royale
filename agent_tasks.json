@@ -729,7 +729,7 @@
     },
     {
       "id": "ai-neural-network-learning",
-      "status": "todo",
+      "status": "done",
       "area": "ai-innovation",
       "risk": "high",
       "title": "Implement Neural Network module for learning",
