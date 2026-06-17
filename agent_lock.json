@@ -4,8 +4,8 @@
       "name": "Jules Core",
       "area": "ai-core",
       "task_id": "ai-behavior-flank",
-      "status": "assigned",
-      "started_at": "2026-06-17T21:28:40.291247+00:00",
+      "status": "working",
+      "started_at": "2026-06-17T21:28:50.385139+00:00",
       "cycles_today": 0
     },
     "agent-2": {
