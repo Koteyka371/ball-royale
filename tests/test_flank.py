@@ -95,3 +95,20 @@ def test_flank_critical_hit():
     action.execute("flank", 0.0)
 
     assert world.damage_dealt == 20
+def test_flank_edge_cases():
+    # Test when target is completely stationary
+    world = MockWorld()
+    attacker = MockBall(x=100.0, y=100.0)
+    # Target is stationary. Default assumption is it faces right (vx=1, vy=0)
+    # Flank point will be behind it, i.e., at x = target.x - 1 * 40 = 200 - 40 = 160.
+    target = MockBall(x=200.0, y=100.0, vx=0.0, vy=0.0)
+    target.ball_type = "scout"
+    world.balls = [attacker, target]
+
+    action = Action(attacker, world)
+
+    # Move for a short delta
+    action.execute("flank", 1.0)
+
+    # Attacker starts at 100, flank point is 160, so it should move right
+    assert attacker.x > 100.0

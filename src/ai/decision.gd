@@ -269,7 +269,7 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
         var skill_name = ""
         if "skill" in self.ball:
             skill_name = self.ball.skill
-        if (skill_name == "dash" or skill_name == "stealth") and (intent_flee or intent_chase):
+        if (skill_name == "dash" or skill_name == "stealth" or skill_name == "flank") and (intent_flee or intent_chase):
             scores["use_skill"] += 50.0
         if skill_name == "command" and allies.size() > 0:
             scores["use_skill"] += 40.0

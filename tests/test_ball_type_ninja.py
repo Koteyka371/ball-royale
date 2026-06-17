@@ -21,7 +21,7 @@ def test_ninja_initialization():
     assert ball.PERCEPTION_RADIUS == 350
     assert ball.AGGRESSION == 0.8
     assert ball.COLOR == "black"
-    assert ball.SKILL == "stealth"
+    assert ball.SKILL == "flank"
     assert ball.SKILL_COOLDOWN == 4.0
 
     assert ball.alive is True
