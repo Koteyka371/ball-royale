@@ -1,7 +1,0 @@
-1. Implement `Action` class in Python (`src/ai/action.py`) to manage execution of chosen behaviors.
-   - It will handle strategies chosen by `Decision`: "flee", "attack", "defend", "opportunistic", and handle movement, pathfinding (simulated for python), timing, and cooldowns.
-2. Implement `Action` class in GDScript (`src/ai/action.gd`) to match the Python implementation for the Godot engine runtime.
-3. Integrate `Action` class into `BallBrain` layer 4 (`action` method) in both Python (`src/ai/ball_brain.py`) and GDScript (`src/ai/ball_brain.gd`).
-4. Add tests for the `Action` class in Python (`tests/test_action.py`).
-5. Update `tests/test_ball_brain.py` to use the new `Action` class integration if needed.
-6. Verify and clean up. Run simulation and quality metrics scripts to ensure everything works properly.

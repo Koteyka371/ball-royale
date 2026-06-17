@@ -537,41 +537,82 @@ class Action:
             enemies = self._get_enemies()
             if enemies:
                 b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
+                target_enemy = None
+                target_pos_x = self.ball.x
+                target_pos_y = self.ball.y
+                should_move = False
+
                 if b_type == "tank":
-                    target = max(enemies, key=lambda e: getattr(e, "max_hp", getattr(e, "hp", 0.0)))
-                else:
-                    target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
-                dx, dy = target.x - self.ball.x, target.y - self.ball.y
-                dist_sq = dx * dx + dy * dy
-                if dist_sq > 0.0001:
-                    dist = math.sqrt(dist_sq)
-                    nx, ny = dx / dist, dy / dist
-                    nx, ny = self._apply_obstacle_avoidance(nx, ny, target)
-                    speed = getattr(self.ball, "speed", 2.0)
-                    step = speed * 0.5 * delta * 60
-                    self.ball.x += nx * min(step, dist)
-                    self.ball.y += ny * min(step, dist)
-
-                # Recalculate distance after movement
-                dx, dy = target.x - self.ball.x, target.y - self.ball.y
-                dist_sq = dx * dx + dy * dy
-                dist = math.sqrt(dist_sq) if dist_sq > 0.0001 else 0.0
-
-                target_radius = getattr(target, "radius", 10.0)
-                ball_radius = getattr(self.ball, "radius", 10.0)
-                if dist <= ball_radius + target_radius + 5:
-                    attack_timer = getattr(self.ball, "attack_timer", 0.0)
-                    if attack_timer <= 0:
-                        if hasattr(self.world, "_deal_damage"):
-                            self.world._deal_damage(self.ball, target)
-
-                        b_type = getattr(self.ball, "ball_type", "").lower()
-                        if b_type in ("tank", "juggernaut", "guardian"):
-                            cooldown = 1.5
+                    allies = self._get_allies()
+                    ally_to_protect = None
+                    if allies:
+                        # Prioritize healers, then lowest HP
+                        healers = [a for a in allies if getattr(a, "ball_type", getattr(a.__class__, "BALL_TYPE", "")).lower() == "healer"]
+                        if healers:
+                            ally_to_protect = min(healers, key=lambda a: (a.x - self.ball.x)**2 + (a.y - self.ball.y)**2)
                         else:
-                            speed = getattr(self.ball, "speed", 2.0)
-                            cooldown = max(0.2, 2.0 / speed if speed > 0 else 1.0)
-                        self.ball.attack_timer = cooldown
+                            def get_hp_pct(a):
+                                if hasattr(a, "get_hp_percent"): return a.get_hp_percent()
+                                if hasattr(a, "hp") and hasattr(a, "max_hp"): return float(a.hp) / float(a.max_hp) if a.max_hp > 0 else 1.0
+                                return 1.0
+                            ally_to_protect = min(allies, key=lambda a: get_hp_pct(a))
+
+                    target_enemy = max(enemies, key=lambda e: getattr(e, "max_hp", getattr(e, "hp", 0.0)))
+
+                    if ally_to_protect:
+                        # Body blocking position: 30 units from ally towards enemy
+                        ex, ey = target_enemy.x, target_enemy.y
+                        ax, ay = ally_to_protect.x, ally_to_protect.y
+                        dx_ea = ex - ax
+                        dy_ea = ey - ay
+                        dist_ea = math.sqrt(dx_ea*dx_ea + dy_ea*dy_ea)
+                        if dist_ea > 0.0001:
+                            target_pos_x = ax + (dx_ea / dist_ea) * min(30.0, dist_ea * 0.5)
+                            target_pos_y = ay + (dy_ea / dist_ea) * min(30.0, dist_ea * 0.5)
+                            should_move = True
+                    else:
+                        target_pos_x = target_enemy.x
+                        target_pos_y = target_enemy.y
+                        should_move = True
+                else:
+                    target_enemy = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+                    target_pos_x = target_enemy.x
+                    target_pos_y = target_enemy.y
+                    should_move = True
+
+                if should_move:
+                    dx, dy = target_pos_x - self.ball.x, target_pos_y - self.ball.y
+                    dist_sq = dx * dx + dy * dy
+                    if dist_sq > 0.0001:
+                        dist = math.sqrt(dist_sq)
+                        nx, ny = dx / dist, dy / dist
+                        nx, ny = self._apply_obstacle_avoidance(nx, ny, target_enemy)
+                        speed = getattr(self.ball, "speed", 2.0)
+                        step = speed * 0.5 * delta * 60
+                        self.ball.x += nx * min(step, dist)
+                        self.ball.y += ny * min(step, dist)
+
+                if target_enemy:
+                    # Recalculate distance to enemy for attack
+                    dx_e, dy_e = target_enemy.x - self.ball.x, target_enemy.y - self.ball.y
+                    dist_e_sq = dx_e * dx_e + dy_e * dy_e
+                    dist_e = math.sqrt(dist_e_sq) if dist_e_sq > 0.0001 else 0.0
+
+                    target_radius = getattr(target_enemy, "radius", 10.0)
+                    ball_radius = getattr(self.ball, "radius", 10.0)
+                    if dist_e <= ball_radius + target_radius + 5:
+                        attack_timer = getattr(self.ball, "attack_timer", 0.0)
+                        if attack_timer <= 0:
+                            if hasattr(self.world, "_deal_damage"):
+                                self.world._deal_damage(self.ball, target_enemy)
+
+                            b_type = getattr(self.ball, "ball_type", "").lower()
+                            if b_type in ("tank", "juggernaut", "guardian"):
+                                cooldown = 1.5
+                            else:
+                                speed = getattr(self.ball, "speed", 2.0)
+                                cooldown = max(0.2, 2.0 / speed if speed > 0 else 1.0)
+                            self.ball.attack_timer = cooldown
                 return
         elif personality in ("healer", "leader", "caring"):
             allies = self._get_allies()
