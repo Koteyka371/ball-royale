@@ -935,7 +935,7 @@
     },
     {
       "id": "ai-battle-commentator-text",
-      "status": "todo",
+      "status": "done",
       "area": "ai-innovation",
       "risk": "low",
       "title": "Add AI Battle Commentator",

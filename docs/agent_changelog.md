@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [ai-battle-commentator-text] Add AI Battle Commentator — *2026-06-17 09:33:57 UTC*
+
+Create a module that parses the kill_log and actions performed during a simulation to produce exciting, dynamic text commentary of the battle.
+
+---
+
 ## [ai-ball-sniper-ai] Implement Sniper AI profile — *2026-06-17 04:32:15 UTC*
 
 Sniper AI: cautious personality, maintains distance, uses Snipe from max range, kites enemies, avoids melee.
