@@ -3,7 +3,6 @@ Auto-generated ball type: Spectator
 Spectator mode, invisible to other balls, observes the battle.
 """
 
-from typing import Any
 
 
 class Spectator:
@@ -49,7 +48,7 @@ class Spectator:
         self.current_action = "idle"
 
     def take_damage(self, amount: float) -> None:
-        self.hp -= amount
+        self.hp -= int(amount)
         if self.hp <= 0:
             self.alive = False
 

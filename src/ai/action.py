@@ -1,5 +1,5 @@
-from typing import Any
 import math
+from typing import Any
 import random
 
 class Action:
@@ -46,6 +46,8 @@ class Action:
             self._kite(delta)
         elif strategy == "chase":
             self._chase(delta)
+        elif strategy == "flank":
+            self._flank(delta)
         elif strategy == "defend":
             self._defend(delta)
         elif strategy in ("opportunistic", "collect_booster", "collect booster"):
@@ -328,6 +330,102 @@ class Action:
             else:
                 return min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
 
+    def _flank(self, delta: float) -> None:
+        enemies = self._get_enemies()
+        if enemies:
+            target = self._get_target(enemies)
+
+            # Announce target
+            personality = getattr(self.ball, "personality", "idle")
+            if personality in ("warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "swarm", "aggressive", "cunning", "curious") and getattr(self.ball, "team_message", None) is None:
+                self.ball.team_message = {"type": "target_spotted", "x": target.x, "y": target.y}
+
+            # Predict position behind target based on its velocity
+            target_vx = getattr(target, "vx", 0.0)
+            target_vy = getattr(target, "vy", 0.0)
+
+            # If target is not moving much, fallback to a fixed facing to prevent pacing
+            if abs(target_vx) < 0.1 and abs(target_vy) < 0.1:
+                # If target has a meta 'last_vx', use it. Otherwise assume facing right.
+                target_vx = getattr(target, 'last_vx', 1.0)
+                target_vy = getattr(target, 'last_vy', 0.0)
+                if abs(target_vx) < 0.1 and abs(target_vy) < 0.1:
+                    target_vx, target_vy = 1.0, 0.0
+            else:
+                # Normalize velocity
+                v_dist_sq = target_vx * target_vx + target_vy * target_vy
+                if v_dist_sq > 0.0001:
+                    v_dist = math.sqrt(v_dist_sq)
+                    target_vx /= v_dist
+                    target_vy /= v_dist
+
+            # Flank point is 40 units behind the target
+            flank_distance = 40.0
+            flank_x = target.x - target_vx * flank_distance
+            flank_y = target.y - target_vy * flank_distance
+
+            dx, dy = flank_x - self.ball.x, flank_y - self.ball.y
+            dist_sq = dx * dx + dy * dy
+            if dist_sq > 0.0001:
+                dist = math.sqrt(dist_sq)
+                nx, ny = dx / dist, dy / dist
+
+                if nx != 0.0 or ny != 0.0:
+                    nx, ny = self._apply_obstacle_avoidance(nx, ny, target)
+                    nx, ny = self._apply_boid_rules(nx, ny)
+
+                    step = getattr(self.ball, "speed", 2.0) * delta * 60
+                    self.ball.x += nx * min(step, dist)
+                    self.ball.y += ny * min(step, dist)
+
+            # Calculate direct distance to target for attack
+            direct_dx, direct_dy = target.x - self.ball.x, target.y - self.ball.y
+            direct_dist_sq = direct_dx * direct_dx + direct_dy * direct_dy
+            direct_dist = math.sqrt(direct_dist_sq) if direct_dist_sq > 0.0001 else 0.0
+
+            target_radius = getattr(target, "radius", 10.0)
+            ball_radius = getattr(self.ball, "radius", 10.0)
+            attack_range = ball_radius + target_radius + 5
+
+            # Use skill if available and we are somewhat far from the actual target (gap closing)
+            skill_timer = getattr(self.ball, "skill_timer", 0.0)
+            if skill_timer <= 0 and direct_dist > attack_range * 1.5:
+                if hasattr(self.ball, "use_skill"):
+                    self.ball.use_skill()
+                if hasattr(self.ball, "skill_cooldown"):
+                    self.ball.skill_timer = self.ball.skill_cooldown
+
+            if direct_dist <= attack_range:
+                attack_timer = getattr(self.ball, "attack_timer", 0.0)
+                if attack_timer <= 0:
+                    # Check if attacking from behind (dot product of target velocity and attack direction)
+                    # We are behind if the target is moving AWAY from us
+                    # direction to target = direct_dx/direct_dist, direct_dy/direct_dist
+                    dot_product = 0.0
+                    if direct_dist > 0.0001:
+                        ndx, ndy = direct_dx / direct_dist, direct_dy / direct_dist
+                        dot_product = ndx * target_vx + ndy * target_vy
+
+                    is_critical = dot_product > 0.5
+
+                    # Temporarily boost damage if critical
+                    original_damage = getattr(self.ball, "damage", 5.0)
+                    if is_critical:
+                        self.ball.damage = original_damage * 2.0
+
+                    if hasattr(self.world, "_deal_damage"):
+                        self.world._deal_damage(self.ball, target)
+
+                    # Restore damage
+                    if is_critical:
+                        self.ball.damage = original_damage
+
+                    speed = getattr(self.ball, "speed", 2.0)
+                    cooldown = max(0.2, 2.0 / speed if speed > 0 else 1.0)
+                    self.ball.attack_timer = cooldown
+        else:
+            self._idle(delta)
+
     def _chase(self, delta: float) -> None:
         enemies = self._get_enemies()
         if not enemies:
@@ -575,8 +673,10 @@ class Action:
                             ally_to_protect = min(healers, key=lambda a: (a.x - self.ball.x)**2 + (a.y - self.ball.y)**2)
                         else:
                             def get_hp_pct(a):
-                                if hasattr(a, "get_hp_percent"): return a.get_hp_percent()
-                                if hasattr(a, "hp") and hasattr(a, "max_hp"): return float(a.hp) / float(a.max_hp) if a.max_hp > 0 else 1.0
+                                if hasattr(a, "get_hp_percent"):
+                                    return a.get_hp_percent()
+                                if hasattr(a, "hp") and hasattr(a, "max_hp"):
+                                    return float(a.hp) / float(a.max_hp) if a.max_hp > 0 else 1.0
                                 return 1.0
                             ally_to_protect = min(allies, key=lambda a: get_hp_pct(a))
 
@@ -710,7 +810,6 @@ class Action:
                 dy_enemy = nearest_enemy.y - self.ball.y
                 dist_enemy_sq = dx_enemy * dx_enemy + dy_enemy * dy_enemy
                 if dist_enemy_sq > 0.0001:
-                    import math
                     dist_enemy = math.sqrt(dist_enemy_sq)
                     if dist_enemy < ball_radius + enemy_radius + 30.0:
                         self._flee(delta)
@@ -720,7 +819,6 @@ class Action:
             dx, dy = nearest.x - self.ball.x, nearest.y - self.ball.y
             dist_sq = dx * dx + dy * dy
             if dist_sq > 0.0001:
-                import math
                 dist = math.sqrt(dist_sq)
                 nx, ny = dx / dist, dy / dist
                 nx, ny = self._apply_obstacle_avoidance(nx, ny, nearest, ignore_enemies=True)
@@ -733,7 +831,6 @@ class Action:
             # Recalculate distance after movement
             dx, dy = nearest.x - self.ball.x, nearest.y - self.ball.y
             dist_sq = dx * dx + dy * dy
-            import math
             dist = math.sqrt(dist_sq) if dist_sq > 0.0001 else 0.0
 
             ball_radius = getattr(self.ball, "radius", 10.0)
