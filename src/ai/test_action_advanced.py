@@ -117,6 +117,53 @@ def test_collect_booster_interrupt():
 
     assert ball.x < 100
 
+def test_tank_target_strong_chase():
+    ball = MockBall(x=100, y=100)
+    ball.ball_type = "tank"
+    world = MockWorld()
+
+    # We have three enemies.
+    # e1 is very close but has low HP
+    # e2 is far away but has the highest HP
+    # e3 is medium distance with medium HP
+    e1 = MockEntity(x=110, y=100, ball_type="enemy")
+    e1.hp = 50.0
+
+    e2 = MockEntity(x=200, y=100, ball_type="enemy")
+    e2.hp = 200.0  # Strongest
+
+    e3 = MockEntity(x=150, y=100, ball_type="enemy")
+    e3.hp = 100.0
+
+    world.entities = [e1, e2, e3]
+
+    action = Action(ball, world)
+
+    # Executing chase without the 'Target Strong' logic would pick e1 (closest).
+    # Since the tank targets the strongest, it should target e2.
+    # Targeting e2 at x=200 means moving towards the right (increasing x).
+    # Targeting e1 at x=110 also moves right, but let's test if it's explicitly targeting e2.
+    # To differentiate, we can place them in different directions.
+
+    # Let's adjust positions to make the targeting choice obvious
+    e1.x = 90
+    e1.y = 100  # Left (closest)
+
+    e2.x = 100
+    e2.y = 200  # Up (furthest, strongest)
+
+    e3.x = 100
+    e3.y = 0    # Down
+
+    action.execute("chase", 0.1)
+
+    # If it targeted e1, it would move left (x < 100).
+    # If it targeted e3, it would move down (y < 100).
+    # Since it should target e2, it must move up (y > 100).
+    assert ball.y > 100
+    assert ball.x == 100
+
+
 def test_collect_booster_ignore_enemies():
     ball = MockBall(x=100, y=100)
     world = MockWorld()
