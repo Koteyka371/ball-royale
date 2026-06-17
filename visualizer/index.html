@@ -424,7 +424,22 @@
             margin-top: auto;
             margin-bottom: auto;
         }
+
+        @media (max-width: 800px) {
+            body {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                height: 50vh;
+                overflow-y: auto;
+                flex: none;
+            }
+        }
     </style>
+
 </head>
 <body>
     <!-- SIDEBAR -->
@@ -496,8 +511,11 @@
         </div>
     </div>
 
+
     <!-- MAIN VIEW -->
     <div class="main-view">
+        <div id="winnerOverlay" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 100; pointer-events: none; text-align: center; font-family: 'Space Grotesk', sans-serif;"></div>
+
         <div class="top-overlay">
             <div class="glass-panel" id="arenaPanel">
                 <span>Arena: <strong id="valArena">0x0</strong></span>
@@ -750,6 +768,7 @@
 
             // Draw Balls
             frame.balls.forEach(ball => {
+                ctx.save();
                 const radius = replayData.ball_types?.[ball.type]?.radius || 12;
                 const color = defaultColors[ball.type] || ball.color || "#ffffff";
 
@@ -775,7 +794,10 @@
                 ctx.beginPath();
                 ctx.arc(ball.x, ball.y, radius, 0, Math.PI * 2);
                 ctx.fillStyle = color;
+                ctx.shadowColor = color;
+                ctx.shadowBlur = 15;
                 ctx.fill();
+                ctx.shadowBlur = 0; // reset
 
                 // HP Bar
                 const barW = radius * 2;
@@ -796,13 +818,15 @@
                     ctx.fillStyle = "#ffffff";
                     ctx.font = "10px Space Grotesk";
                     ctx.textAlign = "center";
-                    ctx.fillText(`${ball.type.toUpperCase()}`, ball.x, ball.y + 4);
+                    ctx.fillText(`${ball.type.toUpperCase()} | HP: ${Math.round(ball.hp)}/${Math.round(ball.max_hp)}`, ball.x, ball.y + radius + 18);
                 }
+                ctx.restore();
             });
 
             // Update stats
             document.getElementById("statTick").textContent = `${frame.tick} / ${replayData.history.length}`;
             document.getElementById("statAlive").textContent = frame.balls.length;
+
 
             const scrubberFill = document.getElementById("scrubberFill");
             const percent = (currentFrameIndex / (replayData.history.length - 1)) * 100;
@@ -812,7 +836,24 @@
             const currentS = (currentFrameIndex * 0.016).toFixed(1);
             document.getElementById("currentTime").textContent = `00:${currentS.padStart(4, "0")}`;
             document.getElementById("totalTime").textContent = `00:${totalS.padStart(4, "0")}`;
+
+            const winnerOverlay = document.getElementById("winnerOverlay");
+            if (currentFrameIndex >= replayData.history.length - 1) {
+                if (frame.balls.length === 1) {
+                    const winnerColor = defaultColors[frame.balls[0].type] || '#fff';
+                    winnerOverlay.innerHTML = `<h1 style="color: ${winnerColor}; font-size: 64px; text-shadow: 0 0 30px currentColor; margin: 0; text-transform: uppercase;">${frame.balls[0].type} WINS!</h1>`;
+                    winnerOverlay.style.display = 'flex';
+                } else if (frame.balls.length === 0) {
+                    winnerOverlay.innerHTML = `<h1 style="color: #fff; font-size: 64px; text-shadow: 0 0 30px #fff; margin: 0;">DRAW</h1>`;
+                    winnerOverlay.style.display = 'flex';
+                } else {
+                    winnerOverlay.style.display = 'none';
+                }
+            } else {
+                winnerOverlay.style.display = 'none';
+            }
         }
+
 
         // Leaderboard & Kill feed updates
         function updateUI() {
@@ -905,7 +946,10 @@
             if (isPlaying) {
                 isPlaying = false;
                 btnPlay.textContent = "Play";
-                if (animationFrameId) cancelAnimationFrame(animationFrameId);
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                    animationFrameId = null;
+                }
             } else {
                 if (currentFrameIndex >= replayData.history.length - 1) {
                     currentFrameIndex = 0;
@@ -933,14 +977,55 @@
             renderFrame();
         });
 
-        // Scrubber
+        // Scrubber Dragging
         const scrubberBar = document.getElementById("scrubberBar");
-        scrubberBar.addEventListener("click", (e) => {
+        let isScrubbing = false;
+        let wasPlayingBeforeScrub = false;
+
+        scrubberBar.addEventListener("mousedown", (e) => {
             if (!replayData) return;
+            isScrubbing = true;
+            wasPlayingBeforeScrub = isPlaying;
+            if (isPlaying) {
+                isPlaying = false;
+                document.getElementById("btnPlay").textContent = "Play";
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                    animationFrameId = null;
+                }
+            }
             const rect = scrubberBar.getBoundingClientRect();
-            const clickPercent = (e.clientX - rect.left) / rect.width;
+            let clickPercent = (e.clientX - rect.left) / rect.width;
+            clickPercent = Math.max(0, Math.min(1, clickPercent));
             currentFrameIndex = Math.floor(clickPercent * (replayData.history.length - 1));
             renderFrame();
+        });
+
+        window.addEventListener("mousemove", (e) => {
+            if (!isScrubbing || !replayData) return;
+            const rect = scrubberBar.getBoundingClientRect();
+            let clickPercent = (e.clientX - rect.left) / rect.width;
+            clickPercent = Math.max(0, Math.min(1, clickPercent));
+            currentFrameIndex = Math.floor(clickPercent * (replayData.history.length - 1));
+            renderFrame();
+        });
+
+        window.addEventListener("mouseup", (e) => {
+            if (!isScrubbing) return;
+            isScrubbing = false;
+            if (wasPlayingBeforeScrub) {
+                isPlaying = true;
+                document.getElementById("btnPlay").textContent = "Pause";
+                tickAnimation();
+            }
+        });
+
+        // Spacebar to play/pause
+        document.addEventListener("keydown", (e) => {
+            if (e.code === "Space") {
+                e.preventDefault(); // prevent scroll
+                document.getElementById("btnPlay").click();
+            }
         });
 
         // Speed selectors
