@@ -182,6 +182,15 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     if b_type.to_lower() == "sniper" and enemies.size() > 0:
         scores["kite"] += 100.0
 
+    if b_type.to_lower() == "ninja":
+        var a_timer = 0.0
+        if "attack_timer" in self.ball:
+            a_timer = float(self.ball.attack_timer)
+        if a_timer > 0.0:
+            scores["flee"] += 200.0
+        else:
+            scores["chase"] += 50.0
+
     if personality == "curious":
         var weak_enemies = 0
         for e in enemies:
@@ -224,7 +233,7 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
         var skill_name = ""
         if "skill" in self.ball:
             skill_name = self.ball.skill
-        if skill_name == "dash" and (intent_flee or intent_chase):
+        if (skill_name == "dash" or skill_name == "stealth") and (intent_flee or intent_chase):
             scores["use_skill"] += 50.0
         if skill_name == "command" and allies.size() > 0:
             scores["use_skill"] += 40.0

@@ -61,6 +61,9 @@ BALL_TYPES = {
     "king": {"hp": 150, "speed": 1.8, "damage": 10, "radius": 14,
              "perception_radius": 300, "aggression": 0.2, "color": "gold",
              "skill": "command", "skill_cooldown": 5.0},
+    "ninja": {"hp": 65, "speed": 4.5, "damage": 25, "radius": 8,
+              "perception_radius": 350, "aggression": 0.8, "color": "black",
+              "skill": "stealth", "skill_cooldown": 4.0},
     "spectator": {"hp": 99999, "speed": 5.0, "damage": 0, "radius": 5,
                   "perception_radius": 1000, "aggression": 0.0, "color": "white",
                   "skill": "observe", "skill_cooldown": 1.0}

@@ -159,6 +159,14 @@ class Decision:
         if len(enemies) == 0:
             scores["chase"] = -1000.0
 
+        # === NINJA LOGIC ===
+        b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
+        if b_type == "ninja":
+            if getattr(self.ball, "attack_timer", 0.0) > 0.0:
+                scores["flee"] += 200.0
+            else:
+                scores["chase"] += 50.0
+
         # === USE SKILL ===
         difficulty = getattr(self.ball, "difficulty", "medium")
 
@@ -180,9 +188,10 @@ class Decision:
                 if hp_percent < 0.5:
                     scores["use_skill"] += 30.0
 
-            if getattr(self.ball, "skill", "") == "dash" and (intent_flee or intent_chase):
+            skill_name = getattr(self.ball, "skill", "")
+            if skill_name in ("dash", "stealth") and (intent_flee or intent_chase):
                 scores["use_skill"] += 50.0
-            if getattr(self.ball, "skill", "") == "command" and len(allies) > 0:
+            if skill_name == "command" and len(allies) > 0:
                 scores["use_skill"] += 40.0
 
         if skill_timer > 0:
