@@ -37,6 +37,8 @@ class MockAlly:
         self.radius = radius
         self.ball_type = ball_type
         self.alive = alive
+        self.hp = 50.0
+        self.max_hp = 100.0
 
 class MockBooster:
     def __init__(self, x=10, y=0, active=True):
@@ -276,3 +278,34 @@ def test_boid_rules_swarm():
     # In python implementation, separation weight might be overwhelmed by cohesion+alignment
     # Let's just assert that it modifies the input vector
     assert nx != 0.0 or ny != 0.0
+
+def test_execute_defend_healer():
+    ball = MockBall(x=100, y=100)
+    ball.personality = "caring"
+    ball.damage = 10.0
+    ball.skill_cooldown = 3.0
+    world = MockWorld()
+
+    # Add a wounded ally
+    ally = MockAlly(x=110, y=100)
+    ally.hp = 20.0
+    ally.max_hp = 100.0
+    world.allies = [ally]
+
+    def mock_get_nearby(b, radius):
+        return {
+            "enemies": [],
+            "allies": world.allies,
+            "boosters": [],
+            "traps": []
+        }
+    world.get_nearby_entities = mock_get_nearby
+
+    action_layer = Action(ball, world)
+    action_layer.execute("defend", 0.1)
+
+    # Ally should be healed: 20.0 + (10.0 * 3.0) = 50.0
+    assert ally.hp == 50.0
+    assert ball.used_skill
+    # It gets decremented by delta in _update_skill_timer
+    assert ball.skill_timer == 3.0 - 0.1

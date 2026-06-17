@@ -824,7 +824,7 @@ func _defend(delta: float):
                     elif self.ball.has_method("set_meta"):
                         self.ball.set_meta("attack_timer", cooldown)
             return
-    elif personality == "healer" or personality == "leader":
+    elif personality == "healer" or personality == "leader" or personality == "caring":
         var allies = _get_allies()
         var target_ally = null
         var lowest_hp = 0.8
@@ -874,8 +874,19 @@ func _defend(delta: float):
                     attack_timer = self.ball.get_meta("attack_timer")
 
                 if attack_timer <= 0:
-                    if self.world != null and self.world.has_method("_deal_damage"):
-                        self.world._deal_damage(self.ball, target)
+                    # Explicit healing logic
+                    if "hp" in target_ally and "max_hp" in target_ally:
+                        var damage = 5.0
+                        if "damage" in self.ball:
+                            damage = self.ball.damage
+                        target_ally.hp = min(target_ally.max_hp, target_ally.hp + (damage * 3.0))
+
+                    if self.ball.has_method("use_skill"):
+                        self.ball.use_skill()
+
+                    if "skill_cooldown" in self.ball:
+                        if "skill_timer" in self.ball:
+                            self.ball.skill_timer = self.ball.skill_cooldown
 
                     var cooldown = 1.5
                     var b_type = ""
