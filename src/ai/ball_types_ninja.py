@@ -14,7 +14,7 @@ class Ninja:
     PERCEPTION_RADIUS = 350
     AGGRESSION = 0.8
     COLOR = "black"
-    SKILL = "stealth"
+    SKILL = "flank"
     SKILL_COOLDOWN = 4.0
 
     def __init__(self, ball_id: int, x: float = 0.0, y: float = 0.0):

@@ -219,7 +219,7 @@ class Decision:
                     scores["use_skill"] += 30.0
 
             skill_name = getattr(self.ball, "skill", "")
-            if skill_name in ("dash", "stealth") and (intent_flee or intent_chase):
+            if skill_name in ("dash", "stealth", "flank") and (intent_flee or intent_chase):
                 scores["use_skill"] += 50.0
             if skill_name == "command" and len(allies) > 0:
                 scores["use_skill"] += 40.0
