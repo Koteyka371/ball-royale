@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [web-visualizer-improvements] Improve Web Visualizer (index.html) — *2026-06-17 04:16:57 UTC*
+
+The user requested improvements to visualizer/index.html. We need to add better UI controls (pause/play, timeline slider, speed control), show the winner clearly, fix any bugs, improve the rendering quality (e.g. better shadows, text showing ball HP or class), and make it fully responsive. Ensure all JS is clean and robust.
+
+---
+
 ## [balance-buff-guardian] Balance: Buff underpowered 'guardian' — *2026-06-17 01:37:56 UTC*
 
 The 'guardian' class is winning only 0.0% of the time (expected ~8.3%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.

@@ -39,7 +39,7 @@
     {
       "title": "Improve Web Visualizer (index.html)",
       "description": "The user requested improvements to visualizer/index.html. We need to add better UI controls (pause/play, timeline slider, speed control), show the winner clearly, fix any bugs, improve the rendering quality (e.g. better shadows, text showing ball HP or class), and make it fully responsive. Ensure all JS is clean and robust.",
-      "status": "todo",
+      "status": "done",
       "priority": "high",
       "risk_level": "medium",
       "assigned_to": null,
