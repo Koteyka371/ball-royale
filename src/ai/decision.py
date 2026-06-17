@@ -201,6 +201,12 @@ class Decision:
             scores["attack"] += 100.0
             scores["chase"] += 100.0
 
+        # Bomber override: Suicide attacks, never flees
+        if b_type == "bomber":
+            scores["flee"] = -1000.0
+            scores["attack"] += 100.0
+            scores["chase"] += 100.0
+
         # Decision Quality (Noise based on difficulty)
         if difficulty == "chaos":
             for k in scores.keys():

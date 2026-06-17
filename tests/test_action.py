@@ -244,7 +244,8 @@ def test_execute_attack_skill():
     world = MockWorld()
     world.enemies = [
         MockEnemy(x=110, y=100),
-        MockEnemy(x=105, y=105)
+        MockEnemy(x=105, y=105),
+        MockEnemy(x=95, y=105)
     ]
     action_layer = Action(ball, world)
 
@@ -252,6 +253,47 @@ def test_execute_attack_skill():
 
     assert ball.used_skill
     assert ball.skill_timer > 0.0
+
+def test_execute_attack_skill_not_enough_enemies():
+    ball = MockBall(x=100, y=100)
+    ball.ball_type = "bomber"
+    world = MockWorld()
+    world.enemies = [
+        MockEnemy(x=110, y=100),
+        MockEnemy(x=105, y=105)
+    ]
+    action_layer = Action(ball, world)
+
+    action_layer.execute("attack", 0.1)
+
+    assert not ball.used_skill
+
+def test_bomber_targeting():
+    ball = MockBall(x=100, y=100)
+    ball.ball_type = "bomber"
+    ball.personality = "bomber" # Need personality to trigger team_message
+    world = MockWorld()
+    # Enemy 1 is closest, but alone
+    e1 = MockEnemy(x=115, y=100)
+
+    # Enemy 2 is further, but has many neighbors
+    e2 = MockEnemy(x=150, y=100)
+    e3 = MockEnemy(x=155, y=105)
+    e4 = MockEnemy(x=145, y=105)
+
+    world.enemies = [e1, e2, e3, e4]
+
+    action_layer = Action(ball, world)
+
+    ball.team_message = None
+
+    action_layer.execute("chase", 0.1)
+
+    msg = ball.team_message
+    assert msg is not None
+    assert msg["type"] == "target_spotted"
+    assert msg["x"] >= 140
+
 
 def test_boid_rules_swarm():
     # Cohesion and separation test

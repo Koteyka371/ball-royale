@@ -436,6 +436,21 @@ func _chase(delta: float):
                 if hp > max_hp:
                     max_hp = hp
                     target = e
+        elif b_type == "bomber":
+            var max_nearby = -1
+            var ball_radius = 10.0
+            if "radius" in self.ball: ball_radius = self.ball.radius
+            for e in enemies:
+                var e_radius = 10.0
+                if "radius" in e: e_radius = e.radius
+                var r_sq = pow(ball_radius + e_radius + 15.0, 2)
+                var count = 0
+                for other in enemies:
+                    if pow(other.x - e.x, 2) + pow(other.y - e.y, 2) <= r_sq:
+                        count += 1
+                if count > max_nearby:
+                    max_nearby = count
+                    target = e
         else:
             for e in enemies:
                 var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
@@ -562,6 +577,21 @@ func _attack(delta: float):
                     if hp > max_hp:
                         max_hp = hp
                         target = e
+            elif b_type == "bomber":
+                var max_nearby = -1
+                var ball_radius = 10.0
+                if "radius" in self.ball: ball_radius = self.ball.radius
+                for e in enemies:
+                    var e_radius = 10.0
+                    if "radius" in e: e_radius = e.radius
+                    var r_sq = pow(ball_radius + e_radius + 15.0, 2)
+                    var count = 0
+                    for other in enemies:
+                        if pow(other.x - e.x, 2) + pow(other.y - e.y, 2) <= r_sq:
+                            count += 1
+                    if count > max_nearby:
+                        max_nearby = count
+                        target = e
             else:
                 for e in enemies:
                     var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
@@ -676,7 +706,7 @@ func _attack(delta: float):
                         var edy = e.y - self.ball.y
                         if sqrt(edx*edx + edy*edy) <= ball_radius + e_radius + 15:
                             close_enemies += 1
-                    optimal = close_enemies >= 2
+                    optimal = close_enemies >= 3
                 elif b_type == "warrior":
                     var in_front = 0
                     var move_dx = target.x - self.ball.x
@@ -760,6 +790,21 @@ func _defend(delta: float):
                         hp = e.hp
                     if hp > max_hp:
                         max_hp = hp
+                        target = e
+            elif b_type == "bomber":
+                var max_nearby = -1
+                var ball_radius = 10.0
+                if "radius" in self.ball: ball_radius = self.ball.radius
+                for e in enemies:
+                    var e_radius = 10.0
+                    if "radius" in e: e_radius = e.radius
+                    var r_sq = pow(ball_radius + e_radius + 15.0, 2)
+                    var count = 0
+                    for other in enemies:
+                        if pow(other.x - e.x, 2) + pow(other.y - e.y, 2) <= r_sq:
+                            count += 1
+                    if count > max_nearby:
+                        max_nearby = count
                         target = e
             else:
                 for e in enemies:

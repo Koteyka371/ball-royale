@@ -254,6 +254,11 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
         scores["attack"] += 100.0
         scores["chase"] += 100.0
 
+    if b_type == "bomber":
+        scores["flee"] = -1000.0
+        scores["attack"] += 100.0
+        scores["chase"] += 100.0
+
     # Decision Quality (Noise based on difficulty)
     if difficulty == "chaos":
         for k in scores.keys():

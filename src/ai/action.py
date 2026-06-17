@@ -320,6 +320,13 @@ class Action:
             b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
             if b_type == "tank":
                 target = max(enemies, key=lambda e: getattr(e, "hp", 0.0))
+            elif b_type == "bomber":
+                # Maximize number of nearby enemies
+                ball_radius = getattr(self.ball, "radius", 10.0)
+                def count_nearby(e):
+                    r = ball_radius + getattr(e, "radius", 10.0) + 15
+                    return sum(1 for other in enemies if (other.x - e.x)**2 + (other.y - e.y)**2 <= r**2)
+                target = max(enemies, key=count_nearby)
             else:
                 target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
 
@@ -408,6 +415,13 @@ class Action:
                 b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
                 if b_type == "tank":
                     target = max(enemies, key=lambda e: getattr(e, "hp", 0.0))
+                elif b_type == "bomber":
+                    # Maximize number of nearby enemies
+                    ball_radius = getattr(self.ball, "radius", 10.0)
+                    def count_nearby(e):
+                        r = ball_radius + getattr(e, "radius", 10.0) + 15
+                        return sum(1 for other in enemies if (other.x - e.x)**2 + (other.y - e.y)**2 <= r**2)
+                    target = max(enemies, key=count_nearby)
                 else:
                     target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
 
@@ -471,7 +485,7 @@ class Action:
                     b_type = getattr(self.ball, "ball_type", "")
                     if b_type == "bomber":
                         close_enemies = sum(1 for e in enemies if math.sqrt((e.x - self.ball.x)**2 + (e.y - self.ball.y)**2) <= ball_radius + getattr(e, "radius", 10.0) + 15)
-                        optimal = close_enemies >= 2
+                        optimal = close_enemies >= 3
                     elif b_type == "warrior":
                         in_front = 0
                         # Calculate normalized movement vector towards target
