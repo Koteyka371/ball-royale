@@ -44,6 +44,8 @@ class Action:
             self._attack(delta)
         elif strategy == "kite":
             self._kite(delta)
+        elif strategy == "flank":
+            self._flank(delta)
         elif strategy == "chase":
             self._chase(delta)
         elif strategy == "defend":
@@ -687,6 +689,58 @@ class Action:
             self.ball.skill_timer -= delta
         if hasattr(self.ball, "attack_timer") and self.ball.attack_timer > 0:
             self.ball.attack_timer -= delta
+
+    def _flank(self, delta: float) -> None:
+        enemies = self._get_enemies()
+        if not enemies:
+            self._idle(delta)
+            return
+
+        target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+        enemy_vx = getattr(target, "vx", 0.0)
+        enemy_vy = getattr(target, "vy", 0.0)
+
+        if abs(enemy_vx) < 0.1 and abs(enemy_vy) < 0.1:
+            enemy_vx = self.ball.x - target.x
+            enemy_vy = self.ball.y - target.y
+
+        speed_sq = enemy_vx**2 + enemy_vy**2
+        if speed_sq > 0.0001:
+            enemy_vx /= math.sqrt(speed_sq)
+            enemy_vy /= math.sqrt(speed_sq)
+
+        target_x = target.x - enemy_vx * 20.0
+        target_y = target.y - enemy_vy * 20.0
+
+        target_dx = target_x - self.ball.x
+        target_dy = target_y - self.ball.y
+        dist_to_target = math.sqrt(target_dx**2 + target_dy**2)
+
+        nx, ny = 0.0, 0.0
+        if dist_to_target > 0.01:
+            nx = target_dx / dist_to_target
+            ny = target_dy / dist_to_target
+
+        nx, ny = self._apply_obstacle_avoidance(nx, ny, target=target, ignore_enemies=False)
+
+        speed = getattr(self.ball, "speed", 2.0)
+        self.ball.x += nx * speed * 60.0 * delta
+        self.ball.y += ny * speed * 60.0 * delta
+        self._clamp_position()
+
+        real_dist = math.sqrt((target.x - self.ball.x)**2 + (target.y - self.ball.y)**2)
+        ball_radius = getattr(self.ball, "radius", 10.0)
+        target_radius = getattr(target, "radius", 10.0)
+
+        if real_dist <= ball_radius + target_radius + 5.0:
+            attack_timer = getattr(self.ball, "attack_timer", 0.0)
+            if attack_timer <= 0:
+                target.hp = max(0, target.hp - getattr(self.ball, "damage", 10.0) * 0.5)
+                if hasattr(self.world, "_deal_damage"):
+                    self.world._deal_damage(self.ball, target)
+
+                cooldown = max(0.2, 2.0 / speed if speed > 0 else 1.0)
+                self.ball.attack_timer = cooldown
 
     def _kite(self, delta: float) -> None:
         enemies = self._get_enemies()
