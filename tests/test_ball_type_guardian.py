@@ -12,8 +12,8 @@ from ai.ball_types_guardian import Guardian
 def test_guardian_initialization():
     ball = Guardian(ball_id=1, x=100, y=200)
     assert ball.id == 1
-    assert ball.hp == 180
-    assert ball.max_hp == 180
+    assert ball.hp == 400
+    assert ball.max_hp == 400
     assert ball.alive is True
     assert ball.personality == "supportive"
 
@@ -21,22 +21,22 @@ def test_guardian_initialization():
 def test_guardian_hp_percent():
     ball = Guardian(ball_id=1)
     ball.hp = 90
-    assert abs(ball.get_hp_percent() - 90/180) < 0.01
+    assert abs(ball.get_hp_percent() - 90/400) < 0.01
 
 
 def test_guardian_take_damage():
     ball = Guardian(ball_id=1)
     ball.take_damage(10)
-    assert ball.hp == 170
+    assert ball.hp == 390
     assert ball.alive is True
-    ball.take_damage(280)
+    ball.take_damage(400)
     assert ball.alive is False
 
 
 def test_guardian_skill():
     ball = Guardian(ball_id=1)
     assert ball.use_skill() is True
-    assert ball.skill_timer == 6.0
+    assert ball.skill_timer == 3.0
     assert ball.use_skill() is False
 
 
