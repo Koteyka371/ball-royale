@@ -61,6 +61,9 @@ BALL_TYPES = {
     "king": {"hp": 150, "speed": 1.8, "damage": 10, "radius": 14,
              "perception_radius": 300, "aggression": 0.2, "color": "gold",
              "skill": "command", "skill_cooldown": 5.0},
+    "spectator": {"hp": 99999, "speed": 5.0, "damage": 0, "radius": 5,
+                  "perception_radius": 1000, "aggression": 0.0, "color": "white",
+                  "skill": "observe", "skill_cooldown": 1.0}
 }
 
 import json  # noqa: E402
@@ -273,7 +276,7 @@ class BattleSimulation:
         allies = []
 
         for b in nearby_balls:
-            if b.id != ball.id:
+            if b.id != ball.id and getattr(b, "ball_type", None) != "spectator":
                 if getattr(b, "ball_type", None) == getattr(ball, "ball_type", None):
                     allies.append(b)
                 else:
@@ -323,6 +326,8 @@ class BattleSimulation:
                     ))
 
     def _deal_damage(self, attacker: Ball, target: Ball):
+        if getattr(target, "ball_type", None) == "spectator":
+            return
         if target.hp == target.max_hp and attacker.damage > 0:
             target.first_hit_taken = True
         target.hp -= attacker.damage

@@ -246,14 +246,19 @@ func _get_enemies() -> Array:
     if self.world != null and self.world.has_method("get_nearby_entities"):
         var entities = self.world.get_nearby_entities(self.ball, perception_radius)
         if typeof(entities) == TYPE_DICTIONARY and entities.has("enemies"):
-            return entities["enemies"]
+            var enemies = []
+            for e in entities["enemies"]:
+                var e_type = e.ball_type if "ball_type" in e else (e.get_ball_type() if e.has_method("get_ball_type") else "")
+                if e_type != "spectator":
+                    enemies.append(e)
+            return enemies
         elif typeof(entities) == TYPE_ARRAY:
             var enemies = []
             for e in entities:
                 if e.has_method("get_ball_type") or "ball_type" in e:
                     var e_type = e.ball_type if "ball_type" in e else e.get_ball_type()
                     var b_type = self.ball.ball_type if "ball_type" in self.ball else self.ball.get_ball_type()
-                    if e_type != b_type:
+                    if e_type != b_type and e_type != "spectator":
                         if ("alive" in e and e.alive) or (e.has_method("is_alive") and e.is_alive()):
                             enemies.append(e)
             return enemies
