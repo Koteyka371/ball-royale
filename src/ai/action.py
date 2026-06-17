@@ -55,7 +55,11 @@ class Action:
         else:
             self._idle(delta)
 
-        self._clamp_position()
+        bounced_col = self._resolve_collisions()
+        bounced_wall = self._clamp_position()
+        if bounced_wall or bounced_col:
+            self._trigger_ripple_effect()
+
         self._update_skill_timer(delta)
 
         if delta > 0:
@@ -733,17 +737,102 @@ class Action:
         self.ball.x += nx * speed * 0.3
         self.ball.y += ny * speed * 0.3
 
-    def _clamp_position(self) -> None:
+    def _clamp_position(self) -> bool:
+        bounced = False
         radius = getattr(self.ball, "radius", 10.0)
 
         if math.isnan(self.ball.x) or math.isinf(self.ball.x):
             self.ball.x = getattr(self.world, "width", 1000) / 2
+            bounced = True
         if math.isnan(self.ball.y) or math.isinf(self.ball.y):
             self.ball.y = getattr(self.world, "height", 1000) / 2
+            bounced = True
 
         if hasattr(self.world, "width") and hasattr(self.world, "height"):
+            old_x, old_y = self.ball.x, self.ball.y
             self.ball.x = max(radius, min(self.world.width - radius, self.ball.x))
             self.ball.y = max(radius, min(self.world.height - radius, self.ball.y))
+            if old_x != self.ball.x or old_y != self.ball.y:
+                bounced = True
+
+        return bounced
+
+    def _resolve_collisions(self) -> bool:
+        bounced = False
+        ball_radius = getattr(self.ball, "radius", 10.0)
+        # Assuming we just need nearby entities to avoid checking everyone
+        nearby = []
+        if hasattr(self.world, "get_nearby_entities"):
+            try:
+                # We check a reasonable distance to find overlapping balls
+                data = self.world.get_nearby_entities(self.ball, ball_radius * 2)
+                if isinstance(data, dict):
+                    nearby = data.get("enemies", []) + data.get("allies", [])
+                elif isinstance(data, list):
+                    nearby = data
+            except Exception:
+                pass
+
+        for other in nearby:
+            if other is self.ball:
+                continue
+            other_radius = getattr(other, "radius", 10.0)
+            dx = self.ball.x - other.x
+            dy = self.ball.y - other.y
+            dist_sq = dx * dx + dy * dy
+            min_dist = ball_radius + other_radius
+            if dist_sq < min_dist * min_dist and dist_sq > 0.0001:
+                import math
+                dist = math.sqrt(dist_sq)
+                overlap = min_dist - dist
+
+                # Simple separation, pushing self away
+                nx = dx / dist
+                ny = dy / dist
+
+                self.ball.x += nx * overlap
+                self.ball.y += ny * overlap
+                bounced = True
+
+        return bounced
+
+    def _trigger_ripple_effect(self) -> None:
+        ball_radius = getattr(self.ball, "radius", 10.0)
+        speed = getattr(self.ball, "speed", 2.0)
+        ripple_radius = ball_radius * 3.0 + speed * 10.0
+
+        nearby = []
+        if hasattr(self.world, "get_nearby_entities"):
+            try:
+                data = self.world.get_nearby_entities(self.ball, ripple_radius)
+                if isinstance(data, dict):
+                    nearby = data.get("enemies", []) + data.get("allies", [])
+                elif isinstance(data, list):
+                    nearby = data
+            except Exception:
+                pass
+
+        for other in nearby:
+            if other is self.ball:
+                continue
+            dx = other.x - self.ball.x
+            dy = other.y - self.ball.y
+            dist_sq = dx * dx + dy * dy
+            if dist_sq > 0.0001 and dist_sq < ripple_radius * ripple_radius:
+                import math
+                dist = math.sqrt(dist_sq)
+                nx = dx / dist
+                ny = dy / dist
+
+                push_strength = (ripple_radius - dist) / ripple_radius * speed * 2.0
+                other.x += nx * push_strength
+                other.y += ny * push_strength
+
+                # Cause extra damage to enemies if speed is high enough
+                if speed > 2.5:
+                    is_enemy = getattr(other, "ball_type", "") != getattr(self.ball, "ball_type", "")
+                    if is_enemy and hasattr(self.world, "_deal_damage"):
+                        self.world._deal_damage(self.ball, other)
 
     def _update_skill_timer(self, delta: float) -> None:
         if hasattr(self.ball, "skill_timer") and self.ball.skill_timer > 0:
