@@ -309,7 +309,7 @@
     },
     {
       "id": "ai-ball-warrior-ai",
-      "status": "todo",
+      "status": "done",
       "area": "ai-ball-types",
       "risk": "medium",
       "title": "Implement Warrior AI profile",

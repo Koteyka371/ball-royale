@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [ai-ball-warrior-ai] Implement Warrior AI profile — *2026-06-17 00:05:33 UTC*
+
+Warrior AI: aggressive personality, high attack priority, never flees, uses Wave Attack when 2+ enemies in front, charges into battle.
+
+---
+
 ## [ai-behavior-kite] Implement Kite behavior — *2026-06-16 22:26:31 UTC*
 
 Ball maintains distance from enemy while attacking. Moves back when enemy approaches, attacks when enemy retreats. Used by Sniper and ranged types.
