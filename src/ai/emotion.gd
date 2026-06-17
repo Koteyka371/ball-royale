@@ -4,13 +4,48 @@ extends RefCounted
 var ball = null
 var world = null
 var has_taken_first_hit_previously = false
+var infected_emotion = null
+var infection_ticks = 0
 
 func _init(ball_ref, world_ref):
     self.ball = ball_ref
     self.world = world_ref
     self.has_taken_first_hit_previously = false
+    self.infected_emotion = null
+    self.infection_ticks = 0
 
 func get_state(perception_data: Dictionary) -> String:
+    if self.infection_ticks > 0:
+        self.infection_ticks -= 1
+    else:
+        self.infected_emotion = null
+
+    var allies = []
+    if perception_data.has("allies"):
+        allies = perception_data["allies"]
+
+    if self.infected_emotion == null and allies.size() > 0:
+        var has_fleeing = false
+        var has_aggro = false
+        for ally in allies:
+            var c_action = ""
+            if "current_action" in ally:
+                c_action = ally.current_action
+            elif ally.has_method("get_current_action"):
+                c_action = ally.get_current_action()
+
+            if c_action == "flee":
+                has_fleeing = true
+            if c_action == "attack" or c_action == "chase":
+                has_aggro = true
+
+        if has_fleeing and randf() < 0.1:
+            self.infected_emotion = "fear"
+            self.infection_ticks = 60
+        elif has_aggro and randf() < 0.1:
+            self.infected_emotion = "rage"
+            self.infection_ticks = 60
+
     var hp_percent = 1.0
     if self.ball.has_method("get_hp_percent"):
         hp_percent = self.ball.get_hp_percent()
@@ -30,11 +65,11 @@ func get_state(perception_data: Dictionary) -> String:
         self.has_taken_first_hit_previously = true
         return "cowardice"
 
-    # 3. Heroism: ally < 30% HP
-    var allies = []
-    if perception_data.has("allies"):
-        allies = perception_data["allies"]
+    # Contagious Fear
+    if self.infected_emotion == "fear":
+        return "fear"
 
+    # 3. Heroism: ally < 30% HP
     for ally in allies:
         var ally_hp_percent = 1.0
         if ally.has_method("get_hp_percent"):
@@ -56,6 +91,10 @@ func get_state(perception_data: Dictionary) -> String:
     # 5. Greed: sees booster
     if perception_data.has("boosters") and perception_data["boosters"].size() > 0:
         return "greed"
+
+    # Contagious Aggression
+    if self.infected_emotion == "rage":
+        return "rage"
 
     # 6. Rage: HP > 80% and sees enemy
     if hp_percent > 0.8 and perception_data.has("enemies") and perception_data["enemies"].size() > 0:
