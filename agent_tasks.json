@@ -612,7 +612,7 @@
     },
     {
       "id": "auto-implement-spectator-mode-(наблюдатель)-game-mode",
-      "status": "todo",
+      "status": "done",
       "area": "modes",
       "risk": "medium",
       "allowed_paths": [

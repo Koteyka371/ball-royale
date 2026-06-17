@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [auto-implement-spectator-mode-(наблюдатель)-game-mode] Implement Spectator Mode (Наблюдатель) game mode — *2026-06-17 17:14:27 UTC*
+
+Create Spectator Mode (Наблюдатель) with full rules and mechanics
+
+---
+
 ## [ai-ball-tank-ai] Implement Tank AI profile — *2026-06-17 17:14:05 UTC*
 
 Tank AI: brave personality, protects allies, uses Shield when taking damage, body blocks for healers, draws aggro.
