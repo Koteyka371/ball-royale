@@ -100,8 +100,8 @@
       "name": "Jules Worker 12",
       "area": "ai-core",
       "task_id": "auto-create-procedural-arenas-arena",
-      "status": "assigned",
-      "started_at": "2026-06-17T21:28:40.291247+00:00",
+      "status": "working",
+      "started_at": "2026-06-17T21:39:40.297126+00:00",
       "cycles_today": 0
     }
   },
