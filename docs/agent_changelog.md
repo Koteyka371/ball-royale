@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [ai-ball-sniper-ai] Implement Sniper AI profile — *2026-06-17 04:32:15 UTC*
+
+Sniper AI: cautious personality, maintains distance, uses Snipe from max range, kites enemies, avoids melee.
+
+---
+
 ## [ai-ball-king-ai] Implement King AI profile — *2026-06-17 04:31:51 UTC*
 
 King AI: leader personality, stays behind allies, uses Command to buff team, targets low HP allies to boost, avoids direct combat.
