@@ -23,6 +23,7 @@ class Decision:
         "phantom": "chase",
         "swarm": "chase",
         "scout": "collect_booster",
+        "king": "defend",
         "aggressive": "attack",
         "defender": "defend",
     }
@@ -94,13 +95,18 @@ class Decision:
             scores["defend"] += 100.0
         if threat_level > 5.0:
             scores["defend"] += 50.0
-        if personality in ("tank", "defender", "guardian", "juggernaut"):
+        if personality in ("tank", "defender", "guardian", "juggernaut", "leader"):
             scores["defend"] += 30.0
         scores["defend"] += danger_level * 20.0
         if emotion_state == "heroism":
             scores["defend"] += 80.0
         if hp_percent < 0.5 and len(allies) > 0:
             scores["defend"] += len(allies) * 10.0
+
+        if personality == "leader" and len(allies) > 0:
+            weak_allies = sum(1 for a in allies if (a.hp / a.max_hp if hasattr(a, "hp") and hasattr(a, "max_hp") and a.max_hp > 0 else 1.0) < 0.5)
+            if weak_allies > 0:
+                scores["defend"] += weak_allies * 30.0
 
         # === COLLECT BOOSTER ===
         if len(boosters) > 0:
@@ -169,6 +175,8 @@ class Decision:
 
             if getattr(self.ball, "skill", "") == "dash" and (intent_flee or intent_chase):
                 scores["use_skill"] += 50.0
+            if getattr(self.ball, "skill", "") == "command" and len(allies) > 0:
+                scores["use_skill"] += 40.0
 
         if skill_timer > 0:
             scores["use_skill"] = -1000.0

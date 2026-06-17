@@ -101,7 +101,7 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     # Defend scoring
     if danger_level > 0.7:
         scores["defend"] += 100.0
-    if personality == "tank" or personality == "defender" or personality == "guardian" or personality == "juggernaut":
+    if personality == "tank" or personality == "defender" or personality == "guardian" or personality == "juggernaut" or personality == "leader":
         scores["defend"] += 30.0
 
     scores["defend"] += danger_level * 20.0
@@ -109,6 +109,19 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
         scores["defend"] += 80.0
     if hp_percent < 0.5 and allies.size() > 0:
         scores["defend"] += allies.size() * 10.0
+
+    if personality == "leader" and allies.size() > 0:
+        var weak_allies = 0
+        for a in allies:
+            var a_hp_pct = 1.0
+            if a.has_method("get_hp_percent"):
+                a_hp_pct = a.get_hp_percent()
+            elif "hp" in a and "max_hp" in a and float(a.max_hp) > 0:
+                a_hp_pct = float(a.hp) / float(a.max_hp)
+            if a_hp_pct < 0.5:
+                weak_allies += 1
+        if weak_allies > 0:
+            scores["defend"] += weak_allies * 30.0
 
     # Collect booster scoring
     if boosters.size() > 0:
@@ -203,6 +216,8 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
             skill_name = self.ball.skill
         if skill_name == "dash" and (intent_flee or intent_chase):
             scores["use_skill"] += 50.0
+        if skill_name == "command" and allies.size() > 0:
+            scores["use_skill"] += 40.0
 
     if skill_timer > 0:
         scores["use_skill"] = -1000.0

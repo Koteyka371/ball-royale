@@ -775,7 +775,7 @@ func _defend(delta: float):
                     elif self.ball.has_method("set_meta"):
                         self.ball.set_meta("attack_timer", cooldown)
             return
-    elif personality == "healer":
+    elif personality == "healer" or personality == "leader":
         var allies = _get_allies()
         var target_ally = null
         var lowest_hp = 0.8
@@ -931,6 +931,17 @@ func _use_skill():
 
     if skill_timer <= 0.0 and self.ball.has_method("use_skill"):
         self.ball.use_skill()
+
+        var skill_name = ""
+        if "skill" in self.ball:
+            skill_name = self.ball.skill
+
+        if skill_name == "command":
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("team_message", {"type": "buff_command", "radius": 200})
+            elif "team_message" in self.ball:
+                self.ball.team_message = {"type": "buff_command", "radius": 200}
+
         if "skill_cooldown" in self.ball:
             self.ball.skill_timer = self.ball.skill_cooldown
 
