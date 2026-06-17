@@ -100,8 +100,8 @@
       "name": "Jules Worker 12",
       "area": "ai-core",
       "task_id": "ai-ball-king-ai",
-      "status": "assigned",
-      "started_at": "2026-06-17T03:58:46.320489+00:00",
+      "status": "working",
+      "started_at": "2026-06-17T04:09:30.679412+00:00",
       "cycles_today": 0
     }
   },
