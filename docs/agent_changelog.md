@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [ai-ball-healer-ai] Implement Healer AI profile — *2026-06-17 09:37:16 UTC*
+
+Healer AI: caring personality, follows wounded allies, heals them, avoids combat, uses heal on cooldown.
+
+---
+
 ## [ai-battle-commentator-text] Add AI Battle Commentator — *2026-06-17 09:33:57 UTC*
 
 Create a module that parses the kill_log and actions performed during a simulation to produce exciting, dynamic text commentary of the battle.

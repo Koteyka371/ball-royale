@@ -366,7 +366,7 @@
     },
     {
       "id": "ai-ball-healer-ai",
-      "status": "todo",
+      "status": "done",
       "area": "ai-ball-types",
       "risk": "medium",
       "title": "Implement Healer AI profile",
