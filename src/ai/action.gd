@@ -403,12 +403,7 @@ func _flee(delta: float):
     self.ball.x += comb_nx * boosted_speed * delta * 60.0
     self.ball.y += comb_ny * boosted_speed * delta * 60.0
 
-func _chase(delta: float):
-    var enemies = _get_enemies()
-    if enemies.size() == 0:
-        _idle(delta)
-        return
-
+func _get_target(enemies: Array) -> Object:
     var target_msg = null
     var allies = _get_allies()
     for ally in allies:
@@ -445,12 +440,35 @@ func _chase(delta: float):
                 if hp > max_hp:
                     max_hp = hp
                     target = e
+        elif b_type == "bomber":
+            var max_crowd = -1
+            var min_dist_sq_bomber = INF
+            for e1 in enemies:
+                var crowd = 0
+                for e2 in enemies:
+                    if e1 != e2 and pow(e1.x - e2.x, 2) + pow(e1.y - e2.y, 2) <= 1600.0:
+                        crowd += 1
+                var dist_sq = pow(e1.x - self.ball.x, 2) + pow(e1.y - self.ball.y, 2)
+                if crowd > max_crowd or (crowd == max_crowd and dist_sq < min_dist_sq_bomber):
+                    max_crowd = crowd
+                    min_dist_sq_bomber = dist_sq
+                    target = e1
         else:
             for e in enemies:
                 var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
                 if dist_sq < min_dist_sq:
                     min_dist_sq = dist_sq
                     target = e
+
+    return target
+
+func _chase(delta: float):
+    var enemies = _get_enemies()
+    if enemies.size() == 0:
+        _idle(delta)
+        return
+
+    var target = _get_target(enemies)
 
     var personality = "idle"
     if "personality" in self.ball:
@@ -489,8 +507,24 @@ func _chase(delta: float):
                 nx = -target_dx / dist_to_target
                 ny = -target_dy / dist_to_target
         else:
-            if self.world != null and self.world.has_method("_deal_damage"):
-                self.world._deal_damage(self.ball, target)
+            var attack_timer = 0.0
+            if "attack_timer" in self.ball:
+                attack_timer = self.ball.attack_timer
+            elif self.ball.has_meta("attack_timer"):
+                attack_timer = self.ball.get_meta("attack_timer")
+
+            if attack_timer <= 0:
+                if self.world != null and self.world.has_method("_deal_damage"):
+                    self.world._deal_damage(self.ball, target)
+
+                var speed = 2.0
+                if "speed" in self.ball: speed = self.ball.speed
+                var cooldown = max(0.2, 2.0 / speed if speed > 0 else 1.0)
+
+                if "attack_timer" in self.ball:
+                    self.ball.attack_timer = cooldown
+                elif self.ball.has_method("set_meta"):
+                    self.ball.set_meta("attack_timer", cooldown)
             return
     else:
         if dist_to_target > 0.01:
@@ -537,59 +571,7 @@ func _chase(delta: float):
 func _attack(delta: float):
     var enemies = _get_enemies()
     if enemies.size() > 0:
-        var target_msg = null
-        var allies = _get_allies()
-        for ally in allies:
-            var msg = null
-            if ally.has_method("get_meta") and ally.has_meta("team_message"):
-                msg = ally.get_meta("team_message")
-            if typeof(msg) == TYPE_DICTIONARY and msg.has("type") and msg["type"] == "target_spotted":
-                target_msg = msg
-                break
-
-        var target = null
-        var min_dist_sq = INF
-
-        if target_msg != null:
-            var tx = target_msg.get("x", self.ball.x)
-            var ty = target_msg.get("y", self.ball.y)
-            for e in enemies:
-                var dist_sq = pow(e.x - tx, 2) + pow(e.y - ty, 2)
-                if dist_sq < min_dist_sq:
-                    min_dist_sq = dist_sq
-                    target = e
-        else:
-            var b_type = ""
-            if "ball_type" in self.ball:
-                b_type = self.ball.ball_type.to_lower()
-            if b_type == "tank":
-                var max_hp = -1.0
-                for e in enemies:
-                    var hp = 0.0
-                    if "hp" in e:
-                        hp = e.hp
-                    if hp > max_hp:
-                        max_hp = hp
-                        target = e
-            elif b_type == "bomber":
-                var max_crowd = -1
-                var min_dist_sq_bomber = INF
-                for e1 in enemies:
-                    var crowd = 0
-                    for e2 in enemies:
-                        if e1 != e2 and pow(e1.x - e2.x, 2) + pow(e1.y - e2.y, 2) <= 1600.0:
-                            crowd += 1
-                    var dist_sq = pow(e1.x - self.ball.x, 2) + pow(e1.y - self.ball.y, 2)
-                    if crowd > max_crowd or (crowd == max_crowd and dist_sq < min_dist_sq_bomber):
-                        max_crowd = crowd
-                        min_dist_sq_bomber = dist_sq
-                        target = e1
-            else:
-                for e in enemies:
-                    var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
-                    if dist_sq < min_dist_sq:
-                        min_dist_sq = dist_sq
-                        target = e
+        var target = _get_target(enemies)
 
         var personality = "idle"
         if "personality" in self.ball:
