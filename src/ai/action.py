@@ -369,8 +369,29 @@ class Action:
                 return
         else:
             if dist_to_target > 0.01:
-                nx = target_dx / dist_to_target
-                ny = target_dy / dist_to_target
+                if b_type_chase == "ninja":
+                    tvx = getattr(target, "vx", 0.0)
+                    tvy = getattr(target, "vy", 0.0)
+                    tv_dist_sq = tvx*tvx + tvy*tvy
+                    if tv_dist_sq > 0.0001:
+                        tv_dist = math.sqrt(tv_dist_sq)
+                        back_x = target.x - (tvx / tv_dist) * (target_radius + ball_radius + 5.0)
+                        back_y = target.y - (tvy / tv_dist) * (target_radius + ball_radius + 5.0)
+                        bdx = back_x - self.ball.x
+                        bdy = back_y - self.ball.y
+                        b_dist = math.sqrt(bdx*bdx + bdy*bdy)
+                        if b_dist > 0.01:
+                            nx = bdx / b_dist
+                            ny = bdy / b_dist
+                        else:
+                            nx = target_dx / dist_to_target
+                            ny = target_dy / dist_to_target
+                    else:
+                        nx = target_dx / dist_to_target
+                        ny = target_dy / dist_to_target
+                else:
+                    nx = target_dx / dist_to_target
+                    ny = target_dy / dist_to_target
 
         # Obstacle avoidance: repel from nearby allies and other enemies
         repel_x, repel_y = 0.0, 0.0
@@ -418,6 +439,21 @@ class Action:
                 ball_radius = getattr(self.ball, "radius", 10.0)
 
                 attack_range = ball_radius + target_radius + 5
+
+                if getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower() == "ninja":
+                    tvx = getattr(target, "vx", 0.0)
+                    tvy = getattr(target, "vy", 0.0)
+                    tv_dist_sq = tvx*tvx + tvy*tvy
+                    if tv_dist_sq > 0.0001:
+                        tv_dist = math.sqrt(tv_dist_sq)
+                        back_x = target.x - (tvx / tv_dist) * (target_radius + ball_radius + 5.0)
+                        back_y = target.y - (tvy / tv_dist) * (target_radius + ball_radius + 5.0)
+                        bdx = back_x - self.ball.x
+                        bdy = back_y - self.ball.y
+                        b_dist = math.sqrt(bdx*bdx + bdy*bdy)
+                        if b_dist > 0.01:
+                            nx = bdx / b_dist
+                            ny = bdy / b_dist
 
                 if nx != 0.0 or ny != 0.0:
                     nx, ny = self._apply_obstacle_avoidance(nx, ny, target)
