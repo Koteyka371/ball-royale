@@ -351,13 +351,21 @@ class BattleSimulation:
             ball.speed += booster.value * 0.01
         booster.active = False
 
+    def add_event(self, event_type: str, data: dict):
+        if event_type == "spawn_booster":
+            x = data.get("x", random.uniform(0, self.width))
+            y = data.get("y", random.uniform(0, self.height))
+            kind = data.get("kind", random.choice(["health", "damage", "speed"]))
+            value = data.get("value", 50.0)
+            self.boosters.append(Booster(x=x, y=y, kind=kind, value=value))
+
     def run(self, record: bool = False) -> Dict:
         self._delta = 0.016
         start = time.time()
         self.history = []
 
         for _ in range(self.max_ticks):
-            alive = sum(1 for b in self.balls if b.alive)
+            alive = sum(1 for b in self.balls if b.alive and getattr(b, "ball_type", None) != "spectator")
             if alive <= 1:
                 break
             self._tick()

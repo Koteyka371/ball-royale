@@ -209,9 +209,9 @@ class Action:
         if hasattr(self.world, "get_nearby_entities"):
             entities = self.world.get_nearby_entities(self.ball, perception_radius)
             if isinstance(entities, dict):
-                return entities.get("allies", [])
+                return [e for e in entities.get("allies", []) if getattr(e, "ball_type", None) != "spectator"]
             else:
-                return [e for e in entities if getattr(e, "ball_type", None) == self.ball.ball_type and getattr(e, "alive", True) and e != self.ball]
+                return [e for e in entities if getattr(e, "ball_type", None) == self.ball.ball_type and getattr(e, "ball_type", None) != "spectator" and getattr(e, "alive", True) and e != self.ball]
         return []
 
     def _get_boosters(self) -> list:
