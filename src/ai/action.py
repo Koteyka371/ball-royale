@@ -335,23 +335,33 @@ class Action:
 
         target_radius = getattr(target, "radius", 10.0)
         ball_radius = getattr(self.ball, "radius", 10.0)
-        b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
-        if b_type == "sniper":
+        b_type_chase = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
+        if b_type_chase == "sniper":
             attack_range = 150.0
         else:
             attack_range = ball_radius + target_radius + 5
 
         # Stop moving if in attack range
-        if dist_to_target <= attack_range:
-            # We are close enough, attack
-            if hasattr(self.world, "_deal_damage"):
-                self.world._deal_damage(self.ball, target)
-            return
-
         nx, ny = 0.0, 0.0
-        if dist_to_target > 0.01:
-            nx = target_dx / dist_to_target
-            ny = target_dy / dist_to_target
+        if dist_to_target <= attack_range:
+            if b_type_chase == "sniper" and dist_to_target < attack_range * 0.8:
+                if dist_to_target > 0.01:
+                    nx = -target_dx / dist_to_target
+                    ny = -target_dy / dist_to_target
+            else:
+                # We are close enough, attack. No cooldown checking here, we just stop moving towards the target and wait for attack logic.
+                # However we need to actually deal damage based on cooldowns, or just rely on the _attack strategy to do it.
+                # Since this is _chase, it is just for movement, but it used to call _deal_damage directly.
+                if hasattr(self.world, "_deal_damage"):
+                    attack_timer = getattr(self.ball, "attack_timer", 0.0)
+                    if attack_timer <= 0:
+                        self.world._deal_damage(self.ball, target)
+                        self.ball.attack_timer = max(0.2, 2.0 / getattr(self.ball, "speed", 2.0))
+                return
+        else:
+            if dist_to_target > 0.01:
+                nx = target_dx / dist_to_target
+                ny = target_dy / dist_to_target
 
         # Obstacle avoidance: repel from nearby allies and other enemies
         repel_x, repel_y = 0.0, 0.0
@@ -413,14 +423,14 @@ class Action:
 
                 target_radius = getattr(target, "radius", 10.0)
                 ball_radius = getattr(self.ball, "radius", 10.0)
-                b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
+                b_type_attack = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
 
-                if b_type == "sniper":
+                if b_type_attack == "sniper":
                     attack_range = 150.0
                 else:
                     attack_range = ball_radius + target_radius + 5
 
-                if b_type == "sniper":
+                if b_type_attack == "sniper":
                     if dist > attack_range:
                         pass # Move towards
                     elif dist < attack_range * 0.8:
@@ -433,8 +443,12 @@ class Action:
                     nx, ny = self._apply_boid_rules(nx, ny)
 
                     step = getattr(self.ball, "speed", 2.0) * delta * 60
-                    self.ball.x += nx * min(step, dist)
-                    self.ball.y += ny * min(step, dist)
+                    if b_type_attack == "sniper" and dist < attack_range * 0.8:
+                        self.ball.x += nx * step
+                        self.ball.y += ny * step
+                    else:
+                        self.ball.x += nx * min(step, dist)
+                        self.ball.y += ny * min(step, dist)
 
             # Recalculate distance after movement
             dx, dy = target.x - self.ball.x, target.y - self.ball.y
@@ -443,8 +457,8 @@ class Action:
 
             target_radius = getattr(target, "radius", 10.0)
             ball_radius = getattr(self.ball, "radius", 10.0)
-            b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
-            if b_type == "sniper":
+            b_type_attack = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
+            if b_type_attack == "sniper":
                 attack_range = 150.0
             else:
                 attack_range = ball_radius + target_radius + 5
