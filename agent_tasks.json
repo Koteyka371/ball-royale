@@ -952,7 +952,7 @@
     },
     {
       "id": "ai-neural-network-brain-wrapper",
-      "status": "todo",
+      "status": "done",
       "area": "ai-innovation",
       "risk": "medium",
       "title": "Implement NeuralNetworkBrain wrapper",

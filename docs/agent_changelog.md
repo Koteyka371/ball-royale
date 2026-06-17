@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [ai-neural-network-brain-wrapper] Implement NeuralNetworkBrain wrapper — *2026-06-17 13:31:07 UTC*
+
+Create a wrapper for Neural Network that plugs directly into BallBrain architecture (replacing Decision layer) to evaluate its performance against the standard Decision logic.
+
+---
+
 ## [auto-implement-action-skill] Implement ACTION skill — *2026-06-17 13:25:23 UTC*
 
 Create ACTION skill: Действие
