@@ -301,12 +301,7 @@ class Action:
         self.ball.x += comb_nx * boosted_speed * delta * 60
         self.ball.y += comb_ny * boosted_speed * delta * 60
 
-    def _chase(self, delta: float) -> None:
-        enemies = self._get_enemies()
-        if not enemies:
-            self._idle(delta)
-            return
-
+    def _get_target(self, enemies: list[Any]) -> Any:
         target_msg = None
         allies = self._get_allies()
         for ally in allies:
@@ -317,17 +312,25 @@ class Action:
 
         if target_msg:
             tx, ty = target_msg.get("x", self.ball.x), target_msg.get("y", self.ball.y)
-            target = min(enemies, key=lambda e: (e.x - tx) ** 2 + (e.y - ty) ** 2)
+            return min(enemies, key=lambda e: (e.x - tx) ** 2 + (e.y - ty) ** 2)
         else:
             b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
             if b_type == "tank":
-                target = max(enemies, key=lambda e: getattr(e, "max_hp", getattr(e, "hp", 0.0)))
+                return max(enemies, key=lambda e: getattr(e, "max_hp", getattr(e, "hp", 0.0)))
             elif b_type == "bomber":
                 def count_nearby(e1):
                     return sum(1 for e2 in enemies if e1 != e2 and ((e1.x - e2.x)**2 + (e1.y - e2.y)**2) <= 1600)
-                target = max(enemies, key=lambda e: (count_nearby(e), -((self.ball.x - e.x)**2 + (self.ball.y - e.y)**2)))
+                return max(enemies, key=lambda e: (count_nearby(e), -((self.ball.x - e.x)**2 + (self.ball.y - e.y)**2)))
             else:
-                target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+                return min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+
+    def _chase(self, delta: float) -> None:
+        enemies = self._get_enemies()
+        if not enemies:
+            self._idle(delta)
+            return
+
+        target = self._get_target(enemies)
 
         personality = getattr(self.ball, "personality", "idle")
         if personality in ("warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "swarm", "aggressive") and getattr(self.ball, "team_message", None) is None:
@@ -399,27 +402,7 @@ class Action:
     def _attack(self, delta: float) -> None:
         enemies = self._get_enemies()
         if enemies:
-            target_msg = None
-            allies = self._get_allies()
-            for ally in allies:
-                msg = getattr(ally, "team_message", None)
-                if msg and isinstance(msg, dict) and msg.get("type") == "target_spotted":
-                    target_msg = msg
-                    break
-
-            if target_msg:
-                tx, ty = target_msg.get("x", self.ball.x), target_msg.get("y", self.ball.y)
-                target = min(enemies, key=lambda e: (e.x - tx) ** 2 + (e.y - ty) ** 2)
-            else:
-                b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
-                if b_type == "tank":
-                    target = max(enemies, key=lambda e: getattr(e, "max_hp", getattr(e, "hp", 0.0)))
-                elif b_type == "bomber":
-                    def count_nearby(e1):
-                        return sum(1 for e2 in enemies if e1 != e2 and ((e1.x - e2.x)**2 + (e1.y - e2.y)**2) <= 1600)
-                    target = max(enemies, key=lambda e: (count_nearby(e), -((self.ball.x - e.x)**2 + (self.ball.y - e.y)**2)))
-                else:
-                    target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+            target = self._get_target(enemies)
 
             personality = getattr(self.ball, "personality", "idle")
             if personality in ("warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "swarm", "aggressive") and getattr(self.ball, "team_message", None) is None:
