@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [ai-ball-tank-ai] Implement Tank AI profile — *2026-06-17 17:14:05 UTC*
+
+Tank AI: brave personality, protects allies, uses Shield when taking damage, body blocks for healers, draws aggro.
+
+---
+
 ## [ai-ball-ninja-ai] Implement Ninja AI profile — *2026-06-17 17:08:06 UTC*
 
 Ninja AI: cunning personality, uses Stealth to approach, attacks from behind for critical, flees after attack, hit-and-run tactics.
