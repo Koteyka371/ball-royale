@@ -84,8 +84,8 @@
       "name": "Jules Worker 10",
       "area": "meta",
       "task_id": "auto-implement-spectator-mode-(наблюдатель)-game-mode",
-      "status": "assigned",
-      "started_at": "2026-06-17T13:00:33.057381+00:00",
+      "status": "working",
+      "started_at": "2026-06-17T13:11:23.986538+00:00",
       "cycles_today": 1
     },
     "agent-11": {
