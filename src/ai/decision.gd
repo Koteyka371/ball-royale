@@ -85,6 +85,12 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
 
     scores["flee"] += danger_level * 10.0
 
+    if personality == "reckless":
+        scores["flee"] -= 200.0
+        if hp_percent < 0.3:
+            scores["attack"] += 100.0
+            scores["chase"] += 100.0
+
     if personality == "curious":
         var strong_enemies = 0
         for e in enemies:

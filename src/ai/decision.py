@@ -84,6 +84,12 @@ class Decision:
             scores["flee"] += 80.0
         scores["flee"] += threat_level * 5.0
 
+        if personality == "reckless":
+            scores["flee"] -= 200.0
+            if hp_percent < 0.3:
+                scores["attack"] += 100.0
+                scores["chase"] += 100.0
+
         if personality == "curious":
             strong_enemies = sum(1 for e in enemies if (e.hp / e.max_hp if hasattr(e, "hp") and hasattr(e, "max_hp") and e.max_hp > 0 else 1.0) >= 0.3)
             if strong_enemies > 0:

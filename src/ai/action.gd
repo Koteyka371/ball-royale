@@ -415,6 +415,12 @@ func _chase(delta: float):
     var target = null
     var min_dist_sq = INF
 
+    var b_type = ""
+    if "ball_type" in self.ball:
+        b_type = self.ball.ball_type
+    elif self.ball.has_method("get_ball_type"):
+        b_type = self.ball.get_ball_type()
+
     if target_msg != null:
         var tx = target_msg.get("x", self.ball.x)
         var ty = target_msg.get("y", self.ball.y)
@@ -424,11 +430,27 @@ func _chase(delta: float):
                 min_dist_sq = dist_sq
                 target = e
     else:
-        for e in enemies:
-            var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
-            if dist_sq < min_dist_sq:
-                min_dist_sq = dist_sq
-                target = e
+        if b_type == "bomber":
+            var best_score = -INF
+            for e in enemies:
+                var count = 0
+                for other in enemies:
+                    if other != e:
+                        var dsq = pow(e.x - other.x, 2) + pow(e.y - other.y, 2)
+                        if dsq < 3600.0: # 60^2
+                            count += 1
+                var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                var dist = sqrt(dist_sq)
+                var score = count * 10000.0 - dist
+                if score > best_score:
+                    best_score = score
+                    target = e
+        else:
+            for e in enemies:
+                var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                if dist_sq < min_dist_sq:
+                    min_dist_sq = dist_sq
+                    target = e
 
     var personality = "idle"
     if "personality" in self.ball:
@@ -514,6 +536,12 @@ func _attack(delta: float):
         var target = null
         var min_dist_sq = INF
 
+        var b_type = ""
+        if "ball_type" in self.ball:
+            b_type = self.ball.ball_type
+        elif self.ball.has_method("get_ball_type"):
+            b_type = self.ball.get_ball_type()
+
         if target_msg != null:
             var tx = target_msg.get("x", self.ball.x)
             var ty = target_msg.get("y", self.ball.y)
@@ -523,11 +551,27 @@ func _attack(delta: float):
                     min_dist_sq = dist_sq
                     target = e
         else:
-            for e in enemies:
-                var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
-                if dist_sq < min_dist_sq:
-                    min_dist_sq = dist_sq
-                    target = e
+            if b_type == "bomber":
+                var best_score = -INF
+                for e in enemies:
+                    var count = 0
+                    for other in enemies:
+                        if other != e:
+                            var dsq = pow(e.x - other.x, 2) + pow(e.y - other.y, 2)
+                            if dsq < 3600.0: # 60^2
+                                count += 1
+                    var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                    var dist = sqrt(dist_sq)
+                    var score = count * 10000.0 - dist
+                    if score > best_score:
+                        best_score = score
+                        target = e
+            else:
+                for e in enemies:
+                    var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                    if dist_sq < min_dist_sq:
+                        min_dist_sq = dist_sq
+                        target = e
 
         var personality = "idle"
         if "personality" in self.ball:
@@ -601,7 +645,14 @@ func _attack(delta: float):
                         var edy = e.y - self.ball.y
                         if sqrt(edx*edx + edy*edy) <= ball_radius + e_radius + 15:
                             close_enemies += 1
-                    optimal = close_enemies >= 2
+
+                    var hp_percent = 1.0
+                    if self.ball.has_method("get_hp_percent"):
+                        hp_percent = self.ball.get_hp_percent()
+                    elif "hp" in self.ball and "max_hp" in self.ball:
+                        hp_percent = float(self.ball.hp) / float(self.ball.max_hp)
+
+                    optimal = close_enemies >= 3 or (hp_percent < 0.2 and close_enemies >= 1)
 
                 if optimal:
                     if self.ball.has_method("use_skill"):

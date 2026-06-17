@@ -313,11 +313,21 @@ class Action:
                 target_msg = msg
                 break
 
+        b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
+
         if target_msg:
             tx, ty = target_msg.get("x", self.ball.x), target_msg.get("y", self.ball.y)
             target = min(enemies, key=lambda e: (e.x - tx) ** 2 + (e.y - ty) ** 2)
         else:
-            target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+            if b_type == "bomber":
+                # Bomber prioritizes crowded enemies
+                def crowd_score(e):
+                    count = sum(1 for other in enemies if other != e and math.sqrt((e.x - other.x)**2 + (e.y - other.y)**2) < 60)
+                    dist_to_bomber = math.sqrt((e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                    return -count, dist_to_bomber
+                target = min(enemies, key=crowd_score)
+            else:
+                target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
 
         personality = getattr(self.ball, "personality", "idle")
         if personality in ("warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "swarm", "aggressive") and getattr(self.ball, "team_message", None) is None:
@@ -387,11 +397,20 @@ class Action:
                     target_msg = msg
                     break
 
+            b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
+
             if target_msg:
                 tx, ty = target_msg.get("x", self.ball.x), target_msg.get("y", self.ball.y)
                 target = min(enemies, key=lambda e: (e.x - tx) ** 2 + (e.y - ty) ** 2)
             else:
-                target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+                if b_type == "bomber":
+                    def crowd_score(e):
+                        count = sum(1 for other in enemies if other != e and math.sqrt((e.x - other.x)**2 + (e.y - other.y)**2) < 60)
+                        dist_to_bomber = math.sqrt((e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                        return -count, dist_to_bomber
+                    target = min(enemies, key=crowd_score)
+                else:
+                    target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
 
             personality = getattr(self.ball, "personality", "idle")
             if personality in ("warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "swarm", "aggressive") and getattr(self.ball, "team_message", None) is None:
@@ -449,7 +468,14 @@ class Action:
                     b_type = getattr(self.ball, "ball_type", "")
                     if b_type == "bomber":
                         close_enemies = sum(1 for e in enemies if math.sqrt((e.x - self.ball.x)**2 + (e.y - self.ball.y)**2) <= ball_radius + getattr(e, "radius", 10.0) + 15)
-                        optimal = close_enemies >= 2
+
+                        hp_percent = 1.0
+                        if hasattr(self.ball, "get_hp_percent"):
+                            hp_percent = self.ball.get_hp_percent()
+                        elif hasattr(self.ball, "hp") and hasattr(self.ball, "max_hp"):
+                            hp_percent = float(self.ball.hp) / float(self.ball.max_hp)
+
+                        optimal = close_enemies >= 3 or (hp_percent < 0.2 and close_enemies >= 1)
 
                     if optimal:
                         if hasattr(self.ball, "use_skill"):
