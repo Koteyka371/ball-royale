@@ -27,6 +27,7 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
         "chase": 0.0,
         "use_skill": 0.0,
         "kite": 0.0,
+        "flank": 0.0,
         "idle": 0.0
     }
 
@@ -182,6 +183,14 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     if b_type.to_lower() == "sniper" and enemies.size() > 0:
         scores["kite"] += 100.0
 
+    if enemies.size() > 0:
+        if b_type == "ninja" or personality == "ninja":
+            scores["flank"] += 100.0
+        if b_type == "scout" or personality == "scout":
+            scores["flank"] += 50.0
+        if personality == "assassin" or personality == "rogue":
+            scores["flank"] += 30.0
+
     if personality == "curious":
         var weak_enemies = 0
         for e in enemies:
@@ -276,7 +285,7 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     var best_action = "idle"
     var best_score = -9999.0
 
-    var order = ["flee", "defend", "collect_booster", "attack", "chase", "use_skill", "kite", "idle"]
+    var order = ["flee", "defend", "collect_booster", "attack", "chase", "use_skill", "kite", "flank", "idle"]
     for action in order:
         if scores[action] > best_score:
             best_score = scores[action]

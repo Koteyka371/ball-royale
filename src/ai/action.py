@@ -38,7 +38,9 @@ class Action:
         elif strategy == "defend" and personality == "tank":
             self.ball.team_message = {"type": "hold_position", "x": self.ball.x, "y": self.ball.y}
 
-        if strategy == "flee":
+        if strategy == "flank":
+            self._flank(delta)
+        elif strategy == "flee":
             self._flee(delta)
         elif strategy == "attack":
             self._attack(delta)
@@ -702,6 +704,87 @@ class Action:
             self.ball.skill_timer -= delta
         if hasattr(self.ball, "attack_timer") and self.ball.attack_timer > 0:
             self.ball.attack_timer -= delta
+
+    def _flank(self, delta: float) -> None:
+        enemies = self._get_enemies()
+        if enemies:
+            import math
+            # target the enemy
+            target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+
+            # calculate position behind the enemy
+            tvx = getattr(target, "vx", 0.0)
+            tvy = getattr(target, "vy", 0.0)
+            speed_sq = tvx*tvx + tvy*tvy
+
+            if speed_sq > 0.0001:
+                tspeed = math.sqrt(speed_sq)
+                tnx, tny = tvx / tspeed, tvy / tspeed
+                flank_x = target.x - tnx * 50.0
+                flank_y = target.y - tny * 50.0
+            else:
+                dx, dy = target.x - self.ball.x, target.y - self.ball.y
+                d_sq = dx*dx + dy*dy
+                if d_sq > 0.0001:
+                    d = math.sqrt(d_sq)
+                    tnx, tny = dx / d, dy / d
+                else:
+                    tnx, tny = 1.0, 0.0
+                flank_x = target.x + tnx * 50.0
+                flank_y = target.y + tny * 50.0
+
+            # Move towards flanking position
+            fx, fy = flank_x - self.ball.x, flank_y - self.ball.y
+            f_dist_sq = fx*fx + fy*fy
+            if f_dist_sq > 0.0001:
+                f_dist = math.sqrt(f_dist_sq)
+                nx, ny = fx / f_dist, fy / f_dist
+                nx, ny = self._apply_obstacle_avoidance(nx, ny, target)
+                nx, ny = self._apply_boid_rules(nx, ny)
+
+                step = getattr(self.ball, "speed", 2.0) * delta * 60
+                self.ball.x += nx * min(step, f_dist)
+                self.ball.y += ny * min(step, f_dist)
+
+            # Recalculate distance to target
+            dx, dy = target.x - self.ball.x, target.y - self.ball.y
+            dist_sq = dx*dx + dy*dy
+            dist = math.sqrt(dist_sq) if dist_sq > 0.0001 else 0.0
+
+            ball_radius = getattr(self.ball, "radius", 10.0)
+            target_radius = getattr(target, "radius", 10.0)
+
+            if dist > ball_radius + target_radius + 20.0:
+                skill_timer = getattr(self.ball, "skill_timer", 0.0)
+                if skill_timer <= 0:
+                    if getattr(self.ball, "skill", "") in ("stealth", "dash"):
+                        if hasattr(self.ball, "use_skill"):
+                            self.ball.use_skill()
+                        self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
+
+            if dist <= ball_radius + target_radius + 5.0:
+                attack_timer = getattr(self.ball, "attack_timer", 0.0)
+                if attack_timer <= 0:
+                    dot = 0.0
+                    if dist_sq > 0.0001:
+                        atnx, atny = dx / dist, dy / dist
+                        dot = atnx * tnx + atny * tny
+
+                    critical = dot > 0.5
+                    if critical:
+                        orig_damage = getattr(self.ball, "damage", 5.0)
+                        self.ball.damage = orig_damage * 2.0
+                        if hasattr(self.world, "_deal_damage"):
+                            self.world._deal_damage(self.ball, target)
+                        self.ball.damage = orig_damage
+                    else:
+                        if hasattr(self.world, "_deal_damage"):
+                            self.world._deal_damage(self.ball, target)
+
+                    speed = getattr(self.ball, "speed", 2.0)
+                    self.ball.attack_timer = max(0.2, 2.0 / speed if speed > 0 else 1.0)
+        else:
+            self._idle(delta)
 
     def _kite(self, delta: float) -> None:
         enemies = self._get_enemies()

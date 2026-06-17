@@ -22,6 +22,7 @@ class Decision:
         "guardian": "defend",
         "phantom": "chase",
         "swarm": "chase",
+        "ninja": "flank",
         "scout": "collect_booster",
         "king": "defend",
         "aggressive": "attack",
@@ -48,6 +49,7 @@ class Decision:
             "chase": 0.0,
             "use_skill": 0.0,
             "kite": 0.0,
+            "flank": 0.0,
             "idle": 0.0,
         }
 
@@ -148,6 +150,16 @@ class Decision:
         if emotion_state == "bloodlust":
             scores["chase"] += 80.0
 
+        # === FLANK ===
+        b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
+        if len(enemies) > 0:
+            if b_type == "ninja" or personality == "ninja":
+                scores["flank"] += 100.0
+            if b_type == "scout" or personality == "scout":
+                scores["flank"] += 50.0
+            if personality in ("assassin", "rogue"):
+                scores["flank"] += 30.0
+
         # === KITE ===
         b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
         if b_type == "sniper" and len(enemies) > 0:
@@ -227,7 +239,7 @@ class Decision:
         best_action = "idle"
         best_score = -9999.0
 
-        for action in ["flee", "defend", "collect_booster", "attack", "chase", "use_skill", "kite", "idle"]:
+        for action in ["flee", "defend", "collect_booster", "attack", "chase", "use_skill", "kite", "flank", "idle"]:
             if scores[action] > best_score:
                 best_score = scores[action]
                 best_action = action

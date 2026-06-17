@@ -35,7 +35,9 @@ func execute(strategy: String, delta: float):
         elif strategy == "defend" and personality == "tank":
             self.ball.set_meta("team_message", {"type": "hold_position", "x": self.ball.x, "y": self.ball.y})
 
-    if strategy == "flee":
+    if strategy == "flank":
+        _flank(delta)
+    elif strategy == "flee":
         _flee(delta)
     elif strategy == "attack":
         _attack(delta)
@@ -1071,6 +1073,154 @@ func _update_skill_timer(delta: float):
             self.ball.attack_timer = attack_timer
         elif self.ball.has_method("set_meta"):
             self.ball.set_meta("attack_timer", attack_timer)
+
+func _flank(delta: float) -> void:
+    var enemies = _get_enemies()
+    if enemies.size() > 0:
+        var target = enemies[0]
+        var min_dist_sq = (target.x - ball.x)*(target.x - ball.x) + (target.y - ball.y)*(target.y - ball.y)
+        for i in range(1, enemies.size()):
+            var e = enemies[i]
+            var d_sq = (e.x - ball.x)*(e.x - ball.x) + (e.y - ball.y)*(e.y - ball.y)
+            if d_sq < min_dist_sq:
+                min_dist_sq = d_sq
+                target = e
+
+        var tvx = 0.0
+        var tvy = 0.0
+        if "vx" in target:
+            tvx = target.vx
+            tvy = target.vy
+        elif target.has_method("get_meta") and target.has_meta("vx"):
+            tvx = target.get_meta("vx")
+            tvy = target.get_meta("vy")
+
+        var speed_sq = tvx*tvx + tvy*tvy
+        var tnx = 0.0
+        var tny = 0.0
+
+        var flank_x = 0.0
+        var flank_y = 0.0
+        if speed_sq > 0.0001:
+            var tspeed = sqrt(speed_sq)
+            tnx = tvx / tspeed
+            tny = tvy / tspeed
+            flank_x = target.x - tnx * 50.0
+            flank_y = target.y - tny * 50.0
+        else:
+            var dx = target.x - ball.x
+            var dy = target.y - ball.y
+            var d_sq = dx*dx + dy*dy
+            if d_sq > 0.0001:
+                var d = sqrt(d_sq)
+                tnx = dx / d
+                tny = dy / d
+            else:
+                tnx = 1.0
+                tny = 0.0
+            flank_x = target.x + tnx * 50.0
+            flank_y = target.y + tny * 50.0
+
+        var fx = flank_x - ball.x
+        var fy = flank_y - ball.y
+        var f_dist_sq = fx*fx + fy*fy
+
+        if f_dist_sq > 0.0001:
+            var f_dist = sqrt(f_dist_sq)
+            var nx = fx / f_dist
+            var ny = fy / f_dist
+
+            var avoid = _apply_obstacle_avoidance(nx, ny, target)
+            nx = avoid[0]
+            ny = avoid[1]
+
+            var boid = _apply_boid_rules(nx, ny)
+            nx = boid[0]
+            ny = boid[1]
+
+            var speed = 2.0
+            if "speed" in ball:
+                speed = ball.speed
+            var step = speed * delta * 60.0
+            ball.x += nx * min(step, f_dist)
+            ball.y += ny * min(step, f_dist)
+
+        var dx = target.x - ball.x
+        var dy = target.y - ball.y
+        var dist_sq = dx*dx + dy*dy
+        var dist = 0.0
+        if dist_sq > 0.0001:
+            dist = sqrt(dist_sq)
+
+        var ball_radius = 10.0
+        if "radius" in ball:
+            ball_radius = ball.radius
+
+        var target_radius = 10.0
+        if "radius" in target:
+            target_radius = target.radius
+
+        if dist > ball_radius + target_radius + 20.0:
+            var skill_timer = 0.0
+            if "skill_timer" in ball:
+                skill_timer = ball.skill_timer
+            elif ball.has_meta("skill_timer"):
+                skill_timer = ball.get_meta("skill_timer")
+            if skill_timer <= 0:
+                var skill = ""
+                if "skill" in ball:
+                    skill = ball.skill
+                if skill == "stealth" or skill == "dash":
+                    if ball.has_method("use_skill"):
+                        ball.use_skill()
+                    var cd = 5.0
+                    if "skill_cooldown" in ball:
+                        cd = ball.skill_cooldown
+                    if "skill_timer" in ball:
+                        ball.skill_timer = cd
+                    elif ball.has_method("set_meta"):
+                        ball.set_meta("skill_timer", cd)
+
+        if dist <= ball_radius + target_radius + 5.0:
+            var attack_timer = 0.0
+            if "attack_timer" in ball:
+                attack_timer = ball.attack_timer
+            elif ball.has_meta("attack_timer"):
+                attack_timer = ball.get_meta("attack_timer")
+
+            if attack_timer <= 0:
+                var dot = 0.0
+                if dist_sq > 0.0001:
+                    var atnx = dx / dist
+                    var atny = dy / dist
+                    dot = atnx * tnx + atny * tny
+
+                var critical = dot > 0.5
+                if critical:
+                    var orig_damage = 5.0
+                    if "damage" in ball:
+                        orig_damage = ball.damage
+                    ball.damage = orig_damage * 2.0
+                    if world.has_method("_deal_damage"):
+                        world._deal_damage(ball, target)
+                    ball.damage = orig_damage
+                else:
+                    if world.has_method("_deal_damage"):
+                        world._deal_damage(ball, target)
+
+                var speed = 2.0
+                if "speed" in ball:
+                    speed = ball.speed
+                var cooldown = 1.0
+                if speed > 0:
+                    cooldown = 2.0 / speed
+                var new_at = max(0.2, cooldown)
+                if "attack_timer" in ball:
+                    ball.attack_timer = new_at
+                elif ball.has_method("set_meta"):
+                    ball.set_meta("attack_timer", new_at)
+    else:
+        _idle(delta)
 
 func _kite(delta: float):
     var enemies = _get_enemies()
