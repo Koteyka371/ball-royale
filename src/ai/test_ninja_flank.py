@@ -1,5 +1,4 @@
-import pytest
-import math
+from ai.action import Action
 
 class MockBall:
     def __init__(self, x=0, y=0, vx=0, vy=0, speed=5.0, ball_type="ninja"):
@@ -16,7 +15,7 @@ class MockWorld:
     def _deal_damage(self, attacker, target):
         pass
 
-from ai.action import Action
+
 
 def test_ninja_flank_chase():
     ninja = MockBall(x=0, y=0, ball_type="ninja")

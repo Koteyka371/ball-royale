@@ -1,3 +1,4 @@
+import random
 from typing import Any, Dict
 
 class Emotion:
@@ -12,6 +13,8 @@ class Emotion:
         self.ball = ball
         self.world = world
         self.has_taken_first_hit_previously = False # track if we already reacted to first hit
+        self.infected_emotion: str | None = None
+        self.infection_ticks = 0
 
     def get_state(self, perception_data: Dict[str, Any]) -> str:
         """
@@ -19,6 +22,23 @@ class Emotion:
         Priority: Fear -> Cowardice -> Heroism -> Bloodlust -> Greed -> Rage -> Neutral
         (Can adjust priority if needed, but this order ensures life-saving emotions come first)
         """
+        if self.infection_ticks > 0:
+            self.infection_ticks -= 1
+        else:
+            self.infected_emotion = None
+
+        allies = perception_data.get("allies", [])
+        if not self.infected_emotion and allies:
+            has_fleeing = any(getattr(a, "current_action", "") == "flee" for a in allies)
+            has_aggro = any(getattr(a, "current_action", "") in ("attack", "chase") for a in allies)
+
+            if has_fleeing and random.random() < 0.1:
+                self.infected_emotion = "fear"
+                self.infection_ticks = 60
+            elif has_aggro and random.random() < 0.1:
+                self.infected_emotion = "rage"
+                self.infection_ticks = 60
+
         hp_percent = 1.0
         if hasattr(self.ball, "get_hp_percent"):
             hp_percent = self.ball.get_hp_percent()
@@ -34,6 +54,10 @@ class Emotion:
             # Once we've experienced Cowardice, we remember it so we don't stay Cowardice forever
             self.has_taken_first_hit_previously = True
             return "cowardice"
+
+        # Contagious Fear
+        if self.infected_emotion == "fear":
+            return "fear"
 
         # 3. Heroism: ally < 30% HP
         allies = perception_data.get("allies", [])
@@ -54,6 +78,10 @@ class Emotion:
         # 5. Greed: sees booster
         if len(perception_data.get("boosters", [])) > 0:
             return "greed"
+
+        # Contagious Aggression
+        if self.infected_emotion == "rage":
+            return "rage"
 
         # 6. Rage: HP > 80% and sees enemy (game design also says "ally killed",
         # but tracking ally death is tricky without world events. Just doing HP > 80% and enemies > 0)

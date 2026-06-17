@@ -103,3 +103,94 @@ def test_priority():
     # Fear (HP < 30%) should override everything else
     state = emotion.get_state(perception)
     assert state == "fear"
+
+def test_contagious_fear():
+    import random
+    random.seed(42) # Ensure predictable randomness if we want, or just force it
+
+    ball = MockBall(hp=100, max_hp=100)
+    world = MockWorld()
+    emotion = Emotion(ball, world)
+
+    class FleeingAlly:
+        def __init__(self):
+            self.current_action = "flee"
+            self.hp = 100
+            self.max_hp = 100
+
+    ally = FleeingAlly()
+
+    # We force the chance to hit by mocking random
+    orig_random = random.random
+    random.random = lambda: 0.05
+
+    state = emotion.get_state({"allies": [ally]})
+
+    random.random = orig_random
+
+    assert state == "fear"
+    assert emotion.infected_emotion == "fear"
+    assert emotion.infection_ticks == 60
+
+def test_contagious_rage():
+    import random
+
+    ball = MockBall(hp=100, max_hp=100)
+    world = MockWorld()
+    emotion = Emotion(ball, world)
+
+    class AggroAlly:
+        def __init__(self):
+            self.current_action = "attack"
+            self.hp = 100
+            self.max_hp = 100
+
+    ally = AggroAlly()
+
+    orig_random = random.random
+    random.random = lambda: 0.05
+
+    state = emotion.get_state({"allies": [ally]})
+
+    random.random = orig_random
+
+    assert state == "rage"
+    assert emotion.infected_emotion == "rage"
+    assert emotion.infection_ticks == 60
+
+def test_contagion_decay():
+    import random
+
+    ball = MockBall(hp=100, max_hp=100)
+    world = MockWorld()
+    emotion = Emotion(ball, world)
+
+    class FleeingAlly:
+        def __init__(self):
+            self.current_action = "flee"
+            self.hp = 100
+            self.max_hp = 100
+
+    ally = FleeingAlly()
+
+    orig_random = random.random
+    random.random = lambda: 0.05
+
+    emotion.get_state({"allies": [ally]})
+    assert emotion.infection_ticks == 60
+
+    random.random = lambda: 0.99 # no more infections
+
+    # tick down
+    emotion.get_state({"allies": [ally]})
+    assert emotion.infection_ticks == 59
+
+    emotion.infection_ticks = 1
+    emotion.get_state({})
+    assert emotion.infection_ticks == 0
+    assert emotion.infected_emotion == "fear"
+
+    emotion.get_state({})
+    assert emotion.infected_emotion is None
+
+    random.random = orig_random
