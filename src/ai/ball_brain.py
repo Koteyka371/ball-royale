@@ -31,7 +31,15 @@ class BallBrain:
         if self._reaction_timer <= 0:
             perception_data = self.perception()
             emotion_state = self.emotion(perception_data)
-            decision = self.decision(perception_data, emotion_state)
+
+            # Use Neural Network if ball type is "neural" and override is not disabled
+            import os
+            b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
+            if b_type == "neural" and not os.environ.get("DISABLE_NN_OVERRIDE"):
+                decision = self._neural_decision(perception_data)
+            else:
+                decision = self.decision(perception_data, emotion_state)
+
             self._current_decision = decision
 
             difficulty = getattr(self.ball, "difficulty", "medium")
@@ -75,3 +83,64 @@ class BallBrain:
         Delegates executing chosen strategy to the Action class.
         """
         self.action_layer.execute(strategy, delta)
+
+    def _neural_decision(self, perception_data: Dict[str, Any]) -> str:
+        """Alternative decision layer using Neural Network weights directly injected into the ball."""
+        # 1. Extract inputs
+        hp_percent = 1.0
+        if hasattr(self.ball, "get_hp_percent"):
+            hp_percent = self.ball.get_hp_percent()
+        elif hasattr(self.ball, "hp") and hasattr(self.ball, "max_hp") and getattr(self.ball, "max_hp", 0) > 0:
+            hp_percent = float(self.ball.hp) / float(self.ball.max_hp)
+
+        danger_level = perception_data.get("danger_level", 0.0)
+        opportunity_score = perception_data.get("opportunity_score", 0.0)
+        threat_level = perception_data.get("threat_level", 0.0)
+
+        inputs = [hp_percent, danger_level, opportunity_score, threat_level]
+
+        # 2. Extract weights
+        weights = getattr(self.ball, "nn_weights", None)
+        biases = getattr(self.ball, "nn_biases", None)
+
+        if weights is None or biases is None:
+            # Try to load them if not injected by trainer
+            import json, os
+            filepath = os.path.join(os.path.dirname(__file__), "nn_weights.json")
+            if os.path.exists(filepath):
+                try:
+                    with open(filepath, "r") as f:
+                        data = json.load(f)
+                        weights = data["weights"]
+                        biases = data["biases"]
+                        # Cache them
+                        self.ball.nn_weights = weights
+                        self.ball.nn_biases = biases
+                except Exception:
+                    pass
+
+        # Fallback to standard decision if load fails
+        if weights is None or biases is None:
+            return self.decision(perception_data, self.emotion(perception_data))
+
+        # 3. Predict
+        actions = ["flee", "defend", "collect_booster", "attack", "chase", "use_skill"]
+        best_score = -9999.0
+        best_action = "idle"
+
+        for i, action in enumerate(actions):
+            if i < len(biases):
+                score = biases[i]
+                for j in range(len(inputs)):
+                    if i < len(weights) and j < len(weights[i]):
+                        score += inputs[j] * weights[i][j]
+                if score > best_score:
+                    best_score = score
+                    best_action = action
+
+        # Additional checks
+        skill_timer = getattr(self.ball, "skill_timer", 0.0)
+        if best_action == "use_skill" and skill_timer > 0:
+            return "chase"  # Fallback
+
+        return best_action
