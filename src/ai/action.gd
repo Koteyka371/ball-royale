@@ -528,8 +528,31 @@ func _chase(delta: float):
             return
     else:
         if dist_to_target > 0.01:
-            nx = target_dx / dist_to_target
-            ny = target_dy / dist_to_target
+            if b_type_chase == "ninja":
+                var tvx = 0.0
+                var tvy = 0.0
+                if "vx" in target: tvx = target.vx
+                if "vy" in target: tvy = target.vy
+                var tv_dist_sq = tvx*tvx + tvy*tvy
+                if tv_dist_sq > 0.0001:
+                    var tv_dist = sqrt(tv_dist_sq)
+                    var back_x = target.x - (tvx / tv_dist) * (target_radius + ball_radius + 5.0)
+                    var back_y = target.y - (tvy / tv_dist) * (target_radius + ball_radius + 5.0)
+                    var bdx = back_x - self.ball.x
+                    var bdy = back_y - self.ball.y
+                    var b_dist = sqrt(bdx*bdx + bdy*bdy)
+                    if b_dist > 0.01:
+                        nx = bdx / b_dist
+                        ny = bdy / b_dist
+                    else:
+                        nx = target_dx / dist_to_target
+                        ny = target_dy / dist_to_target
+                else:
+                    nx = target_dx / dist_to_target
+                    ny = target_dy / dist_to_target
+            else:
+                nx = target_dx / dist_to_target
+                ny = target_dy / dist_to_target
 
     var repel_x = 0.0
     var repel_y = 0.0
@@ -607,10 +630,31 @@ func _attack(delta: float):
 
         var attack_range = ball_radius + target_radius + 5.0
 
-        if dist_sq > 0.0001:
-            var nx = dx / dist
-            var ny = dy / dist
+        var nx = 0.0
+        var ny = 0.0
 
+        if b_type_attack == "ninja":
+            var tvx = 0.0
+            var tvy = 0.0
+            if "vx" in target: tvx = target.vx
+            if "vy" in target: tvy = target.vy
+            var tv_dist_sq = tvx*tvx + tvy*tvy
+            if tv_dist_sq > 0.0001:
+                var tv_dist = sqrt(tv_dist_sq)
+                var back_x = target.x - (tvx / tv_dist) * (target_radius + ball_radius + 5.0)
+                var back_y = target.y - (tvy / tv_dist) * (target_radius + ball_radius + 5.0)
+                var bdx = back_x - self.ball.x
+                var bdy = back_y - self.ball.y
+                var b_dist = sqrt(bdx*bdx + bdy*bdy)
+                if b_dist > 0.01:
+                    nx = bdx / b_dist
+                    ny = bdy / b_dist
+
+        if nx == 0.0 and ny == 0.0 and dist_sq > 0.0001:
+            nx = dx / dist
+            ny = dy / dist
+
+        if dist_sq > 0.0001:
             if nx != 0.0 or ny != 0.0:
                 var avoid_vec = _apply_obstacle_avoidance(nx, ny, target)
                 nx = avoid_vec[0]
