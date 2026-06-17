@@ -554,7 +554,7 @@ class Action:
                             cooldown = max(0.2, 2.0 / speed if speed > 0 else 1.0)
                         self.ball.attack_timer = cooldown
                 return
-        elif personality in ("healer", "leader"):
+        elif personality in ("healer", "leader", "caring"):
             allies = self._get_allies()
             target_ally = None
             lowest_hp = 0.8
@@ -591,8 +591,16 @@ class Action:
                 if dist <= ball_radius + target_radius + 5:
                     attack_timer = getattr(self.ball, "attack_timer", 0.0)
                     if attack_timer <= 0:
-                        if hasattr(self.world, "_deal_damage"):
-                            self.world._deal_damage(self.ball, target_ally)
+                        # Explicit healing logic
+                        if hasattr(target_ally, "hp") and hasattr(target_ally, "max_hp"):
+                            damage = getattr(self.ball, "damage", 5.0)
+                            target_ally.hp = min(target_ally.max_hp, target_ally.hp + (damage * 3.0))
+
+                        if hasattr(self.ball, "use_skill"):
+                            self.ball.use_skill()
+
+                        if hasattr(self.ball, "skill_timer") and hasattr(self.ball, "skill_cooldown"):
+                            self.ball.skill_timer = self.ball.skill_cooldown
 
                         b_type = getattr(self.ball, "ball_type", "").lower()
                         if b_type in ("tank", "juggernaut", "guardian"):
