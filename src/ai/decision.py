@@ -186,6 +186,13 @@ class Decision:
                 if action_key in scores:
                     scores[action_key] += mod_val
 
+        # Warrior override: Never flees, high attack/chase priority
+        b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
+        if b_type == "warrior":
+            scores["flee"] = -1000.0
+            scores["attack"] += 100.0
+            scores["chase"] += 100.0
+
         # Decision Quality (Noise based on difficulty)
         if difficulty == "chaos":
             for k in scores.keys():

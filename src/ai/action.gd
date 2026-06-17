@@ -628,6 +628,27 @@ func _attack(delta: float):
                         if sqrt(edx*edx + edy*edy) <= ball_radius + e_radius + 15:
                             close_enemies += 1
                     optimal = close_enemies >= 2
+                elif b_type == "warrior":
+                    var in_front = 0
+                    var move_dx = target.x - self.ball.x
+                    var move_dy = target.y - self.ball.y
+                    var move_dist = sqrt(move_dx*move_dx + move_dy*move_dy)
+                    if move_dist > 0.0001:
+                        var mnx = move_dx / move_dist
+                        var mny = move_dy / move_dist
+                        for e in enemies:
+                            var e_radius = 10.0
+                            if "radius" in e: e_radius = e.radius
+                            var edx = e.x - self.ball.x
+                            var edy = e.y - self.ball.y
+                            var edist = sqrt(edx*edx + edy*edy)
+                            if edist <= ball_radius + e_radius + 40.0 and edist > 0.0001:
+                                var enx = edx / edist
+                                var eny = edy / edist
+                                var dot_product = mnx * enx + mny * eny
+                                if dot_product > 0.5:
+                                    in_front += 1
+                    optimal = in_front >= 2
 
                 if optimal:
                     if self.ball.has_method("use_skill"):

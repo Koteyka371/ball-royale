@@ -458,6 +458,22 @@ class Action:
                     if b_type == "bomber":
                         close_enemies = sum(1 for e in enemies if math.sqrt((e.x - self.ball.x)**2 + (e.y - self.ball.y)**2) <= ball_radius + getattr(e, "radius", 10.0) + 15)
                         optimal = close_enemies >= 2
+                    elif b_type == "warrior":
+                        in_front = 0
+                        # Calculate normalized movement vector towards target
+                        move_dx, move_dy = target.x - self.ball.x, target.y - self.ball.y
+                        move_dist = math.sqrt(move_dx**2 + move_dy**2)
+                        if move_dist > 0.0001:
+                            mnx, mny = move_dx / move_dist, move_dy / move_dist
+                            for e in enemies:
+                                edx, edy = e.x - self.ball.x, e.y - self.ball.y
+                                edist = math.sqrt(edx**2 + edy**2)
+                                if edist <= ball_radius + getattr(e, "radius", 10.0) + 40 and edist > 0.0001:
+                                    enx, eny = edx / edist, edy / edist
+                                    dot_product = mnx * enx + mny * eny
+                                    if dot_product > 0.5:
+                                        in_front += 1
+                        optimal = in_front >= 2
 
                     if optimal:
                         if hasattr(self.ball, "use_skill"):
