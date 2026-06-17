@@ -43,9 +43,9 @@
     "agent-6": {
       "name": "Jules Innovation",
       "area": "innovation",
-      "task_id": "ai-physics-chain-reactions",
-      "status": "assigned",
-      "started_at": "2026-06-17T13:00:33.057381+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 0
     },
     "supervisor": {
@@ -59,9 +59,9 @@
     "agent-7": {
       "name": "Jules Worker 7",
       "area": "content",
-      "task_id": "auto-implement-**target-strong**-—-атакует-самого-сильн",
-      "status": "working",
-      "started_at": "2026-06-17T13:11:04.649343+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 0
     },
     "agent-8": {
@@ -99,9 +99,9 @@
     "agent-12": {
       "name": "Jules Worker 12",
       "area": "ai-core",
-      "task_id": "auto-implement-coach-mode-(тренер)-game-mode",
-      "status": "assigned",
-      "started_at": "2026-06-17T13:00:33.057381+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 0
     }
   },
