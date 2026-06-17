@@ -76,8 +76,8 @@
       "name": "Jules Worker 9",
       "area": "behaviors",
       "task_id": "arena-shrinking-zone",
-      "status": "assigned",
-      "started_at": "2026-06-17T23:02:22.512699+00:00",
+      "status": "working",
+      "started_at": "2026-06-17T23:12:56.931775+00:00",
       "cycles_today": 0
     },
     "agent-10": {
