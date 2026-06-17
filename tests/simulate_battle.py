@@ -61,6 +61,9 @@ BALL_TYPES = {
     "king": {"hp": 150, "speed": 1.8, "damage": 10, "radius": 14,
              "perception_radius": 300, "aggression": 0.2, "color": "gold",
              "skill": "command", "skill_cooldown": 5.0},
+    "ninja": {"hp": 90, "speed": 7.0, "damage": 25, "radius": 8,
+              "perception_radius": 300, "aggression": 0.8, "color": "black",
+              "skill": "stealth", "skill_cooldown": 3.0},
 }
 
 import json  # noqa: E402

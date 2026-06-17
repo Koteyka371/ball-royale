@@ -479,11 +479,36 @@ class Action:
                 # Deal damage with attack timer
                 attack_timer = getattr(self.ball, "attack_timer", 0.0)
                 if attack_timer <= 0:
+
                     if hasattr(self.world, "_deal_damage"):
                         self.world._deal_damage(self.ball, target)
 
+                        # Ninja critical from behind
+                        if getattr(self.ball, "ball_type", "").lower() == "ninja":
+                            # check if behind target
+                            # dot product of target's velocity and direction from target to ninja
+                            target_vx = getattr(target, "vx", 0.0)
+                            target_vy = getattr(target, "vy", 0.0)
+                            speed_sq = target_vx**2 + target_vy**2
+
+                            if speed_sq > 0.01:
+                                dx = self.ball.x - target.x
+                                dy = self.ball.y - target.y
+                                dist = (dx**2 + dy**2)**0.5
+                                if dist > 0:
+                                    nx = dx / dist
+                                    ny = dy / dist
+                                    tnx = target_vx / (speed_sq**0.5)
+                                    tny = target_vy / (speed_sq**0.5)
+                                    # If dot product < -0.5, it means ninja is behind target's movement direction
+                                    if (nx * tnx + ny * tny) < -0.5:
+                                        # Critical hit (extra damage)
+                                        self.world._deal_damage(self.ball, target)
+                                        self.world._deal_damage(self.ball, target)
+
                     b_type = getattr(self.ball, "ball_type", "").lower()
-                    if b_type in ("scout", "assassin", "phantom", "swarm", "rogue"):
+                    if b_type in ("scout", "assassin", "phantom", "swarm", "rogue", "ninja"):
+
                         cooldown = 0.3
                     elif b_type in ("tank", "juggernaut", "guardian"):
                         cooldown = 1.5

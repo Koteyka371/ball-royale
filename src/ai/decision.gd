@@ -168,7 +168,7 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     # Chase scoring
     if enemies.size() > 0:
         scores["chase"] += 15.0
-    if personality == "assassin" or personality == "rogue" or personality == "phantom" or personality == "swarm":
+    if personality == "assassin" or personality == "rogue" or personality == "phantom" or personality == "swarm" or personality == "ninja":
         scores["chase"] += 40.0
     if emotion_state == "bloodlust":
         scores["chase"] += 80.0
@@ -257,6 +257,17 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
         scores["flee"] = -1000.0
         scores["attack"] += 100.0
         scores["chase"] += 100.0
+
+    if b_type.to_lower() == "ninja":
+        var attack_timer = 0.0
+        if "attack_timer" in self.ball:
+            attack_timer = self.ball.attack_timer
+        elif self.ball.has_meta("attack_timer"):
+            attack_timer = self.ball.get_meta("attack_timer")
+        if attack_timer > 0.0:
+            scores["flee"] += 100.0
+            scores["attack"] -= 50.0
+            scores["chase"] -= 50.0
 
     # Decision Quality (Noise based on difficulty)
     if difficulty == "chaos":

@@ -23,6 +23,7 @@ class Decision:
         "phantom": "chase",
         "swarm": "chase",
         "scout": "collect_booster",
+        "ninja": "chase",
         "king": "defend",
         "aggressive": "attack",
         "defender": "defend",
@@ -142,7 +143,7 @@ class Decision:
         # === CHASE ===
         if len(enemies) > 0:
             scores["chase"] += 15.0
-        if personality in ("assassin", "rogue", "phantom", "swarm"):
+        if personality in ("assassin", "rogue", "phantom", "swarm", "ninja"):
             scores["chase"] += 40.0
         if emotion_state == "bloodlust":
             scores["chase"] += 80.0
@@ -206,6 +207,14 @@ class Decision:
             scores["flee"] = -1000.0
             scores["attack"] += 100.0
             scores["chase"] += 100.0
+
+        # Ninja: Hit and run. If just attacked, flee.
+        if b_type == "ninja":
+            attack_timer = getattr(self.ball, "attack_timer", 0.0)
+            if attack_timer > 0:
+                scores["flee"] += 100.0
+                scores["attack"] -= 50.0
+                scores["chase"] -= 50.0
 
         # Decision Quality (Noise based on difficulty)
         if difficulty == "chaos":

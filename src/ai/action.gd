@@ -702,8 +702,35 @@ func _attack(delta: float):
                 attack_timer = self.ball.get_meta("attack_timer")
 
             if attack_timer <= 0:
+
                 if self.world != null and self.world.has_method("_deal_damage"):
                     self.world._deal_damage(self.ball, target)
+
+                    var ninja_type = ""
+                    if "ball_type" in self.ball:
+                        ninja_type = self.ball.ball_type.to_lower()
+                    elif self.ball.has_method("get_ball_type"):
+                        ninja_type = self.ball.get_ball_type().to_lower()
+
+                    if ninja_type == "ninja":
+                        var target_vx = 0.0
+                        var target_vy = 0.0
+                        if "vx" in target: target_vx = target.vx
+                        if "vy" in target: target_vy = target.vy
+
+                        var speed_sq = target_vx * target_vx + target_vy * target_vy
+                        if speed_sq > 0.01:
+                            var dx2 = self.ball.x - target.x
+                            var dy2 = self.ball.y - target.y
+                            var dist2 = sqrt(dx2 * dx2 + dy2 * dy2)
+                            if dist2 > 0:
+                                var nx2 = dx2 / dist2
+                                var ny2 = dy2 / dist2
+                                var tnx = target_vx / sqrt(speed_sq)
+                                var tny = target_vy / sqrt(speed_sq)
+                                if (nx2 * tnx + ny2 * tny) < -0.5:
+                                    self.world._deal_damage(self.ball, target)
+                                    self.world._deal_damage(self.ball, target)
 
                 var cooldown = 0.5
                 var b_type = ""
@@ -712,7 +739,7 @@ func _attack(delta: float):
                 elif self.ball.has_method("get_ball_type"):
                     b_type = self.ball.get_ball_type().to_lower()
 
-                if b_type in ["scout", "assassin", "phantom", "swarm", "rogue"]:
+                if b_type in ["scout", "assassin", "phantom", "swarm", "rogue", "ninja"]:
                     cooldown = 0.3
                 elif b_type in ["tank", "juggernaut", "guardian"]:
                     cooldown = 1.5
