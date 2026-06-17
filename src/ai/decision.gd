@@ -26,6 +26,7 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
         "attack": 0.0,
         "chase": 0.0,
         "use_skill": 0.0,
+        "kite": 0.0,
         "idle": 0.0
     }
 
@@ -172,6 +173,15 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     if emotion_state == "bloodlust":
         scores["chase"] += 80.0
 
+    var b_type = ""
+    if "ball_type" in self.ball:
+        b_type = self.ball.ball_type
+    elif self.ball.has_method("get_ball_type"):
+        b_type = self.ball.get_ball_type()
+
+    if b_type.to_lower() == "sniper" and enemies.size() > 0:
+        scores["kite"] += 100.0
+
     if personality == "curious":
         var weak_enemies = 0
         for e in enemies:
@@ -243,13 +253,7 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
         scores["attack"] = -1000.0
         scores["chase"] = -1000.0
 
-    var b_type = ""
-    if "ball_type" in self.ball:
-        b_type = self.ball.ball_type
-    elif self.ball.has_method("get_ball_type"):
-        b_type = self.ball.get_ball_type()
-
-    if b_type == "warrior":
+    if b_type.to_lower() == "warrior":
         scores["flee"] = -1000.0
         scores["attack"] += 100.0
         scores["chase"] += 100.0
@@ -266,7 +270,7 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     var best_action = "idle"
     var best_score = -9999.0
 
-    var order = ["flee", "defend", "collect_booster", "attack", "chase", "use_skill", "idle"]
+    var order = ["flee", "defend", "collect_booster", "attack", "chase", "use_skill", "kite", "idle"]
     for action in order:
         if scores[action] > best_score:
             best_score = scores[action]

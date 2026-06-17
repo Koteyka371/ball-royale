@@ -39,7 +39,7 @@ class Sniper:
         self.current_action = "flee"
 
     def attack(self, delta: float) -> None:
-        self.current_action = "attack"
+        self.current_action = "kite"
 
     def defend(self, delta: float) -> None:
         self.current_action = "defend"

@@ -125,7 +125,7 @@ class BallBrain:
             return self.decision(perception_data, self.emotion(perception_data))
 
         # 3. Predict
-        actions = ["flee", "defend", "collect_booster", "attack", "chase", "use_skill"]
+        actions = ["flee", "defend", "collect_booster", "attack", "chase", "use_skill", "kite"]
         best_score = -9999.0
         best_action = "idle"
 
