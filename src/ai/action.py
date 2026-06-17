@@ -518,6 +518,27 @@ class Action:
                     step = speed * 0.5 * delta * 60
                     self.ball.x += nx * min(step, dist)
                     self.ball.y += ny * min(step, dist)
+
+                # Recalculate distance after movement
+                dx, dy = target.x - self.ball.x, target.y - self.ball.y
+                dist_sq = dx * dx + dy * dy
+                dist = math.sqrt(dist_sq) if dist_sq > 0.0001 else 0.0
+
+                target_radius = getattr(target, "radius", 10.0)
+                ball_radius = getattr(self.ball, "radius", 10.0)
+                if dist <= ball_radius + target_radius + 5:
+                    attack_timer = getattr(self.ball, "attack_timer", 0.0)
+                    if attack_timer <= 0:
+                        if hasattr(self.world, "_deal_damage"):
+                            self.world._deal_damage(self.ball, target)
+
+                        b_type = getattr(self.ball, "ball_type", "").lower()
+                        if b_type in ("tank", "juggernaut", "guardian"):
+                            cooldown = 1.5
+                        else:
+                            speed = getattr(self.ball, "speed", 2.0)
+                            cooldown = max(0.2, 2.0 / speed if speed > 0 else 1.0)
+                        self.ball.attack_timer = cooldown
                 return
         elif personality == "healer":
             allies = self._get_allies()
@@ -545,6 +566,27 @@ class Action:
                     step = speed * delta * 60
                     self.ball.x += nx * min(step, dist)
                     self.ball.y += ny * min(step, dist)
+
+                # Recalculate distance after movement
+                dx, dy = target.x - self.ball.x, target.y - self.ball.y
+                dist_sq = dx * dx + dy * dy
+                dist = math.sqrt(dist_sq) if dist_sq > 0.0001 else 0.0
+
+                target_radius = getattr(target, "radius", 10.0)
+                ball_radius = getattr(self.ball, "radius", 10.0)
+                if dist <= ball_radius + target_radius + 5:
+                    attack_timer = getattr(self.ball, "attack_timer", 0.0)
+                    if attack_timer <= 0:
+                        if hasattr(self.world, "_deal_damage"):
+                            self.world._deal_damage(self.ball, target)
+
+                        b_type = getattr(self.ball, "ball_type", "").lower()
+                        if b_type in ("tank", "juggernaut", "guardian"):
+                            cooldown = 1.5
+                        else:
+                            speed = getattr(self.ball, "speed", 2.0)
+                            cooldown = max(0.2, 2.0 / speed if speed > 0 else 1.0)
+                        self.ball.attack_timer = cooldown
                 return
 
         # Defend fallback
