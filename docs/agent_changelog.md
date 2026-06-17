@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [ai-ball-bomber-ai] Implement Bomber AI profile — *2026-06-17 13:23:00 UTC*
+
+Bomber AI: reckless personality, seeks crowded enemy groups, uses Bomb when 3+ enemies nearby, suicide attacks.
+
+---
+
 ## [ai-ball-healer-ai] Implement Healer AI profile — *2026-06-17 09:37:16 UTC*
 
 Healer AI: caring personality, follows wounded allies, heals them, avoids combat, uses heal on cooldown.
