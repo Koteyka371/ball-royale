@@ -83,10 +83,10 @@
     "agent-10": {
       "name": "Jules Worker 10",
       "area": "meta",
-      "task_id": "auto-implement-**flank**-—-обходит-сзади-для-удара-skil",
-      "status": "working",
-      "started_at": "2026-06-17T09:18:25.897739+00:00",
-      "cycles_today": 2
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
+      "cycles_today": 1
     },
     "agent-11": {
       "name": "Jules Worker 11",
