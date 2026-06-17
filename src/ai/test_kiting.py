@@ -65,8 +65,35 @@ def test_sniper_chases_far_enemy():
     assert sniper.x > orig_x, f"Expected sniper to move right, but x moved from {orig_x} to {sniper.x}"
 
 
+def test_sniper_uses_skill_when_approached():
+    world = MockWorld()
+
+    # Test at exactly 150 distance (attack_range)
+    # The sniper should maintain distance but NOT use skill
+    sniper1 = Sniper(1, x=500, y=500)
+    enemy1 = Warrior(2, x=650, y=500)
+    world.entities = [enemy1]
+
+    action1 = Action(sniper1, world)
+    action1.execute("kite", 0.1)
+
+    assert sniper1.skill_timer <= 0.0, "Sniper should not use skill at edge of attack range"
+
+    # Test at closer distance (< attack_range * 0.8)
+    # The sniper should move away AND use its skill
+    sniper2 = Sniper(3, x=500, y=500)
+    enemy2 = Warrior(4, x=550, y=500)
+    world.entities = [enemy2]
+
+    action2 = Action(sniper2, world)
+    action2.execute("kite", 0.1)
+
+    assert sniper2.skill_timer > 0.0, "Sniper should use skill when enemy gets too close"
+
+
 if __name__ == "__main__":
     test_sniper_kites_enemy()
     test_sniper_maintains_distance()
     test_sniper_chases_far_enemy()
+    test_sniper_uses_skill_when_approached()
     print("All kiting tests passed.")

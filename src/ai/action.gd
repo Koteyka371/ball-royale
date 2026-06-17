@@ -1494,11 +1494,12 @@ func _kite(delta: float):
                 skill_timer = self.ball.skill_timer
 
             if skill_timer <= 0:
-                if self.ball.has_method("use_skill"):
-                    self.ball.use_skill()
-                var cd = 5.0
-                if "skill_cooldown" in self.ball: cd = self.ball.skill_cooldown
-                self.ball.skill_timer = cd
+                if dist_after < attack_range * 0.8:
+                    if self.ball.has_method("use_skill"):
+                        self.ball.use_skill()
+                    var cd = 5.0
+                    if "skill_cooldown" in self.ball: cd = self.ball.skill_cooldown
+                    self.ball.skill_timer = cd
 
             var attack_timer = 0.0
             if "attack_timer" in self.ball:

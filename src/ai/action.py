@@ -1034,9 +1034,10 @@ class Action:
                 # Uses skill when available and optimal
                 skill_timer = getattr(self.ball, "skill_timer", 0.0)
                 if skill_timer <= 0:
-                    if hasattr(self.ball, "use_skill"):
-                        self.ball.use_skill()
-                    self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
+                    if dist_after < attack_range * 0.8:
+                        if hasattr(self.ball, "use_skill"):
+                            self.ball.use_skill()
+                        self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
 
                 # Deal damage with attack timer
                 attack_timer = getattr(self.ball, "attack_timer", 0.0)
