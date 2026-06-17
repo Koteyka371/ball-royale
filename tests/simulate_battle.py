@@ -16,6 +16,7 @@ from collections import Counter
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
 from ai.ball_brain import BallBrain
+from ai.neural_network_brain import NeuralNetworkBrain
 
 
 BALL_TYPES = {
@@ -207,7 +208,7 @@ class SpatialGrid:
 
 class BattleSimulation:
     def __init__(self, num_balls: int = 100, arena_size: float = 2000.0,
-                 max_ticks: int = 3000, seed: Optional[int] = None):
+                 max_ticks: int = 3000, seed: Optional[int] = None, use_neural: bool = False):
         if seed is not None:
             random.seed(seed)
 
@@ -218,8 +219,9 @@ class BattleSimulation:
         self.max_ticks = max_ticks
         self.num_balls = num_balls
         self.grid = SpatialGrid(arena_size, arena_size)
-        self.brains = {}  # ball_id -> BallBrain, created once per ball
+        self.brains: Dict[int, Any] = {}  # ball_id -> BallBrain, created once per ball
         self.tick = 0
+        self.use_neural = use_neural
         self.kill_log: List[Dict[str, Any]] = []
         self.stats: Dict[str, Any] = {
             "ticks": 0, "total_kills": 0, "survivors": 0, "winner": None,
@@ -233,7 +235,12 @@ class BattleSimulation:
 
         # Create brains once for each ball (persistent across ticks)
         for ball in self.balls:
-            self.brains[ball.id] = BallBrain(ball, self)
+            if self.use_neural and ball.id % 2 == 0:
+                ball.brain_type = "neural"  # type: ignore
+                self.brains[ball.id] = NeuralNetworkBrain(ball, self)
+            else:
+                ball.brain_type = "standard"  # type: ignore
+                self.brains[ball.id] = BallBrain(ball, self)
 
     def _spawn_balls(self):
         types = list(BALL_TYPES.keys())
@@ -512,7 +519,74 @@ if __name__ == "__main__":
     parser.add_argument("num_balls", type=int, nargs="?", default=100, help="Number of balls.")
     parser.add_argument("--export", type=str, default="", help="Path to export JSON replay file.")
     parser.add_argument("--ticks", type=int, default=1000, help="Max ticks for battle.")
+    parser.add_argument("--eval-neural", action="store_true", help="Evaluate NeuralNetworkBrain over 500 battles.")
     args = parser.parse_args()
+
+    if args.eval_neural:
+        print("Running NeuralNetworkBrain Evaluation (500 Battles)...")
+        neural_wins = 0
+        standard_wins = 0
+        neural_kills = 0
+        standard_kills = 0
+        neural_survivors = 0
+        standard_survivors = 0
+
+        for i in range(500):
+            sim = BattleSimulation(num_balls=args.num_balls, max_ticks=args.ticks, seed=i, use_neural=True)
+            stats = sim.run(record=False)
+
+            # Count kills
+            for log in sim.kill_log:
+                killer_id = log["killer_id"]
+                # Find the killer brain type
+                killer = next((b for b in sim.balls if b.id == killer_id), None)
+                if killer:
+                    if getattr(killer, "brain_type", "standard") == "neural":
+                        neural_kills += 1
+                    else:
+                        standard_kills += 1
+
+            # Check survivors and winner
+            alive_balls = [b for b in sim.balls if b.alive]
+            for b in alive_balls:
+                if getattr(b, "brain_type", "standard") == "neural":
+                    neural_survivors += 1
+                else:
+                    standard_survivors += 1
+
+            if len(alive_balls) == 1:
+                winner = alive_balls[0]
+                if getattr(winner, "brain_type", "standard") == "neural":
+                    neural_wins += 1
+                else:
+                    standard_wins += 1
+            elif len(alive_balls) > 1:
+                # If time ran out, the side with more survivors "wins"
+                n_surv = sum(1 for b in alive_balls if getattr(b, "brain_type", "standard") == "neural")
+                s_surv = len(alive_balls) - n_surv
+                if n_surv > s_surv:
+                    neural_wins += 1
+                elif s_surv > n_surv:
+                    standard_wins += 1
+
+            if (i + 1) % 50 == 0:
+                print(f"Completed {i + 1}/500 battles...")
+
+        print("\n" + "="*60)
+        print("  NEURAL NETWORK BRAIN EVALUATION REPORT (500 Battles)")
+        print("="*60)
+        print(f"  Neural Wins:   {neural_wins} ({(neural_wins/500)*100:.1f}%)")
+        print(f"  Standard Wins: {standard_wins} ({(standard_wins/500)*100:.1f}%)")
+        print(f"  Draws:         {500 - neural_wins - standard_wins}")
+        print("\n  Total Kills:")
+        print(f"    Neural:   {neural_kills}")
+        print(f"    Standard: {standard_kills}")
+        print("\n  Total Survivors at end of battles:")
+        print(f"    Neural:   {neural_survivors}")
+        print(f"    Standard: {standard_survivors}")
+        print("="*60)
+        import sys
+        sys.exit(0)
 
     print(f"Running simulation with {args.num_balls} balls...")
     sim = BattleSimulation(num_balls=args.num_balls, max_ticks=args.ticks, seed=42)

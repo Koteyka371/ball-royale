@@ -1,38 +1,22 @@
-1. **Analyze Ninja Flank Logic Requirements:**
-   - Modify `_chase` and `_attack` methods in Python (`src/ai/action.py`) and GDScript (`src/ai/action.gd`) to handle flank logic for Ninja.
-   - When `b_type == "ninja"`, calculate the target's movement direction. The "back" position is the opposite of the target's movement direction relative to the target's position.
-   - Steer the Ninja towards this "back" position, rather than moving directly to the target.
+1. **Modify `simulate_battle.py`**:
+   - Add an optional `use_neural_network` or `eval_neural` boolean flag to the command-line arguments and `BattleSimulation.__init__`.
+   - Update `__main__` so that it supports `--eval-neural` flag. When the flag is used, it should run 500 battles to evaluate learning efficiency (standard BallBrain vs NeuralNetworkBrain). Or maybe just add a mode to evaluate it. Wait, the task says: "Run the NeuralNetworkBrain (Phase 2) alongside the standard BallBrain in simulate_battle.py to evaluate learning efficiency over 500 battles."
+   - Let's create an evaluation mode in `simulate_battle.py` by adding a `--eval-neural` flag. When given, it will run 500 battles, where in each battle, half the balls use `NeuralNetworkBrain` and half use `BallBrain`.
+   - In `_spawn_balls`, or rather right after creating the brains, check if `eval_neural` is enabled. If it is, for half of the balls (maybe even ID/index based), assign `NeuralNetworkBrain` instead of `BallBrain`.
+   - After the 500 battles, print a summary comparing the stats (e.g. win rate, total kills, avg duration) of Neural vs Standard brains.
 
-2. **Implement in `action.py` (`_chase`)**:
-   ```python
-   # before 'nx = target_dx / dist_to_target'
-   if b_type_chase == "ninja":
-       tvx = getattr(target, "vx", 0.0)
-       tvy = getattr(target, "vy", 0.0)
-       tv_dist_sq = tvx*tvx + tvy*tvy
-       if tv_dist_sq > 0.0001:
-           tv_dist = math.sqrt(tv_dist_sq)
-           # target is moving, the back is in the opposite direction of velocity
-           back_x = target.x - (tvx / tv_dist) * (target_radius + ball_radius + 5.0)
-           back_y = target.y - (tvy / tv_dist) * (target_radius + ball_radius + 5.0)
-           bdx = back_x - self.ball.x
-           bdy = back_y - self.ball.y
-           b_dist = math.sqrt(bdx*bdx + bdy*bdy)
-           if b_dist > 0.01:
-               nx = bdx / b_dist
-               ny = bdy / b_dist
-       else:
-           nx = target_dx / dist_to_target
-           ny = target_dy / dist_to_target
-   else:
-       nx = target_dx / dist_to_target
-       ny = target_dy / dist_to_target
-   ```
-   Do the similar thing in `_attack`.
+Let's check the wording again: "Run the NeuralNetworkBrain (Phase 2) alongside the standard BallBrain in simulate_battle.py to evaluate learning efficiency over 500 battles."
 
-3. **Implement in `action.gd` (`_chase` & `_attack`)**:
-   Apply equivalent changes.
+I'll add:
+- A new argument `--eval-neural`
+- When `--eval-neural` is set, `__main__` loops 500 times. In each loop, it creates a `BattleSimulation(use_neural=True)`.
+- Inside `BattleSimulation`, if `use_neural` is true:
+  - Assign `NeuralNetworkBrain` to 50% of the balls.
+  - Tag the `ball.brain_type = "neural"` vs `"standard"` so we can track stats.
+- Aggregate stats over the 500 battles:
+  - Total standard wins vs neural wins.
+  - Total standard kills vs neural kills.
+  - Total standard survivals vs neural survivals.
+- Output a clear summary report.
 
-4. **Testing and Verification**:
-   - Write a unit test specifically for Ninja to confirm it moves to the target's back when the target is moving.
-   - Run tests: `PYTHONPATH=src DISABLE_NN_OVERRIDE=1 pytest tests/`
+Let me test if this is a good plan.
