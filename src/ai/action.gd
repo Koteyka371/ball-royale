@@ -52,7 +52,11 @@ func execute(strategy: String, delta: float):
     else:
         _idle(delta)
 
-    _clamp_position()
+    var bounced_col = _resolve_collisions()
+    var bounced_wall = _clamp_position()
+    if bounced_wall or bounced_col:
+        _trigger_ripple_effect()
+
     _update_skill_timer(delta)
 
     if delta > 0:
@@ -1134,18 +1138,102 @@ func _idle(delta: float):
     self.ball.x += nx * speed * 0.3
     self.ball.y += ny * speed * 0.3
 
-func _clamp_position():
+func _clamp_position() -> bool:
+    var bounced = false
     if self.world != null and "width" in self.world and "height" in self.world:
         var radius = 10.0
         if "radius" in self.ball: radius = self.ball.radius
 
         if is_nan(self.ball.x) or is_inf(self.ball.x):
             self.ball.x = self.world.width / 2.0
+            bounced = true
         if is_nan(self.ball.y) or is_inf(self.ball.y):
             self.ball.y = self.world.height / 2.0
+            bounced = true
 
+        var old_x = self.ball.x
+        var old_y = self.ball.y
         self.ball.x = max(radius, min(self.world.width - radius, self.ball.x))
         self.ball.y = max(radius, min(self.world.height - radius, self.ball.y))
+
+        if old_x != self.ball.x or old_y != self.ball.y:
+            bounced = true
+
+    return bounced
+
+func _resolve_collisions() -> bool:
+    var bounced = false
+    var ball_radius = 10.0
+    if "radius" in self.ball: ball_radius = self.ball.radius
+
+    var nearby = []
+    if self.world != null and self.world.has_method("get_nearby_entities"):
+        var data = self.world.get_nearby_entities(self.ball, ball_radius * 2)
+        if typeof(data) == TYPE_DICTIONARY:
+            if data.has("enemies"): nearby += data["enemies"]
+            if data.has("allies"): nearby += data["allies"]
+        elif typeof(data) == TYPE_ARRAY:
+            nearby = data
+
+    for other in nearby:
+        if other == self.ball:
+            continue
+        var other_radius = 10.0
+        if "radius" in other: other_radius = other.radius
+        var dx = self.ball.x - other.x
+        var dy = self.ball.y - other.y
+        var dist_sq = dx * dx + dy * dy
+        var min_dist = ball_radius + other_radius
+        if dist_sq < min_dist * min_dist and dist_sq > 0.0001:
+            var dist = sqrt(dist_sq)
+            var overlap = min_dist - dist
+            var nx = dx / dist
+            var ny = dy / dist
+            self.ball.x += nx * overlap
+            self.ball.y += ny * overlap
+            bounced = true
+
+    return bounced
+
+func _trigger_ripple_effect():
+    var ball_radius = 10.0
+    if "radius" in self.ball: ball_radius = self.ball.radius
+    var speed = 2.0
+    if "speed" in self.ball: speed = self.ball.speed
+    var ripple_radius = ball_radius * 3.0 + speed * 10.0
+
+    var nearby = []
+    if self.world != null and self.world.has_method("get_nearby_entities"):
+        var data = self.world.get_nearby_entities(self.ball, ripple_radius)
+        if typeof(data) == TYPE_DICTIONARY:
+            if data.has("enemies"): nearby += data["enemies"]
+            if data.has("allies"): nearby += data["allies"]
+        elif typeof(data) == TYPE_ARRAY:
+            nearby = data
+
+    for other in nearby:
+        if other == self.ball:
+            continue
+        var dx = other.x - self.ball.x
+        var dy = other.y - self.ball.y
+        var dist_sq = dx * dx + dy * dy
+        if dist_sq > 0.0001 and dist_sq < ripple_radius * ripple_radius:
+            var dist = sqrt(dist_sq)
+            var nx = dx / dist
+            var ny = dy / dist
+            var push_strength = (ripple_radius - dist) / ripple_radius * speed * 2.0
+            other.x += nx * push_strength
+            other.y += ny * push_strength
+
+            if speed > 2.5:
+                var my_type = ""
+                var other_type = ""
+                if "ball_type" in self.ball: my_type = self.ball.ball_type
+                if "ball_type" in other: other_type = other.ball_type
+                var is_enemy = (my_type != other_type)
+
+                if is_enemy and self.world != null and self.world.has_method("_deal_damage"):
+                    self.world._deal_damage(self.ball, other)
 
 func _update_skill_timer(delta: float):
     if "skill_timer" in self.ball and self.ball.skill_timer > 0:
