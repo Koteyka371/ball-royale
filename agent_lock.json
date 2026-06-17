@@ -14,7 +14,7 @@
       "task_id": "ai-ball-tank-ai",
       "status": "working",
       "started_at": "2026-06-17T13:02:55.760563+00:00",
-      "cycles_today": 0
+      "cycles_today": 1
     },
     "agent-3": {
       "name": "Jules Tests",
