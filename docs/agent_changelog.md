@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [balance-buff-guardian] Balance: Buff underpowered 'guardian' — *2026-06-17 01:37:56 UTC*
+
+The 'guardian' class is winning only 0.0% of the time (expected ~8.3%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.
+
+---
+
 ## [ai-neural-network-learning-v2] Implement Neural Network learning logic (Phase 2) — *2026-06-17 00:09:56 UTC*
 
 Refine the previously designed neural network learning module for balls by testing with actual battle simulation data over multiple generations.
