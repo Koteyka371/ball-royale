@@ -134,3 +134,39 @@ def test_decision_ally_advantage():
     # 3 allies vs 1 enemy. Attack gets +10 (1 enemy) + (3 - 1) * 15 = 40.
     # Idle is 1. Defend is 2.
     assert action == "attack"
+
+def test_decision_sniper_kite():
+    class MockSniper:
+        def __init__(self):
+            self.hp = 100
+            self.max_hp = 100
+            self.ball_type = "sniper"
+            self.skill_timer = 0
+            self.difficulty = "hard"
+            self.personality = "sniper"
+        def get_hp_percent(self):
+            return 1.0
+
+    class MockEnemy:
+        def __init__(self):
+            self.hp = 100
+            self.max_hp = 100
+            self.ball_type = "enemy"
+
+    ball = MockSniper()
+    world = MockWorld()
+    decision = Decision(ball, world)
+
+    perception_data = {
+        "danger_level": 0.0,
+        "threat_level": 0.0,
+        "opportunity_level": 0.0,
+        "opportunity_score": 0.0,
+        "enemies": [MockEnemy()],
+        "boosters": [],
+        "allies": [],
+        "team_messages": []
+    }
+
+    action = decision.choose_action(perception_data, "calm")
+    assert action == "kite", f"Expected 'kite', got {action}"

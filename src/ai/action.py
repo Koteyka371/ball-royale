@@ -535,8 +535,10 @@ class Action:
                             ally_to_protect = min(healers, key=lambda a: (a.x - self.ball.x)**2 + (a.y - self.ball.y)**2)
                         else:
                             def get_hp_pct(a):
-                                if hasattr(a, "get_hp_percent"): return a.get_hp_percent()
-                                if hasattr(a, "hp") and hasattr(a, "max_hp"): return float(a.hp) / float(a.max_hp) if a.max_hp > 0 else 1.0
+                                if hasattr(a, "get_hp_percent"):
+                                    return a.get_hp_percent()
+                                if hasattr(a, "hp") and hasattr(a, "max_hp"):
+                                    return float(a.hp) / float(a.max_hp) if a.max_hp > 0 else 1.0
                                 return 1.0
                             ally_to_protect = min(allies, key=lambda a: get_hp_pct(a))
 

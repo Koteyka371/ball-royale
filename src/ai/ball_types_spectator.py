@@ -3,7 +3,6 @@ Auto-generated ball type: Spectator
 Spectator mode, invisible to other balls, observes the battle.
 """
 
-from typing import Any
 
 
 class Spectator:
@@ -20,8 +19,8 @@ class Spectator:
 
     def __init__(self, ball_id: int, x: float = 0.0, y: float = 0.0):
         self.id = ball_id
-        self.hp = self.HP
-        self.max_hp = self.HP
+        self.hp = float(self.HP)
+        self.max_hp = float(self.HP)
         self.x = x
         self.y = y
         self.alive = True
@@ -31,7 +30,7 @@ class Spectator:
         self.personality = "spectator"
 
     def get_hp_percent(self) -> float:
-        return self.hp / self.max_hp if self.max_hp > 0 else 0.0
+        return self.hp / float(self.max_hp) if self.max_hp > 0 else 0.0
 
     def flee(self, delta: float) -> None:
         self.current_action = "flee"
