@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [ai-ball-king-ai] Implement King AI profile — *2026-06-17 04:31:51 UTC*
+
+King AI: leader personality, stays behind allies, uses Command to buff team, targets low HP allies to boost, avoids direct combat.
+
+---
+
 ## [ai-neural-network-learning] Implement Neural Network module for learning — *2026-06-17 04:23:57 UTC*
 
 Create a simple neural network that allows balls to learn from their successes (kills, survival time) and failures over multiple rounds. The weights should adjust dynamically to improve decision making.

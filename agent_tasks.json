@@ -442,7 +442,7 @@
     },
     {
       "id": "ai-ball-king-ai",
-      "status": "todo",
+      "status": "done",
       "area": "ai-ball-types",
       "risk": "medium",
       "title": "Implement King AI profile",
