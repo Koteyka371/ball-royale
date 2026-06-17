@@ -661,7 +661,7 @@
     },
     {
       "id": "idea-feature-034",
-      "status": "todo",
+      "status": "done",
       "area": "content",
       "risk": "medium",
       "title": "Basic AI behaviors (chase, flee, attack)",

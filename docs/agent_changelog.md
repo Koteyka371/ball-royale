@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-feature-034] Basic AI behaviors (chase, flee, attack) — *2026-06-17 17:20:51 UTC*
+
+Implement Basic AI behaviors (chase, flee, attack) as described in game_design.md
+
+---
+
 ## [auto-implement-spectator-mode-(наблюдатель)-game-mode] Implement Spectator Mode (Наблюдатель) game mode — *2026-06-17 17:14:27 UTC*
 
 Create Spectator Mode (Наблюдатель) with full rules and mechanics
