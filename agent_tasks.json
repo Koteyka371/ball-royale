@@ -1023,7 +1023,7 @@
     },
     {
       "id": "ai-neural-network-brain-phase3",
-      "status": "todo",
+      "status": "done",
       "area": "ai-innovation",
       "risk": "high",
       "title": "Evaluate NeuralNetworkBrain performance",

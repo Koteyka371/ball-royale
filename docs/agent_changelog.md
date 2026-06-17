@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [ai-neural-network-brain-phase3] Evaluate NeuralNetworkBrain performance — *2026-06-17 23:26:52 UTC*
+
+Run the NeuralNetworkBrain (Phase 2) alongside the standard BallBrain in simulate_battle.py to evaluate learning efficiency over 500 battles.
+
+---
+
 ## [ai-emotional-contagion-logic] Implement Emotional Contagion Logic — *2026-06-17 21:54:12 UTC*
 
 Update Emotion layer so fear and aggression spread like a virus. If a ball flees, nearby balls have a chance to enter cowardice/fear state.
