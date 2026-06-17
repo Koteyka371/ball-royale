@@ -335,3 +335,25 @@ def test_execute_defend_healer():
     assert ball.used_skill
     # It gets decremented by delta in _update_skill_timer
     assert ball.skill_timer == 3.0 - 0.1
+class MockSpectatorWorld(MockWorld):
+    def __init__(self):
+        super().__init__()
+        self.allies = []
+    def get_nearby_entities(self, ball, radius):
+        base = super().get_nearby_entities(ball, radius)
+        base["allies"] = self.allies
+        return base
+
+def test_spectator_not_in_allies():
+    ball = MockBall()
+    ball.ball_type = "warrior"
+    world = MockSpectatorWorld()
+    normal_ally = MockAlly(ball_type="warrior")
+    spectator = MockAlly(ball_type="spectator")
+    world.allies = [normal_ally, spectator]
+
+    action = Action(ball, world)
+    allies = action._get_allies()
+
+    assert len(allies) == 1
+    assert allies[0] == normal_ally

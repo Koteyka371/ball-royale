@@ -279,7 +279,7 @@ func _get_allies() -> Array:
                 if e.has_method("get_ball_type") or "ball_type" in e:
                     var e_type = e.ball_type if "ball_type" in e else e.get_ball_type()
                     var b_type = self.ball.ball_type if "ball_type" in self.ball else self.ball.get_ball_type()
-                    if e_type == b_type and e != self.ball:
+                    if e_type == b_type and e != self.ball and e_type != "spectator":
                         if ("alive" in e and e.alive) or (e.has_method("is_alive") and e.is_alive()):
                             allies.append(e)
             return allies
