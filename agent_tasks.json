@@ -548,7 +548,7 @@
     },
     {
       "id": "auto-implement-action-skill",
-      "status": "todo",
+      "status": "done",
       "area": "skills",
       "risk": "medium",
       "allowed_paths": [
