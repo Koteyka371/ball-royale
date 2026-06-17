@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [ai-neural-network-learning-v2] Implement Neural Network learning logic (Phase 2) — *2026-06-17 00:09:56 UTC*
+
+Refine the previously designed neural network learning module for balls by testing with actual battle simulation data over multiple generations.
+
+---
+
 ## [ai-ball-warrior-ai] Implement Warrior AI profile — *2026-06-17 00:05:33 UTC*
 
 Warrior AI: aggressive personality, high attack priority, never flees, uses Wave Attack when 2+ enemies in front, charges into battle.
