@@ -177,7 +177,7 @@ class Decision:
 
         # === NINJA LOGIC ===
         b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
-        if b_type == "ninja":
+        if b_type in ("ninja", "scout"):
             if getattr(self.ball, "attack_timer", 0.0) > 0.0:
                 scores["flee"] += 200.0
             else:

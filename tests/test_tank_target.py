@@ -2,6 +2,7 @@ import sys
 sys.path.insert(0, 'src')
 from ai.action import Action
 from ai.ball_types_tank import Tank
+from ai.decision import Decision
 
 class MockEnemy:
     def __init__(self, hp, max_hp, x, y):
@@ -110,7 +111,7 @@ def test_tank_body_blocks_healer():
     # Tank starts at 100. Should move right towards 180.
     assert tank.x > 100, f"Tank did not move towards body-blocking pos. x={tank.x}"
 
-from ai.decision import Decision
+
 
 def test_tank_uses_shield_when_damaged():
     tank = Tank(1, 0, 0)

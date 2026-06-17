@@ -203,7 +203,7 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     if b_type.to_lower() == "sniper" and enemies.size() > 0:
         scores["kite"] += 100.0
 
-    if b_type.to_lower() == "ninja":
+    if b_type.to_lower() in ["ninja", "scout"]:
         var a_timer = 0.0
         if "attack_timer" in self.ball:
             a_timer = float(self.ball.attack_timer)

@@ -532,7 +532,7 @@ func _chase(delta: float):
             return
     else:
         if dist_to_target > 0.01:
-            if b_type_chase == "ninja":
+            if b_type_chase in ["ninja", "scout"]:
                 var tvx = 0.0
                 var tvy = 0.0
                 if "vx" in target: tvx = target.vx
@@ -637,7 +637,7 @@ func _attack(delta: float):
         var nx = 0.0
         var ny = 0.0
 
-        if b_type_attack == "ninja":
+        if b_type_attack in ["ninja", "scout"]:
             var tvx = 0.0
             var tvy = 0.0
             if "vx" in target: tvx = target.vx
@@ -791,7 +791,7 @@ func _attack(delta: float):
                 if self.world != null and self.world.has_method("_deal_damage"):
                     self.world._deal_damage(self.ball, target)
 
-                if b_type == "ninja":
+                if b_type in ["ninja", "scout"]:
                     self.ball.damage = original_damage
 
                 var cooldown = 0.5

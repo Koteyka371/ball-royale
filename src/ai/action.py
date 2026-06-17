@@ -373,7 +373,7 @@ class Action:
                 return
         else:
             if dist_to_target > 0.01:
-                if b_type_chase == "ninja":
+                if b_type_chase in ("ninja", "scout"):
                     tvx = getattr(target, "vx", 0.0)
                     tvy = getattr(target, "vy", 0.0)
                     tv_dist_sq = tvx*tvx + tvy*tvy
@@ -444,7 +444,7 @@ class Action:
 
                 attack_range = ball_radius + target_radius + 5
 
-                if getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower() == "ninja":
+                if getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower() in ("ninja", "scout"):
                     tvx = getattr(target, "vx", 0.0)
                     tvy = getattr(target, "vy", 0.0)
                     tv_dist_sq = tvx*tvx + tvy*tvy
@@ -518,7 +518,7 @@ class Action:
                     b_type = getattr(self.ball, "ball_type", "").lower()
                     original_damage = getattr(self.ball, "damage", 10.0)
 
-                    if b_type == "ninja":
+                    if b_type in ("ninja", "scout"):
                         tvx = getattr(target, "vx", 0.0)
                         tvy = getattr(target, "vy", 0.0)
                         tv_dist_sq = tvx*tvx + tvy*tvy
@@ -540,7 +540,7 @@ class Action:
                     if hasattr(self.world, "_deal_damage"):
                         self.world._deal_damage(self.ball, target)
 
-                    if b_type == "ninja":
+                    if b_type in ("ninja", "scout"):
                         self.ball.damage = original_damage
 
                     if b_type in ("scout", "assassin", "phantom", "swarm", "rogue", "ninja"):
@@ -575,8 +575,10 @@ class Action:
                             ally_to_protect = min(healers, key=lambda a: (a.x - self.ball.x)**2 + (a.y - self.ball.y)**2)
                         else:
                             def get_hp_pct(a):
-                                if hasattr(a, "get_hp_percent"): return a.get_hp_percent()
-                                if hasattr(a, "hp") and hasattr(a, "max_hp"): return float(a.hp) / float(a.max_hp) if a.max_hp > 0 else 1.0
+                                if hasattr(a, "get_hp_percent"):
+                                    return a.get_hp_percent()
+                                if hasattr(a, "hp") and hasattr(a, "max_hp"):
+                                    return float(a.hp) / float(a.max_hp) if a.max_hp > 0 else 1.0
                                 return 1.0
                             ally_to_protect = min(allies, key=lambda a: get_hp_pct(a))
 

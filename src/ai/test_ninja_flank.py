@@ -1,6 +1,4 @@
-import pytest
-import math
-
+from ai.action import Action
 class MockBall:
     def __init__(self, x=0, y=0, vx=0, vy=0, speed=5.0, ball_type="ninja"):
         self.x = x
@@ -16,7 +14,6 @@ class MockWorld:
     def _deal_damage(self, attacker, target):
         pass
 
-from ai.action import Action
 
 def test_ninja_flank_chase():
     ninja = MockBall(x=0, y=0, ball_type="ninja")
@@ -53,3 +50,26 @@ def test_ninja_flank_attack():
 
     # Since ninja is at x=10 and wants to go to x=25, it should move right.
     assert ninja.x > 10
+
+def test_scout_flank_chase():
+    scout = MockBall(x=0, y=0, ball_type="scout")
+    target = MockBall(x=0, y=100, vx=0, vy=10, ball_type="basic")
+
+    action = Action(scout, MockWorld())
+    action._get_enemies = lambda: [target]
+    action._get_allies = lambda: []
+
+    action._chase(delta=1.0)
+    assert scout.x == 0
+    assert scout.y > 0
+
+def test_scout_flank_attack():
+    scout = MockBall(x=10, y=100, ball_type="scout")
+    target = MockBall(x=0, y=100, vx=-10, vy=0, ball_type="basic")
+
+    action = Action(scout, MockWorld())
+    action._get_enemies = lambda: [target]
+    action._get_allies = lambda: []
+
+    action._attack(delta=1.0)
+    assert scout.x > 10
