@@ -4,7 +4,7 @@ import random
 
 class Action:
     """
-    Action execution system.
+    ACTION (Действие) execution system.
     Executes the chosen behavior (strategy) by interacting with the ball.
     Handles movement, pathfinding, timing, and cooldowns.
     """
@@ -61,6 +61,20 @@ class Action:
             self.ball.vy = (self.ball.y - old_y) / delta
 
 
+
+    def _get_target(self, enemies: list) -> Any:
+        target_msg = None
+        allies = self._get_allies()
+        for ally in allies:
+            msg = getattr(ally, "team_message", None)
+            if msg and isinstance(msg, dict) and msg.get("type") == "target_spotted":
+                target_msg = msg
+                break
+
+        if target_msg:
+            tx, ty = target_msg.get("x", self.ball.x), target_msg.get("y", self.ball.y)
+            return min(enemies, key=lambda e: (e.x - tx) ** 2 + (e.y - ty) ** 2)
+        return min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
 
     def _apply_boid_rules(self, nx: float, ny: float) -> tuple[float, float]:
         b_type = getattr(self.ball, "ball_type", "")
@@ -305,19 +319,7 @@ class Action:
             self._idle(delta)
             return
 
-        target_msg = None
-        allies = self._get_allies()
-        for ally in allies:
-            msg = getattr(ally, "team_message", None)
-            if msg and isinstance(msg, dict) and msg.get("type") == "target_spotted":
-                target_msg = msg
-                break
-
-        if target_msg:
-            tx, ty = target_msg.get("x", self.ball.x), target_msg.get("y", self.ball.y)
-            target = min(enemies, key=lambda e: (e.x - tx) ** 2 + (e.y - ty) ** 2)
-        else:
-            target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+        target = self._get_target(enemies)
 
         personality = getattr(self.ball, "personality", "idle")
         if personality in ("warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "swarm", "aggressive") and getattr(self.ball, "team_message", None) is None:
@@ -379,19 +381,7 @@ class Action:
     def _attack(self, delta: float) -> None:
         enemies = self._get_enemies()
         if enemies:
-            target_msg = None
-            allies = self._get_allies()
-            for ally in allies:
-                msg = getattr(ally, "team_message", None)
-                if msg and isinstance(msg, dict) and msg.get("type") == "target_spotted":
-                    target_msg = msg
-                    break
-
-            if target_msg:
-                tx, ty = target_msg.get("x", self.ball.x), target_msg.get("y", self.ball.y)
-                target = min(enemies, key=lambda e: (e.x - tx) ** 2 + (e.y - ty) ** 2)
-            else:
-                target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+            target = self._get_target(enemies)
 
             personality = getattr(self.ball, "personality", "idle")
             if personality in ("warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "swarm", "aggressive") and getattr(self.ball, "team_message", None) is None:
@@ -572,8 +562,7 @@ class Action:
         skill_timer = getattr(self.ball, "skill_timer", 0.0)
         if skill_timer <= 0 and hasattr(self.ball, "use_skill"):
             self.ball.use_skill()
-            if hasattr(self.ball, "skill_cooldown"):
-                self.ball.skill_timer = self.ball.skill_cooldown
+            self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
 
     def _idle(self, delta: float) -> None:
         speed = getattr(self.ball, "speed", 2.0)

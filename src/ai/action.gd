@@ -64,6 +64,38 @@ func execute(strategy: String, delta: float):
             self.ball.set_meta("vy", vy)
 
 
+func _get_target(enemies: Array):
+    var target_msg = null
+    var allies = _get_allies()
+    for ally in allies:
+        var msg = null
+        if ally.has_method("get_meta") and ally.has_meta("team_message"):
+            msg = ally.get_meta("team_message")
+        elif "team_message" in ally and ally.team_message != null:
+            msg = ally.team_message
+
+        if typeof(msg) == TYPE_DICTIONARY and msg.has("type") and msg["type"] == "target_spotted":
+            target_msg = msg
+            break
+
+    var target = null
+    var min_dist_sq = INF
+    if target_msg != null:
+        var tx = target_msg.get("x", self.ball.x)
+        var ty = target_msg.get("y", self.ball.y)
+        for e in enemies:
+            var dist_sq = pow(e.x - tx, 2) + pow(e.y - ty, 2)
+            if dist_sq < min_dist_sq:
+                min_dist_sq = dist_sq
+                target = e
+    else:
+        for e in enemies:
+            var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+            if dist_sq < min_dist_sq:
+                min_dist_sq = dist_sq
+                target = e
+    return target
+
 func _apply_boid_rules(nx: float, ny: float) -> Array:
     var b_type = ""
     if "ball_type" in self.ball:
@@ -402,34 +434,7 @@ func _chase(delta: float):
         _idle(delta)
         return
 
-    var target_msg = null
-    var allies = _get_allies()
-    for ally in allies:
-        var msg = null
-        if ally.has_method("get_meta") and ally.has_meta("team_message"):
-            msg = ally.get_meta("team_message")
-        if typeof(msg) == TYPE_DICTIONARY and msg.has("type") and msg["type"] == "target_spotted":
-            target_msg = msg
-            break
-
-    var target = null
-    var min_dist_sq = INF
-
-    if target_msg != null:
-        var tx = target_msg.get("x", self.ball.x)
-        var ty = target_msg.get("y", self.ball.y)
-        for e in enemies:
-            var dist_sq = pow(e.x - tx, 2) + pow(e.y - ty, 2)
-            if dist_sq < min_dist_sq:
-                min_dist_sq = dist_sq
-                target = e
-    else:
-        for e in enemies:
-            var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
-            if dist_sq < min_dist_sq:
-                min_dist_sq = dist_sq
-                target = e
-
+    var target = _get_target(enemies)
     var personality = "idle"
     if "personality" in self.ball:
         personality = self.ball.personality
@@ -501,34 +506,7 @@ func _chase(delta: float):
 func _attack(delta: float):
     var enemies = _get_enemies()
     if enemies.size() > 0:
-        var target_msg = null
-        var allies = _get_allies()
-        for ally in allies:
-            var msg = null
-            if ally.has_method("get_meta") and ally.has_meta("team_message"):
-                msg = ally.get_meta("team_message")
-            if typeof(msg) == TYPE_DICTIONARY and msg.has("type") and msg["type"] == "target_spotted":
-                target_msg = msg
-                break
-
-        var target = null
-        var min_dist_sq = INF
-
-        if target_msg != null:
-            var tx = target_msg.get("x", self.ball.x)
-            var ty = target_msg.get("y", self.ball.y)
-            for e in enemies:
-                var dist_sq = pow(e.x - tx, 2) + pow(e.y - ty, 2)
-                if dist_sq < min_dist_sq:
-                    min_dist_sq = dist_sq
-                    target = e
-        else:
-            for e in enemies:
-                var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
-                if dist_sq < min_dist_sq:
-                    min_dist_sq = dist_sq
-                    target = e
-
+        var target = _get_target(enemies)
         var personality = "idle"
         if "personality" in self.ball:
             personality = self.ball.personality
@@ -791,8 +769,10 @@ func _use_skill():
 
     if skill_timer <= 0.0 and self.ball.has_method("use_skill"):
         self.ball.use_skill()
+        var cooldown = 5.0
         if "skill_cooldown" in self.ball:
-            self.ball.skill_timer = self.ball.skill_cooldown
+            cooldown = self.ball.skill_cooldown
+        self.ball.skill_timer = cooldown
 
 func _idle(delta: float):
     var speed = 2.0

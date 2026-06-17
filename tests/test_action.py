@@ -276,3 +276,15 @@ def test_boid_rules_swarm():
     # In python implementation, separation weight might be overwhelmed by cohesion+alignment
     # Let's just assert that it modifies the input vector
     assert nx != 0.0 or ny != 0.0
+def test_use_skill_fallback_cooldown():
+    ball = MockBall()
+    world = MockWorld()
+    action_layer = Action(ball, world)
+
+    # ensure no skill_cooldown is defined on MockBall by default
+    assert not hasattr(ball, "skill_cooldown")
+
+    action_layer.execute("use_skill", 0.1)
+
+    # check that fallback of 5.0 was used
+    assert ball.skill_timer == 5.0 - 0.1
