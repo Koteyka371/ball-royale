@@ -70,7 +70,7 @@
       "task_id": "ai-ball-sniper-ai",
       "status": "working",
       "started_at": "2026-06-17T04:09:25.469741+00:00",
-      "cycles_today": 0
+      "cycles_today": 1
     },
     "agent-9": {
       "name": "Jules Worker 9",
