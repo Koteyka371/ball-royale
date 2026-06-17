@@ -588,6 +588,9 @@ class Action:
                         if optimal:
                             self.ball.hp = 0 # Suicide
                             self.ball.alive = False
+                    elif b_type == "tank":
+                        strongest = max(enemies, key=lambda e: getattr(e, "max_hp", getattr(e, "hp", 0.0)))
+                        optimal = (target == strongest)
                     elif b_type == "warrior":
                         in_front = 0
                         # Calculate normalized movement vector towards target
