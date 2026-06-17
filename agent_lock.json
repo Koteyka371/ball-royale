@@ -75,10 +75,10 @@
     "agent-9": {
       "name": "Jules Worker 9",
       "area": "behaviors",
-      "task_id": "auto-implement-coach-mode-(тренер)-game-mode",
-      "status": "working",
-      "started_at": "2026-06-17T16:56:32.160914+00:00",
-      "cycles_today": 1
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
+      "cycles_today": 0
     },
     "agent-10": {
       "name": "Jules Worker 10",
