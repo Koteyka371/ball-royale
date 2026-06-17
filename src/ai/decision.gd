@@ -105,6 +105,27 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     if personality == "tank" or personality == "defender" or personality == "guardian" or personality == "juggernaut" or personality == "leader":
         scores["defend"] += 30.0
 
+    if personality == "tank" and allies.size() > 0:
+        var needs_protection = false
+        for ally in allies:
+            var a_type = ""
+            if "ball_type" in ally:
+                a_type = str(ally.ball_type).to_lower()
+            elif ally.has_method("get") and ally.get("BALL_TYPE") != null:
+                a_type = str(ally.get("BALL_TYPE")).to_lower()
+
+            var a_hp_pct = 1.0
+            if ally.has_method("get_hp_percent"):
+                a_hp_pct = ally.get_hp_percent()
+            elif "hp" in ally and "max_hp" in ally and float(ally.max_hp) > 0:
+                a_hp_pct = float(ally.hp) / float(ally.max_hp)
+
+            if a_type == "healer" or a_hp_pct < 0.5:
+                needs_protection = true
+                break
+        if needs_protection:
+            scores["defend"] += 50.0
+
     scores["defend"] += danger_level * 20.0
     if emotion_state == "heroism":
         scores["defend"] += 80.0
@@ -206,6 +227,13 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
 
     var intent_flee = scores["flee"] > max(scores["defend"], max(scores["attack"], max(scores["chase"], scores.get("collect_booster", 0.0))))
     var intent_chase = scores["chase"] > max(scores["flee"], max(scores["defend"], max(scores["attack"], scores.get("collect_booster", 0.0))))
+
+    if skill_timer <= 0 and b_type.to_lower() == "tank":
+        var first_hit_taken = false
+        if "first_hit_taken" in self.ball:
+            first_hit_taken = self.ball.first_hit_taken
+        if first_hit_taken or hp_percent < 1.0 or danger_level > 0.5:
+            scores["use_skill"] += 100.0
 
     if skill_timer <= 0 and enemies.size() > 0:
         if difficulty == "easy":

@@ -347,7 +347,7 @@
     },
     {
       "id": "ai-ball-tank-ai",
-      "status": "todo",
+      "status": "done",
       "area": "ai-ball-types",
       "risk": "medium",
       "title": "Implement Tank AI profile",

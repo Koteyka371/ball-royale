@@ -758,12 +758,48 @@ func _defend(delta: float):
     if personality in ["tank", "defender", "guardian", "juggernaut"]:
         var enemies = _get_enemies()
         if enemies.size() > 0:
-            var target = null
-            var min_dist_sq = INF
+            var target_enemy = null
+            var target_pos_x = self.ball.x
+            var target_pos_y = self.ball.y
+            var should_move = false
+
             var b_type = ""
             if "ball_type" in self.ball:
                 b_type = self.ball.ball_type.to_lower()
+
             if b_type == "tank":
+                var allies = _get_allies()
+                var ally_to_protect = null
+                if allies.size() > 0:
+                    var healers = []
+                    for a in allies:
+                        var a_type = ""
+                        if "ball_type" in a:
+                            a_type = str(a.ball_type).to_lower()
+                        elif a.has_method("get") and a.get("BALL_TYPE") != null:
+                            a_type = str(a.get("BALL_TYPE")).to_lower()
+                        if a_type == "healer":
+                            healers.append(a)
+
+                    if healers.size() > 0:
+                        var min_d_sq = INF
+                        for h in healers:
+                            var dsq = pow(h.x - self.ball.x, 2) + pow(h.y - self.ball.y, 2)
+                            if dsq < min_d_sq:
+                                min_d_sq = dsq
+                                ally_to_protect = h
+                    else:
+                        var min_hp_pct = INF
+                        for a in allies:
+                            var a_hp_pct = 1.0
+                            if a.has_method("get_hp_percent"):
+                                a_hp_pct = a.get_hp_percent()
+                            elif "hp" in a and "max_hp" in a and float(a.max_hp) > 0:
+                                a_hp_pct = float(a.hp) / float(a.max_hp)
+                            if a_hp_pct < min_hp_pct:
+                                min_hp_pct = a_hp_pct
+                                ally_to_protect = a
+
                 var max_hp = -1.0
                 for e in enemies:
                     var hp = 0.0

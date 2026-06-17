@@ -99,6 +99,22 @@ class Decision:
             scores["defend"] += 50.0
         if personality in ("tank", "defender", "guardian", "juggernaut", "leader"):
             scores["defend"] += 30.0
+
+        if personality == "tank" and len(allies) > 0:
+            needs_protection = False
+            for ally in allies:
+                a_type = getattr(ally, "ball_type", getattr(ally.__class__, "BALL_TYPE", "")).lower()
+                a_hp_pct = 1.0
+                if hasattr(ally, "get_hp_percent"):
+                    a_hp_pct = ally.get_hp_percent()
+                elif hasattr(ally, "hp") and hasattr(ally, "max_hp"):
+                    a_hp_pct = float(ally.hp) / float(ally.max_hp) if ally.max_hp > 0 else 1.0
+                if a_type == "healer" or a_hp_pct < 0.5:
+                    needs_protection = True
+                    break
+            if needs_protection:
+                scores["defend"] += 50.0
+
         scores["defend"] += danger_level * 20.0
         if emotion_state == "heroism":
             scores["defend"] += 80.0
@@ -165,6 +181,12 @@ class Decision:
         # Determine intent (flee or chase)
         intent_flee = scores["flee"] > max(scores["defend"], scores["attack"], scores["chase"], scores["collect_booster"])
         intent_chase = scores["chase"] > max(scores["flee"], scores["defend"], scores["attack"], scores["collect_booster"])
+
+        b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
+        if skill_timer <= 0 and b_type == "tank":
+            first_hit_taken = getattr(self.ball, "first_hit_taken", False)
+            if first_hit_taken or hp_percent < 1.0 or danger_level > 0.5:
+                scores["use_skill"] += 100.0
 
         if skill_timer <= 0 and len(enemies) > 0:
             if difficulty == "easy":
