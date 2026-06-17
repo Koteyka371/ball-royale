@@ -50,7 +50,7 @@ class Action:
             self._defend(delta)
         elif strategy in ("opportunistic", "collect_booster", "collect booster"):
             self._collect_booster(delta)
-        elif strategy in ("use_skill", "use skill"):
+        elif strategy in ("use_skill", "use skill", "action_skill", "Действие"):
             self._use_skill()
         else:
             self._idle(delta)
@@ -649,6 +649,8 @@ class Action:
 
             if getattr(self.ball, "skill", "") == "command":
                 self.ball.team_message = {"type": "buff_command", "radius": 200}
+            elif getattr(self.ball, "skill", "") in ("Действие", "action_skill"):
+                self.ball.team_message = {"type": "action_skill_used", "radius": 150}
 
             if hasattr(self.ball, "skill_cooldown"):
                 self.ball.skill_timer = self.ball.skill_cooldown
