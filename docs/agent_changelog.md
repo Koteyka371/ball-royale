@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [ai-physics-chain-reactions] Add Physics Chain Reactions — *2026-06-17 19:53:23 UTC*
+
+Make it so balls bouncing off walls or enemies can trigger a ripple effect, pushing other balls into hazards or causing extra damage based on speed.
+
+---
+
 ## [idea-feature-034] Basic AI behaviors (chase, flee, attack) — *2026-06-17 17:20:51 UTC*
 
 Implement Basic AI behaviors (chase, flee, attack) as described in game_design.md
