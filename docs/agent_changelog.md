@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [ai-behavior-flank] Implement Flank behavior — *2026-06-17 21:34:57 UTC*
+
+Ball moves behind enemy for bonus damage. Uses stealth (Ninja) or speed (Scout) to get behind. Attacks from behind for critical hit.
+
+---
+
 ## [ai-physics-chain-reactions] Add Physics Chain Reactions — *2026-06-17 19:53:23 UTC*
 
 Make it so balls bouncing off walls or enemies can trigger a ripple effect, pushing other balls into hazards or causing extra damage based on speed.

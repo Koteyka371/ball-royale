@@ -252,7 +252,7 @@
     },
     {
       "id": "ai-behavior-flank",
-      "status": "todo",
+      "status": "done",
       "area": "ai-behaviors",
       "risk": "medium",
       "title": "Implement Flank behavior",
