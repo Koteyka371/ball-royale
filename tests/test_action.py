@@ -246,7 +246,8 @@ def test_execute_attack_skill():
     world = MockWorld()
     world.enemies = [
         MockEnemy(x=110, y=100),
-        MockEnemy(x=105, y=105)
+        MockEnemy(x=105, y=105),
+        MockEnemy(x=95, y=95)
     ]
     action_layer = Action(ball, world)
 

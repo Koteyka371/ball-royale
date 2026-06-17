@@ -566,6 +566,19 @@ func _attack(delta: float):
                     if hp > max_hp:
                         max_hp = hp
                         target = e
+            elif b_type == "bomber":
+                var max_crowd = -1
+                var min_dist_sq_bomber = INF
+                for e1 in enemies:
+                    var crowd = 0
+                    for e2 in enemies:
+                        if e1 != e2 and pow(e1.x - e2.x, 2) + pow(e1.y - e2.y, 2) <= 1600.0:
+                            crowd += 1
+                    var dist_sq = pow(e1.x - self.ball.x, 2) + pow(e1.y - self.ball.y, 2)
+                    if crowd > max_crowd or (crowd == max_crowd and dist_sq < min_dist_sq_bomber):
+                        max_crowd = crowd
+                        min_dist_sq_bomber = dist_sq
+                        target = e1
             else:
                 for e in enemies:
                     var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
@@ -664,7 +677,12 @@ func _attack(delta: float):
                         var edy = e.y - self.ball.y
                         if sqrt(edx*edx + edy*edy) <= ball_radius + e_radius + 15:
                             close_enemies += 1
-                    optimal = close_enemies >= 2
+                    optimal = close_enemies >= 3
+
+                    if optimal and "hp" in self.ball:
+                        self.ball.hp = 0
+                        if "alive" in self.ball:
+                            self.ball.alive = false
                 elif b_type == "warrior":
                     var in_front = 0
                     var move_dx = target.x - self.ball.x

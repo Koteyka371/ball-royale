@@ -322,6 +322,10 @@ class Action:
             b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
             if b_type == "tank":
                 target = max(enemies, key=lambda e: getattr(e, "max_hp", getattr(e, "hp", 0.0)))
+            elif b_type == "bomber":
+                def count_nearby(e1):
+                    return sum(1 for e2 in enemies if e1 != e2 and ((e1.x - e2.x)**2 + (e1.y - e2.y)**2) <= 1600)
+                target = max(enemies, key=lambda e: (count_nearby(e), -((self.ball.x - e.x)**2 + (self.ball.y - e.y)**2)))
             else:
                 target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
 
@@ -410,6 +414,10 @@ class Action:
                 b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
                 if b_type == "tank":
                     target = max(enemies, key=lambda e: getattr(e, "max_hp", getattr(e, "hp", 0.0)))
+                elif b_type == "bomber":
+                    def count_nearby(e1):
+                        return sum(1 for e2 in enemies if e1 != e2 and ((e1.x - e2.x)**2 + (e1.y - e2.y)**2) <= 1600)
+                    target = max(enemies, key=lambda e: (count_nearby(e), -((self.ball.x - e.x)**2 + (self.ball.y - e.y)**2)))
                 else:
                     target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
 
@@ -453,7 +461,12 @@ class Action:
                     b_type = getattr(self.ball, "ball_type", "")
                     if b_type == "bomber":
                         close_enemies = sum(1 for e in enemies if math.sqrt((e.x - self.ball.x)**2 + (e.y - self.ball.y)**2) <= ball_radius + getattr(e, "radius", 10.0) + 15)
-                        optimal = close_enemies >= 2
+                        optimal = close_enemies >= 3
+
+                        # Suicide attack: guarantee explosion
+                        if optimal:
+                            self.ball.hp = 0 # Suicide
+                            self.ball.alive = False
                     elif b_type == "warrior":
                         in_front = 0
                         # Calculate normalized movement vector towards target
