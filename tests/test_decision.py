@@ -134,3 +134,58 @@ def test_decision_ally_advantage():
     # 3 allies vs 1 enemy. Attack gets +10 (1 enemy) + (3 - 1) * 15 = 40.
     # Idle is 1. Defend is 2.
     assert action == "attack"
+
+def test_coach_mode_attack():
+    ball = MockBall(hp=100, max_hp=100, personality="idle")
+    ball.coach_strategy = "attack"
+    decision = Decision(ball, MockWorld())
+    perception = {
+        "danger_level": 0.8, "opportunity_level": 0.1,
+        "threat_level": 3.0, "opportunity_score": 0.1,
+        "enemies": [1, 2, 3, 4], "boosters": [], "allies": []
+    }
+    # Normally this perception causes 'defend', but coach overrides it to 'attack'
+    action = decision.choose_action(perception, "neutral")
+    assert action == "attack"
+
+def test_coach_mode_defend():
+    ball = MockBall(hp=100, max_hp=100, personality="idle")
+    ball.coach_strategy = "defend"
+    decision = Decision(ball, MockWorld())
+    perception = {
+        "danger_level": 0.3, "opportunity_level": 0.0,
+        "threat_level": 1.0, "opportunity_score": 0.0,
+        "enemies": [1], "boosters": [], "allies": []
+    }
+    # Normally this perception causes 'attack' (due to rage or default), but coach overrides it to 'defend'
+    action = decision.choose_action(perception, "rage")
+    assert action == "defend"
+
+def test_coach_mode_collect_booster():
+    ball = MockBall(hp=100, max_hp=100, personality="idle")
+    ball.coach_strategy = "collect_booster"
+    decision = Decision(ball, MockWorld())
+    perception = {
+        "danger_level": 0.8, "opportunity_level": 0.1,
+        "threat_level": 3.0, "opportunity_score": 0.1,
+        "enemies": [1, 2], "boosters": [1, 2], "allies": []
+    }
+    # Danger is high, normally defend or flee, but coach overrides
+    action = decision.choose_action(perception, "fear")
+    assert action == "collect_booster"
+
+def test_coach_mode_impossible_action():
+    ball = MockBall(hp=100, max_hp=100, personality="idle")
+    # Coach says to collect boosters
+    ball.coach_strategy = "collect_booster"
+    decision = Decision(ball, MockWorld())
+    perception = {
+        "danger_level": 0.3, "opportunity_level": 0.0,
+        "threat_level": 1.0, "opportunity_score": 0.0,
+        "enemies": [1], "boosters": [], "allies": []
+    }
+    # But there are no boosters! The validation block in `decision.py` should
+    # set scores["collect_booster"] to -1000.0, preventing the impossible action.
+    action = decision.choose_action(perception, "rage")
+    # Rage makes it want to attack, and collect_booster is impossible.
+    assert action == "attack"

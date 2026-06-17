@@ -247,6 +247,11 @@ class Decision:
             scores["attack"] += 100.0
             scores["chase"] += 100.0
 
+        # === COACH MODE OVERRIDES ===
+        coach_strategy = getattr(self.ball, "coach_strategy", None)
+        if coach_strategy and coach_strategy in scores:
+            scores[coach_strategy] += 500.0
+
         # Decision Quality (Noise based on difficulty)
         if difficulty == "chaos":
             for k in scores.keys():

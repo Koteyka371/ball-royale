@@ -303,6 +303,12 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
         scores["attack"] += 100.0
         scores["chase"] += 100.0
 
+    # Coach Mode Overrides
+    if "coach_strategy" in self.ball:
+        var coach_strategy = self.ball.coach_strategy
+        if scores.has(coach_strategy):
+            scores[coach_strategy] += 500.0
+
     # Decision Quality (Noise based on difficulty)
     if difficulty == "chaos":
         for k in scores.keys():
