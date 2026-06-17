@@ -718,6 +718,17 @@ func _attack(delta: float):
                         self.ball.hp = 0
                         if "alive" in self.ball:
                             self.ball.alive = false
+                elif b_type == "tank":
+                    var max_hp = -1.0
+                    var strongest = null
+                    for e in enemies:
+                        var hp = 0.0
+                        if "max_hp" in e: hp = e.max_hp
+                        elif "hp" in e: hp = e.hp
+                        if hp > max_hp:
+                            max_hp = hp
+                            strongest = e
+                    optimal = (target == strongest)
                 elif b_type == "warrior":
                     var in_front = 0
                     var move_dx = target.x - self.ball.x
