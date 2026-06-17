@@ -29,10 +29,13 @@ def train_networks(generations=10, population_size=20, ticks=500):
             sim = BattleSimulation(num_balls=10, max_ticks=ticks, arena_size=1000)
 
             # Make sure balls use our network
+            from ai.neural_network_brain import NeuralNetworkBrain
             for ball in sim.balls:
                 ball.ball_type = "neural"
                 ball.nn_weights = net.weights
                 ball.nn_biases = net.biases
+                # Use NeuralNetworkBrain directly since BallBrain no longer has built-in neural fallback
+                sim.brains[ball.id] = NeuralNetworkBrain(ball, sim)
 
             # Run
             sim.run()
