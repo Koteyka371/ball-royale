@@ -1354,6 +1354,7 @@ func _use_skill():
 
     if skill_timer <= 0.0 and self.ball.has_method("use_skill"):
         self.ball.use_skill()
+        _spawn_skill_particles()
 
         var skill_name = ""
         if "skill" in self.ball:
@@ -1372,6 +1373,23 @@ func _use_skill():
 
         if "skill_cooldown" in self.ball:
             self.ball.skill_timer = self.ball.skill_cooldown
+
+func _spawn_skill_particles():
+    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("add_child"):
+        var particles = CPUParticles2D.new()
+        particles.emitting = true
+        particles.one_shot = true
+        particles.amount = 30
+        particles.spread = 180.0
+        particles.gravity = Vector2(0, 0)
+        particles.initial_velocity_min = 50.0
+        particles.initial_velocity_max = 100.0
+        particles.lifetime = 0.5
+        particles.explosiveness = 0.8
+        self.ball.add_child(particles)
+        if particles.has_signal("finished"):
+            particles.finished.connect(particles.queue_free)
+
 
 func _idle(delta: float):
     var speed = 2.0
