@@ -230,6 +230,23 @@ class Decision:
         # === IDLE ===
         scores["idle"] = 1.0
 
+        # === COACH MODE OVERRIDE ===
+        coach_strategy = perception_data.get("coach_strategy", "")
+        if coach_strategy and isinstance(coach_strategy, str):
+            c_lower = coach_strategy.lower()
+            if "attack" in c_lower or "атак" in c_lower:
+                scores["attack"] += 500.0
+                scores["chase"] += 500.0
+            elif "defend" in c_lower or "защищ" in c_lower:
+                scores["defend"] += 500.0
+            elif "flee" in c_lower or "убег" in c_lower or "отступ" in c_lower:
+                scores["flee"] += 500.0
+            elif "booster" in c_lower or "собир" in c_lower or "collect" in c_lower:
+                scores["collect_booster"] += 500.0
+            elif "skill" in c_lower or "скилл" in c_lower or "способн" in c_lower:
+                scores["use_skill"] += 500.0
+
+
         # Personality baseline
         if personality in scores:
             scores[personality] += 15.0
