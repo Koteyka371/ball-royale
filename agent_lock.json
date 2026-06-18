@@ -67,17 +67,17 @@
     "agent-8": {
       "name": "Jules Worker 8",
       "area": "tests",
-      "task_id": "auto-implement-**neural-ball**-—-a-ball-controlled-by-a",
-      "status": "assigned",
-      "started_at": "2026-06-18T15:20:15.980741+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 0
     },
     "agent-9": {
       "name": "Jules Worker 9",
       "area": "behaviors",
-      "task_id": "auto-implement-**ball-relationships**-—-balls-remember-",
-      "status": "working",
-      "started_at": "2026-06-18T15:30:58.148074+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 0
     },
     "agent-10": {
