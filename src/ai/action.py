@@ -1031,7 +1031,7 @@ class Action:
                 dist = math.sqrt(dist_sq)
                 nx, ny = dx / dist, dy / dist
 
-                attack_range = 150.0
+                attack_range = getattr(self.ball, "attack_range", 150.0)
 
                 if dist > attack_range:
                     pass # Move towards
@@ -1058,9 +1058,9 @@ class Action:
             dist = math.sqrt(dist_sq) if dist_sq > 0.0001 else 0.0
             dist_after = dist
 
-            attack_range = 150.0
+            attack_range = getattr(self.ball, "attack_range", 150.0)
 
-            if dist <= attack_range:
+            if dist_after <= attack_range:
                 # Uses skill when available and optimal
                 skill_timer = getattr(self.ball, "skill_timer", 0.0)
                 if skill_timer <= 0:
