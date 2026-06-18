@@ -1,4 +1,3 @@
-import pytest
 from ai.action import Action
 from ai.decision import Decision
 from ai.perception import Perception

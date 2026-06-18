@@ -1,5 +1,5 @@
-import pytest
 from ai.ball_brain import BallBrain
+from ai.coach_mode import CoachMode
 from ai.decision import Decision
 
 class MockEnemy:
@@ -97,7 +97,6 @@ def test_coach_mode_flee():
     assert action == "flee"
 
 
-from ai.coach_mode import CoachMode
 
 def test_coach_mode_class():
     coach = CoachMode()
