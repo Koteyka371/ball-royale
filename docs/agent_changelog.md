@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-feature-037] Basic arena — *2026-06-18 21:20:08 UTC*
+
+Implement Basic arena as described in game_design.md
+
+---
+
 ## [add-particle-effects] Add particle effects for skills — *2026-06-18 19:13:14 UTC*
 
 Create basic particle effects in Godot for when balls use their skills like Wave Attack or Explosion.
