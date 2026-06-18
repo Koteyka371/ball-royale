@@ -173,6 +173,23 @@ class Decision:
             scores["attack"] += 200.0
             scores["chase"] += 200.0
 
+        # Team Coordination
+        team_messages = perception_data.get("team_messages", [])
+        if team_messages:
+            for msg in team_messages:
+                if isinstance(msg, dict):
+                    msg_type = msg.get("type", "")
+                    if msg_type == "target_spotted":
+                        scores["attack"] += 150.0
+                        scores["chase"] += 150.0
+                    elif msg_type == "request_help":
+                        scores["defend"] += 200.0
+                    elif msg_type == "wounded_call" and b_type == "healer":
+                        scores["use_skill"] += 200.0
+                        scores["defend"] += 100.0
+                    elif msg_type == "hold_position":
+                        scores["defend"] += 150.0
+
         # Coach Mode
         coach_strategy = perception_data.get("coach_strategy", "")
         if coach_strategy and isinstance(coach_strategy, str):
