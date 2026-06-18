@@ -45,6 +45,23 @@ func scan() -> Dictionary:
     var threat = 0.0
     var opp = 0.0
 
+    if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+        for h in self.world.arena.hazards:
+            var dist = 0.0
+            if "x" in h and "y" in h:
+                var dx = h.x - bx
+                var dy = h.y - by
+                dist = sqrt(dx*dx + dy*dy)
+
+            if dist <= perception_radius:
+                var found = false
+                for t in data["traps"]:
+                    if "id" in t and "id" in h and t.id == h.id:
+                        found = true
+                        break
+                if not found:
+                    data["traps"].append(h)
+
     var my_memory = {}
     if self.ball.has_method("get_meta") and self.ball.has_meta("memory"):
         my_memory = self.ball.get_meta("memory")

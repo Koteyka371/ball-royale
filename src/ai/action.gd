@@ -46,6 +46,18 @@ func execute(strategy: String, delta: float):
                     if self.ball.hp <= 0:
                         self.ball.alive = false
 
+        if ball_type != "spectator" and "hazards" in self.world.arena:
+            for hazard in self.world.arena.hazards:
+                var dist = sqrt((self.ball.x - hazard.x) * (self.ball.x - hazard.x) + (self.ball.y - hazard.y) * (self.ball.y - hazard.y))
+                if dist < (self.ball.radius + hazard.radius):
+                    var hazard_damage = hazard.damage * delta
+                    if self.ball.has_method("take_damage"):
+                        self.ball.take_damage(hazard_damage)
+                    elif "hp" in self.ball:
+                        self.ball.hp -= hazard_damage
+                        if self.ball.hp <= 0:
+                            self.ball.alive = false
+
     if "current_action" in self.ball:
         self.ball.current_action = strategy
 

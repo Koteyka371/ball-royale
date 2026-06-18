@@ -56,6 +56,16 @@ class Perception:
             dy = ey - by
             return math.sqrt(dx * dx + dy * dy)
 
+        # Include procedural hazards within perception radius
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            for h in self.world.arena.hazards:
+                dist = calc_dist(h)
+                # Check if within perception radius and not already in traps
+                if dist <= perception_radius:
+                    # Make sure it's not already in there by id
+                    if not any(getattr(t, "id", None) == h.id for t in data["traps"]):
+                        data["traps"].append(h)
+
         for enemy in data["enemies"]:
             dist = calc_dist(enemy)
             if hasattr(enemy, "id"):
