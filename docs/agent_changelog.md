@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [arena-procedural-generation-rooms] Add procedural multi-room arenas — *2026-06-18 18:36:57 UTC*
+
+Expand the arena generation algorithm to create multi-room maps connected by corridors, rather than a single large open space.
+
+---
+
 ## [arena-shrinking-zone] Add shrinking battle zone logic — *2026-06-18 15:57:35 UTC*
 
 Implement a battle royale shrinking zone (like in PUBG/Fortnite). The safe area should decrease over time, and any ball outside the zone takes continuous damage.

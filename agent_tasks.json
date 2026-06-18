@@ -1040,7 +1040,7 @@
     },
     {
       "id": "arena-procedural-generation-rooms",
-      "status": "todo",
+      "status": "done",
       "area": "arenas",
       "risk": "medium",
       "title": "Add procedural multi-room arenas",
