@@ -1057,7 +1057,7 @@
     },
     {
       "id": "visualizer-skills-effects",
-      "status": "todo",
+      "status": "done",
       "area": "visuals",
       "risk": "low",
       "title": "Implement visual effects for all ball skills in HTML5 Canvas",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [visualizer-skills-effects] Implement visual effects for all ball skills in HTML5 Canvas — *2026-06-18 18:46:54 UTC*
+
+Enhance visualizer/index.html to draw unique particle animations and visual elements when balls trigger specific skills (e.g. Shield draws a glowing cyan circle around the tank, Wave Attack draws red shockwaves, Dash leaves ghost trail particles).
+
+---
+
 ## [arena-procedural-generation-rooms] Add procedural multi-room arenas — *2026-06-18 18:36:57 UTC*
 
 Expand the arena generation algorithm to create multi-room maps connected by corridors, rather than a single large open space.
