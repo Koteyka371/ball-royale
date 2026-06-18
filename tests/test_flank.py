@@ -1,3 +1,5 @@
+import sys
+sys.path.insert(0, 'src')
 from ai.action import Action
 from ai.personality import Personality
 
@@ -94,7 +96,8 @@ def test_flank_critical_hit():
     # Set delta to 0 so it doesn't move out of range while flanking
     action.execute("flank", 0.0)
 
-    assert world.damage_dealt == 20
+    # Ninja class now has a 3.0x multiplier on critical hits
+    assert world.damage_dealt == 30
 def test_flank_edge_cases():
     # Test when target is completely stationary
     world = MockWorld()

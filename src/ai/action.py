@@ -366,7 +366,7 @@ class Action:
                     target_vy /= v_dist
 
             # Flank point is 40 units behind the target
-            flank_distance = 40.0
+            flank_distance = getattr(target, 'radius', 10.0) * 2.0 + 20.0
             flank_x = target.x - target_vx * flank_distance
             flank_y = target.y - target_vy * flank_distance
 
@@ -417,7 +417,10 @@ class Action:
                     # Temporarily boost damage if critical
                     original_damage = getattr(self.ball, "damage", 5.0)
                     if is_critical:
-                        self.ball.damage = original_damage * 2.0
+                        if getattr(self.ball, 'ball_type', '') == 'ninja':
+                            self.ball.damage = original_damage * 3.0
+                        else:
+                            self.ball.damage = original_damage * 2.0
 
                     if hasattr(self.world, "_deal_damage"):
                         self.world._deal_damage(self.ball, target)
