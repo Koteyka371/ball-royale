@@ -6,11 +6,28 @@ var height: float
 var num_rooms: int
 var rooms: Array = []
 var corridors: Array = []
+var hazards: Array = []
 var rng: RandomNumberGenerator
 
 var safe_zone_radius: float
 var safe_zone_center: Array
 var last_tick: int = -1
+
+class Hazard:
+    var id: int
+    var x: float
+    var y: float
+    var radius: float
+    var kind: String
+    var damage: float
+
+    func _init(_id: int, _x: float, _y: float, _radius: float, _kind: String, _damage: float):
+        id = _id
+        x = _x
+        y = _y
+        radius = _radius
+        kind = _kind
+        damage = _damage
 
 class Room:
     var x: float
@@ -119,6 +136,24 @@ func generate():
 
         connected.append(r2)
         unconnected.remove_at(best_idx)
+
+    var num_hazards = num_rooms * 2
+    for i in range(num_hazards):
+        var kind = "spikes"
+        if rng.randf() > 0.5:
+            kind = "lava"
+
+        var radius = 0.0
+        var damage = 0.0
+        if kind == "spikes":
+            radius = rng.randf_range(15.0, 30.0)
+            damage = 20.0
+        else:
+            radius = rng.randf_range(30.0, 60.0)
+            damage = 50.0
+
+        var spawn_pt = get_random_spawn_point(radius)
+        hazards.append(Hazard.new(i, spawn_pt[0], spawn_pt[1], radius, kind, damage))
 
 func get_random_spawn_point(radius: float) -> Array:
     if rooms.size() == 0:

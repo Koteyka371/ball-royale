@@ -16,6 +16,16 @@ class Corridor:
     width: float
     height: float
 
+
+@dataclass
+class Hazard:
+    id: int
+    x: float
+    y: float
+    radius: float
+    kind: str
+    damage: float
+
 class ProceduralArena:
     def __init__(self, arena_size: float = 2000.0, num_rooms: int = 5, seed: int | None = None):
         if seed is not None:
@@ -25,6 +35,7 @@ class ProceduralArena:
         self.num_rooms = num_rooms
         self.rooms: List[Room] = []
         self.corridors: List[Corridor] = []
+        self.hazards: List[Hazard] = []
 
         # Shrinking zone
         self.safe_zone_radius = arena_size * 0.7
@@ -98,6 +109,16 @@ class ProceduralArena:
 
             connected.append(r2)
             unconnected.remove(r2)
+
+        # Generate hazards
+        num_hazards = self.num_rooms * 2
+        for i in range(num_hazards):
+            kind = random.choice(["spikes", "lava"])
+            radius = random.uniform(15.0, 30.0) if kind == "spikes" else random.uniform(30.0, 60.0)
+            damage = 20.0 if kind == "spikes" else 50.0
+
+            hx, hy = self.get_random_spawn_point(radius)
+            self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=radius, kind=kind, damage=damage))
 
     def get_random_spawn_point(self, radius: float) -> Tuple[float, float]:
         if not self.rooms:

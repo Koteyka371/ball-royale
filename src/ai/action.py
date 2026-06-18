@@ -38,6 +38,19 @@ class Action:
                         if self.ball.hp <= 0:
                             self.ball.alive = False
 
+            # Apply hazard damage
+            if hasattr(self.world.arena, "hazards") and ball_type != "spectator":
+                for hazard in self.world.arena.hazards:
+                    dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
+                    if dist < (self.ball.radius + hazard.radius):
+                        hazard_damage = hazard.damage * delta
+                        if hasattr(self.ball, "take_damage"):
+                            self.ball.take_damage(hazard_damage)
+                        elif hasattr(self.ball, "hp"):
+                            self.ball.hp -= hazard_damage
+                            if self.ball.hp <= 0:
+                                self.ball.alive = False
+
         self.ball.current_action = strategy
         self.ball.team_message = None  # Clear previous message
 
