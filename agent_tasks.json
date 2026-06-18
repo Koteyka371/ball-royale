@@ -1106,7 +1106,7 @@
     },
     {
       "id": "idea-feature-060",
-      "status": "todo",
+      "status": "done",
       "area": "content",
       "risk": "medium",
       "title": "Emotion system (fear, rage, greed)",

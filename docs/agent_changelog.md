@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-feature-060] Emotion system (fear, rage, greed) — *2026-06-18 21:23:23 UTC*
+
+Implement Emotion system (fear, rage, greed) as described in game_design.md
+
+---
+
 ## [idea-feature-037] Basic arena — *2026-06-18 21:20:08 UTC*
 
 Implement Basic arena as described in game_design.md
