@@ -84,8 +84,8 @@
       "name": "Jules Worker 10",
       "area": "meta",
       "task_id": "visualizer-interactive-spectator",
-      "status": "assigned",
-      "started_at": "2026-06-18T21:01:57.323832+00:00",
+      "status": "working",
+      "started_at": "2026-06-18T21:12:37.211164+00:00",
       "cycles_today": 0
     },
     "agent-11": {
