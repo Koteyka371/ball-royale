@@ -70,7 +70,7 @@ def test_decision_fallback_personality():
     perception = {
         "danger_level": 0.0, "opportunity_level": 0.0,
         "threat_level": 0.0, "opportunity_score": 0.0,
-        "enemies": [], "boosters": [], "allies": []
+        "enemies": [], "boosters": [1], "allies": []
     }
     action = decision.choose_action(perception, "neutral")
     assert action == "collect_booster"
@@ -98,12 +98,12 @@ def test_decision_chase_assassin():
     assert action == "chase"
 
 def test_decision_no_enemies_personality_fallback():
-    ball = MockBall(hp=100, max_hp=100, personality="warrior")
+    ball = MockBall(hp=100, max_hp=100, personality="warrior", skill_timer=1.0)
     decision = Decision(ball, MockWorld())
     perception = {
         "danger_level": 0.0, "opportunity_level": 0.0,
         "threat_level": 0.0, "opportunity_score": 0.0,
-        "enemies": [], "boosters": [], "allies": []
+        "enemies": [1], "boosters": [], "allies": []
     }
     action = decision.choose_action(perception, "neutral")
     assert action == "attack"

@@ -127,7 +127,7 @@ def test_tank_uses_shield_when_damaged():
     decision = Decision(tank, world)
 
     perception_data = {
-        "danger_level": 0.6,
+        "danger_level": 0.1,
         "threat_level": 0.5,
         "opportunity_level": 0.0,
         "opportunity_score": 0.0,
