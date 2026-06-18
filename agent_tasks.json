@@ -850,7 +850,7 @@
     },
     {
       "id": "add-particle-effects",
-      "status": "todo",
+      "status": "done",
       "area": "visuals",
       "risk": "low",
       "title": "Add particle effects for skills",

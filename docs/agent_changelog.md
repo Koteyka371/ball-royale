@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [add-particle-effects] Add particle effects for skills — *2026-06-18 19:13:14 UTC*
+
+Create basic particle effects in Godot for when balls use their skills like Wave Attack or Explosion.
+
+---
+
 ## [visualizer-skills-effects] Implement visual effects for all ball skills in HTML5 Canvas — *2026-06-18 18:46:54 UTC*
 
 Enhance visualizer/index.html to draw unique particle animations and visual elements when balls trigger specific skills (e.g. Shield draws a glowing cyan circle around the tank, Wave Attack draws red shockwaves, Dash leaves ghost trail particles).
