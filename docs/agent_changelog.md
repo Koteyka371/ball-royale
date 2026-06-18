@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-feature-062] Team coordination — *2026-06-18 23:39:35 UTC*
+
+Implement Team coordination as described in game_design.md
+
+---
+
 ## [procedural-hazards] Add procedural hazards to arena — *2026-06-18 21:42:40 UTC*
 
 Generate random hazards (spikes, lava) in the arena that damage balls when they collide.
