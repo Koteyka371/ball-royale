@@ -127,10 +127,20 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
 
     if emotion_state == "fear":
         scores["flee"] += 1000.0
+        scores["attack"] -= 300.0
     elif emotion_state == "rage":
         scores["attack"] += 1000.0
+        scores["defend"] -= 200.0
     elif emotion_state == "heroism":
         scores["defend"] += 1000.0
+    elif emotion_state == "greed":
+        scores["collect_booster"] += 1000.0
+    elif emotion_state == "bloodlust":
+        scores["chase"] += 500.0
+        scores["attack"] += 500.0
+    elif emotion_state == "cowardice":
+        if randf() < 0.3:
+            scores["flee"] += 1000.0
 
     if personality == "assassin":
         scores["chase"] += 1000.0
