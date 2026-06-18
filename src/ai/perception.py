@@ -27,6 +27,7 @@ class Perception:
             "distances": {}, # Maps entity id to distance
             "threat_level": 0.0,
             "opportunity_score": 0.0,
+            "coach_strategy": "",
             # For backward compatibility with existing layers
             "danger_level": 0.0,
             "opportunity_level": 0.0,
@@ -86,6 +87,17 @@ class Perception:
 
         data["threat_level"] = threat
         data["opportunity_score"] = opp
+
+        # Coach Mode
+        if hasattr(self.world, "coach_strategy") and self.world.coach_strategy:
+            strat = self.world.coach_strategy
+            if isinstance(strat, dict):
+                team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
+                if team in strat:
+                    data["coach_strategy"] = strat[team]
+            elif isinstance(strat, str):
+                data["coach_strategy"] = strat
+
 
         # Backward compatibility for existing logic
         data["danger_level"] = len(data["enemies"]) * 0.2

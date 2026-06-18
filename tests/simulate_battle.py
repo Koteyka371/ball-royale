@@ -369,6 +369,9 @@ class BattleSimulation:
             value = data.get("value", 50.0)
             self.boosters.append(Booster(x=x, y=y, kind=kind, value=value))
 
+    def set_coach_strategy(self, strategy):
+        self.coach_strategy = strategy
+
     def run(self, record: bool = False) -> Dict:
         self._delta = 0.016
         start = time.time()

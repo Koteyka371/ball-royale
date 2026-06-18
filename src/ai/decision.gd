@@ -280,6 +280,25 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     # Idle scoring
     scores["idle"] = 1.0
 
+    # Coach Mode Override
+    var coach_strategy = ""
+    if perception_data.has("coach_strategy"):
+        coach_strategy = str(perception_data["coach_strategy"]).to_lower()
+
+    if coach_strategy != "":
+        if "attack" in coach_strategy or "атак" in coach_strategy:
+            scores["attack"] += 500.0
+            scores["chase"] += 500.0
+        elif "defend" in coach_strategy or "защищ" in coach_strategy:
+            scores["defend"] += 500.0
+        elif "flee" in coach_strategy or "убег" in coach_strategy or "отступ" in coach_strategy:
+            scores["flee"] += 500.0
+        elif "booster" in coach_strategy or "собир" in coach_strategy or "collect" in coach_strategy:
+            scores["collect_booster"] += 500.0
+        elif "skill" in coach_strategy or "скилл" in coach_strategy or "способн" in coach_strategy:
+            scores["use_skill"] += 500.0
+
+
     # Baseline score based on personality
     if scores.has(personality):
         scores[personality] += 15.0

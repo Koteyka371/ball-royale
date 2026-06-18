@@ -21,6 +21,7 @@ func scan() -> Dictionary:
         "distances": {}, # Need custom handling to map objects to distances
         "threat_level": 0.0,
         "opportunity_score": 0.0,
+        "coach_strategy": "",
         "danger_level": 0.0,
         "opportunity_level": 0.0
     }
@@ -91,6 +92,24 @@ func scan() -> Dictionary:
 
     data["threat_level"] = threat
     data["opportunity_score"] = opp
+
+    # Coach Mode
+    if self.world != null and "coach_strategy" in self.world and self.world.coach_strategy:
+        var strat = self.world.coach_strategy
+        if typeof(strat) == TYPE_DICTIONARY:
+            var team = ""
+            if "team" in self.ball:
+                team = str(self.ball.team)
+            elif "ball_type" in self.ball:
+                team = str(self.ball.ball_type)
+            elif self.ball.has_method("get_ball_type"):
+                team = str(self.ball.get_ball_type())
+
+            if strat.has(team):
+                data["coach_strategy"] = str(strat[team])
+        elif typeof(strat) == TYPE_STRING:
+            data["coach_strategy"] = strat
+
 
     data["danger_level"] = data["enemies"].size() * 0.2
     data["opportunity_level"] = data["boosters"].size() * 0.3 + data["allies"].size() * 0.1
