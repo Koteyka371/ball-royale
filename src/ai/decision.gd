@@ -321,6 +321,44 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
         scores["flee"] = -1000.0
         scores["attack"] += 100.0
         scores["chase"] += 100.0
+        scores["collect_booster"] -= 20.0
+
+    if b_type.to_lower() == "scout":
+        scores["collect_booster"] += 40.0
+        var weak_count = 0
+        var strong_count = 0
+        for e in enemies:
+            var e_hp_pct = 1.0
+            if e.has_method("get_hp_percent"):
+                e_hp_pct = e.get_hp_percent()
+            elif "hp" in e and "max_hp" in e and float(e.max_hp) > 0:
+                e_hp_pct = float(e.hp) / float(e.max_hp)
+            if e_hp_pct < 0.3:
+                weak_count += 1
+            if e_hp_pct >= 0.7:
+                strong_count += 1
+        if weak_count > 0:
+            scores["chase"] += weak_count * 30.0
+        if strong_count > 0:
+            scores["chase"] -= strong_count * 30.0
+
+    if b_type.to_lower() == "tank" and allies.size() > 0:
+        scores["defend"] += 50.0
+        scores["collect_booster"] -= 20.0
+
+    if b_type.to_lower() == "healer":
+        var wounded_count = 0
+        for a in allies:
+            var a_hp_pct = 1.0
+            if a.has_method("get_hp_percent"):
+                a_hp_pct = a.get_hp_percent()
+            elif "hp" in a and "max_hp" in a and float(a.max_hp) > 0:
+                a_hp_pct = float(a.hp) / float(a.max_hp)
+            if a_hp_pct < 1.0:
+                wounded_count += 1
+        if wounded_count > 0:
+            scores["defend"] += 60.0
+            scores["attack"] -= 50.0
 
     # Decision Quality (Noise based on difficulty)
     if difficulty == "chaos":
