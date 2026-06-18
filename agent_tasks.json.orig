@@ -865,7 +865,7 @@
     },
     {
       "id": "implement-kill-feed-ui",
-      "status": "done",
+      "status": "todo",
       "area": "ui",
       "risk": "medium",
       "title": "Implement Kill Feed UI",

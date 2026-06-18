@@ -1,0 +1,21 @@
+--- src/ai/commentator.py
++++ src/ai/commentator.py
+@@ -1,13 +1,18 @@
+ from typing import List, Dict, Any
++from ui.kill_feed import KillFeed
+
+ class BattleCommentator:
+     """
+     Generates dynamic text commentary based on the simulation kill_log and stats.
+     """
++    def __init__(self):
++        self.kill_feed = KillFeed()
+
+     def generate_commentary(self, kill_log: List[Dict[str, Any]], stats: Dict[str, Any]) -> List[str]:
+         lines: List[str] = []
+         if not kill_log:
+             return lines
++
++        self.kill_feed.update(kill_log)
+
+         streaks: Dict[int, int] = {}
