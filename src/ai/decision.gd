@@ -179,6 +179,23 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
         scores["attack"] += 200.0
         scores["chase"] += 200.0
 
+    # Team Coordination
+    if perception_data.has("team_messages"):
+        var team_messages = perception_data["team_messages"]
+        for msg in team_messages:
+            if typeof(msg) == TYPE_DICTIONARY:
+                var msg_type = msg.get("type", "")
+                if msg_type == "target_spotted":
+                    scores["attack"] += 150.0
+                    scores["chase"] += 150.0
+                elif msg_type == "request_help":
+                    scores["defend"] += 200.0
+                elif msg_type == "wounded_call" and b_type == "healer":
+                    scores["use_skill"] += 200.0
+                    scores["defend"] += 100.0
+                elif msg_type == "hold_position":
+                    scores["defend"] += 150.0
+
     var coach_strategy = ""
     if perception_data.has("coach_strategy"):
         coach_strategy = str(perception_data["coach_strategy"]).to_lower()
