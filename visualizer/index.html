@@ -491,6 +491,17 @@
             </div>
         </div>
 
+        <!-- Inspector Panel -->
+        <div id="inspectorPanel" style="display: none; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; flex-direction: column; gap: 8px; margin-bottom: 16px;">
+            <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--primary-color);" id="insTitle">Inspector</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 11px;">
+                <div><span style="opacity: 0.6;">State:</span> <strong id="insAction">-</strong></div>
+                <div><span style="opacity: 0.6;">HP:</span> <strong id="insHealth">-</strong></div>
+                <div><span style="opacity: 0.6;">Target:</span> <strong id="insTarget">-</strong></div>
+                <div><span style="opacity: 0.6;">Emotion:</span> <strong id="insEmotion">-</strong></div>
+            </div>
+        </div>
+
         <!-- Leaderboard -->
         <div style="display: flex; flex-direction: column; flex-grow: 1; height: 180px;">
             <div class="leaderboard-title">
@@ -565,6 +576,7 @@
 
         // App state
         let replayData = null;
+        let selectedBallId = null;
         let currentFrameIndex = 0;
         let isPlaying = false;
         let playSpeed = 1; // frames per animation tick
@@ -724,6 +736,45 @@
 
         document.getElementById("btnResetZoom").addEventListener("click", resetZoom);
 
+        // Canvas Click Listener for Inspection
+        container.addEventListener("click", (e) => {
+            if (!replayData || isDragging) return;
+
+            // Don't select if they just finished a drag
+            if (Math.abs(e.clientX - panX - startDragX) > 5 || Math.abs(e.clientY - panY - startDragY) > 5) return;
+
+            const rect = canvas.getBoundingClientRect();
+            // The canvas bounding client rect already includes the scale(zoom) and translate(panX, panY)
+            // So we just need to un-scale the relative client position.
+            const clickX = (e.clientX - rect.left) / (rect.width / canvas.width);
+            const clickY = (e.clientY - rect.top) / (rect.height / canvas.height);
+
+            const frame = replayData.history[currentFrameIndex];
+            if (!frame) return;
+
+            let clickedBallId = null;
+
+            for (let i = frame.balls.length - 1; i >= 0; i--) {
+                const ball = frame.balls[i];
+                const radius = replayData.ball_types?.[ball.type]?.radius || 12;
+
+                const dx = clickX - ball.x;
+                const dy = clickY - ball.y;
+                if (dx * dx + dy * dy <= radius * radius) {
+                    clickedBallId = ball.id;
+                    break;
+                }
+            }
+
+            selectedBallId = clickedBallId;
+            if (selectedBallId !== null) {
+                document.getElementById("inspectorPanel").style.display = "flex";
+            } else {
+                document.getElementById("inspectorPanel").style.display = "none";
+            }
+            renderFrame();
+        });
+
         // Rendering Logic
         function renderFrame() {
             if (!replayData) return;
@@ -864,8 +915,39 @@
                     ctx.textAlign = "center";
                     ctx.fillText(`${ball.type.toUpperCase()} | HP: ${Math.round(ball.hp)}/${Math.round(ball.max_hp)}`, ball.x, ball.y + radius + 18);
                 }
+
+                // Highlight selected ball
+                if (ball.id === selectedBallId) {
+                    ctx.beginPath();
+                    ctx.arc(ball.x, ball.y, radius + 8, 0, Math.PI * 2);
+                    ctx.strokeStyle = "#ffffff";
+                    ctx.lineWidth = 3;
+                    ctx.shadowColor = "#ffffff";
+                    ctx.shadowBlur = 10;
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+                }
+
                 ctx.restore();
             });
+
+            // Update Inspector Panel
+            if (selectedBallId !== null) {
+                const selectedBall = frame.balls.find(b => b.id === selectedBallId);
+                if (selectedBall) {
+                    document.getElementById("insTitle").textContent = `${selectedBall.type.toUpperCase()} - ${selectedBall.id}`;
+                    document.getElementById("insAction").textContent = selectedBall.action || "idle";
+                    document.getElementById("insHealth").textContent = `${Math.round(selectedBall.hp)}/${Math.round(selectedBall.max_hp)}`;
+                    document.getElementById("insTarget").textContent = selectedBall.target_id !== undefined ? selectedBall.target_id : "None";
+                    document.getElementById("insEmotion").textContent = selectedBall.emotion || "calm";
+                    document.getElementById("inspectorPanel").style.display = "flex";
+                } else {
+                    selectedBallId = null;
+                    document.getElementById("inspectorPanel").style.display = "none";
+                }
+            } else {
+                document.getElementById("inspectorPanel").style.display = "none";
+            }
 
             // Update stats
             document.getElementById("statTick").textContent = `${frame.tick} / ${replayData.history.length}`;
