@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [add-skill-effects-vfx] Add Particle VFX for Ball Skills — *2026-06-18 15:43:26 UTC*
+
+Implement Godot Particle2D nodes that trigger when a ball uses its special skill, such as wave attack or explosion.
+
+---
+
 ## [innovate-perceptron-ai] Innovation: Implement Neural Network Perceptron AI — *2026-06-18 12:09:09 UTC*
 
 Replace the hardcoded if-else logic in src/ai/decision.py and src/ai/decision.gd with a simple Perceptron/Weights Matrix. Create a file ai_weights.json to store the weights. The decision layer should calculate the score for each action by multiplying perception inputs with the weights.

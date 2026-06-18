@@ -1006,7 +1006,7 @@
     },
     {
       "id": "add-skill-effects-vfx",
-      "status": "todo",
+      "status": "done",
       "area": "visuals",
       "risk": "low",
       "title": "Add Particle VFX for Ball Skills",
