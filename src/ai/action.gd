@@ -534,7 +534,9 @@ func _flank(delta: float):
                 target_vx /= v_dist
                 target_vy /= v_dist
 
-        var flank_distance = 40.0
+        var flank_target_radius = 10.0
+        if "radius" in target: flank_target_radius = target.radius
+        var flank_distance = flank_target_radius * 2.0 + 20.0
         var flank_x = target.x - target_vx * flank_distance
         var flank_y = target.y - target_vy * flank_distance
 
@@ -609,7 +611,10 @@ func _flank(delta: float):
                 if "damage" in self.ball: original_damage = self.ball.damage
 
                 if is_critical:
-                    self.ball.damage = original_damage * 2.0
+                    if "ball_type" in self.ball and self.ball.ball_type == "ninja":
+                        self.ball.damage = original_damage * 3.0
+                    else:
+                        self.ball.damage = original_damage * 2.0
 
                 if self.world != null and self.world.has_method("_deal_damage"):
                     self.world._deal_damage(self.ball, target)
