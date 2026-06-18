@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-feature-035] 4 ball types with unique AI — *2026-06-18 07:54:38 UTC*
+
+Implement 4 ball types with unique AI as described in game_design.md
+
+---
+
 ## [ai-meta-evolution-phase] Implement Meta Evolution phase between battles — *2026-06-18 07:39:45 UTC*
 
 Create a system where balls have a development phase between battles to upgrade stats (speed, damage, max hp) based on their survival and kills.
