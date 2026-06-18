@@ -410,6 +410,29 @@ func _flee(delta: float):
     self.ball.y += comb_ny * boosted_speed * delta * 60.0
 
 func _get_target(enemies: Array) -> Object:
+    var my_memory = {}
+    if self.ball.has_method("get_meta") and self.ball.has_meta("memory"):
+        my_memory = self.ball.get_meta("memory")
+    elif "memory" in self.ball:
+        my_memory = self.ball.memory
+
+    var rivals = []
+    for e in enemies:
+        if "id" in e and my_memory.has(e.id):
+            var rel = my_memory[e.id]
+            if typeof(rel) == TYPE_DICTIONARY and rel.get("relation") == "rival":
+                rivals.append(e)
+
+    if rivals.size() > 0:
+        var best_rival = null
+        var best_dist_sq = INF
+        for r in rivals:
+            var d_sq = pow(r.x - self.ball.x, 2) + pow(r.y - self.ball.y, 2)
+            if d_sq < best_dist_sq:
+                best_dist_sq = d_sq
+                best_rival = r
+        return best_rival
+
     var target_msg = null
     var allies = _get_allies()
     for ally in allies:
@@ -590,6 +613,17 @@ func _flank(delta: float):
 
                 if self.world != null and self.world.has_method("_deal_damage"):
                     self.world._deal_damage(self.ball, target)
+                    if "id" in target and "id" in self.ball:
+                        var mem = {}
+                        if target.has_method("get_meta") and target.has_meta("memory"):
+                            mem = target.get_meta("memory")
+                        elif "memory" in target:
+                            mem = target.memory
+                        mem[self.ball.id] = {"relation": "rival"}
+                        if target.has_method("set_meta"):
+                            target.set_meta("memory", mem)
+                        else:
+                            target.memory = mem
 
                 if is_critical:
                     self.ball.damage = original_damage
@@ -657,6 +691,17 @@ func _chase(delta: float):
             if attack_timer <= 0:
                 if self.world != null and self.world.has_method("_deal_damage"):
                     self.world._deal_damage(self.ball, target)
+                    if "id" in target and "id" in self.ball:
+                        var mem = {}
+                        if target.has_method("get_meta") and target.has_meta("memory"):
+                            mem = target.get_meta("memory")
+                        elif "memory" in target:
+                            mem = target.memory
+                        mem[self.ball.id] = {"relation": "rival"}
+                        if target.has_method("set_meta"):
+                            target.set_meta("memory", mem)
+                        else:
+                            target.memory = mem
 
                 var speed = 2.0
                 if "speed" in self.ball: speed = self.ball.speed
@@ -938,6 +983,17 @@ func _attack(delta: float):
 
                 if self.world != null and self.world.has_method("_deal_damage"):
                     self.world._deal_damage(self.ball, target)
+                    if "id" in target and "id" in self.ball:
+                        var mem = {}
+                        if target.has_method("get_meta") and target.has_meta("memory"):
+                            mem = target.get_meta("memory")
+                        elif "memory" in target:
+                            mem = target.memory
+                        mem[self.ball.id] = {"relation": "rival"}
+                        if target.has_method("set_meta"):
+                            target.set_meta("memory", mem)
+                        else:
+                            target.memory = mem
 
                 if b_type == "ninja":
                     self.ball.damage = original_damage
@@ -1061,6 +1117,17 @@ func _defend(delta: float):
                 if attack_timer <= 0:
                     if self.world != null and self.world.has_method("_deal_damage"):
                         self.world._deal_damage(self.ball, target)
+                        if "id" in target and "id" in self.ball:
+                            var mem = {}
+                            if target.has_method("get_meta") and target.has_meta("memory"):
+                                mem = target.get_meta("memory")
+                            elif "memory" in target:
+                                mem = target.memory
+                            mem[self.ball.id] = {"relation": "rival"}
+                            if target.has_method("set_meta"):
+                                target.set_meta("memory", mem)
+                            else:
+                                target.memory = mem
 
                     var cooldown = 1.5
                     var b_type = ""
@@ -1395,6 +1462,17 @@ func _trigger_ripple_effect():
 
                 if is_enemy and self.world != null and self.world.has_method("_deal_damage"):
                     self.world._deal_damage(self.ball, other)
+                    if "id" in other and "id" in self.ball:
+                        var mem = {}
+                        if other.has_method("get_meta") and other.has_meta("memory"):
+                            mem = other.get_meta("memory")
+                        elif "memory" in other:
+                            mem = other.memory
+                        mem[self.ball.id] = {"relation": "rival"}
+                        if other.has_method("set_meta"):
+                            other.set_meta("memory", mem)
+                        else:
+                            other.memory = mem
 
 func _update_skill_timer(delta: float):
     if "skill_timer" in self.ball and self.ball.skill_timer > 0:
@@ -1523,6 +1601,17 @@ func _kite(delta: float):
             if attack_timer <= 0:
                 if self.world != null and self.world.has_method("_deal_damage"):
                     self.world._deal_damage(self.ball, target)
+                    if "id" in target and "id" in self.ball:
+                        var mem = {}
+                        if target.has_method("get_meta") and target.has_meta("memory"):
+                            mem = target.get_meta("memory")
+                        elif "memory" in target:
+                            mem = target.memory
+                        mem[self.ball.id] = {"relation": "rival"}
+                        if target.has_method("set_meta"):
+                            target.set_meta("memory", mem)
+                        else:
+                            target.memory = mem
 
                 var cooldown = max(0.2, 2.0 / speed if speed > 0 else 1.0)
                 if "attack_timer" in self.ball:

@@ -155,6 +155,10 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     if personality == "scout" or personality == "rogue":
         scores["collect_booster"] += 20.0
 
+    if perception_data.has("rival_spotted") and perception_data["rival_spotted"]:
+        scores["attack"] += 200.0
+        scores["chase"] += 200.0
+
     # Attack scoring
     if enemies.size() > 0:
         scores["attack"] += 10.0
