@@ -19,6 +19,25 @@ class Action:
         old_x = getattr(self.ball, "x", 0.0)
         old_y = getattr(self.ball, "y", 0.0)
 
+        # Update shrinking zone and apply damage
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "update_zone"):
+            current_tick = getattr(self.world, "tick", 0)
+            self.world.arena.update_zone(current_tick, delta)
+
+            ball_type = getattr(self.ball, "ball_type", None)
+            if ball_type != "spectator":
+                cx, cy = getattr(self.world.arena, "safe_zone_center", (0, 0))
+                radius = getattr(self.world.arena, "safe_zone_radius", float('inf'))
+                dist = math.sqrt((self.ball.x - cx)**2 + (self.ball.y - cy)**2)
+                if dist > radius:
+                    zone_damage = 10.0 * delta
+                    if hasattr(self.ball, "take_damage"):
+                        self.ball.take_damage(zone_damage)
+                    elif hasattr(self.ball, "hp"):
+                        self.ball.hp -= zone_damage
+                        if self.ball.hp <= 0:
+                            self.ball.alive = False
+
         self.ball.current_action = strategy
         self.ball.team_message = None  # Clear previous message
 
