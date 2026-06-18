@@ -881,7 +881,7 @@
     },
     {
       "id": "procedural-hazards",
-      "status": "todo",
+      "status": "done",
       "area": "arenas",
       "risk": "high",
       "title": "Add procedural hazards to arena",

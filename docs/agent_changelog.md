@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [procedural-hazards] Add procedural hazards to arena — *2026-06-18 21:42:40 UTC*
+
+Generate random hazards (spikes, lava) in the arena that damage balls when they collide.
+
+---
+
 ## [idea-feature-060] Emotion system (fear, rage, greed) — *2026-06-18 21:23:23 UTC*
 
 Implement Emotion system (fear, rage, greed) as described in game_design.md
