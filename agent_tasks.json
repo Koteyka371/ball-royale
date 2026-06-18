@@ -1073,7 +1073,7 @@
     },
     {
       "id": "visualizer-interactive-spectator",
-      "status": "todo",
+      "status": "done",
       "area": "ui",
       "risk": "low",
       "title": "Add interactive inspection mode to Visualizer",

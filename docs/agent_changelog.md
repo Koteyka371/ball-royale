@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [visualizer-interactive-spectator] Add interactive inspection mode to Visualizer — *2026-06-18 23:48:07 UTC*
+
+Allow clicking on any ball during playback to highlight it, display its active state, current health, target enemy, and emotional level in a detailed inspector panel on the page.
+
+---
+
 ## [idea-feature-062] Team coordination — *2026-06-18 23:39:35 UTC*
 
 Implement Team coordination as described in game_design.md
