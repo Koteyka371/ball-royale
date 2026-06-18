@@ -970,7 +970,7 @@
     },
     {
       "id": "ai-meta-evolution-phase",
-      "status": "todo",
+      "status": "done",
       "area": "ai-innovation",
       "risk": "medium",
       "title": "Implement Meta Evolution phase between battles",

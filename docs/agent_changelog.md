@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [ai-meta-evolution-phase] Implement Meta Evolution phase between battles — *2026-06-18 07:39:45 UTC*
+
+Create a system where balls have a development phase between battles to upgrade stats (speed, damage, max hp) based on their survival and kills.
+
+---
+
 ## [auto-implement-coach-mode-(тренер)-game-mode] Implement Coach Mode (Тренер) game mode — *2026-06-18 02:33:50 UTC*
 
 Create Coach Mode (Тренер) with full rules and mechanics
