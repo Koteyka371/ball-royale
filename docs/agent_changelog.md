@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [innovate-perceptron-ai] Innovation: Implement Neural Network Perceptron AI — *2026-06-18 12:09:09 UTC*
+
+Replace the hardcoded if-else logic in src/ai/decision.py and src/ai/decision.gd with a simple Perceptron/Weights Matrix. Create a file ai_weights.json to store the weights. The decision layer should calculate the score for each action by multiplying perception inputs with the weights.
+
+---
+
 ## [implement-kill-feed-ui] Implement Kill Feed UI — *2026-06-18 12:00:03 UTC*
 
 Create a UI kill feed that logs which ball killed which, using the battle simulation kill_log data.
