@@ -56,6 +56,10 @@ class Personality:
             mods["attack"] -= 20.0
             mods["chase"] -= 20.0
             mods["use_skill"] += 30.0
+        elif self.character == "brave":
+            mods["defend"] += 35.0
+            mods["attack"] += 10.0
+            mods["flee"] -= 20.0
 
         return mods
 

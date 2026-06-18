@@ -267,6 +267,29 @@ class Decision:
             scores["flee"] = -1000.0
             scores["attack"] += 100.0
             scores["chase"] += 100.0
+            scores["collect_booster"] -= 20.0
+
+        # Scout override: Priorities for boosters and weak enemies
+        if b_type == "scout":
+            scores["collect_booster"] += 40.0
+            weak_enemies = sum(1 for e in enemies if (e.hp / e.max_hp if hasattr(e, "hp") and hasattr(e, "max_hp") and e.max_hp > 0 else 1.0) < 0.3)
+            strong_enemies = sum(1 for e in enemies if (e.hp / e.max_hp if hasattr(e, "hp") and hasattr(e, "max_hp") and e.max_hp > 0 else 1.0) >= 0.7)
+            if weak_enemies > 0:
+                scores["chase"] += weak_enemies * 30.0
+            if strong_enemies > 0:
+                scores["chase"] -= strong_enemies * 30.0
+
+        # Tank override: Prioritize defend when allies are near
+        if b_type == "tank" and len(allies) > 0:
+            scores["defend"] += 50.0
+            scores["collect_booster"] -= 20.0
+
+        # Healer override: Prioritize defend (healing) over attack when allies are wounded
+        if b_type == "healer":
+            wounded_allies = sum(1 for a in allies if (a.hp / a.max_hp if hasattr(a, "hp") and hasattr(a, "max_hp") and a.max_hp > 0 else 1.0) < 1.0)
+            if wounded_allies > 0:
+                scores["defend"] += 60.0
+                scores["attack"] -= 50.0
 
         # Decision Quality (Noise based on difficulty)
         if difficulty == "chaos":

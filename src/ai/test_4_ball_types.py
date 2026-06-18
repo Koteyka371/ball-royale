@@ -1,0 +1,109 @@
+import pytest
+from ai.decision import Decision
+from ai.ball_types_warrior import Warrior
+from ai.ball_types_scout import Scout
+from ai.ball_types_tank import Tank
+from ai.ball_types_healer import Healer
+
+class MockWorld:
+    pass
+
+class MockEntity:
+    def __init__(self, hp, max_hp, ball_type="generic"):
+        self.hp = hp
+        self.max_hp = max_hp
+        self.ball_type = ball_type
+
+    def get_hp_percent(self):
+        return self.hp / self.max_hp
+
+def test_warrior_priorities():
+    world = MockWorld()
+    warrior = Warrior(1)
+    layer = Decision(warrior, world)
+
+    perception = {
+        "danger_level": 0.0,
+        "opportunity_level": 1.0,
+        "opportunity_score": 1.0,
+        "threat_level": 0.0,
+        "enemies": [MockEntity(100, 100)],
+        "boosters": [{"x": 10, "y": 10}],
+        "allies": [],
+        "team_messages": []
+    }
+
+    action = layer.choose_action(perception, "calm")
+    # Even though booster opportunity is high, attack should be preferred due to warrior override
+    assert action == "attack" or action == "chase"
+
+def test_scout_priorities():
+    world = MockWorld()
+    scout = Scout(1)
+    layer = Decision(scout, world)
+
+    # Test weak enemy
+    perception_weak = {
+        "danger_level": 0.0,
+        "opportunity_level": 0.0,
+        "opportunity_score": 0.0,
+        "threat_level": 0.0,
+        "enemies": [MockEntity(20, 100)], # weak enemy
+        "boosters": [],
+        "allies": [],
+        "team_messages": []
+    }
+    action_weak = layer.choose_action(perception_weak, "calm")
+    assert action_weak in ("chase", "attack")
+
+    # Test strong enemy vs booster
+    perception_strong = {
+        "danger_level": 0.0,
+        "opportunity_level": 1.0,
+        "opportunity_score": 1.0,
+        "threat_level": 0.8,
+        "enemies": [MockEntity(100, 100)], # strong enemy
+        "boosters": [{"x": 10, "y": 10}],
+        "allies": [],
+        "team_messages": []
+    }
+    action_strong = layer.choose_action(perception_strong, "calm")
+    assert action_strong == "collect_booster"
+
+def test_tank_priorities():
+    world = MockWorld()
+    tank = Tank(1)
+    layer = Decision(tank, world)
+
+    perception = {
+        "danger_level": 0.2,
+        "opportunity_level": 0.5,
+        "opportunity_score": 0.5,
+        "threat_level": 0.0,
+        "enemies": [MockEntity(100, 100)],
+        "boosters": [{"x": 10, "y": 10}],
+        "allies": [MockEntity(50, 100)], # ally present
+        "team_messages": []
+    }
+
+    action = layer.choose_action(perception, "calm")
+    assert action == "defend"
+
+def test_healer_priorities():
+    world = MockWorld()
+    healer = Healer(1)
+    layer = Decision(healer, world)
+
+    perception = {
+        "danger_level": 0.0,
+        "opportunity_level": 0.0,
+        "opportunity_score": 0.0,
+        "threat_level": 0.0,
+        "enemies": [MockEntity(100, 100)],
+        "boosters": [],
+        "allies": [MockEntity(40, 100, ball_type="warrior")], # wounded ally
+        "team_messages": []
+    }
+
+    action = layer.choose_action(perception, "calm")
+    assert action == "defend" # Healer's defend translates to healing/protecting
