@@ -639,8 +639,8 @@
             currentFrameIndex = 0;
             isPlaying = true;
             document.getElementById("btnPlay").textContent = "Pause";
-            if (!animationId) {
-                animationId = requestAnimationFrame(gameLoop);
+            if (!animationFrameId) {
+                animationFrameId = requestAnimationFrame(tickAnimation);
             }
             
             // Set Arena Size
@@ -774,13 +774,57 @@
 
                 // Draw special visual effects for actions
                 if (ball.action === "use_skill" || ball.action === "use skill") {
-                    ctx.beginPath();
-                    ctx.arc(ball.x, ball.y, radius * 3, 0, Math.PI * 2);
-                    ctx.strokeStyle = color;
-                    ctx.lineWidth = 2;
-                    ctx.setLineDash([4, 4]);
-                    ctx.stroke();
-                    ctx.setLineDash([]);
+                    const skill = replayData.ball_types?.[ball.type]?.skill;
+
+                    if (skill === "shield") {
+                        // Glowing cyan circle around the tank
+                        ctx.beginPath();
+                        ctx.arc(ball.x, ball.y, radius + 8, 0, Math.PI * 2);
+                        ctx.strokeStyle = "cyan";
+                        ctx.lineWidth = 3;
+                        ctx.shadowColor = "cyan";
+                        ctx.shadowBlur = 10;
+                        ctx.stroke();
+                        ctx.shadowBlur = 0;
+                    } else if (skill === "wave_attack") {
+                        // Expanding red shockwaves
+                        const waveCount = 3;
+                        for (let i = 0; i < waveCount; i++) {
+                            const waveRadius = radius + ((currentFrameIndex * 2 + i * 15) % 40);
+                            ctx.beginPath();
+                            ctx.arc(ball.x, ball.y, waveRadius, 0, Math.PI * 2);
+                            ctx.strokeStyle = "rgba(255, 74, 90, " + (1 - waveRadius/50) + ")";
+                            ctx.lineWidth = 2;
+                            ctx.stroke();
+                        }
+                    } else if (skill === "dash") {
+                        // Ghost trail particles
+                        const trailLength = 5;
+                        for (let i = 1; i <= trailLength; i++) {
+                            const pastFrameIdx = currentFrameIndex - (i * 2);
+                            if (pastFrameIdx >= 0 && replayData.history[pastFrameIdx]) {
+                                const pastBall = replayData.history[pastFrameIdx].balls.find(b => b.id === ball.id);
+                                if (pastBall) {
+                                    ctx.beginPath();
+                                    ctx.arc(pastBall.x, pastBall.y, radius * 0.8, 0, Math.PI * 2);
+                                    ctx.save();
+                                    ctx.globalAlpha = 1 - (i * 0.15);
+                                    ctx.fillStyle = color;
+                                    ctx.fill();
+                                    ctx.restore();
+                                }
+                            }
+                        }
+                    } else {
+                        // Default dashed circle
+                        ctx.beginPath();
+                        ctx.arc(ball.x, ball.y, radius * 3, 0, Math.PI * 2);
+                        ctx.strokeStyle = color;
+                        ctx.lineWidth = 2;
+                        ctx.setLineDash([4, 4]);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                    }
                 }
 
                 // Outer aura
