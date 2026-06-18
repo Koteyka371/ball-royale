@@ -1,13 +1,11 @@
-import sys
 import os
+import sys
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../src')))
 
 from tests.simulate_battle import BattleSimulation
-import sys
-# Because we append the root dir, ai.genetics needs to be src.ai.genetics
-from src.ai.genetics import BallGenetics
-from src.ai.development_phase import DevelopmentPhase
+from ai.genetics import BallGenetics
+from ai.development_phase import DevelopmentPhase
 
 def run_evolution(generations=5, num_balls=50):
     print(f"Starting evolutionary simulation with {num_balls} balls over {generations} generations...")
@@ -40,7 +38,7 @@ def run_evolution(generations=5, num_balls=50):
                 ball.ball_type = dna.get("ball_type", ball.ball_type)
 
         # Run the simulation
-        stats = sim.run(record=False)
+        sim.run(record=False)
 
         # Process the meta-evolution development phase
         development_phase.process_battle_results(sim.balls)

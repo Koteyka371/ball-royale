@@ -1387,12 +1387,12 @@ func _use_skill():
         skill_timer = self.ball.skill_timer
 
     if skill_timer <= 0.0 and self.ball.has_method("use_skill"):
-        self.ball.use_skill()
-        _spawn_skill_particles()
-
         var skill_name = ""
         if "skill" in self.ball:
             skill_name = self.ball.skill
+
+        self.ball.use_skill()
+        _spawn_skill_particles(skill_name)
 
         if skill_name == "command":
             if self.ball.has_method("set_meta"):
@@ -1408,18 +1408,65 @@ func _use_skill():
         if "skill_cooldown" in self.ball:
             self.ball.skill_timer = self.ball.skill_cooldown
 
-func _spawn_skill_particles():
+func _spawn_skill_particles(skill_name: String = ""):
     if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("add_child"):
         var particles = CPUParticles2D.new()
         particles.emitting = true
         particles.one_shot = true
-        particles.amount = 30
-        particles.spread = 180.0
-        particles.gravity = Vector2(0, 0)
-        particles.initial_velocity_min = 50.0
-        particles.initial_velocity_max = 100.0
-        particles.lifetime = 0.5
-        particles.explosiveness = 0.8
+
+        # Configure particle properties based on skill
+        if skill_name == "wave_attack":
+            particles.amount = 50
+            particles.spread = 360.0
+            particles.initial_velocity_min = 100.0
+            particles.initial_velocity_max = 150.0
+            particles.color = Color(0.2, 0.5, 1.0, 0.8) # Blue wave
+            particles.lifetime = 0.6
+            particles.explosiveness = 0.9
+        elif skill_name == "explosion":
+            particles.amount = 60
+            particles.spread = 360.0
+            particles.initial_velocity_min = 150.0
+            particles.initial_velocity_max = 200.0
+            particles.color = Color(1.0, 0.3, 0.0, 0.9) # Fiery explosion
+            particles.lifetime = 0.4
+            particles.explosiveness = 1.0
+        elif skill_name == "dash":
+            particles.amount = 20
+            particles.spread = 20.0
+            particles.initial_velocity_min = 30.0
+            particles.initial_velocity_max = 80.0
+            particles.color = Color(0.8, 0.8, 0.8, 0.5) # Dust/wind trail
+            particles.lifetime = 0.3
+            particles.explosiveness = 0.5
+            # Could orient opposite to velocity if we had it, but spread and low life is fine
+        elif skill_name == "shield" or skill_name == "protect_ally":
+            particles.amount = 40
+            particles.spread = 360.0
+            particles.initial_velocity_min = 20.0
+            particles.initial_velocity_max = 40.0
+            particles.color = Color(0.9, 0.8, 0.2, 0.7) # Golden/yellow aura
+            particles.lifetime = 0.8
+            particles.explosiveness = 0.2 # Sustained bubble look
+        elif skill_name == "heal_ally":
+            particles.amount = 25
+            particles.spread = 180.0
+            particles.initial_velocity_min = 40.0
+            particles.initial_velocity_max = 70.0
+            particles.gravity = Vector2(0, -50) # Floating up
+            particles.color = Color(0.2, 0.9, 0.3, 0.8) # Green healing
+            particles.lifetime = 0.7
+            particles.explosiveness = 0.4
+        else:
+            # Default generic skill particles
+            particles.amount = 30
+            particles.spread = 180.0
+            particles.initial_velocity_min = 50.0
+            particles.initial_velocity_max = 100.0
+            particles.lifetime = 0.5
+            particles.explosiveness = 0.8
+
+        if skill_name != "heal_ally": particles.gravity = Vector2(0, 0)
         self.ball.add_child(particles)
         if particles.has_signal("finished"):
             particles.finished.connect(particles.queue_free)

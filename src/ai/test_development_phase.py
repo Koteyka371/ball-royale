@@ -1,10 +1,10 @@
-import pytest
-import sys
 import os
+import pytest # type: ignore
+import sys
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../src')))
 
-from src.ai.development_phase import DevelopmentPhase
+from ai.development_phase import DevelopmentPhase
 
 class MockBall:
     def __init__(self, speed, damage, max_hp, hp, color, skill, ball_type, alive, kills):
