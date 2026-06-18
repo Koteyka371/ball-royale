@@ -67,9 +67,9 @@
     "agent-8": {
       "name": "Jules Worker 8",
       "area": "tests",
-      "task_id": "auto-implement-**ball-genetics**-—-balls-reproduce-afte",
-      "status": "assigned",
-      "started_at": "2026-06-18T11:35:25.954952+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 0
     },
     "agent-9": {
@@ -83,17 +83,17 @@
     "agent-10": {
       "name": "Jules Worker 10",
       "area": "meta",
-      "task_id": "auto-implement-**ball-relationships**-—-balls-remember-",
-      "status": "assigned",
-      "started_at": "2026-06-18T11:35:25.954952+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 0
     },
     "agent-11": {
       "name": "Jules Worker 11",
       "area": "innovation",
-      "task_id": "add-particle-effects",
-      "status": "assigned",
-      "started_at": "2026-06-18T11:35:25.954952+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 0
     },
     "agent-12": {
