@@ -628,7 +628,7 @@
     },
     {
       "id": "auto-implement-coach-mode-(тренер)-game-mode",
-      "status": "todo",
+      "status": "done",
       "area": "modes",
       "risk": "medium",
       "allowed_paths": [
