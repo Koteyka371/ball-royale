@@ -25,6 +25,7 @@ class ProceduralArena:
         self.num_rooms = num_rooms
         self.rooms: List[Room] = []
         self.corridors: List[Corridor] = []
+        self.hazards: List[dict] = []
 
         # Shrinking zone
         self.safe_zone_radius = arena_size * 0.7
@@ -41,6 +42,24 @@ class ProceduralArena:
             rx = random.uniform(0, self.width - rw)
             ry = random.uniform(0, self.height - rh)
             self.rooms.append(Room(rx, ry, rw, rh))
+
+        # Generate hazards inside rooms
+        for r in self.rooms:
+            if random.random() < 0.6:  # 60% chance for a room to have a hazard
+                num_hazards = random.randint(1, 3)
+                for _ in range(num_hazards):
+                    hz_type = random.choice(['spikes', 'lava'])
+                    hz_radius = random.uniform(20, 50)
+                    hz_x = random.uniform(r.x + hz_radius, r.x + r.width - hz_radius)
+                    hz_y = random.uniform(r.y + hz_radius, r.y + r.height - hz_radius)
+                    hz_damage = 20.0 if hz_type == 'spikes' else 10.0
+                    self.hazards.append({
+                        'x': hz_x,
+                        'y': hz_y,
+                        'radius': hz_radius,
+                        'damage': hz_damage,
+                        'type': hz_type
+                    })
 
         # Connect rooms with corridors
         for i in range(1, len(self.rooms)):

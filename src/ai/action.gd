@@ -46,6 +46,26 @@ func execute(strategy: String, delta: float):
                     if self.ball.hp <= 0:
                         self.ball.alive = false
 
+            if "hazards" in self.world.arena:
+                var ball_radius = 10.0
+                if "radius" in self.ball:
+                    ball_radius = self.ball.radius
+                for hz in self.world.arena.hazards:
+                    var hz_x = hz.get("x", 0.0)
+                    var hz_y = hz.get("y", 0.0)
+                    var hz_radius = hz.get("radius", 0.0)
+                    var hz_damage = hz.get("damage", 0.0)
+
+                    var dist_sq = (self.ball.x - hz_x) * (self.ball.x - hz_x) + (self.ball.y - hz_y) * (self.ball.y - hz_y)
+                    if dist_sq < (hz_radius + ball_radius) * (hz_radius + ball_radius):
+                        var damage = hz_damage * delta
+                        if self.ball.has_method("take_damage"):
+                            self.ball.take_damage(damage)
+                        elif "hp" in self.ball:
+                            self.ball.hp -= damage
+                            if self.ball.hp <= 0:
+                                self.ball.alive = false
+
     if "current_action" in self.ball:
         self.ball.current_action = strategy
 

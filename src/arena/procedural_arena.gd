@@ -6,6 +6,7 @@ var height: float
 var num_rooms: int
 var rooms: Array = []
 var corridors: Array = []
+var hazards: Array = []
 var rng: RandomNumberGenerator
 
 var safe_zone_radius: float
@@ -59,6 +60,23 @@ func generate():
         var rx = rng.randf_range(0.0, width - rw)
         var ry = rng.randf_range(0.0, height - rh)
         rooms.append(Room.new(rx, ry, rw, rh))
+
+    for r in rooms:
+        if rng.randf() < 0.6: # 60% chance for a room to have a hazard
+            var num_hazards = rng.randi_range(1, 3)
+            for _j in range(num_hazards):
+                var hz_type = "spikes" if rng.randf() < 0.5 else "lava"
+                var hz_radius = rng.randf_range(20.0, 50.0)
+                var hz_x = rng.randf_range(r.x + hz_radius, r.x + r.width - hz_radius)
+                var hz_y = rng.randf_range(r.y + hz_radius, r.y + r.height - hz_radius)
+                var hz_damage = 20.0 if hz_type == "spikes" else 10.0
+                hazards.append({
+                    "x": hz_x,
+                    "y": hz_y,
+                    "radius": hz_radius,
+                    "damage": hz_damage,
+                    "type": hz_type
+                })
 
     for i in range(1, rooms.size()):
         var r1 = rooms[i - 1]

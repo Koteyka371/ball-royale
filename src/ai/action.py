@@ -38,6 +38,25 @@ class Action:
                         if self.ball.hp <= 0:
                             self.ball.alive = False
 
+                # Apply hazard damage
+                if hasattr(self.world.arena, "hazards"):
+                    ball_radius = getattr(self.ball, "radius", 10.0)
+                    for hz in self.world.arena.hazards:
+                        hz_x = hz.get('x', 0)
+                        hz_y = hz.get('y', 0)
+                        hz_radius = hz.get('radius', 0)
+                        hz_damage = hz.get('damage', 0)
+
+                        dist_sq = (self.ball.x - hz_x)**2 + (self.ball.y - hz_y)**2
+                        if dist_sq < (hz_radius + ball_radius)**2:
+                            damage = hz_damage * delta
+                            if hasattr(self.ball, "take_damage"):
+                                self.ball.take_damage(damage)
+                            elif hasattr(self.ball, "hp"):
+                                self.ball.hp -= damage
+                                if self.ball.hp <= 0:
+                                    self.ball.alive = False
+
         self.ball.current_action = strategy
         self.ball.team_message = None  # Clear previous message
 
