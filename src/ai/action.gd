@@ -12,6 +12,40 @@ func execute(strategy: String, delta: float):
     var old_x = self.ball.x
     var old_y = self.ball.y
 
+    if "arena" in self.world and self.world.arena.has_method("update_zone"):
+        var current_tick = 0
+        if "tick" in self.world:
+            current_tick = self.world.tick
+        self.world.arena.update_zone(current_tick, delta)
+
+        var ball_type = null
+        if "ball_type" in self.ball:
+            ball_type = self.ball.ball_type
+        elif self.ball.has_method("get_ball_type"):
+            ball_type = self.ball.get_ball_type()
+
+        if ball_type != "spectator":
+            var cx = 0.0
+            var cy = 0.0
+            var r = INF
+            if "safe_zone_center" in self.world.arena:
+                var center = self.world.arena.safe_zone_center
+                if center.size() >= 2:
+                    cx = center[0]
+                    cy = center[1]
+            if "safe_zone_radius" in self.world.arena:
+                r = self.world.arena.safe_zone_radius
+
+            var dist = sqrt((self.ball.x - cx) * (self.ball.x - cx) + (self.ball.y - cy) * (self.ball.y - cy))
+            if dist > r:
+                var zone_damage = 10.0 * delta
+                if self.ball.has_method("take_damage"):
+                    self.ball.take_damage(zone_damage)
+                elif "hp" in self.ball:
+                    self.ball.hp -= zone_damage
+                    if self.ball.hp <= 0:
+                        self.ball.alive = false
+
     if "current_action" in self.ball:
         self.ball.current_action = strategy
 
