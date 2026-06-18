@@ -737,7 +737,7 @@ class Action:
                                 return 1.0
                             ally_to_protect = min(allies, key=lambda a: get_hp_pct(a))
 
-                    target_enemy = max(enemies, key=lambda e: getattr(e, "max_hp", getattr(e, "hp", 0.0)))
+                    target_enemy = max(enemies, key=lambda e: (getattr(e, "max_hp", getattr(e, "hp", 0.0)), getattr(e, "hp", 0.0), -((e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)))
 
                     if ally_to_protect:
                         # Body blocking position: 30 units from ally towards enemy

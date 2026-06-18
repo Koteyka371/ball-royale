@@ -1160,14 +1160,33 @@ func _defend(delta: float):
                                 min_hp_pct = a_hp_pct
                                 ally_to_protect = a
 
-                var max_hp = -1.0
+                var best_max_hp = -1.0
+                var best_current_hp = -1.0
+                var best_dist_sq = INF
                 for e in enemies:
-                    var hp = 0.0
-                    if "hp" in e:
-                        hp = e.hp
-                    if hp > max_hp:
-                        max_hp = hp
+                    var e_max_hp = 0.0
+                    if "max_hp" in e: e_max_hp = e.max_hp
+                    elif "hp" in e: e_max_hp = e.hp
+
+                    var e_hp = 0.0
+                    if "hp" in e: e_hp = e.hp
+
+                    var d_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+
+                    if e_max_hp > best_max_hp:
+                        best_max_hp = e_max_hp
+                        best_current_hp = e_hp
+                        best_dist_sq = d_sq
                         target = e
+                    elif e_max_hp == best_max_hp:
+                        if e_hp > best_current_hp:
+                            best_current_hp = e_hp
+                            best_dist_sq = d_sq
+                            target = e
+                        elif e_hp == best_current_hp:
+                            if d_sq < best_dist_sq:
+                                best_dist_sq = d_sq
+                                target = e
             else:
                 for e in enemies:
                     var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
