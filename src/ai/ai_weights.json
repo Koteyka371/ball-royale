@@ -1,0 +1,55 @@
+{
+    "flee": {
+        "hp_percent": -50.0,
+        "danger_level": 100.0,
+        "threat_level": 20.0,
+        "enemies_count": 10.0,
+        "bias": 0.0
+    },
+    "defend": {
+        "hp_percent": -30.0,
+        "danger_level": 100.0,
+        "threat_level": 60.0,
+        "allies_count": 10.0,
+        "bias": 10.0
+    },
+    "collect_booster": {
+        "opportunity_score": 100.0,
+        "opportunity_level": 50.0,
+        "boosters_count": 40.0,
+        "bias": 0.0
+    },
+    "attack": {
+        "enemies_count": 30.0,
+        "danger_level": -20.0,
+        "allies_count": 15.0,
+        "bias": 10.0
+    },
+    "chase": {
+        "enemies_count": 20.0,
+        "threat_level": 10.0,
+        "bias": 5.0
+    },
+    "use_skill": {
+        "skill_timer_ready": 100.0,
+        "danger_level": 30.0,
+        "enemies_count": 20.0,
+        "hp_percent": -40.0,
+        "threat_level": 60.0,
+        "bias": 0.0
+    },
+    "kite": {
+        "danger_level": 50.0,
+        "enemies_count": 30.0,
+        "hp_percent": -20.0,
+        "bias": 0.0
+    },
+    "flank": {
+        "enemies_count": 20.0,
+        "danger_level": 10.0,
+        "bias": 0.0
+    },
+    "idle": {
+        "bias": 1.0
+    }
+}

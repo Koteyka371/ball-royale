@@ -32,7 +32,7 @@ def test_decision_fear_flee():
     assert action == "flee"
 
 def test_decision_defend_high_danger():
-    ball = MockBall(hp=100, max_hp=100, personality="idle")
+    ball = MockBall(hp=100, max_hp=100, personality="idle", skill_timer=5.0)
     decision = Decision(ball, MockWorld())
     perception = {
         "danger_level": 0.8, "opportunity_level": 0.1,
@@ -54,7 +54,7 @@ def test_decision_greed_collect_booster():
     assert action == "collect_booster"
 
 def test_decision_rage_attack():
-    ball = MockBall(hp=100, max_hp=100, personality="idle")
+    ball = MockBall(hp=100, max_hp=100, personality="idle", skill_timer=5.0)
     decision = Decision(ball, MockWorld())
     perception = {
         "danger_level": 0.3, "opportunity_level": 0.0,
@@ -109,7 +109,7 @@ def test_decision_no_enemies_personality_fallback():
     assert action == "attack"
 
 def test_decision_heroism_emotion():
-    ball = MockBall(hp=100, max_hp=100, personality="idle")
+    ball = MockBall(hp=100, max_hp=100, personality="idle", skill_timer=5.0)
     decision = Decision(ball, MockWorld())
     perception = {
         "danger_level": 0.1, "opportunity_level": 0.0,
@@ -123,7 +123,7 @@ def test_decision_heroism_emotion():
     assert action == "defend"
 
 def test_decision_ally_advantage():
-    ball = MockBall(hp=100, max_hp=100, personality="idle")
+    ball = MockBall(hp=100, max_hp=100, personality="idle", skill_timer=5.0)
     decision = Decision(ball, MockWorld())
     perception = {
         "danger_level": 0.1, "opportunity_level": 0.0,
