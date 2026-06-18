@@ -1354,6 +1354,7 @@ func _use_skill():
 
     if skill_timer <= 0.0 and self.ball.has_method("use_skill"):
         self.ball.use_skill()
+        _create_skill_particles()
 
         var skill_name = ""
         if "skill" in self.ball:
@@ -1661,3 +1662,34 @@ func _kite(delta: float):
                     self.ball.set_meta("attack_timer", cooldown)
     else:
         _idle(delta)
+
+
+func _create_skill_particles():
+    if not self.ball or not self.ball.has_method("add_child"):
+        return
+
+    var particles = CPUParticles2D.new()
+    particles.emitting = false
+    particles.one_shot = true
+    particles.explosiveness = 0.9
+    particles.amount = 30
+    particles.lifetime = 0.6
+    particles.spread = 180.0
+    particles.gravity = Vector2(0, 0)
+    particles.initial_velocity_min = 50.0
+    particles.initial_velocity_max = 150.0
+    particles.scale_amount_min = 2.0
+    particles.scale_amount_max = 5.0
+
+    var color = Color(1, 1, 1, 1)
+    if "color" in self.ball and typeof(self.ball.color) == TYPE_COLOR:
+        color = self.ball.color
+    elif self.ball.has_method("get_color"):
+        color = self.ball.get_color()
+    particles.color = color
+
+    self.ball.add_child(particles)
+    particles.emitting = true
+
+    var timer = particles.get_tree().create_timer(particles.lifetime + 0.1)
+    timer.connect("timeout", Callable(particles, "queue_free"))

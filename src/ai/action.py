@@ -868,6 +868,7 @@ class Action:
         skill_timer = getattr(self.ball, "skill_timer", 0.0)
         if skill_timer <= 0 and hasattr(self.ball, "use_skill"):
             self.ball.use_skill()
+            self._create_skill_particles()
 
             if getattr(self.ball, "skill", "") == "command":
                 self.ball.team_message = {"type": "buff_command", "radius": 200}
@@ -1083,3 +1084,6 @@ class Action:
                     self.ball.attack_timer = cooldown
         else:
             self._idle(delta)
+
+    def _create_skill_particles(self) -> None:
+        pass
