@@ -202,10 +202,27 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
             best_action = action
 
     if best_action == "idle":
-        if personality == "warrior":
-            return "attack"
-        elif personality == "scout":
-            return "collect_booster"
-        return personality
+        var behaviors = {
+            "warrior": "attack",
+            "tank": "defend",
+            "assassin": "chase",
+            "healer": "defend",
+            "sniper": "kite",
+            "bomber": "attack",
+            "berserker": "attack",
+            "juggernaut": "defend",
+            "rogue": "chase",
+            "guardian": "defend",
+            "phantom": "chase",
+            "swarm": "chase",
+            "scout": "collect_booster",
+            "king": "defend",
+            "aggressive": "attack",
+            "defender": "defend",
+            "spectator": "idle"
+        }
+        if behaviors.has(personality):
+            return behaviors[personality]
+        return "idle"
 
     return best_action
