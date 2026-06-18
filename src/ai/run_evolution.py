@@ -7,12 +7,14 @@ from tests.simulate_battle import BattleSimulation
 import sys
 # Because we append the root dir, ai.genetics needs to be src.ai.genetics
 from src.ai.genetics import BallGenetics
+from src.ai.development_phase import DevelopmentPhase
 
 def run_evolution(generations=5, num_balls=50):
     print(f"Starting evolutionary simulation with {num_balls} balls over {generations} generations...")
 
     # Initialize genetics tracker
     genetics = BallGenetics(battles_to_reproduce=2, mutation_rate=0.2, mutation_amount=0.2)
+    development_phase = DevelopmentPhase()
 
     for gen in range(generations):
         print(f"\n{'='*40}")
@@ -39,6 +41,9 @@ def run_evolution(generations=5, num_balls=50):
 
         # Run the simulation
         stats = sim.run(record=False)
+
+        # Process the meta-evolution development phase
+        development_phase.process_battle_results(sim.balls)
 
         # Gather survivors
         survivors = [b for b in sim.balls if b.alive and getattr(b, "ball_type", None) != "spectator"]
