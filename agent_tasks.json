@@ -748,7 +748,7 @@
     },
     {
       "id": "arena-shrinking-zone",
-      "status": "todo",
+      "status": "done",
       "area": "arena-mechanics",
       "risk": "medium",
       "title": "Add shrinking battle zone logic",

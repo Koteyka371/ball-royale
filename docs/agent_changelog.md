@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [arena-shrinking-zone] Add shrinking battle zone logic — *2026-06-18 15:57:35 UTC*
+
+Implement a battle royale shrinking zone (like in PUBG/Fortnite). The safe area should decrease over time, and any ball outside the zone takes continuous damage.
+
+---
+
 ## [add-skill-effects-vfx] Add Particle VFX for Ball Skills — *2026-06-18 15:43:26 UTC*
 
 Implement Godot Particle2D nodes that trigger when a ball uses its special skill, such as wave attack or explosion.
