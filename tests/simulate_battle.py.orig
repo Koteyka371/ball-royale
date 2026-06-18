@@ -470,12 +470,6 @@ class BattleSimulation:
                 for line in lines[-10:]:
                     print(f"  > {line}")
                 print(f"{'='*60}")
-
-                print("\n" + "="*60)
-                print("  UI KILL FEED PREVIEW")
-                print("="*60)
-                for msg in commentator.kill_feed.get_messages():
-                    print(f"  [UI] {msg}")
             except ImportError:
                 pass
 
@@ -605,7 +599,7 @@ if __name__ == "__main__":
 
     print(f"Running simulation with {args.num_balls} balls...")
     sim = BattleSimulation(num_balls=args.num_balls, max_ticks=args.ticks, seed=42)
-    
+
     record = bool(args.export)
     stats = sim.run(record=record)
     sim.print_report()

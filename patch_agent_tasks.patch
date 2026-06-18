@@ -1,0 +1,12 @@
+--- agent_tasks.json
++++ agent_tasks.json
+@@ -628,7 +628,7 @@
+       ]
+     },
+     {
+       "id": "implement-kill-feed-ui",
+-      "status": "todo",
++      "status": "done",
+       "area": "ui",
+       "risk": "medium",
+       "title": "Implement Kill Feed UI",
