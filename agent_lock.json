@@ -86,7 +86,7 @@
       "task_id": "auto-create-procedural-arenas-arena",
       "status": "working",
       "started_at": "2026-06-18T02:11:40.020594+00:00",
-      "cycles_today": 0
+      "cycles_today": 1
     },
     "agent-11": {
       "name": "Jules Worker 11",
