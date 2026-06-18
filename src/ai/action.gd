@@ -440,6 +440,15 @@ func _flee(delta: float):
     if "speed" in self.ball: speed = self.ball.speed
     var boosted_speed = speed * 1.5
 
+    var emotion = "neutral"
+    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("emotion"):
+        emotion = self.ball.get_meta("emotion")
+    elif "emotion" in self.ball:
+        emotion = self.ball.emotion
+
+    if emotion == "fear":
+        boosted_speed *= 1.5
+
     self.ball.x += comb_nx * boosted_speed * delta * 60.0
     self.ball.y += comb_ny * boosted_speed * delta * 60.0
 

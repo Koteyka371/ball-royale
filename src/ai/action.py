@@ -323,6 +323,10 @@ class Action:
         base_speed = getattr(self.ball, "speed", 2.0)
         boosted_speed = base_speed * 1.5
 
+        emotion = getattr(self.ball, "emotion", "neutral")
+        if emotion == "fear":
+            boosted_speed *= 1.5
+
         self.ball.x += comb_nx * boosted_speed * delta * 60
         self.ball.y += comb_ny * boosted_speed * delta * 60
 

@@ -32,6 +32,8 @@ class BallBrain:
             perception_data = self.perception()
             emotion_state = self.emotion(perception_data)
 
+            self.ball.emotion = emotion_state
+
             decision = self.decision(perception_data, emotion_state)
 
             self._current_decision = decision

@@ -33,6 +33,11 @@ func process(delta):
         var perception_data = perception()
         var emotion_state = emotion(perception_data)
 
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+            self.ball.set_meta("emotion", emotion_state)
+        elif "emotion" in self.ball:
+            self.ball.emotion = emotion_state
+
         var decision_str = decision(perception_data, emotion_state)
         self._current_decision = decision_str
 
