@@ -23,7 +23,8 @@ func scan() -> Dictionary:
         "opportunity_score": 0.0,
         "coach_strategy": "",
         "danger_level": 0.0,
-        "opportunity_level": 0.0
+        "opportunity_level": 0.0,
+        "rival_spotted": false
     }
 
     if not self.world or not self.world.has_method("get_nearby_entities"):
@@ -44,6 +45,12 @@ func scan() -> Dictionary:
     var threat = 0.0
     var opp = 0.0
 
+    var my_memory = {}
+    if self.ball.has_method("get_meta") and self.ball.has_meta("memory"):
+        my_memory = self.ball.get_meta("memory")
+    elif "memory" in self.ball:
+        my_memory = self.ball.memory
+
     for enemy in data["enemies"]:
         var dist = 0.0
         if "x" in enemy and "y" in enemy:
@@ -52,6 +59,10 @@ func scan() -> Dictionary:
             dist = sqrt(dx*dx + dy*dy)
             if "id" in enemy:
                 data["distances"][enemy.id] = dist
+                if my_memory.has(enemy.id):
+                    var rel = my_memory[enemy.id]
+                    if typeof(rel) == TYPE_DICTIONARY and rel.get("relation") == "rival":
+                        data["rival_spotted"] = true
         threat += max(0.0, 1.0 - (dist / perception_radius)) * 1.5
 
     for trap in data["traps"]:

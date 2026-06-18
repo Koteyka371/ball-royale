@@ -137,6 +137,10 @@ class Decision:
         if len(boosters) == 0:
             scores["collect_booster"] = -1000.0
 
+        if perception_data.get("rival_spotted"):
+            scores["attack"] += 200.0
+            scores["chase"] += 200.0
+
         # === ATTACK ===
         if len(enemies) > 0:
             scores["attack"] += 10.0

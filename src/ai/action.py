@@ -308,6 +308,12 @@ class Action:
         self.ball.y += comb_ny * boosted_speed * delta * 60
 
     def _get_target(self, enemies: list[Any]) -> Any:
+        # Check for rivals first
+        my_memory = getattr(self.ball, "memory", {})
+        rivals = [e for e in enemies if hasattr(e, "id") and my_memory.get(e.id, {}).get("relation") == "rival"]
+        if rivals:
+            return min(rivals, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+
         target_msg = None
         allies = self._get_allies()
         for ally in allies:
@@ -415,6 +421,9 @@ class Action:
 
                     if hasattr(self.world, "_deal_damage"):
                         self.world._deal_damage(self.ball, target)
+                        if hasattr(target, "id") and hasattr(self.ball, "id"):
+                            target.memory = getattr(target, "memory", {})
+                            target.memory[self.ball.id] = {"relation": "rival"}
 
                     # Restore damage
                     if is_critical:
@@ -467,6 +476,9 @@ class Action:
                     attack_timer = getattr(self.ball, "attack_timer", 0.0)
                     if attack_timer <= 0:
                         self.world._deal_damage(self.ball, target)
+                        if hasattr(target, "id") and hasattr(self.ball, "id"):
+                            target.memory = getattr(target, "memory", {})
+                            target.memory[self.ball.id] = {"relation": "rival"}
                         self.ball.attack_timer = max(0.2, 2.0 / getattr(self.ball, "speed", 2.0))
                 return
         else:
@@ -640,6 +652,9 @@ class Action:
 
                     if hasattr(self.world, "_deal_damage"):
                         self.world._deal_damage(self.ball, target)
+                        if hasattr(target, "id") and hasattr(self.ball, "id"):
+                            target.memory = getattr(target, "memory", {})
+                            target.memory[self.ball.id] = {"relation": "rival"}
 
                     if b_type == "ninja":
                         self.ball.damage = original_damage
@@ -731,6 +746,9 @@ class Action:
                         if attack_timer <= 0:
                             if hasattr(self.world, "_deal_damage"):
                                 self.world._deal_damage(self.ball, target_enemy)
+                                if hasattr(target_enemy, "id") and hasattr(self.ball, "id"):
+                                    target_enemy.memory = getattr(target_enemy, "memory", {})
+                                    target_enemy.memory[self.ball.id] = {"relation": "rival"}
 
                             b_type = getattr(self.ball, "ball_type", "").lower()
                             if b_type in ("tank", "juggernaut", "guardian"):
@@ -974,6 +992,9 @@ class Action:
                     is_enemy = getattr(other, "ball_type", "") != getattr(self.ball, "ball_type", "")
                     if is_enemy and hasattr(self.world, "_deal_damage"):
                         self.world._deal_damage(self.ball, other)
+                        if hasattr(other, "id") and hasattr(self.ball, "id"):
+                            other.memory = getattr(other, "memory", {})
+                            other.memory[self.ball.id] = {"relation": "rival"}
 
     def _update_skill_timer(self, delta: float) -> None:
         if hasattr(self.ball, "skill_timer") and self.ball.skill_timer > 0:
@@ -1050,6 +1071,9 @@ class Action:
                 if attack_timer <= 0:
                     if hasattr(self.world, "_deal_damage"):
                         self.world._deal_damage(self.ball, target)
+                        if hasattr(target, "id") and hasattr(self.ball, "id"):
+                            target.memory = getattr(target, "memory", {})
+                            target.memory[self.ball.id] = {"relation": "rival"}
 
                     speed = getattr(self.ball, "speed", 2.0)
                     cooldown = max(0.2, 2.0 / speed if speed > 0 else 1.0)

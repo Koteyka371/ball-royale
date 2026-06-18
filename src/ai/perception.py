@@ -31,6 +31,7 @@ class Perception:
             # For backward compatibility with existing layers
             "danger_level": 0.0,
             "opportunity_level": 0.0,
+            "rival_spotted": False,
         }
 
         if not self.world or not hasattr(self.world, "get_nearby_entities"):
@@ -59,6 +60,10 @@ class Perception:
             dist = calc_dist(enemy)
             if hasattr(enemy, "id"):
                 data["distances"][enemy.id] = dist
+
+                # Check for rival memory
+                if hasattr(self.ball, "memory") and self.ball.memory.get(enemy.id, {}).get("relation") == "rival":
+                    data["rival_spotted"] = True
 
             # Threat increases if enemy is closer. Max threat from one enemy = 1.0 (at dist 0)
             threat += max(0.0, 1.0 - (dist / perception_radius)) * 1.5
