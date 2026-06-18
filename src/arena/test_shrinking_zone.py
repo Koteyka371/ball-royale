@@ -1,4 +1,3 @@
-import pytest
 from arena.procedural_arena import ProceduralArena
 
 def test_zone_shrinks():

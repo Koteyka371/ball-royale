@@ -1,4 +1,3 @@
-import random
 from typing import Any, Dict
 
 
@@ -51,8 +50,6 @@ class Decision:
 
 
     def choose_action(self, perception_data: Dict[str, Any], emotion_state: str) -> str:
-        import os
-        import json
 
         hp_percent = 1.0
         if hasattr(self.ball, "get_hp_percent"):

@@ -1,4 +1,3 @@
-import pytest
 from ui.kill_feed import KillFeed
 
 def test_kill_feed_initialization():

@@ -1,10 +1,9 @@
-import pytest
-import sys
 import os
+import sys
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../src')))
 
-from src.ai.genetics import BallGenetics
+from ai.genetics import BallGenetics
 
 class MockBall:
     def __init__(self, speed, damage, max_hp, color, skill, ball_type):
