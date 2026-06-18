@@ -17,6 +17,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../s
 
 from ai.ball_brain import BallBrain
 from ai.neural_network_brain import NeuralNetworkBrain
+from arena.procedural_arena import ProceduralArena
 
 
 BALL_TYPES = {
@@ -214,6 +215,7 @@ class BattleSimulation:
 
         self.width = arena_size
         self.height = arena_size
+        self.arena = ProceduralArena(arena_size, num_rooms=5, seed=seed)
         self.balls: List[Ball] = []
         self.boosters: List[Booster] = []
         self.max_ticks = max_ticks
@@ -248,10 +250,11 @@ class BattleSimulation:
             bt = random.choice(types)
             cfg = BALL_TYPES[bt]
             r = cfg["radius"] * 2
+            spawn_x, spawn_y = self.arena.get_random_spawn_point(r)
             self.balls.append(Ball(
                 id=i, ball_type=bt,
-                x=random.uniform(r, self.width - r),
-                y=random.uniform(r, self.height - r),
+                x=spawn_x,
+                y=spawn_y,
                 hp=cfg["hp"], max_hp=cfg["hp"], speed=cfg["speed"],
                 damage=cfg["damage"], radius=cfg["radius"],
                 perception_radius=cfg["perception_radius"],
@@ -261,9 +264,10 @@ class BattleSimulation:
 
     def _spawn_boosters(self, count: int):
         for _ in range(count):
+            spawn_x, spawn_y = self.arena.get_random_spawn_point(10)
             self.boosters.append(Booster(
-                x=random.uniform(50, self.width - 50),
-                y=random.uniform(50, self.height - 50),
+                x=spawn_x,
+                y=spawn_y,
                 kind=random.choice(["health", "damage", "speed"]),
                 value=random.uniform(10, 30),
             ))
@@ -328,9 +332,10 @@ class BattleSimulation:
             active = sum(1 for b in self.boosters if b.active)
             if active < self.num_balls // 10:
                 for _ in range(3):
+                    rx, ry = self.arena.get_random_spawn_point(10)
                     self.boosters.append(Booster(
-                        x=random.uniform(50, self.width - 50),
-                        y=random.uniform(50, self.height - 50),
+                        x=rx,
+                        y=ry,
                         kind=random.choice(["health", "damage", "speed"]),
                         value=random.uniform(10, 30),
                     ))
@@ -363,8 +368,9 @@ class BattleSimulation:
 
     def add_event(self, event_type: str, data: dict):
         if event_type == "spawn_booster":
-            x = data.get("x", random.uniform(0, self.width))
-            y = data.get("y", random.uniform(0, self.height))
+            rx, ry = self.arena.get_random_spawn_point(10)
+            x = data.get("x", rx)
+            y = data.get("y", ry)
             kind = data.get("kind", random.choice(["health", "damage", "speed"]))
             value = data.get("value", 50.0)
             self.boosters.append(Booster(x=x, y=y, kind=kind, value=value))

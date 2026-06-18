@@ -884,7 +884,12 @@ class Action:
             self.ball.y = getattr(self.world, "height", 1000) / 2
             bounced = True
 
-        if hasattr(self.world, "width") and hasattr(self.world, "height"):
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "clamp_position"):
+            old_x, old_y = self.ball.x, self.ball.y
+            self.ball.x, self.ball.y, bounced_arena = self.world.arena.clamp_position(self.ball.x, self.ball.y, radius)
+            if bounced_arena:
+                bounced = True
+        elif hasattr(self.world, "width") and hasattr(self.world, "height"):
             old_x, old_y = self.ball.x, self.ball.y
             self.ball.x = max(radius, min(self.world.width - radius, self.ball.x))
             self.ball.y = max(radius, min(self.world.height - radius, self.ball.y))

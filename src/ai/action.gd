@@ -1288,24 +1288,37 @@ func _idle(delta: float):
 
 func _clamp_position() -> bool:
     var bounced = false
-    if self.world != null and "width" in self.world and "height" in self.world:
+    if self.world != null:
         var radius = 10.0
         if "radius" in self.ball: radius = self.ball.radius
 
         if is_nan(self.ball.x) or is_inf(self.ball.x):
-            self.ball.x = self.world.width / 2.0
+            if "width" in self.world:
+                self.ball.x = self.world.width / 2.0
+            else:
+                self.ball.x = 1000.0 / 2.0
             bounced = true
         if is_nan(self.ball.y) or is_inf(self.ball.y):
-            self.ball.y = self.world.height / 2.0
+            if "height" in self.world:
+                self.ball.y = self.world.height / 2.0
+            else:
+                self.ball.y = 1000.0 / 2.0
             bounced = true
 
         var old_x = self.ball.x
         var old_y = self.ball.y
-        self.ball.x = max(radius, min(self.world.width - radius, self.ball.x))
-        self.ball.y = max(radius, min(self.world.height - radius, self.ball.y))
 
-        if old_x != self.ball.x or old_y != self.ball.y:
-            bounced = true
+        if "arena" in self.world and self.world.arena != null and self.world.arena.has_method("clamp_position"):
+            var res = self.world.arena.clamp_position(self.ball.x, self.ball.y, radius)
+            self.ball.x = res[0]
+            self.ball.y = res[1]
+            if res[2]:
+                bounced = true
+        elif "width" in self.world and "height" in self.world:
+            self.ball.x = max(radius, min(self.world.width - radius, self.ball.x))
+            self.ball.y = max(radius, min(self.world.height - radius, self.ball.y))
+            if old_x != self.ball.x or old_y != self.ball.y:
+                bounced = true
 
     return bounced
 
