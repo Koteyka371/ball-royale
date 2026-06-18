@@ -328,7 +328,7 @@ class Action:
         else:
             b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
             if b_type == "tank":
-                return max(enemies, key=lambda e: getattr(e, "max_hp", getattr(e, "hp", 0.0)))
+                return max(enemies, key=lambda e: (getattr(e, "max_hp", getattr(e, "hp", 0.0)), getattr(e, "hp", 0.0), -((e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)))
             elif b_type == "bomber":
                 def count_nearby(e1):
                     return sum(1 for e2 in enemies if e1 != e2 and ((e1.x - e2.x)**2 + (e1.y - e2.y)**2) <= 1600)
@@ -601,7 +601,7 @@ class Action:
                             self.ball.hp = 0 # Suicide
                             self.ball.alive = False
                     elif b_type == "tank":
-                        strongest = max(enemies, key=lambda e: getattr(e, "max_hp", getattr(e, "hp", 0.0)))
+                        strongest = max(enemies, key=lambda e: (getattr(e, "max_hp", getattr(e, "hp", 0.0)), getattr(e, "hp", 0.0), -((e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)))
                         optimal = (target == strongest)
                     elif b_type == "warrior":
                         in_front = 0

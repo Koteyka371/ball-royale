@@ -1,6 +1,5 @@
 import sys
 import os
-import math
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../src')))
 
@@ -184,3 +183,38 @@ def test_collect_booster_ignore_enemies():
     action.execute("collect_booster", 0.1)
 
     assert ball.x > 100
+
+def test_tank_target_strong_chase_tiebreaker():
+    ball = MockBall(x=100, y=100)
+    ball.ball_type = "tank"
+    world = MockWorld()
+
+    # Three enemies with identical max_hp (200)
+    # e1: hp 200, dist 100
+    # e2: hp 150, dist 50
+    # e3: hp 200, dist 50
+
+    # We want it to prefer higher current HP if max HP is the same
+    # And if both max_hp and hp are the same, it should prefer the closer one.
+    # Therefore, between e1 and e3 (both 200 HP), it should pick e3 (closer).
+
+    e1 = MockEntity(x=100, y=200, ball_type="enemy") # up
+    e1.max_hp = 200.0
+    e1.hp = 200.0
+
+    e2 = MockEntity(x=100, y=50, ball_type="enemy") # down
+    e2.max_hp = 200.0
+    e2.hp = 150.0
+
+    e3 = MockEntity(x=150, y=100, ball_type="enemy") # right
+    e3.max_hp = 200.0
+    e3.hp = 200.0
+
+    world.entities = [e1, e2, e3]
+
+    action = Action(ball, world)
+    action.execute("chase", 0.1)
+
+    # It should target e3, meaning it moves right (x > 100)
+    assert ball.x > 100
+    assert abs(ball.y - 100) < 1.0 # Should not move vertically significantly

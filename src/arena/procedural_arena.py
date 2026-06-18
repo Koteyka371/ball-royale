@@ -1,5 +1,4 @@
 import random
-import math
 from dataclasses import dataclass
 from typing import List, Tuple
 
@@ -18,7 +17,7 @@ class Corridor:
     height: float
 
 class ProceduralArena:
-    def __init__(self, arena_size: float = 2000.0, num_rooms: int = 5, seed: int = None):
+    def __init__(self, arena_size: float = 2000.0, num_rooms: int = 5, seed: int | None = None):
         if seed is not None:
             random.seed(seed)
         self.width = arena_size

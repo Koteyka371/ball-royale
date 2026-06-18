@@ -1,4 +1,3 @@
-import pytest
 from ai.decision import Decision
 from ai.ball_types_warrior import Warrior
 from ai.ball_types_scout import Scout
