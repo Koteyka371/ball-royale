@@ -12,9 +12,9 @@
       "name": "Jules Behaviors",
       "area": "behaviors",
       "task_id": "auto-implement-**kite**-—-держит-дистанцию,-атакует-при",
-      "status": "assigned",
-      "started_at": "2026-06-18T23:17:43.748989+00:00",
-      "cycles_today": 0
+      "status": "working",
+      "started_at": "2026-06-18T23:19:57.594931+00:00",
+      "cycles_today": 1
     },
     "agent-3": {
       "name": "Jules Tests",
