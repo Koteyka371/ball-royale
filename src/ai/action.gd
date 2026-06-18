@@ -1580,6 +1580,7 @@ func _kite(delta: float):
         if "speed" in self.ball: speed = self.ball.speed
 
         var attack_range = 150.0
+        if "attack_range" in self.ball: attack_range = self.ball.attack_range
 
         if dist_sq > 0.0001:
             var nx = dx / dist
@@ -1619,6 +1620,7 @@ func _kite(delta: float):
             dist_after = sqrt(dist_sq)
 
         attack_range = 150.0
+        if "attack_range" in self.ball: attack_range = self.ball.attack_range
 
         if dist_after <= attack_range:
             var skill_timer = 0.0
