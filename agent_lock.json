@@ -3,49 +3,49 @@
     "agent-1": {
       "name": "Jules Core",
       "area": "ai-core",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "auto-implement-**target-strong**-—-атакует-самого-сильн",
+      "status": "assigned",
+      "started_at": "2026-06-18T07:15:49.518425+00:00",
       "cycles_today": 0
     },
     "agent-2": {
       "name": "Jules Behaviors",
       "area": "behaviors",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "auto-implement-**kite**-—-держит-дистанцию,-атакует-при",
+      "status": "assigned",
+      "started_at": "2026-06-18T07:15:49.518425+00:00",
       "cycles_today": 0
     },
     "agent-3": {
       "name": "Jules Tests",
       "area": "tests",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "auto-implement-**flank**-—-обходит-сзади-для-удара-skil",
+      "status": "assigned",
+      "started_at": "2026-06-18T07:15:49.518425+00:00",
       "cycles_today": 0
     },
     "agent-4": {
       "name": "Jules Content",
       "area": "content",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "idea-feature-035",
+      "status": "assigned",
+      "started_at": "2026-06-18T07:15:49.518425+00:00",
       "cycles_today": 0
     },
     "agent-5": {
       "name": "Jules Meta",
       "area": "meta",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "idea-feature-036",
+      "status": "assigned",
+      "started_at": "2026-06-18T07:15:49.518425+00:00",
       "cycles_today": 0
     },
     "agent-6": {
       "name": "Jules Innovation",
       "area": "innovation",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "ai-meta-evolution-phase",
+      "status": "assigned",
+      "started_at": "2026-06-18T07:15:49.518425+00:00",
       "cycles_today": 0
     },
     "supervisor": {
@@ -59,49 +59,49 @@
     "agent-7": {
       "name": "Jules Worker 7",
       "area": "content",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "idea-feature-037",
+      "status": "assigned",
+      "started_at": "2026-06-18T07:15:49.518425+00:00",
       "cycles_today": 0
     },
     "agent-8": {
       "name": "Jules Worker 8",
       "area": "tests",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "arena-shrinking-zone",
+      "status": "assigned",
+      "started_at": "2026-06-18T07:15:49.518425+00:00",
       "cycles_today": 0
     },
     "agent-9": {
       "name": "Jules Worker 9",
       "area": "behaviors",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "auto-implement-**ball-genetics**-—-balls-reproduce-afte",
+      "status": "assigned",
+      "started_at": "2026-06-18T07:15:49.518425+00:00",
       "cycles_today": 0
     },
     "agent-10": {
       "name": "Jules Worker 10",
       "area": "meta",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "auto-implement-**neural-ball**-—-a-ball-controlled-by-a",
+      "status": "assigned",
+      "started_at": "2026-06-18T07:15:49.518425+00:00",
       "cycles_today": 0
     },
     "agent-11": {
       "name": "Jules Worker 11",
       "area": "innovation",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "innovate-perceptron-ai",
+      "status": "assigned",
+      "started_at": "2026-06-18T07:15:49.518425+00:00",
       "cycles_today": 0
     },
     "agent-12": {
       "name": "Jules Worker 12",
       "area": "ai-core",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "auto-implement-**ball-relationships**-—-balls-remember-",
+      "status": "assigned",
+      "started_at": "2026-06-18T07:15:49.518425+00:00",
       "cycles_today": 0
     }
   },
