@@ -53,16 +53,57 @@ func _init(_arena_size: float = 2000.0, _num_rooms: int = 5, _seed = null):
     generate()
 
 func generate():
-    for _i in range(num_rooms):
-        var rw = rng.randf_range(200.0, 600.0)
-        var rh = rng.randf_range(200.0, 600.0)
-        var rx = rng.randf_range(0.0, width - rw)
-        var ry = rng.randf_range(0.0, height - rh)
-        rooms.append(Room.new(rx, ry, rw, rh))
+    var attempts = 0
+    while rooms.size() < num_rooms and attempts < 1000:
+        attempts += 1
+        var max_size = min(600.0, width / 2.0)
+        var rw = rng.randf_range(200.0, max_size)
+        var rh = rng.randf_range(200.0, max_size)
+        var rx = rng.randf_range(50.0, width - rw - 50.0)
+        var ry = rng.randf_range(50.0, height - rh - 50.0)
 
+        var overlap = false
+        for r in rooms:
+            if not (rx + rw + 50.0 < r.x or rx > r.x + r.width + 50.0 or ry + rh + 50.0 < r.y or ry > r.y + r.height + 50.0):
+                overlap = true
+                break
+
+        if not overlap:
+            rooms.append(Room.new(rx, ry, rw, rh))
+
+    if rooms.size() == 0:
+        return
+
+    var connected = [rooms[0]]
+    var unconnected = []
     for i in range(1, rooms.size()):
-        var r1 = rooms[i - 1]
-        var r2 = rooms[i]
+        unconnected.append(rooms[i])
+
+    while unconnected.size() > 0:
+        var best_dist = INF
+        var best_r1 = null
+        var best_r2 = null
+        var best_idx = -1
+
+        for c_room in connected:
+            var c_cx = c_room.x + c_room.width / 2.0
+            var c_cy = c_room.y + c_room.height / 2.0
+            for i in range(unconnected.size()):
+                var u_room = unconnected[i]
+                var u_cx = u_room.x + u_room.width / 2.0
+                var u_cy = u_room.y + u_room.height / 2.0
+                var dist = (c_cx - u_cx) * (c_cx - u_cx) + (c_cy - u_cy) * (c_cy - u_cy)
+                if dist < best_dist:
+                    best_dist = dist
+                    best_r1 = c_room
+                    best_r2 = u_room
+                    best_idx = i
+
+        if best_r1 == null or best_r2 == null:
+            break
+
+        var r1 = best_r1
+        var r2 = best_r2
 
         var c1x = r1.x + r1.width / 2.0
         var c1y = r1.y + r1.height / 2.0
@@ -75,6 +116,9 @@ func generate():
         else:
             corridors.append(Corridor.new(c1x - 25.0, min(c1y, c2y) - 25.0, 50.0, abs(c2y - c1y) + 50.0))
             corridors.append(Corridor.new(min(c1x, c2x) - 25.0, c2y - 25.0, abs(c2x - c1x) + 50.0, 50.0))
+
+        connected.append(r2)
+        unconnected.remove_at(best_idx)
 
 func get_random_spawn_point(radius: float) -> Array:
     if rooms.size() == 0:
