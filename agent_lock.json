@@ -46,7 +46,7 @@
       "task_id": "arena-shrinking-zone",
       "status": "working",
       "started_at": "2026-06-18T15:30:43.873519+00:00",
-      "cycles_today": 0
+      "cycles_today": 1
     },
     "supervisor": {
       "name": "Jules Supervisor",
