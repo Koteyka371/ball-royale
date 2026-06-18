@@ -54,8 +54,19 @@ python scripts/quality_metrics.py
 pytest tests/ -v
 ```
 
-### 6. Generate next tasks
-Add as many new tasks as you want to agent_tasks.json (minimum 1). YOUR ideas.
+### 6. Generate next tasks (IDEAS INBOX)
+Do NOT modify agent_tasks.json directly to add new tasks! 
+To avoid Git merge conflicts, write your new ideas (minimum 1) as a JSON file in the ideas/ directory.
+Example: create a file ideas/my_awesome_idea.json with this format:
+```json
+{
+  "id": "idea-teleport",
+  "title": "Implement Teleportation Skill",
+  "description": "Skill to teleport across the arena.",
+  "area": "innovation",
+  "risk": "high"
+}
+```
 
 ### 7. Create PR
 - Title format: `[{task_id}] {title}` (e.g. `[ai-brain-architecture] Implement Ball Brain`)

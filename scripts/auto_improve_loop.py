@@ -57,6 +57,25 @@ def main():
     manifest = load_json(TASK_FILE)
     modified = False
 
+    # 0. Process Agent Ideas Inbox
+    ideas_dir = Path("ideas")
+    if ideas_dir.exists():
+        print("[Auto-Improve] Processing ideas inbox...")
+        for idea_file in ideas_dir.glob("*.json"):
+            try:
+                idea_data = load_json(idea_file)
+                tasks_to_add = idea_data if isinstance(idea_data, list) else [idea_data]
+                for t in tasks_to_add:
+                    if "title" in t and "description" in t:
+                        task_id = t.get("id", f"idea-{len(manifest.get('tasks', []))}")
+                        if add_task(manifest, task_id, t["title"], t["description"], 
+                                  t.get("area", "innovation"), t.get("risk", "medium"), 
+                                  t.get("allowed_paths"), t.get("acceptance")):
+                            modified = True
+                idea_file.unlink() # Delete the file after processing
+            except Exception as e:
+                print(f"Error processing idea {idea_file}: {e}")
+
     # 1. Run generate_ideas.py to pull tasks from game_design.md
     print("[Auto-Improve] Running idea generator...")
     try:

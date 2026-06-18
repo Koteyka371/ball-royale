@@ -1,0 +1,48 @@
+name: Jules Agent 21
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: agent-21
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  run-agent:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for agent's turn (stagger)
+        run: sleep 0
+
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+
+      - name: Invoke Jules Agent 21
+        run: python3 scripts/launch_agent.py agent-21
+        env:
+          JULES_API_KEY: ${{ secrets.JULES_API_KEY }}
+          JULES_API_KEY_2: ${{ secrets.JULES_API_KEY_2 }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Show status
+        if: always()
+        run: python3 scripts/status_agents.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
