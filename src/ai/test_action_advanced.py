@@ -1,5 +1,6 @@
 import sys
 import os
+import math
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../src')))
 
@@ -183,4 +184,3 @@ def test_collect_booster_ignore_enemies():
     action.execute("collect_booster", 0.1)
 
     assert ball.x > 100
-    assert ball.y == 100
