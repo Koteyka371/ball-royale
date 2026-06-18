@@ -65,6 +65,27 @@ def test_sniper_chases_far_enemy():
     assert sniper.x > orig_x, f"Expected sniper to move right, but x moved from {orig_x} to {sniper.x}"
 
 
+def test_sniper_attacks_while_kiting():
+    world = MockWorld()
+    sniper = Sniper(1, x=500, y=500)
+    enemy = Warrior(2, x=600, y=500)
+    world.entities = [enemy]
+
+    action = Action(sniper, world)
+
+    damage_dealt = []
+    def mock_deal_damage(attacker, tgt):
+        damage_dealt.append((attacker, tgt))
+    world._deal_damage = mock_deal_damage
+
+    sniper.attack_timer = 0.0
+    action.execute("kite", 0.1)
+
+    assert len(damage_dealt) == 1, "Expected sniper to deal damage to target while kiting"
+    assert damage_dealt[0][0] == sniper
+    assert damage_dealt[0][1] == enemy
+
+
 def test_sniper_uses_skill_when_approached():
     world = MockWorld()
 
@@ -95,5 +116,6 @@ if __name__ == "__main__":
     test_sniper_kites_enemy()
     test_sniper_maintains_distance()
     test_sniper_chases_far_enemy()
+    test_sniper_attacks_while_kiting()
     test_sniper_uses_skill_when_approached()
     print("All kiting tests passed.")
