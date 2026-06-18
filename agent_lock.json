@@ -99,9 +99,9 @@
     "agent-12": {
       "name": "Jules Worker 12",
       "area": "ai-core",
-      "task_id": "implement-kill-feed-ui",
-      "status": "working",
-      "started_at": "2026-06-18T11:46:14.025690+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 1
     }
   },
