@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [implement-kill-feed-ui] Implement Kill Feed UI — *2026-06-18 12:00:03 UTC*
+
+Create a UI kill feed that logs which ball killed which, using the battle simulation kill_log data.
+
+---
+
 ## [idea-feature-035] 4 ball types with unique AI — *2026-06-18 07:54:38 UTC*
 
 Implement 4 ball types with unique AI as described in game_design.md
