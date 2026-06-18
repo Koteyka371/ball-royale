@@ -786,7 +786,7 @@
     },
     {
       "id": "auto-create-procedural-arenas-arena",
-      "status": "todo",
+      "status": "done",
       "area": "arenas",
       "risk": "medium",
       "allowed_paths": [
