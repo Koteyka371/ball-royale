@@ -34,20 +34,53 @@ class ProceduralArena:
         self.generate()
 
     def generate(self):
-        # Generate rooms
-        for _ in range(self.num_rooms):
-            rw = random.uniform(200, 600)
-            rh = random.uniform(200, 600)
-            rx = random.uniform(0, self.width - rw)
-            ry = random.uniform(0, self.height - rh)
-            self.rooms.append(Room(rx, ry, rw, rh))
+        # Generate non-overlapping rooms
+        attempts = 0
+        while len(self.rooms) < self.num_rooms and attempts < 1000:
+            attempts += 1
+            # Adjust max room size based on arena size to ensure they fit better
+            max_size = min(600, self.width / 2)
+            rw = random.uniform(200, max_size)
+            rh = random.uniform(200, max_size)
+            rx = random.uniform(50, self.width - rw - 50)
+            ry = random.uniform(50, self.height - rh - 50)
 
-        # Connect rooms with corridors
-        for i in range(1, len(self.rooms)):
-            r1 = self.rooms[i - 1]
-            r2 = self.rooms[i]
+            overlap = False
+            for r in self.rooms:
+                if not (rx + rw + 50 < r.x or rx > r.x + r.width + 50 or
+                        ry + rh + 50 < r.y or ry > r.y + r.height + 50):
+                    overlap = True
+                    break
 
-            # Center points
+            if not overlap:
+                self.rooms.append(Room(rx, ry, rw, rh))
+
+        # Connect rooms with corridors using closest-neighbor connection
+        if not self.rooms:
+            return
+
+        connected = [self.rooms[0]]
+        unconnected = self.rooms[1:]
+
+        while unconnected:
+            best_dist = float('inf')
+            best_pair = (None, None)
+
+            for c_room in connected:
+                c_cx = c_room.x + c_room.width / 2
+                c_cy = c_room.y + c_room.height / 2
+                for u_room in unconnected:
+                    u_cx = u_room.x + u_room.width / 2
+                    u_cy = u_room.y + u_room.height / 2
+                    dist = (c_cx - u_cx)**2 + (c_cy - u_cy)**2
+                    if dist < best_dist:
+                        best_dist = dist
+                        best_pair = (c_room, u_room)
+
+            r1, r2 = best_pair
+            if r1 is None or r2 is None:
+                break
+
             c1x = r1.x + r1.width / 2
             c1y = r1.y + r1.height / 2
             c2x = r2.x + r2.width / 2
@@ -62,6 +95,9 @@ class ProceduralArena:
                 # Vertical then horizontal
                 self.corridors.append(Corridor(c1x - 25, min(c1y, c2y) - 25, 50, abs(c2y - c1y) + 50))
                 self.corridors.append(Corridor(min(c1x, c2x) - 25, c2y - 25, abs(c2x - c1x) + 50, 50))
+
+            connected.append(r2)
+            unconnected.remove(r2)
 
     def get_random_spawn_point(self, radius: float) -> Tuple[float, float]:
         if not self.rooms:
