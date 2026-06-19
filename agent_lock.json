@@ -35,10 +35,10 @@
     "agent-5": {
       "name": "Jules Meta",
       "area": "meta",
-      "task_id": "auto-implement-**ball-genetics**-—-balls-reproduce-afte",
-      "status": "working",
-      "started_at": "2026-06-19T12:13:14.471794+00:00",
-      "cycles_today": 1
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
+      "cycles_today": 0
     },
     "agent-6": {
       "name": "Jules Innovation",
