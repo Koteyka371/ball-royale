@@ -45,6 +45,39 @@ class Sniper:
     def attack(self, delta: float) -> None:
         self.current_action = "kite"
 
+    def kite(self, delta: float, target=None) -> None:
+        """Kite — держит дистанцию, атакует при приближении skill: для Sniper"""
+        self.current_action = "kite"
+        if target is None:
+            return
+
+        import math
+        dx = target.x - self.x
+        dy = target.y - self.y
+        dist_sq = dx * dx + dy * dy
+        if dist_sq > 0.0001:
+            dist = math.sqrt(dist_sq)
+            nx, ny = dx / dist, dy / dist
+
+            # Keep distance
+            if dist > self.attack_range:
+                pass # Move closer (handled by Action layer globally, or we could add self.x += nx * speed)
+            elif dist < self.attack_range * 0.8:
+                # Move away
+                step = self.SPEED * delta * 60.0
+                self.x -= nx * step
+                self.y -= ny * step
+
+            # Attack when approached or in range
+            if dist <= self.attack_range:
+                if dist < self.attack_range * 0.8 and self.skill_timer <= 0:
+                    self.use_skill()
+
+                # Attacking logic is normally handled by world._deal_damage, we just signal it here
+                if hasattr(self, 'attack_timer') and self.attack_timer <= 0:
+                    # In true implementation, action.py deals damage
+                    pass
+
     def defend(self, delta: float) -> None:
         self.current_action = "defend"
 
