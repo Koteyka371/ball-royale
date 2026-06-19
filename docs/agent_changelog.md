@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-feature-078] Replay system — *2026-06-19 21:29:56 UTC*
+
+Implement Replay system as described in game_design.md
+
+---
+
 ## [idea-feature-075] AI difficulty levels — *2026-06-19 20:16:06 UTC*
 
 Implement AI difficulty levels as described in game_design.md
