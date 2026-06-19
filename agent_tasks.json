@@ -802,7 +802,7 @@
     },
     {
       "id": "auto-implement-**ball-genetics**-—-balls-reproduce-afte",
-      "status": "todo",
+      "status": "done",
       "area": "skills",
       "risk": "medium",
       "allowed_paths": [

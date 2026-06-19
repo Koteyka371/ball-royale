@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [auto-implement-**ball-genetics**-—-balls-reproduce-afte] Implement **Ball Genetics** — Balls reproduce after surviving N battles. Offspring inherit traits skill — *2026-06-19 12:29:23 UTC*
+
+Create **Ball Genetics** — Balls reproduce after surviving N battles. Offspring inherit traits skill: speed, damage, color
+
+---
+
 ## [idea-feature-063] 8 ball types — *2026-06-19 02:53:36 UTC*
 
 Implement 8 ball types as described in game_design.md
