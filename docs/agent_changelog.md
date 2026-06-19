@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-ball_type-086] Implement Tank ball — *2026-06-19 22:43:32 UTC*
+
+Implement Implement Tank ball as described in game_design.md
+
+---
+
 ## [idea-feature-077] Highlight detection — *2026-06-19 21:35:30 UTC*
 
 Implement Highlight detection as described in game_design.md
