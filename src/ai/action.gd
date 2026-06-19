@@ -98,7 +98,17 @@ func execute(strategy: String, delta: float):
     elif strategy == "opportunistic" or strategy == "collect booster":
         _collect_booster(delta)
     elif strategy == "use skill" or strategy == "use_skill" or strategy == "action_skill" or strategy == "Действие":
-        _use_skill()
+        var skill_name = ""
+        if "skill" in self.ball:
+            skill_name = self.ball.skill
+        if skill_name == "flank":
+            if "current_action" in self.ball:
+                self.ball.current_action = "flank"
+            elif self.ball.has_method("set_meta"):
+                self.ball.set_meta("current_action", "flank")
+            _flank(delta)
+        else:
+            _use_skill()
     else:
         _idle(delta)
 
