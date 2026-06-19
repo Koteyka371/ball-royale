@@ -1,0 +1,4 @@
+{
+  "title": "Neural Evolution Mode",
+  "description": "Introduce a game mode where all balls are 'Neural' type. Over successive generations (matches), the balls that survive the longest or get the most kills pass on slightly mutated versions of their neural network weights and biases to the next generation, gradually evolving more sophisticated battle strategies entirely learned by playing rather than hardcoded logic."
+}
