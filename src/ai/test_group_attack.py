@@ -1,7 +1,6 @@
 import sys
 sys.path.insert(0, 'src')
 from ai.action import Action
-import math
 
 class MockBall:
     def __init__(self, x=0, y=0, vx=0, vy=0, speed=5.0, ball_type="swarm", personality="swarm"):
