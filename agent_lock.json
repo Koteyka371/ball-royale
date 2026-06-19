@@ -103,6 +103,186 @@
       "status": "idle",
       "started_at": null,
       "cycles_today": 0
+    },
+    "jules-agent-1": {
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 0
+    },
+    "jules-agent-2": {
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 0
+    },
+    "jules-agent-3": {
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 0
+    },
+    "jules-agent-4": {
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 0
+    },
+    "jules-agent-5": {
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 0
+    },
+    "jules-agent-6": {
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 0
+    },
+    "jules-agent-7": {
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 0
+    },
+    "jules-agent-8": {
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 0
+    },
+    "jules-agent-9": {
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 0
+    },
+    "jules-agent-10": {
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 0
+    },
+    "jules-agent-11": {
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 0
+    },
+    "jules-agent-12": {
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 0
+    },
+    "jules-agent-13": {
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 0
+    },
+    "jules-agent-14": {
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 0
+    },
+    "jules-agent-15": {
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 0
+    },
+    "jules-agent-16": {
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 0
+    },
+    "jules-agent-17": {
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 0
+    },
+    "jules-agent-18": {
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 0
+    },
+    "jules-agent-19": {
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 0
+    },
+    "jules-agent-20": {
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 0
+    },
+    "jules-agent-21": {
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 0
+    },
+    "jules-agent-22": {
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 0
+    },
+    "jules-agent-23": {
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 0
+    },
+    "jules-agent-24": {
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 0
+    },
+    "jules-agent-25": {
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 0
+    },
+    "jules-agent-26": {
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 0
+    },
+    "jules-agent-27": {
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 0
+    },
+    "jules-agent-28": {
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 0
+    },
+    "jules-agent-29": {
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 0
+    },
+    "jules-agent-30": {
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 0
     }
   },
   "last_reset": "2026-06-19T02:16:28.432745+00:00"
