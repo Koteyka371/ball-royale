@@ -1,0 +1,4 @@
+{
+  "title": "Genetic Evolution",
+  "description": "Balls reproduce after surviving N battles. Offspring inherit traits (speed, damage, color) with random mutations. Over generations, the population adapts to specific arena types."
+}

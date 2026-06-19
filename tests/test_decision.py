@@ -6,9 +6,11 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../s
 from ai.decision import Decision
 
 class MockBall:
-    def __init__(self, hp=100, max_hp=100, personality="idle", skill_timer=0.0):
+    def __init__(self, hp=100, max_hp=100, personality='idle', skill_timer=0.0, difficulty='hard'):
         self.hp = hp
         self.max_hp = max_hp
+        self.difficulty = difficulty
+        self.difficulty = difficulty
         self.personality = personality
         self.skill_timer = skill_timer
 
@@ -134,3 +136,70 @@ def test_decision_ally_advantage():
     # 3 allies vs 1 enemy. Attack gets +10 (1 enemy) + (3 - 1) * 15 = 40.
     # Idle is 1. Defend is 2.
     assert action == "attack"
+
+
+def test_difficulty_scaling_chaos():
+    # In chaos mode, if skill timer is 0, 80% chance to use skill.
+    # Otherwise random action.
+    import random
+    random.seed(42)
+    ball = MockBall(hp=100, max_hp=100, difficulty="chaos", skill_timer=0.0)
+    decision = Decision(ball, MockWorld())
+    perception = {
+        "danger_level": 0.0, "opportunity_level": 0.0,
+        "threat_level": 0.0, "opportunity_score": 0.0,
+        "enemies": [1], "boosters": [1], "allies": []
+    }
+
+    # We run it a few times to ensure we hit the use_skill condition due to chaos
+    actions = [decision.choose_action(perception, "neutral") for _ in range(20)]
+    assert "use_skill" in actions
+
+def test_difficulty_scaling_easy():
+    # In easy mode, some randomness from the top 3 actions, and 50% chance to drop skill.
+    import random
+    random.seed(42)
+    ball = MockBall(hp=100, max_hp=100, difficulty="easy", skill_timer=0.0)
+    decision = Decision(ball, MockWorld())
+    perception = {
+        "danger_level": 0.5, "opportunity_level": 0.5,
+        "threat_level": 0.5, "opportunity_score": 0.5,
+        "enemies": [1], "boosters": [1], "allies": []
+    }
+
+    # Actions should vary due to randomness
+    actions = [decision.choose_action(perception, "neutral") for _ in range(50)]
+    unique_actions = set(actions)
+    assert len(unique_actions) > 1
+
+def test_difficulty_scaling_medium():
+    import random
+    random.seed(42)
+    ball = MockBall(hp=100, max_hp=100, difficulty="medium", skill_timer=0.0)
+    decision = Decision(ball, MockWorld())
+    perception = {
+        "danger_level": 0.5, "opportunity_level": 0.5,
+        "threat_level": 0.5, "opportunity_score": 0.5,
+        "enemies": [1], "boosters": [1], "allies": []
+    }
+
+    actions = [decision.choose_action(perception, "neutral") for _ in range(50)]
+    # Medium is 90% top choice, 10% random from top 5. Should have multiple unique actions.
+    unique_actions = set(actions)
+    assert len(unique_actions) > 1
+
+def test_difficulty_scaling_hard():
+    import random
+    random.seed(42)
+    ball = MockBall(hp=100, max_hp=100, difficulty="hard", skill_timer=0.0)
+    decision = Decision(ball, MockWorld())
+    perception = {
+        "danger_level": 0.5, "opportunity_level": 0.5,
+        "threat_level": 0.5, "opportunity_score": 0.5,
+        "enemies": [1], "boosters": [1], "allies": []
+    }
+
+    actions = [decision.choose_action(perception, "neutral") for _ in range(50)]
+    # Hard should ALWAYS pick the exact best action, so no variation.
+    unique_actions = set(actions)
+    assert len(unique_actions) == 1

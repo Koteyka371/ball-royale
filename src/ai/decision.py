@@ -236,13 +236,44 @@ class Decision:
                 if k != "idle":
                     scores[k] = -1000.0
 
-        best_action = "idle"
-        best_score = -9999.0
+        difficulty = getattr(self.ball, "difficulty", "medium").lower()
 
-        for action in ["flee", "defend", "collect_booster", "attack", "chase", "use_skill", "kite", "flank", "group_attack", "idle"]:
-            if scores[action] > best_score:
-                best_score = scores[action]
-                best_action = action
+        if difficulty == "chaos":
+            if skill_timer <= 0.0 and random.random() < 0.8:
+                best_action = "use_skill"
+                best_score = scores.get("use_skill", 0.0)
+            else:
+                possible = [k for k in scores.keys() if scores[k] > -500.0]
+                best_action = random.choice(possible) if possible else "idle"
+                best_score = scores.get(best_action, 0.0)
+        else:
+            action_order = ["flee", "defend", "collect_booster", "attack", "chase", "use_skill", "kite", "flank", "group_attack", "idle"]
+            valid_actions = [k for k in scores.keys() if scores[k] > -500.0]
+            sorted_actions = sorted(valid_actions, key=lambda k: (scores[k], -action_order.index(k) if k in action_order else 0), reverse=True)
+            if not sorted_actions:
+                sorted_actions = ["idle"]
+
+            if difficulty == "easy":
+                top_actions = sorted_actions[:3]
+                if "use_skill" in top_actions and random.random() < 0.5:
+                    top_actions.remove("use_skill")
+                if not top_actions:
+                    top_actions = ["idle"]
+
+                if random.random() < 0.3:
+                    best_action = random.choice(top_actions)
+                else:
+                    best_action = top_actions[0]
+            elif difficulty == "medium":
+                top_actions = sorted_actions[:5]
+                if random.random() < 0.1 and len(top_actions) > 1:
+                    best_action = random.choice(top_actions)
+                else:
+                    best_action = top_actions[0]
+            else: # hard or default
+                best_action = sorted_actions[0]
+
+            best_score = scores.get(best_action, 0.0)
 
         if best_action == "idle":
             return self.PERSONALITY_BEHAVIORS.get(personality, "idle")
