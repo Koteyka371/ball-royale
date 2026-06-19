@@ -54,3 +54,16 @@ def test_ninja_flank_attack():
 
     # Since ninja is at x=10 and wants to go to x=25, it should move right.
     assert ninja.x > 10
+def test_ninja_use_skill():
+    ninja = MockBall(x=0, y=0, ball_type="ninja")
+    ninja.skill_timer = 0
+    ninja.use_skill = lambda: True
+    ninja.skill = "flank"
+    target = MockBall(x=0, y=100, vx=0, vy=10, ball_type="basic")
+
+    action = Action(ninja, MockWorld())
+    action._get_enemies = lambda: [target]
+    action._get_allies = lambda: []
+
+    action.execute("use_skill", 1.0)
+    assert ninja.current_action == "flank"

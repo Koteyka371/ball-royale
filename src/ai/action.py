@@ -87,7 +87,11 @@ class Action:
         elif strategy in ("opportunistic", "collect_booster", "collect booster"):
             self._collect_booster(delta)
         elif strategy in ("use_skill", "use skill", "action_skill", "Действие"):
-            self._use_skill()
+            if getattr(self.ball, "skill", "") == "flank":
+                self.ball.current_action = "flank"
+                self._flank(delta)
+            else:
+                self._use_skill()
         else:
             self._idle(delta)
 
@@ -991,9 +995,10 @@ class Action:
         if skill_timer <= 0 and hasattr(self.ball, "use_skill"):
             self.ball.use_skill()
 
-            if getattr(self.ball, "skill", "") == "command":
+            skill_name = getattr(self.ball, "skill", "")
+            if skill_name == "command":
                 self.ball.team_message = {"type": "buff_command", "radius": 200}
-            elif getattr(self.ball, "skill", "") in ("Действие", "action_skill"):
+            elif skill_name in ("Действие", "action_skill"):
                 self.ball.team_message = {"type": "action_skill_used", "radius": 150}
 
             if hasattr(self.ball, "skill_cooldown"):
