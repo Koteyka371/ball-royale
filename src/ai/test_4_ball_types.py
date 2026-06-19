@@ -1,3 +1,4 @@
+from ai.ball_types_neural import Neural
 from ai.decision import Decision
 from ai.ball_types_warrior import Warrior
 from ai.ball_types_scout import Scout
@@ -106,3 +107,19 @@ def test_healer_priorities():
 
     action = layer.choose_action(perception, "calm")
     assert action == "defend" # Healer's defend translates to healing/protecting
+
+def test_neural_initialization():
+    neural = Neural(1, x=10.0, y=20.0)
+    assert neural.id == 1
+    assert neural.x == 10.0
+    assert neural.y == 20.0
+    assert neural.BALL_TYPE == "neural"
+    assert neural.hp == neural.max_hp
+    assert neural.hp == 100
+    assert neural.skill_timer == 0.0
+    assert neural.use_skill() is True
+    assert neural.skill_timer == 4.0
+
+    neural.take_damage(20)
+    assert neural.hp == 80
+    assert neural.first_hit_taken is True
