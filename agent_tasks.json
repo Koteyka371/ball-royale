@@ -1362,6 +1362,91 @@
         "Tests pass",
         "No regressions"
       ]
+    },
+    {
+      "id": "idea-feature-077",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Highlight detection",
+      "description": "Implement Highlight detection as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Highlight detection implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-feature-078",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Replay system",
+      "description": "Implement Replay system as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Replay system implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-feature-079",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Stats overlay",
+      "description": "Implement Stats overlay as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Stats overlay implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-ball_type-080",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Implement Easy ball",
+      "description": "Implement Implement Easy ball as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Implement Easy ball implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-ball_type-081",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Implement Medium ball",
+      "description": "Implement Implement Medium ball as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Implement Medium ball implemented",
+        "Tests pass",
+        "No regressions"
+      ]
     }
   ]
 }
