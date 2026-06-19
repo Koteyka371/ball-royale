@@ -94,7 +94,7 @@
       "task_id": "sync-gd-perception-calc-dist",
       "status": "working",
       "started_at": "2026-06-19T02:27:10.602412+00:00",
-      "cycles_today": 0
+      "cycles_today": 1
     },
     "agent-12": {
       "name": "Jules Worker 12",
