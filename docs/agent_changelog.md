@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-feature-063] 8 ball types — *2026-06-19 02:53:36 UTC*
+
+Implement 8 ball types as described in game_design.md
+
+---
+
 ## [idea-feature-059] Advanced behaviors (kite, flank, group attack) — *2026-06-19 02:48:38 UTC*
 
 Implement Advanced behaviors (kite, flank, group attack) as described in game_design.md
