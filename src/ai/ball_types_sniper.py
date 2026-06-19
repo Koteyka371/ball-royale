@@ -7,6 +7,7 @@ Long range killer, high damage, low HP
 
 
 
+import math
 from ai.personality import Personality
 
 class Sniper:
@@ -48,43 +49,51 @@ class Sniper:
 
     def kite(self, delta: float, target=None) -> None:
         """Kite — держит дистанцию, атакует при приближении skill: для Sniper"""
+
+        # Set state to kite
         self.current_action = "kite"
+
+        # We need a target to kite
         if target is None:
             return
 
-        import math
+        # Calculate vector to target
         dx = target.x - self.x
         dy = target.y - self.y
         dist_sq = dx * dx + dy * dy
+
+        # Handle valid distance
         if dist_sq > 0.0001:
             dist = math.sqrt(dist_sq)
             nx, ny = dx / dist, dy / dist
 
-            # Keep distance
+            # Kite logic: Keep distance
             if dist > self.attack_range:
-                # Move closer
+                # Target is too far, move closer
                 step = self.SPEED * delta * 60.0
                 self.x += nx * min(step, dist - self.attack_range)
                 self.y += ny * min(step, dist - self.attack_range)
             elif dist < self.attack_range * 0.8:
-                # Move away
+                # Target is too close, move away (kite)
                 step = self.SPEED * delta * 60.0
                 self.x -= nx * step
                 self.y -= ny * step
 
-            # Recalculate distance after movement
+            # Recalculate distance after repositioning
             dx = target.x - self.x
             dy = target.y - self.y
             dist_sq = dx * dx + dy * dy
             dist = math.sqrt(dist_sq) if dist_sq > 0.0001 else 0.0
 
+            # Attack logic: Attack when approached
             if dist <= self.attack_range:
+                # Skill usage when target gets too close
                 if dist < self.attack_range * 0.8 and self.skill_timer <= 0:
                     self.use_skill()
 
+                # Basic attack timing
                 if hasattr(self, 'attack_timer') and self.attack_timer <= 0:
                     self.attack_timer = float(max(0.2, 2.0 / self.SPEED if self.SPEED > 0 else 1.0))
-                    # Note: Actual damage dealing is typically handled by Action layer or world
 
     def defend(self, delta: float) -> None:
         self.current_action = "defend"
