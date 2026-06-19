@@ -17,6 +17,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../s
 
 from ai.ball_brain import BallBrain
 from ai.neural_network_brain import NeuralNetworkBrain
+from arena.arena_types import get_arena
 from arena.procedural_arena import ProceduralArena
 
 
@@ -208,14 +209,14 @@ class SpatialGrid:
 
 
 class BattleSimulation:
-    def __init__(self, num_balls: int = 100, arena_size: float = 2000.0,
+    def __init__(self, num_balls: int = 100, arena_size: float = 2000.0, arena_type: str = "procedural",
                  max_ticks: int = 3000, seed: Optional[int] = None, use_neural: bool = False):
         if seed is not None:
             random.seed(seed)
 
         self.width = arena_size
         self.height = arena_size
-        self.arena = ProceduralArena(arena_size, num_rooms=5, seed=seed)
+        self.arena = get_arena(arena_type, arena_size, seed=seed)
         self.balls: List[Ball] = []
         self.boosters: List[Booster] = []
         self.max_ticks = max_ticks
