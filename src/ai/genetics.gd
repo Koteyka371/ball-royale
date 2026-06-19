@@ -50,6 +50,7 @@ func extract_dna(ball: Object) -> Dictionary:
 		"max_hp": ball.get("max_hp") if "max_hp" in ball else 100.0,
 		"color": ball.get("color") if "color" in ball else "red",
 		"skill": ball.get("skill") if "skill" in ball else "dash",
+		"skill_cooldown": ball.get("skill_cooldown") if "skill_cooldown" in ball else 5.0,
 		"ball_type": ball.get("ball_type") if "ball_type" in ball else "unknown"
 	}
 
@@ -98,7 +99,7 @@ func mutate(dna: Dictionary) -> Dictionary:
 	var child = dna.duplicate(true)
 	var mutated = false
 
-	for stat in ["speed", "damage", "max_hp"]:
+	for stat in ["speed", "damage", "max_hp", "skill_cooldown"]:
 		if child.has(stat) and randf() < mutation_rate:
 			var factor = 1.0 + randf_range(-mutation_amount, mutation_amount)
 			child[stat] *= factor
@@ -110,6 +111,8 @@ func mutate(dna: Dictionary) -> Dictionary:
 				child[stat] = max(1.0, child[stat])
 			elif stat == "max_hp":
 				child[stat] = max(10.0, child[stat])
+			elif stat == "skill_cooldown":
+				child[stat] = max(1.0, child[stat])
 
 	if child.has("color") and randf() < (mutation_rate * 0.5):
 		child["color"] = colors[randi() % colors.size()]
