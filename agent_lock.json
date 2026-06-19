@@ -43,9 +43,9 @@
     "agent-6": {
       "name": "Jules Innovation",
       "area": "innovation",
-      "task_id": "auto-implement-**neural-ball**-—-a-ball-controlled-by-a",
-      "status": "assigned",
-      "started_at": "2026-06-19T07:38:31.884786+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 0
     },
     "supervisor": {
@@ -59,9 +59,9 @@
     "agent-7": {
       "name": "Jules Worker 7",
       "area": "content",
-      "task_id": "auto-implement-**ball-relationships**-—-balls-remember-",
-      "status": "working",
-      "started_at": "2026-06-19T07:48:59.634144+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 0
     },
     "agent-8": {
@@ -75,33 +75,33 @@
     "agent-9": {
       "name": "Jules Worker 9",
       "area": "behaviors",
-      "task_id": "idea-feature-072",
-      "status": "assigned",
-      "started_at": "2026-06-19T07:38:31.884786+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 0
     },
     "agent-10": {
       "name": "Jules Worker 10",
       "area": "meta",
-      "task_id": "idea-feature-073",
-      "status": "assigned",
-      "started_at": "2026-06-19T07:38:31.884786+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 0
     },
     "agent-11": {
       "name": "Jules Worker 11",
       "area": "innovation",
-      "task_id": "idea-feature-074",
-      "status": "assigned",
-      "started_at": "2026-06-19T07:38:31.884786+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 0
     },
     "agent-12": {
       "name": "Jules Worker 12",
       "area": "ai-core",
-      "task_id": "idea-feature-075",
-      "status": "assigned",
-      "started_at": "2026-06-19T07:38:31.884786+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 0
     }
   },
