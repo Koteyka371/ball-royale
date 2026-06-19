@@ -20,6 +20,7 @@ class Sniper:
     COLOR = "blue"
     SKILL = "precision_shot"
     SKILL_COOLDOWN = 6.0
+    ATTACK_RANGE = 150.0
 
     def __init__(self, ball_id: int, x: float = 0.0, y: float = 0.0):
         self.id = ball_id
@@ -29,6 +30,7 @@ class Sniper:
         self.y = y
         self.alive = True
         self.kills = 0
+        self.attack_range = float(self.ATTACK_RANGE)
         self.first_hit_taken = False
         self.current_action = "idle"
         self.skill_timer = 0.0
