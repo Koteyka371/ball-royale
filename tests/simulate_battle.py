@@ -529,6 +529,7 @@ def test_battle_reduces_to_few():
 if __name__ == "__main__":
     import argparse
     import json
+    from video.highlight_detector import HighlightDetector
 
     parser = argparse.ArgumentParser(description="Run Ball Royale Battle Simulation.")
     parser.add_argument("num_balls", type=int, nargs="?", default=100, help="Number of balls.")
@@ -609,8 +610,10 @@ if __name__ == "__main__":
     record = bool(args.export)
     stats = sim.run(record=record)
     sim.print_report()
-
     if args.export:
+        detector = HighlightDetector()
+        highlights = detector.detect_highlights(sim.history, sim.kill_log)
+
         replay_data = {
             "arena": {
                 "width": sim.width,
@@ -618,7 +621,8 @@ if __name__ == "__main__":
             },
             "ball_types": BALL_TYPES,
             "kill_log": sim.kill_log,
-            "history": sim.history
+            "history": sim.history,
+            "highlights": highlights
         }
         try:
             with open(args.export, "w", encoding="utf-8") as f:
