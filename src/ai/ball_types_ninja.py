@@ -1,14 +1,16 @@
 """
 Auto-generated ball type: Ninja
+
 Cunning fighter, uses Stealth to approach, attacks from behind for critical, flees after attack
 """
+
 
 from ai.personality import Personality
 
 class Ninja:
     BALL_TYPE = "ninja"
-    HP = 65
-    SPEED = 4.5
+    HP = 90
+    SPEED = 7.0
     DAMAGE = 25
     RADIUS = 8
     PERCEPTION_RADIUS = 350

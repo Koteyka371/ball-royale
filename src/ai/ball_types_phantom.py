@@ -5,6 +5,7 @@ Can phase through enemies, hit and run
 
 
 
+
 from ai.personality import Personality
 
 class Phantom:

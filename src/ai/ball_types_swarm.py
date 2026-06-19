@@ -5,6 +5,7 @@ Weak alone but can clone itself
 
 
 
+
 from ai.personality import Personality
 
 class Swarm:

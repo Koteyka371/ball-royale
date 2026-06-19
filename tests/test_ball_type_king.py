@@ -6,22 +6,22 @@ def test_king_initialization():
     assert b.x == 100.0
     assert b.y == 200.0
     assert b.BALL_TYPE == "king"
-    assert b.hp == 150
-    assert b.max_hp == 150
+    assert b.hp == 120
+    assert b.max_hp == 120
     assert b.personality.character == "leader"
 
 def test_king_hp_percent():
     b = King(1)
     assert b.get_hp_percent() == 1.0
     b.hp = 75
-    assert b.get_hp_percent() == 0.5
+    assert b.get_hp_percent() == b.hp / b.max_hp
     b.max_hp = 0
     assert b.get_hp_percent() == 0.0
 
 def test_king_take_damage():
     b = King(1)
     b.take_damage(50)
-    assert b.hp == 100
+    assert b.hp == 70
     assert b.alive is True
     assert b.first_hit_taken is True
 

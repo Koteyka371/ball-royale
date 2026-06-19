@@ -3,13 +3,15 @@ Auto-generated ball type: King
 Leader personality, stays behind allies, uses Command to buff team, targets low HP allies to boost, avoids direct combat.
 """
 
+
+
 from ai.personality import Personality
 
 class King:
     BALL_TYPE = "king"
-    HP = 150
-    SPEED = 1.8
-    DAMAGE = 10
+    HP = 120
+    SPEED = 4.0
+    DAMAGE = 15
     RADIUS = 14
     PERCEPTION_RADIUS = 300
     AGGRESSION = 0.2

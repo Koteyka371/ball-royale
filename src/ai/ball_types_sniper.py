@@ -5,13 +5,15 @@ Long range killer, high damage, low HP
 
 
 
+
+
 from ai.personality import Personality
 
 class Sniper:
     BALL_TYPE = "sniper"
-    HP = 60
-    SPEED = 1.5
-    DAMAGE = 35
+    HP = 70
+    SPEED = 3.0
+    DAMAGE = 30
     RADIUS = 9
     PERCEPTION_RADIUS = 500
     AGGRESSION = 0.6

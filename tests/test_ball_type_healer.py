@@ -12,8 +12,8 @@ from ai.ball_types_healer import Healer
 def test_healer_initialization():
     ball = Healer(ball_id=1, x=100, y=200)
     assert ball.id == 1
-    assert ball.hp == 120
-    assert ball.max_hp == 120
+    assert ball.hp == 100
+    assert ball.max_hp == 100
     assert ball.alive is True
     assert ball.personality == "caring"
 
@@ -21,13 +21,13 @@ def test_healer_initialization():
 def test_healer_hp_percent():
     ball = Healer(ball_id=1)
     ball.hp = 60
-    assert abs(ball.get_hp_percent() - 60/120) < 0.01
+    assert abs(ball.get_hp_percent() - ball.hp / ball.max_hp) < 0.01
 
 
 def test_healer_take_damage():
     ball = Healer(ball_id=1)
     ball.take_damage(20)
-    assert ball.hp == 100
+    assert ball.hp == 80
     assert ball.alive is True
     ball.take_damage(180)
     assert ball.alive is False

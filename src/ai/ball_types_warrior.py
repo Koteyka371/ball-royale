@@ -5,13 +5,15 @@ Aggressive fighter, seeks combat, uses Wave Attack when 2+ enemies
 
 
 
+
+
 from ai.personality import Personality
 
 class Warrior:
     BALL_TYPE = "warrior"
-    HP = 120
-    SPEED = 2.0
-    DAMAGE = 15
+    HP = 150
+    SPEED = 4.0
+    DAMAGE = 20
     RADIUS = 12
     PERCEPTION_RADIUS = 250
     AGGRESSION = 0.9

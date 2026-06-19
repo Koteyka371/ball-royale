@@ -5,6 +5,7 @@ Steals boosters from enemies, tricky fighter
 
 
 
+
 from ai.personality import Personality
 
 class Rogue:
