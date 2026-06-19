@@ -42,16 +42,19 @@ func scan() -> Dictionary:
         bx = self.ball.x
         by = self.ball.y
 
+    var calc_dist = func(ent):
+        if "x" in ent and "y" in ent:
+            var dx = ent.x - bx
+            var dy = ent.y - by
+            return sqrt(dx*dx + dy*dy)
+        return 0.0
+
     var threat = 0.0
     var opp = 0.0
 
     if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
         for h in self.world.arena.hazards:
-            var dist = 0.0
-            if "x" in h and "y" in h:
-                var dx = h.x - bx
-                var dy = h.y - by
-                dist = sqrt(dx*dx + dy*dy)
+            var dist = calc_dist.call(h)
 
             if dist <= perception_radius:
                 var found = false
@@ -69,49 +72,33 @@ func scan() -> Dictionary:
         my_memory = self.ball.memory
 
     for enemy in data["enemies"]:
-        var dist = 0.0
-        if "x" in enemy and "y" in enemy:
-            var dx = enemy.x - bx
-            var dy = enemy.y - by
-            dist = sqrt(dx*dx + dy*dy)
-            if "id" in enemy:
-                data["distances"][enemy.id] = dist
-                if my_memory.has(enemy.id):
-                    var rel = my_memory[enemy.id]
-                    if typeof(rel) == TYPE_DICTIONARY and rel.get("relation") == "rival":
-                        data["rival_spotted"] = true
+        var dist = calc_dist.call(enemy)
+        if "id" in enemy:
+            data["distances"][enemy.id] = dist
+            if my_memory.has(enemy.id):
+                var rel = my_memory[enemy.id]
+                if typeof(rel) == TYPE_DICTIONARY and rel.get("relation") == "rival":
+                    data["rival_spotted"] = true
         threat += max(0.0, 1.0 - (dist / perception_radius)) * 1.5
 
     for trap in data["traps"]:
-        var dist = 0.0
-        if "x" in trap and "y" in trap:
-            var dx = trap.x - bx
-            var dy = trap.y - by
-            dist = sqrt(dx*dx + dy*dy)
-            if "id" in trap:
-                data["distances"][trap.id] = dist
+        var dist = calc_dist.call(trap)
+        if "id" in trap:
+            data["distances"][trap.id] = dist
         threat += max(0.0, 1.0 - (dist / perception_radius)) * 2.0
 
     for booster in data["boosters"]:
-        var dist = 0.0
-        if "x" in booster and "y" in booster:
-            var dx = booster.x - bx
-            var dy = booster.y - by
-            dist = sqrt(dx*dx + dy*dy)
-            if "id" in booster:
-                data["distances"][booster.id] = dist
+        var dist = calc_dist.call(booster)
+        if "id" in booster:
+            data["distances"][booster.id] = dist
         opp += max(0.0, 1.0 - (dist / perception_radius)) * 1.0
 
     var team_messages = []
 
     for ally in data["allies"]:
-        var dist = 0.0
-        if "x" in ally and "y" in ally:
-            var dx = ally.x - bx
-            var dy = ally.y - by
-            dist = sqrt(dx*dx + dy*dy)
-            if "id" in ally:
-                data["distances"][ally.id] = dist
+        var dist = calc_dist.call(ally)
+        if "id" in ally:
+            data["distances"][ally.id] = dist
         opp += max(0.0, 1.0 - (dist / perception_radius)) * 0.5
         if ally.has_method("has_meta") and ally.has_meta("team_message"):
             var msg = ally.get_meta("team_message")
