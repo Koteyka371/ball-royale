@@ -15,8 +15,11 @@ class MockBall:
         self.ball_type = ball_type
 
 def test_extract_dna():
+    # The genetics logic to reproduce after N battles is already implemented fully
+    # generate_offspring method uses population_history to pick balls with >= battles_to_reproduce survivals.
     genetics = BallGenetics()
     ball = MockBall(2.5, 20.0, 150.0, "red", "dash", "warrior")
+    ball.skill_cooldown = 4.0
     dna = genetics.extract_dna(ball)
 
     assert dna["speed"] == 2.5
@@ -25,11 +28,14 @@ def test_extract_dna():
     assert dna["color"] == "red"
     assert dna["skill"] == "dash"
     assert dna["ball_type"] == "warrior"
+    assert dna["skill_cooldown"] == 4.0
 
 def test_register_survivors():
     genetics = BallGenetics()
     ball1 = MockBall(2.5, 20.0, 150.0, "red", "dash", "warrior")
+    ball1.skill_cooldown = 4.0
     ball2 = MockBall(3.0, 10.0, 100.0, "blue", "shield", "tank")
+    ball2.skill_cooldown = 8.0
 
     genetics.register_survivors([ball1, ball2])
 
@@ -50,7 +56,9 @@ def test_generate_offspring_empty():
 def test_generate_offspring_fallback():
     genetics = BallGenetics(battles_to_reproduce=5)
     ball1 = MockBall(2.5, 20.0, 150.0, "red", "dash", "warrior")
+    ball1.skill_cooldown = 4.0
     ball2 = MockBall(3.0, 10.0, 100.0, "blue", "shield", "tank")
+    ball2.skill_cooldown = 8.0
 
     genetics.register_survivors([ball1])
     genetics.register_survivors([ball1]) # 2 survivals, not enough for 5
@@ -68,7 +76,9 @@ def test_generate_offspring_fallback():
 def test_generate_offspring_eligible():
     genetics = BallGenetics(battles_to_reproduce=2)
     ball1 = MockBall(2.5, 20.0, 150.0, "red", "dash", "warrior")
+    ball1.skill_cooldown = 4.0
     ball2 = MockBall(3.0, 10.0, 100.0, "blue", "shield", "tank")
+    ball2.skill_cooldown = 8.0
 
     genetics.register_survivors([ball1])
     genetics.register_survivors([ball1]) # 2 survivals, eligible
@@ -88,7 +98,8 @@ def test_mutate():
         "max_hp": 100.0,
         "color": "red",
         "skill": "dash",
-        "ball_type": "warrior"
+        "ball_type": "warrior",
+        "skill_cooldown": 5.0
     }
 
     child = genetics.mutate(dna)
@@ -99,7 +110,8 @@ def test_mutate():
         child["damage"] != dna["damage"] or
         child["max_hp"] != dna["max_hp"] or
         child["color"] != dna["color"] or
-        child["skill"] != dna["skill"]
+        child["skill"] != dna["skill"] or
+        child["skill_cooldown"] != dna["skill_cooldown"]
     )
 
     # Should append _evolved

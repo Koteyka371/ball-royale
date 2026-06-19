@@ -52,6 +52,7 @@ class BallGenetics:
             "max_hp": getattr(ball, "max_hp", 100.0),
             "color": getattr(ball, "color", "red"),
             "skill": getattr(ball, "skill", "dash"),
+            "skill_cooldown": getattr(ball, "skill_cooldown", 5.0),
             "ball_type": getattr(ball, "ball_type", "unknown")
         }
 
@@ -110,7 +111,7 @@ class BallGenetics:
         child = copy.deepcopy(dna)
 
         # Mutate numerical stats
-        for stat in ["speed", "damage", "max_hp"]:
+        for stat in ["speed", "damage", "max_hp", "skill_cooldown"]:
             if stat in child and random.random() < self.mutation_rate:
                 # Multiply by a factor between (1 - mutation_amount) and (1 + mutation_amount)
                 factor = 1.0 + random.uniform(-self.mutation_amount, self.mutation_amount)
@@ -123,6 +124,8 @@ class BallGenetics:
                     child[stat] = max(1.0, child[stat])
                 elif stat == "max_hp":
                     child[stat] = max(10.0, child[stat])
+                elif stat == "skill_cooldown":
+                    child[stat] = max(1.0, child[stat])
 
         # Mutate color
         if "color" in child and random.random() < (self.mutation_rate * 0.5):
