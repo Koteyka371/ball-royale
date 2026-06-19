@@ -1,0 +1,4 @@
+{
+  "title": "Dynamic Weather System",
+  "description": "Implement a dynamic weather system that affects gameplay. Rain could reduce speed, wind could push balls in a certain direction, and lightning could strike random spots dealing damage."
+}

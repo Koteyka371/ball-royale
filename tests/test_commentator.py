@@ -7,7 +7,7 @@ from ai.commentator import BattleCommentator
 def test_commentator_empty_log():
     commentator = BattleCommentator()
     lines = commentator.generate_commentary([], {})
-    assert lines == []
+    assert any("=== STATS ===" in line for line in lines)
 
 def test_commentator_first_blood_and_streaks():
     kill_log = [

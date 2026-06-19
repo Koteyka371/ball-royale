@@ -1,5 +1,7 @@
 from typing import List, Dict, Any
 from ui.kill_feed import KillFeed
+from ui.stats_overlay import StatsOverlay
+
 
 class BattleCommentator:
     """
@@ -7,9 +9,17 @@ class BattleCommentator:
     """
     def __init__(self):
         self.kill_feed = KillFeed()
+        self.stats_overlay = StatsOverlay()
 
     def generate_commentary(self, kill_log: List[Dict[str, Any]], stats: Dict[str, Any]) -> List[str]:
         lines: List[str] = []
+        current_tick = kill_log[-1]["tick"] if kill_log else stats.get("ticks", 0)
+        self.stats_overlay.update(stats, current_tick)
+
+        overlay_text = self.stats_overlay.get_text_display()
+        if overlay_text:
+            lines.append(overlay_text)
+
         if not kill_log:
             return lines
 
