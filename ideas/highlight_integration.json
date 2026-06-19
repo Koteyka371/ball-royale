@@ -1,4 +1,0 @@
-{
-  "title": "Highlight Replay Export",
-  "description": "Enhance the battle simulator export to include the detected highlights. In the visualizer UI, add clickable timestamps on a timeline that jump directly to clutch plays, epic kills, and 1v1 finals."
-}

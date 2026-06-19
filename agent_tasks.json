@@ -1447,6 +1447,91 @@
         "Tests pass",
         "No regressions"
       ]
+    },
+    {
+      "id": "idea-ball_type-082",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Implement Hard ball",
+      "description": "Implement Implement Hard ball as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Implement Hard ball implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-ball_type-083",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Implement Chaos ball",
+      "description": "Implement Implement Chaos ball as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Implement Chaos ball implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-ball_type-084",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Implement Warrior ball",
+      "description": "Implement Implement Warrior ball as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Implement Warrior ball implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-ball_type-085",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Implement Scout ball",
+      "description": "Implement Implement Scout ball as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Implement Scout ball implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-ball_type-086",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Implement Tank ball",
+      "description": "Implement Implement Tank ball as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Implement Tank ball implemented",
+        "Tests pass",
+        "No regressions"
+      ]
     }
   ]
 }
