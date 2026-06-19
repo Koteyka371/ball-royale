@@ -32,6 +32,7 @@ class Tank:
         self.first_hit_taken = False
         self.current_action = "idle"
         self.skill_timer = 0.0
+        self.shield_active = False
         self.personality = Personality("brave")
 
     def get_hp_percent(self) -> float:
@@ -53,6 +54,10 @@ class Tank:
         self.current_action = "idle"
 
     def take_damage(self, amount: float) -> None:
+        if self.shield_active:
+            self.shield_active = False
+            return
+
         if self.hp == self.max_hp and amount > 0:
             self.first_hit_taken = True
         self.hp -= amount
@@ -62,6 +67,7 @@ class Tank:
     def use_skill(self) -> bool:
         if self.skill_timer <= 0:
             self.skill_timer = self.SKILL_COOLDOWN
+            self.shield_active = True
             return True
         return False
 
