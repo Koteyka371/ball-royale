@@ -16,7 +16,7 @@ class Neural:
     PERCEPTION_RADIUS = 300
     AGGRESSION = 0.5
     COLOR = "purple"
-    SKILL = "adaptive"
+    SKILL = "numpy"
     SKILL_COOLDOWN = 4.0
 
     def __init__(self, ball_id: int, x: float = 0.0, y: float = 0.0):
