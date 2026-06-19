@@ -1,0 +1,4 @@
+{
+  "title": "Weather Hazards",
+  "description": "Introduce dynamic weather effects that periodically alter the arena state. For example, a Sandstorm could drastically reduce all ball entities' PERCEPTION_RADIUS for a short duration, causing them to play more cautiously and rely on close-range encounters, or Rain that reduces SPEED and traction, altering kite and chase dynamics."
+}
