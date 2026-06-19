@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-feature-077] Highlight detection — *2026-06-19 21:35:30 UTC*
+
+Implement Highlight detection as described in game_design.md
+
+---
+
 ## [idea-feature-074] 10+ arenas — *2026-06-19 21:33:52 UTC*
 
 Implement 10+ arenas as described in game_design.md

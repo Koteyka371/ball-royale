@@ -1365,7 +1365,7 @@
     },
     {
       "id": "idea-feature-077",
-      "status": "todo",
+      "status": "done",
       "area": "content",
       "risk": "medium",
       "title": "Highlight detection",
