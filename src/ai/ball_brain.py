@@ -44,7 +44,7 @@ class BallBrain:
             elif difficulty == "medium":
                 self._reaction_timer = 0.1
             elif difficulty == "hard":
-                self._reaction_timer = 0.0
+                self._reaction_timer = 0.05
             elif difficulty == "chaos":
                 self._reaction_timer = random.uniform(0.0, 0.2)
             else:

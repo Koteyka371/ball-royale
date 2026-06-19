@@ -1,0 +1,4 @@
+{
+  "title": "Dynamic Weather Events",
+  "description": "Introduce dynamic weather conditions (like rain, snow, or fog) that periodically affect the entire arena. Rain could increase speed but reduce attack range, snow could cause slower movement, and fog could drastically reduce the AI perception radius, forcing close-quarters combat."
+}
