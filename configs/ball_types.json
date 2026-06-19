@@ -180,6 +180,18 @@
       "skill": "observe",
       "skill_cooldown": 1.0,
       "description": "Spectator mode, invisible to other balls, observes the battle."
+    },
+    "neural": {
+      "hp": 100,
+      "speed": 2.0,
+      "damage": 10,
+      "radius": 10,
+      "perception_radius": 200,
+      "aggression": 0.5,
+      "color": "purple",
+      "skill": "neural_predict",
+      "skill_cooldown": 5.0,
+      "description": "A ball controlled by a simple neural network skill: numpy, no external libs"
     }
   }
 }
