@@ -1,6 +1,5 @@
 import random
-from typing import List, Tuple
-from arena.procedural_arena import ProceduralArena, Room, Corridor, Hazard
+from arena.procedural_arena import ProceduralArena, Room, Hazard
 
 class CrossArena(ProceduralArena):
     def generate(self):
@@ -8,7 +7,7 @@ class CrossArena(ProceduralArena):
         self.corridors.clear()
         self.hazards.clear()
         w, h = self.width, self.height
-        cx, cy = w/2, h/2
+        cx, cy = w/2, h/2  # noqa: F841
         self.rooms.append(Room(cx - 150, 50, 300, h - 100))
         self.rooms.append(Room(50, cy - 150, w - 100, 300))
 
@@ -81,7 +80,7 @@ class HazardPitArena(ProceduralArena):
         self.hazards.clear()
         w, h = self.width, self.height
         self.rooms.append(Room(50, 50, w-100, h-100))
-        cx, cy = w/2, h/2
+        cx, cy = w/2, h/2  # noqa: F841
         for i in range(12):
             kind = "lava" if i % 2 == 0 else "spikes"
             radius = 50.0
@@ -96,7 +95,7 @@ class DuelArena(ProceduralArena):
         self.corridors.clear()
         self.hazards.clear()
         w, h = self.width, self.height
-        cx, cy = w/2, h/2
+        cx, cy = w/2, h/2  # noqa: F841
         size = 800
         self.rooms.append(Room(cx - size/2, cy - size/2, size, size))
 
@@ -128,7 +127,7 @@ class FortressArena(ProceduralArena):
         self.corridors.clear()
         self.hazards.clear()
         w, h = self.width, self.height
-        cx, cy = w/2, h/2
+        cx, cy = w/2, h/2  # noqa: F841
         self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
         self.rooms.append(Room(50, 50, 200, 200))
         self.rooms.append(Room(w-250, 50, 200, 200))
@@ -145,7 +144,7 @@ class SplitArena(ProceduralArena):
         self.corridors.clear()
         self.hazards.clear()
         w, h = self.width, self.height
-        cx, cy = w/2, h/2
+        cx, cy = w/2, h/2  # noqa: F841
         self.rooms.append(Room(50, 50, w/2 - 150, h - 100))
         self.rooms.append(Room(w/2 + 100, 50, w/2 - 150, h - 100))
         self.rooms.append(Room(w/2 - 50, cy - 100, 100, 200))
@@ -156,7 +155,7 @@ class ChokePointArena(ProceduralArena):
         self.corridors.clear()
         self.hazards.clear()
         w, h = self.width, self.height
-        cx, cy = w/2, h/2
+        cx, cy = w/2, h/2  # noqa: F841
         self.rooms.append(Room(50, 50, w - 100, h/2 - 150))
         self.rooms.append(Room(50, h/2 + 100, w - 100, h/2 - 150))
         self.rooms.append(Room(cx - 100, h/2 - 50, 200, 150))

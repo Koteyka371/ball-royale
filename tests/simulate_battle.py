@@ -18,7 +18,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../s
 from ai.ball_brain import BallBrain
 from ai.neural_network_brain import NeuralNetworkBrain
 from arena.arena_types import get_arena
-from arena.procedural_arena import ProceduralArena
 
 
 BALL_TYPES = {
@@ -58,6 +57,9 @@ BALL_TYPES = {
     "guardian": {"hp": 400, "speed": 2.2, "damage": 25, "radius": 16,
                  "perception_radius": 220, "aggression": 0.8, "color": "gold",
                  "skill": "protect_ally", "skill_cooldown": 3.0},
+    "neural": {"hp": 100, "speed": 4.5, "damage": 15, "radius": 10,
+                 "perception_radius": 300, "aggression": 0.5, "color": "purple",
+                 "skill": "numpy", "skill_cooldown": 4.0},
     "scout": {"hp": 80, "speed": 3.8, "damage": 20, "radius": 9,
               "perception_radius": 350, "aggression": 0.5, "color": "lightblue",
               "skill": "dash", "skill_cooldown": 3.5},

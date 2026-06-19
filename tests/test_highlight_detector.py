@@ -1,4 +1,3 @@
-import pytest
 from video.highlight_detector import HighlightDetector
 
 def test_clutch_play_detection():
