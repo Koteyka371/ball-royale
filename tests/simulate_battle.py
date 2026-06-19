@@ -18,10 +18,22 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../s
 from ai.ball_brain import BallBrain
 from ai.neural_network_brain import NeuralNetworkBrain
 from arena.arena_types import get_arena
-from arena.procedural_arena import ProceduralArena
 
 
 BALL_TYPES = {
+    "easy": {"hp": 80, "speed": 2.0, "damage": 10, "radius": 10,
+             "perception_radius": 150, "aggression": 0.5, "color": "lightgreen",
+             "skill": "dash", "skill_cooldown": 6.0},
+    "medium": {"hp": 120, "speed": 3.0, "damage": 15, "radius": 12,
+               "perception_radius": 250, "aggression": 0.6, "color": "blue",
+               "skill": "shield", "skill_cooldown": 5.0},
+    "hard": {"hp": 150, "speed": 4.0, "damage": 25, "radius": 14,
+             "perception_radius": 350, "aggression": 0.8, "color": "red",
+             "skill": "wave_attack", "skill_cooldown": 4.0},
+    "chaos": {"hp": 100, "speed": 5.0, "damage": 30, "radius": 12,
+              "perception_radius": 400, "aggression": 1.0, "color": "purple",
+              "skill": "explosion", "skill_cooldown": 3.0},
+
     "warrior": {"hp": 120, "speed": 2.0, "damage": 15, "radius": 12,
                 "perception_radius": 250, "aggression": 0.9, "color": "red",
                 "skill": "wave_attack", "skill_cooldown": 5.0},

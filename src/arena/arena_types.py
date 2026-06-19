@@ -1,6 +1,5 @@
 import random
-from typing import List, Tuple
-from arena.procedural_arena import ProceduralArena, Room, Corridor, Hazard
+from arena.procedural_arena import ProceduralArena, Room, Hazard
 
 class CrossArena(ProceduralArena):
     def generate(self):
@@ -145,7 +144,7 @@ class SplitArena(ProceduralArena):
         self.corridors.clear()
         self.hazards.clear()
         w, h = self.width, self.height
-        cx, cy = w/2, h/2
+        cy = h/2
         self.rooms.append(Room(50, 50, w/2 - 150, h - 100))
         self.rooms.append(Room(w/2 + 100, 50, w/2 - 150, h - 100))
         self.rooms.append(Room(w/2 - 50, cy - 100, 100, 200))
@@ -156,7 +155,7 @@ class ChokePointArena(ProceduralArena):
         self.corridors.clear()
         self.hazards.clear()
         w, h = self.width, self.height
-        cx, cy = w/2, h/2
+        cx = w/2
         self.rooms.append(Room(50, 50, w - 100, h/2 - 150))
         self.rooms.append(Room(50, h/2 + 100, w - 100, h/2 - 150))
         self.rooms.append(Room(cx - 100, h/2 - 50, 200, 150))
