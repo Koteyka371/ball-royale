@@ -180,6 +180,25 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
         scores["defend"] += 50.0
         scores["collect_booster"] -= 20.0
 
+    # Skill Usage AI
+    if skill_timer <= 0.0:
+        if b_type == "warrior" and enemies_count >= 2.0:
+            scores["use_skill"] += 300.0
+        elif b_type == "scout" and (danger_level > 0.5 or opportunity_level > 0.5):
+            scores["use_skill"] += 200.0
+        elif b_type == "tank" and hp_percent < 0.5:
+            scores["use_skill"] += 300.0
+        elif b_type == "healer" and allies_count > 0.0:
+            scores["use_skill"] += 250.0
+        elif b_type == "sniper" and threat_level > 0.3:
+            scores["use_skill"] += 200.0
+        elif b_type == "bomber" and enemies_count >= 3.0:
+            scores["use_skill"] += 400.0
+        elif b_type == "ninja" and opportunity_level > 0.5:
+            scores["use_skill"] += 200.0
+        elif b_type == "king" and allies_count > 0.0:
+            scores["use_skill"] += 200.0
+
     if perception_data.has("rival_spotted") and perception_data["rival_spotted"]:
         scores["attack"] += 200.0
         scores["chase"] += 200.0
