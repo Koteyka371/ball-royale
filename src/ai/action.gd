@@ -91,6 +91,8 @@ func execute(strategy: String, delta: float):
         _chase(delta)
     elif strategy == "flank":
         _flank(delta)
+    elif strategy == "group_attack":
+        _group_attack(delta)
     elif strategy == "defend":
         _defend(delta)
     elif strategy == "opportunistic" or strategy == "collect booster":
@@ -562,6 +564,138 @@ func _get_target(enemies: Array) -> Object:
                     target = e
 
     return target
+
+
+func _group_attack(delta: float):
+    var enemies = _get_enemies()
+    var allies = _get_allies()
+
+    if enemies.size() > 0:
+        var target = _get_target(enemies)
+
+        var personality = "idle"
+        if "personality" in self.ball:
+            personality = self.ball.personality
+
+        if personality in ["warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "swarm", "aggressive", "cunning", "curious"]:
+            var has_msg = false
+            if self.ball.has_method("has_meta") and self.ball.has_meta("team_message"):
+                has_msg = self.ball.get_meta("team_message") != null
+            if not has_msg and self.ball.has_method("set_meta"):
+                self.ball.set_meta("team_message", {"type": "target_spotted", "x": target.x, "y": target.y})
+
+        var dx = target.x - self.ball.x
+        var dy = target.y - self.ball.y
+        var dist_sq = dx * dx + dy * dy
+
+        if dist_sq > 0.0001:
+            var dist = sqrt(dist_sq)
+            var nx = dx / dist
+            var ny = dy / dist
+
+            # Apply boid-like cohesion to stick with allies
+            var cohesion_x = 0.0
+            var cohesion_y = 0.0
+
+            if allies.size() > 0:
+                for ally in allies:
+                    cohesion_x += ally.x
+                    cohesion_y += ally.y
+                cohesion_x /= allies.size()
+                cohesion_y /= allies.size()
+
+                var cdx = cohesion_x - self.ball.x
+                var cdy = cohesion_y - self.ball.y
+                var cdist_sq = cdx * cdx + cdy * cdy
+                if cdist_sq > 0.0001:
+                    var cdist = sqrt(cdist_sq)
+                    var cnx = cdx / cdist
+                    var cny = cdy / cdist
+
+                    # Blend movement: 60% towards target, 40% towards allies center
+                    nx = nx * 0.6 + cnx * 0.4
+                    ny = ny * 0.6 + cny * 0.4
+
+                    var ndist_sq = nx * nx + ny * ny
+                    if ndist_sq > 0.0001:
+                        var ndist = sqrt(ndist_sq)
+                        nx /= ndist
+                        ny /= ndist
+
+            var target_radius = 10.0
+            if "radius" in target: target_radius = float(target.radius)
+            var ball_radius = 10.0
+            if "radius" in self.ball: ball_radius = float(self.ball.radius)
+
+            if nx != 0.0 or ny != 0.0:
+                var avoided = _apply_obstacle_avoidance(nx, ny, target)
+                nx = avoided[0]
+                ny = avoided[1]
+
+                var boided = _apply_boid_rules(nx, ny)
+                nx = boided[0]
+                ny = boided[1]
+
+                var speed = 2.0
+                if "speed" in self.ball: speed = float(self.ball.speed)
+                var step = speed * delta * 60.0
+
+                self.ball.x += nx * min(step, dist)
+                self.ball.y += ny * min(step, dist)
+
+        # Recalculate distance
+        dx = target.x - self.ball.x
+        dy = target.y - self.ball.y
+        dist_sq = dx * dx + dy * dy
+        var dist = 0.0
+        if dist_sq > 0.0001: dist = sqrt(dist_sq)
+
+        var target_radius = 10.0
+        if "radius" in target: target_radius = float(target.radius)
+        var ball_radius = 10.0
+        if "radius" in self.ball: ball_radius = float(self.ball.radius)
+        var attack_range = ball_radius + target_radius + 5.0
+
+        var skill_timer = 0.0
+        if "skill_timer" in self.ball: skill_timer = float(self.ball.skill_timer)
+
+        if skill_timer <= 0.0 and dist <= attack_range * 1.5:
+            if self.ball.has_method("use_skill"):
+                self.ball.use_skill()
+                _spawn_skill_particles()
+
+            var cd = 5.0
+            if "skill_cooldown" in self.ball: cd = float(self.ball.skill_cooldown)
+            self.ball.skill_timer = cd
+
+        var attack_timer = 0.0
+        if "attack_timer" in self.ball: attack_timer = float(self.ball.attack_timer)
+
+        if attack_timer <= 0.0 and dist <= attack_range:
+            if self.world != null and self.world.has_method("_deal_damage"):
+                self.world._deal_damage(self.ball, target)
+
+                if "id" in target and "id" in self.ball:
+                    var target_memory = {}
+                    if target.has_method("get_meta") and target.has_meta("memory"):
+                        target_memory = target.get_meta("memory")
+                    elif "memory" in target and typeof(target.memory) == TYPE_DICTIONARY:
+                        target_memory = target.memory
+
+                    target_memory[self.ball.id] = {"relation": "rival"}
+                    if target.has_method("set_meta"):
+                        target.set_meta("memory", target_memory)
+                    elif "memory" in target:
+                        target.memory = target_memory
+
+            var speed = 2.0
+            if "speed" in self.ball: speed = float(self.ball.speed)
+            var cooldown = 1.0
+            if speed > 0: cooldown = max(0.2, 2.0 / speed)
+            self.ball.attack_timer = cooldown
+
+    else:
+        _idle(delta)
 
 func _flank(delta: float):
     var enemies = _get_enemies()

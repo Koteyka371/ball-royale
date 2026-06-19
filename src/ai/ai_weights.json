@@ -51,5 +51,11 @@
     },
     "idle": {
         "bias": 1.0
+    },
+    "group_attack": {
+        "enemies_count": 20.0,
+        "allies_count": 25.0,
+        "danger_level": 10.0,
+        "bias": -20.0
     }
 }
