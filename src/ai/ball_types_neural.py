@@ -5,7 +5,7 @@ A ball controlled by a simple neural network.
 
 
 from ai.personality import Personality
-import random
+import numpy as np # type: ignore
 
 class Neural:
     BALL_TYPE = "neural"
@@ -16,7 +16,7 @@ class Neural:
     PERCEPTION_RADIUS = 300
     AGGRESSION = 0.5
     COLOR = "purple"
-    SKILL = "adaptive"
+    SKILL = "numpy"
     SKILL_COOLDOWN = 4.0
 
     def __init__(self, ball_id: int, x: float = 0.0, y: float = 0.0):
@@ -36,8 +36,8 @@ class Neural:
         self.input_size = 4
         self.output_size = 3 # example: attack, flee, idle
 
-        self.weights = [[random.uniform(-1, 1) for _ in range(self.output_size)] for _ in range(self.input_size)]
-        self.biases = [random.uniform(-1, 1) for _ in range(self.output_size)]
+        self.weights = np.random.uniform(-1, 1, (self.input_size, self.output_size))
+        self.biases = np.random.uniform(-1, 1, self.output_size)
 
     def get_hp_percent(self) -> float:
         return self.hp / self.max_hp if self.max_hp > 0 else 0.0
@@ -69,16 +69,10 @@ class Neural:
             self.skill_timer = self.SKILL_COOLDOWN
 
             # Predict next action using the simple neural net
-            inputs = [self.get_hp_percent(), self.AGGRESSION, float(self.kills), self.skill_timer]
+            inputs = np.array([self.get_hp_percent(), self.AGGRESSION, float(self.kills), self.skill_timer])
 
-            outputs = []
-            for j in range(self.output_size):
-                out = self.biases[j]
-                for i in range(self.input_size):
-                    out += inputs[i] * self.weights[i][j]
-                outputs.append(out)
-
-            action_idx = outputs.index(max(outputs))
+            outputs = np.dot(inputs, self.weights) + self.biases
+            action_idx = int(np.argmax(outputs))
             actions = ["attack", "flee", "idle"]
             self.current_action = actions[action_idx]
 

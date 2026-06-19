@@ -1,0 +1,4 @@
+{
+  "title": "Neural Skill Customization via Mutations",
+  "description": "Balls with the Neural type and 'numpy' skill can occasionally mutate their network weights when picking up a special type of booster, allowing them to adapt slightly to the current arena layout without a full generational loop."
+}
