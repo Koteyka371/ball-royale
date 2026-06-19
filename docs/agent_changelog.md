@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-feature-073] 6 game modes — *2026-06-19 20:11:54 UTC*
+
+Implement 6 game modes as described in game_design.md
+
+---
+
 ## [idea-feature-061] Skill usage AI — *2026-06-19 16:19:23 UTC*
 
 Implement Skill usage AI as described in game_design.md
