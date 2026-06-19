@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [sync-gd-perception-calc-dist] Sync GDScript: Implement 'calc_dist' in perception.gd — *2026-06-19 02:33:29 UTC*
+
+The Python class in perception.py implements 'calc_dist', but the GDScript counterpart perception.gd is missing it. Please implement the same logic in GDScript.
+
+---
+
 ## [visualizer-interactive-spectator] Add interactive inspection mode to Visualizer — *2026-06-18 23:48:07 UTC*
 
 Allow clicking on any ball during playback to highlight it, display its active state, current health, target enemy, and emotional level in a detailed inspector panel on the page.

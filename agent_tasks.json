@@ -1249,7 +1249,7 @@
     },
     {
       "id": "sync-gd-perception-calc-dist",
-      "status": "todo",
+      "status": "done",
       "area": "content",
       "risk": "medium",
       "title": "Sync GDScript: Implement 'calc_dist' in perception.gd",
