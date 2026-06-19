@@ -1,0 +1,4 @@
+{
+  "title": "Neural Network Evolution Visualization",
+  "description": "Create a real-time visualizer that shows the neural network's architecture, node activations, and weight updates as balls learn and evolve over generations."
+}

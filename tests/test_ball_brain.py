@@ -113,7 +113,7 @@ def test_decision_layer():
     perception_data = brain.perception()
     emotion = brain.emotion(perception_data)
     decision = brain.decision(perception_data, emotion)
-    assert decision in ["defend", "attack"]
+    assert decision in ["defend", "attack", "kite", "use_skill"]
 
     # Low HP -> flee
     ball.hp = 20

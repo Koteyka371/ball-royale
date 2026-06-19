@@ -56,7 +56,6 @@ def test_zombie_infection_mode():
     assert teams.count("Survivor") == 2
 
     # Identify who is who
-    zombie = next(b for b in balls if b.team == "Zombie")
     survivors = [b for b in balls if b.team == "Survivor"]
 
     assert mode.check_winner(world, balls) is None

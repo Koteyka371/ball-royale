@@ -8,3 +8,4 @@ pytest-cov
 # Code quality
 ruff
 mypy
+numpy
