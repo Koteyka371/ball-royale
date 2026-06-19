@@ -349,6 +349,14 @@ class Action:
         self.ball.x += comb_nx * boosted_speed * delta * 60
         self.ball.y += comb_ny * boosted_speed * delta * 60
 
+    def _get_strongest_enemy(self, enemies: list[Any]) -> Any:
+        return max(enemies, key=lambda e: (
+            getattr(e, "max_hp", getattr(e, "hp", 0.0)),
+            getattr(e, "hp", 0.0),
+            -((e.x - self.ball.x)**2 + (e.y - self.ball.y)**2),
+            getattr(e, "id", 0)
+        ))
+
     def _get_target(self, enemies: list[Any]) -> Any:
         # Check for rivals first
         my_memory = getattr(self.ball, "memory", {})
@@ -370,7 +378,7 @@ class Action:
         else:
             b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
             if b_type == "tank":
-                return max(enemies, key=lambda e: (getattr(e, "max_hp", getattr(e, "hp", 0.0)), getattr(e, "hp", 0.0), -((e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)))
+                return self._get_strongest_enemy(enemies)
             elif b_type == "bomber":
                 def count_nearby(e1):
                     return sum(1 for e2 in enemies if e1 != e2 and ((e1.x - e2.x)**2 + (e1.y - e2.y)**2) <= 1600)
@@ -730,8 +738,7 @@ class Action:
                             self.ball.hp = 0 # Suicide
                             self.ball.alive = False
                     elif b_type == "tank":
-                        strongest = max(enemies, key=lambda e: (getattr(e, "max_hp", getattr(e, "hp", 0.0)), getattr(e, "hp", 0.0), -((e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)))
-                        optimal = (target == strongest)
+                        optimal = (target == self._get_strongest_enemy(enemies))
                     elif b_type == "warrior":
                         in_front = 0
                         # Calculate normalized movement vector towards target
@@ -827,7 +834,7 @@ class Action:
                                 return 1.0
                             ally_to_protect = min(allies, key=lambda a: get_hp_pct(a))
 
-                    target_enemy = max(enemies, key=lambda e: (getattr(e, "max_hp", getattr(e, "hp", 0.0)), getattr(e, "hp", 0.0), -((e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)))
+                    target_enemy = self._get_strongest_enemy(enemies)
 
                     if ally_to_protect:
                         # Body blocking position: 30 units from ally towards enemy
