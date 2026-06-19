@@ -30,6 +30,7 @@ class Sniper:
         self.y = y
         self.alive = True
         self.kills = 0
+        self.attack_timer: float = 0.0
         self.attack_range = float(self.ATTACK_RANGE)
         self.first_hit_taken = False
         self.current_action = "idle"
@@ -82,7 +83,7 @@ class Sniper:
                     self.use_skill()
 
                 if hasattr(self, 'attack_timer') and self.attack_timer <= 0:
-                    self.attack_timer = max(0.2, 2.0 / self.SPEED if self.SPEED > 0 else 1.0)
+                    self.attack_timer = float(max(0.2, 2.0 / self.SPEED if self.SPEED > 0 else 1.0))
                     # Note: Actual damage dealing is typically handled by Action layer or world
 
     def defend(self, delta: float) -> None:
