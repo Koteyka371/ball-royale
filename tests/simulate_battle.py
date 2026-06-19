@@ -18,7 +18,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../s
 from ai.ball_brain import BallBrain
 from ai.neural_network_brain import NeuralNetworkBrain
 from arena.arena_types import get_arena
-from arena.procedural_arena import ProceduralArena
 
 
 BALL_TYPES = {
@@ -456,6 +455,21 @@ class BattleSimulation:
         if s['ball_types_alive']:
             print("  Alive by type:", dict(s['ball_types_alive']))
         print(f"{'='*60}")
+
+        try:
+            import os
+            import sys
+            sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
+            from ui.stats_overlay import StatsOverlay
+            overlay = StatsOverlay()
+            overlay.update(self.stats)
+            print(f"\n{'='*60}")
+            print("  UI STATS OVERLAY PREVIEW")
+            print(f"{'='*60}")
+            for line in overlay.get_display_lines():
+                print(f"  [UI] {line}")
+        except ImportError:
+            pass
 
         if hasattr(self, 'kill_log') and self.kill_log:
             try:

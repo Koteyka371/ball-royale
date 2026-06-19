@@ -1,0 +1,4 @@
+{
+  "title": "Dynamic Weather System",
+  "description": "Introduce a dynamic weather system that affects gameplay over time. For instance, 'Rain' could reduce the movement speed of all balls, 'Fog' could decrease their perception radius, and 'Thunderstorms' could randomly drop damaging lightning strikes across the arena. The weather would change periodically during the battle, forcing the AI to adapt their strategies dynamically."
+}
