@@ -120,7 +120,7 @@ def test_decision_layer():
     perception_data = brain.perception()
     emotion = brain.emotion(perception_data)
     decision = brain.decision(perception_data, emotion)
-    assert decision in ["flee", "defend", "attack"]
+    assert decision in ["flee", "defend", "attack", "use_skill"]
 
     # Greed / Booster -> opportunistic
     ball.hp = 100

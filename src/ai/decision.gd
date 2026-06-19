@@ -246,11 +246,92 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     var best_action = "idle"
     var best_score = -9999.0
 
-    var order = ["flee", "defend", "collect_booster", "attack", "chase", "use_skill", "kite", "flank", "group_attack", "idle"]
-    for action in order:
-        if scores[action] > best_score:
-            best_score = scores[action]
-            best_action = action
+    var difficulty = "medium"
+    if "difficulty" in self.ball:
+        difficulty = str(self.ball.difficulty).to_lower()
+
+    if difficulty == "chaos":
+        if skill_timer <= 0.0 and randf() < 0.8:
+            best_action = "use_skill"
+            if scores.has("use_skill"):
+                best_score = scores["use_skill"]
+            else:
+                best_score = 0.0
+        else:
+            var possible = []
+            for k in scores.keys():
+                if float(scores[k]) > -500.0:
+                    possible.append(k)
+            if possible.size() > 0:
+                best_action = possible[randi() % possible.size()]
+            else:
+                best_action = "idle"
+
+            if scores.has(best_action):
+                best_score = float(scores[best_action])
+            else:
+                best_score = 0.0
+    else:
+        var action_order = ["flee", "defend", "collect_booster", "attack", "chase", "use_skill", "kite", "flank", "group_attack", "idle"]
+        var possible_actions = []
+        for k in scores.keys():
+            if float(scores[k]) > -500.0:
+                possible_actions.append(k)
+
+        var sorted_actions = []
+        for a in possible_actions:
+            var inserted = false
+            for i in range(sorted_actions.size()):
+                var score_a = float(scores[a])
+                var score_b = float(scores[sorted_actions[i]])
+                if score_a > score_b:
+                    sorted_actions.insert(i, a)
+                    inserted = true
+                    break
+                elif score_a == score_b:
+                    var index_a = action_order.find(a)
+                    var index_b = action_order.find(sorted_actions[i])
+                    if index_a < index_b:
+                        sorted_actions.insert(i, a)
+                        inserted = true
+                        break
+            if not inserted:
+                sorted_actions.append(a)
+
+        if sorted_actions.size() == 0:
+            sorted_actions = ["idle"]
+
+        if difficulty == "easy":
+            var top_actions = []
+            for i in range(min(3, sorted_actions.size())):
+                top_actions.append(sorted_actions[i])
+
+            if "use_skill" in top_actions and randf() < 0.5:
+                top_actions.erase("use_skill")
+
+            if top_actions.size() == 0:
+                top_actions = ["idle"]
+
+            if randf() < 0.3:
+                best_action = top_actions[randi() % top_actions.size()]
+            else:
+                best_action = top_actions[0]
+        elif difficulty == "medium":
+            var top_actions = []
+            for i in range(min(5, sorted_actions.size())):
+                top_actions.append(sorted_actions[i])
+
+            if randf() < 0.1 and top_actions.size() > 1:
+                best_action = top_actions[randi() % top_actions.size()]
+            else:
+                best_action = top_actions[0]
+        else:
+            best_action = sorted_actions[0]
+
+        if scores.has(best_action):
+            best_score = scores[best_action]
+        else:
+            best_score = 0.0
 
     if best_action == "idle":
         var behaviors = {
