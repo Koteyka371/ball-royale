@@ -1123,7 +1123,7 @@
     },
     {
       "id": "idea-feature-061",
-      "status": "todo",
+      "status": "done",
       "area": "content",
       "risk": "medium",
       "title": "Skill usage AI",

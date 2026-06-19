@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-feature-061] Skill usage AI — *2026-06-19 16:19:23 UTC*
+
+Implement Skill usage AI as described in game_design.md
+
+---
+
 ## [auto-implement-**ball-genetics**-—-balls-reproduce-afte] Implement **Ball Genetics** — Balls reproduce after surviving N battles. Offspring inherit traits skill — *2026-06-19 12:29:23 UTC*
 
 Create **Ball Genetics** — Balls reproduce after surviving N battles. Offspring inherit traits skill: speed, damage, color
