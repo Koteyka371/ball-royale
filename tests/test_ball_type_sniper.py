@@ -54,3 +54,30 @@ def test_sniper_actions():
     assert ball.current_action == "opportunistic"
     ball.idle(0.016)
     assert ball.current_action == "idle"
+
+class MockTarget:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+def test_sniper_kite_keep_distance():
+    ball = Sniper(ball_id=1, x=100.0, y=100.0)
+    target = MockTarget(100.0, 300.0) # dist = 200, attack_range = 150
+    # Expected to move closer
+    ball.kite(0.1, target)
+    assert ball.current_action == "kite"
+    assert ball.y > 100.0
+
+def test_sniper_kite_retreat():
+    ball = Sniper(ball_id=1, x=100.0, y=100.0)
+    target = MockTarget(100.0, 200.0) # dist = 100, < 150 * 0.8 (120)
+    # Expected to move away
+    ball.kite(0.1, target)
+    assert ball.y < 100.0
+
+def test_sniper_kite_use_skill():
+    ball = Sniper(ball_id=1, x=100.0, y=100.0)
+    target = MockTarget(100.0, 200.0) # dist = 100
+    ball.skill_timer = 0.0
+    ball.kite(0.1, target)
+    assert ball.skill_timer > 0.0

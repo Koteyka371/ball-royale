@@ -71,7 +71,7 @@ class Sniper:
                 self.x -= nx * step
                 self.y -= ny * step
 
-            # Attack when approached or in range
+            # Recalculate distance after movement
             dx = target.x - self.x
             dy = target.y - self.y
             dist_sq = dx * dx + dy * dy
@@ -82,8 +82,8 @@ class Sniper:
                     self.use_skill()
 
                 if hasattr(self, 'attack_timer') and self.attack_timer <= 0:
-                    # Signal that we are ready to attack
-                    pass
+                    self.attack_timer = max(0.2, 2.0 / self.SPEED if self.SPEED > 0 else 1.0)
+                    # Note: Actual damage dealing is typically handled by Action layer or world
 
     def defend(self, delta: float) -> None:
         self.current_action = "defend"
