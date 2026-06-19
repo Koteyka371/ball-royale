@@ -18,7 +18,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../s
 from ai.ball_brain import BallBrain
 from ai.neural_network_brain import NeuralNetworkBrain
 from arena.arena_types import get_arena
-from arena.procedural_arena import ProceduralArena
 
 
 BALL_TYPES = {
