@@ -61,7 +61,10 @@ class Sniper:
 
             # Keep distance
             if dist > self.attack_range:
-                pass # Move closer (handled by Action layer globally, or we could add self.x += nx * speed)
+                # Move closer
+                step = self.SPEED * delta * 60.0
+                self.x += nx * min(step, dist - self.attack_range)
+                self.y += ny * min(step, dist - self.attack_range)
             elif dist < self.attack_range * 0.8:
                 # Move away
                 step = self.SPEED * delta * 60.0
@@ -69,13 +72,17 @@ class Sniper:
                 self.y -= ny * step
 
             # Attack when approached or in range
+            dx = target.x - self.x
+            dy = target.y - self.y
+            dist_sq = dx * dx + dy * dy
+            dist = math.sqrt(dist_sq) if dist_sq > 0.0001 else 0.0
+
             if dist <= self.attack_range:
                 if dist < self.attack_range * 0.8 and self.skill_timer <= 0:
                     self.use_skill()
 
-                # Attacking logic is normally handled by world._deal_damage, we just signal it here
                 if hasattr(self, 'attack_timer') and self.attack_timer <= 0:
-                    # In true implementation, action.py deals damage
+                    # Signal that we are ready to attack
                     pass
 
     def defend(self, delta: float) -> None:
