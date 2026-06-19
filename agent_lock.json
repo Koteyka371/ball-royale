@@ -3,7 +3,7 @@
     "agent-1": {
       "name": "Jules Core",
       "area": "ai-core",
-      "task_id": "auto-implement-**target-strong**-—-атакует-самого-сильн",
+      "task_id": "auto-implement-**target-strong**-\u2014-\u0430\u0442\u0430\u043a\u0443\u0435\u0442-\u0441\u0430\u043c\u043e\u0433\u043e-\u0441\u0438\u043b\u044c\u043d",
       "status": "assigned",
       "started_at": "2026-06-19T18:41:22.467729+00:00",
       "cycles_today": 0
@@ -11,7 +11,7 @@
     "agent-2": {
       "name": "Jules Behaviors",
       "area": "behaviors",
-      "task_id": "auto-implement-**kite**-—-держит-дистанцию,-атакует-при",
+      "task_id": "auto-implement-**kite**-\u2014-\u0434\u0435\u0440\u0436\u0438\u0442-\u0434\u0438\u0441\u0442\u0430\u043d\u0446\u0438\u044e,-\u0430\u0442\u0430\u043a\u0443\u0435\u0442-\u043f\u0440\u0438",
       "status": "assigned",
       "started_at": "2026-06-19T18:41:22.467729+00:00",
       "cycles_today": 0
@@ -19,7 +19,7 @@
     "agent-3": {
       "name": "Jules Tests",
       "area": "tests",
-      "task_id": "auto-implement-**flank**-—-обходит-сзади-для-удара-skil",
+      "task_id": "auto-implement-**flank**-\u2014-\u043e\u0431\u0445\u043e\u0434\u0438\u0442-\u0441\u0437\u0430\u0434\u0438-\u0434\u043b\u044f-\u0443\u0434\u0430\u0440\u0430-skil",
       "status": "assigned",
       "started_at": "2026-06-19T18:41:22.467729+00:00",
       "cycles_today": 0
@@ -35,7 +35,7 @@
     "agent-5": {
       "name": "Jules Meta",
       "area": "meta",
-      "task_id": "auto-implement-**neural-ball**-—-a-ball-controlled-by-a",
+      "task_id": "auto-implement-**neural-ball**-\u2014-a-ball-controlled-by-a",
       "status": "assigned",
       "started_at": "2026-06-19T18:41:22.467729+00:00",
       "cycles_today": 0
@@ -43,7 +43,7 @@
     "agent-6": {
       "name": "Jules Innovation",
       "area": "innovation",
-      "task_id": "auto-implement-**ball-relationships**-—-balls-remember-",
+      "task_id": "auto-implement-**ball-relationships**-\u2014-balls-remember-",
       "status": "assigned",
       "started_at": "2026-06-19T18:41:22.467729+00:00",
       "cycles_today": 0
@@ -104,181 +104,109 @@
       "started_at": null,
       "cycles_today": 0
     },
-    "jules-agent-1": {
+    "agent-13": {
       "status": "idle",
       "task_id": null,
       "started_at": null,
       "cycles_today": 0
     },
-    "jules-agent-2": {
+    "agent-14": {
       "status": "idle",
       "task_id": null,
       "started_at": null,
       "cycles_today": 0
     },
-    "jules-agent-3": {
+    "agent-15": {
       "status": "idle",
       "task_id": null,
       "started_at": null,
       "cycles_today": 0
     },
-    "jules-agent-4": {
+    "agent-16": {
       "status": "idle",
       "task_id": null,
       "started_at": null,
       "cycles_today": 0
     },
-    "jules-agent-5": {
+    "agent-17": {
       "status": "idle",
       "task_id": null,
       "started_at": null,
       "cycles_today": 0
     },
-    "jules-agent-6": {
+    "agent-18": {
       "status": "idle",
       "task_id": null,
       "started_at": null,
       "cycles_today": 0
     },
-    "jules-agent-7": {
+    "agent-19": {
       "status": "idle",
       "task_id": null,
       "started_at": null,
       "cycles_today": 0
     },
-    "jules-agent-8": {
+    "agent-20": {
       "status": "idle",
       "task_id": null,
       "started_at": null,
       "cycles_today": 0
     },
-    "jules-agent-9": {
+    "agent-21": {
       "status": "idle",
       "task_id": null,
       "started_at": null,
       "cycles_today": 0
     },
-    "jules-agent-10": {
+    "agent-22": {
       "status": "idle",
       "task_id": null,
       "started_at": null,
       "cycles_today": 0
     },
-    "jules-agent-11": {
+    "agent-23": {
       "status": "idle",
       "task_id": null,
       "started_at": null,
       "cycles_today": 0
     },
-    "jules-agent-12": {
+    "agent-24": {
       "status": "idle",
       "task_id": null,
       "started_at": null,
       "cycles_today": 0
     },
-    "jules-agent-13": {
+    "agent-25": {
       "status": "idle",
       "task_id": null,
       "started_at": null,
       "cycles_today": 0
     },
-    "jules-agent-14": {
+    "agent-26": {
       "status": "idle",
       "task_id": null,
       "started_at": null,
       "cycles_today": 0
     },
-    "jules-agent-15": {
+    "agent-27": {
       "status": "idle",
       "task_id": null,
       "started_at": null,
       "cycles_today": 0
     },
-    "jules-agent-16": {
+    "agent-28": {
       "status": "idle",
       "task_id": null,
       "started_at": null,
       "cycles_today": 0
     },
-    "jules-agent-17": {
+    "agent-29": {
       "status": "idle",
       "task_id": null,
       "started_at": null,
       "cycles_today": 0
     },
-    "jules-agent-18": {
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
-      "cycles_today": 0
-    },
-    "jules-agent-19": {
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
-      "cycles_today": 0
-    },
-    "jules-agent-20": {
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
-      "cycles_today": 0
-    },
-    "jules-agent-21": {
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
-      "cycles_today": 0
-    },
-    "jules-agent-22": {
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
-      "cycles_today": 0
-    },
-    "jules-agent-23": {
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
-      "cycles_today": 0
-    },
-    "jules-agent-24": {
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
-      "cycles_today": 0
-    },
-    "jules-agent-25": {
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
-      "cycles_today": 0
-    },
-    "jules-agent-26": {
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
-      "cycles_today": 0
-    },
-    "jules-agent-27": {
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
-      "cycles_today": 0
-    },
-    "jules-agent-28": {
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
-      "cycles_today": 0
-    },
-    "jules-agent-29": {
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
-      "cycles_today": 0
-    },
-    "jules-agent-30": {
+    "agent-30": {
       "status": "idle",
       "task_id": null,
       "started_at": null,
