@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-feature-059] Advanced behaviors (kite, flank, group attack) — *2026-06-19 02:48:38 UTC*
+
+Implement Advanced behaviors (kite, flank, group attack) as described in game_design.md
+
+---
+
 ## [sync-gd-perception-calc-dist] Sync GDScript: Implement 'calc_dist' in perception.gd — *2026-06-19 02:33:29 UTC*
 
 The Python class in perception.py implements 'calc_dist', but the GDScript counterpart perception.gd is missing it. Please implement the same logic in GDScript.

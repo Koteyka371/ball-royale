@@ -1089,7 +1089,7 @@
     },
     {
       "id": "idea-feature-059",
-      "status": "todo",
+      "status": "done",
       "area": "content",
       "risk": "medium",
       "title": "Advanced behaviors (kite, flank, group attack)",
