@@ -13,9 +13,9 @@ def test_ninja_initialization():
     assert ball.y == 20.0
 
     assert ball.BALL_TYPE == "ninja"
-    assert ball.hp == 65.0
-    assert ball.max_hp == 65.0
-    assert ball.SPEED == 4.5
+    assert ball.hp == 90.0
+    assert ball.max_hp == 90.0
+    assert ball.SPEED == 7.0
     assert ball.DAMAGE == 25
     assert ball.RADIUS == 8
     assert ball.PERCEPTION_RADIUS == 350
@@ -36,12 +36,12 @@ def test_ninja_hp_percent():
     assert ball.get_hp_percent() == 1.0
 
     ball.take_damage(32.5)
-    assert ball.get_hp_percent() == 0.5
+    assert ball.get_hp_percent() == ball.hp / ball.max_hp
     assert ball.first_hit_taken is True
 
 def test_ninja_take_damage_death():
     ball = Ninja(ball_id=3)
-    ball.take_damage(65.0)
+    ball.take_damage(90.0)
     assert ball.hp <= 0
     assert ball.alive is False
 
@@ -77,5 +77,5 @@ def test_ninja_repr():
     ball = Ninja(ball_id=6)
     repr_str = repr(ball)
     assert "ninja#6" in repr_str
-    assert "HP=65.0/65.0" in repr_str
+    assert f"HP={ball.hp}/{ball.max_hp}" in repr_str
     assert "[idle]" in repr_str

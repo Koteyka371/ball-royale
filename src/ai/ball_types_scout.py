@@ -1,16 +1,18 @@
 """
 Auto-generated ball type: Scout
+
 Curious personality, seeks boosters, attacks weak enemies, flees from strong ones.
 Uses Dash to escape or chase.
 """
+
 
 from ai.personality import Personality
 
 class Scout:
     BALL_TYPE = "scout"
     HP = 80
-    SPEED = 3.8
-    DAMAGE = 20
+    SPEED = 8.0
+    DAMAGE = 10
     RADIUS = 9
     PERCEPTION_RADIUS = 350
     AGGRESSION = 0.5

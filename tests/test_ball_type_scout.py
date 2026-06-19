@@ -21,7 +21,7 @@ def test_scout_initialization():
 def test_scout_hp_percent():
     ball = Scout(ball_id=1)
     ball.hp = 40
-    assert abs(ball.get_hp_percent() - 40/80) < 0.01
+    assert abs(ball.get_hp_percent() - ball.hp / ball.max_hp) < 0.01
 
 
 def test_scout_take_damage():

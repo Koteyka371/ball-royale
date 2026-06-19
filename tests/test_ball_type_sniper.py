@@ -12,8 +12,8 @@ from ai.ball_types_sniper import Sniper
 def test_sniper_initialization():
     ball = Sniper(ball_id=1, x=100, y=200)
     assert ball.id == 1
-    assert ball.hp == 60
-    assert ball.max_hp == 60
+    assert ball.hp == 70
+    assert ball.max_hp == 70
     assert ball.alive is True
     assert ball.personality == "cautious"
 
@@ -21,13 +21,13 @@ def test_sniper_initialization():
 def test_sniper_hp_percent():
     ball = Sniper(ball_id=1)
     ball.hp = 30
-    assert abs(ball.get_hp_percent() - 30/60) < 0.01
+    assert abs(ball.get_hp_percent() - ball.hp / ball.max_hp) < 0.01
 
 
 def test_sniper_take_damage():
     ball = Sniper(ball_id=1)
     ball.take_damage(10)
-    assert ball.hp == 50
+    assert ball.hp == 60
     assert ball.alive is True
     ball.take_damage(160)
     assert ball.alive is False

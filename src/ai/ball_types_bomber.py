@@ -5,13 +5,15 @@ Area damage, uses Explosion to hit multiple enemies
 
 
 
+
+
 from ai.personality import Personality
 
 class Bomber:
     BALL_TYPE = "bomber"
-    HP = 90
-    SPEED = 1.8
-    DAMAGE = 20
+    HP = 60
+    SPEED = 4.0
+    DAMAGE = 50
     RADIUS = 14
     PERCEPTION_RADIUS = 200
     AGGRESSION = 0.7

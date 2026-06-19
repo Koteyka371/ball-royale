@@ -5,6 +5,7 @@ Maximum aggression, damage increases as HP drops
 
 
 
+
 from ai.personality import Personality
 
 class Berserker:

@@ -5,6 +5,7 @@ Fast killer, low HP, uses Dash to close distance
 
 
 
+
 from ai.personality import Personality
 
 class Assassin:

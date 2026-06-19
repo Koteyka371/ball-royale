@@ -5,12 +5,14 @@ Support ball, heals allies, avoids combat
 
 
 
+
+
 from ai.personality import Personality
 
 class Healer:
     BALL_TYPE = "healer"
-    HP = 120
-    SPEED = 2.2
+    HP = 100
+    SPEED = 5.0
     DAMAGE = 5
     RADIUS = 10
     PERCEPTION_RADIUS = 350

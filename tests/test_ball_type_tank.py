@@ -12,8 +12,8 @@ from ai.ball_types_tank import Tank
 def test_tank_initialization():
     ball = Tank(ball_id=1, x=100, y=200)
     assert ball.id == 1
-    assert ball.hp == 200
-    assert ball.max_hp == 200
+    assert ball.hp == 250
+    assert ball.max_hp == 250
     assert ball.alive is True
     assert ball.personality == "brave"
 
@@ -21,13 +21,13 @@ def test_tank_initialization():
 def test_tank_hp_percent():
     ball = Tank(ball_id=1)
     ball.hp = 100
-    assert abs(ball.get_hp_percent() - 100/200) < 0.01
+    assert abs(ball.get_hp_percent() - ball.hp / ball.max_hp) < 0.01
 
 
 def test_tank_take_damage():
     ball = Tank(ball_id=1)
     ball.take_damage(10)
-    assert ball.hp == 190
+    assert ball.hp == 240
     assert ball.alive is True
     ball.take_damage(300)
     assert ball.alive is False

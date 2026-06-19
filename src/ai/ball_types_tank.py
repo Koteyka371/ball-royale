@@ -5,12 +5,14 @@ Heavy defender, high HP, uses Shield to absorb damage
 
 
 
+
+
 from ai.personality import Personality
 
 class Tank:
     BALL_TYPE = "tank"
-    HP = 200
-    SPEED = 1.2
+    HP = 250
+    SPEED = 3.0
     DAMAGE = 8
     RADIUS = 18
     PERCEPTION_RADIUS = 200
