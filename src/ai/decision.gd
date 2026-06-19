@@ -99,6 +99,7 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
         "use_skill": 0.0,
         "kite": 0.0,
         "flank": 0.0,
+        "group_attack": 0.0,
         "idle": 0.0
     }
 
@@ -222,7 +223,7 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     var best_action = "idle"
     var best_score = -9999.0
 
-    var order = ["flee", "defend", "collect_booster", "attack", "chase", "use_skill", "kite", "flank", "idle"]
+    var order = ["flee", "defend", "collect_booster", "attack", "chase", "use_skill", "kite", "flank", "group_attack", "idle"]
     for action in order:
         if scores[action] > best_score:
             best_score = scores[action]
@@ -241,7 +242,7 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
             "rogue": "chase",
             "guardian": "defend",
             "phantom": "chase",
-            "swarm": "chase",
+            "swarm": "group_attack",
             "scout": "collect_booster",
             "king": "defend",
             "aggressive": "attack",

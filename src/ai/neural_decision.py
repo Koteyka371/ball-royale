@@ -51,7 +51,7 @@ class NeuralDecision:
             return "idle"
 
         # 3. Predict
-        actions = ["flee", "defend", "collect_booster", "attack", "chase", "use_skill", "kite", "flank"]
+        actions = ["flee", "defend", "collect_booster", "attack", "chase", "use_skill", "kite", "flank", "group_attack"]
         best_score = -9999.0
         best_action = "idle"
 

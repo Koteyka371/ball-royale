@@ -8,7 +8,7 @@ from tests.simulate_battle import BattleSimulation
 
 def train_networks(generations=10, population_size=20, ticks=500):
     input_size = 4 # hp_percent, danger_level, opportunity_score, threat_level
-    output_size = 8 # flee, defend, collect_booster, attack, chase, use_skill, kite, flank
+    output_size = 9 # flee, defend, collect_booster, attack, chase, use_skill, kite, flank, group_attack
     trainer = NeuralTrainer(population_size=population_size, input_size=input_size, output_size=output_size)
 
     weights_path = os.path.join(os.path.dirname(__file__), "nn_weights.json")

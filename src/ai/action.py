@@ -80,6 +80,8 @@ class Action:
             self._chase(delta)
         elif strategy == "flank":
             self._flank(delta)
+        elif strategy == "group_attack":
+            self._group_attack(delta)
         elif strategy == "defend":
             self._defend(delta)
         elif strategy in ("opportunistic", "collect_booster", "collect booster"):
@@ -371,6 +373,90 @@ class Action:
                 return max(enemies, key=lambda e: (count_nearby(e), -((self.ball.x - e.x)**2 + (self.ball.y - e.y)**2)))
             else:
                 return min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+
+
+    def _group_attack(self, delta: float) -> None:
+        enemies = self._get_enemies()
+        allies = self._get_allies()
+
+        if enemies:
+            target = self._get_target(enemies)
+
+            personality = getattr(self.ball, "personality", "idle")
+            if personality in ("warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "swarm", "aggressive", "cunning", "curious") and getattr(self.ball, "team_message", None) is None:
+                self.ball.team_message = {"type": "target_spotted", "x": target.x, "y": target.y}
+
+            dx, dy = target.x - self.ball.x, target.y - self.ball.y
+            dist_sq = dx * dx + dy * dy
+            if dist_sq > 0.0001:
+                import math
+                dist = math.sqrt(dist_sq)
+                nx, ny = dx / dist, dy / dist
+
+                # Apply boid-like cohesion to stick with allies
+                cohesion_x, cohesion_y = 0.0, 0.0
+                if allies:
+                    for ally in allies:
+                        cohesion_x += ally.x
+                        cohesion_y += ally.y
+                    cohesion_x /= len(allies)
+                    cohesion_y /= len(allies)
+
+                    cdx, cdy = cohesion_x - self.ball.x, cohesion_y - self.ball.y
+                    cdist_sq = cdx * cdx + cdy * cdy
+                    if cdist_sq > 0.0001:
+                        cdist = math.sqrt(cdist_sq)
+                        cnx, cny = cdx / cdist, cdy / cdist
+
+                        # Blend movement: 60% towards target, 40% towards allies center
+                        nx = nx * 0.6 + cnx * 0.4
+                        ny = ny * 0.6 + cny * 0.4
+
+                        ndist_sq = nx * nx + ny * ny
+                        if ndist_sq > 0.0001:
+                            ndist = math.sqrt(ndist_sq)
+                            nx /= ndist
+                            ny /= ndist
+
+                target_radius = getattr(target, "radius", 10.0)
+                ball_radius = getattr(self.ball, "radius", 10.0)
+                attack_range = ball_radius + target_radius + 5
+
+                if nx != 0.0 or ny != 0.0:
+                    nx, ny = self._apply_obstacle_avoidance(nx, ny, target)
+                    nx, ny = self._apply_boid_rules(nx, ny)
+
+                    step = getattr(self.ball, "speed", 2.0) * delta * 60
+                    self.ball.x += nx * min(step, dist)
+                    self.ball.y += ny * min(step, dist)
+
+            # Recalculate distance
+            dx, dy = target.x - self.ball.x, target.y - self.ball.y
+            dist_sq = dx * dx + dy * dy
+            dist = math.sqrt(dist_sq) if dist_sq > 0.0001 else 0.0
+
+            target_radius = getattr(target, "radius", 10.0)
+            ball_radius = getattr(self.ball, "radius", 10.0)
+            attack_range = ball_radius + target_radius + 5
+
+            skill_timer = getattr(self.ball, "skill_timer", 0.0)
+            if skill_timer <= 0 and dist <= attack_range * 1.5:
+                if hasattr(self.ball, "use_skill"):
+                    self.ball.use_skill()
+                self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
+
+            attack_timer = getattr(self.ball, "attack_timer", 0.0)
+            if attack_timer <= 0 and dist <= attack_range:
+                if hasattr(self.world, "_deal_damage"):
+                    self.world._deal_damage(self.ball, target)
+                    if hasattr(target, "id") and hasattr(self.ball, "id"):
+                        target.memory = getattr(target, "memory", {})
+                        target.memory[self.ball.id] = {"relation": "rival"}
+                speed = getattr(self.ball, "speed", 2.0)
+                cooldown = max(0.2, 2.0 / speed if speed > 0 else 1.0)
+                self.ball.attack_timer = cooldown
+        else:
+            self._idle(delta)
 
     def _flank(self, delta: float) -> None:
         enemies = self._get_enemies()

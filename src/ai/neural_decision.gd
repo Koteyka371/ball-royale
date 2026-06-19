@@ -61,7 +61,7 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     if weights == null or biases == null:
         return "idle"
 
-    var actions = ["flee", "defend", "collect_booster", "attack", "chase", "use_skill", "kite", "flank"]
+    var actions = ["flee", "defend", "collect_booster", "attack", "chase", "use_skill", "kite", "flank", "group_attack"]
     var best_score = -9999.0
     var best_action = "idle"
 
