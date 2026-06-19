@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-feature-075] AI difficulty levels — *2026-06-19 20:16:06 UTC*
+
+Implement AI difficulty levels as described in game_design.md
+
+---
+
 ## [idea-feature-073] 6 game modes — *2026-06-19 20:11:54 UTC*
 
 Implement 6 game modes as described in game_design.md

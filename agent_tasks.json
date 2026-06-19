@@ -1331,7 +1331,7 @@
     },
     {
       "id": "idea-feature-075",
-      "status": "todo",
+      "status": "done",
       "area": "content",
       "risk": "medium",
       "title": "AI difficulty levels",
