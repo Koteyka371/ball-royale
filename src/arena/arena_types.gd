@@ -27,5 +27,6 @@ const ARENAS = [
     "circle_strafe",
     "epic_kills",
     "reposition",
-    "ball_relationships"
+    "ball_relationships",
+    "clutch_plays"
 ]
