@@ -223,3 +223,36 @@ class AvoidTrapArena extends ProceduralArena:
         hazards.append(ProceduralArena.Hazard.new(2, 500.0, 200.0, 30.0, "spikes", 20.0))
         hazards.append(ProceduralArena.Hazard.new(3, 200.0, 400.0, 30.0, "lava", 50.0))
         hazards.append(ProceduralArena.Hazard.new(4, 450.0, 500.0, 40.0, "lava", 50.0))
+
+class RepositionArena extends ProceduralArena:
+    func generate():
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = width
+        var h = height
+        var cx = w / 2.0
+        var cy = h / 2.0
+
+        # Central room
+        rooms.append(ProceduralArena.Room.new(cx - 200.0, cy - 200.0, 400.0, 400.0))
+        # Top room
+        rooms.append(ProceduralArena.Room.new(cx - 100.0, 100.0, 200.0, 200.0))
+        # Bottom room
+        rooms.append(ProceduralArena.Room.new(cx - 100.0, h - 300.0, 200.0, 200.0))
+        # Left room
+        rooms.append(ProceduralArena.Room.new(100.0, cy - 100.0, 200.0, 200.0))
+        # Right room
+        rooms.append(ProceduralArena.Room.new(w - 300.0, cy - 100.0, 200.0, 200.0))
+
+        # Top corridor
+        corridors.append(ProceduralArena.Corridor.new(cx - 50.0, 300.0, 100.0, cy - 200.0 - 300.0))
+        # Bottom corridor
+        corridors.append(ProceduralArena.Corridor.new(cx - 50.0, cy + 200.0, 100.0, h - 300.0 - (cy + 200.0)))
+        # Left corridor
+        corridors.append(ProceduralArena.Corridor.new(300.0, cy - 50.0, cx - 200.0 - 300.0, 100.0))
+        # Right corridor
+        corridors.append(ProceduralArena.Corridor.new(cx + 200.0, cy - 50.0, w - 300.0 - (cx + 200.0), 100.0))
+
+        # Central hazard
+        hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 100.0, "lava", 15.0))
