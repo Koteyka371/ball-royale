@@ -208,6 +208,38 @@ class UseShieldArena(ProceduralArena):
             damage = 20.0 if kind == "spikes" else 40.0
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=40.0, kind=kind, damage=damage))
 
+class HideBehindArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+
+        # Central room
+        self.rooms.append(Room(50, 50, w - 100, h - 100))
+
+        # Create a grid of "pillars" by carving out small hazard zones
+        # Actually, in this architecture, rooms/corridors are the passable areas.
+        # So we can create a grid of corridors and rooms that leave empty "pillars" in between.
+
+        self.rooms.clear()
+
+        pillar_w = 200
+        pillar_h = 200
+        gap = 150
+
+        # Generate a grid of passable space
+        cols = int((w - 100) / (pillar_w + gap))
+        rows = int((h - 100) / (pillar_h + gap))
+
+        for i in range(cols + 1):
+            x = 50 + i * (pillar_w + gap)
+            self.rooms.append(Room(x, 50, gap, h - 100))
+
+        for j in range(rows + 1):
+            y = 50 + j * (pillar_h + gap)
+            self.rooms.append(Room(50, y, w - 100, gap))
+
 ARENAS = {
     "procedural": ProceduralArena,
     "cross": CrossArena,
@@ -223,7 +255,8 @@ ARENAS = {
     "split": SplitArena,
     "flank": FlankArena,
     "choke_point": ChokePointArena,
-    "use_shield": UseShieldArena
+    "use_shield": UseShieldArena,
+    "hide_behind": HideBehindArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
