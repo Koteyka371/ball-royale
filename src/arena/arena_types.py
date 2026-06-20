@@ -287,7 +287,31 @@ class AggressiveChaseArena(ProceduralArena):
         self.corridors.append(Corridor(cx - 40, 50 + room_size, 80, cy - center_size/2 - (50 + room_size))) # Top
         self.corridors.append(Corridor(cx - 40, cy + center_size/2, 80, (h - 50 - room_size) - (cy + center_size/2))) # Bottom
 
+
+class FinalsArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central large room
+        size = 800
+        self.rooms.append(Room(cx - size/2, cy - size/2, size, size))
+
+        # Outer ring of hazards (colosseum feel)
+        import math
+        num_hazards = 16
+        radius = 350
+        for i in range(num_hazards):
+            angle = 2 * math.pi * i / num_hazards
+            hx = cx + radius * math.cos(angle)
+            hy = cy + radius * math.sin(angle)
+            self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=30.0, kind="lava", damage=25.0))
+
 ARENAS = {
+    "finals": FinalsArena,
     "buff_ally": BuffAllyArena,
     "retreat_to_ally": RetreatToAllyArena,
     "procedural": ProceduralArena,
