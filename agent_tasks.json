@@ -1756,7 +1756,7 @@
     },
     {
       "id": "idea-arena-100",
-      "status": "todo",
+      "status": "done",
       "area": "arenas",
       "risk": "low",
       "title": "Create Circle Strafe arena",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-arena-100] Create Circle Strafe arena — *2026-06-20 16:37:59 UTC*
+
+Implement Create Circle Strafe arena as described in game_design.md
+
+---
+
 ## [idea-arena-103] Create Hide Behind arena — *2026-06-20 15:15:30 UTC*
 
 Implement Create Hide Behind arena as described in game_design.md
