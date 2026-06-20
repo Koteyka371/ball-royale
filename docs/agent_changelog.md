@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-arena-092] Create Aggressive Chase arena — *2026-06-20 12:51:51 UTC*
+
+Implement Create Aggressive Chase arena as described in game_design.md
+
+---
+
 ## [idea-arena-105] Create Buff Ally arena — *2026-06-20 12:39:16 UTC*
 
 Implement Create Buff Ally arena as described in game_design.md
