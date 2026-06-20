@@ -208,10 +208,9 @@ class Decision:
             elif b_type == "king" and allies_count > 0:
                 scores["use_skill"] += 200.0
 
-        # Rivalry skill: attacked me before -> attack on sight
-        rival_seen = perception_data.get("rival_spotted", False)
-        if rival_seen:
-            # Massive priority for attacking/chasing rivals
+        # Check for remembered rivals to trigger attack on sight
+        is_rival_spotted = perception_data.get("rival_spotted", False)
+        if is_rival_spotted:
             scores["attack"] += 250.0
             scores["chase"] += 250.0
 

@@ -75,9 +75,10 @@ func scan() -> Dictionary:
         var dist = calc_dist.call(enemy)
         if "id" in enemy:
             data["distances"][enemy.id] = dist
+            # Check if this enemy attacked us before (Ball Relationships)
             if my_memory.has(enemy.id):
-                var ball_mem = my_memory[enemy.id]
-                if typeof(ball_mem) == TYPE_DICTIONARY and ball_mem.get("relation") == "rival":
+                var mem_entry = my_memory[enemy.id]
+                if typeof(mem_entry) == TYPE_DICTIONARY and mem_entry.get("relation") == "rival":
                     data["rival_spotted"] = true
         threat += max(0.0, 1.0 - (dist / perception_radius)) * 1.5
 
