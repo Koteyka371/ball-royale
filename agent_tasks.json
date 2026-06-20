@@ -1957,6 +1957,91 @@
         "Tests pass",
         "No regressions"
       ]
+    },
+    {
+      "id": "idea-arena-112",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Clutch plays arena",
+      "description": "Implement Create Clutch plays arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Clutch plays arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-arena-113",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Comebacks arena",
+      "description": "Implement Create Comebacks arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Comebacks arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-arena-114",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Funny fails arena",
+      "description": "Implement Create Funny fails arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Funny fails arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-arena-115",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Epic kills arena",
+      "description": "Implement Create Epic kills arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Epic kills arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-arena-116",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create 1v1 Finals arena",
+      "description": "Implement Create 1v1 Finals arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create 1v1 Finals arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
     }
   ]
 }

@@ -1,4 +1,0 @@
-{
-  "title": "Ball Equipment/Items System",
-  "description": "Introduce equipable items scattered around the arena that balls can collect. Items like 'Speed Boots' (+2 speed), 'Spiked Armor' (reflect 10% damage), or 'Vampiric Fangs' (heal 10% of damage dealt) would spawn randomly. Balls can carry up to 2 items and their decision AI would prioritize picking up items that synergize with their class (e.g. Tank prioritizing armor, Assassin prioritizing speed or damage). Items could be dropped upon death, creating high-value loot zones and encouraging conflict over resources."
-}
