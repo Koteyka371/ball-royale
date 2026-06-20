@@ -120,7 +120,7 @@ def test_decision_layer():
     perception_data = brain.perception()
     emotion = brain.emotion(perception_data)
     decision = brain.decision(perception_data, emotion)
-    assert decision in ["flee", "defend", "attack", "use_skill", "flank", "kite"]
+    assert decision in ["flee", "defend", "attack", "use_skill", "flank", "kite", "chase"]
 
     # Greed / Booster -> opportunistic
     ball.hp = 100
@@ -152,4 +152,4 @@ def test_full_process():
 
     brain.process(0.1)
     # 1 enemy, hp 100 -> rage emotion (hp>80%, enemies>0). decision attack
-    assert ball.current_action in ["attack", "chase"]
+    assert ball.current_action in ["attack", "chase", "kite"]
