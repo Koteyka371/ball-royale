@@ -340,3 +340,42 @@ class BallRelationshipsArena extends ProceduralArena:
         hazards.append(ProceduralArena.Hazard.new(1, cx + 150.0, cy - 150.0, 30.0, "lava", 20.0))
         hazards.append(ProceduralArena.Hazard.new(2, cx - 150.0, cy + 150.0, 30.0, "lava", 20.0))
         hazards.append(ProceduralArena.Hazard.new(3, cx + 150.0, cy + 150.0, 30.0, "lava", 20.0))
+
+class BallGeneticsArena extends ProceduralArena:
+    func generate():
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = width
+        var h = height
+        var cx = w / 2.0
+        var cy = h / 2.0
+
+        # Central room
+        rooms.append(ProceduralArena.Room.new(cx - 200.0, cy - 200.0, 400.0, 400.0))
+        # Top room
+        rooms.append(ProceduralArena.Room.new(cx - 100.0, 100.0, 200.0, 200.0))
+        # Bottom room
+        rooms.append(ProceduralArena.Room.new(cx - 100.0, h - 300.0, 200.0, 200.0))
+        # Left room
+        rooms.append(ProceduralArena.Room.new(100.0, cy - 100.0, 200.0, 200.0))
+        # Right room
+        rooms.append(ProceduralArena.Room.new(w - 300.0, cy - 100.0, 200.0, 200.0))
+
+        # Top corridor
+        corridors.append(ProceduralArena.Corridor.new(cx - 50.0, 300.0, 100.0, cy - 500.0))
+        # Bottom corridor
+        corridors.append(ProceduralArena.Corridor.new(cx - 50.0, cy + 200.0, 100.0, h - cy - 500.0))
+        # Left corridor
+        corridors.append(ProceduralArena.Corridor.new(300.0, cy - 50.0, cx - 500.0, 100.0))
+        # Right corridor
+        corridors.append(ProceduralArena.Corridor.new(cx + 200.0, cy - 50.0, w - cx - 500.0, 100.0))
+
+        # Top
+        hazards.append(ProceduralArena.Hazard.new(0, cx, 200.0, 30.0, "lava", 10.0))
+        # Bottom
+        hazards.append(ProceduralArena.Hazard.new(1, cx, h - 200.0, 30.0, "lava", 10.0))
+        # Left
+        hazards.append(ProceduralArena.Hazard.new(2, 200.0, cy, 30.0, "lava", 10.0))
+        # Right
+        hazards.append(ProceduralArena.Hazard.new(3, w - 200.0, cy, 30.0, "lava", 10.0))
