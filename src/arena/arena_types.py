@@ -490,6 +490,44 @@ class RepositionArena(ProceduralArena):
         # Central hazard
         self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=100.0, kind="lava", damage=15.0))
 
+
+class BallRelationshipsArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central meeting room
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+
+        # 4 Spawn rooms
+        self.rooms.append(Room(50, 50, 300, 300))
+        self.rooms.append(Room(w - 350, 50, 300, 300))
+        self.rooms.append(Room(50, h - 350, 300, 300))
+        self.rooms.append(Room(w - 350, h - 350, 300, 300))
+
+        # Connecting corridors
+        # Top-Left to Center
+        self.corridors.append(Corridor(150, 350, 100, cy - 650))
+        self.corridors.append(Corridor(150, cy - 300, cx - 450, 100))
+        # Top-Right to Center
+        self.corridors.append(Corridor(w - 250, 350, 100, cy - 650))
+        self.corridors.append(Corridor(cx + 300, cy - 300, w - cx - 550, 100))
+        # Bottom-Left to Center
+        self.corridors.append(Corridor(150, cy + 200, 100, h - cy - 550))
+        self.corridors.append(Corridor(150, cy + 200, cx - 450, 100))
+        # Bottom-Right to Center
+        self.corridors.append(Corridor(w - 250, cy + 200, 100, h - cy - 550))
+        self.corridors.append(Corridor(cx + 300, cy + 200, w - cx - 550, 100))
+
+        # 4 central hazards
+        self.hazards.append(Hazard(id=0, x=cx - 150, y=cy - 150, radius=30.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=1, x=cx + 150, y=cy - 150, radius=30.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=2, x=cx - 150, y=cy + 150, radius=30.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=3, x=cx + 150, y=cy + 150, radius=30.0, kind="lava", damage=20.0))
+
 ARENAS = {
     "reposition": RepositionArena,
     "avoid_trap": AvoidTrapArena,
@@ -515,7 +553,8 @@ ARENAS = {
     "aggressive_chase": AggressiveChaseArena,
     "comebacks": ComebacksArena,
     "circle_strafe": CircleStrafeArena,
-    "epic_kills": EpicKillsArena
+    "epic_kills": EpicKillsArena,
+    "ball_relationships": BallRelationshipsArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:

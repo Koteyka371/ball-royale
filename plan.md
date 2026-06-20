@@ -1,32 +1,39 @@
-1. **Update Action mappings in `decision.py` and `decision.gd`**:
-   - Use `run_in_bash_session` to run a Python script that injects `"hide_behind"` into `scores` dict and `action_order` array in `src/ai/decision.py`, and into `actions` array in `src/ai/neural_decision.py`.
-   - Use `run_in_bash_session` with `sed` or python to inject `"hide_behind"` into `scores`, `action_order` in `src/ai/decision.gd`, and `actions` in `src/ai/neural_decision.gd`.
-   - Verify the changes using `grep`.
+1. **Explore & Define Arena Layout**:
+   - Define exact dimensions for `BallRelationshipsArena` to satisfy Specificity Rule.
+   - For `arena_size = 2000` (`width` & `height`), `cx = 1000`, `cy = 1000`.
+   - 4 large spawn rooms at the corners (Rival, Ally, Grudge zones). Room sizes: 300x300.
+     - Top-Left: `(100, 100, 300, 300)`
+     - Top-Right: `(1600, 100, 300, 300)`
+     - Bottom-Left: `(100, 1600, 300, 300)`
+     - Bottom-Right: `(1600, 1600, 300, 300)`
+   - Central meeting room (where relationships form):
+     - Center: `(700, 700, 600, 600)`
+   - Corridors (connecting corners to center):
+     - Top-Left to Center: `(200, 400, 100, 300)`, `(200, 700, 500, 100)`
+     - Top-Right to Center: `(1700, 400, 100, 300)`, `(1300, 700, 500, 100)`
+     - Bottom-Left to Center: `(200, 1300, 100, 300)`, `(200, 1200, 500, 100)`
+     - Bottom-Right to Center: `(1700, 1300, 100, 300)`, `(1300, 1200, 500, 100)`
+   - Hazards in the center to create grudges:
+     - Hazard 1: `id=0, x=1000, y=1000, radius=50, kind="lava", damage=20`
 
-2. **Add weights in `ai_weights.json`**:
-   - Use `run_in_bash_session` to write and execute a Python script to load `src/ai/ai_weights.json`, add `"hide_behind"`: `{"hp_percent": -50.0, "danger_level": 80.0, "allies_count": 50.0, "bias": 0.0}`, and save.
-   - Verify with `cat src/ai/ai_weights.json`.
+2. **Implement in Python (`src/arena/arena_types.py`)**:
+   - Create class `BallRelationshipsArena(ProceduralArena)` with `generate` method.
+   - Register it in `ARENAS` dictionary as `"ball_relationships"`.
 
-3. **Add weights in `nn_weights.json`**:
-   - Use `run_in_bash_session` to write and execute a Python script to load `src/ai/nn_weights.json`, update `output_size` to 10, append `[0.1, 0.2, 0.3, 0.4]` to `weights`, append `0.5` to `biases`, and save.
-   - Verify with `cat src/ai/nn_weights.json`.
+3. **Implement in GDScript (`src/arena/procedural_arena.gd`)**:
+   - Create class `BallRelationshipsArena extends ProceduralArena` with `generate` method.
 
-4. **Implement `_hide_behind` in `action.py` and `action.gd`**:
-   - Use `run_in_bash_session` with a Python script to rewrite the `execute` method to include `elif strategy == "hide_behind": self._hide_behind(delta)`, and append the `_hide_behind` logic into `src/ai/action.py`.
-   - Use `run_in_bash_session` with a Python script to rewrite the `execute` method in `src/ai/action.gd` and append the `_hide_behind` GDScript logic.
+4. **Register in GDScript (`src/arena/arena_types.gd`)**:
+   - Add `"ball_relationships"` to `ARENAS` array.
 
-5. **Verify implementation**:
-   - Use `run_in_bash_session` with `grep` and `cat` to verify that `_hide_behind` logic exists in `src/ai/action.py` and `src/ai/action.gd`.
+5. **Write Unit Test (`tests/test_ball_relationships_arena.py`)**:
+   - Verify `BallRelationshipsArena` layout (rooms and corridors count, overlaps).
 
-6. **Write a test for the new behavior**:
-   - Use `run_in_bash_session` with `cat << 'EOF'` to write `tests/test_hide_behind.py`.
-   - Use `run_in_bash_session` to verify with `cat tests/test_hide_behind.py`.
+6. **Create Ideas File**:
+   - Make `ideas/` dir, create `ideas/ball_relationship_idea.json`.
 
-7. **Run all tests**:
-   - Run `pytest tests/` via `run_in_bash_session` to ensure nothing is broken and the new test passes.
+7. **Verify & Pre-Commit**:
+   - Run tests.
+   - Run `pre_commit_instructions`.
 
-8. **Complete pre-commit steps**:
-   - Complete pre-commit steps to ensure proper testing, verification, review, and reflection are done.
-
-9. **Submit changes**:
-   - Use `run_in_bash_session` to create the branch `idea-arena-103`, stage with `git add`, commit with `git commit -m`, push with `git push`, create PR with `gh pr create` with `automated` label, and finally invoke `submit`.
+8. **Submit**.
