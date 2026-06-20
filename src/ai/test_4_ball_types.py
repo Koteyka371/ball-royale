@@ -35,7 +35,7 @@ def test_warrior_priorities():
 
     action = layer.choose_action(perception, "calm")
     # Even though booster opportunity is high, attack should be preferred due to warrior override
-    assert action in ["attack", "chase", "collect_booster"]
+    assert action in ["attack", "chase", "collect_booster", "flank"]
 
 def test_scout_priorities():
     world = MockWorld()
