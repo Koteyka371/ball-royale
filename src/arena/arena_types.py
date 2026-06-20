@@ -1,4 +1,5 @@
 import random
+import math
 
 from arena.procedural_arena import ProceduralArena, Room, Hazard, Corridor
 
@@ -197,7 +198,6 @@ class UseShieldArena(ProceduralArena):
         self.rooms.append(Room(cx - 400, cy - 400, 800, 800))
 
         # Create a dense ring of hazards around the center
-        import math
         num_hazards = 24
         radius = 250
         for i in range(num_hazards):
@@ -231,7 +231,6 @@ class RetreatToAllyArena(ProceduralArena):
         self.corridors.append(Corridor(cx, h - 250, w - cx - 250, 100))
 
         # Hazards in central zone to encourage retreat
-        import math
         for i in range(8):
             angle = 2 * math.pi * i / 8
             hx = cx + 150 * math.cos(angle)
@@ -287,7 +286,44 @@ class AggressiveChaseArena(ProceduralArena):
         self.corridors.append(Corridor(cx - 40, 50 + room_size, 80, cy - center_size/2 - (50 + room_size))) # Top
         self.corridors.append(Corridor(cx - 40, cy + center_size/2, 80, (h - 50 - room_size) - (cy + center_size/2))) # Bottom
 
+
+class FunnyFailsArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # A single giant room
+        self.rooms.append(Room(50, 50, w - 100, h - 100))
+
+        # Grid of massive hazards to force narrow paths and lots of traps
+        rows = 6
+        cols = 6
+        x_step = (w - 200) / cols
+        y_step = (h - 200) / rows
+
+        hazard_id = 0
+        for i in range(rows + 1):
+            for j in range(cols + 1):
+                hx = 100 + j * x_step
+                hy = 100 + i * y_step
+
+                # Alternate between lava and spikes
+                kind = "lava" if (i + j) % 2 == 0 else "spikes"
+                damage = 50.0 if kind == "lava" else 20.0
+                radius = 80.0 if kind == "lava" else 60.0
+
+                # Add some randomness to position
+                hx += random.uniform(-20, 20)
+                hy += random.uniform(-20, 20)
+
+                self.hazards.append(Hazard(id=hazard_id, x=hx, y=hy, radius=radius, kind=kind, damage=damage))
+                hazard_id += 1
+
 ARENAS = {
+    "funny_fails": FunnyFailsArena,
     "buff_ally": BuffAllyArena,
     "retreat_to_ally": RetreatToAllyArena,
     "procedural": ProceduralArena,
