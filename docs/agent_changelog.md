@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-feature-076] Camera system — *2026-06-20 00:29:49 UTC*
+
+Implement Camera system as described in game_design.md
+
+---
+
 ## [idea-ball_type-090] Implement Ninja ball — *2026-06-20 00:21:54 UTC*
 
 Implement Implement Ninja ball as described in game_design.md
