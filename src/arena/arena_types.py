@@ -459,7 +459,39 @@ class AvoidTrapArena(ProceduralArena):
         self.hazards.append(Hazard(3, 200, 400, 30, 'lava', 50.0))
         self.hazards.append(Hazard(4, 450, 500, 40, 'lava', 50.0))
 
+class RepositionArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central room
+        self.rooms.append(Room(cx - 200, cy - 200, 400, 400))
+        # Top room
+        self.rooms.append(Room(cx - 100, 100, 200, 200))
+        # Bottom room
+        self.rooms.append(Room(cx - 100, h - 300, 200, 200))
+        # Left room
+        self.rooms.append(Room(100, cy - 100, 200, 200))
+        # Right room
+        self.rooms.append(Room(w - 300, cy - 100, 200, 200))
+
+        # Top corridor
+        self.corridors.append(Corridor(cx - 50, 300, 100, cy - 200 - 300))
+        # Bottom corridor
+        self.corridors.append(Corridor(cx - 50, cy + 200, 100, h - 300 - (cy + 200)))
+        # Left corridor
+        self.corridors.append(Corridor(300, cy - 50, cx - 200 - 300, 100))
+        # Right corridor
+        self.corridors.append(Corridor(cx + 200, cy - 50, w - 300 - (cx + 200), 100))
+
+        # Central hazard
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=100.0, kind="lava", damage=15.0))
+
 ARENAS = {
+    "reposition": RepositionArena,
     "avoid_trap": AvoidTrapArena,
     "kite": KiteArena,
     "buff_ally": BuffAllyArena,
