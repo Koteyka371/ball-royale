@@ -1,0 +1,4 @@
+{
+  "title": "Random Teleporters",
+  "description": "Add random teleporter pads scattered around the arena. Stepping on a teleporter instantly moves the ball to another random teleporter pad. Could be a new procedural arena element."
+}

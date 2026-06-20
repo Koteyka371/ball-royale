@@ -287,7 +287,41 @@ class AggressiveChaseArena(ProceduralArena):
         self.corridors.append(Corridor(cx - 40, 50 + room_size, 80, cy - center_size/2 - (50 + room_size))) # Top
         self.corridors.append(Corridor(cx - 40, cy + center_size/2, 80, (h - 50 - room_size) - (cy + center_size/2))) # Bottom
 
+class TargetStrongArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Massive central arena for heavyweight fights
+        self.rooms.append(Room(cx - 350, cy - 350, 700, 700))
+
+        # 4 large corner staging areas
+        self.rooms.append(Room(50, 50, 350, 350))
+        self.rooms.append(Room(w - 400, 50, 350, 350))
+        self.rooms.append(Room(50, h - 400, 350, 350))
+        self.rooms.append(Room(w - 400, h - 400, 350, 350))
+
+        # TL to center
+        self.corridors.append(Corridor(350, 200, 450, 200))
+        self.corridors.append(Corridor(600, 200, 200, 500))
+
+        # TR to center
+        self.corridors.append(Corridor(w - 800, 200, 450, 200))
+        self.corridors.append(Corridor(w - 800, 200, 200, 500))
+
+        # BL to center
+        self.corridors.append(Corridor(350, h - 400, 450, 200))
+        self.corridors.append(Corridor(600, h - 700, 200, 500))
+
+        # BR to center
+        self.corridors.append(Corridor(w - 800, h - 400, 450, 200))
+        self.corridors.append(Corridor(w - 800, h - 700, 200, 500))
+
 ARENAS = {
+    "target_strong": TargetStrongArena,
     "buff_ally": BuffAllyArena,
     "retreat_to_ally": RetreatToAllyArena,
     "procedural": ProceduralArena,
