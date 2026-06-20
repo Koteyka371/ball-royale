@@ -571,7 +571,43 @@ class CollectBoosterArena(ProceduralArena):
         self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=40.0, kind="lava", damage=25.0))
 
 
+
+class WaitAndWatchArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Main central viewing room
+        self.rooms.append(Room(cx - 400, cy - 400, 800, 800))
+
+        # 4 Corner spawns
+        self.rooms.append(Room(100, 100, 300, 300))
+        self.rooms.append(Room(w - 400, 100, 300, 300))
+        self.rooms.append(Room(100, h - 400, 300, 300))
+        self.rooms.append(Room(w - 400, h - 400, 300, 300))
+
+        # 8 Corridors connecting spawns to center
+        # Top-Left
+        self.corridors.append(Corridor(200, 400, 100, cy - 400))
+        self.corridors.append(Corridor(200, cy - 400, cx - 200, 100))
+        # Top-Right
+        self.corridors.append(Corridor(w - 300, 400, 100, cy - 400))
+        self.corridors.append(Corridor(cx + 200, cy - 400, w - cx - 500, 100))
+        # Bottom-Left
+        self.corridors.append(Corridor(200, cy + 300, 100, h - cy - 700))
+        self.corridors.append(Corridor(200, cy + 300, cx - 200, 100))
+        # Bottom-Right
+        self.corridors.append(Corridor(w - 300, cy + 300, 100, h - cy - 700))
+        self.corridors.append(Corridor(cx + 200, cy + 300, w - cx - 500, 100))
+
+        # Central hazard
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=200.0, kind="lava", damage=10.0))
+
 ARENAS = {
+    "wait_and_watch": WaitAndWatchArena,
     "collect_booster": CollectBoosterArena,
     "reposition": RepositionArena,
     "avoid_trap": AvoidTrapArena,
