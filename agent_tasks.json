@@ -1773,7 +1773,7 @@
     },
     {
       "id": "idea-arena-101",
-      "status": "todo",
+      "status": "done",
       "area": "arenas",
       "risk": "low",
       "title": "Create Use Shield arena",

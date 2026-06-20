@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-arena-101] Create Use Shield arena — *2026-06-20 08:33:13 UTC*
+
+Implement Create Use Shield arena as described in game_design.md
+
+---
+
 ## [idea-ball_type-084] Implement Warrior ball — *2026-06-20 05:16:07 UTC*
 
 Implement Implement Warrior ball as described in game_design.md
