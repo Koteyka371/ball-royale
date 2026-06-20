@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-arena-110] Create Reposition arena — *2026-06-20 19:38:29 UTC*
+
+Implement Create Reposition arena as described in game_design.md
+
+---
+
 ## [idea-ball_type-088] Implement Sniper ball — *2026-06-20 18:30:16 UTC*
 
 Implement Implement Sniper ball as described in game_design.md
