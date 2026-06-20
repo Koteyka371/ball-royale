@@ -1,0 +1,4 @@
+{
+  "title": "Ninja Smoke Bomb Evasion",
+  "description": "Ninja drops a smoke bomb when health falls below 30%, temporarily blinding enemies within a 50-unit radius (reducing their perception to 0 for 3 seconds) and gaining a massive speed boost to flee."
+}

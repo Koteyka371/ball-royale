@@ -67,3 +67,28 @@ def test_ninja_use_skill():
 
     action.execute("use_skill", 1.0)
     assert ninja.current_action == "flank"
+
+def test_flank_target_selection():
+    ninja = MockBall(x=0, y=0, ball_type="ninja")
+    # Target 1: moving away from ninja (vy=10). Back turned to ninja.
+    # Ninja is at (0, 0), Target 1 is at (0, 100). dx=0, dy=100.
+    # Target 1 vx=0, vy=10. dot_product = (0/100)*0 + (100/100)*10 = 10 > 0.
+    target_away = MockBall(x=0, y=100, vx=0, vy=10, ball_type="basic")
+    target_away.id = 1
+
+    # Target 2: moving towards ninja (vy=-10). Facing ninja.
+    # Ninja is at (0, 0), Target 2 is at (0, 100). dx=0, dy=100.
+    # Target 2 vx=0, vy=-10. dot_product = (0/100)*0 + (100/100)*(-10) = -10 < 0.
+    target_towards = MockBall(x=0, y=100, vx=0, vy=-10, ball_type="basic")
+    target_towards.id = 2
+
+    action = Action(ninja, MockWorld())
+
+    # Passing both targets. Target 1 (facing away) should be preferred over Target 2 (facing towards)
+    # even though they are at the same distance.
+    best_target = action._get_flank_target([target_towards, target_away])
+    assert best_target.id == 1, "Should prefer target facing away from the attacker"
+
+    # Swap order to ensure it's not just returning the second one.
+    best_target = action._get_flank_target([target_away, target_towards])
+    assert best_target.id == 1, "Should prefer target facing away from the attacker regardless of order"
