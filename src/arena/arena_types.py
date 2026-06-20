@@ -490,8 +490,34 @@ class RepositionArena(ProceduralArena):
         # Central hazard
         self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=100.0, kind="lava", damage=15.0))
 
+class EmotionalContagionArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        self.rooms.append(Room(cx - 200, cy - 200, 400, 400))
+        self.rooms.append(Room(cx - 600, cy - 600, 300, 300))
+        self.rooms.append(Room(cx + 300, cy - 600, 300, 300))
+        self.rooms.append(Room(cx - 600, cy + 300, 300, 300))
+        self.rooms.append(Room(cx + 300, cy + 300, 300, 300))
+
+        self.corridors.append(Corridor(cx - 400, cy - 400, 300, 300))
+        self.corridors.append(Corridor(cx + 100, cy - 400, 300, 300))
+        self.corridors.append(Corridor(cx - 400, cy + 100, 300, 300))
+        self.corridors.append(Corridor(cx + 100, cy + 100, 300, 300))
+
+        self.hazards.append(Hazard(0, cx, cy, 100.0, 'lava', 20.0))
+        self.hazards.append(Hazard(1, cx - 450, cy - 450, 50.0, 'spikes', 15.0))
+        self.hazards.append(Hazard(2, cx + 450, cy - 450, 50.0, 'spikes', 15.0))
+        self.hazards.append(Hazard(3, cx - 450, cy + 450, 50.0, 'spikes', 15.0))
+        self.hazards.append(Hazard(4, cx + 450, cy + 450, 50.0, 'spikes', 15.0))
+
 ARENAS = {
     "reposition": RepositionArena,
+    "emotional_contagion": EmotionalContagionArena,
     "avoid_trap": AvoidTrapArena,
     "kite": KiteArena,
     "buff_ally": BuffAllyArena,
