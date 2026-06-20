@@ -208,6 +208,28 @@ class UseShieldArena(ProceduralArena):
             damage = 20.0 if kind == "spikes" else 40.0
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=40.0, kind=kind, damage=damage))
 
+
+class BodyBlockArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # A narrow corridor with side rooms
+        self.rooms.append(Room(cx - 50, 50, 100, h - 100))
+
+        # Safe rooms on sides
+        self.rooms.append(Room(50, cy - 100, cx - 100, 200))
+        self.rooms.append(Room(cx + 50, cy - 100, cx - 100, 200))
+
+        # Hazards in the corridor to force narrow paths
+        import math
+        for i in range(10):
+            hy = 100 + i * (h - 200) / 9
+            self.hazards.append(Hazard(id=i, x=cx, y=hy, radius=20.0, kind="spikes", damage=20.0))
+
 class RetreatToAllyArena(ProceduralArena):
     def generate(self):
         self.rooms.clear()
@@ -305,6 +327,7 @@ ARENAS = {
     "flank": FlankArena,
     "choke_point": ChokePointArena,
     "use_shield": UseShieldArena,
+    "body_block": BodyBlockArena,
     "aggressive_chase": AggressiveChaseArena
 }
 

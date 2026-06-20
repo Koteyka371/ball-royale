@@ -17,6 +17,7 @@ const ARENAS = [
     "flank",
     "choke_point",
     "use_shield",
+    "body_block",
     "retreat_to_ally",
     "buff_ally",
     "aggressive_chase"
