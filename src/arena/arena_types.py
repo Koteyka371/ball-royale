@@ -326,6 +326,28 @@ class ComebacksArena(ProceduralArena):
             hy = cy + 200 * math.sin(angle)
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=30.0, kind="lava", damage=40.0))
 
+class Finals1v1Arena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Small central room for intense 1v1 combat
+        room_size = 400
+        self.rooms.append(Room(cx - room_size/2, cy - room_size/2, room_size, room_size))
+
+        # A ring of hazards around the room
+        import math
+        num_hazards = 36
+        radius = room_size / 2 + 50
+        for i in range(num_hazards):
+            angle = 2 * math.pi * i / num_hazards
+            hx = cx + radius * math.cos(angle)
+            hy = cy + radius * math.sin(angle)
+            self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=20.0, kind="lava", damage=50.0))
+
 ARENAS = {
     "buff_ally": BuffAllyArena,
     "retreat_to_ally": RetreatToAllyArena,
@@ -345,7 +367,8 @@ ARENAS = {
     "choke_point": ChokePointArena,
     "use_shield": UseShieldArena,
     "aggressive_chase": AggressiveChaseArena,
-    "comebacks": ComebacksArena
+    "comebacks": ComebacksArena,
+    "finals_1v1": Finals1v1Arena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:

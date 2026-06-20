@@ -1,0 +1,4 @@
+{
+    "title": "Teleporter Pads",
+    "description": "Add teleporter pads to arenas. When a ball touches a pad, it is instantly teleported to a linked pad elsewhere in the arena, preserving momentum. This allows for quick escapes, flanking maneuvers, and more dynamic map navigation."
+}
