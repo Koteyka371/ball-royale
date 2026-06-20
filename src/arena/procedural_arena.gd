@@ -340,3 +340,33 @@ class BallRelationshipsArena extends ProceduralArena:
         hazards.append(ProceduralArena.Hazard.new(1, cx + 150.0, cy - 150.0, 30.0, "lava", 20.0))
         hazards.append(ProceduralArena.Hazard.new(2, cx - 150.0, cy + 150.0, 30.0, "lava", 20.0))
         hazards.append(ProceduralArena.Hazard.new(3, cx + 150.0, cy + 150.0, 30.0, "lava", 20.0))
+
+class CommentaryArena extends ProceduralArena:
+    func generate():
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = width
+        var h = height
+        var cx = w / 2.0
+        var cy = h / 2.0
+
+        # 1 central arena
+        rooms.append(ProceduralArena.Room.new(cx - 400.0, cy - 400.0, 800.0, 800.0))
+        # 4 commentator booths
+        rooms.append(ProceduralArena.Room.new(cx - 500.0, cy - 500.0, 200.0, 200.0))
+        rooms.append(ProceduralArena.Room.new(cx + 300.0, cy - 500.0, 200.0, 200.0))
+        rooms.append(ProceduralArena.Room.new(cx - 500.0, cy + 300.0, 200.0, 200.0))
+        rooms.append(ProceduralArena.Room.new(cx + 300.0, cy + 300.0, 200.0, 200.0))
+
+        # 4 corridors
+        corridors.append(ProceduralArena.Corridor.new(cx - 400.0, cy - 400.0, 100.0, 100.0))
+        corridors.append(ProceduralArena.Corridor.new(cx + 300.0, cy - 400.0, 100.0, 100.0))
+        corridors.append(ProceduralArena.Corridor.new(cx - 400.0, cy + 300.0, 100.0, 100.0))
+        corridors.append(ProceduralArena.Corridor.new(cx + 300.0, cy + 300.0, 100.0, 100.0))
+
+        # 4 hazards in the booths
+        hazards.append(ProceduralArena.Hazard.new(0, cx - 400.0, cy - 400.0, 40.0, "lava", 10.0))
+        hazards.append(ProceduralArena.Hazard.new(1, cx + 400.0, cy - 400.0, 40.0, "lava", 10.0))
+        hazards.append(ProceduralArena.Hazard.new(2, cx - 400.0, cy + 400.0, 40.0, "lava", 10.0))
+        hazards.append(ProceduralArena.Hazard.new(3, cx + 400.0, cy + 400.0, 40.0, "lava", 10.0))

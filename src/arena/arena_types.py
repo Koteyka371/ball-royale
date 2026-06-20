@@ -571,6 +571,34 @@ class CollectBoosterArena(ProceduralArena):
         self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=40.0, kind="lava", damage=25.0))
 
 
+class CommentaryArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # 1 central arena
+        self.rooms.append(Room(cx - 400, cy - 400, 800, 800))
+        # 4 commentator booths
+        self.rooms.append(Room(cx - 500, cy - 500, 200, 200))
+        self.rooms.append(Room(cx + 300, cy - 500, 200, 200))
+        self.rooms.append(Room(cx - 500, cy + 300, 200, 200))
+        self.rooms.append(Room(cx + 300, cy + 300, 200, 200))
+
+        # 4 corridors
+        self.corridors.append(Corridor(cx - 400, cy - 400, 100, 100))
+        self.corridors.append(Corridor(cx + 300, cy - 400, 100, 100))
+        self.corridors.append(Corridor(cx - 400, cy + 300, 100, 100))
+        self.corridors.append(Corridor(cx + 300, cy + 300, 100, 100))
+
+        # 4 hazards in the booths
+        self.hazards.append(Hazard(0, cx - 400, cy - 400, 40, "lava", 10.0))
+        self.hazards.append(Hazard(1, cx + 400, cy - 400, 40, "lava", 10.0))
+        self.hazards.append(Hazard(2, cx - 400, cy + 400, 40, "lava", 10.0))
+        self.hazards.append(Hazard(3, cx + 400, cy + 400, 40, "lava", 10.0))
+
 ARENAS = {
     "collect_booster": CollectBoosterArena,
     "reposition": RepositionArena,
@@ -598,7 +626,8 @@ ARENAS = {
     "comebacks": ComebacksArena,
     "circle_strafe": CircleStrafeArena,
     "epic_kills": EpicKillsArena,
-    "ball_relationships": BallRelationshipsArena
+    "ball_relationships": BallRelationshipsArena,
+    "commentary": CommentaryArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
