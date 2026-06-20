@@ -26,6 +26,19 @@ class Decision:
         "king": "defend",
         "aggressive": "attack",
         "defender": "defend",
+
+        "paladin": "defend",
+        "mage": "attack",
+        "warlock": "attack",
+        "druid": "defend",
+        "monk": "chase",
+        "brawler": "attack",
+        "necromancer": "defend",
+        "trickster": "chase",
+        "elementalist": "attack",
+        "vampire": "chase",
+        "templar": "defend",
+        "ranger": "kite",
         "spectator": "idle",
     }
 
