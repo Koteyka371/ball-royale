@@ -287,6 +287,45 @@ class AggressiveChaseArena(ProceduralArena):
         self.corridors.append(Corridor(cx - 40, 50 + room_size, 80, cy - center_size/2 - (50 + room_size))) # Top
         self.corridors.append(Corridor(cx - 40, cy + center_size/2, 80, (h - 50 - room_size) - (cy + center_size/2))) # Bottom
 
+
+class FleeArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central large hazard area (open space)
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+
+        # Add a big central hazard to run around
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=150.0, kind="lava", damage=30.0))
+
+        # 4 safe corner rooms
+        self.rooms.append(Room(50, 50, 200, 200))
+        self.rooms.append(Room(w - 250, 50, 200, 200))
+        self.rooms.append(Room(50, h - 250, 200, 200))
+        self.rooms.append(Room(w - 250, h - 250, 200, 200))
+
+        # Long corridors to run away through
+        # Top corridor connecting corners
+        self.corridors.append(Corridor(250, 100, w - 500, 100))
+        # Bottom corridor connecting corners
+        self.corridors.append(Corridor(250, h - 200, w - 500, 100))
+        # Left corridor connecting corners
+        self.corridors.append(Corridor(100, 250, 100, h - 500))
+        # Right corridor connecting corners
+        self.corridors.append(Corridor(w - 200, 250, 100, h - 500))
+
+        # Connect corners to center room
+        self.corridors.append(Corridor(250, 250, cx - 300 - 250, cy - 300 - 250)) # Left Top (just overlaps, wait, let's make straight corridors)
+        self.corridors.append(Corridor(150, 250, 100, cy - 300 - 250)) # From top-left to center
+        self.corridors.append(Corridor(cx - 100, 250, 200, cy - 300 - 250)) # Top middle to center
+        self.corridors.append(Corridor(cx - 100, cy + 300, 200, h - 250 - (cy + 300))) # Bottom middle to center
+        self.corridors.append(Corridor(250, cy - 100, cx - 300 - 250, 200)) # Left middle to center
+        self.corridors.append(Corridor(cx + 300, cy - 100, w - 250 - (cx + 300), 200)) # Right middle to center
+
 ARENAS = {
     "buff_ally": BuffAllyArena,
     "retreat_to_ally": RetreatToAllyArena,
@@ -305,7 +344,8 @@ ARENAS = {
     "flank": FlankArena,
     "choke_point": ChokePointArena,
     "use_shield": UseShieldArena,
-    "aggressive_chase": AggressiveChaseArena
+    "aggressive_chase": AggressiveChaseArena,
+    "flee": FleeArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:

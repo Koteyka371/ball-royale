@@ -1,0 +1,4 @@
+{
+  "title": "Black Hole Hazard",
+  "description": "Introduce a new type of hazard that functions as a black hole. It slowly pulls nearby balls towards its center, requiring them to constantly move away to avoid being sucked in and taking massive damage. This can create dynamic choke points and force interesting pathing decisions."
+}
