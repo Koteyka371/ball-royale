@@ -376,6 +376,40 @@ class KiteArena(ProceduralArena):
         self.hazards.append(Hazard(id=2, x=300, y=cy, radius=50.0, kind="lava", damage=10.0))
         self.hazards.append(Hazard(id=3, x=w-300, y=cy, radius=50.0, kind="lava", damage=10.0))
 
+
+class FunnyFailsArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+
+        # One large room spanning almost the whole arena
+        self.rooms.append(Room(50, 50, w - 100, h - 100))
+
+        grid_size = 5
+        cell_w = (w - 100) / grid_size
+        cell_h = (h - 100) / grid_size
+
+        hazard_id = 0
+        for i in range(grid_size):
+            for j in range(grid_size):
+                # Skip the exact center to allow a starting safe zone
+                if i == 2 and j == 2:
+                    continue
+
+                hx = 50 + i * cell_w + cell_w / 2
+                hy = 50 + j * cell_h + cell_h / 2
+
+                # Make hazard radius large enough to leave only narrow paths
+                radius = min(cell_w, cell_h) / 2 - 30.0
+
+                kind = "lava" if (i + j) % 2 == 0 else "spikes"
+                damage = 40.0 if kind == "lava" else 20.0
+
+                self.hazards.append(Hazard(id=hazard_id, x=hx, y=hy, radius=radius, kind=kind, damage=damage))
+                hazard_id += 1
+
 ARENAS = {
     "kite": KiteArena,
     "buff_ally": BuffAllyArena,
@@ -397,7 +431,8 @@ ARENAS = {
     "use_shield": UseShieldArena,
     "aggressive_chase": AggressiveChaseArena,
     "comebacks": ComebacksArena,
-    "circle_strafe": CircleStrafeArena
+    "circle_strafe": CircleStrafeArena,
+    "funny_fails": FunnyFailsArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
