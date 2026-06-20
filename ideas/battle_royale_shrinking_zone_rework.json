@@ -1,4 +1,0 @@
-{
-  "title": "Dynamic and Deadly Shrinking Zone",
-  "description": "Rework the basic shrinking zone into a dynamic storm effect. Instead of just steadily shrinking at a fixed rate, it could shrink in stages, dealing increasing damage with each stage, and having an animated visual ring with particle effects. Balls caught in the zone will trigger 'fear' and rush desperately towards the center."
-}

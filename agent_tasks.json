@@ -1787,6 +1787,91 @@
         "Tests pass",
         "No regressions"
       ]
+    },
+    {
+      "id": "idea-arena-102",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Retreat to Ally arena",
+      "description": "Implement Create Retreat to Ally arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Retreat to Ally arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-arena-103",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Hide Behind arena",
+      "description": "Implement Create Hide Behind arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Hide Behind arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-arena-104",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Heal Ally arena",
+      "description": "Implement Create Heal Ally arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Heal Ally arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-arena-105",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Buff Ally arena",
+      "description": "Implement Create Buff Ally arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Buff Ally arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-arena-106",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Body Block arena",
+      "description": "Implement Create Body Block arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Body Block arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
     }
   ]
 }
