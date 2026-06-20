@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-feature-072] 12+ ball types — *2026-06-20 12:56:27 UTC*
+
+Implement 12+ ball types as described in game_design.md
+
+---
+
 ## [idea-ball_type-087] Implement Healer ball — *2026-06-20 12:54:41 UTC*
 
 Implement Implement Healer ball as described in game_design.md
