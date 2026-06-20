@@ -238,7 +238,31 @@ class RetreatToAllyArena(ProceduralArena):
             hy = cy + 150 * math.sin(angle)
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=30.0, kind="lava", damage=30.0))
 
+class BuffAllyArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central battle room
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+
+        # Four team bases
+        self.rooms.append(Room(cx - 100, 50, 200, 200)) # Top
+        self.rooms.append(Room(cx - 100, h - 250, 200, 200)) # Bottom
+        self.rooms.append(Room(50, cy - 100, 200, 200)) # Left
+        self.rooms.append(Room(w - 250, cy - 100, 200, 200)) # Right
+
+        # Connect to center
+        self.corridors.append(Corridor(cx - 50, 250, 100, cy - 300 - 250)) # Top to center
+        self.corridors.append(Corridor(cx - 50, cy + 300, 100, h - 250 - (cy + 300))) # Bottom to center
+        self.corridors.append(Corridor(250, cy - 50, cx - 300 - 250, 100)) # Left to center
+        self.corridors.append(Corridor(cx + 300, cy - 50, w - 250 - (cx + 300), 100)) # Right to center
+
 ARENAS = {
+    "buff_ally": BuffAllyArena,
     "retreat_to_ally": RetreatToAllyArena,
     "procedural": ProceduralArena,
     "cross": CrossArena,
