@@ -376,7 +376,37 @@ class KiteArena(ProceduralArena):
         self.hazards.append(Hazard(id=2, x=300, y=cy, radius=50.0, kind="lava", damage=10.0))
         self.hazards.append(Hazard(id=3, x=w-300, y=cy, radius=50.0, kind="lava", damage=10.0))
 
+class BodyBlockArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Left and Right bases
+        self.rooms.append(Room(50, cy - 300, 300, 600))
+        self.rooms.append(Room(w - 350, cy - 300, 300, 600))
+
+        # Central room
+        self.rooms.append(Room(cx - 300, cy - 400, 600, 800))
+
+        # 3 Narrow corridors connecting left base to center
+        self.corridors.append(Corridor(300, cy - 200, 450, 80))
+        self.corridors.append(Corridor(300, cy - 40, 450, 80))
+        self.corridors.append(Corridor(300, cy + 120, 450, 80))
+
+        # 3 Narrow corridors connecting right base to center
+        self.corridors.append(Corridor(w - 750, cy - 200, 450, 80))
+        self.corridors.append(Corridor(w - 750, cy - 40, 450, 80))
+        self.corridors.append(Corridor(w - 750, cy + 120, 450, 80))
+
+        # Some hazards in the center
+        self.hazards.append(Hazard(id=0, x=cx, y=cy - 200, radius=50.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=1, x=cx, y=cy + 200, radius=50.0, kind="lava", damage=20.0))
+
 ARENAS = {
+    "body_block": BodyBlockArena,
     "kite": KiteArena,
     "buff_ally": BuffAllyArena,
     "retreat_to_ally": RetreatToAllyArena,
