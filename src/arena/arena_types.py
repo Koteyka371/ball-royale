@@ -1,3 +1,4 @@
+import math
 import random
 
 from arena.procedural_arena import ProceduralArena, Room, Hazard, Corridor
@@ -197,7 +198,7 @@ class UseShieldArena(ProceduralArena):
         self.rooms.append(Room(cx - 400, cy - 400, 800, 800))
 
         # Create a dense ring of hazards around the center
-        import math
+
         num_hazards = 24
         radius = 250
         for i in range(num_hazards):
@@ -231,15 +232,47 @@ class RetreatToAllyArena(ProceduralArena):
         self.corridors.append(Corridor(cx, h - 250, w - cx - 250, 100))
 
         # Hazards in central zone to encourage retreat
-        import math
+
         for i in range(8):
             angle = 2 * math.pi * i / 8
             hx = cx + 150 * math.cos(angle)
             hy = cy + 150 * math.sin(angle)
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=30.0, kind="lava", damage=30.0))
 
+class RepositionArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # 4 vantage point rooms at the edges
+        self.rooms.append(Room(cx - 150, 50, 300, 200))       # Top
+        self.rooms.append(Room(cx - 150, h - 250, 300, 200))  # Bottom
+        self.rooms.append(Room(50, cy - 150, 200, 300))       # Left
+        self.rooms.append(Room(w - 250, cy - 150, 200, 300))  # Right
+
+        # Central room, heavily trapped
+        self.rooms.append(Room(cx - 200, cy - 200, 400, 400))
+
+        # Corridors connecting vantage points to central room
+        self.corridors.append(Corridor(cx - 50, 250, 100, cy - 200 - 250))
+        self.corridors.append(Corridor(cx - 50, cy + 200, 100, h - 250 - (cy + 200)))
+        self.corridors.append(Corridor(250, cy - 50, cx - 200 - 250, 100))
+        self.corridors.append(Corridor(cx + 200, cy - 50, w - 250 - (cx + 200), 100))
+
+        # Hazards in central zone to encourage repositioning
+
+        for i in range(12):
+            angle = 2 * math.pi * i / 12
+            hx = cx + 120 * math.cos(angle)
+            hy = cy + 120 * math.sin(angle)
+            self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=25.0, kind="spikes", damage=20.0))
+
 ARENAS = {
     "retreat_to_ally": RetreatToAllyArena,
+    "reposition": RepositionArena,
     "procedural": ProceduralArena,
     "cross": CrossArena,
     "ring": RingArena,
