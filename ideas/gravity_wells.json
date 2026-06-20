@@ -1,0 +1,4 @@
+{
+  "title": "Gravity Wells",
+  "description": "Procedural arenas can now spawn 'Gravity Wells'—black-hole-like anomalies that slowly pull nearby balls towards their center. The pull strength increases as a ball gets closer. Balls with high speed can escape, while slower ones or those with low HP might get sucked in, taking continuous damage until they die or manage to use a dash/teleport skill."
+}

@@ -376,6 +376,32 @@ class KiteArena(ProceduralArena):
         self.hazards.append(Hazard(id=2, x=300, y=cy, radius=50.0, kind="lava", damage=10.0))
         self.hazards.append(Hazard(id=3, x=w-300, y=cy, radius=50.0, kind="lava", damage=10.0))
 
+
+class EscortArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Start room for escort mission
+        self.rooms.append(Room(50, cy - 100, 200, 200))
+
+        # End room for escort mission
+        self.rooms.append(Room(w - 250, cy - 100, 200, 200))
+
+        # Long corridor connecting start and end
+        self.corridors.append(Corridor(250, cy - 50, w - 500, 100))
+
+        # Two rooms on the sides of the corridor for ambushers
+        self.rooms.append(Room(cx - 150, 50, 300, 200))
+        self.rooms.append(Room(cx - 150, h - 250, 300, 200))
+
+        # Connect ambush rooms to the main corridor
+        self.corridors.append(Corridor(cx - 50, 250, 100, cy - 250 - 50))
+        self.corridors.append(Corridor(cx - 50, cy + 50, 100, h - 250 - cy - 50))
+
 ARENAS = {
     "kite": KiteArena,
     "buff_ally": BuffAllyArena,
@@ -397,7 +423,8 @@ ARENAS = {
     "use_shield": UseShieldArena,
     "aggressive_chase": AggressiveChaseArena,
     "comebacks": ComebacksArena,
-    "circle_strafe": CircleStrafeArena
+    "circle_strafe": CircleStrafeArena,
+    "escort": EscortArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
