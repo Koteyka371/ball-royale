@@ -4,8 +4,8 @@ class CameraSystem:
     def __init__(self, width: int = 800, height: int = 600):
         self.width = width
         self.height = height
-        self.x = width / 2
-        self.y = height / 2
+        self.x = float(width / 2)
+        self.y = float(height / 2)
         self.zoom = 1.0
         self.target_id: Optional[int] = None
         self.activity_scores: Dict[int, float] = {}
@@ -16,11 +16,12 @@ class CameraSystem:
         # Factors: recent kills, taking damage, using skills, low HP survival
 
         # Decay previous scores
-        for b_id in self.activity_scores:
-            self.activity_scores[b_id] *= 0.9
+        for score_id in self.activity_scores:
+            self.activity_scores[score_id] *= 0.9
 
         for ball in balls:
-            b_id = ball.get("id")
+            b_id_val = ball.get("id")
+            b_id = int(b_id_val) if b_id_val is not None else None
             if b_id is None:
                 continue
 
@@ -63,14 +64,15 @@ class CameraSystem:
 
         # Find most active ball
         best_score = -1.0
-        best_id = None
+        best_id: Optional[int] = None
         for ball in balls:
-            b_id = ball.get("id")
+            b_id_val = ball.get("id")
+            b_id = int(b_id_val) if b_id_val is not None else None
             if b_id is not None and ball.get("hp", 0) > 0:
                 score = self.activity_scores.get(b_id, 0.0)
                 if score > best_score:
                     best_score = score
-                    best_id = b_id
+                    best_id = int(b_id)
 
         if best_id is not None:
             self.target_id = best_id

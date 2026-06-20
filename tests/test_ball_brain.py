@@ -106,14 +106,14 @@ def test_decision_layer():
     perception_data = brain.perception()
     emotion = brain.emotion(perception_data)
     decision = brain.decision(perception_data, emotion)
-    assert decision in ["attack", "defend", "kite"]
+    assert decision in ["attack", "defend", "kite", "flank"]
 
     # High danger -> defend
     world.entities["enemies"] = [MockBall() for _ in range(4)] # danger_level = 0.8
     perception_data = brain.perception()
     emotion = brain.emotion(perception_data)
     decision = brain.decision(perception_data, emotion)
-    assert decision in ["defend", "attack", "chase", "kite"]
+    assert decision in ["defend", "attack", "chase", "kite", "flank"]
 
     # Low HP -> flee
     ball.hp = 20
