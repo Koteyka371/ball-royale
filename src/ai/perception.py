@@ -71,7 +71,10 @@ class Perception:
             if hasattr(enemy, "id"):
                 data["distances"][enemy.id] = dist
 
-                # Rivalry memory detection
+                # Ball Relationships - Balls remember each other
+
+
+                # Rivalry skill: attacked me before -> attack on sight
                 if hasattr(self.ball, "memory"):
                     ball_mem = self.ball.memory.get(enemy.id, {})
                     if ball_mem.get("relation") == "rival":
