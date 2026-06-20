@@ -185,7 +185,36 @@ class ChokePointArena(ProceduralArena):
         self.rooms.append(Room(50, h/2 + 100, w - 100, h/2 - 150))
         self.rooms.append(Room(cx - 100, h/2 - 50, 200, 150))
 
+
+class FleeArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Safe rooms in corners
+        size = 300
+        self.rooms.append(Room(50, 50, size, size))
+        self.rooms.append(Room(w - 50 - size, 50, size, size))
+        self.rooms.append(Room(50, h - 50 - size, size, size))
+        self.rooms.append(Room(w - 50 - size, h - 50 - size, size, size))
+
+        # Small corridors connecting along edges
+        self.corridors.append(Corridor(50 + size, 100, w - 100 - 2*size, 100))
+        self.corridors.append(Corridor(50 + size, h - 200, w - 100 - 2*size, 100))
+        self.corridors.append(Corridor(100, 50 + size, 100, h - 100 - 2*size))
+        self.corridors.append(Corridor(w - 200, 50 + size, 100, h - 100 - 2*size))
+
+        # Giant central hazard
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=min(w,h)*0.35, kind="lava", damage=40.0))
+
+        # Central tiny safe island just for fun
+        self.rooms.append(Room(cx - 50, cy - 50, 100, 100))
+
 ARENAS = {
+    "flee": FleeArena,
     "procedural": ProceduralArena,
     "cross": CrossArena,
     "ring": RingArena,

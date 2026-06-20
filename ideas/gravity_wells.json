@@ -1,0 +1,4 @@
+{
+  "title": "Gravity Wells Arena Feature",
+  "description": "Introduce zones in arenas that either attract (pull) or repel (push) balls. A Gravity Well in the center could pull balls towards a hazard (like lava or spikes) if they get too close, making navigation around the center much riskier. Alternatively, repulsor zones could push balls away, forcing them into specific corridors or choke points, changing up positional strategy."
+}
