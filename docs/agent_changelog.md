@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-arena-113] Create Comebacks arena — *2026-06-20 14:59:06 UTC*
+
+Implement Create Comebacks arena as described in game_design.md
+
+---
+
 ## [idea-feature-072] 12+ ball types — *2026-06-20 12:56:27 UTC*
 
 Implement 12+ ball types as described in game_design.md
