@@ -30,6 +30,7 @@ class King:
         self.first_hit_taken = False
         self.current_action = "idle"
         self.skill_timer = 0.0
+        self.attack_timer: float = 0.0
         self.personality = Personality("leader")
 
     def get_hp_percent(self) -> float:
@@ -47,7 +48,9 @@ class King:
     def collect_booster(self, delta: float) -> None:
         self.current_action = "opportunistic"
 
+
     def idle(self, delta: float) -> None:
+
         self.current_action = "idle"
 
     def command(self, delta: float, target_ally=None) -> None:

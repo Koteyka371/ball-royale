@@ -326,7 +326,37 @@ class ComebacksArena(ProceduralArena):
             hy = cy + 200 * math.sin(angle)
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=30.0, kind="lava", damage=40.0))
 
+
+class ClutchPlaysArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w / 2, h / 2
+
+        self.rooms.append(Room(cx - 200, cy - 200, 400, 400))
+        self.rooms.append(Room(cx - 100, cy - 400, 200, 200))
+        self.rooms.append(Room(cx - 100, cy + 200, 200, 200))
+        self.rooms.append(Room(cx - 400, cy - 100, 200, 200))
+        self.rooms.append(Room(cx + 200, cy - 100, 200, 200))
+
+        self.corridors.append(Corridor(cx - 50, cy - 250, 100, 100))
+        self.corridors.append(Corridor(cx - 50, cy + 150, 100, 100))
+        self.corridors.append(Corridor(cx - 250, cy - 50, 100, 100))
+        self.corridors.append(Corridor(cx + 150, cy - 50, 100, 100))
+
+        import math
+        num_hazards = 12
+        radius = 150
+        for i in range(num_hazards):
+            angle = 2 * math.pi * i / num_hazards
+            hx = cx + radius * math.cos(angle)
+            hy = cy + radius * math.sin(angle)
+            self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=20.0, kind="lava", damage=40.0))
+
 ARENAS = {
+
     "buff_ally": BuffAllyArena,
     "retreat_to_ally": RetreatToAllyArena,
     "procedural": ProceduralArena,
@@ -345,7 +375,8 @@ ARENAS = {
     "choke_point": ChokePointArena,
     "use_shield": UseShieldArena,
     "aggressive_chase": AggressiveChaseArena,
-    "comebacks": ComebacksArena
+    "comebacks": ComebacksArena,
+    "clutch_plays": ClutchPlaysArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
