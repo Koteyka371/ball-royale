@@ -86,7 +86,7 @@ func generate():
                 break
 
         if not overlap:
-            rooms.append(Room.new(rx, ry, rw, rh))
+            rooms.append(ProceduralArena.Room.new(rx, ry, rw, rh))
 
     if rooms.size() == 0:
         return
@@ -128,11 +128,11 @@ func generate():
         var c2y = r2.y + r2.height / 2.0
 
         if rng.randf() < 0.5:
-            corridors.append(Corridor.new(min(c1x, c2x) - 25.0, c1y - 25.0, abs(c2x - c1x) + 50.0, 50.0))
-            corridors.append(Corridor.new(c2x - 25.0, min(c1y, c2y) - 25.0, 50.0, abs(c2y - c1y) + 50.0))
+            corridors.append(ProceduralArena.Corridor.new(min(c1x, c2x) - 25.0, c1y - 25.0, abs(c2x - c1x) + 50.0, 50.0))
+            corridors.append(ProceduralArena.Corridor.new(c2x - 25.0, min(c1y, c2y) - 25.0, 50.0, abs(c2y - c1y) + 50.0))
         else:
-            corridors.append(Corridor.new(c1x - 25.0, min(c1y, c2y) - 25.0, 50.0, abs(c2y - c1y) + 50.0))
-            corridors.append(Corridor.new(min(c1x, c2x) - 25.0, c2y - 25.0, abs(c2x - c1x) + 50.0, 50.0))
+            corridors.append(ProceduralArena.Corridor.new(c1x - 25.0, min(c1y, c2y) - 25.0, 50.0, abs(c2y - c1y) + 50.0))
+            corridors.append(ProceduralArena.Corridor.new(min(c1x, c2x) - 25.0, c2y - 25.0, abs(c2x - c1x) + 50.0, 50.0))
 
         connected.append(r2)
         unconnected.remove_at(best_idx)
@@ -153,7 +153,7 @@ func generate():
             damage = 50.0
 
         var spawn_pt = get_random_spawn_point(radius)
-        hazards.append(Hazard.new(i, spawn_pt[0], spawn_pt[1], radius, kind, damage))
+        hazards.append(ProceduralArena.Hazard.new(i, spawn_pt[0], spawn_pt[1], radius, kind, damage))
 
 func get_random_spawn_point(radius: float) -> Array:
     if rooms.size() == 0:
@@ -340,3 +340,49 @@ class BallRelationshipsArena extends ProceduralArena:
         hazards.append(ProceduralArena.Hazard.new(1, cx + 150.0, cy - 150.0, 30.0, "lava", 20.0))
         hazards.append(ProceduralArena.Hazard.new(2, cx - 150.0, cy + 150.0, 30.0, "lava", 20.0))
         hazards.append(ProceduralArena.Hazard.new(3, cx + 150.0, cy + 150.0, 30.0, "lava", 20.0))
+
+
+class ClutchPlaysArena:
+    extends ProceduralArena
+
+    func _init(size: float = 2000.0, seed_val = null):
+        super(size, 5, seed_val)
+
+    func generate():
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+
+        var w = width
+        var h = height
+        var cx = w / 2.0
+        var cy = h / 2.0
+
+        # Central room
+        rooms.append(ProceduralArena.Room.new(cx - 300, cy - 300, 600, 600))
+
+        # Safe zones
+        rooms.append(ProceduralArena.Room.new(50, 50, 200, 200))
+        rooms.append(ProceduralArena.Room.new(w - 250, 50, 200, 200))
+        rooms.append(ProceduralArena.Room.new(50, h - 250, 200, 200))
+        rooms.append(ProceduralArena.Room.new(w - 250, h - 250, 200, 200))
+
+        # Corridors
+        corridors.append(ProceduralArena.Corridor.new(100, 200, 100, cy - 400))
+        corridors.append(ProceduralArena.Corridor.new(100, cy - 300, cx - 300, 100))
+
+        corridors.append(ProceduralArena.Corridor.new(w - 200, 200, 100, cy - 400))
+        corridors.append(ProceduralArena.Corridor.new(cx + 200, cy - 300, w - cx - 300, 100))
+
+        corridors.append(ProceduralArena.Corridor.new(100, cy + 200, 100, h - cy - 400))
+        corridors.append(ProceduralArena.Corridor.new(100, cy + 200, cx - 300, 100))
+
+        corridors.append(ProceduralArena.Corridor.new(w - 200, cy + 200, 100, h - cy - 400))
+        corridors.append(ProceduralArena.Corridor.new(cx + 200, cy + 200, w - cx - 300, 100))
+
+        # Hazards
+        hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 100.0, "lava", 30.0))
+        hazards.append(ProceduralArena.Hazard.new(1, cx - 150, cy - 150, 50.0, "spikes", 20.0))
+        hazards.append(ProceduralArena.Hazard.new(2, cx + 150, cy - 150, 50.0, "spikes", 20.0))
+        hazards.append(ProceduralArena.Hazard.new(3, cx - 150, cy + 150, 50.0, "spikes", 20.0))
+        hazards.append(ProceduralArena.Hazard.new(4, cx + 150, cy + 150, 50.0, "spikes", 20.0))
