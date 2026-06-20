@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Trail Mechanic",
+  "description": "When a ball enters the Flee state, they occasionally drop a visual decoy that mimics their movement direction for 2 seconds. This causes chasing balls to target the decoy instead of the actual fleeing ball, giving the fleer a higher chance of escape."
+}
