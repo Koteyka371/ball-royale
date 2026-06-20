@@ -208,12 +208,12 @@ class Decision:
             elif b_type == "king" and allies_count > 0:
                 scores["use_skill"] += 200.0
 
+        # Ball Relationships - Balls remember each other
         # Rivalry skill: attacked me before -> attack on sight
-        rival_seen = perception_data.get("rival_spotted", False)
-        if rival_seen:
-            # Massive priority for attacking/chasing rivals
-            scores["attack"] += 250.0
-            scores["chase"] += 250.0
+        if perception_data.get("rival_spotted", False):
+            # Greatly increase attack and chase priorities against rivals
+            scores["attack"] += 275.0
+            scores["chase"] += 275.0
 
         # Team Coordination
         team_messages = perception_data.get("team_messages", [])
