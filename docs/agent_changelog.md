@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-arena-108] Create Collect Booster arena — *2026-06-20 22:15:36 UTC*
+
+Implement Create Collect Booster arena as described in game_design.md
+
+---
+
 ## [idea-arena-123] Create Ball Relationships arena — *2026-06-20 21:01:24 UTC*
 
 Implement Create Ball Relationships arena as described in game_design.md
