@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-arena-102] Create Retreat to Ally arena — *2026-06-20 11:09:33 UTC*
+
+Implement Create Retreat to Ally arena as described in game_design.md
+
+---
+
 ## [auto-implement-**flank**-—-обходит-сзади-для-удара-skil] Implement **Flank** — обходит сзади для удара skill — *2026-06-20 08:43:30 UTC*
 
 Create **Flank** — обходит сзади для удара skill: для Ninja
