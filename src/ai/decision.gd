@@ -199,7 +199,9 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
         elif b_type == "king" and allies_count > 0.0:
             scores["use_skill"] += 200.0
 
-    if perception_data.has("rival_spotted") and perception_data["rival_spotted"]:
+    # Increase aggression against rivals
+    var has_rival = perception_data.has("rival_spotted") and perception_data["rival_spotted"]
+    if has_rival:
         scores["attack"] += 200.0
         scores["chase"] += 200.0
 

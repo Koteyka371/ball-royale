@@ -72,8 +72,10 @@ class Perception:
                 data["distances"][enemy.id] = dist
 
                 # Check for rival memory
-                if hasattr(self.ball, "memory") and self.ball.memory.get(enemy.id, {}).get("relation") == "rival":
-                    data["rival_spotted"] = True
+                if hasattr(self.ball, "memory"):
+                    relation_info = self.ball.memory.get(enemy.id, {})
+                    if relation_info.get("relation") == "rival":
+                        data["rival_spotted"] = True
 
             # Threat increases if enemy is closer. Max threat from one enemy = 1.0 (at dist 0)
             threat += max(0.0, 1.0 - (dist / perception_radius)) * 1.5
