@@ -9,3 +9,4 @@ pytest-cov
 ruff
 mypy
 numpy
+numpy

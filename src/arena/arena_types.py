@@ -326,7 +326,36 @@ class ComebacksArena(ProceduralArena):
             hy = cy + 200 * math.sin(angle)
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=30.0, kind="lava", damage=40.0))
 
+class TeamWipesArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central battle room
+        self.rooms.append(Room(cx - 400, cy - 400, 800, 800))
+
+        # Two team spawn rooms
+        self.rooms.append(Room(50, cy - 150, 200, 300)) # Left team
+        self.rooms.append(Room(w - 250, cy - 150, 200, 300)) # Right team
+
+        # Corridors connecting to center
+        self.corridors.append(Corridor(200, cy - 100, cx - 400 - 200 + 50, 200)) # Left to center
+        self.corridors.append(Corridor(cx + 400 - 50, cy - 100, w - 200 - (cx + 400 - 50), 200)) # Right to center
+
+        # Ring of 20 hazards in the central room
+        import math
+        radius = 300
+        for i in range(20):
+            angle = 2 * math.pi * i / 20
+            hx = cx + radius * math.cos(angle)
+            hy = cy + radius * math.sin(angle)
+            self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=30.0, kind="lava", damage=40.0))
+
 ARENAS = {
+    "team_wipes": TeamWipesArena,
     "buff_ally": BuffAllyArena,
     "retreat_to_ally": RetreatToAllyArena,
     "procedural": ProceduralArena,
