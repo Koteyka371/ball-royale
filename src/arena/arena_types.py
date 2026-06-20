@@ -326,7 +326,57 @@ class ComebacksArena(ProceduralArena):
             hy = cy + 200 * math.sin(angle)
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=30.0, kind="lava", damage=40.0))
 
+
+class FunnyFailsArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # 4 small corner rooms
+        room_size = 150
+        self.rooms.append(Room(50, 50, room_size, room_size)) # Top-Left
+        self.rooms.append(Room(w - 50 - room_size, 50, room_size, room_size)) # Top-Right
+        self.rooms.append(Room(50, h - 50 - room_size, room_size, room_size)) # Bottom-Left
+        self.rooms.append(Room(w - 50 - room_size, h - 50 - room_size, room_size, room_size)) # Bottom-Right
+
+        # Narrow bridges between them to make falling easy
+        bridge_width = 80
+        self.corridors.append(Corridor(50 + room_size, 50 + (room_size - bridge_width)/2, w - 100 - 2*room_size, bridge_width)) # Top bridge
+        self.corridors.append(Corridor(50 + room_size, h - 50 - room_size + (room_size - bridge_width)/2, w - 100 - 2*room_size, bridge_width)) # Bottom bridge
+        self.corridors.append(Corridor(50 + (room_size - bridge_width)/2, 50 + room_size, bridge_width, h - 100 - 2*room_size)) # Left bridge
+        self.corridors.append(Corridor(w - 50 - room_size + (room_size - bridge_width)/2, 50 + room_size, bridge_width, h - 100 - 2*room_size)) # Right bridge
+
+        # Cross bridges in the middle
+        self.corridors.append(Corridor(cx - bridge_width/2, 50 + room_size, bridge_width, h - 100 - 2*room_size)) # Vertical middle bridge
+        self.corridors.append(Corridor(50 + room_size, cy - bridge_width/2, w - 100 - 2*room_size, bridge_width)) # Horizontal middle bridge
+
+        # Center small room (intersection)
+        self.rooms.append(Room(cx - 100, cy - 100, 200, 200))
+
+        # Huge amounts of hazards in the gaps
+        import math
+        # Ring of lava around the center room
+        num_hazards = 12
+        radius = 250
+        for i in range(num_hazards):
+            angle = 2 * math.pi * i / num_hazards
+            hx = cx + radius * math.cos(angle)
+            hy = cy + radius * math.sin(angle)
+            self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=50.0, kind="lava", damage=50.0))
+
+        # Add bounce pads / spikes to push into the lava
+        # (Using spikes since they exist and deal damage, or we can use generic hazards)
+        for i in range(4):
+            # Place 4 large spike balls near the outer corners
+            hx = cx + 500 * math.cos(2 * math.pi * i / 4 + math.pi/4)
+            hy = cy + 500 * math.sin(2 * math.pi * i / 4 + math.pi/4)
+            self.hazards.append(Hazard(id=i+100, x=hx, y=hy, radius=70.0, kind="spikes", damage=30.0))
+
 ARENAS = {
+    "funny_fails": FunnyFailsArena,
     "buff_ally": BuffAllyArena,
     "retreat_to_ally": RetreatToAllyArena,
     "procedural": ProceduralArena,
