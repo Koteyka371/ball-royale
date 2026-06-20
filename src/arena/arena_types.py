@@ -326,7 +326,43 @@ class ComebacksArena(ProceduralArena):
             hy = cy + 200 * math.sin(angle)
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=30.0, kind="lava", damage=40.0))
 
+class RepositionArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # 4 Corner rooms
+        self.rooms.append(Room(50, 50, 300, 300)) # Top-Left
+        self.rooms.append(Room(w - 350, 50, 300, 300)) # Top-Right
+        self.rooms.append(Room(50, h - 350, 300, 300)) # Bottom-Left
+        self.rooms.append(Room(w - 350, h - 350, 300, 300)) # Bottom-Right
+
+        # Center room
+        self.rooms.append(Room(cx - 200, cy - 200, 400, 400))
+
+        # Connecting Corridors (with overlap to ensure traversability):
+        # TL to Center
+        self.corridors.append(Corridor(200, 350, 100, cy - 200 - 350 + 50)) # Vertical down from TL
+        self.corridors.append(Corridor(200, cy - 200, cx - 200 - 200, 100)) # Horizontal right to Center
+        # TR to Center
+        self.corridors.append(Corridor(w - 300, 350, 100, cy - 200 - 350 + 50)) # Vertical down from TR
+        self.corridors.append(Corridor(cx + 200, cy - 200, w - 300 - (cx + 200) + 100, 100)) # Horizontal left to Center
+        # BL to Center
+        self.corridors.append(Corridor(200, cy + 200 - 50, 100, h - 350 - (cy + 200 - 50))) # Vertical up from BL
+        self.corridors.append(Corridor(200, cy + 200 - 100, cx - 200 - 200, 100)) # Horizontal right to Center
+        # BR to Center
+        self.corridors.append(Corridor(w - 300, cy + 200 - 50, 100, h - 350 - (cy + 200 - 50))) # Vertical up from BR
+        self.corridors.append(Corridor(cx + 200, cy + 200 - 100, w - 300 - (cx + 200) + 100, 100)) # Horizontal left to Center
+
+        # Hazards
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=100.0, kind="spikes", damage=30.0))
+
+
 ARENAS = {
+    "reposition": RepositionArena,
     "buff_ally": BuffAllyArena,
     "retreat_to_ally": RetreatToAllyArena,
     "procedural": ProceduralArena,

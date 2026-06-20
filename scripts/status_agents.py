@@ -4,7 +4,6 @@ Agent Status Dashboard — shows what all 12 agents are doing.
 Usage: python status_agents.py
 """
 import json
-import sys
 from datetime import datetime, timezone
 
 LOCK_FILE = "agent_lock.json"

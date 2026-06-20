@@ -4,11 +4,9 @@ Measures code quality across the project.
 Run: python scripts/quality_metrics.py
 """
 
-import os
 import re
 import sys
 from pathlib import Path
-from collections import defaultdict
 
 PROJECT_ROOT = Path(__file__).parent.parent
 
@@ -133,20 +131,20 @@ def run_quality_check() -> dict:
 
     coverage = measure_test_coverage()
 
-    print(f"\n  --- Line Counts ---")
+    print("\n  --- Line Counts ---")
     print(f"  Total files:     {len(all_files)}")
     print(f"  Total lines:     {total_lines['total']}")
     print(f"  Code lines:      {total_lines['code']}")
     print(f"  Comment lines:   {total_lines['comments']}")
     print(f"  Blank lines:     {total_lines['blank']}")
 
-    print(f"\n  --- Complexity ---")
+    print("\n  --- Complexity ---")
     print(f"  Functions:       {total_complexity['functions']}")
     print(f"  Classes:         {total_complexity['classes']}")
     print(f"  Imports:         {total_complexity['imports']}")
     print(f"  Max line length: {total_complexity['max_line_length']}")
 
-    print(f"\n  --- Test Coverage ---")
+    print("\n  --- Test Coverage ---")
     print(f"  Test files:      {coverage['test_files']}")
     print(f"  Source files:    {coverage['src_files']}")
     print(f"  Tested modules:  {coverage['tested_modules']}/{coverage['total_modules']}")
@@ -157,7 +155,7 @@ def run_quality_check() -> dict:
         for t in all_todos[:10]:
             print(f"    {t['file']}:{t['line']} [{t['type']}] {t['text']}")
     else:
-        print(f"\n  --- TODOs/FIXMEs: None ---")
+        print("\n  --- TODOs/FIXMEs: None ---")
 
     quality_score = min(100, coverage["coverage_percent"] + 20)
     passed = quality_score >= 60

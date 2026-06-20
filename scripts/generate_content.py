@@ -5,7 +5,6 @@ Run: python scripts/generate_content.py
 """
 
 import json
-import os
 import sys
 from pathlib import Path
 

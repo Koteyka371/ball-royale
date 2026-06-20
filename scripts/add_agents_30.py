@@ -1,4 +1,3 @@
-import os
 
 with open('scripts/dispatch_agents.py', 'r') as f:
     text = f.read()

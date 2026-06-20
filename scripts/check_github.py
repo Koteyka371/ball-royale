@@ -1,4 +1,5 @@
-import urllib.request, json
+import urllib.request
+import json
 
 # Check workflow runs
 r = urllib.request.urlopen('https://api.github.com/repos/Koteyka371/ball-royale/actions/runs?per_page=5')
@@ -17,7 +18,7 @@ for p in prs:
 # Check recent commits
 r3 = urllib.request.urlopen('https://api.github.com/repos/Koteyka371/ball-royale/commits?per_page=8')
 commits = json.load(r3)
-print(f"\n=== Recent commits ===")
+print("\n=== Recent commits ===")
 for c in commits:
     msg = c['commit']['message'].split('\n')[0][:60]
     author = c['commit']['author']['name']
