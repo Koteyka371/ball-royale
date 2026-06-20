@@ -208,6 +208,25 @@ class UseShieldArena(ProceduralArena):
             damage = 20.0 if kind == "spikes" else 40.0
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=40.0, kind=kind, damage=damage))
 
+class TargetStrongArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        _, cy = w/2, h/2
+
+        # Small starting room for the Tank
+        self.rooms.append(Room(50, cy - 100, 200, 200))
+        # Large combat room
+        self.rooms.append(Room(w - 450, cy - 300, 400, 600))
+
+        # Connecting corridor
+        self.corridors.append(Corridor(250, cy - 50, w - 700, 100))
+
+        # Place a strong enemy hazard marker in the large room
+        self.hazards.append(Hazard(id=1, x=w - 250, y=cy, radius=50.0, kind="spikes", damage=30.0))
+
 class RetreatToAllyArena(ProceduralArena):
     def generate(self):
         self.rooms.clear()
@@ -254,7 +273,8 @@ ARENAS = {
     "split": SplitArena,
     "flank": FlankArena,
     "choke_point": ChokePointArena,
-    "use_shield": UseShieldArena
+    "use_shield": UseShieldArena,
+    "target_strong": TargetStrongArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
