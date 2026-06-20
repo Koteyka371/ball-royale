@@ -1,0 +1,4 @@
+{
+  "title": "Dynamic Weather Events",
+  "description": "Introduce random weather conditions like 'Rain' (decreases ball speed), 'Wind' (pushes balls in a specific direction), and 'Fog' (reduces perception radius) to add an extra layer of strategy and unpredictability to the battles."
+}
