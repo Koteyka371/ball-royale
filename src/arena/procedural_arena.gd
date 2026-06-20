@@ -206,3 +206,20 @@ func update_zone(current_tick: int, delta: float) -> void:
         safe_zone_radius -= 10.0 * delta
         if safe_zone_radius < 50.0:
             safe_zone_radius = 50.0
+
+class AvoidTrapArena extends ProceduralArena:
+    func generate():
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        rooms.append(ProceduralArena.Room.new(100.0, 100.0, 200.0, 200.0))
+        rooms.append(ProceduralArena.Room.new(600.0, 100.0, 200.0, 200.0))
+        rooms.append(ProceduralArena.Room.new(350.0, 400.0, 200.0, 200.0))
+        corridors.append(ProceduralArena.Corridor.new(300.0, 150.0, 300.0, 100.0))
+        corridors.append(ProceduralArena.Corridor.new(150.0, 300.0, 100.0, 200.0))
+        corridors.append(ProceduralArena.Corridor.new(150.0, 450.0, 200.0, 100.0))
+        hazards.append(ProceduralArena.Hazard.new(0, 400.0, 200.0, 30.0, "spikes", 20.0))
+        hazards.append(ProceduralArena.Hazard.new(1, 450.0, 200.0, 30.0, "lava", 50.0))
+        hazards.append(ProceduralArena.Hazard.new(2, 500.0, 200.0, 30.0, "spikes", 20.0))
+        hazards.append(ProceduralArena.Hazard.new(3, 200.0, 400.0, 30.0, "lava", 50.0))
+        hazards.append(ProceduralArena.Hazard.new(4, 450.0, 500.0, 40.0, "lava", 50.0))

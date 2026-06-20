@@ -376,7 +376,26 @@ class KiteArena(ProceduralArena):
         self.hazards.append(Hazard(id=2, x=300, y=cy, radius=50.0, kind="lava", damage=10.0))
         self.hazards.append(Hazard(id=3, x=w-300, y=cy, radius=50.0, kind="lava", damage=10.0))
 
+
+class AvoidTrapArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        self.rooms.append(Room(100, 100, 200, 200))
+        self.rooms.append(Room(600, 100, 200, 200))
+        self.rooms.append(Room(350, 400, 200, 200))
+        self.corridors.append(Corridor(300, 150, 300, 100))
+        self.corridors.append(Corridor(150, 300, 100, 200))
+        self.corridors.append(Corridor(150, 450, 200, 100))
+        self.hazards.append(Hazard(0, 400, 200, 30, 'spikes', 20.0))
+        self.hazards.append(Hazard(1, 450, 200, 30, 'lava', 50.0))
+        self.hazards.append(Hazard(2, 500, 200, 30, 'spikes', 20.0))
+        self.hazards.append(Hazard(3, 200, 400, 30, 'lava', 50.0))
+        self.hazards.append(Hazard(4, 450, 500, 40, 'lava', 50.0))
+
 ARENAS = {
+    "avoid_trap": AvoidTrapArena,
     "kite": KiteArena,
     "buff_ally": BuffAllyArena,
     "retreat_to_ally": RetreatToAllyArena,
