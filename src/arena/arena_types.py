@@ -238,7 +238,24 @@ class RetreatToAllyArena(ProceduralArena):
             hy = cy + 150 * math.sin(angle)
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=30.0, kind="lava", damage=30.0))
 
+class EscortArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        self.rooms.append(Room(50, 50, 200, 200))
+        self.rooms.append(Room(w - 250, h - 250, 200, 200))
+        self.rooms.append(Room(w - 250, 50, 200, 200))
+        self.rooms.append(Room(50, h - 250, 200, 200))
+        self.corridors.append(Corridor(150, 250, 100, h - 500))
+        self.corridors.append(Corridor(150, h - 250, w - 400, 100))
+        self.corridors.append(Corridor(w - 200, 250, 100, h - 500))
+        self.hazards.append(Hazard(id=0, x=w - 150, y=150, radius=40.0, kind="spikes", damage=20.0))
+        self.hazards.append(Hazard(id=1, x=150, y=h - 150, radius=40.0, kind="lava", damage=40.0))
+
 ARENAS = {
+    "escort": EscortArena,
     "retreat_to_ally": RetreatToAllyArena,
     "procedural": ProceduralArena,
     "cross": CrossArena,
