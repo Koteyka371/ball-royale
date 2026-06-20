@@ -1841,7 +1841,7 @@
     },
     {
       "id": "idea-arena-105",
-      "status": "todo",
+      "status": "done",
       "area": "arenas",
       "risk": "low",
       "title": "Create Buff Ally arena",

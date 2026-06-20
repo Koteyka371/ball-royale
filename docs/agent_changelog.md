@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-arena-105] Create Buff Ally arena — *2026-06-20 12:39:16 UTC*
+
+Implement Create Buff Ally arena as described in game_design.md
+
+---
+
 ## [idea-ball_type-083] Implement Chaos ball — *2026-06-20 11:21:25 UTC*
 
 Implement Implement Chaos ball as described in game_design.md
