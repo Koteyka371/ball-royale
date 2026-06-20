@@ -1787,6 +1787,301 @@
         "Tests pass",
         "No regressions"
       ]
+    },
+    {
+      "id": "idea-arena-102",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Retreat to Ally arena",
+      "description": "Implement Create Retreat to Ally arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Retreat to Ally arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-arena-103",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Hide Behind arena",
+      "description": "Implement Create Hide Behind arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Hide Behind arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-arena-104",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Heal Ally arena",
+      "description": "Implement Create Heal Ally arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Heal Ally arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-arena-105",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Buff Ally arena",
+      "description": "Implement Create Buff Ally arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Buff Ally arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-arena-106",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Body Block arena",
+      "description": "Implement Create Body Block arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Body Block arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "balance-buff-warrior",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'warrior'",
+      "description": "The 'warrior' class is winning only 0.0% of the time (expected ~6.2%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-tank",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'tank'",
+      "description": "The 'tank' class is winning only 0.0% of the time (expected ~6.2%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-nerf-assassin",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Nerf overpowered 'assassin'",
+      "description": "The 'assassin' class is winning 20.0% of the time (expected ~6.2%). It is overpowered. Please reduce its HP, damage, speed, or increase skill cooldown.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Win rate reduced in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-sniper",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'sniper'",
+      "description": "The 'sniper' class is winning only 0.0% of the time (expected ~6.2%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-bomber",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'bomber'",
+      "description": "The 'bomber' class is winning only 0.0% of the time (expected ~6.2%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-phantom",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'phantom'",
+      "description": "The 'phantom' class is winning only 0.0% of the time (expected ~6.2%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-king",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'king'",
+      "description": "The 'king' class is winning only 0.0% of the time (expected ~6.2%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-nerf-spectator",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Nerf overpowered 'spectator'",
+      "description": "The 'spectator' class is winning 20.0% of the time (expected ~6.2%). It is overpowered. Please reduce its HP, damage, speed, or increase skill cooldown.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Win rate reduced in simulations"
+      ]
+    },
+    {
+      "id": "sync-gd-decision-get-weights",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Sync GDScript: Implement 'get_weights' in decision.gd",
+      "description": "The Python class in decision.py implements 'get_weights', but the GDScript counterpart decision.gd is missing it. Please implement the same logic in GDScript.",
+      "allowed_paths": [
+        "src/ai/decision.gd"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "sync-gd-action-get-hp-pct",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Sync GDScript: Implement 'get_hp_pct' in action.gd",
+      "description": "The Python class in action.py implements 'get_hp_pct', but the GDScript counterpart action.gd is missing it. Please implement the same logic in GDScript.",
+      "allowed_paths": [
+        "src/ai/action.gd"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "sync-gd-action-count-nearby",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Sync GDScript: Implement 'count_nearby' in action.gd",
+      "description": "The Python class in action.py implements 'count_nearby', but the GDScript counterpart action.gd is missing it. Please implement the same logic in GDScript.",
+      "allowed_paths": [
+        "src/ai/action.gd"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "perf-optimize-run",
+      "status": "todo",
+      "area": "meta",
+      "risk": "high",
+      "title": "Performance: Optimize 'run' in simulate_battle.py",
+      "description": "The function 'run' in simulate_battle.py is causing a performance bottleneck. During a 100-tick stress test, it was called 1 times and took 9.89 seconds total. Please optimize this function to reduce its execution time (e.g., use better data structures, caching, or spatial hashing).",
+      "allowed_paths": [
+        "simulate_battle.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "perf-optimize--tick",
+      "status": "todo",
+      "area": "meta",
+      "risk": "high",
+      "title": "Performance: Optimize '_tick' in simulate_battle.py",
+      "description": "The function '_tick' in simulate_battle.py is causing a performance bottleneck. During a 100-tick stress test, it was called 100 times and took 9.87 seconds total. Please optimize this function to reduce its execution time (e.g., use better data structures, caching, or spatial hashing).",
+      "allowed_paths": [
+        "simulate_battle.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "perf-optimize-process",
+      "status": "todo",
+      "area": "meta",
+      "risk": "high",
+      "title": "Performance: Optimize 'process' in ball_brain.py",
+      "description": "The function 'process' in ball_brain.py is causing a performance bottleneck. During a 100-tick stress test, it was called 30040 times and took 9.70 seconds total. Please optimize this function to reduce its execution time (e.g., use better data structures, caching, or spatial hashing).",
+      "allowed_paths": [
+        "ball_brain.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
