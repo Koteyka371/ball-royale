@@ -2042,6 +2042,91 @@
         "Tests pass",
         "No regressions"
       ]
+    },
+    {
+      "id": "idea-arena-117",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Team wipes arena",
+      "description": "Implement Create Team wipes arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Team wipes arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-arena-118",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Ball Genetics arena",
+      "description": "Implement Create Ball Genetics arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Ball Genetics arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-arena-119",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Neural Ball arena",
+      "description": "Implement Create Neural Ball arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Neural Ball arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-arena-120",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Swarm Intelligence arena",
+      "description": "Implement Create Swarm Intelligence arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Swarm Intelligence arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-arena-121",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Emotional Contagion arena",
+      "description": "Implement Create Emotional Contagion arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Emotional Contagion arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
     }
   ]
 }
