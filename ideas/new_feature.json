@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Skill for Ninja",
+  "description": "Ninja balls can spawn a temporary decoy (a static or randomly moving clone with 1 HP) when using their Stealth skill. The decoy draws enemy aggro and resets targeting for aggressive AI types, allowing the Ninja to either escape or strike from behind unhindered."
+}

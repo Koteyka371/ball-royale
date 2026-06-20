@@ -208,6 +208,46 @@ class UseShieldArena(ProceduralArena):
             damage = 20.0 if kind == "spikes" else 40.0
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=40.0, kind=kind, damage=damage))
 
+
+class AmbushArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central combat zone
+        self.rooms.append(Room(cx - 200, cy - 200, 400, 400))
+
+        # Hiding spots (small rooms)
+        positions = [
+            (cx - 350, cy - 350), (cx, cy - 350), (cx + 350, cy - 350),
+            (cx - 350, cy), (cx + 350, cy),
+            (cx - 350, cy + 350), (cx, cy + 350), (cx + 350, cy + 350)
+        ]
+
+        for px, py in positions:
+            self.rooms.append(Room(px - 50, py - 50, 100, 100))
+
+        # Corridors connecting hiding spots to center
+        # Top-left to center
+        self.corridors.append(Corridor(cx - 300, cy - 300, 100, 100))
+        # Top to center
+        self.corridors.append(Corridor(cx - 25, cy - 300, 50, 100))
+        # Top-right to center
+        self.corridors.append(Corridor(cx + 200, cy - 300, 100, 100))
+        # Left to center
+        self.corridors.append(Corridor(cx - 300, cy - 25, 100, 50))
+        # Right to center
+        self.corridors.append(Corridor(cx + 200, cy - 25, 100, 50))
+        # Bottom-left to center
+        self.corridors.append(Corridor(cx - 300, cy + 200, 100, 100))
+        # Bottom to center
+        self.corridors.append(Corridor(cx - 25, cy + 200, 50, 100))
+        # Bottom-right to center
+        self.corridors.append(Corridor(cx + 200, cy + 200, 100, 100))
+
 ARENAS = {
     "procedural": ProceduralArena,
     "cross": CrossArena,
@@ -223,7 +263,8 @@ ARENAS = {
     "split": SplitArena,
     "flank": FlankArena,
     "choke_point": ChokePointArena,
-    "use_shield": UseShieldArena
+    "use_shield": UseShieldArena,
+    "ambush": AmbushArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
