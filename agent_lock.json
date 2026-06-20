@@ -158,7 +158,7 @@
       "status": "working",
       "task_id": "idea-arena-107",
       "started_at": "2026-06-20T14:43:27.859008+00:00",
-      "cycles_today": 0
+      "cycles_today": 1
     },
     "agent-20": {
       "name": "Jules Worker 20",
