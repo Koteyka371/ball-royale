@@ -519,29 +519,29 @@ func _get_strongest_enemy(enemies: Array) -> Object:
     return target
 
 func _get_target(enemies: Array) -> Object:
-    var my_memory = {}
+    var memory_state = {}
     if self.ball.has_method("get_meta") and self.ball.has_meta("memory"):
-        my_memory = self.ball.get_meta("memory")
+        memory_state = self.ball.get_meta("memory")
     elif "memory" in self.ball:
-        my_memory = self.ball.memory
+        memory_state = self.ball.memory
 
-    var rivals = []
-    # Populate list of known rivals
-    for e in enemies:
-        if "id" in e and my_memory.has(e.id):
-            var rel_data = my_memory[e.id]
-            if typeof(rel_data) == TYPE_DICTIONARY and rel_data.get("relation") == "rival":
-                rivals.append(e)
+    var remembered_rivals = []
+    # Rivalry skill: attacked me before -> attack on sight
+    for enemy in enemies:
+        if "id" in enemy and memory_state.has(enemy.id):
+            var relation_data = memory_state[enemy.id]
+            if typeof(relation_data) == TYPE_DICTIONARY and relation_data.get("relation") == "rival":
+                remembered_rivals.append(enemy)
 
-    if rivals.size() > 0:
-        var best_rival = null
-        var best_dist_sq = INF
-        for r in rivals:
-            var d_sq = pow(r.x - self.ball.x, 2) + pow(r.y - self.ball.y, 2)
-            if d_sq < best_dist_sq:
-                best_dist_sq = d_sq
-                best_rival = r
-        return best_rival
+    if remembered_rivals.size() > 0:
+        var closest_rival = null
+        var min_dist_sq = INF
+        for rival_entity in remembered_rivals:
+            var dist_squared = pow(rival_entity.x - self.ball.x, 2) + pow(rival_entity.y - self.ball.y, 2)
+            if dist_squared < min_dist_sq:
+                min_dist_sq = dist_squared
+                closest_rival = rival_entity
+        return closest_rival
 
     var target_msg = null
     var allies = _get_allies()
@@ -709,7 +709,8 @@ func _group_attack(delta: float):
                     elif "memory" in target and typeof(target.memory) == TYPE_DICTIONARY:
                         target_memory = target.memory
 
-                    # Store rival relationship
+                    # Rivalry skill: attacked me before -> attack on sight
+                    # Update the target's memory to mark us as a rival
                     target_memory[self.ball.id] = {"relation": "rival"}
                     if target.has_method("set_meta"):
                         target.set_meta("memory", target_memory)
@@ -935,7 +936,8 @@ func _flank(delta: float):
                             mem = target.get_meta("memory")
                         elif "memory" in target:
                             mem = target.memory
-                        # Update rival relationship
+                        # Rivalry skill: attacked me before -> attack on sight
+                        # Update the target's memory to mark us as a rival
                         mem[self.ball.id] = {"relation": "rival"}
                         if target.has_method("set_meta"):
                             target.set_meta("memory", mem)
@@ -1014,7 +1016,8 @@ func _chase(delta: float):
                             mem = target.get_meta("memory")
                         elif "memory" in target:
                             mem = target.memory
-                        # Update rival relationship
+                        # Rivalry skill: attacked me before -> attack on sight
+                        # Update the target's memory to mark us as a rival
                         mem[self.ball.id] = {"relation": "rival"}
                         if target.has_method("set_meta"):
                             target.set_meta("memory", mem)
@@ -1298,7 +1301,8 @@ func _attack(delta: float):
                             mem = target.get_meta("memory")
                         elif "memory" in target:
                             mem = target.memory
-                        # Update rival relationship
+                        # Rivalry skill: attacked me before -> attack on sight
+                        # Update the target's memory to mark us as a rival
                         mem[self.ball.id] = {"relation": "rival"}
                         if target.has_method("set_meta"):
                             target.set_meta("memory", mem)
@@ -1977,7 +1981,8 @@ func _kite(delta: float):
                             mem = target.get_meta("memory")
                         elif "memory" in target:
                             mem = target.memory
-                        # Update rival relationship
+                        # Rivalry skill: attacked me before -> attack on sight
+                        # Update the target's memory to mark us as a rival
                         mem[self.ball.id] = {"relation": "rival"}
                         if target.has_method("set_meta"):
                             target.set_meta("memory", mem)

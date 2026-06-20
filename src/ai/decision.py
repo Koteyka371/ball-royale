@@ -193,11 +193,12 @@ class Decision:
             elif b_type == "king" and allies_count > 0:
                 scores["use_skill"] += 200.0
 
-        # Boost scores if a rival is spotted
-        is_rival_present = perception_data.get("rival_spotted", False)
-        if is_rival_present:
-            scores["attack"] += 200.0
-            scores["chase"] += 200.0
+        # Rivalry skill: attacked me before -> attack on sight
+        has_rival_in_sight = perception_data.get("rival_spotted", False)
+        if has_rival_in_sight:
+            # Massive priority for attacking/chasing rivals
+            scores["attack"] += 250.0
+            scores["chase"] += 250.0
 
         # Team Coordination
         team_messages = perception_data.get("team_messages", [])

@@ -358,17 +358,18 @@ class Action:
         ))
 
     def _get_target(self, enemies: list[Any]) -> Any:
-        # Check for rivals first
-        my_memory = getattr(self.ball, "memory", {})
-        # Extract all rivals from memory
-        rivals = []
-        for e in enemies:
-            if hasattr(e, "id"):
-                rel_data = my_memory.get(e.id, {})
-                if rel_data.get("relation") == "rival":
-                    rivals.append(e)
-        if rivals:
-            return min(rivals, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+        # Check for rivals first - Rivalry skill: attacked me before -> attack on sight
+        memory_state = getattr(self.ball, "memory", {})
+        # Extract all remembered rivals
+        remembered_rivals = []
+        for enemy in enemies:
+            if hasattr(enemy, "id"):
+                relation_data = memory_state.get(enemy.id, {})
+                if relation_data.get("relation") == "rival":
+                    remembered_rivals.append(enemy)
+        if remembered_rivals:
+            # Attack on sight: prioritize the closest rival
+            return min(remembered_rivals, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
 
         target_msg = None
         allies = self._get_allies()
@@ -468,7 +469,8 @@ class Action:
                 if hasattr(self.world, "_deal_damage"):
                     self.world._deal_damage(self.ball, target)
                     if hasattr(target, "id") and hasattr(self.ball, "id"):
-                        # Rivalry memory update
+                        # Rivalry skill: attacked me before -> attack on sight
+                        # Update the target's memory to mark us as a rival
                         if not hasattr(target, "memory"):
                             target.memory = {}
                         target.memory[self.ball.id] = {"relation": "rival"}
@@ -607,7 +609,8 @@ class Action:
                     if hasattr(self.world, "_deal_damage"):
                         self.world._deal_damage(self.ball, target)
                         if hasattr(target, "id") and hasattr(self.ball, "id"):
-                            # Rivalry memory update
+                            # Rivalry skill: attacked me before -> attack on sight
+                            # Update the target's memory to mark us as a rival
                             if not hasattr(target, "memory"):
                                 target.memory = {}
                             target.memory[self.ball.id] = {"relation": "rival"}
@@ -664,7 +667,8 @@ class Action:
                     if attack_timer <= 0:
                         self.world._deal_damage(self.ball, target)
                         if hasattr(target, "id") and hasattr(self.ball, "id"):
-                            # Rivalry memory update
+                            # Rivalry skill: attacked me before -> attack on sight
+                            # Update the target's memory to mark us as a rival
                             if not hasattr(target, "memory"):
                                 target.memory = {}
                             target.memory[self.ball.id] = {"relation": "rival"}
@@ -841,7 +845,8 @@ class Action:
                     if hasattr(self.world, "_deal_damage"):
                         self.world._deal_damage(self.ball, target)
                         if hasattr(target, "id") and hasattr(self.ball, "id"):
-                            # Rivalry memory update
+                            # Rivalry skill: attacked me before -> attack on sight
+                            # Update the target's memory to mark us as a rival
                             if not hasattr(target, "memory"):
                                 target.memory = {}
                             target.memory[self.ball.id] = {"relation": "rival"}
@@ -1263,7 +1268,8 @@ class Action:
                     if hasattr(self.world, "_deal_damage"):
                         self.world._deal_damage(self.ball, target)
                         if hasattr(target, "id") and hasattr(self.ball, "id"):
-                            # Rivalry memory update
+                            # Rivalry skill: attacked me before -> attack on sight
+                            # Update the target's memory to mark us as a rival
                             if not hasattr(target, "memory"):
                                 target.memory = {}
                             target.memory[self.ball.id] = {"relation": "rival"}
