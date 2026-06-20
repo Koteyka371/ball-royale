@@ -21,8 +21,13 @@ class BattleRoyaleMode(GameMode):
         self.description = "Last man standing. Everyone for themselves."
 
     def setup(self, world: Any, balls: List[Any]) -> None:
-        for b in balls:
-            b.team = b.ball_type # Default behavior
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        for i, b in enumerate(valid_balls):
+            if i >= 20:
+                b.ball_type = "spectator"
+                b.alive = False
+            else:
+                b.team = b.ball_type # Default behavior
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]

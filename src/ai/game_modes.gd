@@ -19,8 +19,18 @@ class BattleRoyaleMode extends GameMode:
         description = "Last man standing. Everyone for themselves."
 
     func setup(world, balls: Array) -> void:
+        var valid_balls = []
         for b in balls:
-            b.team = b.ball_type
+            if b.ball_type != "spectator":
+                valid_balls.append(b)
+
+        for i in range(valid_balls.size()):
+            var b = valid_balls[i]
+            if i >= 20:
+                b.ball_type = "spectator"
+                b.alive = false
+            else:
+                b.team = b.ball_type
 
     func check_winner(world, balls: Array):
         var alive = []
