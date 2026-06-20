@@ -66,16 +66,21 @@ class Neural:
 
     def use_skill(self) -> bool:
         if self.skill_timer <= 0:
-            import numpy as np # type: ignore
+            import math
             self.skill_timer = self.SKILL_COOLDOWN
 
             # Predict next action using the simple neural net
-            inputs = np.array([self.get_hp_percent(), self.AGGRESSION, float(self.kills), self.skill_timer])
+            inputs = [self.get_hp_percent(), self.AGGRESSION, float(self.kills), self.skill_timer]
 
             # weights is (input_size, output_size), so input.dot(weights) + biases
-            outputs = np.dot(inputs, self.weights) + np.array(self.biases)
+            outputs = []
+            for j in range(self.output_size):
+                out = self.biases[j]
+                for i in range(self.input_size):
+                    out += inputs[i] * self.weights[i][j]
+                outputs.append(out)
 
-            action_idx = int(np.argmax(outputs))
+            action_idx = outputs.index(max(outputs))
             actions = ["attack", "flee", "idle"]
             self.current_action = actions[action_idx]
 

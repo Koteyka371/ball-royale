@@ -326,6 +326,41 @@ class ComebacksArena(ProceduralArena):
             hy = cy + 200 * math.sin(angle)
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=30.0, kind="lava", damage=40.0))
 
+class SwarmArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central massive room for swarm combat
+        self.rooms.append(Room(cx - 500, cy - 500, 1000, 1000))
+
+        # Four wide bases to spawn many entities
+        self.rooms.append(Room(50, 50, 300, 300))
+        self.rooms.append(Room(w - 350, 50, 300, 300))
+        self.rooms.append(Room(50, h - 350, 300, 300))
+        self.rooms.append(Room(w - 350, h - 350, 300, 300))
+
+        # Wide corridors to let swarms pass through efficiently
+        # Make them span the entire gap between the base and the central room
+        # Top-Left to Center
+        self.corridors.append(Corridor(150, 350, 200, cy - 500 - 350)) # Vertical segment going down
+        self.corridors.append(Corridor(350, 150, cx - 500 - 350, 200)) # Horizontal segment going right
+
+        # Top-Right to Center
+        self.corridors.append(Corridor(w - 350, 350, 200, cy - 500 - 350)) # Vertical going down
+        self.corridors.append(Corridor(cx + 500, 150, w - 350 - (cx + 500), 200)) # Horizontal going left
+
+        # Bottom-Left to Center
+        self.corridors.append(Corridor(150, cy + 500, 200, h - 350 - (cy + 500))) # Vertical going up
+        self.corridors.append(Corridor(350, h - 350, cx - 500 - 350, 200)) # Horizontal going right
+
+        # Bottom-Right to Center
+        self.corridors.append(Corridor(w - 350, cy + 500, 200, h - 350 - (cy + 500))) # Vertical going up
+        self.corridors.append(Corridor(cx + 500, h - 350, w - 350 - (cx + 500), 200)) # Horizontal going left
+
 ARENAS = {
     "buff_ally": BuffAllyArena,
     "retreat_to_ally": RetreatToAllyArena,
@@ -345,7 +380,8 @@ ARENAS = {
     "choke_point": ChokePointArena,
     "use_shield": UseShieldArena,
     "aggressive_chase": AggressiveChaseArena,
-    "comebacks": ComebacksArena
+    "comebacks": ComebacksArena,
+    "swarm": SwarmArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:

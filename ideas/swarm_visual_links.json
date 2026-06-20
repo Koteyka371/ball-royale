@@ -1,0 +1,4 @@
+{
+  "title": "Swarm Visual Tethers",
+  "description": "Add dynamic visual tethers (laser beams or particle trails) connecting balls that are actively engaging in swarm intelligence logic (like flanking or group attacking). This helps the player visually understand the boid-like coordination."
+}
