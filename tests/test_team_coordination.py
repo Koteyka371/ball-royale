@@ -9,6 +9,7 @@ class MockBall:
         self.skill_timer = 0
         self.hp = 100
         self.max_hp = 100
+        self.difficulty = "hard"
 
 def test_team_coordination_decision():
     world = None
