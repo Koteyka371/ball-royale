@@ -1,0 +1,4 @@
+{
+  "title": "Dynamic Weather Effects",
+  "description": "Introduce unpredictable weather conditions during battles, such as Fog (reduces perception radius for all balls), Rain (decreases movement speed and increases slide), and Thunderstorms (random lightning strikes that deal damage in small areas), forcing AI and players to dynamically adapt their strategies."
+}
