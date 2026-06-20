@@ -1,0 +1,4 @@
+{
+  "title": "Chain Healing Effect",
+  "description": "When a ball uses the 'heal_ally' skill, any other damaged allies within a close radius of the primary target also receive a minor fraction (e.g., 20%) of the healing amount. This creates a strategic advantage for grouping up defensively, rewarding players who keep their team formations tight during heavy attacks."
+}

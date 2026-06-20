@@ -1,3 +1,4 @@
+import math
 import random
 
 from arena.procedural_arena import ProceduralArena, Room, Hazard, Corridor
@@ -208,7 +209,43 @@ class UseShieldArena(ProceduralArena):
             damage = 20.0 if kind == "spikes" else 40.0
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=40.0, kind=kind, damage=damage))
 
+
+class HealAllyArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central room
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+
+        # 4 safe wards
+        self.rooms.append(Room(50, 50, 200, 200))
+        self.rooms.append(Room(w - 250, 50, 200, 200))
+        self.rooms.append(Room(50, h - 250, 200, 200))
+        self.rooms.append(Room(w - 250, h - 250, 200, 200))
+
+        # Corridors
+        self.corridors.append(Corridor(150, 250, 100, cy - 300 - 250 + 50)) # TL to center
+        self.corridors.append(Corridor(w - 250, 250, 100, cy - 300 - 250 + 50)) # TR to center
+        self.corridors.append(Corridor(150, cy + 300 - 50, 100, h - 250 - (cy + 300) + 50)) # BL to center
+        self.corridors.append(Corridor(w - 250, cy + 300 - 50, 100, h - 250 - (cy + 300) + 50)) # BR to center
+
+        # Hazards in central room
+        num_hazards = 12
+        radius = 150
+        for i in range(num_hazards):
+            angle = 2 * math.pi * i / num_hazards
+            hx = cx + radius * math.cos(angle)
+            hy = cy + radius * math.sin(angle)
+            kind = "spikes" if i % 2 == 0 else "lava"
+            damage = 20.0 if kind == "spikes" else 40.0
+            self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=30.0, kind=kind, damage=damage))
+
 ARENAS = {
+    "heal_ally": HealAllyArena,
     "procedural": ProceduralArena,
     "cross": CrossArena,
     "ring": RingArena,
