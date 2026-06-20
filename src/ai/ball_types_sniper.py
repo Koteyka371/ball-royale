@@ -50,34 +50,34 @@ class Sniper:
     def kite(self, delta: float, target=None) -> None:
         """Kite — держит дистанцию, атакует при приближении skill: для Sniper"""
         self.current_action = "kite"
-        if not target:
+        if target is None:
             return
 
-        x_diff = target.x - self.x
-        y_diff = target.y - self.y
-        distance = math.hypot(x_diff, y_diff)
+        dx = target.x - self.x
+        dy = target.y - self.y
+        dist = math.hypot(dx, dy)
 
-        if distance > 0.0001:
-            dir_x = x_diff / distance
-            dir_y = y_diff / distance
-            move_step = self.SPEED * delta * 60.0
+        if dist > 0.0001:
+            dir_x_norm = dx / dist
+            dir_y_norm = dy / dist
+            move_amt = self.SPEED * delta * 60.0
 
-            safe_distance = self.attack_range * 0.8
+            safe_dist = self.attack_range * 0.8
 
-            if distance > self.attack_range:
-                amount_to_move = min(move_step, distance - self.attack_range)
-                self.x += dir_x * amount_to_move
-                self.y += dir_y * amount_to_move
-            elif distance < safe_distance:
-                self.x -= dir_x * move_step
-                self.y -= dir_y * move_step
+            if dist > self.attack_range:
+                amt_to_move = min(move_amt, dist - self.attack_range)
+                self.x += dir_x_norm * amt_to_move
+                self.y += dir_y_norm * amt_to_move
+            elif dist < safe_dist:
+                self.x -= dir_x_norm * move_amt
+                self.y -= dir_y_norm * move_amt
 
-            updated_x_diff = target.x - self.x
-            updated_y_diff = target.y - self.y
-            updated_distance = math.hypot(updated_x_diff, updated_y_diff)
+            new_dx = target.x - self.x
+            new_dy = target.y - self.y
+            new_dist = math.hypot(new_dx, new_dy)
 
-            if updated_distance <= self.attack_range:
-                if updated_distance < safe_distance and self.skill_timer <= 0:
+            if new_dist <= self.attack_range:
+                if new_dist < safe_dist and self.skill_timer <= 0:
                     self.use_skill()
                 if getattr(self, 'attack_timer', 0.0) <= 0:
                     self.attack_timer = max(0.2, 2.0 / self.SPEED if self.SPEED > 0 else 1.0)

@@ -1,0 +1,4 @@
+{
+  "title": "Sniper Camouflage/Stealth Mode",
+  "description": "When the Sniper has not moved for 3 seconds, it enters a stealth mode, reducing its visual opacity and perception radius of enemies until it moves or attacks, giving it a tactical ambush advantage."
+}
