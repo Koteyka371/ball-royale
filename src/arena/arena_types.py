@@ -528,6 +528,54 @@ class BallRelationshipsArena(ProceduralArena):
         self.hazards.append(Hazard(id=2, x=cx - 150, y=cy + 150, radius=30.0, kind="lava", damage=20.0))
         self.hazards.append(Hazard(id=3, x=cx + 150, y=cy + 150, radius=30.0, kind="lava", damage=20.0))
 
+
+class BallGeneticsArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # DNA Double Helix layout
+        # Rooms (9 rooms representing base pairs and crossing)
+        self.rooms.append(Room(cx - 200, cy - 600, 100, 100)) # Top Left
+        self.rooms.append(Room(cx + 100, cy - 600, 100, 100)) # Top Right
+        self.rooms.append(Room(cx - 300, cy - 300, 150, 150)) # Upper Mid Left
+        self.rooms.append(Room(cx + 150, cy - 300, 150, 150)) # Upper Mid Right
+        self.rooms.append(Room(cx - 150, cy - 50, 300, 100)) # Center Crossing Room
+        self.rooms.append(Room(cx - 300, cy + 150, 150, 150)) # Lower Mid Left
+        self.rooms.append(Room(cx + 150, cy + 150, 150, 150)) # Lower Mid Right
+        self.rooms.append(Room(cx - 200, cy + 500, 100, 100)) # Bottom Left
+        self.rooms.append(Room(cx + 100, cy + 500, 100, 100)) # Bottom Right
+
+        # Corridors
+        # Horizontal connections (Base pairs)
+        self.corridors.append(Corridor(cx - 150, cy - 580, 300, 60)) # Top
+        self.corridors.append(Corridor(cx - 200, cy - 250, 400, 60)) # Upper mid
+        self.corridors.append(Corridor(cx - 200, cy + 190, 400, 60)) # Lower mid
+        self.corridors.append(Corridor(cx - 150, cy + 520, 300, 60)) # Bottom
+
+        # Vertical connections (Backbones)
+        # Left Strand
+        self.corridors.append(Corridor(cx - 180, cy - 550, 60, 300))
+        self.corridors.append(Corridor(cx - 200, cy - 200, 60, 200))
+        self.corridors.append(Corridor(cx - 200, cy, 60, 200))
+        self.corridors.append(Corridor(cx - 180, cy + 250, 60, 300))
+
+        # Right Strand
+        self.corridors.append(Corridor(cx + 120, cy - 550, 60, 300))
+        self.corridors.append(Corridor(cx + 140, cy - 200, 60, 200))
+        self.corridors.append(Corridor(cx + 140, cy, 60, 200))
+        self.corridors.append(Corridor(cx + 120, cy + 250, 60, 300))
+
+        # Hazards (Evolutionary pressure)
+        self.hazards.append(Hazard(id=0, x=cx - 150, y=cy - 220, radius=20.0, kind="lava", damage=10.0))
+        self.hazards.append(Hazard(id=1, x=cx + 150, y=cy - 220, radius=20.0, kind="lava", damage=10.0))
+        self.hazards.append(Hazard(id=2, x=cx, y=cy, radius=30.0, kind="lava", damage=15.0))
+        self.hazards.append(Hazard(id=3, x=cx - 150, y=cy + 220, radius=20.0, kind="lava", damage=10.0))
+        self.hazards.append(Hazard(id=4, x=cx + 150, y=cy + 220, radius=20.0, kind="lava", damage=10.0))
+
 ARENAS = {
     "reposition": RepositionArena,
     "avoid_trap": AvoidTrapArena,
@@ -554,7 +602,8 @@ ARENAS = {
     "comebacks": ComebacksArena,
     "circle_strafe": CircleStrafeArena,
     "epic_kills": EpicKillsArena,
-    "ball_relationships": BallRelationshipsArena
+    "ball_relationships": BallRelationshipsArena,
+    "ball_genetics": BallGeneticsArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
