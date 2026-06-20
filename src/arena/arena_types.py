@@ -326,7 +326,38 @@ class ComebacksArena(ProceduralArena):
             hy = cy + 200 * math.sin(angle)
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=30.0, kind="lava", damage=40.0))
 
+
+class GroupAttackArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central large room for the group clash
+        rw, rh = 600, 600
+        self.rooms.append(Room(cx - rw/2, cy - rh/2, rw, rh))
+
+        # 4 Corner rooms
+        cw, ch = 200, 200
+        self.rooms.append(Room(50, 50, cw, ch))
+        self.rooms.append(Room(w - 50 - cw, 50, cw, ch))
+        self.rooms.append(Room(50, h - 50 - ch, cw, ch))
+        self.rooms.append(Room(w - 50 - cw, h - 50 - ch, cw, ch))
+
+        # Corridors connecting corners to the central room
+        # Top-Left
+        self.corridors.append(Corridor(50 + cw - 50, 50 + ch/2 - 50, cx - rw/2 - (50 + cw - 50) + 100, 100))
+        # Top-Right
+        self.corridors.append(Corridor(cx + rw/2 - 50, 50 + ch/2 - 50, w - 50 - cw - (cx + rw/2) + 100, 100))
+        # Bottom-Left
+        self.corridors.append(Corridor(50 + cw/2 - 50, cy + rh/2 - 50, 100, h - 50 - ch - (cy + rh/2) + 100))
+        # Bottom-Right
+        self.corridors.append(Corridor(w - 50 - cw/2 - 50, cy + rh/2 - 50, 100, h - 50 - ch - (cy + rh/2) + 100))
+
 ARENAS = {
+    "group_attack": GroupAttackArena,
     "buff_ally": BuffAllyArena,
     "retreat_to_ally": RetreatToAllyArena,
     "procedural": ProceduralArena,
