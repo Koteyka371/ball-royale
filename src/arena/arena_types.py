@@ -208,6 +208,37 @@ class UseShieldArena(ProceduralArena):
             damage = 20.0 if kind == "spikes" else 40.0
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=40.0, kind=kind, damage=damage))
 
+class FleeArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central battle room
+        self.rooms.append(Room(cx - 200, cy - 200, 400, 400))
+
+        # Four safe edge rooms
+        self.rooms.append(Room(50, 50, 200, 200)) # Top-left
+        self.rooms.append(Room(w - 250, 50, 200, 200)) # Top-right
+        self.rooms.append(Room(50, h - 250, 200, 200)) # Bottom-left
+        self.rooms.append(Room(w - 250, h - 250, 200, 200)) # Bottom-right
+
+        # Four corridors connecting center to edge rooms
+        # Using L-shaped or straight corridors
+        self.corridors.append(Corridor(150, 250, 100, cy - 250 - 50)) # Top-left to center (vertical part)
+        self.corridors.append(Corridor(250, cy - 100, cx - 250 - 50, 100)) # Top-left to center (horizontal part)
+
+        self.corridors.append(Corridor(w - 250, 250, 100, cy - 250 - 50)) # Top-right to center (vertical part)
+        self.corridors.append(Corridor(cx + 200, cy - 100, w - 250 - cx - 200, 100)) # Top-right to center (horizontal part)
+
+        self.corridors.append(Corridor(150, cy + 100, 100, h - 250 - cy - 100)) # Bottom-left to center (vertical part)
+        self.corridors.append(Corridor(250, cy + 100, cx - 250 - 50, 100)) # Bottom-left to center (horizontal part)
+
+        self.corridors.append(Corridor(w - 250, cy + 100, 100, h - 250 - cy - 100)) # Bottom-right to center (vertical part)
+        self.corridors.append(Corridor(cx + 200, cy + 100, w - 250 - cx - 200, 100)) # Bottom-right to center (horizontal part)
+
 ARENAS = {
     "procedural": ProceduralArena,
     "cross": CrossArena,
@@ -223,7 +254,8 @@ ARENAS = {
     "split": SplitArena,
     "flank": FlankArena,
     "choke_point": ChokePointArena,
-    "use_shield": UseShieldArena
+    "use_shield": UseShieldArena,
+    "flee": FleeArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:

@@ -1,0 +1,4 @@
+{
+    "title": "King vs King match type",
+    "description": "A match type where each team has one King ball and a swarm of supportive balls. If a team's King is killed, all other balls on that team automatically explode."
+}
