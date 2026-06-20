@@ -1,6 +1,5 @@
 import sys
 import os
-import math
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
@@ -30,7 +29,7 @@ def test_ninja_initialization():
     assert ball.PERCEPTION_RADIUS == 350
     assert ball.AGGRESSION == 0.8
     assert ball.COLOR == "black"
-    assert ball.SKILL == "stealth"
+    assert ball.SKILL == "flank"
     assert ball.SKILL_COOLDOWN == 4.0
     assert ball.ATTACK_RANGE == 21.0
 
