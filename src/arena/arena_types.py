@@ -376,7 +376,43 @@ class KiteArena(ProceduralArena):
         self.hazards.append(Hazard(id=2, x=300, y=cy, radius=50.0, kind="lava", damage=10.0))
         self.hazards.append(Hazard(id=3, x=w-300, y=cy, radius=50.0, kind="lava", damage=10.0))
 
+class NeuralArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        node_size = 200
+
+        layer_x = [w * 0.15, w * 0.5, w * 0.85]
+        nodes = [
+            [h * 0.2, h * 0.5, h * 0.8],
+            [h * 0.15, h * 0.38, h * 0.62, h * 0.85],
+            [h * 0.35, h * 0.65]
+        ]
+
+        for i, layer in enumerate(nodes):
+            cx = layer_x[i]
+            for cy in layer:
+                self.rooms.append(Room(cx - node_size/2, cy - node_size/2, node_size, node_size))
+
+        bus1_x = layer_x[0] + (layer_x[1] - layer_x[0]) / 2
+        bus2_x = layer_x[1] + (layer_x[2] - layer_x[1]) / 2
+        bus_w = 60
+
+        self.corridors.append(Corridor(bus1_x - bus_w/2, h * 0.1, bus_w, h * 0.8))
+        self.corridors.append(Corridor(bus2_x - bus_w/2, h * 0.1, bus_w, h * 0.8))
+
+        for cy in nodes[0]:
+            self.corridors.append(Corridor(layer_x[0] + node_size/2 - 20, cy - 30, bus1_x - layer_x[0] - node_size/2 + 40, 60))
+        for cy in nodes[1]:
+            self.corridors.append(Corridor(bus1_x - 20, cy - 30, layer_x[1] - node_size/2 - bus1_x + 40, 60))
+            self.corridors.append(Corridor(layer_x[1] + node_size/2 - 20, cy - 30, bus2_x - layer_x[1] - node_size/2 + 40, 60))
+        for cy in nodes[2]:
+            self.corridors.append(Corridor(bus2_x - 20, cy - 30, layer_x[2] - node_size/2 - bus2_x + 40, 60))
+
 ARENAS = {
+    "neural": NeuralArena,
     "kite": KiteArena,
     "buff_ally": BuffAllyArena,
     "retreat_to_ally": RetreatToAllyArena,

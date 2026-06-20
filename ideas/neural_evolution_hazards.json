@@ -1,0 +1,4 @@
+{
+  "title": "Neural Evolution Hazards",
+  "description": "Hazards that dynamically learn player patterns using a simple neural network, positioning themselves where balls are most likely to flee or heal."
+}
