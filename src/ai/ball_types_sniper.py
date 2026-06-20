@@ -53,34 +53,34 @@ class Sniper:
         if target is None:
             return
 
-        dx = target.x - self.x
-        dy = target.y - self.y
-        dist = math.hypot(dx, dy)
+        dx_target = target.x - self.x
+        dy_target = target.y - self.y
+        distance_val = math.hypot(dx_target, dy_target)
 
-        if dist > 0.0001:
-            nx = dx / dist
-            ny = dy / dist
-            step = self.SPEED * delta * 60.0
+        if distance_val > 0.0001:
+            dir_x = dx_target / distance_val
+            dir_y = dy_target / distance_val
+            move_step = self.SPEED * delta * 60.0
 
             # Maintain distance logic
-            if dist > self.attack_range:
+            if distance_val > self.attack_range:
                 # Move closer if too far
-                move_dist = min(step, dist - self.attack_range)
-                self.x += nx * move_dist
-                self.y += ny * move_dist
-            elif dist < self.attack_range * 0.8:
+                approach_dist = min(move_step, distance_val - self.attack_range)
+                self.x += dir_x * approach_dist
+                self.y += dir_y * approach_dist
+            elif distance_val < self.attack_range * 0.8:
                 # Retreat if too close
-                self.x -= nx * step
-                self.y -= ny * step
+                self.x -= dir_x * move_step
+                self.y -= dir_y * move_step
 
             # Update distance post-movement
-            new_dx = target.x - self.x
-            new_dy = target.y - self.y
-            new_dist = math.hypot(new_dx, new_dy)
+            new_dx_target = target.x - self.x
+            new_dy_target = target.y - self.y
+            new_distance_val = math.hypot(new_dx_target, new_dy_target)
 
             # Attack logic when in range
-            if new_dist <= self.attack_range:
-                if new_dist < self.attack_range * 0.8 and self.skill_timer <= 0:
+            if new_distance_val <= self.attack_range:
+                if new_distance_val < self.attack_range * 0.8 and self.skill_timer <= 0:
                     self.use_skill()
                 if getattr(self, 'attack_timer', 0.0) <= 0:
                     self.attack_timer = max(0.2, 2.0 / self.SPEED if self.SPEED > 0 else 1.0)

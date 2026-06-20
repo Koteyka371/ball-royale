@@ -1,0 +1,4 @@
+{
+    "title": "Stealth Mode / Ambush Mechanic",
+    "description": "Introduce a new game mechanic where balls can enter a 'stealth' mode using terrain or specific skills. While in stealth, they are invisible to the perception logic of other balls unless those balls have a high 'perception_radius' or specific anti-stealth traits. This encourages ambush behaviors where a ball waits for enemies to get close before striking, significantly expanding strategic depth."
+}

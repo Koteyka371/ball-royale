@@ -163,11 +163,11 @@ func _apply_boid_rules(nx: float, ny: float) -> Array:
     for ally in allies:
         var dx = self.ball.x - ally.x
         var dy = self.ball.y - ally.y
-        var dist_sq = dx*dx + dy*dy
+        var distance_sq = dx*dx + dy*dy
 
-        if dist_sq > 0.0001 and dist_sq < perception_radius * perception_radius:
+        if distance_sq > 0.0001 and distance_sq < perception_radius * perception_radius:
             count += 1
-            var dist = sqrt(dist_sq)
+            var dist = sqrt(distance_sq)
 
             center_x += ally.x
             center_y += ally.y
@@ -194,11 +194,11 @@ func _apply_boid_rules(nx: float, ny: float) -> Array:
 
         var coh_dx = center_x - self.ball.x
         var coh_dy = center_y - self.ball.y
-        var coh_dist_sq = coh_dx*coh_dx + coh_dy*coh_dy
+        var coh_distance_sq = coh_dx*coh_dx + coh_dy*coh_dy
         var coh_nx = 0.0
         var coh_ny = 0.0
-        if coh_dist_sq > 0.0001:
-            var coh_dist = sqrt(coh_dist_sq)
+        if coh_distance_sq > 0.0001:
+            var coh_dist = sqrt(coh_distance_sq)
             coh_nx = coh_dx / coh_dist
             coh_ny = coh_dy / coh_dist
 
@@ -215,9 +215,9 @@ func _apply_boid_rules(nx: float, ny: float) -> Array:
         var comb_nx = nx + coh_nx * cohesion_weight + al_nx * alignment_weight + sep_nx * separation_weight
         var comb_ny = ny + coh_ny * cohesion_weight + al_ny * alignment_weight + sep_ny * separation_weight
 
-        var comb_dist_sq = comb_nx*comb_nx + comb_ny*comb_ny
-        if comb_dist_sq > 0.0001:
-            var comb_dist = sqrt(comb_dist_sq)
+        var comb_distance_sq = comb_nx*comb_nx + comb_ny*comb_ny
+        if comb_distance_sq > 0.0001:
+            var comb_dist = sqrt(comb_distance_sq)
             return [comb_nx / comb_dist, comb_ny / comb_dist]
 
     return [nx, ny]
@@ -284,11 +284,11 @@ func _apply_obstacle_avoidance(nx: float, ny: float, target=null, ignore_enemies
 
         var dx = self.ball.x - entity.x
         var dy = self.ball.y - entity.y
-        var dist_sq = dx*dx + dy*dy
+        var distance_sq = dx*dx + dy*dy
 
         var safe_dist = ball_radius + entity_radius + 5.0
-        if dist_sq > 0.0001 and dist_sq < safe_dist * safe_dist:
-            var dist = sqrt(dist_sq)
+        if distance_sq > 0.0001 and distance_sq < safe_dist * safe_dist:
+            var dist = sqrt(distance_sq)
             var force = 1.0 - (dist / safe_dist)
             repulse_nx += (dx / dist) * force
             repulse_ny += (dy / dist) * force
@@ -296,9 +296,9 @@ func _apply_obstacle_avoidance(nx: float, ny: float, target=null, ignore_enemies
     var comb_nx = nx + repulse_nx * 0.5
     var comb_ny = ny + repulse_ny * 0.5
 
-    var comb_dist_sq = comb_nx*comb_nx + comb_ny*comb_ny
-    if comb_dist_sq > 0.0001:
-        var comb_dist = sqrt(comb_dist_sq)
+    var comb_distance_sq = comb_nx*comb_nx + comb_ny*comb_ny
+    if comb_distance_sq > 0.0001:
+        var comb_dist = sqrt(comb_distance_sq)
         return [comb_nx / comb_dist, comb_ny / comb_dist]
     return [nx, ny]
 
@@ -376,19 +376,19 @@ func _flee(delta: float):
         return
 
     var nearest = null
-    var min_dist_sq = INF
+    var min_distance_sq = INF
     for e in enemies:
-        var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
-        if dist_sq < min_dist_sq:
-            min_dist_sq = dist_sq
+        var distance_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+        if distance_sq < min_distance_sq:
+            min_distance_sq = distance_sq
             nearest = e
 
     var dx = self.ball.x - nearest.x
     var dy = self.ball.y - nearest.y
-    var dist_sq = dx*dx + dy*dy
+    var distance_sq = dx*dx + dy*dy
     var dist = 0.01
-    if dist_sq > 0.0001:
-        dist = sqrt(dist_sq)
+    if distance_sq > 0.0001:
+        dist = sqrt(distance_sq)
 
     var perception_radius = 250.0
     if "perception_radius" in self.ball:
@@ -410,18 +410,18 @@ func _flee(delta: float):
 
     if allies.size() > 0:
         var nearest_ally = null
-        var min_adist_sq = INF
+        var min_adistance_sq = INF
         for a in allies:
-            var adist_sq = pow(a.x - self.ball.x, 2) + pow(a.y - self.ball.y, 2)
-            if adist_sq < min_adist_sq:
-                min_adist_sq = adist_sq
+            var adistance_sq = pow(a.x - self.ball.x, 2) + pow(a.y - self.ball.y, 2)
+            if adistance_sq < min_adistance_sq:
+                min_adistance_sq = adistance_sq
                 nearest_ally = a
 
         var adx = nearest_ally.x - self.ball.x
         var ady = nearest_ally.y - self.ball.y
-        var adist_sq = adx*adx + ady*ady
-        if adist_sq > 0.0001:
-            var adist = sqrt(adist_sq)
+        var adistance_sq = adx*adx + ady*ady
+        if adistance_sq > 0.0001:
+            var adist = sqrt(adistance_sq)
             ally_nx = adx / adist
             ally_ny = ady / adist
 
@@ -432,10 +432,10 @@ func _flee(delta: float):
         var center_y = self.world.height / 2.0
         var cdx = center_x - self.ball.x
         var cdy = center_y - self.ball.y
-        var cdist_sq = cdx*cdx + cdy*cdy
+        var cdistance_sq = cdx*cdx + cdy*cdy
 
-        if cdist_sq > 0.0001:
-            var cdist = sqrt(cdist_sq)
+        if cdistance_sq > 0.0001:
+            var cdist = sqrt(cdistance_sq)
             var min_center_dim = center_x
             if center_y < center_x:
                 min_center_dim = center_y
@@ -447,9 +447,9 @@ func _flee(delta: float):
     var comb_nx = flee_nx * 1.0 + ally_nx * 0.4 + safe_nx * 0.3
     var comb_ny = flee_ny * 1.0 + ally_ny * 0.4 + safe_ny * 0.3
 
-    var comb_dist_sq = comb_nx*comb_nx + comb_ny*comb_ny
-    if comb_dist_sq > 0.0001:
-        var comb_dist = sqrt(comb_dist_sq)
+    var comb_distance_sq = comb_nx*comb_nx + comb_ny*comb_ny
+    if comb_distance_sq > 0.0001:
+        var comb_dist = sqrt(comb_distance_sq)
         comb_nx /= comb_dist
         comb_ny /= comb_dist
     else:
@@ -479,7 +479,7 @@ func _flee(delta: float):
 func _get_strongest_enemy(enemies: Array) -> Object:
     var best_max_hp = -1.0
     var best_current_hp = -1.0
-    var best_dist_sq = INF
+    var best_distance_sq = INF
     var best_id = -1
     var target = null
 
@@ -498,21 +498,21 @@ func _get_strongest_enemy(enemies: Array) -> Object:
         if e_max_hp > best_max_hp:
             best_max_hp = e_max_hp
             best_current_hp = e_hp
-            best_dist_sq = d_sq
+            best_distance_sq = d_sq
             best_id = e_id
             target = e
         elif e_max_hp == best_max_hp:
             if e_hp > best_current_hp:
                 best_current_hp = e_hp
-                best_dist_sq = d_sq
+                best_distance_sq = d_sq
                 best_id = e_id
                 target = e
             elif e_hp == best_current_hp:
-                if d_sq < best_dist_sq:
-                    best_dist_sq = d_sq
+                if d_sq < best_distance_sq:
+                    best_distance_sq = d_sq
                     best_id = e_id
                     target = e
-                elif d_sq == best_dist_sq:
+                elif d_sq == best_distance_sq:
                     if e_id > best_id:
                         best_id = e_id
                         target = e
@@ -535,11 +535,11 @@ func _get_target(enemies: Array) -> Object:
 
     if rivals.size() > 0:
         var best_rival = null
-        var best_dist_sq = INF
+        var best_distance_sq = INF
         for r in rivals:
             var d_sq = pow(r.x - self.ball.x, 2) + pow(r.y - self.ball.y, 2)
-            if d_sq < best_dist_sq:
-                best_dist_sq = d_sq
+            if d_sq < best_distance_sq:
+                best_distance_sq = d_sq
                 best_rival = r
         return best_rival
 
@@ -554,15 +554,15 @@ func _get_target(enemies: Array) -> Object:
             break
 
     var target = null
-    var min_dist_sq = INF
+    var min_distance_sq = INF
 
     if target_msg != null:
         var tx = target_msg.get("x", self.ball.x)
         var ty = target_msg.get("y", self.ball.y)
         for e in enemies:
-            var dist_sq = pow(e.x - tx, 2) + pow(e.y - ty, 2)
-            if dist_sq < min_dist_sq:
-                min_dist_sq = dist_sq
+            var distance_sq = pow(e.x - tx, 2) + pow(e.y - ty, 2)
+            if distance_sq < min_distance_sq:
+                min_distance_sq = distance_sq
                 target = e
     else:
         var b_type = ""
@@ -572,22 +572,22 @@ func _get_target(enemies: Array) -> Object:
             target = _get_strongest_enemy(enemies)
         elif b_type == "bomber":
             var max_crowd = -1
-            var min_dist_sq_bomber = INF
+            var min_distance_sq_bomber = INF
             for e1 in enemies:
                 var crowd = 0
                 for e2 in enemies:
                     if e1 != e2 and pow(e1.x - e2.x, 2) + pow(e1.y - e2.y, 2) <= 1600.0:
                         crowd += 1
-                var dist_sq = pow(e1.x - self.ball.x, 2) + pow(e1.y - self.ball.y, 2)
-                if crowd > max_crowd or (crowd == max_crowd and dist_sq < min_dist_sq_bomber):
+                var distance_sq = pow(e1.x - self.ball.x, 2) + pow(e1.y - self.ball.y, 2)
+                if crowd > max_crowd or (crowd == max_crowd and distance_sq < min_distance_sq_bomber):
                     max_crowd = crowd
-                    min_dist_sq_bomber = dist_sq
+                    min_distance_sq_bomber = distance_sq
                     target = e1
         else:
             for e in enemies:
-                var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
-                if dist_sq < min_dist_sq:
-                    min_dist_sq = dist_sq
+                var distance_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                if distance_sq < min_distance_sq:
+                    min_distance_sq = distance_sq
                     target = e
 
     return target
@@ -613,10 +613,10 @@ func _group_attack(delta: float):
 
         var dx = target.x - self.ball.x
         var dy = target.y - self.ball.y
-        var dist_sq = dx * dx + dy * dy
+        var distance_sq = dx * dx + dy * dy
 
-        if dist_sq > 0.0001:
-            var dist = sqrt(dist_sq)
+        if distance_sq > 0.0001:
+            var dist = sqrt(distance_sq)
             var nx = dx / dist
             var ny = dy / dist
 
@@ -633,9 +633,9 @@ func _group_attack(delta: float):
 
                 var cdx = cohesion_x - self.ball.x
                 var cdy = cohesion_y - self.ball.y
-                var cdist_sq = cdx * cdx + cdy * cdy
-                if cdist_sq > 0.0001:
-                    var cdist = sqrt(cdist_sq)
+                var cdistance_sq = cdx * cdx + cdy * cdy
+                if cdistance_sq > 0.0001:
+                    var cdist = sqrt(cdistance_sq)
                     var cnx = cdx / cdist
                     var cny = cdy / cdist
 
@@ -643,9 +643,9 @@ func _group_attack(delta: float):
                     nx = nx * 0.6 + cnx * 0.4
                     ny = ny * 0.6 + cny * 0.4
 
-                    var ndist_sq = nx * nx + ny * ny
-                    if ndist_sq > 0.0001:
-                        var ndist = sqrt(ndist_sq)
+                    var ndistance_sq = nx * nx + ny * ny
+                    if ndistance_sq > 0.0001:
+                        var ndist = sqrt(ndistance_sq)
                         nx /= ndist
                         ny /= ndist
 
@@ -673,9 +673,9 @@ func _group_attack(delta: float):
         # Recalculate distance
         dx = target.x - self.ball.x
         dy = target.y - self.ball.y
-        dist_sq = dx * dx + dy * dy
+        distance_sq = dx * dx + dy * dy
         var dist = 0.0
-        if dist_sq > 0.0001: dist = sqrt(dist_sq)
+        if distance_sq > 0.0001: dist = sqrt(distance_sq)
 
         var target_radius = 10.0
         if "radius" in target: target_radius = float(target.radius)
@@ -762,9 +762,9 @@ func _flank(delta: float):
                 target_vx = 1.0
                 target_vy = 0.0
         else:
-            var v_dist_sq = target_vx*target_vx + target_vy*target_vy
-            if v_dist_sq > 0.0001:
-                var v_dist = sqrt(v_dist_sq)
+            var v_distance_sq = target_vx*target_vx + target_vy*target_vy
+            if v_distance_sq > 0.0001:
+                var v_dist = sqrt(v_distance_sq)
                 target_vx /= v_dist
                 target_vy /= v_dist
 
@@ -776,13 +776,13 @@ func _flank(delta: float):
 
         var dx = flank_x - self.ball.x
         var dy = flank_y - self.ball.y
-        var dist_sq = dx*dx + dy*dy
+        var distance_sq = dx*dx + dy*dy
 
         var speed = 2.0
         if "speed" in self.ball: speed = self.ball.speed
 
-        if dist_sq > 0.0001:
-            var dist = sqrt(dist_sq)
+        if distance_sq > 0.0001:
+            var dist = sqrt(distance_sq)
             var nx = dx / dist
             var ny = dy / dist
 
@@ -801,10 +801,10 @@ func _flank(delta: float):
 
         var direct_dx = target.x - self.ball.x
         var direct_dy = target.y - self.ball.y
-        var direct_dist_sq = direct_dx*direct_dx + direct_dy*direct_dy
+        var direct_distance_sq = direct_dx*direct_dx + direct_dy*direct_dy
         var direct_dist = 0.0
-        if direct_dist_sq > 0.0001:
-            direct_dist = sqrt(direct_dist_sq)
+        if direct_distance_sq > 0.0001:
+            direct_dist = sqrt(direct_distance_sq)
 
         var target_radius = 10.0
         if "radius" in target: target_radius = target.radius
@@ -960,9 +960,9 @@ func _chase(delta: float):
                 var tvy = 0.0
                 if "vx" in target: tvx = target.vx
                 if "vy" in target: tvy = target.vy
-                var tv_dist_sq = tvx*tvx + tvy*tvy
-                if tv_dist_sq > 0.0001:
-                    var tv_dist = sqrt(tv_dist_sq)
+                var tv_distance_sq = tvx*tvx + tvy*tvy
+                if tv_distance_sq > 0.0001:
+                    var tv_dist = sqrt(tv_distance_sq)
                     var back_x = target.x - (tvx / tv_dist) * (target_radius + ball_radius + 5.0)
                     var back_y = target.y - (tvy / tv_dist) * (target_radius + ball_radius + 5.0)
                     var bdx = back_x - self.ball.x
@@ -1036,10 +1036,10 @@ func _attack(delta: float):
 
         var dx = target.x - self.ball.x
         var dy = target.y - self.ball.y
-        var dist_sq = dx*dx + dy*dy
+        var distance_sq = dx*dx + dy*dy
         var dist = 0.0
-        if dist_sq > 0.0001:
-            dist = sqrt(dist_sq)
+        if distance_sq > 0.0001:
+            dist = sqrt(distance_sq)
 
         var speed = 2.0
         if "speed" in self.ball: speed = self.ball.speed
@@ -1065,9 +1065,9 @@ func _attack(delta: float):
             var tvy = 0.0
             if "vx" in target: tvx = target.vx
             if "vy" in target: tvy = target.vy
-            var tv_dist_sq = tvx*tvx + tvy*tvy
-            if tv_dist_sq > 0.0001:
-                var tv_dist = sqrt(tv_dist_sq)
+            var tv_distance_sq = tvx*tvx + tvy*tvy
+            if tv_distance_sq > 0.0001:
+                var tv_dist = sqrt(tv_distance_sq)
                 var back_x = target.x - (tvx / tv_dist) * (target_radius + ball_radius + 5.0)
                 var back_y = target.y - (tvy / tv_dist) * (target_radius + ball_radius + 5.0)
                 var bdx = back_x - self.ball.x
@@ -1077,11 +1077,11 @@ func _attack(delta: float):
                     nx = bdx / b_dist
                     ny = bdy / b_dist
 
-        if nx == 0.0 and ny == 0.0 and dist_sq > 0.0001:
+        if nx == 0.0 and ny == 0.0 and distance_sq > 0.0001:
             nx = dx / dist
             ny = dy / dist
 
-        if dist_sq > 0.0001:
+        if distance_sq > 0.0001:
             if nx != 0.0 or ny != 0.0:
                 var avoid_vec = _apply_obstacle_avoidance(nx, ny, target)
                 nx = avoid_vec[0]
@@ -1098,9 +1098,9 @@ func _attack(delta: float):
         # Recalculate distance after movement
         dx = target.x - self.ball.x
         dy = target.y - self.ball.y
-        dist_sq = dx*dx + dy*dy
-        if dist_sq > 0.0001:
-            dist = sqrt(dist_sq)
+        distance_sq = dx*dx + dy*dy
+        if distance_sq > 0.0001:
+            dist = sqrt(distance_sq)
         else:
             dist = 0.0
 
@@ -1195,17 +1195,17 @@ func _attack(delta: float):
                     var tvy = 0.0
                     if "vx" in target: tvx = float(target.vx)
                     if "vy" in target: tvy = float(target.vy)
-                    var tv_dist_sq = tvx * tvx + tvy * tvy
-                    if tv_dist_sq > 0.0001:
-                        var tv_dist = sqrt(tv_dist_sq)
+                    var tv_distance_sq = tvx * tvx + tvy * tvy
+                    if tv_distance_sq > 0.0001:
+                        var tv_dist = sqrt(tv_distance_sq)
                         var tnx = tvx / tv_dist
                         var tny = tvy / tv_dist
 
                         var adx = float(target.x) - float(self.ball.x)
                         var ady = float(target.y) - float(self.ball.y)
-                        var adist_sq = adx * adx + ady * ady
-                        if adist_sq > 0.0001:
-                            var adist = sqrt(adist_sq)
+                        var adistance_sq = adx * adx + ady * ady
+                        if adistance_sq > 0.0001:
+                            var adist = sqrt(adistance_sq)
                             var anx = adx / adist
                             var any = ady / adist
 
@@ -1300,16 +1300,16 @@ func _defend(delta: float):
                 target = _get_strongest_enemy(enemies)
             else:
                 for e in enemies:
-                    var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
-                    if dist_sq < min_dist_sq:
-                        min_dist_sq = dist_sq
+                    var distance_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                    if distance_sq < min_distance_sq:
+                        min_distance_sq = distance_sq
                         target = e
 
             var dx = target.x - self.ball.x
             var dy = target.y - self.ball.y
-            var dist_sq = dx*dx + dy*dy
-            if dist_sq > 0.0001:
-                var dist = sqrt(dist_sq)
+            var distance_sq = dx*dx + dy*dy
+            if distance_sq > 0.0001:
+                var dist = sqrt(distance_sq)
                 var nx = dx / dist
                 var ny = dy / dist
                 var avoid_vec = _apply_obstacle_avoidance(nx, ny, target)
@@ -1323,10 +1323,10 @@ func _defend(delta: float):
 
             dx = target.x - self.ball.x
             dy = target.y - self.ball.y
-            dist_sq = dx*dx + dy*dy
+            distance_sq = dx*dx + dy*dy
             var dist_after = 0.0
-            if dist_sq > 0.0001:
-                dist_after = sqrt(dist_sq)
+            if distance_sq > 0.0001:
+                dist_after = sqrt(distance_sq)
 
             var target_radius = 10.0
             if "radius" in target: target_radius = target.radius
@@ -1388,9 +1388,9 @@ func _defend(delta: float):
         if target_ally != null:
             var dx = target_ally.x - self.ball.x
             var dy = target_ally.y - self.ball.y
-            var dist_sq = dx*dx + dy*dy
-            if dist_sq > 0.0001:
-                var dist = sqrt(dist_sq)
+            var distance_sq = dx*dx + dy*dy
+            if distance_sq > 0.0001:
+                var dist = sqrt(distance_sq)
                 var nx = dx / dist
                 var ny = dy / dist
                 var avoid_vec = _apply_obstacle_avoidance(nx, ny, target_ally)
@@ -1404,10 +1404,10 @@ func _defend(delta: float):
 
             dx = target.x - self.ball.x
             dy = target.y - self.ball.y
-            dist_sq = dx*dx + dy*dy
+            distance_sq = dx*dx + dy*dy
             var dist_after = 0.0
-            if dist_sq > 0.0001:
-                dist_after = sqrt(dist_sq)
+            if distance_sq > 0.0001:
+                dist_after = sqrt(distance_sq)
 
             var target_radius = 10.0
             if "radius" in target: target_radius = target.radius
@@ -1467,9 +1467,9 @@ func _collect_booster(delta: float):
             var nearest_enemy = null
             var min_dist_enemy_sq = INF
             for e in enemies:
-                var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
-                if dist_sq < min_dist_enemy_sq:
-                    min_dist_enemy_sq = dist_sq
+                var distance_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                if distance_sq < min_dist_enemy_sq:
+                    min_dist_enemy_sq = distance_sq
                     nearest_enemy = e
 
             var enemy_radius = 10.0
@@ -1482,24 +1482,24 @@ func _collect_booster(delta: float):
                     return
 
         var nearest = null
-        var min_dist_sq = INF
+        var min_distance_sq = INF
         for b in boosters:
-            var dist_sq = pow(b.x - self.ball.x, 2) + pow(b.y - self.ball.y, 2)
-            if dist_sq < min_dist_sq:
-                min_dist_sq = dist_sq
+            var distance_sq = pow(b.x - self.ball.x, 2) + pow(b.y - self.ball.y, 2)
+            if distance_sq < min_distance_sq:
+                min_distance_sq = distance_sq
                 nearest = b
 
         var dx = nearest.x - self.ball.x
         var dy = nearest.y - self.ball.y
-        var dist_sq = dx*dx + dy*dy
+        var distance_sq = dx*dx + dy*dy
         var dist = 0.0
-        if dist_sq > 0.0001:
-            dist = sqrt(dist_sq)
+        if distance_sq > 0.0001:
+            dist = sqrt(distance_sq)
 
         var speed = 2.0
         if "speed" in self.ball: speed = self.ball.speed
 
-        if dist_sq > 0.0001:
+        if distance_sq > 0.0001:
             var nx = dx / dist
             var ny = dy / dist
             var avoid_vec = _apply_obstacle_avoidance(nx, ny, nearest, true)
@@ -1517,9 +1517,9 @@ func _collect_booster(delta: float):
         # Recalculate distance after movement
         dx = nearest.x - self.ball.x
         dy = nearest.y - self.ball.y
-        dist_sq = dx*dx + dy*dy
-        if dist_sq > 0.0001:
-            dist = sqrt(dist_sq)
+        distance_sq = dx*dx + dy*dy
+        if distance_sq > 0.0001:
+            dist = sqrt(distance_sq)
         else:
             dist = 0.0
 
@@ -1628,9 +1628,9 @@ func _idle(delta: float):
     if "speed" in self.ball: speed = self.ball.speed
     var nx = randf_range(-1.0, 1.0)
     var ny = randf_range(-1.0, 1.0)
-    var dist_sq = nx*nx + ny*ny
-    if dist_sq > 0.0001:
-        var dist = sqrt(dist_sq)
+    var distance_sq = nx*nx + ny*ny
+    if distance_sq > 0.0001:
+        var dist = sqrt(distance_sq)
         nx /= dist
         ny /= dist
     else:
@@ -1701,10 +1701,10 @@ func _resolve_collisions() -> bool:
         if "radius" in other: other_radius = other.radius
         var dx = self.ball.x - other.x
         var dy = self.ball.y - other.y
-        var dist_sq = dx * dx + dy * dy
+        var distance_sq = dx * dx + dy * dy
         var min_dist = ball_radius + other_radius
-        if dist_sq < min_dist * min_dist and dist_sq > 0.0001:
-            var dist = sqrt(dist_sq)
+        if distance_sq < min_dist * min_dist and distance_sq > 0.0001:
+            var dist = sqrt(distance_sq)
             var overlap = min_dist - dist
             var nx = dx / dist
             var ny = dy / dist
@@ -1735,9 +1735,9 @@ func _trigger_ripple_effect():
             continue
         var dx = other.x - self.ball.x
         var dy = other.y - self.ball.y
-        var dist_sq = dx * dx + dy * dy
-        if dist_sq > 0.0001 and dist_sq < ripple_radius * ripple_radius:
-            var dist = sqrt(dist_sq)
+        var distance_sq = dx * dx + dy * dy
+        if distance_sq > 0.0001 and distance_sq < ripple_radius * ripple_radius:
+            var dist = sqrt(distance_sq)
             var nx = dx / dist
             var ny = dy / dist
             var push_strength = (ripple_radius - dist) / ripple_radius * speed * 2.0
@@ -1796,21 +1796,21 @@ func _kite(delta: float):
                 break
 
         var target = null
-        var min_dist_sq = INF
+        var min_distance_sq = INF
 
         if target_msg != null:
             var tx = target_msg.get("x", self.ball.x)
             var ty = target_msg.get("y", self.ball.y)
             for e in enemies:
-                var dist_sq = pow(e.x - tx, 2) + pow(e.y - ty, 2)
-                if dist_sq < min_dist_sq:
-                    min_dist_sq = dist_sq
+                var distance_sq = pow(e.x - tx, 2) + pow(e.y - ty, 2)
+                if distance_sq < min_distance_sq:
+                    min_distance_sq = distance_sq
                     target = e
         else:
             for e in enemies:
-                var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
-                if dist_sq < min_dist_sq:
-                    min_dist_sq = dist_sq
+                var distance_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                if distance_sq < min_distance_sq:
+                    min_distance_sq = distance_sq
                     target = e
 
         var has_msg = false
@@ -1819,66 +1819,66 @@ func _kite(delta: float):
         if not has_msg and self.ball.has_method("set_meta"):
             self.ball.set_meta("team_message", {"type": "target_spotted", "x": target.x, "y": target.y})
 
-        var dx = target.x - self.ball.x
-        var dy = target.y - self.ball.y
-        var dist_sq = dx*dx + dy*dy
-        var dist = 0.0
-        if dist_sq > 0.0001:
-            dist = sqrt(dist_sq)
+        var dx_target = target.x - self.ball.x
+        var dy_target = target.y - self.ball.y
+        var distance_sq = dx_target*dx_target + dy_target*dy_target
+        var distance_val = 0.0
+        if distance_sq > 0.0001:
+            distance_val = sqrt(distance_sq)
 
         var speed = 2.0
         if "speed" in self.ball: speed = self.ball.speed
 
-        var attack_range = 150.0
-        if "attack_range" in self.ball: attack_range = self.ball.attack_range
+        var optimal_range = 150.0
+        if "attack_range" in self.ball: optimal_range = self.ball.attack_range
 
-        if dist_sq > 0.0001:
-            var nx = dx / dist
-            var ny = dy / dist
+        if distance_sq > 0.0001:
+            var dir_x = dx_target / distance_val
+            var dir_y = dy_target / distance_val
 
-            if dist > attack_range:
+            if distance_val > optimal_range:
                 pass
-            elif dist < attack_range * 0.8:
-                nx = -nx
-                ny = -ny
+            elif distance_val < optimal_range * 0.8:
+                dir_x = -dir_x
+                dir_y = -dir_y
             else:
-                nx = 0.0
-                ny = 0.0
+                dir_x = 0.0
+                dir_y = 0.0
 
-            if nx != 0.0 or ny != 0.0:
-                var avoid_vec = _apply_obstacle_avoidance(nx, ny, target)
-                nx = avoid_vec[0]
-                ny = avoid_vec[1]
+            if dir_x != 0.0 or dir_y != 0.0:
+                var avoid_vec = _apply_obstacle_avoidance(dir_x, dir_y, target)
+                dir_x = avoid_vec[0]
+                dir_y = avoid_vec[1]
 
-                var boid_vec = _apply_boid_rules(nx, ny)
-                nx = boid_vec[0]
-                ny = boid_vec[1]
+                var boid_vec = _apply_boid_rules(dir_x, dir_y)
+                dir_x = boid_vec[0]
+                dir_y = boid_vec[1]
 
                 var step = speed * delta * 60.0
-                if dist < attack_range * 0.8:
-                    self.ball.x += nx * step
-                    self.ball.y += ny * step
+                if distance_val < optimal_range * 0.8:
+                    self.ball.x += dir_x * step
+                    self.ball.y += dir_y * step
                 else:
-                    self.ball.x += nx * min(step, dist)
-                    self.ball.y += ny * min(step, dist)
+                    self.ball.x += dir_x * min(step, distance_val)
+                    self.ball.y += dir_y * min(step, distance_val)
 
-        dx = target.x - self.ball.x
-        dy = target.y - self.ball.y
-        dist_sq = dx*dx + dy*dy
+        dx_target = target.x - self.ball.x
+        dy_target = target.y - self.ball.y
+        distance_sq = dx_target*dx_target + dy_target*dy_target
         var dist_after = 0.0
-        if dist_sq > 0.0001:
-            dist_after = sqrt(dist_sq)
+        if distance_sq > 0.0001:
+            dist_after = sqrt(distance_sq)
 
-        attack_range = 150.0
-        if "attack_range" in self.ball: attack_range = self.ball.attack_range
+        optimal_range = 150.0
+        if "attack_range" in self.ball: optimal_range = self.ball.attack_range
 
-        if dist_after <= attack_range:
+        if dist_after <= optimal_range:
             var skill_timer = 0.0
             if "skill_timer" in self.ball:
                 skill_timer = self.ball.skill_timer
 
             if skill_timer <= 0:
-                if dist_after < attack_range * 0.8:
+                if dist_after < optimal_range * 0.8:
                     if self.ball.has_method("use_skill"):
                         self.ball.use_skill()
                     var cd = 5.0
