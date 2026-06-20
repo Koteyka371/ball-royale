@@ -1532,6 +1532,91 @@
         "Tests pass",
         "No regressions"
       ]
+    },
+    {
+      "id": "idea-ball_type-087",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Implement Healer ball",
+      "description": "Implement Implement Healer ball as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Implement Healer ball implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-ball_type-088",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Implement Sniper ball",
+      "description": "Implement Implement Sniper ball as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Implement Sniper ball implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-ball_type-089",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Implement Bomber ball",
+      "description": "Implement Implement Bomber ball as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Implement Bomber ball implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-ball_type-090",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Implement Ninja ball",
+      "description": "Implement Implement Ninja ball as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Implement Ninja ball implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-ball_type-091",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Implement King ball",
+      "description": "Implement Implement King ball as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Implement King ball implemented",
+        "Tests pass",
+        "No regressions"
+      ]
     }
   ]
 }
