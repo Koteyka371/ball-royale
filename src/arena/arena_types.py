@@ -238,7 +238,52 @@ class RetreatToAllyArena(ProceduralArena):
             hy = cy + 150 * math.sin(angle)
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=30.0, kind="lava", damage=30.0))
 
+class WaitAndWatchArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central battle arena
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+
+        # 4 safe observation rooms in corners
+        self.rooms.append(Room(50, 50, 150, 150))
+        self.rooms.append(Room(w - 200, 50, 150, 150))
+        self.rooms.append(Room(50, h - 200, 150, 150))
+        self.rooms.append(Room(w - 200, h - 200, 150, 150))
+
+        # Connecting corridors from safe zones to central arena
+        self.corridors.append(Corridor(100, 200, 100, cy - 300 - 200 + 50)) # Top-Left V
+        self.corridors.append(Corridor(100, cy - 300, cx - 300 - 100 + 50, 100)) # Top-Left H
+
+        self.corridors.append(Corridor(w - 200, 200, 100, cy - 300 - 200 + 50)) # Top-Right V
+        self.corridors.append(Corridor(cx + 300 - 50, cy - 300, w - 200 - (cx + 300) + 50, 100)) # Top-Right H
+
+        self.corridors.append(Corridor(100, cy + 300 - 50, 100, h - 200 - (cy + 300) + 50)) # Bottom-Left V
+        self.corridors.append(Corridor(100, cy + 300 - 100, cx - 300 - 100 + 50, 100)) # Bottom-Left H
+
+        self.corridors.append(Corridor(w - 200, cy + 300 - 50, 100, h - 200 - (cy + 300) + 50)) # Bottom-Right V
+        self.corridors.append(Corridor(cx + 300 - 50, cy + 300 - 100, w - 200 - (cx + 300) + 50, 100)) # Bottom-Right H
+
+        # Dense hazards in the center to encourage watching and waiting
+        import math
+        for i in range(12):
+            angle = 2 * math.pi * i / 12
+            hx = cx + 150 * math.cos(angle)
+            hy = cy + 150 * math.sin(angle)
+            self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=30.0, kind="lava", damage=40.0))
+        for i in range(12, 20):
+            angle = 2 * math.pi * (i-12) / 8
+            hx = cx + 250 * math.cos(angle)
+            hy = cy + 250 * math.sin(angle)
+            self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=20.0, kind="spikes", damage=20.0))
+        self.hazards.append(Hazard(id=20, x=cx, y=cy, radius=50.0, kind="lava", damage=60.0))
+
 ARENAS = {
+    "wait_and_watch": WaitAndWatchArena,
     "retreat_to_ally": RetreatToAllyArena,
     "procedural": ProceduralArena,
     "cross": CrossArena,

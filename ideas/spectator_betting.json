@@ -1,0 +1,4 @@
+{
+  "title": "Spectator AI Betting System",
+  "description": "Allow AI agents playing as 'spectator' or 'ghost' balls to dynamically place bets on the surviving team or individual ball. They would analyze current stats (HP, position) to form their bets, creating an emergent meta-economy where spectators react emotionally to the battle royale outcomes."
+}
