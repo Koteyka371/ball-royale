@@ -1702,6 +1702,91 @@
         "Tests pass",
         "No regressions"
       ]
+    },
+    {
+      "id": "idea-arena-097",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Group Attack arena",
+      "description": "Implement Create Group Attack arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Group Attack arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-arena-098",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Ambush arena",
+      "description": "Implement Create Ambush arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Ambush arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-arena-099",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Flee arena",
+      "description": "Implement Create Flee arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Flee arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-arena-100",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Circle Strafe arena",
+      "description": "Implement Create Circle Strafe arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Circle Strafe arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-arena-101",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Use Shield arena",
+      "description": "Implement Create Use Shield arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Use Shield arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
     }
   ]
 }
