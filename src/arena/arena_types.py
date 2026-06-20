@@ -287,7 +287,26 @@ class AggressiveChaseArena(ProceduralArena):
         self.corridors.append(Corridor(cx - 40, 50 + room_size, 80, cy - center_size/2 - (50 + room_size))) # Top
         self.corridors.append(Corridor(cx - 40, cy + center_size/2, 80, (h - 50 - room_size) - (cy + center_size/2))) # Bottom
 
+class EscortArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        # Create a winding path of rooms
+        self.rooms.append(Room(50, 50, 200, 200)) # Start safe zone
+        self.rooms.append(Room(w - 250, h - 250, 200, 200)) # End safe zone
+        self.rooms.append(Room(300, 50, 400, 200))
+        self.rooms.append(Room(w - 300, 300, 250, 400))
+        self.rooms.append(Room(50, h - 300, 400, 250))
+        self.corridors.append(Corridor(250, 100, 50, 100))
+        self.corridors.append(Corridor(700, 100, w - 300 - 700, 100))
+        self.corridors.append(Corridor(w - 150, 250, 100, 50))
+        self.corridors.append(Corridor(w - 150, 700, 100, h - 300 - 700))
+        self.corridors.append(Corridor(450, h - 150, w - 250 - 450, 100))
+
 ARENAS = {
+    "escort": EscortArena,
     "buff_ally": BuffAllyArena,
     "retreat_to_ally": RetreatToAllyArena,
     "procedural": ProceduralArena,
