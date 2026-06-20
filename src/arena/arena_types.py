@@ -161,7 +161,20 @@ class ChokePointArena(ProceduralArena):
         self.rooms.append(Room(50, h/2 + 100, w - 100, h/2 - 150))
         self.rooms.append(Room(cx - 100, h/2 - 50, 200, 150))
 
+class AggressiveChaseArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        # A large ring track for continuous chasing
+        self.rooms.append(Room(50, 50, w-100, 200))
+        self.rooms.append(Room(w-250, 250, 200, h-500))
+        self.rooms.append(Room(50, h-250, w-100, 200))
+        self.rooms.append(Room(50, 250, 200, h-500))
+
 ARENAS = {
+    "aggressive_chase": AggressiveChaseArena,
     "procedural": ProceduralArena,
     "cross": CrossArena,
     "ring": RingArena,
