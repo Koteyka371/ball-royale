@@ -1909,7 +1909,7 @@
     },
     {
       "id": "idea-arena-109",
-      "status": "todo",
+      "status": "done",
       "area": "arenas",
       "risk": "low",
       "title": "Create Avoid Trap arena",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-arena-109] Create Avoid Trap arena — *2026-06-20 18:05:45 UTC*
+
+Implement Create Avoid Trap arena as described in game_design.md
+
+---
+
 ## [idea-arena-095] Create Kite arena — *2026-06-20 17:06:56 UTC*
 
 Implement Create Kite arena as described in game_design.md
