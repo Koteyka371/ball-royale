@@ -478,7 +478,7 @@ func _flee(delta: float):
     self.ball.x += comb_nx * boosted_speed * delta * 60.0
     self.ball.y += comb_ny * boosted_speed * delta * 60.0
 
-func _calculate_enemy_strength_score(e: Object) -> Array:
+func _evaluate_target_strength_deterministic(e: Object) -> Array:
     var e_max_hp = 0.0
     if "max_hp" in e:
         e_max_hp = float(e.max_hp)
@@ -496,12 +496,12 @@ func _calculate_enemy_strength_score(e: Object) -> Array:
 
     return [e_max_hp, e_hp, -d_sq, e_id]
 
-func _get_strongest_enemy(enemies: Array) -> Object:
+func _find_strongest_enemy_deterministic(enemies: Array) -> Object:
     var best_score = [-1.0, -1.0, -INF, -1]
     var target = null
 
     for e in enemies:
-        var score = _calculate_enemy_strength_score(e)
+        var score = _evaluate_target_strength_deterministic(e)
 
         var is_better = false
         if score[0] > best_score[0]:
@@ -573,7 +573,7 @@ func _get_target(enemies: Array) -> Object:
         if "ball_type" in self.ball:
             b_type = self.ball.ball_type.to_lower()
         if b_type == "tank":
-            target = _get_strongest_enemy(enemies)
+            target = _find_strongest_enemy_deterministic(enemies)
         elif b_type == "bomber":
             var max_crowd = -1
             var min_dist_sq_bomber = INF
@@ -1226,7 +1226,7 @@ func _attack(delta: float):
                         if "alive" in self.ball:
                             self.ball.alive = false
                 elif b_type == "tank":
-                    optimal = (target == _get_strongest_enemy(enemies))
+                    optimal = (target == _find_strongest_enemy_deterministic(enemies))
                 elif b_type == "warrior":
                     var in_front = 0
                     var move_dx = target.x - self.ball.x
@@ -1382,7 +1382,7 @@ func _defend(delta: float):
                                 min_hp_pct = a_hp_pct
                                 ally_to_protect = a
 
-                target = _get_strongest_enemy(enemies)
+                target = _find_strongest_enemy_deterministic(enemies)
             else:
                 for e in enemies:
                     var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
@@ -2009,7 +2009,7 @@ func _hide_behind(delta: float):
         _flee(delta)
         return
 
-    var target_enemy = _get_strongest_enemy(enemies)
+    var target_enemy = _find_strongest_enemy_deterministic(enemies)
 
     var best_ally = null
     var best_score = -1.0
