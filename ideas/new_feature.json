@@ -1,0 +1,4 @@
+{
+  "title": "Teleporter Pads",
+  "description": "Add interactive teleporter pads in arenas. When a ball steps on a teleporter, it instantly moves to a linked teleporter elsewhere on the map, allowing for rapid escapes or surprise flanks."
+}

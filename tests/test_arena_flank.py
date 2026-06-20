@@ -3,7 +3,7 @@ import os
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
-from arena.arena_types import FlankArena
+from arena.arena_types import FlankArena, get_arena
 
 def test_flank_arena_generation():
     arena = FlankArena(arena_size=2000.0, seed=42)
@@ -33,3 +33,8 @@ def test_flank_arena_is_point_inside():
 
     # Point outside
     assert not arena.is_point_inside(5, 5, 10.0)
+
+def test_circle_strafe_arena():
+    arena = get_arena("circle_strafe", arena_size=1000.0)
+    assert len(arena.rooms) == 1
+    assert len(arena.hazards) == 5

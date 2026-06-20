@@ -185,7 +185,29 @@ class ChokePointArena(ProceduralArena):
         self.rooms.append(Room(50, h/2 + 100, w - 100, h/2 - 150))
         self.rooms.append(Room(cx - 100, h/2 - 50, 200, 150))
 
+
+class CircleStrafeArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # A large central room
+        self.rooms.append(Room(50, 50, w - 100, h - 100))
+
+        # Central hazard acting as a pillar
+        self.hazards.append(Hazard(id=1, x=cx, y=cy, radius=w*0.15, kind="spikes", damage=10.0))
+
+        # Outer hazards forcing circular movement
+        self.hazards.append(Hazard(id=2, x=200, y=200, radius=w*0.05, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=3, x=w-200, y=200, radius=w*0.05, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=4, x=200, y=h-200, radius=w*0.05, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=5, x=w-200, y=h-200, radius=w*0.05, kind="lava", damage=20.0))
+
 ARENAS = {
+
     "procedural": ProceduralArena,
     "cross": CrossArena,
     "ring": RingArena,
@@ -199,7 +221,8 @@ ARENAS = {
     "fortress": FortressArena,
     "split": SplitArena,
     "flank": FlankArena,
-    "choke_point": ChokePointArena
+    "choke_point": ChokePointArena,
+    "circle_strafe": CircleStrafeArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
