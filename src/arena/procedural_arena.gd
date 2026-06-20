@@ -256,3 +256,33 @@ class RepositionArena extends ProceduralArena:
 
         # Central hazard
         hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 100.0, "lava", 15.0))
+
+class ChainReactionArena extends ProceduralArena:
+    func _init(size: float = 2000.0, seed_val: int = -1).(size, 5, seed_val):
+        pass
+
+    func generate():
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = width
+        var h = height
+        var cx = w / 2.0
+        var cy = h / 2.0
+
+        rooms.append(ProceduralArena.Room.new(cx - 700, cy - 700, 1400, 200))
+        rooms.append(ProceduralArena.Room.new(cx - 700, cy + 500, 1400, 200))
+        rooms.append(ProceduralArena.Room.new(cx - 700, cy - 500, 200, 1000))
+        rooms.append(ProceduralArena.Room.new(cx + 500, cy - 500, 200, 1000))
+
+        var c_offsets = [-500.0, -225.0, 50.0, 325.0]
+        for offset in c_offsets:
+            corridors.append(ProceduralArena.Corridor.new(cx + offset, cy - 500, 175, 1000))
+            corridors.append(ProceduralArena.Corridor.new(cx - 500, cy + offset, 1000, 175))
+
+        var hazard_id = 0
+        var centers = [-412.5, -137.5, 137.5, 412.5]
+        for dx in centers:
+            for dy in centers:
+                hazards.append(ProceduralArena.Hazard.new(hazard_id, cx+dx, cy+dy, 35.0, "lava", 25.0))
+                hazard_id += 1

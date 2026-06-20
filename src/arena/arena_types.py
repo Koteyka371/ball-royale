@@ -490,7 +490,34 @@ class RepositionArena(ProceduralArena):
         # Central hazard
         self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=100.0, kind="lava", damage=15.0))
 
+
+class ChainReactionArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        self.rooms.append(Room(cx - 700, cy - 700, 1400, 200))
+        self.rooms.append(Room(cx - 700, cy + 500, 1400, 200))
+        self.rooms.append(Room(cx - 700, cy - 500, 200, 1000))
+        self.rooms.append(Room(cx + 500, cy - 500, 200, 1000))
+
+        c_offsets = [-500, -225, 50, 325]
+        for offset in c_offsets:
+            self.corridors.append(Corridor(cx + offset, cy - 500, 175, 1000))
+            self.corridors.append(Corridor(cx - 500, cy + offset, 1000, 175))
+
+        hazard_id = 0
+        centers = [-412.5, -137.5, 137.5, 412.5]
+        for dx in centers:
+            for dy in centers:
+                self.hazards.append(Hazard(id=hazard_id, x=cx+dx, y=cy+dy, radius=35.0, kind="lava", damage=25.0))
+                hazard_id += 1
+
 ARENAS = {
+    "chain_reaction": ChainReactionArena,
     "reposition": RepositionArena,
     "avoid_trap": AvoidTrapArena,
     "kite": KiteArena,
