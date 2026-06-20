@@ -7,6 +7,7 @@ Area damage, uses Explosion to hit multiple enemies
 
 
 
+import math
 from ai.personality import Personality
 
 class Bomber:
@@ -32,6 +33,7 @@ class Bomber:
         self.first_hit_taken = False
         self.current_action = "idle"
         self.skill_timer = 0.0
+        self.attack_timer = 0.0
         self.personality = Personality("reckless")
 
     def get_hp_percent(self) -> float:
@@ -40,8 +42,32 @@ class Bomber:
     def flee(self, delta: float) -> None:
         self.current_action = "flee"
 
-    def attack(self, delta: float) -> None:
+    def attack(self, delta: float, target=None) -> None:
         self.current_action = "attack"
+        if target is None:
+            return
+
+        dx = target.x - self.x
+        dy = target.y - self.y
+        dist = math.hypot(dx, dy)
+
+        if dist > 0.0001:
+            nx = dx / dist
+            ny = dy / dist
+            step = self.SPEED * delta * 60.0
+
+            self.x += nx * min(step, dist)
+            self.y += ny * min(step, dist)
+
+        attack_range = self.RADIUS + getattr(target, 'radius', 10.0) + 15.0
+        if dist <= attack_range:
+            if self.skill_timer <= 0:
+                self.use_skill()
+                self.hp = 0.0
+                self.alive = False
+                self.current_action = "explode"
+            elif getattr(self, 'attack_timer', 0.0) <= 0:
+                self.attack_timer = max(0.2, 2.0 / self.SPEED if self.SPEED > 0 else 1.0)
 
     def defend(self, delta: float) -> None:
         self.current_action = "defend"
