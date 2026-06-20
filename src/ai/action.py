@@ -478,39 +478,79 @@ class Action:
         else:
             self._idle(delta)
 
-    def _flank(self, delta: float) -> None:
-        enemies = self._get_enemies()
-        if enemies:
-            target = self._get_target(enemies)
 
-            # Announce target
-            personality = getattr(self.ball, "personality", "idle")
-            if personality in ("warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "swarm", "aggressive", "cunning", "curious") and getattr(self.ball, "team_message", None) is None:
-                self.ball.team_message = {"type": "target_spotted", "x": target.x, "y": target.y}
+    def _get_flank_target(self, enemies: list) -> Any:
+        best_target = None
+        best_score = (-float('inf'), -float('inf'), -float('inf'))
 
-            # Predict position behind target based on its velocity
-            target_vx = getattr(target, "vx", 0.0)
-            target_vy = getattr(target, "vy", 0.0)
+        for e in enemies:
+            dx = e.x - self.ball.x
+            dy = e.y - self.ball.y
+            dist_sq = dx * dx + dy * dy
+            dist = math.sqrt(dist_sq) if dist_sq > 0 else 0.0
 
-            # If target is not moving much, fallback to a fixed facing to prevent pacing
+            target_vx = getattr(e, "vx", 0.0)
+            target_vy = getattr(e, "vy", 0.0)
+
             if abs(target_vx) < 0.1 and abs(target_vy) < 0.1:
-                # If target has a meta 'last_vx', use it. Otherwise assume facing right.
-                target_vx = getattr(target, 'last_vx', 1.0)
-                target_vy = getattr(target, 'last_vy', 0.0)
+                target_vx = getattr(e, 'last_vx', 1.0)
+                target_vy = getattr(e, 'last_vy', 0.0)
                 if abs(target_vx) < 0.1 and abs(target_vy) < 0.1:
                     target_vx, target_vy = 1.0, 0.0
             else:
-                # Normalize velocity
                 v_dist_sq = target_vx * target_vx + target_vy * target_vy
                 if v_dist_sq > 0.0001:
                     v_dist = math.sqrt(v_dist_sq)
                     target_vx /= v_dist
                     target_vy /= v_dist
 
-            # Flank point is 40 units behind the target
-            flank_distance = getattr(target, 'radius', 10.0) * 2.0 + 20.0
-            flank_x = target.x - target_vx * flank_distance
-            flank_y = target.y - target_vy * flank_distance
+            # Are they moving away from us?
+            # We want dot_product > 0 (they face away)
+            dot_product = 0.0
+            if dist > 0.0001:
+                dot_product = (dx / dist) * target_vx + (dy / dist) * target_vy
+
+            # Tiebreaker score: (is_facing_away, -distance, id)
+            # We want to flank targets whose back is turned towards us.
+            score = (dot_product, -dist, getattr(e, 'id', 0))
+            if best_target is None or score > best_score:
+                best_score = score
+                best_target = e
+
+        return best_target
+
+    def _get_flank_position(self, target: Any) -> tuple[float, float, float, float]:
+        target_vx = getattr(target, "vx", 0.0)
+        target_vy = getattr(target, "vy", 0.0)
+
+        if abs(target_vx) < 0.1 and abs(target_vy) < 0.1:
+            target_vx = getattr(target, 'last_vx', 1.0)
+            target_vy = getattr(target, 'last_vy', 0.0)
+            if abs(target_vx) < 0.1 and abs(target_vy) < 0.1:
+                target_vx, target_vy = 1.0, 0.0
+        else:
+            v_dist_sq = target_vx * target_vx + target_vy * target_vy
+            if v_dist_sq > 0.0001:
+                v_dist = math.sqrt(v_dist_sq)
+                target_vx /= v_dist
+                target_vy /= v_dist
+
+        flank_distance = getattr(target, 'radius', 10.0) * 2.0 + 20.0
+        flank_x = target.x - target_vx * flank_distance
+        flank_y = target.y - target_vy * flank_distance
+
+        return target_vx, target_vy, flank_x, flank_y
+    def _flank(self, delta: float) -> None:
+        enemies = self._get_enemies()
+        if enemies:
+            target = self._get_flank_target(enemies)
+
+            # Announce target
+            personality = getattr(self.ball, "personality", "idle")
+            if personality in ("warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "swarm", "aggressive", "cunning", "curious") and getattr(self.ball, "team_message", None) is None:
+                self.ball.team_message = {"type": "target_spotted", "x": target.x, "y": target.y}
+
+            target_vx, target_vy, flank_x, flank_y = self._get_flank_position(target)
 
             dx, dy = flank_x - self.ball.x, flank_y - self.ball.y
             dist_sq = dx * dx + dy * dy

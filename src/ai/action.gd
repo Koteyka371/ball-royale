@@ -725,35 +725,34 @@ func _group_attack(delta: float):
     else:
         _idle(delta)
 
-func _flank(delta: float):
-    var enemies = _get_enemies()
-    if enemies.size() > 0:
-        var target = _get_target(enemies)
 
-        var personality = "idle"
-        if "personality" in self.ball:
-            personality = self.ball.personality
+func _get_flank_target(enemies: Array):
+    var best_target = null
+    var best_score_dp = -INF
+    var best_score_dist = -INF
+    var best_score_id = -INF
 
-        if personality in ["warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "swarm", "aggressive", "cunning", "curious"]:
-            var has_msg = false
-            if self.ball.has_method("has_meta") and self.ball.has_meta("team_message"):
-                has_msg = self.ball.get_meta("team_message") != null
-            if not has_msg and self.ball.has_method("set_meta"):
-                self.ball.set_meta("team_message", {"type": "target_spotted", "x": target.x, "y": target.y})
+    for e in enemies:
+        var dx = e.x - self.ball.x
+        var dy = e.y - self.ball.y
+        var dist_sq = dx * dx + dy * dy
+        var dist = 0.0
+        if dist_sq > 0:
+            dist = sqrt(dist_sq)
 
         var target_vx = 0.0
         var target_vy = 0.0
 
-        if "vx" in target: target_vx = target.vx
-        elif target.has_method("get_meta") and target.has_meta("vx"): target_vx = target.get_meta("vx")
+        if "vx" in e: target_vx = e.vx
+        elif e.has_method("get_meta") and e.has_meta("vx"): target_vx = e.get_meta("vx")
 
-        if "vy" in target: target_vy = target.vy
-        elif target.has_method("get_meta") and target.has_meta("vy"): target_vy = target.get_meta("vy")
+        if "vy" in e: target_vy = e.vy
+        elif e.has_method("get_meta") and e.has_meta("vy"): target_vy = e.get_meta("vy")
 
         if abs(target_vx) < 0.1 and abs(target_vy) < 0.1:
-            if target.has_method("get_meta") and target.has_meta("last_vx"):
-                target_vx = target.get_meta("last_vx")
-                target_vy = target.get_meta("last_vy")
+            if e.has_method("get_meta") and e.has_meta("last_vx"):
+                target_vx = e.get_meta("last_vx")
+                target_vy = e.get_meta("last_vy")
             else:
                 target_vx = 1.0
                 target_vy = 0.0
@@ -768,11 +767,89 @@ func _flank(delta: float):
                 target_vx /= v_dist
                 target_vy /= v_dist
 
-        var flank_target_radius = 10.0
-        if "radius" in target: flank_target_radius = target.radius
-        var flank_distance = flank_target_radius * 2.0 + 20.0
-        var flank_x = target.x - target_vx * flank_distance
-        var flank_y = target.y - target_vy * flank_distance
+        var dot_product = 0.0
+        if dist > 0.0001:
+            dot_product = (dx / dist) * target_vx + (dy / dist) * target_vy
+
+        var e_id = 0
+        if "id" in e:
+            e_id = int(e.id)
+
+        var better = false
+        if dot_product > best_score_dp:
+            better = true
+        elif dot_product == best_score_dp:
+            if -dist > best_score_dist:
+                better = true
+            elif -dist == best_score_dist:
+                if e_id > best_score_id:
+                    better = true
+
+        if best_target == null or better:
+            best_score_dp = dot_product
+            best_score_dist = -dist
+            best_score_id = e_id
+            best_target = e
+
+    return best_target
+
+func _get_flank_position(target) -> Array:
+    var target_vx = 0.0
+    var target_vy = 0.0
+
+    if "vx" in target: target_vx = target.vx
+    elif target.has_method("get_meta") and target.has_meta("vx"): target_vx = target.get_meta("vx")
+
+    if "vy" in target: target_vy = target.vy
+    elif target.has_method("get_meta") and target.has_meta("vy"): target_vy = target.get_meta("vy")
+
+    if abs(target_vx) < 0.1 and abs(target_vy) < 0.1:
+        if target.has_method("get_meta") and target.has_meta("last_vx"):
+            target_vx = target.get_meta("last_vx")
+            target_vy = target.get_meta("last_vy")
+        else:
+            target_vx = 1.0
+            target_vy = 0.0
+
+        if abs(target_vx) < 0.1 and abs(target_vy) < 0.1:
+            target_vx = 1.0
+            target_vy = 0.0
+    else:
+        var v_dist_sq = target_vx*target_vx + target_vy*target_vy
+        if v_dist_sq > 0.0001:
+            var v_dist = sqrt(v_dist_sq)
+            target_vx /= v_dist
+            target_vy /= v_dist
+
+    var flank_target_radius = 10.0
+    if "radius" in target: flank_target_radius = target.radius
+    var flank_distance = flank_target_radius * 2.0 + 20.0
+    var flank_x = target.x - target_vx * flank_distance
+    var flank_y = target.y - target_vy * flank_distance
+
+    return [target_vx, target_vy, flank_x, flank_y]
+
+func _flank(delta: float):
+    var enemies = _get_enemies()
+    if enemies.size() > 0:
+        var target = _get_flank_target(enemies)
+
+        var personality = "idle"
+        if "personality" in self.ball:
+            personality = self.ball.personality
+
+        if personality in ["warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "swarm", "aggressive", "cunning", "curious"]:
+            var has_msg = false
+            if self.ball.has_method("has_meta") and self.ball.has_meta("team_message"):
+                has_msg = self.ball.get_meta("team_message") != null
+            if not has_msg and self.ball.has_method("set_meta"):
+                self.ball.set_meta("team_message", {"type": "target_spotted", "x": target.x, "y": target.y})
+
+        var flank_data = _get_flank_position(target)
+        var target_vx = flank_data[0]
+        var target_vy = flank_data[1]
+        var flank_x = flank_data[2]
+        var flank_y = flank_data[3]
 
         var dx = flank_x - self.ball.x
         var dy = flank_y - self.ball.y
