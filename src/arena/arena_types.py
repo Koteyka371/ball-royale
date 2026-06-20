@@ -326,6 +326,40 @@ class ComebacksArena(ProceduralArena):
             hy = cy + 200 * math.sin(angle)
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=30.0, kind="lava", damage=40.0))
 
+class EpicKillsArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Center battle room
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+
+        # 4 safe zones in corners
+        self.rooms.append(Room(50, 50, 200, 200)) # Top-Left
+        self.rooms.append(Room(w - 250, 50, 200, 200)) # Top-Right
+        self.rooms.append(Room(50, h - 250, 200, 200)) # Bottom-Left
+        self.rooms.append(Room(w - 250, h - 250, 200, 200)) # Bottom-Right
+
+        # Corridors from corners to center
+        # Top-Left to Center
+        self.corridors.append(Corridor(100, 200, 100, cy - 400))
+        self.corridors.append(Corridor(100, cy - 300, cx - 300, 100))
+        # Top-Right to Center
+        self.corridors.append(Corridor(w - 200, 200, 100, cy - 400))
+        self.corridors.append(Corridor(cx + 200, cy - 300, w - cx - 300, 100))
+        # Bottom-Left to Center
+        self.corridors.append(Corridor(100, cy + 200, 100, h - cy - 400))
+        self.corridors.append(Corridor(100, cy + 200, cx - 300, 100))
+        # Bottom-Right to Center
+        self.corridors.append(Corridor(w - 200, cy + 200, 100, h - cy - 400))
+        self.corridors.append(Corridor(cx + 200, cy + 200, w - cx - 300, 100))
+
+        # Center big lava hazard
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=100.0, kind="lava", damage=50.0))
+
 ARENAS = {
     "buff_ally": BuffAllyArena,
     "retreat_to_ally": RetreatToAllyArena,
@@ -345,7 +379,8 @@ ARENAS = {
     "choke_point": ChokePointArena,
     "use_shield": UseShieldArena,
     "aggressive_chase": AggressiveChaseArena,
-    "comebacks": ComebacksArena
+    "comebacks": ComebacksArena,
+    "epic_kills": EpicKillsArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:

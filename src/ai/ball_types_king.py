@@ -9,6 +9,7 @@ from ai.personality import Personality
 
 class King:
     BALL_TYPE = "king"
+
     HP = 120
     SPEED = 4.0
     DAMAGE = 15
@@ -20,6 +21,7 @@ class King:
     SKILL_COOLDOWN = 5.0
 
     def __init__(self, ball_id: int, x: float = 0.0, y: float = 0.0):
+        self.attack_timer: float = 0.0
         self.id = ball_id
         self.hp = float(self.HP)
         self.max_hp = float(self.HP)
