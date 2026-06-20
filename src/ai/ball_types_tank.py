@@ -5,14 +5,10 @@ Heavy defender, high HP, uses Shield to absorb damage
 
 
 
-
-
-from ai.personality import Personality
-
 class Tank:
     BALL_TYPE = "tank"
-    HP = 250
-    SPEED = 3.0
+    HP = 200
+    SPEED = 1.2
     DAMAGE = 8
     RADIUS = 18
     PERCEPTION_RADIUS = 200
@@ -23,17 +19,15 @@ class Tank:
 
     def __init__(self, ball_id: int, x: float = 0.0, y: float = 0.0):
         self.id = ball_id
-        self.hp = float(self.HP)
-        self.max_hp = float(self.HP)
+        self.hp = self.HP
+        self.max_hp = self.HP
         self.x = x
         self.y = y
         self.alive = True
         self.kills = 0
-        self.first_hit_taken = False
         self.current_action = "idle"
         self.skill_timer = 0.0
-        self.shield_active = False
-        self.personality = Personality("brave")
+        self.personality = "tank"
 
     def get_hp_percent(self) -> float:
         return self.hp / self.max_hp if self.max_hp > 0 else 0.0
@@ -54,20 +48,13 @@ class Tank:
         self.current_action = "idle"
 
     def take_damage(self, amount: float) -> None:
-        if self.shield_active:
-            self.shield_active = False
-            return
-
-        if self.hp == self.max_hp and amount > 0:
-            self.first_hit_taken = True
-        self.hp -= amount
+        self.hp -= int(amount)
         if self.hp <= 0:
             self.alive = False
 
     def use_skill(self) -> bool:
         if self.skill_timer <= 0:
             self.skill_timer = self.SKILL_COOLDOWN
-            self.shield_active = True
             return True
         return False
 

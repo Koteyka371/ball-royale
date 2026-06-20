@@ -5,15 +5,11 @@ Aggressive fighter, seeks combat, uses Wave Attack when 2+ enemies
 
 
 
-
-
-from ai.personality import Personality
-
 class Warrior:
     BALL_TYPE = "warrior"
-    HP = 150
-    SPEED = 4.0
-    DAMAGE = 20
+    HP = 120
+    SPEED = 2.0
+    DAMAGE = 15
     RADIUS = 12
     PERCEPTION_RADIUS = 250
     AGGRESSION = 0.9
@@ -23,16 +19,15 @@ class Warrior:
 
     def __init__(self, ball_id: int, x: float = 0.0, y: float = 0.0):
         self.id = ball_id
-        self.hp = float(self.HP)
-        self.max_hp = float(self.HP)
+        self.hp = self.HP
+        self.max_hp = self.HP
         self.x = x
         self.y = y
         self.alive = True
         self.kills = 0
-        self.first_hit_taken = False
         self.current_action = "idle"
         self.skill_timer = 0.0
-        self.personality = Personality("aggressive")
+        self.personality = "warrior"
 
     def get_hp_percent(self) -> float:
         return self.hp / self.max_hp if self.max_hp > 0 else 0.0
@@ -53,9 +48,7 @@ class Warrior:
         self.current_action = "idle"
 
     def take_damage(self, amount: float) -> None:
-        if self.hp == self.max_hp and amount > 0:
-            self.first_hit_taken = True
-        self.hp -= amount
+        self.hp -= int(amount)
         if self.hp <= 0:
             self.alive = False
 

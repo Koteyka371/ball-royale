@@ -15,21 +15,21 @@ def test_scout_initialization():
     assert ball.hp == 80
     assert ball.max_hp == 80
     assert ball.alive is True
-    assert ball.personality.character == "curious"
+    assert ball.personality == "scout"
 
 
 def test_scout_hp_percent():
     ball = Scout(ball_id=1)
     ball.hp = 40
-    assert abs(ball.get_hp_percent() - ball.hp / ball.max_hp) < 0.01
+    assert abs(ball.get_hp_percent() - 40/80) < 0.01
 
 
 def test_scout_take_damage():
     ball = Scout(ball_id=1)
-    ball.take_damage(20)
-    assert ball.hp == 60
+    ball.take_damage(10)
+    assert ball.hp == 70
     assert ball.alive is True
-    ball.take_damage(100)
+    ball.take_damage(180)
     assert ball.alive is False
 
 

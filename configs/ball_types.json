@@ -180,6 +180,18 @@
       "skill": "observe",
       "skill_cooldown": 1.0,
       "description": "Spectator mode, invisible to other balls, observes the battle."
+    },
+    "chaos": {
+      "hp": 100,
+      "speed": 3.0,
+      "damage": 15,
+      "radius": 12,
+      "perception_radius": 250,
+      "aggression": 1.0,
+      "color": "magenta",
+      "skill": "random_teleport",
+      "skill_cooldown": 2.0,
+      "description": "Creates maximum funny chaos, absurd decisions, spamming skills."
     }
   }
 }

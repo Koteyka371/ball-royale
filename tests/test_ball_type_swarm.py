@@ -15,7 +15,7 @@ def test_swarm_initialization():
     assert ball.hp == 60
     assert ball.max_hp == 60
     assert ball.alive is True
-    assert ball.personality == "aggressive"
+    assert ball.personality == "swarm"
 
 
 def test_swarm_hp_percent():
@@ -29,7 +29,7 @@ def test_swarm_take_damage():
     ball.take_damage(10)
     assert ball.hp == 50
     assert ball.alive is True
-    ball.take_damage(140)
+    ball.take_damage(160)
     assert ball.alive is False
 
 

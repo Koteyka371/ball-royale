@@ -1,18 +1,15 @@
 """
 Auto-generated ball type: Scout
-
-Curious personality, seeks boosters, attacks weak enemies, flees from strong ones.
-Uses Dash to escape or chase.
+Curious personality, seeks boosters, attacks weak enemies, flees from strong ones, uses Dash to escape or chase
 """
 
 
-from ai.personality import Personality
 
 class Scout:
     BALL_TYPE = "scout"
     HP = 80
-    SPEED = 8.0
-    DAMAGE = 10
+    SPEED = 3.8
+    DAMAGE = 20
     RADIUS = 9
     PERCEPTION_RADIUS = 350
     AGGRESSION = 0.5
@@ -22,16 +19,15 @@ class Scout:
 
     def __init__(self, ball_id: int, x: float = 0.0, y: float = 0.0):
         self.id = ball_id
-        self.hp = float(self.HP)
-        self.max_hp = float(self.HP)
+        self.hp = self.HP
+        self.max_hp = self.HP
         self.x = x
         self.y = y
         self.alive = True
         self.kills = 0
-        self.first_hit_taken = False
         self.current_action = "idle"
         self.skill_timer = 0.0
-        self.personality = Personality("curious")
+        self.personality = "scout"
 
     def get_hp_percent(self) -> float:
         return self.hp / self.max_hp if self.max_hp > 0 else 0.0
@@ -52,9 +48,7 @@ class Scout:
         self.current_action = "idle"
 
     def take_damage(self, amount: float) -> None:
-        if self.hp == self.max_hp and amount > 0:
-            self.first_hit_taken = True
-        self.hp -= amount
+        self.hp -= int(amount)
         if self.hp <= 0:
             self.alive = False
 

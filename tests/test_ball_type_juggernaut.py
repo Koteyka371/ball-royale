@@ -15,7 +15,7 @@ def test_juggernaut_initialization():
     assert ball.hp == 300
     assert ball.max_hp == 300
     assert ball.alive is True
-    assert ball.personality == "supportive"
+    assert ball.personality == "juggernaut"
 
 
 def test_juggernaut_hp_percent():

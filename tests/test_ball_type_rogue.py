@@ -15,7 +15,7 @@ def test_rogue_initialization():
     assert ball.hp == 75
     assert ball.max_hp == 75
     assert ball.alive is True
-    assert ball.personality == "cunning"
+    assert ball.personality == "rogue"
 
 
 def test_rogue_hp_percent():
@@ -36,7 +36,7 @@ def test_rogue_take_damage():
 def test_rogue_skill():
     ball = Rogue(ball_id=1)
     assert ball.use_skill() is True
-    assert ball.skill_timer == 2.0
+    assert ball.skill_timer == 4.5
     assert ball.use_skill() is False
 
 

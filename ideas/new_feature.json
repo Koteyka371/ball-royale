@@ -1,0 +1,4 @@
+{
+  "title": "Weather Effects Arena",
+  "description": "Add dynamic weather effects to the arena (like rain, snow, sandstorm) that periodically change. Rain makes the surface slippery (increasing slide distance), snow slows down all balls, and sandstorms reduce perception_radius for all balls."
+}

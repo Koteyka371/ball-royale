@@ -47,7 +47,7 @@ class Medium:
     def take_damage(self, amount: float) -> None:
         if self.hp == self.max_hp and amount > 0:
             self.first_hit_taken = True
-        self.hp -= amount
+        self.hp -= int(amount)
         if self.hp <= 0:
             self.alive = False
 

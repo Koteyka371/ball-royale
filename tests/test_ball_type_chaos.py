@@ -1,47 +1,47 @@
 """
-Auto-generated tests for: Assassin
+Auto-generated tests for: Chaos
 """
 
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
-from ai.ball_types_assassin import Assassin
+from ai.ball_types_chaos import Chaos
 
 
-def test_assassin_initialization():
-    ball = Assassin(ball_id=1, x=100, y=200)
+def test_chaos_initialization():
+    ball = Chaos(ball_id=1, x=100, y=200)
     assert ball.id == 1
-    assert ball.hp == 70
-    assert ball.max_hp == 70
+    assert ball.hp == 100
+    assert ball.max_hp == 100
     assert ball.alive is True
-    assert ball.personality == "assassin"
+    assert ball.personality == "chaos"
 
 
-def test_assassin_hp_percent():
-    ball = Assassin(ball_id=1)
-    ball.hp = 35
-    assert abs(ball.get_hp_percent() - 35/70) < 0.01
+def test_chaos_hp_percent():
+    ball = Chaos(ball_id=1)
+    ball.hp = 50
+    assert abs(ball.get_hp_percent() - 50/100) < 0.01
 
 
-def test_assassin_take_damage():
-    ball = Assassin(ball_id=1)
+def test_chaos_take_damage():
+    ball = Chaos(ball_id=1)
     ball.take_damage(10)
-    assert ball.hp == 60
+    assert ball.hp == 90
     assert ball.alive is True
-    ball.take_damage(170)
+    ball.take_damage(200)
     assert ball.alive is False
 
 
-def test_assassin_skill():
-    ball = Assassin(ball_id=1)
+def test_chaos_skill():
+    ball = Chaos(ball_id=1)
     assert ball.use_skill() is True
-    assert ball.skill_timer == 3.0
+    assert ball.skill_timer == 2.0
     assert ball.use_skill() is False
 
 
-def test_assassin_actions():
-    ball = Assassin(ball_id=1)
+def test_chaos_actions():
+    ball = Chaos(ball_id=1)
     ball.flee(0.016)
     assert ball.current_action == "flee"
     ball.attack(0.016)

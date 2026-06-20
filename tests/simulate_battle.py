@@ -67,6 +67,7 @@ BALL_TYPES = {
               "perception_radius": 350, "aggression": 0.8, "color": "black",
               "skill": "stealth", "skill_cooldown": 4.0},
     "spectator": {"hp": 99999, "speed": 5.0, "damage": 0, "radius": 5,
+    "chaos": {"hp": 100, "speed": 3.0, "damage": 15, "radius": 12, "perception_radius": 250, "aggression": 1.0, "color": "magenta", "skill": "random_teleport", "skill_cooldown": 2.0, "description": "Creates maximum funny chaos, absurd decisions, spamming skills."},
                   "perception_radius": 1000, "aggression": 0.0, "color": "white",
                   "skill": "observe", "skill_cooldown": 1.0}
 }

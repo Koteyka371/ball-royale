@@ -1,21 +1,21 @@
 """
-Auto-generated ball type: Assassin
-Fast killer, low HP, uses Dash to close distance
+Auto-generated ball type: Chaos
+Creates maximum funny chaos, absurd decisions, spamming skills.
 """
 
 
 
-class Assassin:
-    BALL_TYPE = "assassin"
-    HP = 70
-    SPEED = 3.5
-    DAMAGE = 25
-    RADIUS = 8
-    PERCEPTION_RADIUS = 300
-    AGGRESSION = 0.8
-    COLOR = "purple"
-    SKILL = "dash"
-    SKILL_COOLDOWN = 3.0
+class Chaos:
+    BALL_TYPE = "chaos"
+    HP = 100
+    SPEED = 3.0
+    DAMAGE = 15
+    RADIUS = 12
+    PERCEPTION_RADIUS = 250
+    AGGRESSION = 1.0
+    COLOR = "magenta"
+    SKILL = "random_teleport"
+    SKILL_COOLDOWN = 2.0
 
     def __init__(self, ball_id: int, x: float = 0.0, y: float = 0.0):
         self.id = ball_id
@@ -27,7 +27,7 @@ class Assassin:
         self.kills = 0
         self.current_action = "idle"
         self.skill_timer = 0.0
-        self.personality = "assassin"
+        self.personality = "chaos"
 
     def get_hp_percent(self) -> float:
         return self.hp / self.max_hp if self.max_hp > 0 else 0.0

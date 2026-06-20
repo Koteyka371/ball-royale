@@ -20,7 +20,7 @@ class CameraSystem:
             self.activity_scores[b_id] *= 0.9
 
         for ball in balls:
-            b_id = ball.get("id")
+            b_id = int(ball.get("id", 0))
             if b_id is None:
                 continue
 
@@ -65,7 +65,7 @@ class CameraSystem:
         best_score = -1.0
         best_id = None
         for ball in balls:
-            b_id = ball.get("id")
+            b_id = int(ball.get("id", 0))
             if b_id is not None and ball.get("hp", 0) > 0:
                 score = self.activity_scores.get(b_id, 0.0)
                 if score > best_score:
