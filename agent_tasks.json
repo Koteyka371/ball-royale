@@ -1535,7 +1535,7 @@
     },
     {
       "id": "idea-ball_type-087",
-      "status": "todo",
+      "status": "done",
       "area": "content",
       "risk": "medium",
       "title": "Implement Healer ball",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-ball_type-087] Implement Healer ball — *2026-06-20 12:54:41 UTC*
+
+Implement Implement Healer ball as described in game_design.md
+
+---
+
 ## [idea-arena-092] Create Aggressive Chase arena — *2026-06-20 12:51:51 UTC*
 
 Implement Create Aggressive Chase arena as described in game_design.md
