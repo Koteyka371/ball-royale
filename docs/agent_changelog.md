@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-arena-096] Create Flank arena — *2026-06-20 05:02:12 UTC*
+
+Implement Create Flank arena as described in game_design.md
+
+---
+
 ## [idea-feature-079] Stats overlay — *2026-06-20 00:36:19 UTC*
 
 Implement Stats overlay as described in game_design.md
