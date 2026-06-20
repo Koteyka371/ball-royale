@@ -571,7 +571,31 @@ class CollectBoosterArena(ProceduralArena):
         self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=40.0, kind="lava", damage=25.0))
 
 
+class TeamWipesArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # 3 rooms: 2 team spawns and central room
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+        self.rooms.append(Room(100, cy - 200, 400, 400))
+        self.rooms.append(Room(w - 500, cy - 200, 400, 400))
+
+        # 4 corridors connecting spawns to central room
+        self.corridors.append(Corridor(400, cy - 150, cx - 300 - 400 + 50, 100))
+        self.corridors.append(Corridor(400, cy + 50, cx - 300 - 400 + 50, 100))
+        self.corridors.append(Corridor(cx + 250, cy - 150, w - 500 - (cx + 250) + 50, 100))
+        self.corridors.append(Corridor(cx + 250, cy + 50, w - 500 - (cx + 250) + 50, 100))
+
+        # Central hazards
+        self.hazards.append(Hazard(id=0, x=cx, y=cy - 150, radius=50.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=1, x=cx, y=cy + 150, radius=50.0, kind="lava", damage=20.0))
+
 ARENAS = {
+    "team_wipes": TeamWipesArena,
     "collect_booster": CollectBoosterArena,
     "reposition": RepositionArena,
     "avoid_trap": AvoidTrapArena,

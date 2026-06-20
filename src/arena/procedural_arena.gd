@@ -302,6 +302,31 @@ class RepositionArena extends ProceduralArena:
         # Central hazard
         hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 100.0, "lava", 15.0))
 
+class TeamWipesArena extends ProceduralArena:
+    func generate():
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = width
+        var h = height
+        var cx = w / 2.0
+        var cy = h / 2.0
+
+        # 3 rooms: 2 team spawns and central room
+        rooms.append(ProceduralArena.Room.new(cx - 300.0, cy - 300.0, 600.0, 600.0))
+        rooms.append(ProceduralArena.Room.new(100.0, cy - 200.0, 400.0, 400.0))
+        rooms.append(ProceduralArena.Room.new(w - 500.0, cy - 200.0, 400.0, 400.0))
+
+        # 4 corridors connecting spawns to central room
+        corridors.append(ProceduralArena.Corridor.new(400.0, cy - 150.0, cx - 250.0 - 400.0, 100.0))
+        corridors.append(ProceduralArena.Corridor.new(400.0, cy + 50.0, cx - 250.0 - 400.0, 100.0))
+        corridors.append(ProceduralArena.Corridor.new(cx + 250.0, cy - 150.0, w - 500.0 - (cx + 250.0), 100.0))
+        corridors.append(ProceduralArena.Corridor.new(cx + 250.0, cy + 50.0, w - 500.0 - (cx + 250.0), 100.0))
+
+        # Central hazards
+        hazards.append(ProceduralArena.Hazard.new(0, cx, cy - 150.0, 50.0, "lava", 20.0))
+        hazards.append(ProceduralArena.Hazard.new(1, cx, cy + 150.0, 50.0, "lava", 20.0))
+
 class BallRelationshipsArena extends ProceduralArena:
     func generate():
         rooms.clear()
