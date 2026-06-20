@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-arena-115] Create Epic kills arena — *2026-06-20 18:19:29 UTC*
+
+Implement Create Epic kills arena as described in game_design.md
+
+---
+
 ## [idea-arena-097] Create Group Attack arena — *2026-06-20 18:13:52 UTC*
 
 Implement Create Group Attack arena as described in game_design.md
