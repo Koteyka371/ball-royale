@@ -1399,7 +1399,7 @@
     },
     {
       "id": "idea-feature-079",
-      "status": "todo",
+      "status": "done",
       "area": "content",
       "risk": "medium",
       "title": "Stats overlay",

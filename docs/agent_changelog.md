@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-feature-079] Stats overlay — *2026-06-20 00:36:19 UTC*
+
+Implement Stats overlay as described in game_design.md
+
+---
+
 ## [idea-ball_type-081] Implement Medium ball — *2026-06-20 00:31:35 UTC*
 
 Implement Implement Medium ball as described in game_design.md
