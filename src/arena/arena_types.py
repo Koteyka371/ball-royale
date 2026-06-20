@@ -185,7 +185,37 @@ class ChokePointArena(ProceduralArena):
         self.rooms.append(Room(50, h/2 + 100, w - 100, h/2 - 150))
         self.rooms.append(Room(cx - 100, h/2 - 50, 200, 150))
 
+
+class GroupAttackArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central big room for group combat
+        self.rooms.append(Room(cx - 400, cy - 400, 800, 800))
+
+        # 4 Corner spawn rooms
+        self.rooms.append(Room(50, 50, 200, 200)) # Top-Left
+        self.rooms.append(Room(w - 250, 50, 200, 200)) # Top-Right
+        self.rooms.append(Room(50, h - 250, 200, 200)) # Bottom-Left
+        self.rooms.append(Room(w - 250, h - 250, 200, 200)) # Bottom-Right
+
+        # Corridors connecting spawns to center
+        corridor_width = 100
+        # Top-Left to Center
+        self.corridors.append(Corridor(150 - corridor_width/2, 250, corridor_width, (cy - 400) - 250 + 50))
+        # Top-Right to Center
+        self.corridors.append(Corridor(w - 150 - corridor_width/2, 250, corridor_width, (cy - 400) - 250 + 50))
+        # Bottom-Left to Center
+        self.corridors.append(Corridor(150 - corridor_width/2, cy + 400 - 50, corridor_width, (h - 250) - (cy + 400) + 50))
+        # Bottom-Right to Center
+        self.corridors.append(Corridor(w - 150 - corridor_width/2, cy + 400 - 50, corridor_width, (h - 250) - (cy + 400) + 50))
+
 ARENAS = {
+
     "procedural": ProceduralArena,
     "cross": CrossArena,
     "ring": RingArena,
@@ -199,7 +229,8 @@ ARENAS = {
     "fortress": FortressArena,
     "split": SplitArena,
     "flank": FlankArena,
-    "choke_point": ChokePointArena
+    "choke_point": ChokePointArena,
+    "group_attack": GroupAttackArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
