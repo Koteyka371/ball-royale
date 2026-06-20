@@ -3,6 +3,7 @@ extends RefCounted
 
 const ARENAS = [
     "procedural",
+    "buff_ally",
     "cross",
     "ring",
     "four_rooms",

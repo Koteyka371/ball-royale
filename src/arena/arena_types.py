@@ -208,8 +208,32 @@ class UseShieldArena(ProceduralArena):
             damage = 20.0 if kind == "spikes" else 40.0
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=40.0, kind=kind, damage=damage))
 
+class BuffAllyArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central battle room
+        self.rooms.append(Room(cx - 200, cy - 200, 400, 400))
+
+        # Team 1 start room (Top)
+        self.rooms.append(Room(cx - 150, 50, 300, 150))
+
+        # Team 2 start room (Bottom)
+        self.rooms.append(Room(cx - 150, h - 200, 300, 150))
+
+        # Corridors connecting start rooms to central room
+        # Top corridor
+        self.corridors.append(Corridor(cx - 50, 200, 100, cy - 400))
+        # Bottom corridor
+        self.corridors.append(Corridor(cx - 50, cy + 200, 100, h - cy - 400))
+
 ARENAS = {
     "procedural": ProceduralArena,
+    "buff_ally": BuffAllyArena,
     "cross": CrossArena,
     "ring": RingArena,
     "four_rooms": FourRoomsArena,

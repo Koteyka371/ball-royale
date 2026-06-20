@@ -1,0 +1,4 @@
+{
+  "title": "Aura Buff Resonance",
+  "description": "If multiple balls with a buffing ability (like King) cast their buffs in overlapping areas, the buffs enter a 'resonance' state. Instead of just adding stats, resonant buffs trigger a secondary unique effect for the team, such as spawning temporary shield nodes or periodically healing nearby allies based on the number of overlapping auras."
+}
