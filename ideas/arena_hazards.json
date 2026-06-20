@@ -1,0 +1,4 @@
+{
+    "title": "Moving Arena Hazards",
+    "description": "Add hazards that move slowly around the rooms in procedural arenas, forcing balls to adapt their pathfinding dynamically."
+}

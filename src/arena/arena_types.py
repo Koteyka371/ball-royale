@@ -261,6 +261,32 @@ class BuffAllyArena(ProceduralArena):
         self.corridors.append(Corridor(250, cy - 50, cx - 300 - 250, 100)) # Left to center
         self.corridors.append(Corridor(cx + 300, cy - 50, w - 250 - (cx + 300), 100)) # Right to center
 
+class AggressiveChaseArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central medium room
+        center_size = 300
+        self.rooms.append(Room(cx - center_size/2, cy - center_size/2, center_size, center_size))
+
+        # 4 dead-end rooms (narrower)
+        room_size = 150
+        self.rooms.append(Room(50, cy - room_size/2, room_size, room_size)) # Left
+        self.rooms.append(Room(w - 50 - room_size, cy - room_size/2, room_size, room_size)) # Right
+        self.rooms.append(Room(cx - room_size/2, 50, room_size, room_size)) # Top
+        self.rooms.append(Room(cx - room_size/2, h - 50 - room_size, room_size, room_size)) # Bottom
+
+        # Corridors connecting dead-ends to center
+        # These are long and narrow, making escaping hard once cornered
+        self.corridors.append(Corridor(50 + room_size, cy - 40, cx - center_size/2 - (50 + room_size), 80)) # Left
+        self.corridors.append(Corridor(cx + center_size/2, cy - 40, (w - 50 - room_size) - (cx + center_size/2), 80)) # Right
+        self.corridors.append(Corridor(cx - 40, 50 + room_size, 80, cy - center_size/2 - (50 + room_size))) # Top
+        self.corridors.append(Corridor(cx - 40, cy + center_size/2, 80, (h - 50 - room_size) - (cy + center_size/2))) # Bottom
+
 ARENAS = {
     "buff_ally": BuffAllyArena,
     "retreat_to_ally": RetreatToAllyArena,
@@ -278,7 +304,8 @@ ARENAS = {
     "split": SplitArena,
     "flank": FlankArena,
     "choke_point": ChokePointArena,
-    "use_shield": UseShieldArena
+    "use_shield": UseShieldArena,
+    "aggressive_chase": AggressiveChaseArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
