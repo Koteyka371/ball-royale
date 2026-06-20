@@ -208,7 +208,38 @@ class UseShieldArena(ProceduralArena):
             damage = 20.0 if kind == "spikes" else 40.0
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=40.0, kind=kind, damage=damage))
 
+class RetreatToAllyArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central danger zone with hazards
+        self.rooms.append(Room(cx - 200, cy - 200, 400, 400))
+
+        # Two ally bases (safe zones)
+        self.rooms.append(Room(50, 50, 200, 200))
+        self.rooms.append(Room(w - 250, h - 250, 200, 200))
+
+        # Corridors connecting bases to central zone
+        self.corridors.append(Corridor(150, 250, 100, cy - 250))
+        self.corridors.append(Corridor(250, 150, cx - 250, 100))
+
+        self.corridors.append(Corridor(w - 250, cy, 100, h - cy - 250))
+        self.corridors.append(Corridor(cx, h - 250, w - cx - 250, 100))
+
+        # Hazards in central zone to encourage retreat
+        import math
+        for i in range(8):
+            angle = 2 * math.pi * i / 8
+            hx = cx + 150 * math.cos(angle)
+            hy = cy + 150 * math.sin(angle)
+            self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=30.0, kind="lava", damage=30.0))
+
 ARENAS = {
+    "retreat_to_ally": RetreatToAllyArena,
     "procedural": ProceduralArena,
     "cross": CrossArena,
     "ring": RingArena,
