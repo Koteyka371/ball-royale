@@ -1603,7 +1603,7 @@
     },
     {
       "id": "idea-ball_type-091",
-      "status": "todo",
+      "status": "done",
       "area": "content",
       "risk": "medium",
       "title": "Implement King ball",
