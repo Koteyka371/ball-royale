@@ -208,7 +208,34 @@ class UseShieldArena(ProceduralArena):
             damage = 20.0 if kind == "spikes" else 40.0
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=40.0, kind=kind, damage=damage))
 
+class TargetStrongArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central large room
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+
+        # 4 corner rooms
+        self.rooms.append(Room(50, 50, 200, 200))
+        self.rooms.append(Room(w - 250, 50, 200, 200))
+        self.rooms.append(Room(50, h - 250, 200, 200))
+        self.rooms.append(Room(w - 250, h - 250, 200, 200))
+
+        # Corridors connecting corners to center
+        self.corridors.append(Corridor(200, 200, cx - 300 - 200, cy - 300 - 200 + 100)) # Top left
+        self.corridors.append(Corridor(cx + 300, 200, w - 250 - cx - 300, cy - 300 - 200 + 100)) # Top right
+        self.corridors.append(Corridor(200, cy + 300, cx - 300 - 200, h - 250 - cy - 300)) # Bottom left
+        self.corridors.append(Corridor(cx + 300, cy + 300, w - 250 - cx - 300, h - 250 - cy - 300)) # Bottom right
+
+        # Adding some hazards to make it challenging
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=80.0, kind="spikes", damage=20.0))
+
 ARENAS = {
+    "target_strong": TargetStrongArena,
     "procedural": ProceduralArena,
     "cross": CrossArena,
     "ring": RingArena,
