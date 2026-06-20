@@ -174,7 +174,7 @@
       "status": "idle",
       "task_id": null,
       "started_at": null,
-      "cycles_today": 2
+      "cycles_today": 1
     },
     "agent-22": {
       "name": "Jules Worker 22",
