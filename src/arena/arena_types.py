@@ -326,7 +326,46 @@ class ComebacksArena(ProceduralArena):
             hy = cy + 200 * math.sin(angle)
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=30.0, kind="lava", damage=40.0))
 
+class GeneticsArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # A large central area resembling a petri dish / cell
+        self.rooms.append(Room(cx - 400, cy - 400, 800, 800))
+
+        # 4 small "incubation" chambers
+        self.rooms.append(Room(50, 50, 200, 200))
+        self.rooms.append(Room(w - 250, 50, 200, 200))
+        self.rooms.append(Room(50, h - 250, 200, 200))
+        self.rooms.append(Room(w - 250, h - 250, 200, 200))
+
+        # Connect incubation chambers to the central area
+        self.corridors.append(Corridor(150, 250, 100, cy - 400 - 250))
+        self.corridors.append(Corridor(250, 150, cx - 400 - 250, 100))
+
+        self.corridors.append(Corridor(w - 250, 250, 100, cy - 400 - 250))
+        self.corridors.append(Corridor(cx + 400, 150, w - 250 - (cx + 400), 100))
+
+        self.corridors.append(Corridor(150, cy + 400, 100, h - 250 - (cy + 400)))
+        self.corridors.append(Corridor(250, h - 250, cx - 400 - 250, 100))
+
+        self.corridors.append(Corridor(w - 250, cy + 400, 100, h - 250 - (cy + 400)))
+        self.corridors.append(Corridor(cx + 400, h - 250, w - 250 - (cx + 400), 100))
+
+        # Add some hazards resembling "mutations" or cell structures
+        import math
+        for i in range(12):
+            angle = 2 * math.pi * i / 12
+            hx = cx + 250 * math.cos(angle)
+            hy = cy + 250 * math.sin(angle)
+            self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=25.0, kind="lava" if i%2 == 0 else "spikes", damage=30.0))
+
 ARENAS = {
+    "genetics": GeneticsArena,
     "buff_ally": BuffAllyArena,
     "retreat_to_ally": RetreatToAllyArena,
     "procedural": ProceduralArena,
