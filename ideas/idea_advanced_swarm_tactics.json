@@ -1,0 +1,4 @@
+{
+  "title": "Advanced Swarm Tactics",
+  "description": "Implement swarm tactics such as encirclement and decoy maneuvers for the Swarm balls, taking advantage of the boid rules implemented. This could also expand the 'SwarmArena' to provide strategic choke points that benefit smaller, numerous balls."
+}

@@ -376,7 +376,34 @@ class KiteArena(ProceduralArena):
         self.hazards.append(Hazard(id=2, x=300, y=cy, radius=50.0, kind="lava", damage=10.0))
         self.hazards.append(Hazard(id=3, x=w-300, y=cy, radius=50.0, kind="lava", damage=10.0))
 
+class SwarmArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central large room for swarm battles
+        self.rooms.append(Room(cx - 400, cy - 400, 800, 800))
+
+        # Surrounding smaller rooms
+        self.rooms.append(Room(50, 50, 200, 200))
+        self.rooms.append(Room(w - 250, 50, 200, 200))
+        self.rooms.append(Room(50, h - 250, 200, 200))
+        self.rooms.append(Room(w - 250, h - 250, 200, 200))
+
+        # Corridors
+        self.corridors.append(Corridor(150, 250, 100, cy - 650))
+        self.corridors.append(Corridor(w - 250, 250, 100, cy - 650))
+        self.corridors.append(Corridor(150, cy + 400, 100, h - cy - 650))
+        self.corridors.append(Corridor(w - 250, cy + 400, 100, h - cy - 650))
+
+        # Add a few central hazards
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=50.0, kind="lava", damage=10.0))
+
 ARENAS = {
+    "swarm": SwarmArena,
     "kite": KiteArena,
     "buff_ally": BuffAllyArena,
     "retreat_to_ally": RetreatToAllyArena,
