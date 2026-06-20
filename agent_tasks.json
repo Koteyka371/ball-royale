@@ -1617,6 +1617,91 @@
         "Tests pass",
         "No regressions"
       ]
+    },
+    {
+      "id": "idea-arena-092",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Aggressive Chase arena",
+      "description": "Implement Create Aggressive Chase arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Aggressive Chase arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-arena-093",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Target Weak arena",
+      "description": "Implement Create Target Weak arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Target Weak arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-arena-094",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Target Strong arena",
+      "description": "Implement Create Target Strong arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Target Strong arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-arena-095",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Kite arena",
+      "description": "Implement Create Kite arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Kite arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-arena-096",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Flank arena",
+      "description": "Implement Create Flank arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Flank arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
     }
   ]
 }
