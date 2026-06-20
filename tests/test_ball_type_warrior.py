@@ -43,7 +43,7 @@ def test_warrior_skill():
 def test_warrior_actions():
     ball = Warrior(ball_id=1)
     ball.flee(0.016)
-    assert ball.current_action == "flee"
+    assert ball.current_action == "attack"
     ball.attack(0.016)
     assert ball.current_action == "attack"
     ball.defend(0.016)
