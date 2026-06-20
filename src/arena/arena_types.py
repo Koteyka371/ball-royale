@@ -376,6 +376,35 @@ class KiteArena(ProceduralArena):
         self.hazards.append(Hazard(id=2, x=300, y=cy, radius=50.0, kind="lava", damage=10.0))
         self.hazards.append(Hazard(id=3, x=w-300, y=cy, radius=50.0, kind="lava", damage=10.0))
 
+class EmotionalContagionArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central room
+        self.rooms.append(Room(cx - 200, cy - 200, 400, 400))
+
+        # Side rooms
+        self.rooms.append(Room(cx - 100, 50, 200, 200)) # Top
+        self.rooms.append(Room(cx - 100, h - 250, 200, 200)) # Bottom
+        self.rooms.append(Room(50, cy - 100, 200, 200)) # Left
+        self.rooms.append(Room(w - 250, cy - 100, 200, 200)) # Right
+
+        # Corridors
+        self.corridors.append(Corridor(cx - 50, 200, 100, cy - 200 - 150)) # Top to center
+        self.corridors.append(Corridor(cx - 50, cy + 150, 100, h - 250 - cy - 100)) # Bottom to center
+        self.corridors.append(Corridor(200, cy - 50, cx - 200 - 150, 100)) # Left to center
+        self.corridors.append(Corridor(cx + 150, cy - 50, w - 250 - cx - 100, 100)) # Center to right
+
+        # Hazards in central room corners to create choke points
+        self.hazards.append(Hazard(0, cx - 150, cy - 150, 40.0, 'lava', 10.0))
+        self.hazards.append(Hazard(1, cx + 150, cy - 150, 40.0, 'lava', 10.0))
+        self.hazards.append(Hazard(2, cx - 150, cy + 150, 40.0, 'lava', 10.0))
+        self.hazards.append(Hazard(3, cx + 150, cy + 150, 40.0, 'lava', 10.0))
+
 ARENAS = {
     "kite": KiteArena,
     "buff_ally": BuffAllyArena,
@@ -397,7 +426,8 @@ ARENAS = {
     "use_shield": UseShieldArena,
     "aggressive_chase": AggressiveChaseArena,
     "comebacks": ComebacksArena,
-    "circle_strafe": CircleStrafeArena
+    "circle_strafe": CircleStrafeArena,
+    "emotional_contagion": EmotionalContagionArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:

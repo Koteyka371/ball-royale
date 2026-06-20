@@ -22,5 +22,6 @@ const ARENAS = [
     "buff_ally",
     "aggressive_chase",
     "comebacks",
-    "circle_strafe"
+    "circle_strafe",
+    "emotional_contagion"
 ]
