@@ -1,0 +1,4 @@
+{
+  "title": "Weather System",
+  "description": "Dynamic weather that affects gameplay. Rain makes movement slippery and increases speed, fog reduces perception radius for all balls, and lightning occasionally strikes random spots in the arena, dealing damage."
+}
