@@ -528,7 +528,51 @@ class BallRelationshipsArena(ProceduralArena):
         self.hazards.append(Hazard(id=2, x=cx - 150, y=cy + 150, radius=30.0, kind="lava", damage=20.0))
         self.hazards.append(Hazard(id=3, x=cx + 150, y=cy + 150, radius=30.0, kind="lava", damage=20.0))
 
+class CollectBoosterArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # 9 rooms in a 3x3 grid
+        # Top row
+        self.rooms.append(Room(cx - 400, cy - 400, 200, 200))
+        self.rooms.append(Room(cx - 100, cy - 400, 200, 200))
+        self.rooms.append(Room(cx + 200, cy - 400, 200, 200))
+        # Middle row
+        self.rooms.append(Room(cx - 400, cy - 100, 200, 200))
+        self.rooms.append(Room(cx - 100, cy - 100, 200, 200))
+        self.rooms.append(Room(cx + 200, cy - 100, 200, 200))
+        # Bottom row
+        self.rooms.append(Room(cx - 400, cy + 200, 200, 200))
+        self.rooms.append(Room(cx - 100, cy + 200, 200, 200))
+        self.rooms.append(Room(cx + 200, cy + 200, 200, 200))
+
+        # 12 corridors connecting them
+        # Horizontal corridors
+        self.corridors.append(Corridor(cx - 200, cy - 350, 100, 100))
+        self.corridors.append(Corridor(cx + 100, cy - 350, 100, 100))
+        self.corridors.append(Corridor(cx - 200, cy - 50, 100, 100))
+        self.corridors.append(Corridor(cx + 100, cy - 50, 100, 100))
+        self.corridors.append(Corridor(cx - 200, cy + 250, 100, 100))
+        self.corridors.append(Corridor(cx + 100, cy + 250, 100, 100))
+
+        # Vertical corridors
+        self.corridors.append(Corridor(cx - 350, cy - 200, 100, 100))
+        self.corridors.append(Corridor(cx - 50, cy - 200, 100, 100))
+        self.corridors.append(Corridor(cx + 250, cy - 200, 100, 100))
+        self.corridors.append(Corridor(cx - 350, cy + 100, 100, 100))
+        self.corridors.append(Corridor(cx - 50, cy + 100, 100, 100))
+        self.corridors.append(Corridor(cx + 250, cy + 100, 100, 100))
+
+        # Central hazard
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=40.0, kind="lava", damage=25.0))
+
+
 ARENAS = {
+    "collect_booster": CollectBoosterArena,
     "reposition": RepositionArena,
     "avoid_trap": AvoidTrapArena,
     "kite": KiteArena,
