@@ -295,3 +295,54 @@ class BallRelationshipsArena extends ProceduralArena:
         hazards.append(ProceduralArena.Hazard.new(1, cx + 150.0, cy - 150.0, 30.0, "lava", 20.0))
         hazards.append(ProceduralArena.Hazard.new(2, cx - 150.0, cy + 150.0, 30.0, "lava", 20.0))
         hazards.append(ProceduralArena.Hazard.new(3, cx + 150.0, cy + 150.0, 30.0, "lava", 20.0))
+
+class BattleRoyaleArena extends ProceduralArena:
+    func generate():
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = width
+        var h = height
+        var cx = w / 2.0
+        var cy = h / 2.0
+
+        rooms.append(ProceduralArena.Room.new(100.0, 100.0, 400.0, 400.0))
+        rooms.append(ProceduralArena.Room.new(w - 500.0, 100.0, 400.0, 400.0))
+        rooms.append(ProceduralArena.Room.new(100.0, h - 500.0, 400.0, 400.0))
+        rooms.append(ProceduralArena.Room.new(w - 500.0, h - 500.0, 400.0, 400.0))
+
+        rooms.append(ProceduralArena.Room.new(cx - 100.0, 100.0, 200.0, 200.0))
+        rooms.append(ProceduralArena.Room.new(cx - 100.0, h - 300.0, 200.0, 200.0))
+        rooms.append(ProceduralArena.Room.new(100.0, cy - 100.0, 200.0, 200.0))
+        rooms.append(ProceduralArena.Room.new(w - 300.0, cy - 100.0, 200.0, 200.0))
+
+        rooms.append(ProceduralArena.Room.new(cx - 250.0, cy - 250.0, 500.0, 500.0))
+
+        corridors.append(ProceduralArena.Corridor.new(300.0, 200.0, cx - 400.0, 100.0))
+        corridors.append(ProceduralArena.Corridor.new(200.0, 300.0, 100.0, cy - 400.0))
+
+        corridors.append(ProceduralArena.Corridor.new(cx + 100.0, 200.0, cx - 400.0, 100.0))
+        corridors.append(ProceduralArena.Corridor.new(w - 300.0, 300.0, 100.0, cy - 400.0))
+
+        corridors.append(ProceduralArena.Corridor.new(200.0, cy + 100.0, 100.0, cy - 400.0))
+        corridors.append(ProceduralArena.Corridor.new(300.0, h - 300.0, cx - 400.0, 100.0))
+
+        corridors.append(ProceduralArena.Corridor.new(w - 300.0, cy + 100.0, 100.0, cy - 400.0))
+        corridors.append(ProceduralArena.Corridor.new(cx + 100.0, h - 300.0, cx - 400.0, 100.0))
+
+        corridors.append(ProceduralArena.Corridor.new(cx - 50.0, 300.0, 100.0, cy - 550.0))
+        corridors.append(ProceduralArena.Corridor.new(cx - 50.0, cy + 250.0, 100.0, cy - 550.0))
+        corridors.append(ProceduralArena.Corridor.new(300.0, cy - 50.0, cx - 550.0, 100.0))
+        corridors.append(ProceduralArena.Corridor.new(cx + 250.0, cy - 50.0, cx - 550.0, 100.0))
+
+        hazards.append(ProceduralArena.Hazard.new(0, cx - 100.0, cy - 100.0, 40.0, "lava", 20.0))
+        hazards.append(ProceduralArena.Hazard.new(1, cx + 100.0, cy - 100.0, 40.0, "lava", 20.0))
+        hazards.append(ProceduralArena.Hazard.new(2, cx - 100.0, cy + 100.0, 40.0, "lava", 20.0))
+        hazards.append(ProceduralArena.Hazard.new(3, cx + 100.0, cy + 100.0, 40.0, "lava", 20.0))
+
+    func update_zone(current_tick: int, delta: float) -> void:
+        if current_tick != last_tick:
+            last_tick = current_tick
+            safe_zone_radius -= 10.0 * delta
+            if safe_zone_radius < 50.0:
+                safe_zone_radius = 50.0

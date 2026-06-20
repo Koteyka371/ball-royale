@@ -528,6 +528,62 @@ class BallRelationshipsArena(ProceduralArena):
         self.hazards.append(Hazard(id=2, x=cx - 150, y=cy + 150, radius=30.0, kind="lava", damage=20.0))
         self.hazards.append(Hazard(id=3, x=cx + 150, y=cy + 150, radius=30.0, kind="lava", damage=20.0))
 
+
+class BattleRoyaleArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # 4 large corner areas
+        self.rooms.append(Room(100, 100, 400, 400)) # Top-Left
+        self.rooms.append(Room(w - 500, 100, 400, 400)) # Top-Right
+        self.rooms.append(Room(100, h - 500, 400, 400)) # Bottom-Left
+        self.rooms.append(Room(w - 500, h - 500, 400, 400)) # Bottom-Right
+
+        # 4 small midway areas
+        self.rooms.append(Room(cx - 100, 100, 200, 200)) # Top-Mid
+        self.rooms.append(Room(cx - 100, h - 300, 200, 200)) # Bottom-Mid
+        self.rooms.append(Room(100, cy - 100, 200, 200)) # Left-Mid
+        self.rooms.append(Room(w - 300, cy - 100, 200, 200)) # Right-Mid
+
+        # Central final showdown area
+        self.rooms.append(Room(cx - 250, cy - 250, 500, 500))
+
+        # Connecting corridors to allow navigation towards the center
+        # Corners to Mid
+        self.corridors.append(Corridor(300, 200, cx - 400, 100)) # TL to TM
+        self.corridors.append(Corridor(200, 300, 100, cy - 400)) # TL to LM
+
+        self.corridors.append(Corridor(cx + 100, 200, cx - 400, 100)) # TM to TR
+        self.corridors.append(Corridor(w - 300, 300, 100, cy - 400)) # TR to RM
+
+        self.corridors.append(Corridor(200, cy + 100, 100, cy - 400)) # LM to BL
+        self.corridors.append(Corridor(300, h - 300, cx - 400, 100)) # BL to BM
+
+        self.corridors.append(Corridor(w - 300, cy + 100, 100, cy - 400)) # RM to BR
+        self.corridors.append(Corridor(cx + 100, h - 300, cx - 400, 100)) # BM to BR
+
+        # Mid to Center
+        self.corridors.append(Corridor(cx - 50, 300, 100, cy - 550)) # TM to Center
+        self.corridors.append(Corridor(cx - 50, cy + 250, 100, cy - 550)) # BM to Center
+        self.corridors.append(Corridor(300, cy - 50, cx - 550, 100)) # LM to Center
+        self.corridors.append(Corridor(cx + 250, cy - 50, cx - 550, 100)) # RM to Center
+
+        # Hazards scattered in the middle to make it dangerous
+        self.hazards.append(Hazard(id=0, x=cx - 100, y=cy - 100, radius=40.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=1, x=cx + 100, y=cy - 100, radius=40.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=2, x=cx - 100, y=cy + 100, radius=40.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=3, x=cx + 100, y=cy + 100, radius=40.0, kind="lava", damage=20.0))
+
+    def update_zone(self, current_tick: int, delta: float):
+        if current_tick != self.last_tick:
+            self.last_tick = current_tick
+            self.safe_zone_radius -= 10.0 * delta
+            if self.safe_zone_radius < 50.0:
+                self.safe_zone_radius = 50.0
 ARENAS = {
     "reposition": RepositionArena,
     "avoid_trap": AvoidTrapArena,
@@ -554,7 +610,8 @@ ARENAS = {
     "comebacks": ComebacksArena,
     "circle_strafe": CircleStrafeArena,
     "epic_kills": EpicKillsArena,
-    "ball_relationships": BallRelationshipsArena
+    "ball_relationships": BallRelationshipsArena,
+    "battle_royale": BattleRoyaleArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
