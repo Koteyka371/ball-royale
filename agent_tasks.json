@@ -2127,6 +2127,91 @@
         "Tests pass",
         "No regressions"
       ]
+    },
+    {
+      "id": "idea-arena-122",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create AI Commentary arena",
+      "description": "Implement Create AI Commentary arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create AI Commentary arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-arena-123",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Ball Relationships arena",
+      "description": "Implement Create Ball Relationships arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Ball Relationships arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-arena-124",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Meta Evolution arena",
+      "description": "Implement Create Meta Evolution arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Meta Evolution arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-arena-125",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Physics Chain Reactions arena",
+      "description": "Implement Create Physics Chain Reactions arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Physics Chain Reactions arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-arena-126",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Battle Royale Shrinking Zone arena",
+      "description": "Implement Create Battle Royale Shrinking Zone arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Battle Royale Shrinking Zone arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
     }
   ]
 }
