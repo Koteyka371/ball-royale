@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-ball_type-082] Implement Hard ball — *2026-06-20 15:02:59 UTC*
+
+Implement Implement Hard ball as described in game_design.md
+
+---
+
 ## [idea-arena-113] Create Comebacks arena — *2026-06-20 14:59:06 UTC*
 
 Implement Create Comebacks arena as described in game_design.md
