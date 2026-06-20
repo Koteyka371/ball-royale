@@ -287,7 +287,29 @@ class AggressiveChaseArena(ProceduralArena):
         self.corridors.append(Corridor(cx - 40, 50 + room_size, 80, cy - center_size/2 - (50 + room_size))) # Top
         self.corridors.append(Corridor(cx - 40, cy + center_size/2, 80, (h - 50 - room_size) - (cy + center_size/2))) # Bottom
 
+
+class HideBehindArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central large room
+        self.rooms.append(Room(cx - 400, cy - 400, 800, 800))
+
+        # Add hazards in the center to encourage hiding
+        import math
+        for i in range(12):
+            angle = 2 * math.pi * i / 12
+            hx = cx + 200 * math.cos(angle)
+            hy = cy + 200 * math.sin(angle)
+            self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=30.0, kind="spikes", damage=10.0))
+
 ARENAS = {
+    "hide_behind": HideBehindArena,
+
     "buff_ally": BuffAllyArena,
     "retreat_to_ally": RetreatToAllyArena,
     "procedural": ProceduralArena,
