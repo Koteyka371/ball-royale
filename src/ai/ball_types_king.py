@@ -25,6 +25,7 @@ class King:
         self.max_hp = float(self.HP)
         self.x = x
         self.y = y
+        self.attack_timer: float = 0.0
         self.alive = True
         self.kills = 0
         self.first_hit_taken = False

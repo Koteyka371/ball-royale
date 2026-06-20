@@ -326,6 +326,24 @@ class ComebacksArena(ProceduralArena):
             hy = cy + 200 * math.sin(angle)
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=30.0, kind="lava", damage=40.0))
 
+class EmotionalContagionArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        strip_height = 300
+        self.rooms.append(Room(100, 100, w - 200, strip_height))
+        self.rooms.append(Room(100, cy - strip_height/2, w - 200, strip_height))
+        self.rooms.append(Room(100, h - 100 - strip_height, w - 200, strip_height))
+
+        strip_width = 300
+        self.rooms.append(Room(100, 100, strip_width, h - 200))
+        self.rooms.append(Room(cx - strip_width/2, 100, strip_width, h - 200))
+        self.rooms.append(Room(w - 100 - strip_width, 100, strip_width, h - 200))
+
 ARENAS = {
     "buff_ally": BuffAllyArena,
     "retreat_to_ally": RetreatToAllyArena,
@@ -345,7 +363,8 @@ ARENAS = {
     "choke_point": ChokePointArena,
     "use_shield": UseShieldArena,
     "aggressive_chase": AggressiveChaseArena,
-    "comebacks": ComebacksArena
+    "comebacks": ComebacksArena,
+    "emotional_contagion": EmotionalContagionArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
