@@ -50,6 +50,11 @@ class Sniper:
     def kite(self, delta: float, target=None) -> None:
         """Kite — держит дистанцию, атакует при приближении skill: для Sniper"""
         self.current_action = "kite"
+        if getattr(self, "skill_timer", 0.0) > 0:
+            self.skill_timer -= delta
+        if getattr(self, "attack_timer", 0.0) > 0:
+            self.attack_timer -= delta
+
         if not target:
             return
 
@@ -57,30 +62,35 @@ class Sniper:
         dy = target.y - self.y
         dist = math.hypot(dx, dy)
 
-        if dist > 0.0001:
-            nx = dx / dist
-            ny = dy / dist
-            step = self.SPEED * delta * 60.0
+        if dist <= 0.0001:
+            return
 
-            safe_distance = self.attack_range * 0.8
+        nx = dx / dist
+        ny = dy / dist
+        step = self.SPEED * delta * 60.0
+        safe_dist = self.attack_range * 0.8
 
-            if dist > self.attack_range:
-                move_dist = min(step, dist - self.attack_range)
-                self.x += nx * move_dist
-                self.y += ny * move_dist
-            elif dist < safe_distance:
-                self.x -= nx * step
-                self.y -= ny * step
+        if dist > self.attack_range:
+            # Move towards target
+            move_dist = min(step, dist - self.attack_range)
+            self.x += nx * move_dist
+            self.y += ny * move_dist
+        elif dist < safe_dist:
+            # Move away from target
+            self.x -= nx * step
+            self.y -= ny * step
 
-            new_dx = target.x - self.x
-            new_dy = target.y - self.y
-            new_dist = math.hypot(new_dx, new_dy)
+        # Recalculate distance
+        new_dx = target.x - self.x
+        new_dy = target.y - self.y
+        new_dist = math.hypot(new_dx, new_dy)
 
-            if new_dist <= self.attack_range:
-                if new_dist < safe_distance and self.skill_timer <= 0:
-                    self.use_skill()
-                if getattr(self, 'attack_timer', 0.0) <= 0:
-                    self.attack_timer = max(0.2, 2.0 / self.SPEED if self.SPEED > 0 else 1.0)
+        if new_dist <= self.attack_range:
+            if new_dist < safe_dist and self.skill_timer <= 0:
+                self.use_skill()
+            if getattr(self, 'attack_timer', 0.0) <= 0:
+                self.current_action = "attack"
+                self.attack_timer = max(0.2, 2.0 / self.SPEED if self.SPEED > 0 else 1.0)
 
     def defend(self, delta: float) -> None:
         self.current_action = "defend"
