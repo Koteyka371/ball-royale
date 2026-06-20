@@ -347,6 +347,29 @@ class CircleStrafeArena(ProceduralArena):
         self.corridors.append(Corridor(cx - 350, cy - 150, 200, 300)) # Left
         self.corridors.append(Corridor(cx + 150, cy - 150, 200, 300)) # Right
 
+class ClutchPlaysArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+
+        # Central large room
+        self.rooms.append(Room(100, 100, w - 200, h - 200))
+
+        # Grid of highly damaging hazards
+        hazard_id = 0
+        grid_size = 4
+        spacing_x = (w - 400) / (grid_size - 1)
+        spacing_y = (h - 400) / (grid_size - 1)
+
+        for i in range(grid_size):
+            for j in range(grid_size):
+                hx = 200 + i * spacing_x
+                hy = 200 + j * spacing_y
+                self.hazards.append(Hazard(id=hazard_id, x=hx, y=hy, radius=50.0, kind="spikes", damage=99.0))
+                hazard_id += 1
+
 class EpicKillsArena(ProceduralArena):
     def generate(self):
         self.rooms.clear()
@@ -515,7 +538,8 @@ ARENAS = {
     "aggressive_chase": AggressiveChaseArena,
     "comebacks": ComebacksArena,
     "circle_strafe": CircleStrafeArena,
-    "epic_kills": EpicKillsArena
+    "epic_kills": EpicKillsArena,
+    "clutch_plays": ClutchPlaysArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
