@@ -238,7 +238,28 @@ class RetreatToAllyArena(ProceduralArena):
             hy = cy + 150 * math.sin(angle)
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=30.0, kind="lava", damage=30.0))
 
+class HideBehindArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+
+        strip_w = 200
+        gap_x = (w - 100 - 3 * strip_w) / 2
+        gap_y = (h - 100 - 3 * strip_w) / 2
+
+        for i in range(3):
+            x = 50 + i * (strip_w + gap_x)
+            self.rooms.append(Room(x, 50, strip_w, h - 100))
+
+        for i in range(3):
+            y = 50 + i * (strip_w + gap_y)
+            self.rooms.append(Room(50, y, w - 100, strip_w))
+
+
 ARENAS = {
+    "hide_behind": HideBehindArena,
     "retreat_to_ally": RetreatToAllyArena,
     "procedural": ProceduralArena,
     "cross": CrossArena,

@@ -1,0 +1,4 @@
+{
+  "title": "Hide and Seek Game Mode",
+  "description": "A new game mode where some balls start as 'seekers' (e.g. enhanced perception, faster speed, but constantly losing HP) and others start as 'hiders' (no attack abilities, stealth/invisibility capabilities, only need to survive the timer). If a hider is caught/killed, they turn into a seeker."
+}
