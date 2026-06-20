@@ -208,6 +208,27 @@ class UseShieldArena(ProceduralArena):
             damage = 20.0 if kind == "spikes" else 40.0
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=40.0, kind=kind, damage=damage))
 
+
+class BodyBlockArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Two large rooms at top and bottom
+        self.rooms.append(Room(50, 50, w - 100, 300))
+        self.rooms.append(Room(50, h - 350, w - 100, 300))
+
+        # Three narrow corridors connecting them to encourage body blocking
+        # Left corridor
+        self.rooms.append(Room(200, 350, 100, h - 700))
+        # Center corridor
+        self.rooms.append(Room(cx - 50, 350, 100, h - 700))
+        # Right corridor
+        self.rooms.append(Room(w - 300, 350, 100, h - 700))
+
 ARENAS = {
     "procedural": ProceduralArena,
     "cross": CrossArena,
@@ -223,7 +244,8 @@ ARENAS = {
     "split": SplitArena,
     "flank": FlankArena,
     "choke_point": ChokePointArena,
-    "use_shield": UseShieldArena
+    "use_shield": UseShieldArena,
+    "body_block": BodyBlockArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
