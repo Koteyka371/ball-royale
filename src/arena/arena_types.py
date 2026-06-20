@@ -287,6 +287,46 @@ class AggressiveChaseArena(ProceduralArena):
         self.corridors.append(Corridor(cx - 40, 50 + room_size, 80, cy - center_size/2 - (50 + room_size))) # Top
         self.corridors.append(Corridor(cx - 40, cy + center_size/2, 80, (h - 50 - room_size) - (cy + center_size/2))) # Bottom
 
+
+class GroupAttackArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Massive open central room for group fighting
+        self.rooms.append(Room(cx - 500, cy - 500, 1000, 1000))
+
+        # 4 small squad bases in the corners
+        self.rooms.append(Room(50, 50, 150, 150))
+        self.rooms.append(Room(w - 200, 50, 150, 150))
+        self.rooms.append(Room(50, h - 200, 150, 150))
+        self.rooms.append(Room(w - 200, h - 200, 150, 150))
+
+        # Corridors connecting bases to the massive central room
+        # We make the corridors wide enough for a group to pass through together
+        self.corridors.append(Corridor(125, 200, 150, cy - 500 - 200)) # Top-Left to center (verticalish)
+        self.corridors.append(Corridor(200, 125, cx - 500 - 200, 150)) # Top-Left to center (horizontalish)
+
+        self.corridors.append(Corridor(w - 275, 200, 150, cy - 500 - 200)) # Top-Right
+        self.corridors.append(Corridor(cx + 500, 125, w - 200 - cx - 500, 150))
+
+        self.corridors.append(Corridor(125, cy + 500, 150, h - 200 - cy - 500)) # Bottom-Left
+        self.corridors.append(Corridor(200, h - 275, cx - 500 - 200, 150))
+
+        self.corridors.append(Corridor(w - 275, cy + 500, 150, h - 200 - cy - 500)) # Bottom-Right
+        self.corridors.append(Corridor(cx + 500, h - 275, w - 200 - cx - 500, 150))
+
+        # Add a few central hazards
+        import math
+        for i in range(4):
+            angle = 2 * math.pi * i / 4
+            hx = cx + 250 * math.cos(angle)
+            hy = cy + 250 * math.sin(angle)
+            self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=40.0, kind="lava", damage=40.0))
+
 ARENAS = {
     "buff_ally": BuffAllyArena,
     "retreat_to_ally": RetreatToAllyArena,
@@ -305,7 +345,8 @@ ARENAS = {
     "flank": FlankArena,
     "choke_point": ChokePointArena,
     "use_shield": UseShieldArena,
-    "aggressive_chase": AggressiveChaseArena
+    "aggressive_chase": AggressiveChaseArena,
+    "group_attack": GroupAttackArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:

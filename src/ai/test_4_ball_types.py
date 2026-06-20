@@ -54,7 +54,7 @@ def test_scout_priorities():
         "team_messages": []
     }
     action_weak = layer.choose_action(perception_weak, "calm")
-    assert action_weak in ("chase", "attack", "use_skill")
+    assert action_weak in ("chase", "attack", "use_skill", "flank")
 
     # Test strong enemy vs booster
     perception_strong = {

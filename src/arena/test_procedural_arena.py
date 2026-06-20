@@ -32,3 +32,10 @@ def test_hazard_generation():
         assert hazard.radius > 0
         assert hazard.damage > 0
         assert arena.is_point_inside(hazard.x, hazard.y, 0)
+
+def test_group_attack_arena():
+    from arena.arena_types import GroupAttackArena
+    arena = GroupAttackArena(arena_size=2000.0)
+    assert len(arena.rooms) == 5 # 1 massive central room, 4 squad bases
+    assert len(arena.corridors) == 8 # 8 wide connecting corridors
+    assert len(arena.hazards) == 4 # 4 lava hazards in the central room
