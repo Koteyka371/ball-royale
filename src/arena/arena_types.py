@@ -287,6 +287,28 @@ class AggressiveChaseArena(ProceduralArena):
         self.corridors.append(Corridor(cx - 40, 50 + room_size, 80, cy - center_size/2 - (50 + room_size))) # Top
         self.corridors.append(Corridor(cx - 40, cy + center_size/2, 80, (h - 50 - room_size) - (cy + center_size/2))) # Bottom
 
+class AvoidTrapArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Two safe zones connected by a narrow path
+        self.rooms.append(Room(50, 50, w/2 - 100, h - 100))
+        self.rooms.append(Room(w/2 + 50, 50, w/2 - 100, h - 100))
+
+        # Connecting corridor
+        self.corridors.append(Corridor(w/2 - 50, h/2 - 50, 100, 100))
+
+        # Add hazards in the center path area
+        import random
+        for i in range(15):
+            hx = cx + (random.uniform(-1, 1) * 80)
+            hy = cy + (random.uniform(-1, 1) * 80)
+            self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=15.0, kind="lava", damage=40.0))
+
 ARENAS = {
     "buff_ally": BuffAllyArena,
     "retreat_to_ally": RetreatToAllyArena,
@@ -305,7 +327,8 @@ ARENAS = {
     "flank": FlankArena,
     "choke_point": ChokePointArena,
     "use_shield": UseShieldArena,
-    "aggressive_chase": AggressiveChaseArena
+    "aggressive_chase": AggressiveChaseArena,
+    "avoid_trap": AvoidTrapArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
