@@ -1467,7 +1467,7 @@
     },
     {
       "id": "idea-ball_type-083",
-      "status": "todo",
+      "status": "done",
       "area": "content",
       "risk": "medium",
       "title": "Implement Chaos ball",

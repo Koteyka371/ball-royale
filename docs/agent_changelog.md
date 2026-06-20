@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-ball_type-083] Implement Chaos ball — *2026-06-20 11:21:25 UTC*
+
+Implement Implement Chaos ball as described in game_design.md
+
+---
+
 ## [idea-arena-102] Create Retreat to Ally arena — *2026-06-20 11:09:33 UTC*
 
 Implement Create Retreat to Ally arena as described in game_design.md
