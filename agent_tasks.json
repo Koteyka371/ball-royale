@@ -1484,7 +1484,7 @@
     },
     {
       "id": "idea-ball_type-084",
-      "status": "todo",
+      "status": "done",
       "area": "content",
       "risk": "medium",
       "title": "Implement Warrior ball",

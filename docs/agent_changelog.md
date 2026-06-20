@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-ball_type-084] Implement Warrior ball — *2026-06-20 05:16:07 UTC*
+
+Implement Implement Warrior ball as described in game_design.md
+
+---
+
 ## [idea-ball_type-089] Implement Bomber ball — *2026-06-20 05:05:01 UTC*
 
 Implement Implement Bomber ball as described in game_design.md
