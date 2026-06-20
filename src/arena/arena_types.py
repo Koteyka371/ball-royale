@@ -238,7 +238,22 @@ class RetreatToAllyArena(ProceduralArena):
             hy = cy + 150 * math.sin(angle)
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=30.0, kind="lava", damage=30.0))
 
+class CircleStrafeArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # A large square room with a huge hazard in the center
+        self.rooms.append(Room(100, 100, w - 200, h - 200))
+
+        # Add a massive central hazard (lava) so players have to circle strafe around it
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=300.0, kind="lava", damage=50.0))
+
 ARENAS = {
+    "circle_strafe": CircleStrafeArena,
     "retreat_to_ally": RetreatToAllyArena,
     "procedural": ProceduralArena,
     "cross": CrossArena,
