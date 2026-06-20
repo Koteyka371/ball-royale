@@ -20,5 +20,6 @@ const ARENAS = [
     "retreat_to_ally",
     "buff_ally",
     "aggressive_chase",
+    "target_strong",
     "comebacks"
 ]

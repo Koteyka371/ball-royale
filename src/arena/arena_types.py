@@ -326,7 +326,39 @@ class ComebacksArena(ProceduralArena):
             hy = cy + 200 * math.sin(angle)
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=30.0, kind="lava", damage=40.0))
 
+class TargetStrongArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central battle room (the stronghold)
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+
+        # Four corner spawn rooms
+        self.rooms.append(Room(50, 50, 200, 200)) # Top-Left
+        self.rooms.append(Room(w - 250, 50, 200, 200)) # Top-Right
+        self.rooms.append(Room(50, h - 250, 200, 200)) # Bottom-Left
+        self.rooms.append(Room(w - 250, h - 250, 200, 200)) # Bottom-Right
+
+        # Corridors connecting corners to center (with safe overlaps)
+        # Top-Left to Center
+        self.corridors.append(Corridor(100, 200, 100, cy - 400))
+        self.corridors.append(Corridor(100, cy - 300, cx - 300, 100))
+        # Top-Right to Center
+        self.corridors.append(Corridor(w - 200, 200, 100, cy - 400))
+        self.corridors.append(Corridor(cx + 300, cy - 300, w - cx - 300, 100))
+        # Bottom-Left to Center
+        self.corridors.append(Corridor(100, cy + 300, 100, h - cy - 400))
+        self.corridors.append(Corridor(100, cy + 200, cx - 300, 100))
+        # Bottom-Right to Center
+        self.corridors.append(Corridor(w - 200, cy + 300, 100, h - cy - 400))
+        self.corridors.append(Corridor(cx + 300, cy + 200, w - cx - 300, 100))
+
 ARENAS = {
+    "target_strong": TargetStrongArena,
     "buff_ally": BuffAllyArena,
     "retreat_to_ally": RetreatToAllyArena,
     "procedural": ProceduralArena,
