@@ -1,0 +1,4 @@
+{
+  "title": "Genetic Mutations System",
+  "description": "Balls reproduce and pass on slightly mutated versions of their stats (speed, HP, damage) over multiple battles, leading to natural selection."
+}
