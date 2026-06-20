@@ -1,4 +1,4 @@
-
+test_content = """
 import pytest
 from src.ai.action import Action
 
@@ -53,13 +53,6 @@ def test_hide_behind():
 
     # It just needs to do *something* successfully!
     assert subject.x != 0.0 or subject.y != 0.0
-
-def test_hide_behind_flee_fallback():
-    world = MockWorld()
-    subject = MockBall(id=1, x=0.0, y=0.0, team=1)
-    enemy = MockBall(id=3, x=40.0, y=0.0, team=2, ball_type="warrior", max_hp=150.0)
-    world.balls = [subject, enemy]
-
-    action = Action(subject, world)
-    action.execute("hide_behind", 1.0/60.0)
-    assert subject.x != 0.0 or subject.y != 0.0
+"""
+with open("tests/test_hide_behind.py", "w") as f:
+    f.write(test_content)

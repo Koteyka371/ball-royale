@@ -1341,7 +1341,7 @@ class Action:
             nx_m = dx_m / dist_m
             ny_m = dy_m / dist_m
 
-            nx_m, ny_m = self._apply_obstacle_avoidance(nx_m, ny_m, target_enemy)
+            nx_m, ny_m = self._apply_obstacle_avoidance(nx_m, ny_m)
             nx_m, ny_m = self._apply_boid_rules(nx_m, ny_m)
 
             speed = getattr(self.ball, "speed", 2.0)

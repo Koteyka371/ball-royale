@@ -2062,7 +2062,7 @@ func _hide_behind(delta: float):
         var nx_m = dx_m / dist_m
         var ny_m = dy_m / dist_m
 
-        var avoid = _apply_obstacle_avoidance(nx_m, ny_m, target_enemy)
+        var avoid = _apply_obstacle_avoidance(nx_m, ny_m)
         nx_m = avoid[0]
         ny_m = avoid[1]
 
