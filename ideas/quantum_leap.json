@@ -1,4 +1,0 @@
-{
-  "title": "Quantum Leap / Blackhole Arena",
-  "description": "Introduce an arena feature called 'Quantum Blackholes' that periodically spawn randomly in the center or sides. These blackholes apply a strong gravitational pull to all balls within a certain radius, sucking them toward the center. If a ball touches the center, it teleports them to another random blackhole on the map and deals a percentage of their HP as fall damage. This introduces dynamic environmental hazards that can break stalemates and force sudden, chaotic close-quarters combat."
-}

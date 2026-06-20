@@ -1872,6 +1872,91 @@
         "Tests pass",
         "No regressions"
       ]
+    },
+    {
+      "id": "idea-arena-107",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Escort arena",
+      "description": "Implement Create Escort arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Escort arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-arena-108",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Collect Booster arena",
+      "description": "Implement Create Collect Booster arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Collect Booster arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-arena-109",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Avoid Trap arena",
+      "description": "Implement Create Avoid Trap arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Avoid Trap arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-arena-110",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Reposition arena",
+      "description": "Implement Create Reposition arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Reposition arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
+    },
+    {
+      "id": "idea-arena-111",
+      "status": "todo",
+      "area": "arenas",
+      "risk": "low",
+      "title": "Create Wait and Watch arena",
+      "description": "Implement Create Wait and Watch arena as described in game_design.md",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Create Wait and Watch arena implemented",
+        "Tests pass",
+        "No regressions"
+      ]
     }
   ]
 }
