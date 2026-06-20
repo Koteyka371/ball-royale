@@ -326,7 +326,38 @@ class ComebacksArena(ProceduralArena):
             hy = cy + 200 * math.sin(angle)
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=30.0, kind="lava", damage=40.0))
 
+class KiteArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # 4 large corner rooms
+        self.rooms.append(Room(100, 100, 400, 400)) # Top-Left
+        self.rooms.append(Room(w - 500, 100, 400, 400)) # Top-Right
+        self.rooms.append(Room(100, h - 500, 400, 400)) # Bottom-Left
+        self.rooms.append(Room(w - 500, h - 500, 400, 400)) # Bottom-Right
+
+        # Long corridors connecting them, forming a giant kiting loop
+        # Top corridor
+        self.corridors.append(Corridor(300, 200, w - 600, 200))
+        # Bottom corridor
+        self.corridors.append(Corridor(300, h - 400, w - 600, 200))
+        # Left corridor
+        self.corridors.append(Corridor(200, 300, 200, h - 600))
+        # Right corridor
+        self.corridors.append(Corridor(w - 400, 300, 200, h - 600))
+
+        # Add a few central hazards inside the corridors to make kiting interesting
+        self.hazards.append(Hazard(id=0, x=cx, y=300, radius=50.0, kind="lava", damage=10.0))
+        self.hazards.append(Hazard(id=1, x=cx, y=h-300, radius=50.0, kind="lava", damage=10.0))
+        self.hazards.append(Hazard(id=2, x=300, y=cy, radius=50.0, kind="lava", damage=10.0))
+        self.hazards.append(Hazard(id=3, x=w-300, y=cy, radius=50.0, kind="lava", damage=10.0))
+
 ARENAS = {
+    "kite": KiteArena,
     "buff_ally": BuffAllyArena,
     "retreat_to_ally": RetreatToAllyArena,
     "procedural": ProceduralArena,
