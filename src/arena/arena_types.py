@@ -1,6 +1,6 @@
 import random
 
-from arena.procedural_arena import ProceduralArena, Room, Hazard
+from arena.procedural_arena import ProceduralArena, Room, Hazard, Corridor
 
 class CrossArena(ProceduralArena):
     def generate(self):
@@ -150,6 +150,30 @@ class SplitArena(ProceduralArena):
         self.rooms.append(Room(w/2 + 100, 50, w/2 - 150, h - 100))
         self.rooms.append(Room(w/2 - 50, cy - 100, 100, 200))
 
+
+class FlankArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central battle room
+        self.rooms.append(Room(cx - 200, cy - 200, 400, 400))
+
+        # Flanking side rooms
+        self.rooms.append(Room(50, cy - 100, 150, 200)) # Left flank
+        self.rooms.append(Room(w - 200, cy - 100, 150, 200)) # Right flank
+        self.rooms.append(Room(cx - 100, 50, 200, 150)) # Top flank
+        self.rooms.append(Room(cx - 100, h - 200, 200, 150)) # Bottom flank
+
+        # Corridors connecting flanks
+        self.corridors.append(Corridor(200, cy - 50, cx - 400, 100)) # Left to center
+        self.corridors.append(Corridor(cx + 200, cy - 50, w - cx - 400, 100)) # Center to right
+        self.corridors.append(Corridor(cx - 50, 200, 100, cy - 400)) # Top to center
+        self.corridors.append(Corridor(cx - 50, cy + 200, 100, h - cy - 400)) # Center to bottom
+
 class ChokePointArena(ProceduralArena):
     def generate(self):
         self.rooms.clear()
@@ -174,6 +198,7 @@ ARENAS = {
     "zigzag": ZigZagArena,
     "fortress": FortressArena,
     "split": SplitArena,
+    "flank": FlankArena,
     "choke_point": ChokePointArena
 }
 

@@ -14,5 +14,6 @@ const ARENAS = [
     "zigzag",
     "fortress",
     "split",
+    "flank",
     "choke_point"
 ]
