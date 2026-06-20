@@ -53,31 +53,31 @@ class Sniper:
         if target is None:
             return
 
-        dx = target.x - self.x
-        dy = target.y - self.y
-        dist = math.hypot(dx, dy)
+        dist_x = target.x - self.x
+        dist_y = target.y - self.y
+        distance = math.hypot(dist_x, dist_y)
 
-        if dist > 0.0001:
-            dir_x_norm = dx / dist
-            dir_y_norm = dy / dist
+        if distance > 0.0001:
+            dir_x_norm = dist_x / distance
+            dir_y_norm = dist_y / distance
             move_amt = self.SPEED * delta * 60.0
 
             safe_dist = self.attack_range * 0.8
 
-            if dist > self.attack_range:
-                amt_to_move = min(move_amt, dist - self.attack_range)
+            if distance > self.attack_range:
+                amt_to_move = min(move_amt, distance - self.attack_range)
                 self.x += dir_x_norm * amt_to_move
                 self.y += dir_y_norm * amt_to_move
-            elif dist < safe_dist:
+            elif distance < safe_dist:
                 self.x -= dir_x_norm * move_amt
                 self.y -= dir_y_norm * move_amt
 
-            new_dx = target.x - self.x
-            new_dy = target.y - self.y
-            new_dist = math.hypot(new_dx, new_dy)
+            new_dist_x = target.x - self.x
+            new_dist_y = target.y - self.y
+            new_distance = math.hypot(new_dist_x, new_dist_y)
 
-            if new_dist <= self.attack_range:
-                if new_dist < safe_dist and self.skill_timer <= 0:
+            if new_distance <= self.attack_range:
+                if new_distance < safe_dist and self.skill_timer <= 0:
                     self.use_skill()
                 if getattr(self, 'attack_timer', 0.0) <= 0:
                     self.attack_timer = max(0.2, 2.0 / self.SPEED if self.SPEED > 0 else 1.0)
