@@ -287,7 +287,50 @@ class AggressiveChaseArena(ProceduralArena):
         self.corridors.append(Corridor(cx - 40, 50 + room_size, 80, cy - center_size/2 - (50 + room_size))) # Top
         self.corridors.append(Corridor(cx - 40, cy + center_size/2, 80, (h - 50 - room_size) - (cy + center_size/2))) # Bottom
 
+
+class ClutchPlaysArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # A very large central room, but it's mostly filled with hazards
+        self.rooms.append(Room(50, 50, w - 100, h - 100))
+
+        # We want to create "clutch" plays, so we'll leave a small safe zone
+        # in the center, and a narrow cross-shaped safe area, and fill the rest
+        # with dense, high-damage hazards (lava)
+
+        import math
+
+        # Grid of hazards
+        num_hazards_x = 10
+        num_hazards_y = 10
+
+        spacing_x = w / num_hazards_x
+        spacing_y = h / num_hazards_y
+
+        hazard_id = 0
+        for i in range(num_hazards_x):
+            for j in range(num_hazards_y):
+                hx = i * spacing_x + spacing_x / 2
+                hy = j * spacing_y + spacing_y / 2
+
+                # Check if it's in the cross safe zone
+                in_horizontal_safe = abs(hy - cy) < 150
+                in_vertical_safe = abs(hx - cx) < 150
+                in_center = math.hypot(hx - cx, hy - cy) < 250
+
+                if not (in_horizontal_safe or in_vertical_safe or in_center):
+                    # It's in the danger zone, add a hazard
+                    # High damage lava to force clutch plays
+                    self.hazards.append(Hazard(id=hazard_id, x=hx, y=hy, radius=min(spacing_x, spacing_y)*0.4, kind="lava", damage=80.0))
+                    hazard_id += 1
+
 ARENAS = {
+    "clutch_plays": ClutchPlaysArena,
     "buff_ally": BuffAllyArena,
     "retreat_to_ally": RetreatToAllyArena,
     "procedural": ProceduralArena,
