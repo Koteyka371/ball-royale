@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [auto-implement-**flank**-—-обходит-сзади-для-удара-skil] Implement **Flank** — обходит сзади для удара skill — *2026-06-20 08:43:30 UTC*
+
+Create **Flank** — обходит сзади для удара skill: для Ninja
+
+---
+
 ## [idea-feature-036] Battle Royale mode with 20 balls — *2026-06-20 08:36:55 UTC*
 
 Implement Battle Royale mode with 20 balls as described in game_design.md
