@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Hologram Module",
+  "description": "A new tactical equipment that players/AI can deploy to create a temporary clone of themselves. The clone moves erratically and draws enemy aggro/attacks, but deals no damage and disappears after taking a set amount of damage or after a few seconds. Useful for snipers and squishy classes to reposition safely."
+}
