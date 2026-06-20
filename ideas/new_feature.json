@@ -1,0 +1,4 @@
+{
+  "title": "Weather Effects and Arena Modifiers",
+  "description": "Introduce dynamic weather effects that change the arena conditions temporarily. E.g., 'Rain' makes the floor slippery (reduced friction), 'Fog' reduces the AI's perception radius by 50%, and 'Wind' gently pushes all balls in a specific direction. These effects would randomly cycle every 30 seconds."
+}

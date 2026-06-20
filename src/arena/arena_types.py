@@ -185,6 +185,42 @@ class ChokePointArena(ProceduralArena):
         self.rooms.append(Room(50, h/2 + 100, w - 100, h/2 - 150))
         self.rooms.append(Room(cx - 100, h/2 - 50, 200, 150))
 
+class TargetWeakArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central large room
+        self.rooms.append(Room(cx - 200, cy - 200, 400, 400))
+
+        # Weak corner rooms
+        self.rooms.append(Room(50, 50, 150, 150))
+        self.rooms.append(Room(w - 200, 50, 150, 150))
+        self.rooms.append(Room(50, h - 200, 150, 150))
+        self.rooms.append(Room(w - 200, h - 200, 150, 150))
+
+        # Corridors
+        cw = 100  # corridor width
+
+        # Top-Left to Center (L-shape)
+        self.corridors.append(Corridor(125 - cw/2, 200, cw, cy - 200 - 200 + cw/2)) # Vertical down
+        self.corridors.append(Corridor(125 - cw/2, cy - 200 - cw/2, cx - 200 - 125 + cw/2, cw)) # Horizontal right
+
+        # Top-Right to Center (L-shape)
+        self.corridors.append(Corridor(w - 125 - cw/2, 200, cw, cy - 200 - 200 + cw/2)) # Vertical down
+        self.corridors.append(Corridor(cx + 200, cy - 200 - cw/2, w - 125 - (cx + 200) + cw/2, cw)) # Horizontal left
+
+        # Bottom-Left to Center (L-shape)
+        self.corridors.append(Corridor(125 - cw/2, cy + 200 - cw/2, cw, h - 200 - (cy + 200) + cw/2)) # Vertical up
+        self.corridors.append(Corridor(125 - cw/2, cy + 200 - cw/2, cx - 200 - 125 + cw/2, cw)) # Horizontal right
+
+        # Bottom-Right to Center (L-shape)
+        self.corridors.append(Corridor(w - 125 - cw/2, cy + 200 - cw/2, cw, h - 200 - (cy + 200) + cw/2)) # Vertical up
+        self.corridors.append(Corridor(cx + 200, cy + 200 - cw/2, w - 125 - (cx + 200) + cw/2, cw)) # Horizontal left
+
 ARENAS = {
     "procedural": ProceduralArena,
     "cross": CrossArena,
@@ -199,7 +235,8 @@ ARENAS = {
     "fortress": FortressArena,
     "split": SplitArena,
     "flank": FlankArena,
-    "choke_point": ChokePointArena
+    "choke_point": ChokePointArena,
+    "target_weak": TargetWeakArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
