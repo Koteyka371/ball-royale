@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-feature-036] Battle Royale mode with 20 balls — *2026-06-20 08:36:55 UTC*
+
+Implement Battle Royale mode with 20 balls as described in game_design.md
+
+---
+
 ## [idea-arena-101] Create Use Shield arena — *2026-06-20 08:33:13 UTC*
 
 Implement Create Use Shield arena as described in game_design.md
