@@ -376,7 +376,47 @@ class KiteArena(ProceduralArena):
         self.hazards.append(Hazard(id=2, x=300, y=cy, radius=50.0, kind="lava", damage=10.0))
         self.hazards.append(Hazard(id=3, x=w-300, y=cy, radius=50.0, kind="lava", damage=10.0))
 
+
+class WaitAndWatchArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # One large central room where the main brawl happens
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+
+        # Four "watchtower" or hiding rooms in the corners
+        self.rooms.append(Room(50, 50, 200, 200)) # Top-Left
+        self.rooms.append(Room(w - 250, 50, 200, 200)) # Top-Right
+        self.rooms.append(Room(50, h - 250, 200, 200)) # Bottom-Left
+        self.rooms.append(Room(w - 250, h - 250, 200, 200)) # Bottom-Right
+
+        # Narrow, long corridors connecting the corners to the center
+        self.corridors.append(Corridor(125, 250, 50, cy - 550))
+        self.corridors.append(Corridor(125, cy - 300, cx - 425, 50))
+
+        self.corridors.append(Corridor(w - 175, 250, 50, cy - 550))
+        self.corridors.append(Corridor(cx + 300, cy - 300, w - cx - 475, 50))
+
+        self.corridors.append(Corridor(125, cy + 300, 50, h - cy - 550))
+        self.corridors.append(Corridor(125, cy + 250, cx - 425, 50))
+
+        self.corridors.append(Corridor(w - 175, cy + 300, 50, h - cy - 550))
+        self.corridors.append(Corridor(cx + 300, cy + 250, w - cx - 475, 50))
+
+        # Hazards in the center
+        import math
+        for i in range(12):
+            angle = 2 * math.pi * i / 12
+            hx = cx + 200 * math.cos(angle)
+            hy = cy + 200 * math.sin(angle)
+            self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=35.0, kind="spikes", damage=20.0))
+
 ARENAS = {
+
     "kite": KiteArena,
     "buff_ally": BuffAllyArena,
     "retreat_to_ally": RetreatToAllyArena,
@@ -397,7 +437,8 @@ ARENAS = {
     "use_shield": UseShieldArena,
     "aggressive_chase": AggressiveChaseArena,
     "comebacks": ComebacksArena,
-    "circle_strafe": CircleStrafeArena
+    "circle_strafe": CircleStrafeArena,
+    "wait_and_watch": WaitAndWatchArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
