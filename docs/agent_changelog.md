@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-ball_type-081] Implement Medium ball — *2026-06-20 00:31:35 UTC*
+
+Implement Implement Medium ball as described in game_design.md
+
+---
+
 ## [idea-feature-076] Camera system — *2026-06-20 00:29:49 UTC*
 
 Implement Camera system as described in game_design.md

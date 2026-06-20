@@ -1433,7 +1433,7 @@
     },
     {
       "id": "idea-ball_type-081",
-      "status": "todo",
+      "status": "done",
       "area": "content",
       "risk": "medium",
       "title": "Implement Medium ball",
