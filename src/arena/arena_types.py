@@ -528,6 +528,13 @@ class BallRelationshipsArena(ProceduralArena):
         self.hazards.append(Hazard(id=2, x=cx - 150, y=cy + 150, radius=30.0, kind="lava", damage=20.0))
         self.hazards.append(Hazard(id=3, x=cx + 150, y=cy + 150, radius=30.0, kind="lava", damage=20.0))
 
+class ShrinkingZoneArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        self.rooms.append(Room(50.0, 50.0, self.width - 100.0, self.height - 100.0))
+
 class CollectBoosterArena(ProceduralArena):
     def generate(self):
         self.rooms.clear()
@@ -572,6 +579,7 @@ class CollectBoosterArena(ProceduralArena):
 
 
 ARENAS = {
+    "shrinking_zone": ShrinkingZoneArena,
     "collect_booster": CollectBoosterArena,
     "reposition": RepositionArena,
     "avoid_trap": AvoidTrapArena,

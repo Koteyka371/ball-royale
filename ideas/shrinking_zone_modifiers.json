@@ -1,0 +1,4 @@
+{
+  "title": "Dynamic Safe Zone Shapes",
+  "description": "Instead of just circles, the safe zone can shrink into randomized shapes like polygons or moving paths."
+}

@@ -207,6 +207,13 @@ func update_zone(current_tick: int, delta: float) -> void:
         if safe_zone_radius < 50.0:
             safe_zone_radius = 50.0
 
+class ShrinkingZoneArena extends ProceduralArena:
+    func generate():
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        rooms.append(ProceduralArena.Room.new(50.0, 50.0, width - 100.0, height - 100.0))
+
 class CollectBoosterArena extends ProceduralArena:
     func generate():
         rooms.clear()
