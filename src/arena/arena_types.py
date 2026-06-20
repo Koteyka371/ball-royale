@@ -528,6 +528,39 @@ class BallRelationshipsArena(ProceduralArena):
         self.hazards.append(Hazard(id=2, x=cx - 150, y=cy + 150, radius=30.0, kind="lava", damage=20.0))
         self.hazards.append(Hazard(id=3, x=cx + 150, y=cy + 150, radius=30.0, kind="lava", damage=20.0))
 
+class FunnyFailsArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # 4 corner rooms
+        self.rooms.append(Room(100, 100, 200, 200))
+        self.rooms.append(Room(w - 300, 100, 200, 200))
+        self.rooms.append(Room(100, h - 300, 200, 200))
+        self.rooms.append(Room(w - 300, h - 300, 200, 200))
+
+        # 1 tiny central room
+        self.rooms.append(Room(cx - 50, cy - 50, 100, 100))
+
+        # 4 extremely narrow corridors connecting corners to center
+        self.corridors.append(Corridor(200, cy - 25, cx - 250, 50))
+        self.corridors.append(Corridor(cx + 50, cy - 25, w - cx - 250, 50))
+        self.corridors.append(Corridor(cx - 25, 200, 50, cy - 250))
+        self.corridors.append(Corridor(cx - 25, cy + 50, 50, h - cy - 250))
+
+        # 8 huge lava hazards to catch falls from the narrow bridges
+        self.hazards.append(Hazard(id=0, x=cx - 150, y=cy - 150, radius=80.0, kind="lava", damage=50.0))
+        self.hazards.append(Hazard(id=1, x=cx + 150, y=cy - 150, radius=80.0, kind="lava", damage=50.0))
+        self.hazards.append(Hazard(id=2, x=cx - 150, y=cy + 150, radius=80.0, kind="lava", damage=50.0))
+        self.hazards.append(Hazard(id=3, x=cx + 150, y=cy + 150, radius=80.0, kind="lava", damage=50.0))
+        self.hazards.append(Hazard(id=4, x=cx - 250, y=cy, radius=60.0, kind="lava", damage=50.0))
+        self.hazards.append(Hazard(id=5, x=cx + 250, y=cy, radius=60.0, kind="lava", damage=50.0))
+        self.hazards.append(Hazard(id=6, x=cx, y=cy - 250, radius=60.0, kind="lava", damage=50.0))
+        self.hazards.append(Hazard(id=7, x=cx, y=cy + 250, radius=60.0, kind="lava", damage=50.0))
+
 ARENAS = {
     "reposition": RepositionArena,
     "avoid_trap": AvoidTrapArena,
@@ -554,7 +587,8 @@ ARENAS = {
     "comebacks": ComebacksArena,
     "circle_strafe": CircleStrafeArena,
     "epic_kills": EpicKillsArena,
-    "ball_relationships": BallRelationshipsArena
+    "ball_relationships": BallRelationshipsArena,
+    "funny_fails": FunnyFailsArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
