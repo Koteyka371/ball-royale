@@ -401,7 +401,7 @@ class Action:
             target = self._get_target(enemies)
 
             personality = getattr(self.ball, "personality", "idle")
-            if personality in ("warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "swarm", "aggressive", "cunning", "curious") and getattr(self.ball, "team_message", None) is None:
+            if personality in ("warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "swarm", "aggressive", "cunning", "curious", "mage", "paladin", "necro", "druid", "bard", "monk", "warlock", "cleric", "ranger", "illusionist", "alchemist", "shaman", "jester") and getattr(self.ball, "team_message", None) is None:
                 self.ball.team_message = {"type": "target_spotted", "x": target.x, "y": target.y}
 
             dx, dy = target.x - self.ball.x, target.y - self.ball.y
@@ -547,7 +547,7 @@ class Action:
 
             # Announce target
             personality = getattr(self.ball, "personality", "idle")
-            if personality in ("warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "swarm", "aggressive", "cunning", "curious") and getattr(self.ball, "team_message", None) is None:
+            if personality in ("warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "swarm", "aggressive", "cunning", "curious", "mage", "paladin", "necro", "druid", "bard", "monk", "warlock", "cleric", "ranger", "illusionist", "alchemist", "shaman", "jester") and getattr(self.ball, "team_message", None) is None:
                 self.ball.team_message = {"type": "target_spotted", "x": target.x, "y": target.y}
 
             target_vx, target_vy, flank_x, flank_y = self._get_flank_position(target)
@@ -631,7 +631,7 @@ class Action:
         target = self._get_target(enemies)
 
         personality = getattr(self.ball, "personality", "idle")
-        if personality in ("warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "swarm", "aggressive") and getattr(self.ball, "team_message", None) is None:
+        if personality in ("warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "swarm", "aggressive", "cunning", "curious", "mage", "paladin", "necro", "druid", "bard", "monk", "warlock", "cleric", "ranger", "illusionist", "alchemist", "shaman", "jester") and getattr(self.ball, "team_message", None) is None:
             self.ball.team_message = {"type": "target_spotted", "x": target.x, "y": target.y}
 
         # Basic pathfinding / steering:
@@ -729,7 +729,7 @@ class Action:
             target = self._get_target(enemies)
 
             personality = getattr(self.ball, "personality", "idle")
-            if personality in ("warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "swarm", "aggressive") and getattr(self.ball, "team_message", None) is None:
+            if personality in ("warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "swarm", "aggressive", "cunning", "curious", "mage", "paladin", "necro", "druid", "bard", "monk", "warlock", "cleric", "ranger", "illusionist", "alchemist", "shaman", "jester") and getattr(self.ball, "team_message", None) is None:
                 self.ball.team_message = {"type": "target_spotted", "x": target.x, "y": target.y}
 
             dx, dy = target.x - self.ball.x, target.y - self.ball.y
