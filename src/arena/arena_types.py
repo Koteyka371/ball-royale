@@ -287,6 +287,26 @@ class AggressiveChaseArena(ProceduralArena):
         self.corridors.append(Corridor(cx - 40, 50 + room_size, 80, cy - center_size/2 - (50 + room_size))) # Top
         self.corridors.append(Corridor(cx - 40, cy + center_size/2, 80, (h - 50 - room_size) - (cy + center_size/2))) # Bottom
 
+class CircleStrafeArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+        rw, rh = 300, 300
+        # 4 rooms forming a large square with a central hole
+        self.rooms.append(Room(cx - 400, cy - 400, rw, rh)) # Top-Left
+        self.rooms.append(Room(cx + 100, cy - 400, rw, rh)) # Top-Right
+        self.rooms.append(Room(cx - 400, cy + 100, rw, rh)) # Bottom-Left
+        self.rooms.append(Room(cx + 100, cy + 100, rw, rh)) # Bottom-Right
+
+        # 4 corridors connecting them (loop)
+        self.corridors.append(Corridor(cx - 150, cy - 350, 300, 200)) # Top
+        self.corridors.append(Corridor(cx - 150, cy + 150, 300, 200)) # Bottom
+        self.corridors.append(Corridor(cx - 350, cy - 150, 200, 300)) # Left
+        self.corridors.append(Corridor(cx + 150, cy - 150, 200, 300)) # Right
+
 class ComebacksArena(ProceduralArena):
     def generate(self):
         self.rooms.clear()
@@ -345,7 +365,8 @@ ARENAS = {
     "choke_point": ChokePointArena,
     "use_shield": UseShieldArena,
     "aggressive_chase": AggressiveChaseArena,
-    "comebacks": ComebacksArena
+    "comebacks": ComebacksArena,
+    "circle_strafe": CircleStrafeArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
