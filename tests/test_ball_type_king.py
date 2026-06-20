@@ -48,3 +48,18 @@ def test_king_actions():
     assert b.current_action == "opportunistic"
     b.idle(1.0)
     assert b.current_action == "idle"
+
+def test_king_command():
+    b = King(1, 0, 0)
+    ally = King(2, 5, 0)
+    ally.damage = 10
+    ally.speed = 10
+    b.skill_timer = 0
+    b.attack_timer = 0
+
+    b.command(0.1, target_ally=ally)
+
+    assert b.current_action == "defend"
+    assert ally.damage == 12.0
+    assert ally.speed == 12.0
+    assert b.skill_timer == 5.0

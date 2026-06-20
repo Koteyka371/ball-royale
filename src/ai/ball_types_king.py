@@ -50,6 +50,54 @@ class King:
     def idle(self, delta: float) -> None:
         self.current_action = "idle"
 
+    def command(self, delta: float, target_ally=None) -> None:
+        if hasattr(self, "attack_timer"):
+            self.attack_timer -= delta
+        if hasattr(self, "skill_timer"):
+            self.skill_timer -= delta
+        self.current_action = "defend"
+        if target_ally is None:
+            return
+
+        import math
+
+        # Calculate distance to ally
+        dx = target_ally.x - self.x
+        dy = target_ally.y - self.y
+        dist_sq = dx * dx + dy * dy
+        dist = math.sqrt(dist_sq) if dist_sq > 0.0001 else 0.0
+
+        # Movement towards ally
+        target_radius = getattr(target_ally, "radius", 10.0)
+        attack_range = self.RADIUS + target_radius + 5.0
+
+        if dist > attack_range:
+            nx = dx / dist if dist > 0 else 0
+            ny = dy / dist if dist > 0 else 0
+            step = self.SPEED * delta * 60.0
+            self.x += nx * min(step, dist - attack_range * 0.8)
+            self.y += ny * min(step, dist - attack_range * 0.8)
+
+        # Recalculate distance after moving
+        new_dx = target_ally.x - self.x
+        new_dy = target_ally.y - self.y
+        new_dist_sq = new_dx * new_dx + new_dy * new_dy
+        new_dist = math.sqrt(new_dist_sq) if new_dist_sq > 0.0001 else 0.0
+
+        # Command buff logic
+        if new_dist <= attack_range:
+            if getattr(self, "attack_timer", 0.0) <= 0.0:
+                if self.skill_timer <= 0:
+                    if hasattr(target_ally, "damage"):
+                        target_ally.damage *= 1.2
+                    if hasattr(target_ally, "speed"):
+                        target_ally.speed *= 1.2
+                    self.use_skill()
+
+                speed = getattr(self, "speed", self.SPEED)
+                cooldown = max(0.2, 2.0 / speed if speed > 0 else 1.0)
+                self.attack_timer = cooldown
+
     def take_damage(self, amount: float) -> None:
         if self.hp == self.max_hp and amount > 0:
             self.first_hit_taken = True
