@@ -287,6 +287,19 @@ class AggressiveChaseArena(ProceduralArena):
         self.corridors.append(Corridor(cx - 40, 50 + room_size, 80, cy - center_size/2 - (50 + room_size))) # Top
         self.corridors.append(Corridor(cx - 40, cy + center_size/2, 80, (h - 50 - room_size) - (cy + center_size/2))) # Bottom
 
+class KiteArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+
+        # A large central obstacle to kite around (hollow center using 4 overlapping outer rooms)
+        self.rooms.append(Room(50, 50, w - 100, 200)) # Top
+        self.rooms.append(Room(50, h - 250, w - 100, 200)) # Bottom
+        self.rooms.append(Room(50, 250, 200, h - 500)) # Left
+        self.rooms.append(Room(w - 250, 250, 200, h - 500)) # Right
+
 ARENAS = {
     "buff_ally": BuffAllyArena,
     "retreat_to_ally": RetreatToAllyArena,
@@ -305,7 +318,8 @@ ARENAS = {
     "flank": FlankArena,
     "choke_point": ChokePointArena,
     "use_shield": UseShieldArena,
-    "aggressive_chase": AggressiveChaseArena
+    "aggressive_chase": AggressiveChaseArena,
+    "kite": KiteArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:

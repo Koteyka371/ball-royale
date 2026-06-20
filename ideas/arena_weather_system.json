@@ -1,0 +1,4 @@
+{
+  "title": "Arena Weather System",
+  "description": "Introduce dynamic weather effects that periodically change the arena conditions during a match. For example, a Rainstorm makes balls slide slightly more, Thunderstorm has random lightning strikes acting as temporary hazards, and Fog reduces the perception range for AI targeting."
+}
