@@ -207,8 +207,8 @@ class Decision:
                 scores["use_skill"] += 200.0
 
         # Rivalry skill: attacked me before -> attack on sight
-        has_rival_in_sight = perception_data.get("rival_spotted", False)
-        if has_rival_in_sight:
+        rival_seen = perception_data.get("rival_spotted", False)
+        if rival_seen:
             # Massive priority for attacking/chasing rivals
             scores["attack"] += 250.0
             scores["chase"] += 250.0
