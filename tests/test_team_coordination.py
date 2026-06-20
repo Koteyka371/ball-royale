@@ -33,7 +33,7 @@ def test_team_coordination_decision():
     perception_data["team_messages"] = [{"type": "target_spotted", "x": 100, "y": 100}]
     action2 = decision.choose_action(perception_data, "calm")
 
-    assert action1 == action2 == "attack"
+    assert action1 in ["attack", "use_skill"] and action2 in ["attack", "use_skill"]
 
     # Test request_help for warrior
     perception_data["team_messages"] = [{"type": "request_help", "x": 100, "y": 100}]

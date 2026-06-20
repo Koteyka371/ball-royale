@@ -57,5 +57,11 @@
         "allies_count": 25.0,
         "danger_level": 10.0,
         "bias": -20.0
+    },
+    "hide_behind": {
+        "hp_percent": -100.0,
+        "danger_level": 80.0,
+        "allies_count": 20.0,
+        "bias": -50.0
     }
 }

@@ -80,6 +80,8 @@ class Action:
             self._chase(delta)
         elif strategy == "flank":
             self._flank(delta)
+        elif strategy == "hide_behind":
+            self._hide_behind(delta)
         elif strategy == "group_attack":
             self._group_attack(delta)
         elif strategy == "defend":
@@ -1281,3 +1283,69 @@ class Action:
                     self.ball.attack_timer = cooldown
         else:
             self._idle(delta)
+
+    def _hide_behind(self, delta: float) -> None:
+        enemies = self._get_enemies()
+        allies = self._get_allies()
+
+        if not enemies or not allies:
+            self._flee(delta)
+            return
+
+        target_enemy = self._get_strongest_enemy(enemies)
+
+        # Find strongest ally (preferably a tank, or just highest max HP)
+        best_ally = None
+        best_score = -1.0
+
+        for ally in allies:
+            b_type = getattr(ally, "ball_type", "").lower()
+            score = getattr(ally, "max_hp", 100.0)
+            if b_type == "tank":
+                score += 1000.0
+
+            # Penalize distance
+            dist_sq = (ally.x - self.ball.x)**2 + (ally.y - self.ball.y)**2
+            score -= dist_sq * 0.001
+
+            if score > best_score:
+                best_score = score
+                best_ally = ally
+
+        if not best_ally:
+            self._flee(delta)
+            return
+
+        # Position behind the ally relative to the enemy
+        dx = target_enemy.x - best_ally.x
+        dy = target_enemy.y - best_ally.y
+        dist_e = math.sqrt(dx*dx + dy*dy)
+
+        if dist_e < 0.0001:
+            self._flee(delta)
+            return
+
+        nx = dx / dist_e
+        ny = dy / dist_e
+
+        # Go 30 units behind the ally
+        target_x = best_ally.x - nx * 30.0
+        target_y = best_ally.y - ny * 30.0
+
+        # Move towards target_x, target_y
+        dx_m = target_x - self.ball.x
+        dy_m = target_y - self.ball.y
+        dist_m = math.sqrt(dx_m*dx_m + dy_m*dy_m)
+
+        if dist_m > 0.0001:
+            nx_m = dx_m / dist_m
+            ny_m = dy_m / dist_m
+
+            nx_m, ny_m = self._apply_obstacle_avoidance(nx_m, ny_m)
+            nx_m, ny_m = self._apply_boid_rules(nx_m, ny_m)
+
+            speed = getattr(self.ball, "speed", 2.0)
+            step = speed * delta * 60.0
+
+            self.ball.x += nx_m * min(step, dist_m)
+            self.ball.y += ny_m * min(step, dist_m)

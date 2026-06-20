@@ -91,6 +91,8 @@ func execute(strategy: String, delta: float):
         _chase(delta)
     elif strategy == "flank":
         _flank(delta)
+    elif strategy == "hide_behind":
+        _hide_behind(delta)
     elif strategy == "group_attack":
         _group_attack(delta)
     elif strategy == "defend":
@@ -2001,3 +2003,78 @@ func _kite(delta: float):
                     self.ball.set_meta("attack_timer", cooldown)
     else:
         _idle(delta)
+
+func _hide_behind(delta: float):
+    var enemies = _get_enemies()
+    var allies = _get_allies()
+
+    if enemies.size() == 0 or allies.size() == 0:
+        _flee(delta)
+        return
+
+    var target_enemy = _get_strongest_enemy(enemies)
+
+    var best_ally = null
+    var best_score = -1.0
+
+    for ally in allies:
+        var b_type = ""
+        if "ball_type" in ally:
+            b_type = str(ally.ball_type).to_lower()
+
+        var score = 100.0
+        if "max_hp" in ally:
+            score = float(ally.max_hp)
+
+        if b_type == "tank":
+            score += 1000.0
+
+        var dist_sq = pow(ally.x - ball.x, 2) + pow(ally.y - ball.y, 2)
+        score -= dist_sq * 0.001
+
+        if score > best_score:
+            best_score = score
+            best_ally = ally
+
+    if best_ally == null:
+        _flee(delta)
+        return
+
+    var dx = target_enemy.x - best_ally.x
+    var dy = target_enemy.y - best_ally.y
+    var dist_e = sqrt(dx*dx + dy*dy)
+
+    if dist_e < 0.0001:
+        _flee(delta)
+        return
+
+    var nx = dx / dist_e
+    var ny = dy / dist_e
+
+    var target_x = best_ally.x - nx * 30.0
+    var target_y = best_ally.y - ny * 30.0
+
+    var dx_m = target_x - ball.x
+    var dy_m = target_y - ball.y
+    var dist_m = sqrt(dx_m*dx_m + dy_m*dy_m)
+
+    if dist_m > 0.0001:
+        var nx_m = dx_m / dist_m
+        var ny_m = dy_m / dist_m
+
+        var avoid = _apply_obstacle_avoidance(nx_m, ny_m)
+        nx_m = avoid[0]
+        ny_m = avoid[1]
+
+        var boid = _apply_boid_rules(nx_m, ny_m)
+        nx_m = boid[0]
+        ny_m = boid[1]
+
+        var speed = 2.0
+        if "speed" in ball:
+            speed = ball.speed
+
+        var step = speed * delta * 60.0
+
+        ball.x += nx_m * min(step, dist_m)
+        ball.y += ny_m * min(step, dist_m)

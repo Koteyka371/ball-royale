@@ -100,6 +100,7 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
         "kite": 0.0,
         "flank": 0.0,
         "group_attack": 0.0,
+        "hide_behind": 0.0,
         "idle": 0.0
     }
 
@@ -274,7 +275,7 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
             else:
                 best_score = 0.0
     else:
-        var action_order = ["flee", "defend", "collect_booster", "attack", "chase", "use_skill", "kite", "flank", "group_attack", "idle"]
+        var action_order = ["flee", "defend", "collect_booster", "attack", "chase", "use_skill", "kite", "flank", "group_attack", "hide_behind", "idle"]
         var possible_actions = []
         for k in scores.keys():
             if float(scores[k]) > -500.0:
