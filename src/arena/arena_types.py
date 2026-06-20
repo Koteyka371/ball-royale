@@ -208,6 +208,30 @@ class UseShieldArena(ProceduralArena):
             damage = 20.0 if kind == "spikes" else 40.0
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=40.0, kind=kind, damage=damage))
 
+class TargetWeakArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central large room
+        self.rooms.append(Room(cx - 400, cy - 400, 800, 800))
+
+        # 4 small corner rooms
+        self.rooms.append(Room(cx - 500, cy - 500, 100, 100))
+        self.rooms.append(Room(cx + 400, cy - 500, 100, 100))
+        self.rooms.append(Room(cx - 500, cy + 400, 100, 100))
+        self.rooms.append(Room(cx + 400, cy + 400, 100, 100))
+
+        # Corridors connecting to center
+        self.corridors.append(Corridor(cx - 400, cy - 450, 100, 50))
+        self.corridors.append(Corridor(cx + 300, cy - 450, 100, 50))
+        self.corridors.append(Corridor(cx - 400, cy + 400, 100, 50))
+        self.corridors.append(Corridor(cx + 300, cy + 400, 100, 50))
+
+
 ARENAS = {
     "procedural": ProceduralArena,
     "cross": CrossArena,
@@ -223,7 +247,8 @@ ARENAS = {
     "split": SplitArena,
     "flank": FlankArena,
     "choke_point": ChokePointArena,
-    "use_shield": UseShieldArena
+    "use_shield": UseShieldArena,
+    "target_weak": TargetWeakArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:

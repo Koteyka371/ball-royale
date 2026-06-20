@@ -32,3 +32,11 @@ def test_hazard_generation():
         assert hazard.radius > 0
         assert hazard.damage > 0
         assert arena.is_point_inside(hazard.x, hazard.y, 0)
+
+def test_target_weak_arena_generation():
+    from arena.arena_types import TargetWeakArena
+    arena = TargetWeakArena(arena_size=2000.0, seed=42)
+    # The generated arena should have 5 rooms (1 central + 4 corners)
+    assert len(arena.rooms) == 5
+    # The generated arena should have 4 corridors
+    assert len(arena.corridors) == 4
