@@ -208,6 +208,31 @@ class UseShieldArena(ProceduralArena):
             damage = 20.0 if kind == "spikes" else 40.0
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=40.0, kind=kind, damage=damage))
 
+
+class KiteArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central large room for kiting
+        self.rooms.append(Room(50, 50, w - 100, h - 100))
+
+        # Large central hazard to run around
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=200.0, kind="lava", damage=50.0))
+
+        # Outer ring of smaller hazards
+        import math
+        num_outer_hazards = 12
+        radius = 400
+        for i in range(num_outer_hazards):
+            angle = 2 * math.pi * i / num_outer_hazards
+            hx = cx + radius * math.cos(angle)
+            hy = cy + radius * math.sin(angle)
+            self.hazards.append(Hazard(id=i+1, x=hx, y=hy, radius=30.0, kind="spikes", damage=20.0))
+
 ARENAS = {
     "procedural": ProceduralArena,
     "cross": CrossArena,
@@ -223,7 +248,8 @@ ARENAS = {
     "split": SplitArena,
     "flank": FlankArena,
     "choke_point": ChokePointArena,
-    "use_shield": UseShieldArena
+    "use_shield": UseShieldArena,
+    "kite": KiteArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
