@@ -528,7 +528,32 @@ class BallRelationshipsArena(ProceduralArena):
         self.hazards.append(Hazard(id=2, x=cx - 150, y=cy + 150, radius=30.0, kind="lava", damage=20.0))
         self.hazards.append(Hazard(id=3, x=cx + 150, y=cy + 150, radius=30.0, kind="lava", damage=20.0))
 
+class MetaEvolutionArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        self.rooms.append(Room(cx - 150, cy - 150, 300, 300))
+        self.rooms.append(Room(cx - 100, 50, 200, 200))
+        self.rooms.append(Room(cx - 100, h - 250, 200, 200))
+        self.rooms.append(Room(50, cy - 100, 200, 200))
+        self.rooms.append(Room(w - 250, cy - 100, 200, 200))
+
+        self.corridors.append(Corridor(cx - 50, 250, 100, cy - 150 - 250))
+        self.corridors.append(Corridor(cx - 50, cy + 150, 100, h - 250 - (cy + 150)))
+        self.corridors.append(Corridor(250, cy - 50, cx - 150 - 250, 100))
+        self.corridors.append(Corridor(cx + 150, cy - 50, w - 250 - (cx + 150), 100))
+
+        self.hazards.append(Hazard(id=0, x=150, y=150, radius=50.0, kind="spikes", damage=20.0))
+        self.hazards.append(Hazard(id=1, x=w - 150, y=150, radius=50.0, kind="spikes", damage=20.0))
+        self.hazards.append(Hazard(id=2, x=150, y=h - 150, radius=50.0, kind="spikes", damage=20.0))
+        self.hazards.append(Hazard(id=3, x=w - 150, y=h - 150, radius=50.0, kind="spikes", damage=20.0))
+
 ARENAS = {
+
     "reposition": RepositionArena,
     "avoid_trap": AvoidTrapArena,
     "kite": KiteArena,
@@ -554,7 +579,8 @@ ARENAS = {
     "comebacks": ComebacksArena,
     "circle_strafe": CircleStrafeArena,
     "epic_kills": EpicKillsArena,
-    "ball_relationships": BallRelationshipsArena
+    "ball_relationships": BallRelationshipsArena,
+    "meta_evolution": MetaEvolutionArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:

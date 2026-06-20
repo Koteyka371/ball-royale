@@ -295,3 +295,29 @@ class BallRelationshipsArena extends ProceduralArena:
         hazards.append(ProceduralArena.Hazard.new(1, cx + 150.0, cy - 150.0, 30.0, "lava", 20.0))
         hazards.append(ProceduralArena.Hazard.new(2, cx - 150.0, cy + 150.0, 30.0, "lava", 20.0))
         hazards.append(ProceduralArena.Hazard.new(3, cx + 150.0, cy + 150.0, 30.0, "lava", 20.0))
+
+class MetaEvolutionArena extends ProceduralArena:
+    func generate():
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = width
+        var h = height
+        var cx = w / 2.0
+        var cy = h / 2.0
+
+        rooms.append(ProceduralArena.Room.new(cx - 150.0, cy - 150.0, 300.0, 300.0))
+        rooms.append(ProceduralArena.Room.new(cx - 100.0, 50.0, 200.0, 200.0))
+        rooms.append(ProceduralArena.Room.new(cx - 100.0, h - 250.0, 200.0, 200.0))
+        rooms.append(ProceduralArena.Room.new(50.0, cy - 100.0, 200.0, 200.0))
+        rooms.append(ProceduralArena.Room.new(w - 250.0, cy - 100.0, 200.0, 200.0))
+
+        corridors.append(ProceduralArena.Corridor.new(cx - 50.0, 250.0, 100.0, cy - 150.0 - 250.0))
+        corridors.append(ProceduralArena.Corridor.new(cx - 50.0, cy + 150.0, 100.0, h - 250.0 - (cy + 150.0)))
+        corridors.append(ProceduralArena.Corridor.new(250.0, cy - 50.0, cx - 150.0 - 250.0, 100.0))
+        corridors.append(ProceduralArena.Corridor.new(cx + 150.0, cy - 50.0, w - 250.0 - (cx + 150.0), 100.0))
+
+        hazards.append(ProceduralArena.Hazard.new(0, 150.0, 150.0, 50.0, "spikes", 20.0))
+        hazards.append(ProceduralArena.Hazard.new(1, w - 150.0, 150.0, 50.0, "spikes", 20.0))
+        hazards.append(ProceduralArena.Hazard.new(2, 150.0, h - 150.0, 50.0, "spikes", 20.0))
+        hazards.append(ProceduralArena.Hazard.new(3, w - 150.0, h - 150.0, 50.0, "spikes", 20.0))
