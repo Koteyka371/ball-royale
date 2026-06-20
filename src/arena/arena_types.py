@@ -528,6 +528,34 @@ class BallRelationshipsArena(ProceduralArena):
         self.hazards.append(Hazard(id=2, x=cx - 150, y=cy + 150, radius=30.0, kind="lava", damage=20.0))
         self.hazards.append(Hazard(id=3, x=cx + 150, y=cy + 150, radius=30.0, kind="lava", damage=20.0))
 
+class ChainReactionArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+
+        num_strips = 5
+        strip_w = 250
+
+        for i in range(num_strips):
+            x = 50 + i * (w - 100 - strip_w) / max(1, (num_strips - 1))
+            self.rooms.append(Room(x, 50, strip_w, h - 100))
+
+        for i in range(num_strips):
+            y = 50 + i * (h - 100 - strip_w) / max(1, (num_strips - 1))
+            self.rooms.append(Room(50, y, w - 100, strip_w))
+
+        hazard_id = 0
+        for i in range(num_strips):
+            for j in range(num_strips):
+                # Place hazards at some intersections but not all to allow bouncing
+                if (i + j) % 2 == 1:
+                    x = 50 + i * (w - 100 - strip_w) / max(1, (num_strips - 1)) + strip_w / 2
+                    y = 50 + j * (h - 100 - strip_w) / max(1, (num_strips - 1)) + strip_w / 2
+                    self.hazards.append(Hazard(id=hazard_id, x=x, y=y, radius=60.0, kind="spikes", damage=15.0))
+                    hazard_id += 1
+
 ARENAS = {
     "reposition": RepositionArena,
     "avoid_trap": AvoidTrapArena,
@@ -554,7 +582,8 @@ ARENAS = {
     "comebacks": ComebacksArena,
     "circle_strafe": CircleStrafeArena,
     "epic_kills": EpicKillsArena,
-    "ball_relationships": BallRelationshipsArena
+    "ball_relationships": BallRelationshipsArena,
+    "chain_reaction": ChainReactionArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
