@@ -19,7 +19,7 @@ class Sniper:
     PERCEPTION_RADIUS = 500
     AGGRESSION = 0.6
     COLOR = "blue"
-    SKILL = "precision_shot"
+    SKILL = "snipe"
     SKILL_COOLDOWN = 6.0
     ATTACK_RANGE = 150.0
 
@@ -40,6 +40,17 @@ class Sniper:
 
     def get_hp_percent(self) -> float:
         return self.hp / self.max_hp if self.max_hp > 0 else 0.0
+
+    def get_priority(self, target=None) -> str:
+        if target:
+            dx = target.x - self.x
+            dy = target.y - self.y
+            dist = math.hypot(dx, dy)
+            if dist > self.attack_range * 0.5:
+                return "long_range_attack"
+            else:
+                return "flee"
+        return "idle"
 
     def flee(self, delta: float) -> None:
         self.current_action = "flee"
@@ -71,12 +82,12 @@ class Sniper:
         safe_dist = self.attack_range * 0.8
 
         if dist > self.attack_range:
-            # Move towards target
+            # Move towards target to get in range
             move_dist = min(step, dist - self.attack_range)
             self.x += nx * move_dist
             self.y += ny * move_dist
         elif dist < safe_dist:
-            # Move away from target
+            # Move away from target to maintain safe distance (flee)
             self.x -= nx * step
             self.y -= ny * step
 
@@ -86,9 +97,9 @@ class Sniper:
         new_dist = math.hypot(new_dx, new_dy)
 
         if new_dist <= self.attack_range:
-            if new_dist < safe_dist and self.skill_timer <= 0:
+            if self.skill_timer <= 0:
                 self.use_skill()
-            if getattr(self, 'attack_timer', 0.0) <= 0:
+            elif getattr(self, 'attack_timer', 0.0) <= 0:
                 self.current_action = "attack"
                 self.attack_timer = max(0.2, 2.0 / self.SPEED if self.SPEED > 0 else 1.0)
 
@@ -111,6 +122,7 @@ class Sniper:
     def use_skill(self) -> bool:
         if self.skill_timer <= 0:
             self.skill_timer = self.SKILL_COOLDOWN
+            self.current_action = "use_skill"
             return True
         return False
 

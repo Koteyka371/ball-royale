@@ -1,0 +1,4 @@
+{
+  "title": "Sniper Camouflage",
+  "description": "If a Sniper stays perfectly still for 3 seconds without attacking, it gains camouflage, making it invisible to enemies outside of 50 range, effectively acting as an Ambush behavior. The camouflage breaks upon moving or attacking."
+}
