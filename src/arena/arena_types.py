@@ -185,6 +185,29 @@ class ChokePointArena(ProceduralArena):
         self.rooms.append(Room(50, h/2 + 100, w - 100, h/2 - 150))
         self.rooms.append(Room(cx - 100, h/2 - 50, 200, 150))
 
+class UseShieldArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central large room
+        self.rooms.append(Room(cx - 400, cy - 400, 800, 800))
+
+        # Create a dense ring of hazards around the center
+        import math
+        num_hazards = 24
+        radius = 250
+        for i in range(num_hazards):
+            angle = 2 * math.pi * i / num_hazards
+            hx = cx + radius * math.cos(angle)
+            hy = cy + radius * math.sin(angle)
+            kind = "spikes" if i % 2 == 0 else "lava"
+            damage = 20.0 if kind == "spikes" else 40.0
+            self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=40.0, kind=kind, damage=damage))
+
 ARENAS = {
     "procedural": ProceduralArena,
     "cross": CrossArena,
@@ -199,7 +222,8 @@ ARENAS = {
     "fortress": FortressArena,
     "split": SplitArena,
     "flank": FlankArena,
-    "choke_point": ChokePointArena
+    "choke_point": ChokePointArena,
+    "use_shield": UseShieldArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
