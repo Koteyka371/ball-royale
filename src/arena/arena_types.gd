@@ -16,6 +16,7 @@ const ARENAS = [
     "fortress",
     "split",
     "flank",
+    "group_attack",
     "choke_point",
     "use_shield",
     "retreat_to_ally",

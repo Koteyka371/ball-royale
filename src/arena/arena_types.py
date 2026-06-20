@@ -185,6 +185,46 @@ class ChokePointArena(ProceduralArena):
         self.rooms.append(Room(50, h/2 + 100, w - 100, h/2 - 150))
         self.rooms.append(Room(cx - 100, h/2 - 50, 200, 150))
 
+class GroupAttackArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central battle room (large for group battles)
+        self.rooms.append(Room(cx - 400, cy - 400, 800, 800))
+
+        # 4 Staging rooms in corners
+        self.rooms.append(Room(50, 50, 300, 300)) # Top-Left
+        self.rooms.append(Room(w - 350, 50, 300, 300)) # Top-Right
+        self.rooms.append(Room(50, h - 350, 300, 300)) # Bottom-Left
+        self.rooms.append(Room(w - 350, h - 350, 300, 300)) # Bottom-Right
+
+        # Corridors connecting staging rooms to the central room
+        # Top-Left to Center
+        self.corridors.append(Corridor(200, 300, 100, cy - 400 - 300 + 50))
+        self.corridors.append(Corridor(200, cy - 400, cx - 400 - 200 + 50, 100))
+
+        # Top-Right to Center
+        self.corridors.append(Corridor(w - 300, 300, 100, cy - 400 - 300 + 50))
+        self.corridors.append(Corridor(cx + 400 - 50, cy - 400, w - 300 - cx - 400 + 100, 100))
+
+        # Bottom-Left to Center
+        self.corridors.append(Corridor(200, cy + 400 - 50, 100, h - 300 - cy - 400 + 100))
+        self.corridors.append(Corridor(200, h - 400, cx - 400 - 200 + 50, 100))
+
+        # Bottom-Right to Center
+        self.corridors.append(Corridor(w - 300, cy + 400 - 50, 100, h - 300 - cy - 400 + 100))
+        self.corridors.append(Corridor(cx + 400 - 50, h - 400, w - 300 - cx - 400 + 100, 100))
+
+        # Hazards in the center to force splitting
+        self.hazards.append(Hazard(id=1, x=cx - 150, y=cy - 150, radius=50, kind="lava", damage=10.0))
+        self.hazards.append(Hazard(id=2, x=cx + 150, y=cy - 150, radius=50, kind="lava", damage=10.0))
+        self.hazards.append(Hazard(id=3, x=cx - 150, y=cy + 150, radius=50, kind="lava", damage=10.0))
+        self.hazards.append(Hazard(id=4, x=cx + 150, y=cy + 150, radius=50, kind="lava", damage=10.0))
+
 class UseShieldArena(ProceduralArena):
     def generate(self):
         self.rooms.clear()
@@ -393,6 +433,7 @@ ARENAS = {
     "fortress": FortressArena,
     "split": SplitArena,
     "flank": FlankArena,
+    "group_attack": GroupAttackArena,
     "choke_point": ChokePointArena,
     "use_shield": UseShieldArena,
     "aggressive_chase": AggressiveChaseArena,
