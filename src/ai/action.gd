@@ -478,50 +478,47 @@ func _flee(delta: float):
     self.ball.x += comb_nx * boosted_speed * delta * 60.0
     self.ball.y += comb_ny * boosted_speed * delta * 60.0
 
+func _calculate_enemy_strength_score(e: Object) -> Array:
+    var e_max_hp = 0.0
+    if "max_hp" in e:
+        e_max_hp = float(e.max_hp)
+    elif "hp" in e:
+        e_max_hp = float(e.hp)
+
+    var e_hp = 0.0
+    if "hp" in e:
+        e_hp = float(e.hp)
+
+    var d_sq = float(pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2))
+    var e_id = 0
+    if "id" in e:
+        e_id = int(e.id)
+
+    return [e_max_hp, e_hp, -d_sq, e_id]
+
 func _get_strongest_enemy(enemies: Array) -> Object:
-    var best_max_hp = -1.0
-    var best_current_hp = -1.0
-    var best_dist_sq = INF
-    var best_id = -1
+    var best_score = [-1.0, -1.0, -INF, -1]
     var target = null
 
     for e in enemies:
-        var e_max_hp = 0.0
-        if "max_hp" in e:
-            e_max_hp = float(e.max_hp)
-        elif "hp" in e:
-            e_max_hp = float(e.hp)
+        var score = _calculate_enemy_strength_score(e)
 
-        var e_hp = 0.0
-        if "hp" in e:
-            e_hp = float(e.hp)
+        var is_better = false
+        if score[0] > best_score[0]:
+            is_better = true
+        elif score[0] == best_score[0]:
+            if score[1] > best_score[1]:
+                is_better = true
+            elif score[1] == best_score[1]:
+                if score[2] > best_score[2]:
+                    is_better = true
+                elif score[2] == best_score[2]:
+                    if score[3] > best_score[3]:
+                        is_better = true
 
-        var d_sq = float(pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2))
-        var e_id = 0
-        if "id" in e:
-            e_id = int(e.id)
-
-        if e_max_hp > best_max_hp:
-            best_max_hp = e_max_hp
-            best_current_hp = e_hp
-            best_dist_sq = d_sq
-            best_id = e_id
+        if is_better:
+            best_score = score
             target = e
-        elif e_max_hp == best_max_hp:
-            if e_hp > best_current_hp:
-                best_current_hp = e_hp
-                best_dist_sq = d_sq
-                best_id = e_id
-                target = e
-            elif e_hp == best_current_hp:
-                if d_sq < best_dist_sq:
-                    best_dist_sq = d_sq
-                    best_id = e_id
-                    target = e
-                elif d_sq == best_dist_sq:
-                    if e_id > best_id:
-                        best_id = e_id
-                        target = e
 
     return target
 

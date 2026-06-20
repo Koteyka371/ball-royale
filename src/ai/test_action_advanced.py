@@ -218,3 +218,19 @@ def test_tank_target_strong_chase_tiebreaker():
     # It should target e3, meaning it moves right (x > 100)
     assert ball.x > 100
     assert abs(ball.y - 100) < 1.0 # Should not move vertically significantly
+
+def test_tank_target_strong_helper_method():
+    ball = MockBall(x=100, y=100)
+    ball.ball_type = "tank"
+    world = MockWorld()
+
+    e1 = MockEntity(x=100, y=200, ball_type="enemy") # dist_sq = 100^2 = 10000
+    e1.id = 1
+    e1.max_hp = 200.0
+    e1.hp = 150.0
+
+    action = Action(ball, world)
+    score = action._calculate_enemy_strength_score(e1)
+
+    # expected: (max_hp, hp, -dist_sq, id)
+    assert score == (200.0, 150.0, -10000.0, 1)
