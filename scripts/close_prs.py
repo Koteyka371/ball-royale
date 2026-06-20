@@ -1,6 +1,5 @@
 import urllib.request
 import json
-import sys
 
 repo = "Koteyka371/ball-royale"
 

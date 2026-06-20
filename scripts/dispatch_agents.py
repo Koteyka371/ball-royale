@@ -205,7 +205,7 @@ def atomic_update(new_data, message):
         if git_commit_and_push(message):
             if verify_pushed():
                 return True
-            print(f"[Dispatcher] Commit OK but push verify failed, retrying...")
+            print("[Dispatcher] Commit OK but push verify failed, retrying...")
         else:
             print(f"[Dispatcher] Push failed ({attempt + 1}/{MAX_RETRIES})")
         time.sleep(2)

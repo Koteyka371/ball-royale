@@ -156,7 +156,7 @@ def save_and_push(new_data, message):
         if git_commit_and_push(message):
             if verify_pushed():
                 return True
-            print(f"[Supervisor] Commit OK but push verify failed, retrying...")
+            print("[Supervisor] Commit OK but push verify failed, retrying...")
         else:
             print(f"[Supervisor] Push failed ({attempt + 1}/{MAX_RETRIES})")
         time.sleep(2)
@@ -498,12 +498,12 @@ def mark_task_done(task_id):
                         capture_output=True, text=True, timeout=30
                     )
                     if push_result.returncode == 0:
-                        print(f"[Supervisor] Committed task status update and changelog")
+                        print("[Supervisor] Committed task status update and changelog")
                         break
                     print(f"[Supervisor] Push failed (attempt {attempt + 1}/3): {push_result.stderr}")
                     time.sleep(2)
                 else:
-                    print(f"[Supervisor] Failed to push task status after 3 attempts")
+                    print("[Supervisor] Failed to push task status after 3 attempts")
             else:
                 print(f"[Supervisor] Failed to commit task status: {commit_result.stderr}")
     except Exception as e:
@@ -656,11 +656,11 @@ def main():
                 print(f"    Mergeable: {pr.get('mergeable', '?')}")
 
                 if not is_automated:
-                    print(f"    Skipped (no 'automated' label and no task_id)")
+                    print("    Skipped (no 'automated' label and no task_id)")
                     continue
                 
                 if task_id == "Auto":
-                    print(f"    Auto PR detected! Merging immediately to propagate tasks to main.")
+                    print("    Auto PR detected! Merging immediately to propagate tasks to main.")
                     branch_name = pr.get("head", {}).get("ref", "")
                     merge_pr(pr_num, branch_name=branch_name)
                     continue
@@ -690,7 +690,7 @@ def main():
                         
                         # Also delete the branch
                         if branch_name:
-                            subprocess.run(["git", "push", "origin", f"--delete", branch_name], capture_output=True)
+                            subprocess.run(["git", "push", "origin", "--delete", branch_name], capture_output=True)
                     except Exception as e:
                         print(f"    Failed to close PR #{pr_num}: {e}")
                         
@@ -708,7 +708,7 @@ def main():
                 ci_status = get_ci_status(pr_head)
 
                 if ci_status == "success":
-                    print(f"    CI passed! Merging...")
+                    print("    CI passed! Merging...")
                     branch_name = pr.get("head", {}).get("ref", "")
                     if merge_pr(pr_num, branch_name=branch_name):
                         mark_task_done(task_id)
@@ -721,7 +721,7 @@ def main():
                                 "started_at": None,
                             }
                 elif ci_status == "failure":
-                    print(f"    CI failed! Fixing via Jules API...")
+                    print("    CI failed! Fixing via Jules API...")
                     branch_name = pr.get("head", {}).get("ref", "")
                     agent_id = find_agent_by_task_id(lock_data, task_id)
 
@@ -773,7 +773,7 @@ def main():
                                 print(f"[Supervisor] CI status ({elapsed}m): {new_ci}")
 
                                 if new_ci == "success":
-                                    print(f"    Fixed! Merging...")
+                                    print("    Fixed! Merging...")
                                     target_branch = pr_data.get("head", {}).get("ref", "") if pr_data else branch_name
                                     if merge_pr(pr_num, branch_name=target_branch, mergeable=pr_data.get("mergeable") if pr_data else None):
                                         mark_task_done(task_id)
@@ -793,7 +793,7 @@ def main():
                                 elif new_ci == "pending":
                                     consecutive_failures = 0
                                 elif new_ci == "error":
-                                    print(f"    CI auth error, aborting fix loop")
+                                    print("    CI auth error, aborting fix loop")
                                     break
 
                                 if i + 30 < 15 * 60:
@@ -809,14 +809,14 @@ def main():
                                 pr_need_save = True
                 else:
                     if ci_status == "error":
-                        print(f"    CI auth error, skipping this PR")
+                        print("    CI auth error, skipping this PR")
                     else:
-                        print(f"    CI pending...")
+                        print("    CI pending...")
         else:
             print("[Supervisor] No open PRs")
 
         if pr_need_save and pr_updates.get("agents"):
-            if save_and_push(pr_updates, f"supervisor: PR updates"):
+            if save_and_push(pr_updates, "supervisor: PR updates"):
                 print(f"\n[Supervisor] Saved {LOCK_FILE}")
             else:
                 print("\n[Supervisor] FAILED to save PR updates")

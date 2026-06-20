@@ -161,6 +161,20 @@ class ChokePointArena(ProceduralArena):
         self.rooms.append(Room(50, h/2 + 100, w - 100, h/2 - 150))
         self.rooms.append(Room(cx - 100, h/2 - 50, 200, 150))
 
+class TargetWeakArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+        self.rooms.append(Room(50, 50, 100, 100))
+        self.rooms.append(Room(w-150, 50, 100, 100))
+        self.rooms.append(Room(50, h-150, 100, 100))
+        self.rooms.append(Room(w-150, h-150, 100, 100))
+        self.rooms.append(Room(cx - 400, cy - 400, 800, 800))
+        self.hazards.append(Hazard(id=1, x=cx, y=cy, radius=100.0, kind="lava", damage=50.0))
+
 ARENAS = {
     "procedural": ProceduralArena,
     "cross": CrossArena,
@@ -174,7 +188,8 @@ ARENAS = {
     "zigzag": ZigZagArena,
     "fortress": FortressArena,
     "split": SplitArena,
-    "choke_point": ChokePointArena
+    "choke_point": ChokePointArena,
+    "target_weak": TargetWeakArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:

@@ -1,4 +1,3 @@
-import os, glob
 
 # 1. Update dispatch_agents.py
 with open('scripts/dispatch_agents.py', 'r') as f:

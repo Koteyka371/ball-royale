@@ -14,5 +14,6 @@ const ARENAS = [
     "zigzag",
     "fortress",
     "split",
-    "choke_point"
+    "choke_point",
+    "target_weak"
 ]

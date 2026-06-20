@@ -1,4 +1,5 @@
-import urllib.request, json
+import urllib.request
+import json
 
 # Get latest run
 r = urllib.request.urlopen('https://api.github.com/repos/Koteyka371/ball-royale/actions/runs?per_page=1')

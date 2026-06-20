@@ -16,22 +16,23 @@ class CameraSystem:
         # Factors: recent kills, taking damage, using skills, low HP survival
 
         # Decay previous scores
-        for b_id in self.activity_scores:
-            self.activity_scores[b_id] *= 0.9
+        for act_id in self.activity_scores:
+            self.activity_scores[act_id] *= 0.9
 
         for ball in balls:
-            b_id = ball.get("id")
-            if b_id is None:
+            b_id_val = ball.get("id")
+            if b_id_val is None:
                 continue
+            b_id_int: int = int(b_id_val)
 
-            if b_id not in self.activity_scores:
-                self.activity_scores[b_id] = 0.0
+            if b_id_int not in self.activity_scores:
+                self.activity_scores[b_id_int] = 0.0
 
             hp = ball.get("hp", 0)
             max_hp = ball.get("max_hp", 100)
 
             if hp <= 0:
-                self.activity_scores[b_id] = 0.0
+                self.activity_scores[b_id_int] = 0.0
                 continue
 
             # Base score for being alive
@@ -41,7 +42,7 @@ class CameraSystem:
             if hp / max_hp < 0.2:
                 score_increase += 2.0
 
-            self.activity_scores[b_id] += score_increase
+            self.activity_scores[b_id_int] += score_increase
 
         # Add score from events
         for event in events:
@@ -63,14 +64,15 @@ class CameraSystem:
 
         # Find most active ball
         best_score = -1.0
-        best_id = None
+        best_id: Optional[int] = None
         for ball in balls:
-            b_id = ball.get("id")
-            if b_id is not None and ball.get("hp", 0) > 0:
-                score = self.activity_scores.get(b_id, 0.0)
+            b_id_val = ball.get("id")
+            if b_id_val is not None and ball.get("hp", 0) > 0:
+                ball_id: int = int(b_id_val)
+                score = self.activity_scores.get(ball_id, 0.0)
                 if score > best_score:
                     best_score = score
-                    best_id = b_id
+                    best_id = ball_id
 
         if best_id is not None:
             self.target_id = best_id
