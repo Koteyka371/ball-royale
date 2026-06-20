@@ -287,7 +287,43 @@ class AggressiveChaseArena(ProceduralArena):
         self.corridors.append(Corridor(cx - 40, 50 + room_size, 80, cy - center_size/2 - (50 + room_size))) # Top
         self.corridors.append(Corridor(cx - 40, cy + center_size/2, 80, (h - 50 - room_size) - (cy + center_size/2))) # Bottom
 
+
+class CollectBoosterArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central room
+        self.rooms.append(Room(cx - 200, cy - 200, 400, 400))
+
+        # Four wide booster rooms far away
+        self.rooms.append(Room(50, 50, 300, 300)) # Top-Left
+        self.rooms.append(Room(w - 350, 50, 300, 300)) # Top-Right
+        self.rooms.append(Room(50, h - 350, 300, 300)) # Bottom-Left
+        self.rooms.append(Room(w - 350, h - 350, 300, 300)) # Bottom-Right
+
+        # Corridors connecting central room to the corners properly
+        # Center to Top-Left
+        self.corridors.append(Corridor(200, 350, 100, cy - 200 - 350 + 100))
+        self.corridors.append(Corridor(300, cy - 200, cx - 200 - 300, 100))
+
+        # Center to Top-Right
+        self.corridors.append(Corridor(w - 300, 350, 100, cy - 200 - 350 + 100))
+        self.corridors.append(Corridor(cx + 200, cy - 200, w - 300 - (cx + 200), 100))
+
+        # Center to Bottom-Left
+        self.corridors.append(Corridor(200, cy + 100, 100, h - 350 - (cy + 100)))
+        self.corridors.append(Corridor(300, cy + 100, cx - 200 - 300, 100))
+
+        # Center to Bottom-Right
+        self.corridors.append(Corridor(w - 300, cy + 100, 100, h - 350 - (cy + 100)))
+        self.corridors.append(Corridor(cx + 200, cy + 100, w - 300 - (cx + 200), 100))
+
 ARENAS = {
+
     "buff_ally": BuffAllyArena,
     "retreat_to_ally": RetreatToAllyArena,
     "procedural": ProceduralArena,
@@ -305,7 +341,8 @@ ARENAS = {
     "flank": FlankArena,
     "choke_point": ChokePointArena,
     "use_shield": UseShieldArena,
-    "aggressive_chase": AggressiveChaseArena
+    "aggressive_chase": AggressiveChaseArena,
+    "collect_booster": CollectBoosterArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
