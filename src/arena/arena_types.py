@@ -238,7 +238,24 @@ class RetreatToAllyArena(ProceduralArena):
             hy = cy + 150 * math.sin(angle)
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=30.0, kind="lava", damage=30.0))
 
+class BodyBlockArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        self.rooms.append(Room(50, 50, 400, h - 100))
+        self.rooms.append(Room(w - 450, 50, 400, h - 100))
+
+        self.corridors.append(Corridor(400, cy - 100, w - 800, 200))
+
+        self.hazards.append(Hazard(id=0, x=cx, y=cy - 120, radius=30.0, kind="spikes", damage=20.0))
+        self.hazards.append(Hazard(id=1, x=cx, y=cy + 120, radius=30.0, kind="spikes", damage=20.0))
+
 ARENAS = {
+    "body_block": BodyBlockArena,
     "retreat_to_ally": RetreatToAllyArena,
     "procedural": ProceduralArena,
     "cross": CrossArena,
