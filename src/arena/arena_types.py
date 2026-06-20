@@ -490,7 +490,41 @@ class RepositionArena(ProceduralArena):
         # Central hazard
         self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=100.0, kind="lava", damage=15.0))
 
+
+class NeuralArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        i1_y, i2_y, i3_y = 300, cy - 100, h - 500
+        self.rooms.append(Room(200, i1_y, 200, 200))
+        self.rooms.append(Room(200, i2_y, 200, 200))
+        self.rooms.append(Room(200, i3_y, 200, 200))
+
+        h1_y, h2_y, h3_y, h4_y = 200, 600, h - 800, h - 400
+        self.rooms.append(Room(cx - 100, h1_y, 200, 200))
+        self.rooms.append(Room(cx - 100, h2_y, 200, 200))
+        self.rooms.append(Room(cx - 100, h3_y, 200, 200))
+        self.rooms.append(Room(cx - 100, h4_y, 200, 200))
+
+        self.corridors.append(Corridor(cx - 50, h1_y + 100, 100, h4_y - h1_y))
+
+        o1_y, o2_y = 500, h - 700
+        self.rooms.append(Room(w - 400, o1_y, 250, 250))
+        self.rooms.append(Room(w - 400, o2_y, 250, 250))
+
+        self.corridors.append(Corridor(400, i1_y + 50, cx - 100 - 400, 100))
+        self.corridors.append(Corridor(400, i2_y + 50, cx - 100 - 400, 100))
+        self.corridors.append(Corridor(400, i3_y + 50, cx - 100 - 400, 100))
+
+        self.corridors.append(Corridor(cx + 100, o1_y + 75, w - 400 - (cx + 100), 100))
+        self.corridors.append(Corridor(cx + 100, o2_y + 75, w - 400 - (cx + 100), 100))
+
 ARENAS = {
+    "neural": NeuralArena,
     "reposition": RepositionArena,
     "avoid_trap": AvoidTrapArena,
     "kite": KiteArena,
