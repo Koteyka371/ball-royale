@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-ball_type-090] Implement Ninja ball — *2026-06-20 00:21:54 UTC*
+
+Implement Implement Ninja ball as described in game_design.md
+
+---
+
 ## [idea-ball_type-080] Implement Easy ball — *2026-06-19 22:52:26 UTC*
 
 Implement Implement Easy ball as described in game_design.md
