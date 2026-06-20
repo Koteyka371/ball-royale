@@ -193,7 +193,9 @@ class Decision:
             elif b_type == "king" and allies_count > 0:
                 scores["use_skill"] += 200.0
 
-        if perception_data.get("rival_spotted"):
+        # Boost scores if a rival is spotted
+        is_rival_present = perception_data.get("rival_spotted", False)
+        if is_rival_present:
             scores["attack"] += 200.0
             scores["chase"] += 200.0
 

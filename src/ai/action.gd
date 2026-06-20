@@ -526,10 +526,11 @@ func _get_target(enemies: Array) -> Object:
         my_memory = self.ball.memory
 
     var rivals = []
+    # Populate list of known rivals
     for e in enemies:
         if "id" in e and my_memory.has(e.id):
-            var rel = my_memory[e.id]
-            if typeof(rel) == TYPE_DICTIONARY and rel.get("relation") == "rival":
+            var rel_data = my_memory[e.id]
+            if typeof(rel_data) == TYPE_DICTIONARY and rel_data.get("relation") == "rival":
                 rivals.append(e)
 
     if rivals.size() > 0:
@@ -708,6 +709,7 @@ func _group_attack(delta: float):
                     elif "memory" in target and typeof(target.memory) == TYPE_DICTIONARY:
                         target_memory = target.memory
 
+                    # Store rival relationship
                     target_memory[self.ball.id] = {"relation": "rival"}
                     if target.has_method("set_meta"):
                         target.set_meta("memory", target_memory)
@@ -856,6 +858,7 @@ func _flank(delta: float):
                             mem = target.get_meta("memory")
                         elif "memory" in target:
                             mem = target.memory
+                        # Update rival relationship
                         mem[self.ball.id] = {"relation": "rival"}
                         if target.has_method("set_meta"):
                             target.set_meta("memory", mem)
@@ -934,6 +937,7 @@ func _chase(delta: float):
                             mem = target.get_meta("memory")
                         elif "memory" in target:
                             mem = target.memory
+                        # Update rival relationship
                         mem[self.ball.id] = {"relation": "rival"}
                         if target.has_method("set_meta"):
                             target.set_meta("memory", mem)
@@ -1217,6 +1221,7 @@ func _attack(delta: float):
                             mem = target.get_meta("memory")
                         elif "memory" in target:
                             mem = target.memory
+                        # Update rival relationship
                         mem[self.ball.id] = {"relation": "rival"}
                         if target.has_method("set_meta"):
                             target.set_meta("memory", mem)
@@ -1895,6 +1900,7 @@ func _kite(delta: float):
                             mem = target.get_meta("memory")
                         elif "memory" in target:
                             mem = target.memory
+                        # Update rival relationship
                         mem[self.ball.id] = {"relation": "rival"}
                         if target.has_method("set_meta"):
                             target.set_meta("memory", mem)

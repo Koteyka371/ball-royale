@@ -76,8 +76,8 @@ func scan() -> Dictionary:
         if "id" in enemy:
             data["distances"][enemy.id] = dist
             if my_memory.has(enemy.id):
-                var rel = my_memory[enemy.id]
-                if typeof(rel) == TYPE_DICTIONARY and rel.get("relation") == "rival":
+                var rel_info = my_memory[enemy.id]
+                if typeof(rel_info) == TYPE_DICTIONARY and rel_info.get("relation") == "rival":
                     data["rival_spotted"] = true
         threat += max(0.0, 1.0 - (dist / perception_radius)) * 1.5
 

@@ -360,7 +360,13 @@ class Action:
     def _get_target(self, enemies: list[Any]) -> Any:
         # Check for rivals first
         my_memory = getattr(self.ball, "memory", {})
-        rivals = [e for e in enemies if hasattr(e, "id") and my_memory.get(e.id, {}).get("relation") == "rival"]
+        # Extract all rivals from memory
+        rivals = []
+        for e in enemies:
+            if hasattr(e, "id"):
+                rel_data = my_memory.get(e.id, {})
+                if rel_data.get("relation") == "rival":
+                    rivals.append(e)
         if rivals:
             return min(rivals, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
 
@@ -462,7 +468,9 @@ class Action:
                 if hasattr(self.world, "_deal_damage"):
                     self.world._deal_damage(self.ball, target)
                     if hasattr(target, "id") and hasattr(self.ball, "id"):
-                        target.memory = getattr(target, "memory", {})
+                        # Rivalry memory update
+                        if not hasattr(target, "memory"):
+                            target.memory = {}
                         target.memory[self.ball.id] = {"relation": "rival"}
                 speed = getattr(self.ball, "speed", 2.0)
                 cooldown = max(0.2, 2.0 / speed if speed > 0 else 1.0)
@@ -559,7 +567,9 @@ class Action:
                     if hasattr(self.world, "_deal_damage"):
                         self.world._deal_damage(self.ball, target)
                         if hasattr(target, "id") and hasattr(self.ball, "id"):
-                            target.memory = getattr(target, "memory", {})
+                            # Rivalry memory update
+                            if not hasattr(target, "memory"):
+                                target.memory = {}
                             target.memory[self.ball.id] = {"relation": "rival"}
 
                     # Restore damage
@@ -614,7 +624,9 @@ class Action:
                     if attack_timer <= 0:
                         self.world._deal_damage(self.ball, target)
                         if hasattr(target, "id") and hasattr(self.ball, "id"):
-                            target.memory = getattr(target, "memory", {})
+                            # Rivalry memory update
+                            if not hasattr(target, "memory"):
+                                target.memory = {}
                             target.memory[self.ball.id] = {"relation": "rival"}
                         self.ball.attack_timer = max(0.2, 2.0 / getattr(self.ball, "speed", 2.0))
                 return
@@ -789,7 +801,9 @@ class Action:
                     if hasattr(self.world, "_deal_damage"):
                         self.world._deal_damage(self.ball, target)
                         if hasattr(target, "id") and hasattr(self.ball, "id"):
-                            target.memory = getattr(target, "memory", {})
+                            # Rivalry memory update
+                            if not hasattr(target, "memory"):
+                                target.memory = {}
                             target.memory[self.ball.id] = {"relation": "rival"}
 
                     if b_type == "ninja":
@@ -1209,7 +1223,9 @@ class Action:
                     if hasattr(self.world, "_deal_damage"):
                         self.world._deal_damage(self.ball, target)
                         if hasattr(target, "id") and hasattr(self.ball, "id"):
-                            target.memory = getattr(target, "memory", {})
+                            # Rivalry memory update
+                            if not hasattr(target, "memory"):
+                                target.memory = {}
                             target.memory[self.ball.id] = {"relation": "rival"}
 
                     speed = getattr(self.ball, "speed", 2.0)
