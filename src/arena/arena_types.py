@@ -528,7 +528,49 @@ class BallRelationshipsArena(ProceduralArena):
         self.hazards.append(Hazard(id=2, x=cx - 150, y=cy + 150, radius=30.0, kind="lava", damage=20.0))
         self.hazards.append(Hazard(id=3, x=cx + 150, y=cy + 150, radius=30.0, kind="lava", damage=20.0))
 
+
+class SwarmIntelligenceArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+
+        # 9 Rooms
+        self.rooms.append(Room(350, 350, 300, 300))
+        self.rooms.append(Room(850, 350, 300, 300))
+        self.rooms.append(Room(1350, 350, 300, 300))
+        self.rooms.append(Room(350, 850, 300, 300))
+        self.rooms.append(Room(850, 850, 300, 300))
+        self.rooms.append(Room(1350, 850, 300, 300))
+        self.rooms.append(Room(350, 1350, 300, 300))
+        self.rooms.append(Room(850, 1350, 300, 300))
+        self.rooms.append(Room(1350, 1350, 300, 300))
+
+        # 12 Corridors
+        # Horizontal
+        self.corridors.append(Corridor(600, 450, 300, 100))
+        self.corridors.append(Corridor(1100, 450, 300, 100))
+        self.corridors.append(Corridor(600, 950, 300, 100))
+        self.corridors.append(Corridor(1100, 950, 300, 100))
+        self.corridors.append(Corridor(600, 1450, 300, 100))
+        self.corridors.append(Corridor(1100, 1450, 300, 100))
+
+        # Vertical
+        self.corridors.append(Corridor(450, 600, 100, 300))
+        self.corridors.append(Corridor(450, 1100, 100, 300))
+        self.corridors.append(Corridor(950, 600, 100, 300))
+        self.corridors.append(Corridor(950, 1100, 100, 300))
+        self.corridors.append(Corridor(1450, 600, 100, 300))
+        self.corridors.append(Corridor(1450, 1100, 100, 300))
+
+        # 4 Hazards in the center room
+        self.hazards.append(Hazard(id=0, x=900, y=900, radius=30.0, kind="spikes", damage=15.0))
+        self.hazards.append(Hazard(id=1, x=1100, y=900, radius=30.0, kind="spikes", damage=15.0))
+        self.hazards.append(Hazard(id=2, x=900, y=1100, radius=30.0, kind="spikes", damage=15.0))
+        self.hazards.append(Hazard(id=3, x=1100, y=1100, radius=30.0, kind="spikes", damage=15.0))
+
 ARENAS = {
+    "swarm_intelligence": SwarmIntelligenceArena,
     "reposition": RepositionArena,
     "avoid_trap": AvoidTrapArena,
     "kite": KiteArena,
