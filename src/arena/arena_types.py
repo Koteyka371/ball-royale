@@ -307,6 +307,31 @@ class CircleStrafeArena(ProceduralArena):
         self.corridors.append(Corridor(cx - 350, cy - 150, 200, 300)) # Left
         self.corridors.append(Corridor(cx + 150, cy - 150, 200, 300)) # Right
 
+class EpicKillsArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # 3 rooms: large central room and two sniper nests
+        self.rooms.append(Room(cx - 400, cy - 400, 800, 800))
+        self.rooms.append(Room(cx - 700, cy - 100, 200, 200))
+        self.rooms.append(Room(cx + 500, cy - 100, 200, 200))
+
+        # 2 corridors bridging the gaps
+        self.corridors.append(Corridor(cx - 550, cy - 50, 200, 100))
+        self.corridors.append(Corridor(cx + 350, cy - 50, 200, 100))
+
+        # A huge pit of hazards in the middle (8 hazards forming a circle)
+        import math
+        for i in range(8):
+            angle = 2 * math.pi * i / 8
+            hx = cx + 200 * math.cos(angle)
+            hy = cy + 200 * math.sin(angle)
+            self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=100.0, kind="lava", damage=50.0))
+
 class ComebacksArena(ProceduralArena):
     def generate(self):
         self.rooms.clear()
@@ -397,7 +422,8 @@ ARENAS = {
     "use_shield": UseShieldArena,
     "aggressive_chase": AggressiveChaseArena,
     "comebacks": ComebacksArena,
-    "circle_strafe": CircleStrafeArena
+    "circle_strafe": CircleStrafeArena,
+    "epic_kills": EpicKillsArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
