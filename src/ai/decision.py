@@ -40,6 +40,7 @@ class Decision:
         "templar": "defend",
         "ranger": "kite",
         "spectator": "idle",
+        "hard": "attack",
     }
 
     _weights_cache = None

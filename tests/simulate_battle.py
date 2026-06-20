@@ -83,7 +83,10 @@ BALL_TYPES = {
                   "skill": "observe", "skill_cooldown": 1.0},
     "chaos": {"hp": 100, "speed": 3.0, "damage": 15, "radius": 10,
               "perception_radius": 250, "aggression": 0.5, "color": "magenta",
-              "skill": "random", "skill_cooldown": 2.0}
+              "skill": "random", "skill_cooldown": 2.0},
+    "hard": {"hp": 150, "speed": 3.5, "damage": 20, "radius": 11,
+             "perception_radius": 300, "aggression": 0.8, "color": "darkred",
+             "skill": "perfect_strike", "skill_cooldown": 4.0}
 }
 
 import json  # noqa: E402
