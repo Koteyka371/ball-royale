@@ -208,6 +208,29 @@ class UseShieldArena(ProceduralArena):
             damage = 20.0 if kind == "spikes" else 40.0
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=40.0, kind=kind, damage=damage))
 
+class GroupAttackArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central battlefield
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+
+        # 4 team bases
+        self.rooms.append(Room(50, cy - 100, 200, 200)) # Left base
+        self.rooms.append(Room(w - 250, cy - 100, 200, 200)) # Right base
+        self.rooms.append(Room(cx - 100, 50, 200, 200)) # Top base
+        self.rooms.append(Room(cx - 100, h - 250, 200, 200)) # Bottom base
+
+        # Corridors connecting bases to center
+        self.corridors.append(Corridor(250, cy - 50, cx - 300 - 250, 100)) # Left corridor
+        self.corridors.append(Corridor(cx + 300, cy - 50, w - 250 - (cx + 300), 100)) # Right corridor
+        self.corridors.append(Corridor(cx - 50, 250, 100, cy - 300 - 250)) # Top corridor
+        self.corridors.append(Corridor(cx - 50, cy + 300, 100, h - 250 - (cy + 300))) # Bottom corridor
+
 class RetreatToAllyArena(ProceduralArena):
     def generate(self):
         self.rooms.clear()
@@ -239,6 +262,7 @@ class RetreatToAllyArena(ProceduralArena):
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=30.0, kind="lava", damage=30.0))
 
 ARENAS = {
+    "group_attack": GroupAttackArena,
     "retreat_to_ally": RetreatToAllyArena,
     "procedural": ProceduralArena,
     "cross": CrossArena,
