@@ -485,15 +485,19 @@ func _get_strongest_enemy(enemies: Array) -> Object:
 
     for e in enemies:
         var e_max_hp = 0.0
-        if "max_hp" in e: e_max_hp = e.max_hp
-        elif "hp" in e: e_max_hp = e.hp
+        if "max_hp" in e:
+            e_max_hp = float(e.max_hp)
+        elif "hp" in e:
+            e_max_hp = float(e.hp)
 
         var e_hp = 0.0
-        if "hp" in e: e_hp = e.hp
+        if "hp" in e:
+            e_hp = float(e.hp)
 
-        var d_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+        var d_sq = float(pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2))
         var e_id = 0
-        if "id" in e: e_id = e.id
+        if "id" in e:
+            e_id = int(e.id)
 
         if e_max_hp > best_max_hp:
             best_max_hp = e_max_hp
@@ -516,6 +520,7 @@ func _get_strongest_enemy(enemies: Array) -> Object:
                     if e_id > best_id:
                         best_id = e_id
                         target = e
+
     return target
 
 func _get_target(enemies: Array) -> Object:

@@ -350,12 +350,14 @@ class Action:
         self.ball.y += comb_ny * boosted_speed * delta * 60
 
     def _get_strongest_enemy(self, enemies: list[Any]) -> Any:
-        return max(enemies, key=lambda e: (
-            getattr(e, "max_hp", getattr(e, "hp", 0.0)),
-            getattr(e, "hp", 0.0),
-            -((e.x - self.ball.x)**2 + (e.y - self.ball.y)**2),
-            getattr(e, "id", 0)
-        ))
+        def enemy_score(e: Any) -> tuple[float, float, float, int]:
+            max_hp = float(getattr(e, "max_hp", getattr(e, "hp", 0.0)))
+            hp = float(getattr(e, "hp", 0.0))
+            dist_sq = -float((e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+            e_id = int(getattr(e, "id", 0))
+            return (max_hp, hp, dist_sq, e_id)
+
+        return max(enemies, key=enemy_score)
 
     def _get_target(self, enemies: list[Any]) -> Any:
         # Check for rivals first - Rivalry skill: attacked me before -> attack on sight
