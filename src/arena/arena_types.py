@@ -490,6 +490,41 @@ class RepositionArena(ProceduralArena):
         # Central hazard
         self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=100.0, kind="lava", damage=15.0))
 
+class FunnyFailsArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central room
+        self.rooms.append(Room(cx - 150, cy - 150, 300, 300))
+        # Top outer room
+        self.rooms.append(Room(cx - 150, 100, 300, 200))
+        # Bottom outer room
+        self.rooms.append(Room(cx - 150, h - 300, 300, 200))
+        # Left outer room
+        self.rooms.append(Room(100, cy - 150, 200, 300))
+        # Right outer room
+        self.rooms.append(Room(w - 300, cy - 150, 200, 300))
+
+        # Top corridor
+        self.corridors.append(Corridor(cx - 25, 300, 50, cy - 450))
+        # Bottom corridor
+        self.corridors.append(Corridor(cx - 25, cy + 150, 50, h - cy - 450))
+        # Left corridor
+        self.corridors.append(Corridor(300, cy - 25, cx - 450, 50))
+        # Right corridor
+        self.corridors.append(Corridor(cx + 150, cy - 25, w - cx - 450, 50))
+
+        # Hazards
+        self.hazards.append(Hazard(id=0, x=cx - 250, y=cy - 250, radius=150.0, kind="lava", damage=50.0))
+        self.hazards.append(Hazard(id=1, x=cx + 250, y=cy - 250, radius=150.0, kind="lava", damage=50.0))
+        self.hazards.append(Hazard(id=2, x=cx - 250, y=cy + 250, radius=150.0, kind="lava", damage=50.0))
+        self.hazards.append(Hazard(id=3, x=cx + 250, y=cy + 250, radius=150.0, kind="lava", damage=50.0))
+        self.hazards.append(Hazard(id=4, x=cx, y=cy, radius=50.0, kind="spikes", damage=25.0))
+
 ARENAS = {
     "reposition": RepositionArena,
     "avoid_trap": AvoidTrapArena,
@@ -515,7 +550,8 @@ ARENAS = {
     "aggressive_chase": AggressiveChaseArena,
     "comebacks": ComebacksArena,
     "circle_strafe": CircleStrafeArena,
-    "epic_kills": EpicKillsArena
+    "epic_kills": EpicKillsArena,
+    "funny_fails": FunnyFailsArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:

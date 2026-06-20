@@ -1,0 +1,4 @@
+{
+  "title": "Black Hole Hazard",
+  "description": "A new hazard type that doesn't just damage balls, but actively pulls them towards its center with increasing force the closer they get. If a ball reaches the absolute center, it is instantly destroyed regardless of current HP. This would create highly dynamic movement challenges and synergies with knockback abilities, as players try to bump opponents into the event horizon while fighting the gravitational pull themselves."
+}
