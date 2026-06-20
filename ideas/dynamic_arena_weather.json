@@ -1,0 +1,4 @@
+{
+  "title": "Dynamic Arena Weather System",
+  "description": "Introduce a dynamic weather system during battles. Random weather events like rain (reduces movement speed), wind (pushes balls in a specific direction), or fog (reduces perception radius) can occur, forcing AI to adapt their strategies dynamically."
+}
