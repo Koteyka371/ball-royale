@@ -238,7 +238,34 @@ class RetreatToAllyArena(ProceduralArena):
             hy = cy + 150 * math.sin(angle)
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=30.0, kind="lava", damage=30.0))
 
+class AmbushArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central room (street)
+        self.rooms.append(Room(cx - 150, cy - 300, 300, 600))
+
+        # Hiding spots
+        self.rooms.append(Room(cx - 300, cy - 200, 100, 100)) # Top left
+        self.rooms.append(Room(cx + 200, cy - 200, 100, 100)) # Top right
+        self.rooms.append(Room(cx - 300, cy + 100, 100, 100)) # Bottom left
+        self.rooms.append(Room(cx + 200, cy + 100, 100, 100)) # Bottom right
+
+        # Corridors connecting hiding spots to central room
+        self.corridors.append(Corridor(cx - 200, cy - 175, 50, 50))
+        self.corridors.append(Corridor(cx + 150, cy - 175, 50, 50))
+        self.corridors.append(Corridor(cx - 200, cy + 125, 50, 50))
+        self.corridors.append(Corridor(cx + 150, cy + 125, 50, 50))
+
+        # Central hazard pushing them into hiding
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=50.0, kind="lava", damage=25.0))
+
 ARENAS = {
+    "ambush": AmbushArena,
     "retreat_to_ally": RetreatToAllyArena,
     "procedural": ProceduralArena,
     "cross": CrossArena,

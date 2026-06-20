@@ -1,0 +1,4 @@
+{
+  "title": "Stealth Grass mechanic in Ambush Arena",
+  "description": "Introduce a new hazard or terrain type called 'Stealth Grass' specifically for the Ambush Arena. Entities hiding inside the grass have their visual perception range significantly reduced, but they become completely invisible to entities outside the grass, allowing for perfect ambush maneuvers."
+}
