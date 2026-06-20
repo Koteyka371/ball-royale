@@ -347,6 +347,42 @@ class CircleStrafeArena(ProceduralArena):
         self.corridors.append(Corridor(cx - 350, cy - 150, 200, 300)) # Left
         self.corridors.append(Corridor(cx + 150, cy - 150, 200, 300)) # Right
 
+class CollectBoosterArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central room
+        self.rooms.append(Room(cx - 200, cy - 200, 400, 400))
+        # Top-left room
+        self.rooms.append(Room(100, 100, 250, 250))
+        # Top-right room
+        self.rooms.append(Room(w - 350, 100, 250, 250))
+        # Bottom-left room
+        self.rooms.append(Room(100, h - 350, 250, 250))
+        # Bottom-right room
+        self.rooms.append(Room(w - 350, h - 350, 250, 250))
+
+        # Corridors overlapping by at least 50px
+        # Top-left to center
+        self.corridors.append(Corridor(300, 300, cx - 300, 100))
+        self.corridors.append(Corridor(cx - 100, 300, 100, cy - 300))
+        # Top-right to center
+        self.corridors.append(Corridor(cx, 300, w - 300 - cx, 100))
+        self.corridors.append(Corridor(cx, 300, 100, cy - 300))
+        # Bottom-left to center
+        self.corridors.append(Corridor(300, h - 400, cx - 300, 100))
+        self.corridors.append(Corridor(cx - 100, cy, 100, h - 300 - cy))
+        # Bottom-right to center
+        self.corridors.append(Corridor(cx, h - 400, w - 300 - cx, 100))
+        self.corridors.append(Corridor(cx, cy, 100, h - 300 - cy))
+
+        # Central hazard
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=50.0, kind="spikes", damage=20.0))
+
 class EpicKillsArena(ProceduralArena):
     def generate(self):
         self.rooms.clear()
@@ -515,7 +551,8 @@ ARENAS = {
     "aggressive_chase": AggressiveChaseArena,
     "comebacks": ComebacksArena,
     "circle_strafe": CircleStrafeArena,
-    "epic_kills": EpicKillsArena
+    "epic_kills": EpicKillsArena,
+    "collect_booster": CollectBoosterArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
