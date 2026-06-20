@@ -1,0 +1,4 @@
+{
+  "title": "Black Hole Hazard",
+  "description": "A new hazard type that doesn't deal direct damage but continuously pulls nearby balls towards its center. The closer a ball gets, the stronger the pull, making it an environmental trap that players can use strategically to pull enemies into other hazards or out of position."
+}

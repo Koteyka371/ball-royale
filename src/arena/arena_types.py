@@ -326,7 +326,45 @@ class ComebacksArena(ProceduralArena):
             hy = cy + 200 * math.sin(angle)
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=30.0, kind="lava", damage=40.0))
 
+class WaitAndWatchArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central battle room
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+
+        # Safe outer ring (spectator/waiting area)
+        ring_thickness = 150
+        margin = 50
+        # Top
+        self.rooms.append(Room(margin, margin, w - 2*margin, ring_thickness))
+        # Bottom
+        self.rooms.append(Room(margin, h - margin - ring_thickness, w - 2*margin, ring_thickness))
+        # Left
+        self.rooms.append(Room(margin, margin + ring_thickness, ring_thickness, h - 2*margin - 2*ring_thickness))
+        # Right
+        self.rooms.append(Room(w - margin - ring_thickness, margin + ring_thickness, ring_thickness, h - 2*margin - 2*ring_thickness))
+
+        # Connecting corridors from outer ring to center
+        self.corridors.append(Corridor(cx - 50, margin + ring_thickness, 100, cy - 300 - (margin + ring_thickness))) # Top to center
+        self.corridors.append(Corridor(cx - 50, cy + 300, 100, (h - margin - ring_thickness) - (cy + 300))) # Bottom to center
+        self.corridors.append(Corridor(margin + ring_thickness, cy - 50, (cx - 300) - (margin + ring_thickness), 100)) # Left to center
+        self.corridors.append(Corridor(cx + 300, cy - 50, (w - margin - ring_thickness) - (cx + 300), 100)) # Right to center
+
+        # Hazards in the center to make waiting outside safer initially
+        import math
+        for i in range(12):
+            angle = 2 * math.pi * i / 12
+            hx = cx + 200 * math.cos(angle)
+            hy = cy + 200 * math.sin(angle)
+            self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=40.0, kind="lava", damage=25.0))
+
 ARENAS = {
+    "wait_and_watch": WaitAndWatchArena,
     "buff_ally": BuffAllyArena,
     "retreat_to_ally": RetreatToAllyArena,
     "procedural": ProceduralArena,
