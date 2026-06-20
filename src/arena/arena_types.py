@@ -238,7 +238,43 @@ class RetreatToAllyArena(ProceduralArena):
             hy = cy + 150 * math.sin(angle)
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=30.0, kind="lava", damage=30.0))
 
+class CollectBoosterArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central room
+        self.rooms.append(Room(cx - 200, cy - 200, 400, 400))
+
+        # Small corner rooms
+        self.rooms.append(Room(50, 50, 150, 150)) # Top-Left
+        self.rooms.append(Room(w - 200, 50, 150, 150)) # Top-Right
+        self.rooms.append(Room(50, h - 200, 150, 150)) # Bottom-Left
+        self.rooms.append(Room(w - 200, h - 200, 150, 150)) # Bottom-Right
+
+        # Corridors connecting corners to center
+        # TL to center
+        self.corridors.append(Corridor(125, 125, cx - 125, 50))
+        self.corridors.append(Corridor(cx - 50, 125, 50, cy - 125))
+
+        # TR to center
+        self.corridors.append(Corridor(cx, 125, w - cx - 125, 50))
+        self.corridors.append(Corridor(cx, 125, 50, cy - 125))
+
+        # BL to center
+        self.corridors.append(Corridor(125, h - 175, cx - 125, 50))
+        self.corridors.append(Corridor(cx - 50, cy, 50, h - cy - 125))
+
+        # BR to center
+        self.corridors.append(Corridor(cx, h - 175, w - cx - 125, 50))
+        self.corridors.append(Corridor(cx, cy, 50, h - cy - 125))
+
+
 ARENAS = {
+    "collect_booster": CollectBoosterArena,
     "retreat_to_ally": RetreatToAllyArena,
     "procedural": ProceduralArena,
     "cross": CrossArena,

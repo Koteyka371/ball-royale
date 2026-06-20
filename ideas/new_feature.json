@@ -1,0 +1,4 @@
+{
+  "title": "Boosters that spawn temporary walls",
+  "description": "Add a new booster type that upon collection creates temporary walls around the collector, giving them a safe space to heal or wait out attacks."
+}
