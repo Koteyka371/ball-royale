@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-ball_type-088] Implement Sniper ball — *2026-06-20 18:30:16 UTC*
+
+Implement Implement Sniper ball as described in game_design.md
+
+---
+
 ## [idea-arena-115] Create Epic kills arena — *2026-06-20 18:19:29 UTC*
 
 Implement Create Epic kills arena as described in game_design.md

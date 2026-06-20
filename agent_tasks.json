@@ -1552,7 +1552,7 @@
     },
     {
       "id": "idea-ball_type-088",
-      "status": "todo",
+      "status": "done",
       "area": "content",
       "risk": "medium",
       "title": "Implement Sniper ball",
