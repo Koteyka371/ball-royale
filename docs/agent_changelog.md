@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-arena-103] Create Hide Behind arena — *2026-06-20 15:15:30 UTC*
+
+Implement Create Hide Behind arena as described in game_design.md
+
+---
+
 ## [idea-ball_type-091] Implement King ball — *2026-06-20 15:12:37 UTC*
 
 Implement Implement King ball as described in game_design.md

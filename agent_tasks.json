@@ -1807,7 +1807,7 @@
     },
     {
       "id": "idea-arena-103",
-      "status": "todo",
+      "status": "done",
       "area": "arenas",
       "risk": "low",
       "title": "Create Hide Behind arena",
