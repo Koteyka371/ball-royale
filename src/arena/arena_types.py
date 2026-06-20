@@ -185,6 +185,21 @@ class ChokePointArena(ProceduralArena):
         self.rooms.append(Room(50, h/2 + 100, w - 100, h/2 - 150))
         self.rooms.append(Room(cx - 100, h/2 - 50, 200, 150))
 
+
+class TargetStrongArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+        # Add high-damage hazards for 'strong' theme
+        self.hazards.append(Hazard(id=1, x=cx-150, y=cy-150, radius=50.0, kind="lava", damage=100.0))
+        self.hazards.append(Hazard(id=2, x=cx+150, y=cy-150, radius=50.0, kind="lava", damage=100.0))
+        self.hazards.append(Hazard(id=3, x=cx-150, y=cy+150, radius=50.0, kind="lava", damage=100.0))
+        self.hazards.append(Hazard(id=4, x=cx+150, y=cy+150, radius=50.0, kind="lava", damage=100.0))
+
 ARENAS = {
     "procedural": ProceduralArena,
     "cross": CrossArena,
@@ -199,7 +214,8 @@ ARENAS = {
     "fortress": FortressArena,
     "split": SplitArena,
     "flank": FlankArena,
-    "choke_point": ChokePointArena
+    "choke_point": ChokePointArena,
+    "target_strong": TargetStrongArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
