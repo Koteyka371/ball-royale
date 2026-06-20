@@ -7,6 +7,7 @@ Aggressive fighter, seeks combat, uses Wave Attack when 2+ enemies
 
 
 
+import math
 from ai.personality import Personality
 
 class Warrior:
@@ -20,6 +21,7 @@ class Warrior:
     COLOR = "red"
     SKILL = "wave_attack"
     SKILL_COOLDOWN = 5.0
+    ATTACK_RANGE = 20.0
 
     def __init__(self, ball_id: int, x: float = 0.0, y: float = 0.0):
         self.id = ball_id
@@ -32,16 +34,47 @@ class Warrior:
         self.first_hit_taken = False
         self.current_action = "idle"
         self.skill_timer = 0.0
+        self.attack_timer = 0.0
+        self.attack_range = float(self.ATTACK_RANGE)
         self.personality = Personality("aggressive")
 
     def get_hp_percent(self) -> float:
         return self.hp / self.max_hp if self.max_hp > 0 else 0.0
 
-    def flee(self, delta: float) -> None:
-        self.current_action = "flee"
-
-    def attack(self, delta: float) -> None:
+    def flee(self, delta: float, target=None) -> None:
+        # Warrior is aggressive and does not flee, so it attacks instead
         self.current_action = "attack"
+
+    def attack(self, delta: float, target=None) -> None:
+        self.current_action = "attack"
+        if target is None:
+            return
+
+        dx = target.x - self.x
+        dy = target.y - self.y
+        dist_sq = dx * dx + dy * dy
+        if dist_sq > 0.0001:
+            dist = math.sqrt(dist_sq)
+            nx = dx / dist
+            ny = dy / dist
+            step = self.SPEED * delta * 60.0
+
+            # Warrior aggressively closes the distance
+            self.x += nx * min(step, dist)
+            self.y += ny * min(step, dist)
+
+            target_radius = getattr(target, 'radius', 10.0)
+            attack_range = self.RADIUS + target_radius + 5
+
+            # Recalculate distance after moving
+            new_dx = target.x - self.x
+            new_dy = target.y - self.y
+            new_dist_sq = new_dx * new_dx + new_dy * new_dy
+            new_dist = math.sqrt(new_dist_sq) if new_dist_sq > 0.0001 else 0.0
+
+            if new_dist <= attack_range:
+                if self.attack_timer <= 0:
+                    self.attack_timer = float(max(0.2, 2.0 / self.SPEED if self.SPEED > 0 else 1.0))
 
     def defend(self, delta: float) -> None:
         self.current_action = "defend"
