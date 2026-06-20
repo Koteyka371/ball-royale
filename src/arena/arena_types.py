@@ -528,7 +528,43 @@ class BallRelationshipsArena(ProceduralArena):
         self.hazards.append(Hazard(id=2, x=cx - 150, y=cy + 150, radius=30.0, kind="lava", damage=20.0))
         self.hazards.append(Hazard(id=3, x=cx + 150, y=cy + 150, radius=30.0, kind="lava", damage=20.0))
 
+
+class NeuralBallArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central room
+        self.rooms.append(Room(cx - 200, cy - 200, 400, 400))
+        # Top node
+        self.rooms.append(Room(cx - 50, cy - 400, 100, 100))
+        # Bottom node
+        self.rooms.append(Room(cx - 50, cy + 300, 100, 100))
+        # Left node
+        self.rooms.append(Room(cx - 400, cy - 50, 100, 100))
+        # Right node
+        self.rooms.append(Room(cx + 300, cy - 50, 100, 100))
+
+        # Corridor top
+        self.corridors.append(Corridor(cx - 25, cy - 300, 50, 100))
+        # Corridor bottom
+        self.corridors.append(Corridor(cx - 25, cy + 200, 50, 100))
+        # Corridor left
+        self.corridors.append(Corridor(cx - 300, cy - 25, 100, 50))
+        # Corridor right
+        self.corridors.append(Corridor(cx + 200, cy - 25, 100, 50))
+
+        # Hazards
+        self.hazards.append(Hazard(1, cx - 150, cy - 150, 40, "lava", 10.0))
+        self.hazards.append(Hazard(2, cx + 150, cy - 150, 40, "lava", 10.0))
+        self.hazards.append(Hazard(3, cx - 150, cy + 150, 40, "lava", 10.0))
+        self.hazards.append(Hazard(4, cx + 150, cy + 150, 40, "lava", 10.0))
+
 ARENAS = {
+
     "reposition": RepositionArena,
     "avoid_trap": AvoidTrapArena,
     "kite": KiteArena,
@@ -554,7 +590,8 @@ ARENAS = {
     "comebacks": ComebacksArena,
     "circle_strafe": CircleStrafeArena,
     "epic_kills": EpicKillsArena,
-    "ball_relationships": BallRelationshipsArena
+    "ball_relationships": BallRelationshipsArena,
+    "neural_ball": NeuralBallArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:

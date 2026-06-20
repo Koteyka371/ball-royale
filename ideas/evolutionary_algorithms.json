@@ -1,0 +1,4 @@
+{
+  "title": "Evolutionary Algorithms for Neural Balls",
+  "description": "Allow Neural Balls to reproduce and evolve their weights over generations based on their performance in the arena."
+}
