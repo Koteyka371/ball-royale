@@ -61,42 +61,47 @@ class Sniper:
     def kite(self, delta: float, target=None) -> None:
         """Kite — держит дистанцию, атакует при приближении skill: для Sniper"""
         self.current_action = "kite"
+
+        # Decrement timers
         if getattr(self, "skill_timer", 0.0) > 0:
             self.skill_timer -= delta
         if getattr(self, "attack_timer", 0.0) > 0:
             self.attack_timer -= delta
 
-        if not target:
+        if target is None:
             return
 
+        # Calculate distance to target
         dx = target.x - self.x
         dy = target.y - self.y
-        dist = math.hypot(dx, dy)
+        distance = math.hypot(dx, dy)
 
-        if dist <= 0.0001:
+        if distance <= 0.0001:
             return
 
-        nx = dx / dist
-        ny = dy / dist
-        step = self.SPEED * delta * 60.0
-        safe_dist = self.attack_range * 0.8
+        # Normalize direction
+        dir_x = dx / distance
+        dir_y = dy / distance
 
-        if dist > self.attack_range:
+        # Movement
+        step_dist = self.SPEED * delta * 60.0
+        safe_distance = self.attack_range * 0.8
+
+        if distance > self.attack_range:
             # Move towards target to get in range
-            move_dist = min(step, dist - self.attack_range)
-            self.x += nx * move_dist
-            self.y += ny * move_dist
-        elif dist < safe_dist:
-            # Move away from target to maintain safe distance (flee)
-            self.x -= nx * step
-            self.y -= ny * step
+            move = min(step_dist, distance - self.attack_range)
+            self.x += dir_x * move
+            self.y += dir_y * move
+        elif distance < safe_distance:
+            # Move away from target to maintain safe distance
+            self.x -= dir_x * step_dist
+            self.y -= dir_y * step_dist
 
-        # Recalculate distance
-        new_dx = target.x - self.x
-        new_dy = target.y - self.y
-        new_dist = math.hypot(new_dx, new_dy)
+        # Recalculate distance after moving
+        new_distance = math.hypot(target.x - self.x, target.y - self.y)
 
-        if new_dist <= self.attack_range:
+        # Trigger skill or attack if in range
+        if new_distance <= self.attack_range:
             if self.skill_timer <= 0:
                 self.use_skill()
             elif getattr(self, 'attack_timer', 0.0) <= 0:
