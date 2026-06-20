@@ -462,6 +462,7 @@ class BattleSimulation:
                 import sys
                 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
                 from ai.commentator import BattleCommentator
+                from ui.stats_overlay import StatsOverlay
                 commentator = BattleCommentator()
                 lines = commentator.generate_commentary(self.kill_log, self.stats)
                 print(f"\n{'='*60}")
@@ -476,6 +477,21 @@ class BattleSimulation:
                 print("="*60)
                 for msg in commentator.kill_feed.get_messages():
                     print(f"  [UI] {msg}")
+
+                print("\n" + "="*60)
+                print("  UI STATS OVERLAY PREVIEW")
+                print("="*60)
+
+                overlay = StatsOverlay()
+                kills_by_id = {}
+                for log in self.kill_log:
+                    kid = log.get("killer_id")
+                    if kid is not None:
+                        kills_by_id[kid] = kills_by_id.get(kid, 0) + 1
+
+                overlay.update([{"id": b.id, "type": b.ball_type, "hp": b.hp, "kills": kills_by_id.get(b.id, 0)} for b in self.balls])
+                for line in overlay.format_text().split("\n"):
+                    print(f"  [UI] {line}")
             except ImportError:
                 pass
 
