@@ -287,7 +287,46 @@ class AggressiveChaseArena(ProceduralArena):
         self.corridors.append(Corridor(cx - 40, 50 + room_size, 80, cy - center_size/2 - (50 + room_size))) # Top
         self.corridors.append(Corridor(cx - 40, cy + center_size/2, 80, (h - 50 - room_size) - (cy + center_size/2))) # Bottom
 
+
+class RepositionArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # 4 safe small rooms in the corners
+        room_w = 200
+        room_h = 200
+        self.rooms.append(Room(50, 50, room_w, room_h))
+        self.rooms.append(Room(w - 50 - room_w, 50, room_w, room_h))
+        self.rooms.append(Room(50, h - 50 - room_h, room_w, room_h))
+        self.rooms.append(Room(w - 50 - room_w, h - 50 - room_h, room_w, room_h))
+
+        # Central room, highly exposed
+        center_size = 400
+        self.rooms.append(Room(cx - center_size/2, cy - center_size/2, center_size, center_size))
+
+        # Connect corner rooms to center with intersecting corridors
+        # Top-Left to Center
+        self.corridors.append(Corridor(50 + room_w/2 - 40, 50 + room_h, 80, cy - center_size/2 - (50 + room_h) + 10))
+        # Top-Right to Center
+        self.corridors.append(Corridor(w - 50 - room_w/2 - 40, 50 + room_h, 80, cy - center_size/2 - (50 + room_h) + 10))
+        # Bottom-Left to Center
+        self.corridors.append(Corridor(50 + room_w/2 - 40, cy + center_size/2 - 10, 80, (h - 50 - room_h) - (cy + center_size/2) + 10))
+        # Bottom-Right to Center
+        self.corridors.append(Corridor(w - 50 - room_w/2 - 40, cy + center_size/2 - 10, 80, (h - 50 - room_h) - (cy + center_size/2) + 10))
+
+        # Additional horizontal corridors to ensure connectivity (from inner side of corner rooms to center room's sides)
+        self.corridors.append(Corridor(50 + room_w - 10, cy - 40, cx - center_size/2 - (50 + room_w) + 20, 80)) # Left side
+        self.corridors.append(Corridor(cx + center_size/2 - 10, cy - 40, (w - 50 - room_w) - (cx + center_size/2) + 20, 80)) # Right side
+
+        # Add hazards in the central room to force repositioning
+        self.hazards.append(Hazard(cx - center_size/4, cy - center_size/4, center_size/2, center_size/2, "spikes", 5.0))
+
 ARENAS = {
+    "reposition": RepositionArena,
     "buff_ally": BuffAllyArena,
     "retreat_to_ally": RetreatToAllyArena,
     "procedural": ProceduralArena,
