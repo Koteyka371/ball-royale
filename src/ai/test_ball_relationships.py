@@ -31,7 +31,7 @@ class MockWorld:
     def _deal_damage(self, attacker, target):
         target.hp -= attacker.damage
 
-def test_rival_memory_recorded():
+def test_rival_memory_is_saved():
     attacker = MockBall(1, 0, 0, "assassin")
     target = MockBall(2, 5, 0, "warrior")
     world = MockWorld([attacker, target])
@@ -45,7 +45,7 @@ def test_rival_memory_recorded():
     assert 1 in target.memory
     assert target.memory[1]["relation"] == "rival"
 
-def test_rival_prioritized():
+def test_closest_rival_prioritized():
     ball = MockBall(1, 0, 0, "warrior")
     rival = MockBall(2, 100, 0, "assassin")
     normal_enemy = MockBall(3, 10, 0, "tank")
@@ -62,7 +62,7 @@ def test_rival_prioritized():
 
     assert target == rival
 
-def test_rival_increases_threat_and_attack_score():
+def test_rival_boosts_aggression_score():
     ball = MockBall(1, 0, 0, "warrior")
     rival = MockBall(2, 50, 0, "assassin")
     world = MockWorld([ball, rival])

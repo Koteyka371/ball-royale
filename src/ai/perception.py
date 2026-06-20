@@ -73,8 +73,8 @@ class Perception:
 
                 # Rivalry memory detection
                 if hasattr(self.ball, "memory"):
-                    relationship_info = self.ball.memory.get(enemy.id, {})
-                    if relationship_info.get("relation") == "rival":
+                    ball_mem = self.ball.memory.get(enemy.id, {})
+                    if ball_mem.get("relation") == "rival":
                         data["rival_spotted"] = True
 
             # Threat increases if enemy is closer. Max threat from one enemy = 1.0 (at dist 0)
