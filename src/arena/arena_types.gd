@@ -2,6 +2,7 @@ class_name ArenaTypes
 extends RefCounted
 
 const ARENAS = [
+    "ambush",
     "procedural",
     "cross",
     "ring",

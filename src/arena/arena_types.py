@@ -185,7 +185,37 @@ class ChokePointArena(ProceduralArena):
         self.rooms.append(Room(50, h/2 + 100, w - 100, h/2 - 150))
         self.rooms.append(Room(cx - 100, h/2 - 50, 200, 150))
 
+
+class AmbushArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central large room
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+
+        # Four hiding spots (ambush spots) around the central room
+        # Top ambush spot
+        self.rooms.append(Room(cx - 50, cy - 450, 100, 100))
+        self.corridors.append(Corridor(cx - 25, cy - 350, 50, 50))
+
+        # Bottom ambush spot
+        self.rooms.append(Room(cx - 50, cy + 350, 100, 100))
+        self.corridors.append(Corridor(cx - 25, cy + 300, 50, 50))
+
+        # Left ambush spot
+        self.rooms.append(Room(cx - 450, cy - 50, 100, 100))
+        self.corridors.append(Corridor(cx - 350, cy - 25, 50, 50))
+
+        # Right ambush spot
+        self.rooms.append(Room(cx + 350, cy - 50, 100, 100))
+        self.corridors.append(Corridor(cx + 300, cy - 25, 50, 50))
+
 ARENAS = {
+    "ambush": AmbushArena,
     "procedural": ProceduralArena,
     "cross": CrossArena,
     "ring": RingArena,
