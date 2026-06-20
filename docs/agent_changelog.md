@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-ball_type-089] Implement Bomber ball — *2026-06-20 05:05:01 UTC*
+
+Implement Implement Bomber ball as described in game_design.md
+
+---
+
 ## [idea-arena-096] Create Flank arena — *2026-06-20 05:02:12 UTC*
 
 Implement Create Flank arena as described in game_design.md
