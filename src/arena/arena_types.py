@@ -376,6 +376,69 @@ class KiteArena(ProceduralArena):
         self.hazards.append(Hazard(id=2, x=300, y=cy, radius=50.0, kind="lava", damage=10.0))
         self.hazards.append(Hazard(id=3, x=w-300, y=cy, radius=50.0, kind="lava", damage=10.0))
 
+class RepositionArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+
+        # 3x3 grid of islands
+        # Start at 200, 200, spacing 700
+        # Islands are 200x200
+
+        islands = []
+        for i in range(3):
+            row = []
+            for j in range(3):
+                rx = 200 + j * 700
+                ry = 200 + i * 700
+                self.rooms.append(Room(rx, ry, 200, 200))
+                row.append((rx, ry))
+            islands.append(row)
+
+        hazard_id = 0
+
+        # Connect horizontally
+        for i in range(3):
+            for j in range(2):
+                rx1, ry1 = islands[i][j]
+                rx2, ry2 = islands[i][j+1]
+
+                # Corridor starting inside room 1, ending inside room 2
+                # Room width is 200. Overlap by 50 means x starts at rx1 + 150
+                # Length should be to rx2 + 50. distance is rx2 - rx1 = 700.
+                # So length = 700 - 150 + 50 = 600
+                cx = rx1 + 150
+                cy = ry1 + 60
+                c_width = 600
+                c_height = 80
+
+                self.corridors.append(Corridor(cx, cy, c_width, c_height))
+
+                # Hazard in the middle of the corridor
+                hx = cx + c_width / 2
+                hy = cy + c_height / 2
+                self.hazards.append(Hazard(id=hazard_id, x=hx, y=hy, radius=30.0, kind="lava", damage=20.0))
+                hazard_id += 1
+
+        # Connect vertically
+        for i in range(2):
+            for j in range(3):
+                rx1, ry1 = islands[i][j]
+                rx2, ry2 = islands[i+1][j]
+
+                cx = rx1 + 60
+                cy = ry1 + 150
+                c_width = 80
+                c_height = 600
+
+                self.corridors.append(Corridor(cx, cy, c_width, c_height))
+
+                hx = cx + c_width / 2
+                hy = cy + c_height / 2
+                self.hazards.append(Hazard(id=hazard_id, x=hx, y=hy, radius=30.0, kind="lava", damage=20.0))
+                hazard_id += 1
+
 ARENAS = {
     "kite": KiteArena,
     "buff_ally": BuffAllyArena,
@@ -397,7 +460,8 @@ ARENAS = {
     "use_shield": UseShieldArena,
     "aggressive_chase": AggressiveChaseArena,
     "comebacks": ComebacksArena,
-    "circle_strafe": CircleStrafeArena
+    "circle_strafe": CircleStrafeArena,
+    "reposition": RepositionArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
