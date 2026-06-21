@@ -324,6 +324,45 @@ class RepositionArena extends ProceduralArena:
         # Central hazard
         hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 100.0, "lava", 15.0))
 
+class AICommentaryArena extends ProceduralArena:
+	func generate():
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+		var w = width
+		var h = height
+		var cx = w / 2.0
+		var cy = h / 2.0
+
+		# Central battle room for commentary
+		rooms.append(ProceduralArena.Room.new(cx - 400.0, cy - 400.0, 800.0, 800.0))
+
+		# 4 Viewing/Spawn rooms
+		rooms.append(ProceduralArena.Room.new(100.0, 100.0, 200.0, 200.0))
+		rooms.append(ProceduralArena.Room.new(w - 300.0, 100.0, 200.0, 200.0))
+		rooms.append(ProceduralArena.Room.new(100.0, h - 300.0, 200.0, 200.0))
+		rooms.append(ProceduralArena.Room.new(w - 300.0, h - 300.0, 200.0, 200.0))
+
+		# Connecting corridors
+		corridors.append(ProceduralArena.Corridor.new(200.0, 200.0, cx - 600.0, 100.0))
+		corridors.append(ProceduralArena.Corridor.new(cx - 450.0, 200.0, 100.0, cy - 600.0))
+
+		corridors.append(ProceduralArena.Corridor.new(cx + 400.0, 200.0, cx - 600.0, 100.0))
+		corridors.append(ProceduralArena.Corridor.new(cx + 350.0, 200.0, 100.0, cy - 600.0))
+
+		corridors.append(ProceduralArena.Corridor.new(200.0, cy + 350.0, cx - 600.0, 100.0))
+		corridors.append(ProceduralArena.Corridor.new(cx - 450.0, cy + 350.0, 100.0, cy - 600.0))
+
+		corridors.append(ProceduralArena.Corridor.new(cx + 400.0, cy + 350.0, cx - 600.0, 100.0))
+		corridors.append(ProceduralArena.Corridor.new(cx + 350.0, cy + 350.0, 100.0, cy - 600.0))
+
+		# Central hazards for exciting moments
+		var h1 = ProceduralArena.Hazard.new(0, cx - 150.0, cy - 150.0, 50.0, "lava", 20.0)
+		hazards.append(h1)
+
+		var h2 = ProceduralArena.Hazard.new(1, cx + 150.0, cy + 150.0, 50.0, "lava", 20.0)
+		hazards.append(h2)
+
 class BallRelationshipsArena extends ProceduralArena:
     func generate():
         rooms.clear()

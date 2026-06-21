@@ -511,6 +511,44 @@ class RepositionArena(ProceduralArena):
         self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=100.0, kind="lava", damage=15.0))
 
 
+class AICommentaryArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central battle room for commentary
+        self.rooms.append(Room(cx - 400, cy - 400, 800, 800))
+
+        # 4 Viewing/Spawn rooms
+        self.rooms.append(Room(100, 100, 200, 200))
+        self.rooms.append(Room(w - 300, 100, 200, 200))
+        self.rooms.append(Room(100, h - 300, 200, 200))
+        self.rooms.append(Room(w - 300, h - 300, 200, 200))
+
+        # Connecting corridors (bridging the gaps correctly)
+        # Top-Left (200, 300) to Central (cx - 400 = 600, cy - 400 = 600)
+        self.corridors.append(Corridor(200, 200, cx - 600, 100)) # horizontal part
+        self.corridors.append(Corridor(cx - 450, 200, 100, cy - 600)) # vertical part
+
+        # Top-Right (w-300 = 1700, 300) to Central (cx+400=1400, 600)
+        self.corridors.append(Corridor(cx + 400, 200, cx - 600, 100)) # horizontal part
+        self.corridors.append(Corridor(cx + 350, 200, 100, cy - 600)) # vertical part
+
+        # Bottom-Left (200, h-300=1700) to Central (600, cy+400=1400)
+        self.corridors.append(Corridor(200, cy + 350, cx - 600, 100)) # horizontal part
+        self.corridors.append(Corridor(cx - 450, cy + 350, 100, cy - 600)) # vertical part
+
+        # Bottom-Right (1700, 1700) to Central (1400, 1400)
+        self.corridors.append(Corridor(cx + 400, cy + 350, cx - 600, 100)) # horizontal part
+        self.corridors.append(Corridor(cx + 350, cy + 350, 100, cy - 600)) # vertical part
+
+        # Central hazards for exciting moments
+        self.hazards.append(Hazard(id=0, x=cx - 150, y=cy - 150, radius=50, kind="lava", damage=20))
+        self.hazards.append(Hazard(id=1, x=cx + 150, y=cy + 150, radius=50, kind="lava", damage=20))
+
 class BallRelationshipsArena(ProceduralArena):
     def generate(self):
         self.rooms.clear()
@@ -995,6 +1033,7 @@ ARENAS = {
     "comebacks": ComebacksArena,
     "circle_strafe": CircleStrafeArena,
     "epic_kills": EpicKillsArena,
+    "ai_commentary": AICommentaryArena,
     "ball_relationships": BallRelationshipsArena,
     "finals_1v1": Finals1v1Arena,
     "team_wipes": TeamWipesArena
