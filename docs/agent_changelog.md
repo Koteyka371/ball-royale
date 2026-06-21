@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-arena-114] Create Funny fails arena — *2026-06-21 23:29:06 UTC*
+
+Implement Create Funny fails arena as described in game_design.md
+
+---
+
 ## [idea-arena-122] Create AI Commentary arena — *2026-06-21 22:22:49 UTC*
 
 Implement Create AI Commentary arena as described in game_design.md
