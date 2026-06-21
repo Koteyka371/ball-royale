@@ -1320,7 +1320,6 @@ class Action:
             norm_x, norm_y = diff_x / actual_dist, diff_y / actual_dist
 
             ball_attack_range = getattr(self.ball, "attack_range", 150.0)
-
             if actual_dist > ball_attack_range:
                 # Approach target if out of range
                 pass
@@ -1339,10 +1338,9 @@ class Action:
                 if actual_dist < ball_attack_range * 0.8:
                     self.ball.x += norm_x * move_step
                     self.ball.y += norm_y * move_step
-                else:
-                    self.ball.x += norm_x * min(move_step, actual_dist)
-                    self.ball.y += norm_y * min(move_step, actual_dist)
-
+                elif actual_dist > ball_attack_range:
+                    self.ball.x += norm_x * min(move_step, actual_dist - ball_attack_range)
+                    self.ball.y += norm_y * min(move_step, actual_dist - ball_attack_range)
         # Recalculate distance after movement
         diff_x_after, diff_y_after = optimal_target.x - self.ball.x, optimal_target.y - self.ball.y
         dist_sq_after = diff_x_after * diff_x_after + diff_y_after * diff_y_after

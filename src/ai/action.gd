@@ -2033,7 +2033,6 @@ func _kite(delta: float):
         if dist_sq > 0.0001:
             var nx = dx / actual_dist
             var ny = dy / actual_dist
-
             if actual_dist > b_attack_range:
                 pass
             elif actual_dist < b_attack_range * 0.8:
@@ -2056,10 +2055,9 @@ func _kite(delta: float):
                 if actual_dist < b_attack_range * 0.8:
                     self.ball.x += nx * step
                     self.ball.y += ny * step
-                else:
-                    self.ball.x += nx * min(step, actual_dist)
-                    self.ball.y += ny * min(step, actual_dist)
-
+                elif actual_dist > b_attack_range:
+                    self.ball.x += nx * min(step, actual_dist - b_attack_range)
+                    self.ball.y += ny * min(step, actual_dist - b_attack_range)
         dx = optimal_target.x - self.ball.x
         dy = optimal_target.y - self.ball.y
         dist_sq = dx*dx + dy*dy
