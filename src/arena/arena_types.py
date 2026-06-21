@@ -730,7 +730,49 @@ class AmbushArena(ProceduralArena):
         # 1 central hazard to discourage staying in the open
         self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=80.0, kind="lava", damage=20.0))
 
+class EmotionalContagionArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Center
+        self.rooms.append(Room(cx - 400, cy - 400, 800, 800))
+        # Top-Left
+        self.rooms.append(Room(100, 100, 200, 200))
+        # Top-Right
+        self.rooms.append(Room(w - 300, 100, 200, 200))
+        # Bottom-Left
+        self.rooms.append(Room(100, h - 300, 200, 200))
+        # Bottom-Right
+        self.rooms.append(Room(w - 300, h - 300, 200, 200))
+
+        # Top-Left Corridors
+        self.corridors.append(Corridor(200, 200, cx - 100, 100))
+        self.corridors.append(Corridor(cx - 200, 200, 100, cy - 200))
+
+        # Top-Right Corridors
+        self.corridors.append(Corridor(cx, 200, cx - 100, 100))
+        self.corridors.append(Corridor(cx + 100, 200, 100, cy - 200))
+
+        # Bottom-Left Corridors
+        self.corridors.append(Corridor(200, h - 300, cx - 100, 100))
+        self.corridors.append(Corridor(cx - 200, cy, 100, cy - 200))
+
+        # Bottom-Right Corridors
+        self.corridors.append(Corridor(cx, h - 300, cx - 100, 100))
+        self.corridors.append(Corridor(cx + 100, cy, 100, cy - 200))
+
+        # Hazards
+        self.hazards.append(Hazard(id=0, x=cx - 250, y=cy - 250, radius=30.0, kind="lava", damage=10.0))
+        self.hazards.append(Hazard(id=1, x=cx + 250, y=cy - 250, radius=30.0, kind="lava", damage=10.0))
+        self.hazards.append(Hazard(id=2, x=cx - 250, y=cy + 250, radius=30.0, kind="lava", damage=10.0))
+        self.hazards.append(Hazard(id=3, x=cx + 250, y=cy + 250, radius=30.0, kind="lava", damage=10.0))
+
 ARENAS = {
+    "emotional_contagion": EmotionalContagionArena,
     "ambush": AmbushArena,
     "swarm_intelligence": SwarmIntelligenceArena,
     "clutch_plays": ClutchPlaysArena,
