@@ -783,7 +783,44 @@ class BodyBlockArena(ProceduralArena):
         # A central hazard to force players into tighter chokes
         self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=50.0, kind="lava", damage=25.0))
 
+
+class NeuralBallArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        self.rooms.append(Room(cx - 700, cy - 400, 200, 200))
+        self.rooms.append(Room(cx - 700, cy - 100, 200, 200))
+        self.rooms.append(Room(cx - 700, cy + 200, 200, 200))
+
+        self.rooms.append(Room(cx - 100, cy - 550, 200, 200))
+        self.rooms.append(Room(cx - 100, cy - 250, 200, 200))
+        self.rooms.append(Room(cx - 100, cy + 50, 200, 200))
+        self.rooms.append(Room(cx - 100, cy + 350, 200, 200))
+
+        self.rooms.append(Room(cx + 500, cy - 250, 200, 200))
+        self.rooms.append(Room(cx + 500, cy + 50, 200, 200))
+
+        self.corridors.append(Corridor(cx - 600, cy - 325, 600, 50))
+        self.corridors.append(Corridor(cx - 600, cy - 25, 600, 50))
+        self.corridors.append(Corridor(cx - 600, cy + 275, 600, 50))
+
+        self.corridors.append(Corridor(cx - 50, cy - 450, 100, 900))
+
+        self.corridors.append(Corridor(cx, cy - 175, 600, 50))
+        self.corridors.append(Corridor(cx, cy + 125, 600, 50))
+
+        self.hazards.append(Hazard(id=0, x=cx - 300, y=cy - 300, radius=20.0, kind="lava", damage=10.0))
+        self.hazards.append(Hazard(id=1, x=cx - 300, y=cy, radius=20.0, kind="lava", damage=10.0))
+        self.hazards.append(Hazard(id=2, x=cx - 300, y=cy + 300, radius=20.0, kind="lava", damage=10.0))
+        self.hazards.append(Hazard(id=3, x=cx + 300, y=cy - 150, radius=20.0, kind="spikes", damage=10.0))
+        self.hazards.append(Hazard(id=4, x=cx + 300, y=cy + 150, radius=20.0, kind="spikes", damage=10.0))
+
 ARENAS = {
+    "neural_ball": NeuralBallArena,
     "body_block": BodyBlockArena,
     "meta_evolution": MetaEvolutionArena,
     "ambush": AmbushArena,
