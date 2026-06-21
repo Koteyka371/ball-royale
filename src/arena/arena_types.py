@@ -848,7 +848,22 @@ class EmotionalContagionArena(ProceduralArena):
         self.hazards.append(Hazard(id=7, x=cx + 150.0, y=cy + 150.0, radius=40.0, kind="spikes", damage=30.0))
 
 
+class HealAllyArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+        self.rooms.append(Room(cx - 200, cy - 200, 400, 400))
+        self.rooms.append(Room(50, cy - 150, 200, 300))
+        self.rooms.append(Room(w - 250, cy - 150, 200, 300))
+        self.corridors.append(Corridor(200, cy - 50, cx - 200 - 150, 100))
+        self.corridors.append(Corridor(cx + 150, cy - 50, w - 250 - cx - 100, 100))
+        self.hazards.append(Hazard(1, cx, cy, 50.0, "spikes", 10.0))
+
 ARENAS = {
+    "heal_ally": HealAllyArena,
     "emotional_contagion": EmotionalContagionArena,
     "body_block": BodyBlockArena,
     "meta_evolution": MetaEvolutionArena,
