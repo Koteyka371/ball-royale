@@ -97,7 +97,40 @@ class PhysicsChainReactionsArena extends ProceduralArena:
         var h4 = ProceduralArena.Hazard.new()
         h4.id = 4; h4.x = cx; h4.y = cy; h4.radius = 80.0; h4.kind = "lava"; h4.damage = 20.0; hazards.append(h4)
 
+class BallGeneticsArena extends ProceduralArena:
+    func generate() -> void:
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w := float(width)
+        var h := float(height)
+        var cx := w / 2.0
+        var cy := h / 2.0
+
+        rooms.append(ProceduralArena.Room.new(cx - 300, cy - 300, 600, 600))
+        rooms.append(ProceduralArena.Room.new(cx - 200, cy - 800, 400, 400))
+        rooms.append(ProceduralArena.Room.new(cx - 200, cy + 400, 400, 400))
+        rooms.append(ProceduralArena.Room.new(cx - 800, cy - 200, 400, 400))
+        rooms.append(ProceduralArena.Room.new(cx + 400, cy - 200, 400, 400))
+
+        corridors.append(ProceduralArena.Corridor.new(cx - 100, cy - 450, 200, 200))
+        corridors.append(ProceduralArena.Corridor.new(cx - 100, cy + 250, 200, 200))
+        corridors.append(ProceduralArena.Corridor.new(cx - 450, cy - 100, 200, 200))
+        corridors.append(ProceduralArena.Corridor.new(cx + 250, cy - 100, 200, 200))
+
+        var h0 = ProceduralArena.Hazard.new()
+        h0.id = 0; h0.x = cx; h0.y = cy - 600; h0.radius = 50.0; h0.kind = "lava"; h0.damage = 10.0; hazards.append(h0)
+        var h1 = ProceduralArena.Hazard.new()
+        h1.id = 1; h1.x = cx; h1.y = cy + 600; h1.radius = 50.0; h1.kind = "lava"; h1.damage = 10.0; hazards.append(h1)
+        var h2 = ProceduralArena.Hazard.new()
+        h2.id = 2; h2.x = cx - 600; h2.y = cy; h2.radius = 50.0; h2.kind = "lava"; h2.damage = 10.0; hazards.append(h2)
+        var h3 = ProceduralArena.Hazard.new()
+        h3.id = 3; h3.x = cx + 600; h3.y = cy; h3.radius = 50.0; h3.kind = "lava"; h3.damage = 10.0; hazards.append(h3)
+        var h4 = ProceduralArena.Hazard.new()
+        h4.id = 4; h4.x = cx; h4.y = cy; h4.radius = 100.0; h4.kind = "spikes"; h4.damage = 20.0; hazards.append(h4)
+
 const ARENAS = [
+    "ball_genetics",
 	"body_block",
 	"meta_evolution",
     "swarm_intelligence",

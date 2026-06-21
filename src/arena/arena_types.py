@@ -814,7 +814,33 @@ class PhysicsChainReactionsArena(ProceduralArena):
         self.hazards.append(Hazard(id=4, x=cx, y=cy, radius=80.0, kind="lava", damage=20.0))
 
 
+class BallGeneticsArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+        self.rooms.append(Room(cx - 200, cy - 800, 400, 400))
+        self.rooms.append(Room(cx - 200, cy + 400, 400, 400))
+        self.rooms.append(Room(cx - 800, cy - 200, 400, 400))
+        self.rooms.append(Room(cx + 400, cy - 200, 400, 400))
+
+        self.corridors.append(Corridor(cx - 100, cy - 450, 200, 200))
+        self.corridors.append(Corridor(cx - 100, cy + 250, 200, 200))
+        self.corridors.append(Corridor(cx - 450, cy - 100, 200, 200))
+        self.corridors.append(Corridor(cx + 250, cy - 100, 200, 200))
+
+        self.hazards.append(Hazard(id=0, x=cx, y=cy - 600, radius=50.0, kind="lava", damage=10.0))
+        self.hazards.append(Hazard(id=1, x=cx, y=cy + 600, radius=50.0, kind="lava", damage=10.0))
+        self.hazards.append(Hazard(id=2, x=cx - 600, y=cy, radius=50.0, kind="lava", damage=10.0))
+        self.hazards.append(Hazard(id=3, x=cx + 600, y=cy, radius=50.0, kind="lava", damage=10.0))
+        self.hazards.append(Hazard(id=4, x=cx, y=cy, radius=100.0, kind="spikes", damage=20.0))
+
 ARENAS = {
+    "ball_genetics": BallGeneticsArena,
     "body_block": BodyBlockArena,
     "meta_evolution": MetaEvolutionArena,
     "ambush": AmbushArena,
