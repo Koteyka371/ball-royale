@@ -613,6 +613,35 @@ class ClutchPlaysArena(ProceduralArena):
         self.hazards.append(Hazard(id=3, x=cx - 150, y=cy + 150, radius=50.0, kind="spikes", damage=20.0))
         self.hazards.append(Hazard(id=4, x=cx + 150, y=cy + 150, radius=50.0, kind="spikes", damage=20.0))
 
+class BallGeneticsArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+        self.rooms.append(Room(50, 50, 300, 300))
+        self.rooms.append(Room(w - 350, 50, 300, 300))
+        self.rooms.append(Room(50, h - 350, 300, 300))
+        self.rooms.append(Room(w - 350, h - 350, 300, 300))
+
+        self.corridors.append(Corridor(150, 300, 100, cy - 550))
+        self.corridors.append(Corridor(150, cy - 350, cx - 400, 100))
+        self.corridors.append(Corridor(w - 250, 300, 100, cy - 550))
+        self.corridors.append(Corridor(cx + 300, cy - 350, w - cx - 500, 100))
+        self.corridors.append(Corridor(150, cy + 250, 100, h - cy - 500))
+        self.corridors.append(Corridor(150, cy + 250, cx - 400, 100))
+        self.corridors.append(Corridor(w - 250, cy + 250, 100, h - cy - 500))
+        self.corridors.append(Corridor(cx + 300, cy + 250, w - cx - 500, 100))
+
+        self.hazards.append(Hazard(id=0, x=cx - 150, y=cy - 150, radius=40.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=1, x=cx + 150, y=cy - 150, radius=40.0, kind="spikes", damage=20.0))
+        self.hazards.append(Hazard(id=2, x=cx - 150, y=cy + 150, radius=40.0, kind="spikes", damage=20.0))
+        self.hazards.append(Hazard(id=3, x=cx + 150, y=cy + 150, radius=40.0, kind="lava", damage=20.0))
+
+
 ARENAS = {
     "clutch_plays": ClutchPlaysArena,
     "collect_booster": CollectBoosterArena,
@@ -641,7 +670,8 @@ ARENAS = {
     "comebacks": ComebacksArena,
     "circle_strafe": CircleStrafeArena,
     "epic_kills": EpicKillsArena,
-    "ball_relationships": BallRelationshipsArena
+    "ball_relationships": BallRelationshipsArena,
+    "ball_genetics": BallGeneticsArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:

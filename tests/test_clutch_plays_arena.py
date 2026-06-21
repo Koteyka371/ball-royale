@@ -1,4 +1,3 @@
-import pytest
 from src.arena.arena_types import get_arena, ClutchPlaysArena
 
 def test_clutch_plays_arena():
