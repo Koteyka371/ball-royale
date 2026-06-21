@@ -571,7 +571,40 @@ class CollectBoosterArena(ProceduralArena):
         self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=40.0, kind="lava", damage=25.0))
 
 
+class EmotionalContagionArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        self.rooms.append(Room(100, 100, 300, 300))
+        self.rooms.append(Room(w - 400, 100, 300, 300))
+        self.rooms.append(Room(100, h - 400, 300, 300))
+        self.rooms.append(Room(w - 400, h - 400, 300, 300))
+
+        self.rooms.append(Room(cx - 200, cy - 200, 400, 400))
+
+        self.corridors.append(Corridor(200, 350, 100, cy - 500))
+        self.corridors.append(Corridor(200, cy - 200, cx - 350, 100))
+
+        self.corridors.append(Corridor(w - 300, 350, 100, cy - 500))
+        self.corridors.append(Corridor(cx + 150, cy - 200, cx - 350, 100))
+
+        self.corridors.append(Corridor(200, cy + 150, 100, cy - 500))
+        self.corridors.append(Corridor(200, cy + 150, cx - 350, 100))
+
+        self.corridors.append(Corridor(w - 300, cy + 150, 100, cy - 500))
+        self.corridors.append(Corridor(cx + 150, cy + 150, cx - 350, 100))
+
+        self.hazards.append(Hazard(id=0, x=cx - 100, y=cy - 100, radius=40.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=1, x=cx + 100, y=cy - 100, radius=40.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=2, x=cx - 100, y=cy + 100, radius=40.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=3, x=cx + 100, y=cy + 100, radius=40.0, kind="lava", damage=20.0))
+
 ARENAS = {
+    "emotional_contagion": EmotionalContagionArena,
     "collect_booster": CollectBoosterArena,
     "reposition": RepositionArena,
     "avoid_trap": AvoidTrapArena,
