@@ -676,7 +676,42 @@ class SwarmIntelligenceArena(ProceduralArena):
         self.hazards.append(Hazard(id=2, x=cx - 100, y=cy + 100, radius=40.0, kind="spikes", damage=25.0))
         self.hazards.append(Hazard(id=3, x=cx + 100, y=cy + 100, radius=40.0, kind="spikes", damage=25.0))
 
+
+class EmotionalContagionArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+        # Large central area for contagion
+        self.rooms.append(Room(cx - 400, cy - 400, 800, 800))
+        # Corner rooms
+        self.rooms.append(Room(50, 50, 200, 200))
+        self.rooms.append(Room(w - 250, 50, 200, 200))
+        self.rooms.append(Room(50, h - 250, 200, 200))
+        self.rooms.append(Room(w - 250, h - 250, 200, 200))
+
+        # Diagonal corridors to connect corner rooms to central room
+        # Top-left to center: Room(50,50,200,200) -> Center(600,600)
+        self.corridors.append(Corridor(200, 200, 450, 100)) # Horiz: x=200..650, y=200..300
+        self.corridors.append(Corridor(550, 200, 100, 450)) # Vert: x=550..650, y=200..650
+
+        # Top-right to center: Room(1750,50,200,200) -> Center(1400,600)
+        self.corridors.append(Corridor(1350, 200, 450, 100)) # Horiz: x=1350..1800, y=200..300
+        self.corridors.append(Corridor(1350, 200, 100, 450)) # Vert: x=1350..1450, y=200..650
+
+        # Bottom-left to center: Room(50,1750,200,200) -> Center(600,1400)
+        self.corridors.append(Corridor(200, 1700, 450, 100)) # Horiz: x=200..650, y=1700..1800
+        self.corridors.append(Corridor(550, 1350, 100, 450)) # Vert: x=550..650, y=1350..1800
+
+        # Bottom-right to center: Room(1750,1750,200,200) -> Center(1400,1400)
+        self.corridors.append(Corridor(1350, 1700, 450, 100)) # Horiz: x=1350..1800, y=1700..1800
+        self.corridors.append(Corridor(1350, 1350, 100, 450)) # Vert: x=1350..1450, y=1350..1800
+
+
 ARENAS = {
+    "emotional_contagion": EmotionalContagionArena,
     "swarm_intelligence": SwarmIntelligenceArena,
     "clutch_plays": ClutchPlaysArena,
     "collect_booster": CollectBoosterArena,
