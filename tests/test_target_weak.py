@@ -61,6 +61,7 @@ def test_target_weak_action():
 def test_target_weak_decision():
     ball = MockBall()
     ball.ball_type = "scout"
+    ball.difficulty = "hard" # disable random chance
     ball.skill_timer = 10.0 # disable skill
     decision = Decision(ball, MockWorld())
 
