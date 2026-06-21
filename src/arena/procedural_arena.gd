@@ -477,6 +477,36 @@ class SwarmIntelligenceArena extends ProceduralArena:
         hazards.append(ProceduralArena.Hazard.new(2, cx - 100, cy + 100, 40.0, "spikes", 25.0))
         hazards.append(ProceduralArena.Hazard.new(3, cx + 100, cy + 100, 40.0, "spikes", 25.0))
 
+class EmotionalContagionArena extends ProceduralArena:
+    func generate() -> void:
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = width
+        var h = height
+        var cx = w / 2.0
+        var cy = h / 2.0
+
+        rooms.append(ProceduralArena.Room.new(cx - 300.0, cy - 300.0, 600.0, 600.0))
+        rooms.append(ProceduralArena.Room.new(100.0, 100.0, 300.0, 300.0))
+        rooms.append(ProceduralArena.Room.new(w - 400.0, 100.0, 300.0, 300.0))
+        rooms.append(ProceduralArena.Room.new(100.0, h - 400.0, 300.0, 300.0))
+        rooms.append(ProceduralArena.Room.new(w - 400.0, h - 400.0, 300.0, 300.0))
+
+        corridors.append(ProceduralArena.Corridor.new(200.0, 350.0, 100.0, cy - 600.0))
+        corridors.append(ProceduralArena.Corridor.new(w - 300.0, 350.0, 100.0, cy - 600.0))
+        corridors.append(ProceduralArena.Corridor.new(200.0, cy + 250.0, 100.0, h - cy - 600.0))
+        corridors.append(ProceduralArena.Corridor.new(w - 300.0, cy + 250.0, 100.0, h - cy - 600.0))
+
+        hazards.append(ProceduralArena.Hazard.new(0, 250.0, 250.0, 50.0, "lava", 20.0))
+        hazards.append(ProceduralArena.Hazard.new(1, w - 250.0, 250.0, 50.0, "lava", 20.0))
+        hazards.append(ProceduralArena.Hazard.new(2, 250.0, h - 250.0, 50.0, "lava", 20.0))
+        hazards.append(ProceduralArena.Hazard.new(3, w - 250.0, h - 250.0, 50.0, "lava", 20.0))
+        hazards.append(ProceduralArena.Hazard.new(4, cx - 150.0, cy - 150.0, 40.0, "spikes", 30.0))
+        hazards.append(ProceduralArena.Hazard.new(5, cx + 150.0, cy - 150.0, 40.0, "spikes", 30.0))
+        hazards.append(ProceduralArena.Hazard.new(6, cx - 150.0, cy + 150.0, 40.0, "spikes", 30.0))
+        hazards.append(ProceduralArena.Hazard.new(7, cx + 150.0, cy + 150.0, 40.0, "spikes", 30.0))
+
 class AmbushArena extends ProceduralArena:
     func generate() -> void:
         rooms.clear()
