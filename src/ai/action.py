@@ -1068,11 +1068,28 @@ class Action:
         if skill_timer <= 0 and hasattr(self.ball, "use_skill"):
             self.ball.use_skill()
 
-            skill_name = getattr(self.ball, "skill", "")
+            skill_name = getattr(self.ball, "skill", getattr(self.ball, "SKILL", ""))
+
             if skill_name == "command":
                 self.ball.team_message = {"type": "buff_command", "radius": 200}
             elif skill_name in ("Действие", "action_skill"):
                 self.ball.team_message = {"type": "action_skill_used", "radius": 150}
+            elif skill_name == "dash":
+                import random
+                import math
+                enemies = self._get_enemies()
+                if enemies:
+                    target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                    dx = target.x - self.ball.x
+                    dy = target.y - self.ball.y
+                    dist = math.sqrt(dx*dx + dy*dy)
+                    if dist > 0.0001:
+                        self.ball.x += (dx/dist) * 100.0
+                        self.ball.y += (dy/dist) * 100.0
+                else:
+                    angle = random.uniform(0, 2 * math.pi)
+                    self.ball.x += math.cos(angle) * 100.0
+                    self.ball.y += math.sin(angle) * 100.0
 
             if hasattr(self.ball, "skill_cooldown"):
                 self.ball.skill_timer = self.ball.skill_cooldown
