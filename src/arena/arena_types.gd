@@ -97,6 +97,37 @@ class PhysicsChainReactionsArena extends ProceduralArena:
         var h4 = ProceduralArena.Hazard.new()
         h4.id = 4; h4.x = cx; h4.y = cy; h4.radius = 80.0; h4.kind = "lava"; h4.damage = 20.0; hazards.append(h4)
 
+class FleeArena extends ProceduralArena:
+    func generate() -> void:
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w := float(width)
+        var h := float(height)
+        var cx := w / 2.0
+        var cy := h / 2.0
+
+        rooms.append(ProceduralArena.Room.new(cx - 300, cy - 300, 600, 600))
+
+        rooms.append(ProceduralArena.Room.new(cx - 150, 100, 300, 300))
+        rooms.append(ProceduralArena.Room.new(cx - 150, h - 400, 300, 300))
+        rooms.append(ProceduralArena.Room.new(100, cy - 150, 300, 300))
+        rooms.append(ProceduralArena.Room.new(w - 400, cy - 150, 300, 300))
+
+        corridors.append(ProceduralArena.Corridor.new(cx - 100, 350, 200, cy - 600))
+        corridors.append(ProceduralArena.Corridor.new(cx - 100, cy + 250, 200, h - cy - 600))
+        corridors.append(ProceduralArena.Corridor.new(350, cy - 100, cx - 600, 200))
+        corridors.append(ProceduralArena.Corridor.new(cx + 250, cy - 100, w - cx - 600, 200))
+
+        var h0 = ProceduralArena.Hazard.new()
+        h0.id = 0
+        h0.x = cx
+        h0.y = cy
+        h0.radius = 100.0
+        h0.kind = "lava"
+        h0.damage = 25.0
+        hazards.append(h0)
+
 const ARENAS = [
 	"body_block",
 	"meta_evolution",
@@ -132,5 +163,6 @@ const ARENAS = [
     "finals_1v1",
     "team_wipes",
     "ambush",
-    "physics_chain_reactions"
+    "physics_chain_reactions",
+    "flee"
 ]

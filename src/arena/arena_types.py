@@ -814,6 +814,33 @@ class PhysicsChainReactionsArena(ProceduralArena):
         self.hazards.append(Hazard(id=4, x=cx, y=cy, radius=80.0, kind="lava", damage=20.0))
 
 
+class FleeArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # 1 central danger room
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+
+        # 4 safe zones
+        self.rooms.append(Room(cx - 150, 100, 300, 300)) # Top
+        self.rooms.append(Room(cx - 150, h - 400, 300, 300)) # Bottom
+        self.rooms.append(Room(100, cy - 150, 300, 300)) # Left
+        self.rooms.append(Room(w - 400, cy - 150, 300, 300)) # Right
+
+        # Corridors connecting the center to the safe rooms
+        self.corridors.append(Corridor(cx - 100, 350, 200, cy - 600)) # Top
+        self.corridors.append(Corridor(cx - 100, cy + 250, 200, h - cy - 600)) # Bottom
+        self.corridors.append(Corridor(350, cy - 100, cx - 600, 200)) # Left
+        self.corridors.append(Corridor(cx + 250, cy - 100, w - cx - 600, 200)) # Right
+
+        # Hazards in the center to encourage fleeing
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=100.0, kind="lava", damage=25.0))
+
+
 ARENAS = {
     "body_block": BodyBlockArena,
     "meta_evolution": MetaEvolutionArena,
@@ -849,7 +876,8 @@ ARENAS = {
     "epic_kills": EpicKillsArena,
     "ball_relationships": BallRelationshipsArena,
     "finals_1v1": Finals1v1Arena,
-    "team_wipes": TeamWipesArena
+    "team_wipes": TeamWipesArena,
+    "flee": FleeArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
