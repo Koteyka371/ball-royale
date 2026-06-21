@@ -920,7 +920,46 @@ class WaitAndWatchArena(ProceduralArena):
         self.hazards.append(Hazard(id=3, x=cx - 150, y=cy + 150, radius=50.0, kind="spikes", damage=30.0))
         self.hazards.append(Hazard(id=4, x=cx + 150, y=cy + 150, radius=50.0, kind="spikes", damage=30.0))
 
+class FunnyFailsArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Safe platform rooms at corners
+        self.rooms.append(Room(100.0, 100.0, 200.0, 200.0))
+        self.rooms.append(Room(w - 300.0, 100.0, 200.0, 200.0))
+        self.rooms.append(Room(100.0, h - 300.0, 200.0, 200.0))
+        self.rooms.append(Room(w - 300.0, h - 300.0, 200.0, 200.0))
+
+        # Safe platform room in the center
+        self.rooms.append(Room(cx - 100.0, cy - 100.0, 200.0, 200.0))
+
+        # Narrow corridors (bridges) connecting corners to center (with 50px overlap)
+        self.corridors.append(Corridor(200.0, 250.0, 50.0, cy - 300.0)) # Top Left to Center Y
+        self.corridors.append(Corridor(200.0, cy - 50.0, cx - 250.0, 50.0)) # Top Left to Center X
+        self.corridors.append(Corridor(w - 250.0, 250.0, 50.0, cy - 300.0)) # Top Right to Center Y
+        self.corridors.append(Corridor(cx + 50.0, cy - 50.0, w - cx - 250.0, 50.0)) # Top Right to Center X
+        self.corridors.append(Corridor(200.0, cy + 50.0, 50.0, h - cy - 300.0)) # Bottom Left to Center Y
+        self.corridors.append(Corridor(200.0, cy + 50.0, cx - 250.0, 50.0)) # Bottom Left to Center X
+        self.corridors.append(Corridor(w - 250.0, cy + 50.0, 50.0, h - cy - 300.0)) # Bottom Right to Center Y
+        self.corridors.append(Corridor(cx + 50.0, cy + 50.0, w - cx - 250.0, 50.0)) # Bottom Right to Center X
+
+        # Massive hazards everywhere else
+        self.hazards.append(Hazard(id=0, x=cx, y=200.0, radius=150.0, kind="lava", damage=40.0))
+        self.hazards.append(Hazard(id=1, x=cx, y=h - 200.0, radius=150.0, kind="lava", damage=40.0))
+        self.hazards.append(Hazard(id=2, x=200.0, y=cy, radius=150.0, kind="lava", damage=40.0))
+        self.hazards.append(Hazard(id=3, x=w - 200.0, y=cy, radius=150.0, kind="lava", damage=40.0))
+        self.hazards.append(Hazard(id=4, x=cx - 300.0, y=cy - 300.0, radius=80.0, kind="spikes", damage=25.0))
+        self.hazards.append(Hazard(id=5, x=cx + 300.0, y=cy - 300.0, radius=80.0, kind="spikes", damage=25.0))
+        self.hazards.append(Hazard(id=6, x=cx - 300.0, y=cy + 300.0, radius=80.0, kind="spikes", damage=25.0))
+        self.hazards.append(Hazard(id=7, x=cx + 300.0, y=cy + 300.0, radius=80.0, kind="spikes", damage=25.0))
+
+
 ARENAS = {
+    "funny_fails": FunnyFailsArena,
     "wait_and_watch": WaitAndWatchArena,
     "battle_royale_shrinking_zone": BattleRoyaleShrinkingZoneArena,
     "emotional_contagion": EmotionalContagionArena,

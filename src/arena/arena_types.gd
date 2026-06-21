@@ -173,7 +173,43 @@ class WaitAndWatchArena extends ProceduralArena:
 		var h3 = ProceduralArena.Hazard.new(); h3.id = 3; h3.x = cx - 150; h3.y = cy + 150; h3.radius = 50.0; h3.kind = "spikes"; h3.damage = 30.0; hazards.append(h3)
 		var h4 = ProceduralArena.Hazard.new(); h4.id = 4; h4.x = cx + 150; h4.y = cy + 150; h4.radius = 50.0; h4.kind = "spikes"; h4.damage = 30.0; hazards.append(h4)
 
+class FunnyFailsArena extends ProceduralArena:
+	func generate():
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+		var w = self.width
+		var h = self.height
+		var cx = w / 2.0
+		var cy = h / 2.0
+
+		var r0 = ProceduralArena.Room.new(); r0.x = 100.0; r0.y = 100.0; r0.width = 200.0; r0.height = 200.0; rooms.append(r0)
+		var r1 = ProceduralArena.Room.new(); r1.x = w - 300.0; r1.y = 100.0; r1.width = 200.0; r1.height = 200.0; rooms.append(r1)
+		var r2 = ProceduralArena.Room.new(); r2.x = 100.0; r2.y = h - 300.0; r2.width = 200.0; r2.height = 200.0; rooms.append(r2)
+		var r3 = ProceduralArena.Room.new(); r3.x = w - 300.0; r3.y = h - 300.0; r3.width = 200.0; r3.height = 200.0; rooms.append(r3)
+		var r4 = ProceduralArena.Room.new(); r4.x = cx - 100.0; r4.y = cy - 100.0; r4.width = 200.0; r4.height = 200.0; rooms.append(r4)
+
+		var c0 = ProceduralArena.Corridor.new(); c0.x = 200.0; c0.y = 250.0; c0.width = 50.0; c0.height = cy - 300.0; corridors.append(c0)
+		var c1 = ProceduralArena.Corridor.new(); c1.x = 200.0; c1.y = cy - 50.0; c1.width = cx - 250.0; c1.height = 50.0; corridors.append(c1)
+		var c2 = ProceduralArena.Corridor.new(); c2.x = w - 250.0; c2.y = 250.0; c2.width = 50.0; c2.height = cy - 300.0; corridors.append(c2)
+		var c3 = ProceduralArena.Corridor.new(); c3.x = cx + 50.0; c3.y = cy - 50.0; c3.width = w - cx - 250.0; c3.height = 50.0; corridors.append(c3)
+		var c4 = ProceduralArena.Corridor.new(); c4.x = 200.0; c4.y = cy + 50.0; c4.width = 50.0; c4.height = h - cy - 300.0; corridors.append(c4)
+		var c5 = ProceduralArena.Corridor.new(); c5.x = 200.0; c5.y = cy + 50.0; c5.width = cx - 250.0; c5.height = 50.0; corridors.append(c5)
+		var c6 = ProceduralArena.Corridor.new(); c6.x = w - 250.0; c6.y = cy + 50.0; c6.width = 50.0; c6.height = h - cy - 300.0; corridors.append(c6)
+		var c7 = ProceduralArena.Corridor.new(); c7.x = cx + 50.0; c7.y = cy + 50.0; c7.width = w - cx - 250.0; c7.height = 50.0; corridors.append(c7)
+
+		var h0 = ProceduralArena.Hazard.new(); h0.id = 0; h0.x = cx; h0.y = 200.0; h0.radius = 150.0; h0.kind = "lava"; h0.damage = 40.0; hazards.append(h0)
+		var h1 = ProceduralArena.Hazard.new(); h1.id = 1; h1.x = cx; h1.y = h - 200.0; h1.radius = 150.0; h1.kind = "lava"; h1.damage = 40.0; hazards.append(h1)
+		var h2 = ProceduralArena.Hazard.new(); h2.id = 2; h2.x = 200.0; h2.y = cy; h2.radius = 150.0; h2.kind = "lava"; h2.damage = 40.0; hazards.append(h2)
+		var h3 = ProceduralArena.Hazard.new(); h3.id = 3; h3.x = w - 200.0; h3.y = cy; h3.radius = 150.0; h3.kind = "lava"; h3.damage = 40.0; hazards.append(h3)
+		var h4 = ProceduralArena.Hazard.new(); h4.id = 4; h4.x = cx - 300.0; h4.y = cy - 300.0; h4.radius = 80.0; h4.kind = "spikes"; h4.damage = 25.0; hazards.append(h4)
+		var h5 = ProceduralArena.Hazard.new(); h5.id = 5; h5.x = cx + 300.0; h5.y = cy - 300.0; h5.radius = 80.0; h5.kind = "spikes"; h5.damage = 25.0; hazards.append(h5)
+		var h6 = ProceduralArena.Hazard.new(); h6.id = 6; h6.x = cx - 300.0; h6.y = cy + 300.0; h6.radius = 80.0; h6.kind = "spikes"; h6.damage = 25.0; hazards.append(h6)
+		var h7 = ProceduralArena.Hazard.new(); h7.id = 7; h7.x = cx + 300.0; h7.y = cy + 300.0; h7.radius = 80.0; h7.kind = "spikes"; h7.damage = 25.0; hazards.append(h7)
+
+
 const ARENAS = [
+	"funny_fails",
 	"wait_and_watch",
     "battle_royale_shrinking_zone",
 	"emotional_contagion",
