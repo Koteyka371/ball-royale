@@ -4,8 +4,8 @@
       "name": "Jules Core",
       "area": "ai-core",
       "task_id": "auto-implement-**kite**-—-держит-дистанцию,-атакует-при",
-      "status": "assigned",
-      "started_at": "2026-06-21T23:10:56.851587+00:00",
+      "status": "working",
+      "started_at": "2026-06-21T23:11:06.714371+00:00",
       "cycles_today": 1
     },
     "agent-2": {
