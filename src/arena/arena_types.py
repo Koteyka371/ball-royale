@@ -676,7 +676,37 @@ class SwarmIntelligenceArena(ProceduralArena):
         self.hazards.append(Hazard(id=2, x=cx - 100, y=cy + 100, radius=40.0, kind="spikes", damage=25.0))
         self.hazards.append(Hazard(id=3, x=cx + 100, y=cy + 100, radius=40.0, kind="spikes", damage=25.0))
 
+class BallGeneticsArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        self.rooms.append(Room(50, 50, 300, 300))
+        self.rooms.append(Room(w - 350, 50, 300, 300))
+        self.rooms.append(Room(50, h - 350, 300, 300))
+        self.rooms.append(Room(w - 350, h - 350, 300, 300))
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+
+        self.corridors.append(Corridor(150, 350, 100, cy - 650))
+        self.corridors.append(Corridor(150, cy - 300, cx - 450, 100))
+        self.corridors.append(Corridor(w - 250, 350, 100, cy - 650))
+        self.corridors.append(Corridor(cx + 300, cy - 300, w - cx - 550, 100))
+        self.corridors.append(Corridor(150, cy + 200, 100, h - cy - 550))
+        self.corridors.append(Corridor(150, cy + 200, cx - 450, 100))
+        self.corridors.append(Corridor(w - 250, cy + 200, 100, h - cy - 550))
+        self.corridors.append(Corridor(cx + 300, cy + 200, w - cx - 550, 100))
+
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=50.0, kind="lava", damage=30.0))
+        self.hazards.append(Hazard(id=1, x=cx - 150, y=cy - 150, radius=30.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=2, x=cx + 150, y=cy - 150, radius=30.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=3, x=cx - 150, y=cy + 150, radius=30.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=4, x=cx + 150, y=cy + 150, radius=30.0, kind="lava", damage=20.0))
+
 ARENAS = {
+    "ball_genetics": BallGeneticsArena,
     "swarm_intelligence": SwarmIntelligenceArena,
     "clutch_plays": ClutchPlaysArena,
     "collect_booster": CollectBoosterArena,

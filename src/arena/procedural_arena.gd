@@ -453,3 +453,34 @@ class SwarmIntelligenceArena extends ProceduralArena:
         hazards.append(ProceduralArena.Hazard.new(1, cx + 100, cy - 100, 40.0, "spikes", 25.0))
         hazards.append(ProceduralArena.Hazard.new(2, cx - 100, cy + 100, 40.0, "spikes", 25.0))
         hazards.append(ProceduralArena.Hazard.new(3, cx + 100, cy + 100, 40.0, "spikes", 25.0))
+
+class BallGeneticsArena extends ProceduralArena:
+    func generate() -> void:
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w: float = width
+        var h: float = height
+        var cx: float = w / 2.0
+        var cy: float = h / 2.0
+
+        rooms.append(ProceduralArena.Room.new(50, 50, 300, 300))
+        rooms.append(ProceduralArena.Room.new(w - 350, 50, 300, 300))
+        rooms.append(ProceduralArena.Room.new(50, h - 350, 300, 300))
+        rooms.append(ProceduralArena.Room.new(w - 350, h - 350, 300, 300))
+        rooms.append(ProceduralArena.Room.new(cx - 300, cy - 300, 600, 600))
+
+        corridors.append(ProceduralArena.Corridor.new(150, 350, 100, cy - 650))
+        corridors.append(ProceduralArena.Corridor.new(150, cy - 300, cx - 450, 100))
+        corridors.append(ProceduralArena.Corridor.new(w - 250, 350, 100, cy - 650))
+        corridors.append(ProceduralArena.Corridor.new(cx + 300, cy - 300, w - cx - 550, 100))
+        corridors.append(ProceduralArena.Corridor.new(150, cy + 200, 100, h - cy - 550))
+        corridors.append(ProceduralArena.Corridor.new(150, cy + 200, cx - 450, 100))
+        corridors.append(ProceduralArena.Corridor.new(w - 250, cy + 200, 100, h - cy - 550))
+        corridors.append(ProceduralArena.Corridor.new(cx + 300, cy + 200, w - cx - 550, 100))
+
+        hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 50.0, "lava", 30.0))
+        hazards.append(ProceduralArena.Hazard.new(1, cx - 150, cy - 150, 30.0, "lava", 20.0))
+        hazards.append(ProceduralArena.Hazard.new(2, cx + 150, cy - 150, 30.0, "lava", 20.0))
+        hazards.append(ProceduralArena.Hazard.new(3, cx - 150, cy + 150, 30.0, "lava", 20.0))
+        hazards.append(ProceduralArena.Hazard.new(4, cx + 150, cy + 150, 30.0, "lava", 20.0))
