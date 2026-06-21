@@ -386,3 +386,35 @@ class ClutchPlaysArena:
         hazards.append(ProceduralArena.Hazard.new(2, cx + 150, cy - 150, 50.0, "spikes", 20.0))
         hazards.append(ProceduralArena.Hazard.new(3, cx - 150, cy + 150, 50.0, "spikes", 20.0))
         hazards.append(ProceduralArena.Hazard.new(4, cx + 150, cy + 150, 50.0, "spikes", 20.0))
+
+class MetaEvolutionArena extends ProceduralArena:
+    func generate():
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = width
+        var h = height
+        var cx = w / 2
+        var cy = h / 2
+
+        # Central evolution chamber
+        rooms.append(ProceduralArena.Room.new(cx - 200, cy - 200, 400, 400))
+
+        # 4 surrounding test pods
+        rooms.append(ProceduralArena.Room.new(100, 100, 200, 200))
+        rooms.append(ProceduralArena.Room.new(w - 300, 100, 200, 200))
+        rooms.append(ProceduralArena.Room.new(100, h - 300, 200, 200))
+        rooms.append(ProceduralArena.Room.new(w - 300, h - 300, 200, 200))
+
+        # Connect pods to central chamber using corridors
+        corridors.append(ProceduralArena.Corridor.new(300, 200, cx - 500, 100))
+        corridors.append(ProceduralArena.Corridor.new(cx + 200, 200, w - cx - 500, 100))
+        corridors.append(ProceduralArena.Corridor.new(300, h - 300, cx - 500, 100))
+        corridors.append(ProceduralArena.Corridor.new(cx + 200, h - 300, w - cx - 500, 100))
+        corridors.append(ProceduralArena.Corridor.new(cx - 200, 200, 100, cy - 400))
+        corridors.append(ProceduralArena.Corridor.new(cx + 100, 200, 100, cy - 400))
+        corridors.append(ProceduralArena.Corridor.new(cx - 200, cy + 200, 100, h - cy - 400))
+        corridors.append(ProceduralArena.Corridor.new(cx + 100, cy + 200, 100, h - cy - 400))
+
+        # Add a central hazard to stimulate evolution under pressure
+        hazards.append(ProceduralArena.Hazard.new(1, cx, cy, 100, "spikes", 5.0))

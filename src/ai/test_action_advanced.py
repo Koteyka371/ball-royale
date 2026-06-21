@@ -230,7 +230,7 @@ def test_tank_target_strong_helper_method():
     e1.hp = 150.0
 
     action = Action(ball, world)
-    score = action._calculate_enemy_strength_score(e1)
+    score = action._evaluate_target_strength_deterministic(e1)
 
     # expected: (max_hp, hp, -dist_sq, id)
     assert score == (200.0, 150.0, -10000.0, 1)

@@ -613,9 +613,49 @@ class ClutchPlaysArena(ProceduralArena):
         self.hazards.append(Hazard(id=3, x=cx - 150, y=cy + 150, radius=50.0, kind="spikes", damage=20.0))
         self.hazards.append(Hazard(id=4, x=cx + 150, y=cy + 150, radius=50.0, kind="spikes", damage=20.0))
 
+class MetaEvolutionArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central evolution chamber
+        self.rooms.append(Room(cx - 200, cy - 200, 400, 400))
+
+        # 4 surrounding test pods
+        self.rooms.append(Room(100, 100, 200, 200))
+        self.rooms.append(Room(w - 300, 100, 200, 200))
+        self.rooms.append(Room(100, h - 300, 200, 200))
+        self.rooms.append(Room(w - 300, h - 300, 200, 200))
+
+        # Connect pods to central chamber using corridors
+        # Top-left pod (x=100..300, y=100..300) to center (cx-200..cx+200, cy-200..cy+200)
+        # Assuming 2000x2000, cx=1000, cy=1000. Center is 800..1200.
+        # We need corridors that bridge these gaps. Let's make diagonal-ish overlapping corridors, or just L-shapes.
+        # Horizontal bridge from x=300 to x=800 for top-left
+        self.corridors.append(Corridor(300, 200, cx - 500, 100)) # to x=800
+        # Horizontal bridge from x=w-800 to x=w-300 for top-right
+        self.corridors.append(Corridor(cx + 200, 200, w - cx - 500, 100))
+        # Horizontal bridge for bottom-left
+        self.corridors.append(Corridor(300, h - 300, cx - 500, 100))
+        # Horizontal bridge for bottom-right
+        self.corridors.append(Corridor(cx + 200, h - 300, w - cx - 500, 100))
+
+        # Vertical bridge from y=200 to y=800 for top-left (wait, the horizontal corridor reaches x=800, now needs to go down to y=800)
+        self.corridors.append(Corridor(cx - 200, 200, 100, cy - 400)) # drops into the center
+        self.corridors.append(Corridor(cx + 100, 200, 100, cy - 400)) # for top-right
+        self.corridors.append(Corridor(cx - 200, cy + 200, 100, h - cy - 400)) # bottom-left
+        self.corridors.append(Corridor(cx + 100, cy + 200, 100, h - cy - 400)) # bottom-right
+
+        # Add a central hazard to stimulate evolution under pressure
+        self.hazards.append(Hazard(1, cx, cy, 100, "spikes", 5.0))
+
 ARENAS = {
     "clutch_plays": ClutchPlaysArena,
     "collect_booster": CollectBoosterArena,
+    "meta_evolution": MetaEvolutionArena,
     "reposition": RepositionArena,
     "avoid_trap": AvoidTrapArena,
     "kite": KiteArena,
