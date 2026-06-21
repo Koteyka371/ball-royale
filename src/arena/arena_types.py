@@ -278,6 +278,31 @@ class RetreatToAllyArena(ProceduralArena):
             hy = cy + 150 * math.sin(angle)
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=30.0, kind="lava", damage=30.0))
 
+class EscortArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Start base and End base
+        self.rooms.append(Room(100.0, cy - 200.0, 400.0, 400.0))
+        self.rooms.append(Room(w - 500.0, cy - 200.0, 400.0, 400.0))
+
+        # Central path
+        self.rooms.append(Room(500.0, cy - 100.0, w - 1000.0, 200.0))
+
+        # Corridors to ensure 50px overlap
+        self.corridors.append(Corridor(450.0, cy - 50.0, 100.0, 100.0))
+        self.corridors.append(Corridor(w - 550.0, cy - 50.0, 100.0, 100.0))
+
+        # Hazards along the path
+        self.hazards.append(Hazard(id=0, x=cx - 200.0, y=cy - 150.0, radius=30.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=1, x=cx + 200.0, y=cy + 150.0, radius=30.0, kind="spikes", damage=20.0))
+        self.hazards.append(Hazard(id=2, x=cx, y=cy, radius=40.0, kind="lava", damage=20.0))
+
+
 class BuffAllyArena(ProceduralArena):
     def generate(self):
         self.rooms.clear()
@@ -794,7 +819,8 @@ ARENAS = {
     "epic_kills": EpicKillsArena,
     "ball_relationships": BallRelationshipsArena,
     "finals_1v1": Finals1v1Arena,
-    "team_wipes": TeamWipesArena
+    "team_wipes": TeamWipesArena,
+    "escort": EscortArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:

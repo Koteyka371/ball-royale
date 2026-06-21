@@ -33,6 +33,28 @@ class MetaEvolutionArena extends ProceduralArena:
 		hazards.append(ProceduralArena.Hazard.new(4, cx + 600, cy + 320, 20.0, "spikes", 30.0))
 
 
+class EscortArena extends ProceduralArena:
+	func generate():
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+		var w = self.width
+		var h = self.height
+		var cx = w / 2.0
+		var cy = h / 2.0
+
+		rooms.append(ProceduralArena.Room.new(100.0, cy - 200.0, 400.0, 400.0))
+		rooms.append(ProceduralArena.Room.new(w - 500.0, cy - 200.0, 400.0, 400.0))
+		rooms.append(ProceduralArena.Room.new(500.0, cy - 100.0, w - 1000.0, 200.0))
+
+		corridors.append(ProceduralArena.Corridor.new(450.0, cy - 50.0, 100.0, 100.0))
+		corridors.append(ProceduralArena.Corridor.new(w - 550.0, cy - 50.0, 100.0, 100.0))
+
+		hazards.append(ProceduralArena.Hazard.new(0, cx - 200.0, cy - 150.0, 30.0, "lava", 20.0))
+		hazards.append(ProceduralArena.Hazard.new(1, cx + 200.0, cy + 150.0, 30.0, "spikes", 20.0))
+		hazards.append(ProceduralArena.Hazard.new(2, cx, cy, 40.0, "lava", 20.0))
+
+
 const ARENAS = [
 	"meta_evolution",
     "swarm_intelligence",
@@ -66,5 +88,6 @@ const ARENAS = [
     "collect_booster",
     "finals_1v1",
     "team_wipes",
-    "ambush"
+    "ambush",
+    "escort"
 ]
