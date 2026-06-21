@@ -4,6 +4,7 @@ extends RefCounted
 const ARENAS = [
     "avoid_trap",
     "kite",
+    "heal_ally",
     "procedural",
     "cross",
     "ring",

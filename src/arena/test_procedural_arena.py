@@ -32,3 +32,10 @@ def test_hazard_generation():
         assert hazard.radius > 0
         assert hazard.damage > 0
         assert arena.is_point_inside(hazard.x, hazard.y, 0)
+
+def test_heal_ally_arena():
+    from arena.arena_types import get_arena
+    arena = get_arena("heal_ally", arena_size=2000.0)
+    assert len(arena.rooms) == 5
+    assert len(arena.corridors) == 4
+    assert len(arena.hazards) == 3
