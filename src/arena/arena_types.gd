@@ -210,11 +210,39 @@ class EscortArena extends ProceduralArena:
 		rooms.append(ProceduralArena.Room.new(cx - 200, h - 400, 400, 300))
 		rooms.append(ProceduralArena.Room.new(cx - 200, 100, 400, 300))
 		corridors.append(ProceduralArena.Corridor.new(cx - 100, 400, 200, h - 800))
-		var h1 = ProceduralArena.Hazard.new(); h1.id = 0; h1.x = cx - 150; h1.y = cy; h1.radius = 40.0; h1.kind = "lava"; h1.damage = 10.0; hazards.append(h1)
-		var h2 = ProceduralArena.Hazard.new(); h2.id = 1; h2.x = cx + 150; h2.y = cy; h2.radius = 40.0; h2.kind = "lava"; h2.damage = 10.0; hazards.append(h2)
+		hazards.append(ProceduralArena.Hazard.new(0, cx - 150, cy, 40.0, "lava", 10.0))
+		hazards.append(ProceduralArena.Hazard.new(1, cx + 150, cy, 40.0, "lava", 10.0))
+
+class BallGeneticsArena extends ProceduralArena:
+	func generate() -> void:
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+		var w = width
+		var h = height
+		var cx = w / 2.0
+		var cy = h / 2.0
+
+		rooms.append(ProceduralArena.Room.new(cx - 300.0, cy - 300.0, 600.0, 600.0))
+		rooms.append(ProceduralArena.Room.new(100.0, cy - 200.0, 200.0, 400.0))
+		rooms.append(ProceduralArena.Room.new(w - 300.0, cy - 200.0, 200.0, 400.0))
+		rooms.append(ProceduralArena.Room.new(cx - 200.0, 100.0, 400.0, 200.0))
+		rooms.append(ProceduralArena.Room.new(cx - 200.0, h - 300.0, 400.0, 200.0))
+
+		corridors.append(ProceduralArena.Corridor.new(300.0, cy - 50.0, max(10.0, cx - 600.0), 100.0))
+		corridors.append(ProceduralArena.Corridor.new(cx + 300.0, cy - 50.0, max(10.0, w - cx - 600.0), 100.0))
+		corridors.append(ProceduralArena.Corridor.new(cx - 50.0, 300.0, 100.0, max(10.0, cy - 600.0)))
+		corridors.append(ProceduralArena.Corridor.new(cx - 50.0, cy + 300.0, 100.0, max(10.0, h - cy - 600.0)))
+
+		hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 100.0, "lava", 50.0))
+		hazards.append(ProceduralArena.Hazard.new(1, cx - 150.0, cy - 150.0, 30.0, "spikes", 20.0))
+		hazards.append(ProceduralArena.Hazard.new(2, cx + 150.0, cy - 150.0, 30.0, "spikes", 20.0))
+		hazards.append(ProceduralArena.Hazard.new(3, cx - 150.0, cy + 150.0, 30.0, "spikes", 20.0))
+		hazards.append(ProceduralArena.Hazard.new(4, cx + 150.0, cy + 150.0, 30.0, "spikes", 20.0))
 
 const ARENAS = [
 	"escort",
+	"ball_genetics",
 	"wait_and_watch",
     "battle_royale_shrinking_zone",
 	"emotional_contagion",
