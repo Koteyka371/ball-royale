@@ -3,6 +3,7 @@ extends RefCounted
 
 const ARENAS = [
     "avoid_trap",
+    "emotional_contagion",
     "kite",
     "procedural",
     "cross",
