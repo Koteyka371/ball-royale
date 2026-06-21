@@ -571,7 +571,54 @@ class CollectBoosterArena(ProceduralArena):
         self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=40.0, kind="lava", damage=25.0))
 
 
+class PhysicsChainArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # 4 corner spawn rooms
+        self.rooms.append(Room(50, 50, 200, 200))
+        self.rooms.append(Room(w - 250, 50, 200, 200))
+        self.rooms.append(Room(50, h - 250, 200, 200))
+        self.rooms.append(Room(w - 250, h - 250, 200, 200))
+
+        # Central room
+        self.rooms.append(Room(cx - 200, cy - 200, 400, 400))
+
+        # Corridors connecting corners to center
+        # Top-Left to Center
+        self.corridors.append(Corridor(200, 100, cx - 300, 100))
+        self.corridors.append(Corridor(cx - 100, 100, 100, cy - 300))
+
+        # Top-Right to Center
+        self.corridors.append(Corridor(cx + 100, 100, cx - 300, 100))
+        self.corridors.append(Corridor(cx, 100, 100, cy - 300))
+
+        # Bottom-Left to Center
+        self.corridors.append(Corridor(200, h - 200, cx - 300, 100))
+        self.corridors.append(Corridor(cx - 100, cy + 200, 100, h - cy - 300))
+
+        # Bottom-Right to Center
+        self.corridors.append(Corridor(cx + 100, h - 200, cx - 300, 100))
+        self.corridors.append(Corridor(cx, cy + 200, 100, h - cy - 300))
+
+        # 4 hazards in the central room
+        self.hazards.append(Hazard(id=0, x=cx - 100, y=cy - 100, radius=40.0, kind="lava", damage=30.0))
+        self.hazards.append(Hazard(id=1, x=cx + 100, y=cy - 100, radius=40.0, kind="lava", damage=30.0))
+        self.hazards.append(Hazard(id=2, x=cx - 100, y=cy + 100, radius=40.0, kind="lava", damage=30.0))
+        self.hazards.append(Hazard(id=3, x=cx + 100, y=cy + 100, radius=40.0, kind="lava", damage=30.0))
+
+        # 4 small hazards in corridors
+        self.hazards.append(Hazard(id=4, x=cx, y=cy - 250, radius=20.0, kind="spikes", damage=15.0))
+        self.hazards.append(Hazard(id=5, x=cx, y=cy + 250, radius=20.0, kind="spikes", damage=15.0))
+        self.hazards.append(Hazard(id=6, x=cx - 250, y=cy, radius=20.0, kind="spikes", damage=15.0))
+        self.hazards.append(Hazard(id=7, x=cx + 250, y=cy, radius=20.0, kind="spikes", damage=15.0))
+
 ARENAS = {
+
     "collect_booster": CollectBoosterArena,
     "reposition": RepositionArena,
     "avoid_trap": AvoidTrapArena,
@@ -598,7 +645,8 @@ ARENAS = {
     "comebacks": ComebacksArena,
     "circle_strafe": CircleStrafeArena,
     "epic_kills": EpicKillsArena,
-    "ball_relationships": BallRelationshipsArena
+    "ball_relationships": BallRelationshipsArena,
+    "physics_chain": PhysicsChainArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:

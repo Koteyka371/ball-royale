@@ -340,3 +340,50 @@ class BallRelationshipsArena extends ProceduralArena:
         hazards.append(ProceduralArena.Hazard.new(1, cx + 150.0, cy - 150.0, 30.0, "lava", 20.0))
         hazards.append(ProceduralArena.Hazard.new(2, cx - 150.0, cy + 150.0, 30.0, "lava", 20.0))
         hazards.append(ProceduralArena.Hazard.new(3, cx + 150.0, cy + 150.0, 30.0, "lava", 20.0))
+class PhysicsChainArena extends ProceduralArena:
+    func generate():
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = width
+        var h = height
+        var cx = w / 2.0
+        var cy = h / 2.0
+
+        # 4 corner spawn rooms
+        rooms.append(ProceduralArena.Room.new(50.0, 50.0, 200.0, 200.0))
+        rooms.append(ProceduralArena.Room.new(w - 250.0, 50.0, 200.0, 200.0))
+        rooms.append(ProceduralArena.Room.new(50.0, h - 250.0, 200.0, 200.0))
+        rooms.append(ProceduralArena.Room.new(w - 250.0, h - 250.0, 200.0, 200.0))
+
+        # Central room
+        rooms.append(ProceduralArena.Room.new(cx - 200.0, cy - 200.0, 400.0, 400.0))
+
+        # Corridors connecting corners to center
+        # Top-Left to Center
+        corridors.append(ProceduralArena.Corridor.new(200.0, 100.0, cx - 300.0, 100.0))
+        corridors.append(ProceduralArena.Corridor.new(cx - 100.0, 100.0, 100.0, cy - 300.0))
+
+        # Top-Right to Center
+        corridors.append(ProceduralArena.Corridor.new(cx + 100.0, 100.0, cx - 300.0, 100.0))
+        corridors.append(ProceduralArena.Corridor.new(cx, 100.0, 100.0, cy - 300.0))
+
+        # Bottom-Left to Center
+        corridors.append(ProceduralArena.Corridor.new(200.0, h - 200.0, cx - 300.0, 100.0))
+        corridors.append(ProceduralArena.Corridor.new(cx - 100.0, cy + 200.0, 100.0, h - cy - 300.0))
+
+        # Bottom-Right to Center
+        corridors.append(ProceduralArena.Corridor.new(cx + 100.0, h - 200.0, cx - 300.0, 100.0))
+        corridors.append(ProceduralArena.Corridor.new(cx, cy + 200.0, 100.0, h - cy - 300.0))
+
+        # 4 hazards in the central room
+        hazards.append(ProceduralArena.Hazard.new(0, cx - 100.0, cy - 100.0, 40.0, "lava", 30.0))
+        hazards.append(ProceduralArena.Hazard.new(1, cx + 100.0, cy - 100.0, 40.0, "lava", 30.0))
+        hazards.append(ProceduralArena.Hazard.new(2, cx - 100.0, cy + 100.0, 40.0, "lava", 30.0))
+        hazards.append(ProceduralArena.Hazard.new(3, cx + 100.0, cy + 100.0, 40.0, "lava", 30.0))
+
+        # 4 small hazards in corridors
+        hazards.append(ProceduralArena.Hazard.new(4, cx, cy - 250.0, 20.0, "spikes", 15.0))
+        hazards.append(ProceduralArena.Hazard.new(5, cx, cy + 250.0, 20.0, "spikes", 15.0))
+        hazards.append(ProceduralArena.Hazard.new(6, cx - 250.0, cy, 20.0, "spikes", 15.0))
+        hazards.append(ProceduralArena.Hazard.new(7, cx + 250.0, cy, 20.0, "spikes", 15.0))
