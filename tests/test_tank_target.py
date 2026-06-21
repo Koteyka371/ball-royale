@@ -115,12 +115,13 @@ def test_tank_body_blocks_healer():
 
 
 
-def test_tank_uses_shield_when_damaged():
+def test_tank_uses_target_strong_when_damaged():
     tank = Tank(1, 0, 0)
     tank.hp = 150  # Max is 200
     tank.skill_timer = 0
     tank.first_hit_taken = True
     tank.personality = "tank"
+    tank.skill_timer = -1.0
 
     enemy = MockEnemy(100, 100, 300, 100)
     world = MockWorld([enemy])
