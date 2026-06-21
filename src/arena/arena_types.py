@@ -676,7 +676,50 @@ class SwarmIntelligenceArena(ProceduralArena):
         self.hazards.append(Hazard(id=2, x=cx - 100, y=cy + 100, radius=40.0, kind="spikes", damage=25.0))
         self.hazards.append(Hazard(id=3, x=cx + 100, y=cy + 100, radius=40.0, kind="spikes", damage=25.0))
 
+class PhysicsChainReactionsArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        # 3x3 grid of rooms for chain reactions
+        # Create tighter rooms but more hazards between them
+        cols, rows = 3, 3
+        rw, rh = 400, 400
+
+        positions = [200, 800, 1400]
+
+        for i in range(cols):
+            for j in range(rows):
+                rx = positions[i]
+                ry = positions[j]
+                self.rooms.append(Room(rx, ry, rw, rh))
+
+                # Add Lava in the corners of corner rooms
+                if (i == 0 or i == 2) and (j == 0 or j == 2):
+                    self.hazards.append(Hazard(id=len(self.hazards), x=rx+200, y=ry+200, radius=50.0, kind="lava", damage=50.0))
+
+        # Horizontal corridors
+        for i in range(cols - 1):
+            for j in range(rows):
+                cx1 = positions[i] + 400 - 50
+                cy1 = positions[j] + 200 - 75
+                self.corridors.append(Corridor(cx1, cy1, 300, 150)) # 800-600=200 gap + 100 overlap = 300 length
+
+                # Spikes in horizontal corridors
+                self.hazards.append(Hazard(id=len(self.hazards), x=cx1+150, y=cy1+75, radius=30.0, kind="spikes", damage=30.0))
+
+        # Vertical corridors
+        for i in range(cols):
+            for j in range(rows - 1):
+                cx2 = positions[i] + 200 - 75
+                cy2 = positions[j] + 400 - 50
+                self.corridors.append(Corridor(cx2, cy2, 150, 300))
+
+                # Spikes in vertical corridors
+                self.hazards.append(Hazard(id=len(self.hazards), x=cx2+75, y=cy2+150, radius=30.0, kind="spikes", damage=30.0))
+
 ARENAS = {
+    "physics_chain_reactions": PhysicsChainReactionsArena,
     "swarm_intelligence": SwarmIntelligenceArena,
     "clutch_plays": ClutchPlaysArena,
     "collect_booster": CollectBoosterArena,

@@ -453,3 +453,42 @@ class SwarmIntelligenceArena extends ProceduralArena:
         hazards.append(ProceduralArena.Hazard.new(1, cx + 100, cy - 100, 40.0, "spikes", 25.0))
         hazards.append(ProceduralArena.Hazard.new(2, cx - 100, cy + 100, 40.0, "spikes", 25.0))
         hazards.append(ProceduralArena.Hazard.new(3, cx + 100, cy + 100, 40.0, "spikes", 25.0))
+
+
+class PhysicsChainReactionsArena extends ProceduralArena:
+	func generate() -> void:
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+
+		var cols := 3
+		var rows := 3
+		var rw := 400.0
+		var rh := 400.0
+
+		var positions = [200.0, 800.0, 1400.0]
+
+		for i in range(cols):
+			for j in range(rows):
+				var rx: float = positions[i]
+				var ry: float = positions[j]
+				rooms.append(ProceduralArena.Room.new(rx, ry, rw, rh))
+
+				if (i == 0 or i == 2) and (j == 0 or j == 2):
+					hazards.append(ProceduralArena.Hazard.new(hazards.size(), rx+200.0, ry+200.0, 50.0, "lava", 50.0))
+
+		for i in range(cols - 1):
+			for j in range(rows):
+				var cx1: float = positions[i] + 400.0 - 50.0
+				var cy1: float = positions[j] + 200.0 - 75.0
+				corridors.append(ProceduralArena.Corridor.new(cx1, cy1, 300.0, 150.0))
+
+				hazards.append(ProceduralArena.Hazard.new(hazards.size(), cx1+150.0, cy1+75.0, 30.0, "spikes", 30.0))
+
+		for i in range(cols):
+			for j in range(rows - 1):
+				var cx2: float = positions[i] + 200.0 - 75.0
+				var cy2: float = positions[j] + 400.0 - 50.0
+				corridors.append(ProceduralArena.Corridor.new(cx2, cy2, 150.0, 300.0))
+
+				hazards.append(ProceduralArena.Hazard.new(hazards.size(), cx2+75.0, cy2+150.0, 30.0, "spikes", 30.0))
