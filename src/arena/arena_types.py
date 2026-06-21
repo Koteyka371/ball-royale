@@ -895,7 +895,47 @@ class BattleRoyaleShrinkingZoneArena(ProceduralArena):
             if self.safe_zone_radius < 50.0:
                 self.safe_zone_radius = 50.0
 
+class BallGeneticsArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central evolution room
+        self.rooms.append(Room(cx - 400, cy - 400, 800, 800))
+
+        # 4 Spawn rooms
+        self.rooms.append(Room(50, 50, 300, 300))
+        self.rooms.append(Room(w - 350, 50, 300, 300))
+        self.rooms.append(Room(50, h - 350, 300, 300))
+        self.rooms.append(Room(w - 350, h - 350, 300, 300))
+
+        # Connecting corridors
+        # Top-Left
+        self.corridors.append(Corridor(150, 350, 100, cy - 750))
+        self.corridors.append(Corridor(150, cy - 400, cx - 550, 100))
+        # Top-Right
+        self.corridors.append(Corridor(w - 250, 350, 100, cy - 750))
+        self.corridors.append(Corridor(cx + 400, cy - 400, w - cx - 650, 100))
+        # Bottom-Left
+        self.corridors.append(Corridor(150, cy + 300, 100, h - cy - 650))
+        self.corridors.append(Corridor(150, cy + 300, cx - 550, 100))
+        # Bottom-Right
+        self.corridors.append(Corridor(w - 250, cy + 300, 100, h - cy - 650))
+        self.corridors.append(Corridor(cx + 400, cy + 300, w - cx - 650, 100))
+
+        # Hazards
+        self.hazards.append(Hazard(id=0, x=cx - 200, y=cy - 200, radius=50.0, kind="spikes", damage=30.0))
+        self.hazards.append(Hazard(id=1, x=cx + 200, y=cy - 200, radius=50.0, kind="spikes", damage=30.0))
+        self.hazards.append(Hazard(id=2, x=cx - 200, y=cy + 200, radius=50.0, kind="spikes", damage=30.0))
+        self.hazards.append(Hazard(id=3, x=cx + 200, y=cy + 200, radius=50.0, kind="spikes", damage=30.0))
+        self.hazards.append(Hazard(id=4, x=cx, y=cy, radius=80.0, kind="lava", damage=20.0))
+
+
 ARENAS = {
+    "ball_genetics": BallGeneticsArena,
     "battle_royale_shrinking_zone": BattleRoyaleShrinkingZoneArena,
     "emotional_contagion": EmotionalContagionArena,
     "body_block": BodyBlockArena,
