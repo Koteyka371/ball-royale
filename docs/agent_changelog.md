@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-arena-106] Create Body Block arena — *2026-06-21 12:04:51 UTC*
+
+Implement Create Body Block arena as described in game_design.md
+
+---
+
 ## [idea-arena-124] Create Meta Evolution arena — *2026-06-21 11:55:20 UTC*
 
 Implement Create Meta Evolution arena as described in game_design.md
