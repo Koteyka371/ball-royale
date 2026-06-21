@@ -146,7 +146,32 @@ class BattleRoyaleShrinkingZoneArena extends ProceduralArena:
             if safe_zone_radius < 50.0:
                 safe_zone_radius = 50.0
 
+
+class FleeArena extends ProceduralArena:
+	func generate():
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+		var w = self.width
+		var h = self.height
+		var cx = w / 2.0
+		var cy = h / 2.0
+
+		rooms.append(ProceduralArena.Room.new(cx - 150, cy - 150, 300, 300))
+		rooms.append(ProceduralArena.Room.new(50, cy - 100, 200, 200))
+		rooms.append(ProceduralArena.Room.new(w - 250, cy - 100, 200, 200))
+		rooms.append(ProceduralArena.Room.new(cx - 100, 50, 200, 200))
+		rooms.append(ProceduralArena.Room.new(cx - 100, h - 250, 200, 200))
+
+		corridors.append(ProceduralArena.Corridor.new(200, cy - 50, cx - 300, 100))
+		corridors.append(ProceduralArena.Corridor.new(cx + 100, cy - 50, w - cx - 300, 100))
+		corridors.append(ProceduralArena.Corridor.new(cx - 50, 200, 100, cy - 300))
+		corridors.append(ProceduralArena.Corridor.new(cx - 50, cy + 100, 100, h - cy - 300))
+
+		hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 50.0, "lava", 20.0))
+
 const ARENAS = [
+    "flee",
     "battle_royale_shrinking_zone",
 	"emotional_contagion",
 	"body_block",

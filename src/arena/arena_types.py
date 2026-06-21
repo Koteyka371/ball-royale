@@ -895,7 +895,30 @@ class BattleRoyaleShrinkingZoneArena(ProceduralArena):
             if self.safe_zone_radius < 50.0:
                 self.safe_zone_radius = 50.0
 
+
+class FleeArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        self.rooms.append(Room(cx - 150, cy - 150, 300, 300))
+        self.rooms.append(Room(50, cy - 100, 200, 200))
+        self.rooms.append(Room(w - 250, cy - 100, 200, 200))
+        self.rooms.append(Room(cx - 100, 50, 200, 200))
+        self.rooms.append(Room(cx - 100, h - 250, 200, 200))
+
+        self.corridors.append(Corridor(200, cy - 50, cx - 300, 100))
+        self.corridors.append(Corridor(cx + 100, cy - 50, w - cx - 300, 100))
+        self.corridors.append(Corridor(cx - 50, 200, 100, cy - 300))
+        self.corridors.append(Corridor(cx - 50, cy + 100, 100, h - cy - 300))
+
+        self.hazards.append(Hazard(0, cx, cy, 50.0, "lava", 20.0))
+
 ARENAS = {
+    "flee": FleeArena,
     "battle_royale_shrinking_zone": BattleRoyaleShrinkingZoneArena,
     "emotional_contagion": EmotionalContagionArena,
     "body_block": BodyBlockArena,
