@@ -613,7 +613,34 @@ class ClutchPlaysArena(ProceduralArena):
         self.hazards.append(Hazard(id=3, x=cx - 150, y=cy + 150, radius=50.0, kind="spikes", damage=20.0))
         self.hazards.append(Hazard(id=4, x=cx + 150, y=cy + 150, radius=50.0, kind="spikes", damage=20.0))
 
+class FunnyFailsArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        self.rooms.append(Room(200, 200, 400, 400))
+        self.rooms.append(Room(w - 600, 200, 400, 400))
+        self.rooms.append(Room(200, h - 600, 400, 400))
+        self.rooms.append(Room(w - 600, h - 600, 400, 400))
+
+        self.rooms.append(Room(cx - 150, cy - 150, 300, 300))
+
+        self.corridors.append(Corridor(600, cy - 50, cx - 600, 100))
+        self.corridors.append(Corridor(cx, cy - 50, w - 600 - cx, 100))
+        self.corridors.append(Corridor(cx - 50, 600, 100, cy - 600))
+        self.corridors.append(Corridor(cx - 50, cy, 100, h - 600 - cy))
+
+        self.hazards.append(Hazard(id=0, x=cx - 200, y=cy, radius=40.0, kind="lava", damage=40.0))
+        self.hazards.append(Hazard(id=1, x=cx + 200, y=cy, radius=40.0, kind="lava", damage=40.0))
+        self.hazards.append(Hazard(id=2, x=cx, y=cy - 200, radius=40.0, kind="spikes", damage=20.0))
+        self.hazards.append(Hazard(id=3, x=cx, y=cy + 200, radius=40.0, kind="spikes", damage=20.0))
+        self.hazards.append(Hazard(id=4, x=cx, y=cy, radius=120.0, kind="lava", damage=50.0))
+
 ARENAS = {
+    "funny_fails": FunnyFailsArena,
     "clutch_plays": ClutchPlaysArena,
     "collect_booster": CollectBoosterArena,
     "reposition": RepositionArena,
