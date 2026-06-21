@@ -730,7 +730,43 @@ class AmbushArena(ProceduralArena):
         # 1 central hazard to discourage staying in the open
         self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=80.0, kind="lava", damage=20.0))
 
+class NeuralBallArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        self.rooms.append(Room(cx - 600.0, cy - 400.0, 200.0, 200.0))
+        self.rooms.append(Room(cx - 100.0, cy - 400.0, 200.0, 200.0))
+        self.rooms.append(Room(cx + 400.0, cy - 400.0, 200.0, 200.0))
+        self.rooms.append(Room(cx - 600.0, cy - 100.0, 200.0, 200.0))
+        self.rooms.append(Room(cx - 100.0, cy - 100.0, 200.0, 200.0))
+        self.rooms.append(Room(cx + 400.0, cy - 100.0, 200.0, 200.0))
+        self.rooms.append(Room(cx - 600.0, cy + 200.0, 200.0, 200.0))
+        self.rooms.append(Room(cx - 100.0, cy + 200.0, 200.0, 200.0))
+        self.rooms.append(Room(cx + 400.0, cy + 200.0, 200.0, 200.0))
+
+        self.corridors.append(Corridor(cx - 450.0, cy - 350.0, 400.0, 100.0))
+        self.corridors.append(Corridor(cx + 50.0, cy - 350.0, 400.0, 100.0))
+        self.corridors.append(Corridor(cx - 450.0, cy - 50.0, 400.0, 100.0))
+        self.corridors.append(Corridor(cx + 50.0, cy - 50.0, 400.0, 100.0))
+        self.corridors.append(Corridor(cx - 450.0, cy + 250.0, 400.0, 100.0))
+        self.corridors.append(Corridor(cx + 50.0, cy + 250.0, 400.0, 100.0))
+
+        self.corridors.append(Corridor(cx - 50.0, cy - 250.0, 100.0, 200.0))
+        self.corridors.append(Corridor(cx - 50.0, cy + 50.0, 100.0, 200.0))
+
+        self.corridors.append(Corridor(cx - 550.0, cy - 250.0, 100.0, 200.0))
+        self.corridors.append(Corridor(cx + 450.0, cy - 250.0, 100.0, 200.0))
+
+        self.hazards.append(Hazard(id=0, x=cx, y=cy - 300.0, radius=40.0, kind="lava", damage=30.0))
+        self.hazards.append(Hazard(id=1, x=cx, y=cy, radius=40.0, kind="lava", damage=30.0))
+        self.hazards.append(Hazard(id=2, x=cx, y=cy + 300.0, radius=40.0, kind="lava", damage=30.0))
+
 ARENAS = {
+    "neural_ball": NeuralBallArena,
     "ambush": AmbushArena,
     "swarm_intelligence": SwarmIntelligenceArena,
     "clutch_plays": ClutchPlaysArena,

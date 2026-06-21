@@ -1,0 +1,4 @@
+{
+  "title": "Neural Evolution Matchmaking",
+  "description": "Match neural balls based on their win rates and generational age to naturally select the strongest neural weights over time."
+}

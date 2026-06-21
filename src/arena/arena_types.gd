@@ -2,6 +2,7 @@ class_name ArenaTypes
 extends RefCounted
 
 const ARENAS = [
+    "neural_ball",
     "swarm_intelligence",
     "avoid_trap",
     "kite",
