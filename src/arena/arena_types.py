@@ -895,7 +895,41 @@ class BattleRoyaleShrinkingZoneArena(ProceduralArena):
             if self.safe_zone_radius < 50.0:
                 self.safe_zone_radius = 50.0
 
+class AICommentaryArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Main broadcasting stadium ring
+        self.rooms.append(Room(cx - 500, cy - 500, 1000, 1000))
+
+        # Safe broadcasting booth / commentator desk
+        self.rooms.append(Room(cx - 100, cy - 800, 200, 200))
+
+        # Audience stands
+        self.rooms.append(Room(cx - 900, cy - 300, 300, 600))
+        self.rooms.append(Room(cx + 600, cy - 300, 300, 600))
+
+        # Entrances to the main ring
+        self.corridors.append(Corridor(cx - 650, cy - 100, 200, 200))
+        self.corridors.append(Corridor(cx + 450, cy - 100, 200, 200))
+
+        # VIP bridge
+        self.corridors.append(Corridor(cx - 50, cy - 650, 100, 200))
+
+        # Action-driving hazards in the main stadium to ensure exciting commentary
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=100.0, kind="lava", damage=25.0))
+        self.hazards.append(Hazard(id=1, x=cx - 300, y=cy - 300, radius=50.0, kind="spikes", damage=30.0))
+        self.hazards.append(Hazard(id=2, x=cx + 300, y=cy - 300, radius=50.0, kind="spikes", damage=30.0))
+        self.hazards.append(Hazard(id=3, x=cx - 300, y=cy + 300, radius=50.0, kind="spikes", damage=30.0))
+        self.hazards.append(Hazard(id=4, x=cx + 300, y=cy + 300, radius=50.0, kind="spikes", damage=30.0))
+
+
 ARENAS = {
+    "ai_commentary": AICommentaryArena,
     "battle_royale_shrinking_zone": BattleRoyaleShrinkingZoneArena,
     "emotional_contagion": EmotionalContagionArena,
     "body_block": BodyBlockArena,

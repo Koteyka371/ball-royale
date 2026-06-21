@@ -1,0 +1,4 @@
+{
+  "title": "Interactive Twitch Plays Commentary",
+  "description": "Allow viewers via a Twitch extension to vote on commentary styles (e.g. 'Sports Announcer', 'Snoop Dogg', 'Robot') dynamically mid-match. The AI commentator switches tone on the fly depending on chat votes."
+}
