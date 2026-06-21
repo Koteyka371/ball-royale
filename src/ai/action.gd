@@ -1904,11 +1904,12 @@ func _update_skill_timer(delta: float):
             self.ball.set_meta("attack_timer", attack_timer)
 
 func _kite(delta: float):
-    var enemies = _get_enemies()
-    if enemies.size() > 0:
+    # Kite — держит дистанцию, атакует при приближении skill: для Sniper
+    var active_enemies = _get_enemies()
+    if active_enemies.size() > 0:
         var target_msg = null
-        var allies = _get_allies()
-        for ally in allies:
+        var team_allies = _get_allies()
+        for ally in team_allies:
             var msg = null
             if ally.has_method("get_meta") and ally.has_meta("team_message"):
                 msg = ally.get_meta("team_message")
@@ -1916,50 +1917,50 @@ func _kite(delta: float):
                 target_msg = msg
                 break
 
-        var target = null
+        var optimal_target = null
         var min_dist_sq = INF
 
         if target_msg != null:
             var tx = target_msg.get("x", self.ball.x)
             var ty = target_msg.get("y", self.ball.y)
-            for e in enemies:
+            for e in active_enemies:
                 var dist_sq = pow(e.x - tx, 2) + pow(e.y - ty, 2)
                 if dist_sq < min_dist_sq:
                     min_dist_sq = dist_sq
-                    target = e
+                    optimal_target = e
         else:
-            for e in enemies:
+            for e in active_enemies:
                 var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
                 if dist_sq < min_dist_sq:
                     min_dist_sq = dist_sq
-                    target = e
+                    optimal_target = e
 
         var has_msg = false
         if self.ball.has_method("has_meta") and self.ball.has_meta("team_message"):
             has_msg = self.ball.get_meta("team_message") != null
         if not has_msg and self.ball.has_method("set_meta"):
-            self.ball.set_meta("team_message", {"type": "target_spotted", "x": target.x, "y": target.y})
+            self.ball.set_meta("team_message", {"type": "target_spotted", "x": optimal_target.x, "y": optimal_target.y})
 
-        var dx = target.x - self.ball.x
-        var dy = target.y - self.ball.y
+        var dx = optimal_target.x - self.ball.x
+        var dy = optimal_target.y - self.ball.y
         var dist_sq = dx*dx + dy*dy
-        var dist = 0.0
+        var actual_dist = 0.0
         if dist_sq > 0.0001:
-            dist = sqrt(dist_sq)
+            actual_dist = sqrt(dist_sq)
 
-        var speed = 2.0
-        if "speed" in self.ball: speed = self.ball.speed
+        var b_speed = 2.0
+        if "speed" in self.ball: b_speed = self.ball.speed
 
-        var attack_range = 150.0
-        if "attack_range" in self.ball: attack_range = self.ball.attack_range
+        var b_attack_range = 150.0
+        if "attack_range" in self.ball: b_attack_range = self.ball.attack_range
 
         if dist_sq > 0.0001:
-            var nx = dx / dist
-            var ny = dy / dist
+            var nx = dx / actual_dist
+            var ny = dy / actual_dist
 
-            if dist > attack_range:
+            if actual_dist > b_attack_range:
                 pass
-            elif dist < attack_range * 0.8:
+            elif actual_dist < b_attack_range * 0.8:
                 nx = -nx
                 ny = -ny
             else:
@@ -1967,7 +1968,7 @@ func _kite(delta: float):
                 ny = 0.0
 
             if nx != 0.0 or ny != 0.0:
-                var avoid_vec = _apply_obstacle_avoidance(nx, ny, target)
+                var avoid_vec = _apply_obstacle_avoidance(nx, ny, optimal_target)
                 nx = avoid_vec[0]
                 ny = avoid_vec[1]
 
@@ -1975,31 +1976,31 @@ func _kite(delta: float):
                 nx = boid_vec[0]
                 ny = boid_vec[1]
 
-                var step = speed * delta * 60.0
-                if dist < attack_range * 0.8:
+                var step = b_speed * delta * 60.0
+                if actual_dist < b_attack_range * 0.8:
                     self.ball.x += nx * step
                     self.ball.y += ny * step
                 else:
-                    self.ball.x += nx * min(step, dist)
-                    self.ball.y += ny * min(step, dist)
+                    self.ball.x += nx * min(step, actual_dist)
+                    self.ball.y += ny * min(step, actual_dist)
 
-        dx = target.x - self.ball.x
-        dy = target.y - self.ball.y
+        dx = optimal_target.x - self.ball.x
+        dy = optimal_target.y - self.ball.y
         dist_sq = dx*dx + dy*dy
         var dist_after = 0.0
         if dist_sq > 0.0001:
             dist_after = sqrt(dist_sq)
 
-        attack_range = 150.0
-        if "attack_range" in self.ball: attack_range = self.ball.attack_range
+        b_attack_range = 150.0
+        if "attack_range" in self.ball: b_attack_range = self.ball.attack_range
 
-        if dist_after <= attack_range:
+        if dist_after <= b_attack_range:
             var skill_timer = 0.0
             if "skill_timer" in self.ball:
                 skill_timer = self.ball.skill_timer
 
             if skill_timer <= 0:
-                if dist_after < attack_range * 0.8:
+                if dist_after < b_attack_range * 0.8:
                     if self.ball.has_method("use_skill"):
                         self.ball.use_skill()
                     var cd = 5.0
@@ -2014,23 +2015,21 @@ func _kite(delta: float):
 
             if attack_timer <= 0:
                 if self.world != null and self.world.has_method("_deal_damage"):
-                    self.world._deal_damage(self.ball, target)
-                    if "id" in target and "id" in self.ball:
+                    self.world._deal_damage(self.ball, optimal_target)
+                    if "id" in optimal_target and "id" in self.ball:
                         var mem = {}
-                        if target.has_method("get_meta") and target.has_meta("memory"):
-                            mem = target.get_meta("memory")
-                        elif "memory" in target:
-                            mem = target.memory
+                        if optimal_target.has_method("get_meta") and optimal_target.has_meta("memory"):
+                            mem = optimal_target.get_meta("memory")
+                        elif "memory" in optimal_target:
+                            mem = optimal_target.memory
                         # Ball Relationships - Balls remember each other
-
-                        # Rivalry skill: attacked me before -> attack on sight
                         mem[self.ball.id] = {"relation": "rival"}
-                        if target.has_method("set_meta"):
-                            target.set_meta("memory", mem)
+                        if optimal_target.has_method("set_meta"):
+                            optimal_target.set_meta("memory", mem)
                         else:
-                            target.memory = mem
+                            optimal_target.memory = mem
 
-                var cooldown = max(0.2, 2.0 / speed if speed > 0 else 1.0)
+                var cooldown = max(0.2, 2.0 / b_speed if b_speed > 0 else 1.0)
                 if "attack_timer" in self.ball:
                     self.ball.attack_timer = cooldown
                 elif self.ball.has_method("set_meta"):
