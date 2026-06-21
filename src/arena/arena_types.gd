@@ -97,7 +97,57 @@ class PhysicsChainReactionsArena extends ProceduralArena:
         var h4 = ProceduralArena.Hazard.new()
         h4.id = 4; h4.x = cx; h4.y = cy; h4.radius = 80.0; h4.kind = "lava"; h4.damage = 20.0; hazards.append(h4)
 
+
+class BattleRoyaleShrinkingZoneArena extends ProceduralArena:
+    func generate() -> void:
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = width
+        var h = height
+        var cx = w / 2.0
+        var cy = h / 2.0
+
+        # Central room
+        rooms.append(ProceduralArena.Room.new(cx - 300, cy - 300, 600, 600))
+
+        # Top-left room
+        rooms.append(ProceduralArena.Room.new(50, 50, 150, 150))
+        # Top-right room
+        rooms.append(ProceduralArena.Room.new(w - 200, 50, 150, 150))
+        # Bottom-left room
+        rooms.append(ProceduralArena.Room.new(50, h - 200, 150, 150))
+        # Bottom-right room
+        rooms.append(ProceduralArena.Room.new(w - 200, h - 200, 150, 150))
+
+        # Connecting corridors (top-left)
+        corridors.append(ProceduralArena.Corridor.new(100, 200, 50, cy - 400))
+        corridors.append(ProceduralArena.Corridor.new(100, cy - 300, cx - 300, 50))
+
+        # Connecting corridors (top-right)
+        corridors.append(ProceduralArena.Corridor.new(w - 150, 200, 50, cy - 400))
+        corridors.append(ProceduralArena.Corridor.new(cx + 300, cy - 300, w - cx - 300, 50))
+
+        # Connecting corridors (bottom-left)
+        corridors.append(ProceduralArena.Corridor.new(100, cy + 250, 50, h - cy - 400))
+        corridors.append(ProceduralArena.Corridor.new(100, cy + 250, cx - 300, 50))
+
+        # Connecting corridors (bottom-right)
+        corridors.append(ProceduralArena.Corridor.new(w - 150, cy + 250, 50, h - cy - 400))
+        corridors.append(ProceduralArena.Corridor.new(cx + 300, cy + 250, w - cx - 300, 50))
+
+        # 1 central hazard to discourage staying in the open
+        hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 80.0, "lava", 20.0))
+
+    func update_zone(current_tick: int, delta: float) -> void:
+        if current_tick != last_tick:
+            last_tick = current_tick
+            safe_zone_radius -= 15.0 * delta
+            if safe_zone_radius < 50.0:
+                safe_zone_radius = 50.0
+
 const ARENAS = [
+    "battle_royale_shrinking_zone",
 	"emotional_contagion",
 	"body_block",
 	"meta_evolution",
