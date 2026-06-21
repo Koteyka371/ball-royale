@@ -848,7 +848,55 @@ class EmotionalContagionArena(ProceduralArena):
         self.hazards.append(Hazard(id=7, x=cx + 150.0, y=cy + 150.0, radius=40.0, kind="spikes", damage=30.0))
 
 
+
+class BattleRoyaleShrinkingZoneArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central room
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+
+        # Top-left room
+        self.rooms.append(Room(50, 50, 150, 150))
+        # Top-right room
+        self.rooms.append(Room(w - 200, 50, 150, 150))
+        # Bottom-left room
+        self.rooms.append(Room(50, h - 200, 150, 150))
+        # Bottom-right room
+        self.rooms.append(Room(w - 200, h - 200, 150, 150))
+
+        # Connecting corridors (top-left)
+        self.corridors.append(Corridor(100, 200, 50, cy - 400))
+        self.corridors.append(Corridor(100, cy - 300, cx - 300, 50))
+
+        # Connecting corridors (top-right)
+        self.corridors.append(Corridor(w - 150, 200, 50, cy - 400))
+        self.corridors.append(Corridor(cx + 300, cy - 300, w - cx - 300, 50))
+
+        # Connecting corridors (bottom-left)
+        self.corridors.append(Corridor(100, cy + 250, 50, h - cy - 400))
+        self.corridors.append(Corridor(100, cy + 250, cx - 300, 50))
+
+        # Connecting corridors (bottom-right)
+        self.corridors.append(Corridor(w - 150, cy + 250, 50, h - cy - 400))
+        self.corridors.append(Corridor(cx + 300, cy + 250, w - cx - 300, 50))
+
+        # 1 central hazard to discourage staying in the open
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=80.0, kind="lava", damage=20.0))
+
+    def update_zone(self, current_tick: int, delta: float):
+        if current_tick != self.last_tick:
+            self.last_tick = current_tick
+            self.safe_zone_radius -= 15.0 * delta
+            if self.safe_zone_radius < 50.0:
+                self.safe_zone_radius = 50.0
+
 ARENAS = {
+    "battle_royale_shrinking_zone": BattleRoyaleShrinkingZoneArena,
     "emotional_contagion": EmotionalContagionArena,
     "body_block": BodyBlockArena,
     "meta_evolution": MetaEvolutionArena,
