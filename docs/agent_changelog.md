@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-ball_type-085] Implement Scout ball — *2026-06-21 04:28:25 UTC*
+
+Implement Implement Scout ball as described in game_design.md
+
+---
+
 ## [idea-arena-120] Create Swarm Intelligence arena — *2026-06-21 04:21:25 UTC*
 
 Implement Create Swarm Intelligence arena as described in game_design.md

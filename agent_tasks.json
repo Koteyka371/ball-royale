@@ -1501,7 +1501,7 @@
     },
     {
       "id": "idea-ball_type-085",
-      "status": "todo",
+      "status": "done",
       "area": "content",
       "risk": "medium",
       "title": "Implement Scout ball",
