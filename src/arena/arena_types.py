@@ -676,7 +676,39 @@ class SwarmIntelligenceArena(ProceduralArena):
         self.hazards.append(Hazard(id=2, x=cx - 100, y=cy + 100, radius=40.0, kind="spikes", damage=25.0))
         self.hazards.append(Hazard(id=3, x=cx + 100, y=cy + 100, radius=40.0, kind="spikes", damage=25.0))
 
+
+class BattleRoyaleShrinkingZoneArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        self.rooms.append(Room(cx - 500, cy - 500, 1000, 1000))
+        self.rooms.append(Room(50, 50, 200, 200))
+        self.rooms.append(Room(w - 250, 50, 200, 200))
+        self.rooms.append(Room(50, h - 250, 200, 200))
+        self.rooms.append(Room(w - 250, h - 250, 200, 200))
+
+        self.corridors.append(Corridor(100, 250, 100, cy - 750))
+        self.corridors.append(Corridor(100, cy - 500, cx - 600, 100))
+        self.corridors.append(Corridor(w - 200, 250, 100, cy - 750))
+        self.corridors.append(Corridor(cx + 500, cy - 500, w - cx - 700, 100))
+        self.corridors.append(Corridor(100, cy + 400, 100, h - cy - 650))
+        self.corridors.append(Corridor(100, cy + 400, cx - 600, 100))
+        self.corridors.append(Corridor(w - 200, cy + 400, 100, h - cy - 650))
+        self.corridors.append(Corridor(cx + 500, cy + 400, w - cx - 700, 100))
+
+    def update_zone(self, current_tick: int, delta: float):
+        if current_tick != self.last_tick:
+            self.last_tick = current_tick
+            self.safe_zone_radius -= 10.0 * delta
+            if self.safe_zone_radius < 50.0:
+                self.safe_zone_radius = 50.0
+
 ARENAS = {
+
     "swarm_intelligence": SwarmIntelligenceArena,
     "clutch_plays": ClutchPlaysArena,
     "collect_booster": CollectBoosterArena,
@@ -706,7 +738,8 @@ ARENAS = {
     "circle_strafe": CircleStrafeArena,
     "epic_kills": EpicKillsArena,
     "ball_relationships": BallRelationshipsArena,
-    "finals_1v1": Finals1v1Arena
+    "finals_1v1": Finals1v1Arena,
+    "battle_royale_shrinking_zone": BattleRoyaleShrinkingZoneArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:

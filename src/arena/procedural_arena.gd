@@ -453,3 +453,35 @@ class SwarmIntelligenceArena extends ProceduralArena:
         hazards.append(ProceduralArena.Hazard.new(1, cx + 100, cy - 100, 40.0, "spikes", 25.0))
         hazards.append(ProceduralArena.Hazard.new(2, cx - 100, cy + 100, 40.0, "spikes", 25.0))
         hazards.append(ProceduralArena.Hazard.new(3, cx + 100, cy + 100, 40.0, "spikes", 25.0))
+
+class BattleRoyaleShrinkingZoneArena extends ProceduralArena:
+    func generate() -> void:
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = width
+        var h = height
+        var cx = w / 2.0
+        var cy = h / 2.0
+
+        rooms.append(ProceduralArena.Room.new(cx - 500.0, cy - 500.0, 1000.0, 1000.0))
+        rooms.append(ProceduralArena.Room.new(50.0, 50.0, 200.0, 200.0))
+        rooms.append(ProceduralArena.Room.new(w - 250.0, 50.0, 200.0, 200.0))
+        rooms.append(ProceduralArena.Room.new(50.0, h - 250.0, 200.0, 200.0))
+        rooms.append(ProceduralArena.Room.new(w - 250.0, h - 250.0, 200.0, 200.0))
+
+        corridors.append(ProceduralArena.Corridor.new(100.0, 250.0, 100.0, cy - 750.0))
+        corridors.append(ProceduralArena.Corridor.new(100.0, cy - 500.0, cx - 600.0, 100.0))
+        corridors.append(ProceduralArena.Corridor.new(w - 200.0, 250.0, 100.0, cy - 750.0))
+        corridors.append(ProceduralArena.Corridor.new(cx + 500.0, cy - 500.0, w - cx - 700.0, 100.0))
+        corridors.append(ProceduralArena.Corridor.new(100.0, cy + 400.0, 100.0, h - cy - 650.0))
+        corridors.append(ProceduralArena.Corridor.new(100.0, cy + 400.0, cx - 600.0, 100.0))
+        corridors.append(ProceduralArena.Corridor.new(w - 200.0, cy + 400.0, 100.0, h - cy - 650.0))
+        corridors.append(ProceduralArena.Corridor.new(cx + 500.0, cy + 400.0, w - cx - 700.0, 100.0))
+
+    func update_zone(current_tick: int, delta: float) -> void:
+        if current_tick != last_tick:
+            last_tick = current_tick
+            safe_zone_radius -= 10.0 * delta
+            if safe_zone_radius < 50.0:
+                safe_zone_radius = 50.0
