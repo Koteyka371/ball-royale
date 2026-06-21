@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-arena-120] Create Swarm Intelligence arena — *2026-06-21 04:21:25 UTC*
+
+Implement Create Swarm Intelligence arena as described in game_design.md
+
+---
+
 ## [idea-arena-116] Create 1v1 Finals arena — *2026-06-21 04:17:33 UTC*
 
 Implement Create 1v1 Finals arena as described in game_design.md
