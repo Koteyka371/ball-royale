@@ -347,6 +347,26 @@ class CircleStrafeArena(ProceduralArena):
         self.corridors.append(Corridor(cx - 350, cy - 150, 200, 300)) # Left
         self.corridors.append(Corridor(cx + 150, cy - 150, 200, 300)) # Right
 
+class Finals1v1Arena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+        self.rooms.append(Room(100, cy - 100, 200, 200))
+        self.rooms.append(Room(w - 300, cy - 100, 200, 200))
+
+        self.corridors.append(Corridor(250, cy - 50, 500, 100))
+        self.corridors.append(Corridor(cx + 250, cy - 50, 500, 100))
+
+        self.hazards.append(Hazard(id=0, x=cx - 200, y=cy - 200, radius=30.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=1, x=cx + 200, y=cy - 200, radius=30.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=2, x=cx - 200, y=cy + 200, radius=30.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=3, x=cx + 200, y=cy + 200, radius=30.0, kind="lava", damage=20.0))
+
 class EpicKillsArena(ProceduralArena):
     def generate(self):
         self.rooms.clear()
@@ -641,7 +661,8 @@ ARENAS = {
     "comebacks": ComebacksArena,
     "circle_strafe": CircleStrafeArena,
     "epic_kills": EpicKillsArena,
-    "ball_relationships": BallRelationshipsArena
+    "ball_relationships": BallRelationshipsArena,
+    "finals_1v1": Finals1v1Arena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:

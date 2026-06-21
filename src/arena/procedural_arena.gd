@@ -269,6 +269,28 @@ class AvoidTrapArena extends ProceduralArena:
         hazards.append(ProceduralArena.Hazard.new(3, 200.0, 400.0, 30.0, "lava", 50.0))
         hazards.append(ProceduralArena.Hazard.new(4, 450.0, 500.0, 40.0, "lava", 50.0))
 
+class Finals1v1Arena extends ProceduralArena:
+    func generate() -> void:
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w := float(width)
+        var h := float(height)
+        var cx := w / 2.0
+        var cy := h / 2.0
+
+        rooms.append(ProceduralArena.Room.new(cx - 300.0, cy - 300.0, 600.0, 600.0))
+        rooms.append(ProceduralArena.Room.new(100.0, cy - 100.0, 200.0, 200.0))
+        rooms.append(ProceduralArena.Room.new(w - 300.0, cy - 100.0, 200.0, 200.0))
+
+        corridors.append(ProceduralArena.Corridor.new(250.0, cy - 50.0, 500.0, 100.0))
+        corridors.append(ProceduralArena.Corridor.new(cx + 250.0, cy - 50.0, 500.0, 100.0))
+
+        hazards.append(ProceduralArena.Hazard.new(0, cx - 200.0, cy - 200.0, 30.0, "lava", 20.0))
+        hazards.append(ProceduralArena.Hazard.new(1, cx + 200.0, cy - 200.0, 30.0, "lava", 20.0))
+        hazards.append(ProceduralArena.Hazard.new(2, cx - 200.0, cy + 200.0, 30.0, "lava", 20.0))
+        hazards.append(ProceduralArena.Hazard.new(3, cx + 200.0, cy + 200.0, 30.0, "lava", 20.0))
+
 class RepositionArena extends ProceduralArena:
     func generate():
         rooms.clear()
