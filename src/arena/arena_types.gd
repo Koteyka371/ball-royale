@@ -97,7 +97,50 @@ class PhysicsChainReactionsArena extends ProceduralArena:
         var h4 = ProceduralArena.Hazard.new()
         h4.id = 4; h4.x = cx; h4.y = cy; h4.radius = 80.0; h4.kind = "lava"; h4.damage = 20.0; hazards.append(h4)
 
+
+class ShrinkingZoneArena extends ProceduralArena:
+    func generate() -> void:
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w := float(width)
+        var h := float(height)
+        var cx := w / 2.0
+        var cy := h / 2.0
+
+        # 1 large central room to represent an open map
+        var rm = ProceduralArena.Room.new()
+        rm.x = 100.0
+        rm.y = 100.0
+        rm.width = w - 200.0
+        rm.height = h - 200.0
+        rooms.append(rm)
+
+        for i in range(8):
+            var angle := float(i) * (PI / 4.0)
+            var hx := cx + 600.0 * cos(angle)
+            var hy := cy + 600.0 * sin(angle)
+            hx = max(150.0, min(w - 150.0, hx))
+            hy = max(150.0, min(h - 150.0, hy))
+            var haz = ProceduralArena.Hazard.new()
+            haz.id = i
+            haz.x = hx
+            haz.y = hy
+            haz.radius = 40.0
+            haz.kind = "lava"
+            haz.damage = 10.0
+            hazards.append(haz)
+
+    func update_zone(current_tick: int, delta: float) -> void:
+        if current_tick != last_tick:
+            last_tick = current_tick
+            safe_zone_radius -= 30.0 * delta # Faster shrink!
+            if safe_zone_radius < 20.0:
+                safe_zone_radius = 20.0
+
 const ARENAS = [
+    "shrinking_zone",
+
 	"body_block",
 	"meta_evolution",
     "swarm_intelligence",

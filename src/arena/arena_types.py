@@ -814,7 +814,39 @@ class PhysicsChainReactionsArena(ProceduralArena):
         self.hazards.append(Hazard(id=4, x=cx, y=cy, radius=80.0, kind="lava", damage=20.0))
 
 
+
+class ShrinkingZoneArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # 1 large central room to represent an open map
+        self.rooms.append(Room(100.0, 100.0, w - 200.0, h - 200.0))
+
+        # Add hazards in a ring to guide players slightly, but keep center clear
+        import math
+        for i in range(8):
+            angle = i * (math.pi / 4)
+            hx = cx + 600 * math.cos(angle)
+            hy = cy + 600 * math.sin(angle)
+            # Ensure it fits inside bounds if the arena is smaller
+            hx = max(150.0, min(w - 150.0, hx))
+            hy = max(150.0, min(h - 150.0, hy))
+            self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=40.0, kind="lava", damage=10.0))
+
+    def update_zone(self, current_tick: int, delta: float):
+        if current_tick != self.last_tick:
+            self.last_tick = current_tick
+            self.safe_zone_radius -= 30.0 * delta # Faster shrink!
+            if self.safe_zone_radius < 20.0:
+                self.safe_zone_radius = 20.0
+
+
 ARENAS = {
+    "shrinking_zone": ShrinkingZoneArena,
     "body_block": BodyBlockArena,
     "meta_evolution": MetaEvolutionArena,
     "ambush": AmbushArena,
