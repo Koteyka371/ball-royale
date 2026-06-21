@@ -2181,7 +2181,7 @@
     },
     {
       "id": "idea-arena-125",
-      "status": "todo",
+      "status": "done",
       "area": "arenas",
       "risk": "low",
       "title": "Create Physics Chain Reactions arena",

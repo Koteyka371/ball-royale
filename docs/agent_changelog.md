@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-arena-125] Create Physics Chain Reactions arena — *2026-06-21 14:21:11 UTC*
+
+Implement Create Physics Chain Reactions arena as described in game_design.md
+
+---
+
 ## [idea-arena-106] Create Body Block arena — *2026-06-21 12:04:51 UTC*
 
 Implement Create Body Block arena as described in game_design.md
