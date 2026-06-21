@@ -676,6 +676,24 @@ class SwarmIntelligenceArena(ProceduralArena):
         self.hazards.append(Hazard(id=2, x=cx - 100, y=cy + 100, radius=40.0, kind="spikes", damage=25.0))
         self.hazards.append(Hazard(id=3, x=cx + 100, y=cy + 100, radius=40.0, kind="spikes", damage=25.0))
 
+class EscortArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        self.rooms.append(Room(100, 100, 300, 300))
+        self.rooms.append(Room(w - 400, h - 400, 300, 300))
+
+        self.corridors.append(Corridor(250, 200, cx - 250, 100))
+        self.corridors.append(Corridor(cx - 50, 200, 100, h - 400))
+        self.corridors.append(Corridor(cx - 50, h - 300, w - cx - 250, 100))
+
+        for i in range(3):
+            self.hazards.append(Hazard(id=i, x=cx, y=400 + i*300, radius=30.0, kind='lava', damage=20.0))
+
 class TeamWipesArena(ProceduralArena):
     def generate(self):
         self.rooms.clear()
@@ -817,7 +835,8 @@ ARENAS = {
     "epic_kills": EpicKillsArena,
     "ball_relationships": BallRelationshipsArena,
     "finals_1v1": Finals1v1Arena,
-    "team_wipes": TeamWipesArena
+    "team_wipes": TeamWipesArena,
+    "escort": EscortArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:

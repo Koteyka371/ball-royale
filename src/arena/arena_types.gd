@@ -1,6 +1,27 @@
 class_name ArenaTypes
 extends RefCounted
 
+class EscortArena extends ProceduralArena:
+	func generate():
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+		var w = width
+		var h = height
+		var cx = w / 2.0
+
+		rooms.append(ProceduralArena.Room.new(100, 100, 300, 300))
+		rooms.append(ProceduralArena.Room.new(w - 400, h - 400, 300, 300))
+
+		corridors.append(ProceduralArena.Corridor.new(250, 200, cx - 250, 100))
+		corridors.append(ProceduralArena.Corridor.new(cx - 50, 200, 100, h - 400))
+		corridors.append(ProceduralArena.Corridor.new(cx - 50, h - 300, w - cx - 250, 100))
+
+		for i in range(3):
+			hazards.append(ProceduralArena.Hazard.new(i, cx, 400 + i*300, 30.0, "lava", 20.0))
+
+
+
 class MetaEvolutionArena extends ProceduralArena:
 	func generate():
 		rooms.clear()
@@ -98,5 +119,6 @@ const ARENAS = [
     "collect_booster",
     "finals_1v1",
     "team_wipes",
-    "ambush"
+    "ambush",
+    "escort"
 ]
