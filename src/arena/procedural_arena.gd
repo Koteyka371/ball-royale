@@ -408,3 +408,48 @@ class ClutchPlaysArena:
         hazards.append(ProceduralArena.Hazard.new(2, cx + 150, cy - 150, 50.0, "spikes", 20.0))
         hazards.append(ProceduralArena.Hazard.new(3, cx - 150, cy + 150, 50.0, "spikes", 20.0))
         hazards.append(ProceduralArena.Hazard.new(4, cx + 150, cy + 150, 50.0, "spikes", 20.0))
+
+
+class SwarmIntelligenceArena extends ProceduralArena:
+    func generate() -> void:
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = width
+        var h = height
+        var cx = w / 2.0
+        var cy = h / 2.0
+
+        # 3x3 grid of 9 rooms, 400x400 each
+        rooms.append(ProceduralArena.Room.new(cx - 700, cy - 700, 400, 400))
+        rooms.append(ProceduralArena.Room.new(cx - 200, cy - 700, 400, 400))
+        rooms.append(ProceduralArena.Room.new(cx + 300, cy - 700, 400, 400))
+        rooms.append(ProceduralArena.Room.new(cx - 700, cy - 200, 400, 400))
+        rooms.append(ProceduralArena.Room.new(cx - 200, cy - 200, 400, 400))
+        rooms.append(ProceduralArena.Room.new(cx + 300, cy - 200, 400, 400))
+        rooms.append(ProceduralArena.Room.new(cx - 700, cy + 300, 400, 400))
+        rooms.append(ProceduralArena.Room.new(cx - 200, cy + 300, 400, 400))
+        rooms.append(ProceduralArena.Room.new(cx + 300, cy + 300, 400, 400))
+
+        # 12 connecting corridors, 300x300 to overlap 50px
+        # Horizontal
+        corridors.append(ProceduralArena.Corridor.new(cx - 350, cy - 650, 200, 300))
+        corridors.append(ProceduralArena.Corridor.new(cx + 150, cy - 650, 200, 300))
+        corridors.append(ProceduralArena.Corridor.new(cx - 350, cy - 150, 200, 300))
+        corridors.append(ProceduralArena.Corridor.new(cx + 150, cy - 150, 200, 300))
+        corridors.append(ProceduralArena.Corridor.new(cx - 350, cy + 350, 200, 300))
+        corridors.append(ProceduralArena.Corridor.new(cx + 150, cy + 350, 200, 300))
+
+        # Vertical
+        corridors.append(ProceduralArena.Corridor.new(cx - 650, cy - 350, 300, 200))
+        corridors.append(ProceduralArena.Corridor.new(cx - 150, cy - 350, 300, 200))
+        corridors.append(ProceduralArena.Corridor.new(cx + 350, cy - 350, 300, 200))
+        corridors.append(ProceduralArena.Corridor.new(cx - 650, cy + 150, 300, 200))
+        corridors.append(ProceduralArena.Corridor.new(cx - 150, cy + 150, 300, 200))
+        corridors.append(ProceduralArena.Corridor.new(cx + 350, cy + 150, 300, 200))
+
+        # 4 central hazards
+        hazards.append(ProceduralArena.Hazard.new(0, cx - 100, cy - 100, 40.0, "spikes", 25.0))
+        hazards.append(ProceduralArena.Hazard.new(1, cx + 100, cy - 100, 40.0, "spikes", 25.0))
+        hazards.append(ProceduralArena.Hazard.new(2, cx - 100, cy + 100, 40.0, "spikes", 25.0))
+        hazards.append(ProceduralArena.Hazard.new(3, cx + 100, cy + 100, 40.0, "spikes", 25.0))

@@ -633,7 +633,51 @@ class ClutchPlaysArena(ProceduralArena):
         self.hazards.append(Hazard(id=3, x=cx - 150, y=cy + 150, radius=50.0, kind="spikes", damage=20.0))
         self.hazards.append(Hazard(id=4, x=cx + 150, y=cy + 150, radius=50.0, kind="spikes", damage=20.0))
 
+
+class SwarmIntelligenceArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # 3x3 grid of 9 rooms, 400x400 each
+        self.rooms.append(Room(cx - 700, cy - 700, 400, 400))
+        self.rooms.append(Room(cx - 200, cy - 700, 400, 400))
+        self.rooms.append(Room(cx + 300, cy - 700, 400, 400))
+        self.rooms.append(Room(cx - 700, cy - 200, 400, 400))
+        self.rooms.append(Room(cx - 200, cy - 200, 400, 400))
+        self.rooms.append(Room(cx + 300, cy - 200, 400, 400))
+        self.rooms.append(Room(cx - 700, cy + 300, 400, 400))
+        self.rooms.append(Room(cx - 200, cy + 300, 400, 400))
+        self.rooms.append(Room(cx + 300, cy + 300, 400, 400))
+
+        # 12 connecting corridors, 300x300 to overlap 50px
+        # Horizontal
+        self.corridors.append(Corridor(cx - 350, cy - 650, 200, 300))
+        self.corridors.append(Corridor(cx + 150, cy - 650, 200, 300))
+        self.corridors.append(Corridor(cx - 350, cy - 150, 200, 300))
+        self.corridors.append(Corridor(cx + 150, cy - 150, 200, 300))
+        self.corridors.append(Corridor(cx - 350, cy + 350, 200, 300))
+        self.corridors.append(Corridor(cx + 150, cy + 350, 200, 300))
+
+        # Vertical
+        self.corridors.append(Corridor(cx - 650, cy - 350, 300, 200))
+        self.corridors.append(Corridor(cx - 150, cy - 350, 300, 200))
+        self.corridors.append(Corridor(cx + 350, cy - 350, 300, 200))
+        self.corridors.append(Corridor(cx - 650, cy + 150, 300, 200))
+        self.corridors.append(Corridor(cx - 150, cy + 150, 300, 200))
+        self.corridors.append(Corridor(cx + 350, cy + 150, 300, 200))
+
+        # 4 central hazards
+        self.hazards.append(Hazard(id=0, x=cx - 100, y=cy - 100, radius=40.0, kind="spikes", damage=25.0))
+        self.hazards.append(Hazard(id=1, x=cx + 100, y=cy - 100, radius=40.0, kind="spikes", damage=25.0))
+        self.hazards.append(Hazard(id=2, x=cx - 100, y=cy + 100, radius=40.0, kind="spikes", damage=25.0))
+        self.hazards.append(Hazard(id=3, x=cx + 100, y=cy + 100, radius=40.0, kind="spikes", damage=25.0))
+
 ARENAS = {
+    "swarm_intelligence": SwarmIntelligenceArena,
     "clutch_plays": ClutchPlaysArena,
     "collect_booster": CollectBoosterArena,
     "reposition": RepositionArena,
