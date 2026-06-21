@@ -173,7 +173,39 @@ class WaitAndWatchArena extends ProceduralArena:
 		var h3 = ProceduralArena.Hazard.new(); h3.id = 3; h3.x = cx - 150; h3.y = cy + 150; h3.radius = 50.0; h3.kind = "spikes"; h3.damage = 30.0; hazards.append(h3)
 		var h4 = ProceduralArena.Hazard.new(); h4.id = 4; h4.x = cx + 150; h4.y = cy + 150; h4.radius = 50.0; h4.kind = "spikes"; h4.damage = 30.0; hazards.append(h4)
 
+
+class TargetStrongArena extends ProceduralArena:
+	func generate() -> void:
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+		var w = float(width)
+		var h = float(height)
+		var cx = w / 2.0
+		var cy = h / 2.0
+
+		rooms.append(ProceduralArena.Room.new(cx - 200, cy - 200, 400, 400))
+		rooms.append(ProceduralArena.Room.new(cx - 100, 100, 200, 200))
+		rooms.append(ProceduralArena.Room.new(cx - 100, h - 300, 200, 200))
+		rooms.append(ProceduralArena.Room.new(100, cy - 100, 200, 200))
+		rooms.append(ProceduralArena.Room.new(w - 300, cy - 100, 200, 200))
+
+		corridors.append(ProceduralArena.Corridor.new(cx - 50, 250, 100, cy - 400))
+		corridors.append(ProceduralArena.Corridor.new(cx - 50, cy + 150, 100, h - 400 - cy))
+		corridors.append(ProceduralArena.Corridor.new(250, cy - 50, cx - 400, 100))
+		corridors.append(ProceduralArena.Corridor.new(cx + 150, cy - 50, w - 400 - cx, 100))
+
+		var h0 = ProceduralArena.Hazard.new()
+		h0.id = 0
+		h0.x = cx
+		h0.y = cy
+		h0.radius = 80.0
+		h0.kind = "lava"
+		h0.damage = 25.0
+		hazards.append(h0)
+
 const ARENAS = [
+
 	"wait_and_watch",
     "battle_royale_shrinking_zone",
 	"emotional_contagion",
@@ -211,5 +243,6 @@ const ARENAS = [
     "finals_1v1",
     "team_wipes",
     "ambush",
-    "physics_chain_reactions"
+    "physics_chain_reactions",
+	"target_strong"
 ]
