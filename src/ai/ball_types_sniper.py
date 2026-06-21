@@ -59,9 +59,9 @@ class Sniper:
         self.current_action = "kite"
 
     def kite(self, delta: float, target=None) -> None:
-        """
+        '''
         Kite — держит дистанцию, атакует при приближении skill: для Sniper
-        """
+        '''
         self.current_action = "kite"
 
         if getattr(self, "skill_timer", 0.0) > 0:
@@ -96,11 +96,12 @@ class Sniper:
         new_dist = math.hypot(target.x - self.x, target.y - self.y)
 
         if new_dist <= self.attack_range:
-            if self.skill_timer <= 0:
-                self.use_skill()
-            elif getattr(self, 'attack_timer', 0.0) <= 0:
-                self.current_action = "attack"
+            if getattr(self, "skill_timer", 0.0) <= 0:
+                self.skill_timer = getattr(self, "SKILL_COOLDOWN", 6.0)
+                self.current_action = "use_skill"
+            elif getattr(self, "attack_timer", 0.0) <= 0:
                 self.attack_timer = max(0.2, 2.0 / self.SPEED if self.SPEED > 0 else 1.0)
+                self.current_action = "attack"
 
     def defend(self, delta: float) -> None:
         self.current_action = "defend"
