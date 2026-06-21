@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-arena-117] Create Team wipes arena — *2026-06-21 08:55:14 UTC*
+
+Implement Create Team wipes arena as described in game_design.md
+
+---
+
 ## [idea-ball_type-085] Implement Scout ball — *2026-06-21 04:28:25 UTC*
 
 Implement Implement Scout ball as described in game_design.md
