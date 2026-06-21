@@ -676,6 +676,43 @@ class SwarmIntelligenceArena(ProceduralArena):
         self.hazards.append(Hazard(id=2, x=cx - 100, y=cy + 100, radius=40.0, kind="spikes", damage=25.0))
         self.hazards.append(Hazard(id=3, x=cx + 100, y=cy + 100, radius=40.0, kind="spikes", damage=25.0))
 
+
+class TargetStrongArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w = self.width
+        h = self.height
+        cx = w / 2
+        cy = h / 2
+
+        # Central Room
+        self.rooms.append(Room(cx - 400, cy - 400, 800, 800))
+        # Top Room
+        self.rooms.append(Room(cx - 150, 100, 300, 300))
+        # Bottom Room
+        self.rooms.append(Room(cx - 150, h - 400, 300, 300))
+        # Left Room
+        self.rooms.append(Room(100, cy - 150, 300, 300))
+        # Right Room
+        self.rooms.append(Room(w - 400, cy - 150, 300, 300))
+
+        # Top Corridor
+        self.corridors.append(Corridor(cx - 50, 350, 100, 300))
+        # Bottom Corridor
+        self.corridors.append(Corridor(cx - 50, cy + 350, 100, 300))
+        # Left Corridor
+        self.corridors.append(Corridor(350, cy - 50, 300, 100))
+        # Right Corridor
+        self.corridors.append(Corridor(cx + 350, cy - 50, 300, 100))
+
+        # 4 Hazards
+        self.hazards.append(Hazard(id=0, x=cx - 250, y=cy - 250, radius=80.0, kind="lava", damage=15.0))
+        self.hazards.append(Hazard(id=1, x=cx + 250, y=cy - 250, radius=80.0, kind="lava", damage=15.0))
+        self.hazards.append(Hazard(id=2, x=cx - 250, y=cy + 250, radius=80.0, kind="lava", damage=15.0))
+        self.hazards.append(Hazard(id=3, x=cx + 250, y=cy + 250, radius=80.0, kind="lava", damage=15.0))
+
 ARENAS = {
     "swarm_intelligence": SwarmIntelligenceArena,
     "clutch_plays": ClutchPlaysArena,
@@ -706,7 +743,8 @@ ARENAS = {
     "circle_strafe": CircleStrafeArena,
     "epic_kills": EpicKillsArena,
     "ball_relationships": BallRelationshipsArena,
-    "finals_1v1": Finals1v1Arena
+    "finals_1v1": Finals1v1Arena,
+    "target_strong": TargetStrongArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:

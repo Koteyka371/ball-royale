@@ -453,3 +453,40 @@ class SwarmIntelligenceArena extends ProceduralArena:
         hazards.append(ProceduralArena.Hazard.new(1, cx + 100, cy - 100, 40.0, "spikes", 25.0))
         hazards.append(ProceduralArena.Hazard.new(2, cx - 100, cy + 100, 40.0, "spikes", 25.0))
         hazards.append(ProceduralArena.Hazard.new(3, cx + 100, cy + 100, 40.0, "spikes", 25.0))
+
+
+class TargetStrongArena extends ProceduralArena:
+    func generate() -> void:
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w := float(width)
+        var h := float(height)
+        var cx := w / 2.0
+        var cy := h / 2.0
+
+        # Central Room
+        rooms.append(ProceduralArena.Room.new(cx - 400.0, cy - 400.0, 800.0, 800.0))
+        # Top Room
+        rooms.append(ProceduralArena.Room.new(cx - 150.0, 100.0, 300.0, 300.0))
+        # Bottom Room
+        rooms.append(ProceduralArena.Room.new(cx - 150.0, h - 400.0, 300.0, 300.0))
+        # Left Room
+        rooms.append(ProceduralArena.Room.new(100.0, cy - 150.0, 300.0, 300.0))
+        # Right Room
+        rooms.append(ProceduralArena.Room.new(w - 400.0, cy - 150.0, 300.0, 300.0))
+
+        # Top Corridor
+        corridors.append(ProceduralArena.Corridor.new(cx - 50.0, 350.0, 100.0, 300.0))
+        # Bottom Corridor
+        corridors.append(ProceduralArena.Corridor.new(cx - 50.0, cy + 350.0, 100.0, 300.0))
+        # Left Corridor
+        corridors.append(ProceduralArena.Corridor.new(350.0, cy - 50.0, 300.0, 100.0))
+        # Right Corridor
+        corridors.append(ProceduralArena.Corridor.new(cx + 350.0, cy - 50.0, 300.0, 100.0))
+
+        # 4 Hazards
+        hazards.append(ProceduralArena.Hazard.new(0, cx - 250.0, cy - 250.0, 80.0, "lava", 15.0))
+        hazards.append(ProceduralArena.Hazard.new(1, cx + 250.0, cy - 250.0, 80.0, "lava", 15.0))
+        hazards.append(ProceduralArena.Hazard.new(2, cx - 250.0, cy + 250.0, 80.0, "lava", 15.0))
+        hazards.append(ProceduralArena.Hazard.new(3, cx + 250.0, cy + 250.0, 80.0, "lava", 15.0))
