@@ -761,7 +761,35 @@ class MetaEvolutionArena(ProceduralArena):
         self.hazards.append(Hazard(id=4, x=cx + 600, y=cy + 320, radius=20.0, kind="spikes", damage=30.0))
 
 
+
+class FleeArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        self.rooms.append(Room(50, 50, 200, 200))
+        self.rooms.append(Room(w - 250, 50, 200, 200))
+        self.rooms.append(Room(50, h - 250, 200, 200))
+        self.rooms.append(Room(w - 250, h - 250, 200, 200))
+        self.rooms.append(Room(cx - 150, cy - 150, 300, 300))
+
+        self.corridors.append(Corridor(250, 100, w - 500, 100))
+        self.corridors.append(Corridor(250, h - 200, w - 500, 100))
+        self.corridors.append(Corridor(100, 250, 100, h - 500))
+        self.corridors.append(Corridor(w - 200, 250, 100, h - 500))
+
+        self.corridors.append(Corridor(cx - 50, 250, 100, cy - 400))
+        self.corridors.append(Corridor(cx - 50, cy + 150, 100, h - cy - 400))
+        self.corridors.append(Corridor(250, cy - 50, cx - 400, 100))
+        self.corridors.append(Corridor(cx + 150, cy - 50, w - cx - 400, 100))
+
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=50.0, kind="lava", damage=20.0))
+
 ARENAS = {
+    "flee": FleeArena,
     "meta_evolution": MetaEvolutionArena,
     "ambush": AmbushArena,
     "swarm_intelligence": SwarmIntelligenceArena,

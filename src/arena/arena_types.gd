@@ -67,4 +67,5 @@ const ARENAS = [
     "finals_1v1",
     "team_wipes",
     "ambush"
+, "flee"
 ]
