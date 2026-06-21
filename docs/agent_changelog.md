@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-arena-098] Create Ambush arena — *2026-06-21 09:06:37 UTC*
+
+Implement Create Ambush arena as described in game_design.md
+
+---
+
 ## [idea-arena-117] Create Team wipes arena — *2026-06-21 08:55:14 UTC*
 
 Implement Create Team wipes arena as described in game_design.md
