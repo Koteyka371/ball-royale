@@ -98,5 +98,6 @@ const ARENAS = [
     "collect_booster",
     "finals_1v1",
     "team_wipes",
-    "ambush"
+    "ambush",
+    "ball_genetics"
 ]

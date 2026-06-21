@@ -783,7 +783,44 @@ class BodyBlockArena(ProceduralArena):
         # A central hazard to force players into tighter chokes
         self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=50.0, kind="lava", damage=25.0))
 
+
+class BallGeneticsArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+        nw = 400
+
+        # Center room
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+
+        # 4 Corner rooms
+        self.rooms.append(Room(50, 50, nw, nw))
+        self.rooms.append(Room(w - 50 - nw, 50, nw, nw))
+        self.rooms.append(Room(50, h - 50 - nw, nw, nw))
+        self.rooms.append(Room(w - 50 - nw, h - 50 - nw, nw, nw))
+
+        # Corridors
+        # Top-left to center
+        self.corridors.append(Corridor(50 + nw/2 - 50, 50 + nw - 50, 100, cy - 300 - (50 + nw) + 100))
+        self.corridors.append(Corridor(50 + nw/2 - 50, cy - 300 - 50, cx - 300 - (50 + nw/2) + 100, 100))
+
+        # Top-right to center
+        self.corridors.append(Corridor(w - 50 - nw/2 - 50, 50 + nw - 50, 100, cy - 300 - (50 + nw) + 100))
+        self.corridors.append(Corridor(cx + 300 - 50, cy - 300 - 50, (w - 50 - nw/2) - (cx + 300) + 100, 100))
+
+        # Bottom-left to center
+        self.corridors.append(Corridor(50 + nw/2 - 50, cy + 300 - 50, 100, (h - 50 - nw) - (cy + 300) + 100))
+        self.corridors.append(Corridor(50 + nw/2 - 50, cy + 300 - 50, cx - 300 - (50 + nw/2) + 100, 100))
+
+        # Bottom-right to center
+        self.corridors.append(Corridor(w - 50 - nw/2 - 50, cy + 300 - 50, 100, (h - 50 - nw) - (cy + 300) + 100))
+        self.corridors.append(Corridor(cx + 300 - 50, cy + 300 - 50, (w - 50 - nw/2) - (cx + 300) + 100, 100))
+
 ARENAS = {
+
     "body_block": BodyBlockArena,
     "meta_evolution": MetaEvolutionArena,
     "ambush": AmbushArena,
@@ -817,7 +854,8 @@ ARENAS = {
     "epic_kills": EpicKillsArena,
     "ball_relationships": BallRelationshipsArena,
     "finals_1v1": Finals1v1Arena,
-    "team_wipes": TeamWipesArena
+    "team_wipes": TeamWipesArena,
+    "ball_genetics": BallGeneticsArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
