@@ -97,7 +97,44 @@ class PhysicsChainReactionsArena extends ProceduralArena:
         var h4 = ProceduralArena.Hazard.new()
         h4.id = 4; h4.x = cx; h4.y = cy; h4.radius = 80.0; h4.kind = "lava"; h4.damage = 20.0; hazards.append(h4)
 
+class FunnyFailsArena extends ProceduralArena:
+	func generate():
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+		var w = self.width
+		var h = self.height
+		var cx = w / 2.0
+		var cy = h / 2.0
+
+		rooms.append(ProceduralArena.Room.new(cx - 600, cy - 600, 400, 400))
+		rooms.append(ProceduralArena.Room.new(cx + 200, cy - 600, 400, 400))
+		rooms.append(ProceduralArena.Room.new(cx - 600, cy + 200, 400, 400))
+		rooms.append(ProceduralArena.Room.new(cx + 200, cy + 200, 400, 400))
+
+		corridors.append(ProceduralArena.Corridor.new(cx - 250, cy - 450, 500, 100))
+		corridors.append(ProceduralArena.Corridor.new(cx - 250, cy + 350, 500, 100))
+		corridors.append(ProceduralArena.Corridor.new(cx - 450, cy - 250, 100, 500))
+		corridors.append(ProceduralArena.Corridor.new(cx + 350, cy - 250, 100, 500))
+		corridors.append(ProceduralArena.Corridor.new(cx - 50, cy - 50, 100, 100))
+		corridors.append(ProceduralArena.Corridor.new(cx - 50, cy - 250, 100, 200))
+		corridors.append(ProceduralArena.Corridor.new(cx - 50, cy + 50, 100, 200))
+		corridors.append(ProceduralArena.Corridor.new(cx - 250, cy - 50, 200, 100))
+		corridors.append(ProceduralArena.Corridor.new(cx + 50, cy - 50, 200, 100))
+
+		var h0 = ProceduralArena.Hazard.new()
+		h0.id = 0; h0.x = cx; h0.y = cy; h0.radius = 40.0; h0.kind = "lava"; h0.damage = 20.0; hazards.append(h0)
+		var h1 = ProceduralArena.Hazard.new()
+		h1.id = 1; h1.x = cx - 300; h1.y = cy - 300; h1.radius = 100.0; h1.kind = "lava"; h1.damage = 20.0; hazards.append(h1)
+		var h2 = ProceduralArena.Hazard.new()
+		h2.id = 2; h2.x = cx + 300; h2.y = cy - 300; h2.radius = 100.0; h2.kind = "lava"; h2.damage = 20.0; hazards.append(h2)
+		var h3 = ProceduralArena.Hazard.new()
+		h3.id = 3; h3.x = cx - 300; h3.y = cy + 300; h3.radius = 100.0; h3.kind = "lava"; h3.damage = 20.0; hazards.append(h3)
+		var h4 = ProceduralArena.Hazard.new()
+		h4.id = 4; h4.x = cx + 300; h4.y = cy + 300; h4.radius = 100.0; h4.kind = "lava"; h4.damage = 20.0; hazards.append(h4)
+
 const ARENAS = [
+	"funny_fails",
 	"emotional_contagion",
 	"body_block",
 	"meta_evolution",

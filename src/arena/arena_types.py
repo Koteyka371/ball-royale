@@ -848,7 +848,37 @@ class EmotionalContagionArena(ProceduralArena):
         self.hazards.append(Hazard(id=7, x=cx + 150.0, y=cy + 150.0, radius=40.0, kind="spikes", damage=30.0))
 
 
+class FunnyFailsArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        self.rooms.append(Room(cx - 600, cy - 600, 400, 400))
+        self.rooms.append(Room(cx + 200, cy - 600, 400, 400))
+        self.rooms.append(Room(cx - 600, cy + 200, 400, 400))
+        self.rooms.append(Room(cx + 200, cy + 200, 400, 400))
+
+        self.corridors.append(Corridor(cx - 250, cy - 450, 500, 100))
+        self.corridors.append(Corridor(cx - 250, cy + 350, 500, 100))
+        self.corridors.append(Corridor(cx - 450, cy - 250, 100, 500))
+        self.corridors.append(Corridor(cx + 350, cy - 250, 100, 500))
+        self.corridors.append(Corridor(cx - 50, cy - 50, 100, 100))
+        self.corridors.append(Corridor(cx - 50, cy - 250, 100, 200))
+        self.corridors.append(Corridor(cx - 50, cy + 50, 100, 200))
+        self.corridors.append(Corridor(cx - 250, cy - 50, 200, 100))
+        self.corridors.append(Corridor(cx + 50, cy - 50, 200, 100))
+
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=40.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=1, x=cx - 300, y=cy - 300, radius=100.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=2, x=cx + 300, y=cy - 300, radius=100.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=3, x=cx - 300, y=cy + 300, radius=100.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=4, x=cx + 300, y=cy + 300, radius=100.0, kind="lava", damage=20.0))
+
 ARENAS = {
+    "funny_fails": FunnyFailsArena,
     "emotional_contagion": EmotionalContagionArena,
     "body_block": BodyBlockArena,
     "meta_evolution": MetaEvolutionArena,
