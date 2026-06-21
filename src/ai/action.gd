@@ -103,6 +103,9 @@ func execute(strategy: String, delta: float):
         var skill_name = ""
         if "skill" in self.ball:
             skill_name = self.ball.skill
+        elif "SKILL" in self.ball:
+            skill_name = self.ball.SKILL
+
         if skill_name == "flank":
             if "current_action" in self.ball:
                 self.ball.current_action = "flank"
@@ -1634,6 +1637,9 @@ func _use_skill():
         var skill_name = ""
         if "skill" in self.ball:
             skill_name = self.ball.skill
+        elif "SKILL" in self.ball:
+            skill_name = self.ball.SKILL
+
 
         self.ball.use_skill()
         _spawn_skill_particles(skill_name)
@@ -1648,6 +1654,26 @@ func _use_skill():
                 self.ball.set_meta("team_message", {"type": "action_skill_used", "radius": 150})
             elif "team_message" in self.ball:
                 self.ball.team_message = {"type": "action_skill_used", "radius": 150}
+        elif skill_name == "dash":
+            var enemies = _get_enemies()
+            if enemies.size() > 0:
+                var target = null
+                var min_dist_sq = INF
+                for e in enemies:
+                    var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                    if dist_sq < min_dist_sq:
+                        min_dist_sq = dist_sq
+                        target = e
+                var dx = target.x - self.ball.x
+                var dy = target.y - self.ball.y
+                var dist = sqrt(min_dist_sq)
+                if dist > 0.0001:
+                    self.ball.x += (dx/dist) * 100.0
+                    self.ball.y += (dy/dist) * 100.0
+            else:
+                var angle = randf() * PI * 2.0
+                self.ball.x += cos(angle) * 100.0
+                self.ball.y += sin(angle) * 100.0
 
         if "skill_cooldown" in self.ball:
             self.ball.skill_timer = self.ball.skill_cooldown

@@ -185,6 +185,17 @@ class Decision:
         if b_type == "scout":
             scores["collect_booster"] += 40.0
 
+            # Flees from strong enemies
+            if threat_level > 0.5:
+                scores["flee"] += 150.0
+                scores["attack"] -= 50.0
+
+            # Attacks weak enemies
+            if threat_level < 0.3 and opportunity_level > 0.5:
+                scores["attack"] += 100.0
+                scores["chase"] += 100.0
+                scores["collect_booster"] -= 20.0
+
         if b_type == "tank" and allies_count > 0:
             scores["defend"] += 50.0
             scores["collect_booster"] -= 20.0
