@@ -920,7 +920,30 @@ class WaitAndWatchArena(ProceduralArena):
         self.hazards.append(Hazard(id=3, x=cx - 150, y=cy + 150, radius=50.0, kind="spikes", damage=30.0))
         self.hazards.append(Hazard(id=4, x=cx + 150, y=cy + 150, radius=50.0, kind="spikes", damage=30.0))
 
+class BallGeneticsArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w / 2.0, h / 2.0
+
+        # Core breeding ground
+        self.rooms.append(Room(cx - 200, cy - 200, 400, 400))
+
+        # Left and right breeding pods
+        self.rooms.append(Room(cx - 400, cy - 100, 200, 200))
+        self.rooms.append(Room(cx + 200, cy - 100, 200, 200))
+
+        # Corridors
+        self.corridors.append(Corridor(cx - 250, cy - 50, 50, 100))
+        self.corridors.append(Corridor(cx + 200, cy - 50, 50, 100))
+
+        # Radiation hazard in the center for mutations
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=80.0, kind="lava", damage=15.0))
+
 ARENAS = {
+    "ball_genetics": BallGeneticsArena,
     "wait_and_watch": WaitAndWatchArena,
     "battle_royale_shrinking_zone": BattleRoyaleShrinkingZoneArena,
     "emotional_contagion": EmotionalContagionArena,
