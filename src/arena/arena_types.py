@@ -814,7 +814,42 @@ class PhysicsChainReactionsArena(ProceduralArena):
         self.hazards.append(Hazard(id=4, x=cx, y=cy, radius=80.0, kind="lava", damage=20.0))
 
 
+class EmotionalContagionArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # 1 central contagion room
+        self.rooms.append(Room(cx - 300.0, cy - 300.0, 600.0, 600.0))
+
+        # 4 quarantine rooms
+        self.rooms.append(Room(100.0, 100.0, 300.0, 300.0))
+        self.rooms.append(Room(w - 400.0, 100.0, 300.0, 300.0))
+        self.rooms.append(Room(100.0, h - 400.0, 300.0, 300.0))
+        self.rooms.append(Room(w - 400.0, h - 400.0, 300.0, 300.0))
+
+        # 4 corridors connecting quarantine rooms to center (with 50px overlap)
+        self.corridors.append(Corridor(200.0, 350.0, 100.0, cy - 600.0))
+        self.corridors.append(Corridor(w - 300.0, 350.0, 100.0, cy - 600.0))
+        self.corridors.append(Corridor(200.0, cy + 250.0, 100.0, h - cy - 600.0))
+        self.corridors.append(Corridor(w - 300.0, cy + 250.0, 100.0, h - cy - 600.0))
+
+        # 8 hazards
+        self.hazards.append(Hazard(id=0, x=250.0, y=250.0, radius=50.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=1, x=w - 250.0, y=250.0, radius=50.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=2, x=250.0, y=h - 250.0, radius=50.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=3, x=w - 250.0, y=h - 250.0, radius=50.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=4, x=cx - 150.0, y=cy - 150.0, radius=40.0, kind="spikes", damage=30.0))
+        self.hazards.append(Hazard(id=5, x=cx + 150.0, y=cy - 150.0, radius=40.0, kind="spikes", damage=30.0))
+        self.hazards.append(Hazard(id=6, x=cx - 150.0, y=cy + 150.0, radius=40.0, kind="spikes", damage=30.0))
+        self.hazards.append(Hazard(id=7, x=cx + 150.0, y=cy + 150.0, radius=40.0, kind="spikes", damage=30.0))
+
+
 ARENAS = {
+    "emotional_contagion": EmotionalContagionArena,
     "body_block": BodyBlockArena,
     "meta_evolution": MetaEvolutionArena,
     "ambush": AmbushArena,

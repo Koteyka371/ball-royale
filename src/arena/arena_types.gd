@@ -98,6 +98,7 @@ class PhysicsChainReactionsArena extends ProceduralArena:
         h4.id = 4; h4.x = cx; h4.y = cy; h4.radius = 80.0; h4.kind = "lava"; h4.damage = 20.0; hazards.append(h4)
 
 const ARENAS = [
+	"emotional_contagion",
 	"body_block",
 	"meta_evolution",
     "swarm_intelligence",
