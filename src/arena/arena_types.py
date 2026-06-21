@@ -895,6 +895,29 @@ class BattleRoyaleShrinkingZoneArena(ProceduralArena):
             if self.safe_zone_radius < 50.0:
                 self.safe_zone_radius = 50.0
 
+class HealAllyArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+        self.rooms.append(Room(100, 100, 300, 300))
+        self.rooms.append(Room(w - 400, 100, 300, 300))
+        self.rooms.append(Room(100, h - 400, 300, 300))
+        self.rooms.append(Room(w - 400, h - 400, 300, 300))
+
+        self.corridors.append(Corridor(350, 200, cx - 600, 100))
+        self.corridors.append(Corridor(cx - 350, 250, 100, cy - 500))
+        self.corridors.append(Corridor(cx + 250, 200, w - cx - 600, 100))
+        self.corridors.append(Corridor(cx + 250, 250, 100, cy - 500))
+        self.corridors.append(Corridor(350, h - 300, cx - 600, 100))
+        self.corridors.append(Corridor(cx - 350, cy + 250, 100, h - cy - 500))
+        self.corridors.append(Corridor(cx + 250, h - 300, w - cx - 600, 100))
+        self.corridors.append(Corridor(cx + 250, cy + 250, 100, h - cy - 500))
+
 class WaitAndWatchArena(ProceduralArena):
     def generate(self):
         self.rooms.clear()
@@ -951,6 +974,7 @@ ARENAS = {
     "kite": KiteArena,
     "buff_ally": BuffAllyArena,
     "retreat_to_ally": RetreatToAllyArena,
+    "heal_ally": HealAllyArena,
     "procedural": ProceduralArena,
     "cross": CrossArena,
     "ring": RingArena,
