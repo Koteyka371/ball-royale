@@ -33,5 +33,6 @@ const ARENAS = [
     "collect_booster",
     "finals_1v1",
     "team_wipes",
-    "ambush"
+    "ambush",
+    "battle_royale_shrinking_zone"
 ]

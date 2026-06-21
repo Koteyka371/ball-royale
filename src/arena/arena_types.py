@@ -730,8 +730,56 @@ class AmbushArena(ProceduralArena):
         # 1 central hazard to discourage staying in the open
         self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=80.0, kind="lava", damage=20.0))
 
+
+class BattleRoyaleShrinkingZoneArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Massive central zone
+        self.rooms.append(Room(cx - 500.0, cy - 500.0, 1000.0, 1000.0))
+
+        # 4 spawn rooms
+        self.rooms.append(Room(50.0, 50.0, 200.0, 200.0))
+        self.rooms.append(Room(w - 250.0, 50.0, 200.0, 200.0))
+        self.rooms.append(Room(50.0, h - 250.0, 200.0, 200.0))
+        self.rooms.append(Room(w - 250.0, h - 250.0, 200.0, 200.0))
+
+        # Connecting corridors from spawn rooms to the center room
+        # Top-Left
+        self.corridors.append(Corridor(100.0, 200.0, 100.0, cy - 500.0 - 200.0 + 50.0))
+        self.corridors.append(Corridor(100.0, cy - 500.0 - 50.0, cx - 500.0 - 100.0 + 50.0, 100.0))
+        # Top-Right
+        self.corridors.append(Corridor(w - 200.0, 200.0, 100.0, cy - 500.0 - 200.0 + 50.0))
+        self.corridors.append(Corridor(cx + 500.0 - 50.0, cy - 500.0 - 50.0, w - 200.0 - (cx + 500.0) + 100.0, 100.0))
+        # Bottom-Left
+        self.corridors.append(Corridor(100.0, cy + 500.0 - 50.0, 100.0, h - 200.0 - (cy + 500.0) + 100.0))
+        self.corridors.append(Corridor(100.0, cy + 500.0 - 50.0, cx - 500.0 - 100.0 + 50.0, 100.0))
+        # Bottom-Right
+        self.corridors.append(Corridor(w - 200.0, cy + 500.0 - 50.0, 100.0, h - 200.0 - (cy + 500.0) + 100.0))
+        self.corridors.append(Corridor(cx + 500.0 - 50.0, cy + 500.0 - 50.0, w - 200.0 - (cx + 500.0) + 100.0, 100.0))
+
+        # Hazards
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=80.0, kind="lava", damage=25.0))
+        self.hazards.append(Hazard(id=1, x=cx - 300.0, y=cy - 300.0, radius=40.0, kind="spikes", damage=15.0))
+        self.hazards.append(Hazard(id=2, x=cx + 300.0, y=cy - 300.0, radius=40.0, kind="spikes", damage=15.0))
+        self.hazards.append(Hazard(id=3, x=cx - 300.0, y=cy + 300.0, radius=40.0, kind="spikes", damage=15.0))
+        self.hazards.append(Hazard(id=4, x=cx + 300.0, y=cy + 300.0, radius=40.0, kind="spikes", damage=15.0))
+
+    def update_zone(self, current_tick: int, delta: float):
+        if current_tick != self.last_tick:
+            self.last_tick = current_tick
+            self.safe_zone_radius -= 10.0 * delta
+            if self.safe_zone_radius < 50.0:
+                self.safe_zone_radius = 50.0
+
 ARENAS = {
+
     "ambush": AmbushArena,
+    "battle_royale_shrinking_zone": BattleRoyaleShrinkingZoneArena,
     "swarm_intelligence": SwarmIntelligenceArena,
     "clutch_plays": ClutchPlaysArena,
     "collect_booster": CollectBoosterArena,

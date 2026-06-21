@@ -511,3 +511,49 @@ class AmbushArena extends ProceduralArena:
 
         # 1 central hazard to discourage staying in the open
         hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 80.0, "lava", 20.0))
+
+class BattleRoyaleShrinkingZoneArena extends ProceduralArena:
+    func generate() -> void:
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = width
+        var h = height
+        var cx = w / 2.0
+        var cy = h / 2.0
+
+        # Massive central zone
+        rooms.append(ProceduralArena.Room.new(cx - 500.0, cy - 500.0, 1000.0, 1000.0))
+
+        # 4 spawn rooms
+        rooms.append(ProceduralArena.Room.new(50.0, 50.0, 200.0, 200.0))
+        rooms.append(ProceduralArena.Room.new(w - 250.0, 50.0, 200.0, 200.0))
+        rooms.append(ProceduralArena.Room.new(50.0, h - 250.0, 200.0, 200.0))
+        rooms.append(ProceduralArena.Room.new(w - 250.0, h - 250.0, 200.0, 200.0))
+
+        # Connecting corridors to the center
+        corridors.append(ProceduralArena.Corridor.new(100.0, 200.0, 100.0, cy - 500.0 - 200.0 + 50.0))
+        corridors.append(ProceduralArena.Corridor.new(100.0, cy - 500.0 - 50.0, cx - 500.0 - 100.0 + 50.0, 100.0))
+
+        corridors.append(ProceduralArena.Corridor.new(w - 200.0, 200.0, 100.0, cy - 500.0 - 200.0 + 50.0))
+        corridors.append(ProceduralArena.Corridor.new(cx + 500.0 - 50.0, cy - 500.0 - 50.0, w - 200.0 - (cx + 500.0) + 100.0, 100.0))
+
+        corridors.append(ProceduralArena.Corridor.new(100.0, cy + 500.0 - 50.0, 100.0, h - 200.0 - (cy + 500.0) + 100.0))
+        corridors.append(ProceduralArena.Corridor.new(100.0, cy + 500.0 - 50.0, cx - 500.0 - 100.0 + 50.0, 100.0))
+
+        corridors.append(ProceduralArena.Corridor.new(w - 200.0, cy + 500.0 - 50.0, 100.0, h - 200.0 - (cy + 500.0) + 100.0))
+        corridors.append(ProceduralArena.Corridor.new(cx + 500.0 - 50.0, cy + 500.0 - 50.0, w - 200.0 - (cx + 500.0) + 100.0, 100.0))
+
+        # Hazards
+        hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 80.0, "lava", 25.0))
+        hazards.append(ProceduralArena.Hazard.new(1, cx - 300.0, cy - 300.0, 40.0, "spikes", 15.0))
+        hazards.append(ProceduralArena.Hazard.new(2, cx + 300.0, cy - 300.0, 40.0, "spikes", 15.0))
+        hazards.append(ProceduralArena.Hazard.new(3, cx - 300.0, cy + 300.0, 40.0, "spikes", 15.0))
+        hazards.append(ProceduralArena.Hazard.new(4, cx + 300.0, cy + 300.0, 40.0, "spikes", 15.0))
+
+    func update_zone(current_tick: int, delta: float) -> void:
+        if current_tick != last_tick:
+            last_tick = current_tick
+            safe_zone_radius -= 10.0 * delta
+            if safe_zone_radius < 50.0:
+                safe_zone_radius = 50.0
