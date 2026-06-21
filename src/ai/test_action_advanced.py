@@ -234,3 +234,26 @@ def test_tank_target_strong_helper_method():
 
     # expected: (max_hp, hp, -dist_sq, id)
     assert score == (200.0, 150.0, -10000.0, 1)
+
+def test_tank_target_strong_use_skill():
+    ball = MockBall(x=100, y=100)
+    ball.ball_type = "tank"
+    ball.skill = "target_strong"
+    world = MockWorld()
+
+    # e2 is the strongest
+    e1 = MockEntity(x=100, y=100, ball_type="enemy")
+    e1.max_hp = 100.0
+    e1.hp = 100.0
+    e2 = MockEntity(x=200, y=100, ball_type="enemy") # to the right
+    e2.max_hp = 300.0
+    e2.hp = 300.0
+
+    world.entities = [e1, e2]
+
+    action = Action(ball, world)
+    action.execute("use_skill", 0.1)
+
+    # Tank should move 150.0 units towards e2 (x + 150.0, y same)
+    assert abs(ball.x - 250.0) < 1.0
+    assert abs(ball.y - 100.0) < 1.0
