@@ -96,6 +96,7 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
         "collect_booster": 0.0,
         "attack": 0.0,
         "chase": 0.0,
+        "target_weak": 0.0,
         "use_skill": 0.0,
         "kite": 0.0,
         "flank": 0.0,
@@ -184,6 +185,7 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
 
         # Attacks weak enemies
         if threat_level < 0.3 and opportunity_level > 0.5:
+            scores["target_weak"] += 150.0
             scores["attack"] += 100.0
             scores["chase"] += 100.0
             scores["collect_booster"] -= 20.0
@@ -286,7 +288,7 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
             else:
                 best_score = 0.0
     else:
-        var action_order = ["flee", "defend", "collect_booster", "attack", "chase", "use_skill", "kite", "flank", "group_attack", "hide_behind", "idle"]
+        var action_order = ["flee", "defend", "collect_booster", "attack", "target_weak", "chase", "use_skill", "kite", "flank", "group_attack", "hide_behind", "idle"]
         var possible_actions = []
         for k in scores.keys():
             if float(scores[k]) > -500.0:

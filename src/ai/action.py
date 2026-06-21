@@ -13,6 +13,12 @@ class Action:
         self.world = world
 
     def execute(self, strategy: str, delta: float) -> None:
+        if strategy == "target_weak":
+            self._target_weak(delta)
+            self._update_skill_timer(delta)
+            self._resolve_collisions()
+            self._clamp_position()
+            return
         """
         Executes the chosen strategy.
         """
@@ -629,6 +635,41 @@ class Action:
                     self.ball.attack_timer = cooldown
         else:
             self._idle(delta)
+
+
+    def _target_weak(self, delta: float) -> None:
+        '''
+        Target Weak — ищет самого слабого врага
+        '''
+        enemies = self._get_enemies()
+        if not enemies:
+            self._idle(delta)
+            return
+
+        def evaluate_weakness(e):
+            hp = getattr(e, "hp", getattr(e, "max_hp", 100.0))
+            dist_sq = (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2
+            e_id = getattr(e, "id", 0)
+            return (-hp, -dist_sq, e_id)
+
+        weakest_enemy = max(enemies, key=evaluate_weakness)
+        self._chase_target(weakest_enemy, delta)
+
+    def _chase_target(self, target, delta: float) -> None:
+        dx = target.x - self.ball.x
+        dy = target.y - self.ball.y
+        dist_sq = dx * dx + dy * dy
+        if dist_sq > 0.0001:
+            import math
+            dist = math.sqrt(dist_sq)
+            nx = dx / dist
+            ny = dy / dist
+            nx, ny = self._apply_obstacle_avoidance(nx, ny, target)
+            nx, ny = self._apply_boid_rules(nx, ny)
+            speed = getattr(self.ball, "speed", 2.0)
+            step = speed * delta * 60.0
+            self.ball.x += nx * step
+            self.ball.y += ny * step
 
     def _chase(self, delta: float) -> None:
         enemies = self._get_enemies()

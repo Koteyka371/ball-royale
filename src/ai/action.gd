@@ -9,6 +9,12 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+    if strategy == "target_weak":
+        _target_weak(delta)
+        _update_skill_timer(delta)
+        _resolve_collisions()
+        _clamp_position()
+        return
     var old_x = self.ball.x
     var old_y = self.ball.y
 
@@ -966,6 +972,61 @@ func _flank(delta: float):
     else:
         _idle(delta)
 
+
+
+func _target_weak(delta: float):
+    # Target Weak — ищет самого слабого врага
+    var enemies = _get_enemies()
+    if enemies.size() == 0:
+        _idle(delta)
+        return
+
+    var weakest_enemy = null
+    var min_score = INF # Higher is stronger
+
+    for e in enemies:
+        var hp = 100.0
+        if "hp" in e:
+            hp = e.hp
+        elif "max_hp" in e:
+            hp = e.max_hp
+
+        var dist_sq = pow(e.x - ball.x, 2) + pow(e.y - ball.y, 2)
+
+        # We want the lowest HP. If HP is equal, the closest distance.
+        var score = hp * 1000000 + dist_sq
+        if score < min_score:
+            min_score = score
+            weakest_enemy = e
+
+    if weakest_enemy != null:
+        _chase_target(weakest_enemy, delta)
+    else:
+        _idle(delta)
+
+func _chase_target(target, delta: float):
+    var dx = target.x - ball.x
+    var dy = target.y - ball.y
+    var dist_sq = dx*dx + dy*dy
+    if dist_sq > 0.0001:
+        var dist = sqrt(dist_sq)
+        var nx = dx / dist
+        var ny = dy / dist
+
+        var avoid = _apply_obstacle_avoidance(nx, ny, target)
+        nx = avoid[0]
+        ny = avoid[1]
+
+        var boid = _apply_boid_rules(nx, ny)
+        nx = boid[0]
+        ny = boid[1]
+
+        var speed = 2.0
+        if "speed" in ball: speed = ball.speed
+        var step = speed * delta * 60.0
+
+        ball.x += nx * step
+        ball.y += ny * step
 
 func _chase(delta: float):
     var enemies = _get_enemies()
