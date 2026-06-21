@@ -453,3 +453,29 @@ class SwarmIntelligenceArena extends ProceduralArena:
         hazards.append(ProceduralArena.Hazard.new(1, cx + 100, cy - 100, 40.0, "spikes", 25.0))
         hazards.append(ProceduralArena.Hazard.new(2, cx - 100, cy + 100, 40.0, "spikes", 25.0))
         hazards.append(ProceduralArena.Hazard.new(3, cx + 100, cy + 100, 40.0, "spikes", 25.0))
+
+class NeuralBallArena extends ProceduralArena:
+    func generate() -> void:
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = width
+        var h = height
+        var cx = w / 2.0
+        var cy = h / 2.0
+
+        rooms.append(ProceduralArena.Room.new(cx - 500, cy - 500, 1000, 1000))
+        rooms.append(ProceduralArena.Room.new(cx - 100, 50, 200, cy - 500 - 50))
+        rooms.append(ProceduralArena.Room.new(cx - 100, cy + 500, 200, h - 50 - (cy + 500)))
+        rooms.append(ProceduralArena.Room.new(50, cy - 100, cx - 500 - 50, 200))
+        rooms.append(ProceduralArena.Room.new(cx + 500, cy - 100, w - 50 - (cx + 500), 200))
+
+        corridors.append(ProceduralArena.Corridor.new(cx - 50, cy - 550, 100, 100))
+        corridors.append(ProceduralArena.Corridor.new(cx - 50, cy + 450, 100, 100))
+        corridors.append(ProceduralArena.Corridor.new(cx - 550, cy - 50, 100, 100))
+        corridors.append(ProceduralArena.Corridor.new(cx + 450, cy - 50, 100, 100))
+
+        hazards.append(ProceduralArena.Hazard.new(1, cx - 250, cy - 250, 50, "lava", 10.0))
+        hazards.append(ProceduralArena.Hazard.new(2, cx + 250, cy - 250, 50, "lava", 10.0))
+        hazards.append(ProceduralArena.Hazard.new(3, cx - 250, cy + 250, 50, "lava", 10.0))
+        hazards.append(ProceduralArena.Hazard.new(4, cx + 250, cy + 250, 50, "lava", 10.0))

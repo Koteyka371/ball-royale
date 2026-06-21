@@ -676,7 +676,32 @@ class SwarmIntelligenceArena(ProceduralArena):
         self.hazards.append(Hazard(id=2, x=cx - 100, y=cy + 100, radius=40.0, kind="spikes", damage=25.0))
         self.hazards.append(Hazard(id=3, x=cx + 100, y=cy + 100, radius=40.0, kind="spikes", damage=25.0))
 
+class NeuralBallArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        self.rooms.append(Room(cx - 500, cy - 500, 1000, 1000))
+        self.rooms.append(Room(cx - 100, 50, 200, cy - 500 - 50))
+        self.rooms.append(Room(cx - 100, cy + 500, 200, h - 50 - (cy + 500)))
+        self.rooms.append(Room(50, cy - 100, cx - 500 - 50, 200))
+        self.rooms.append(Room(cx + 500, cy - 100, w - 50 - (cx + 500), 200))
+
+        self.corridors.append(Corridor(cx - 50, cy - 550, 100, 100))
+        self.corridors.append(Corridor(cx - 50, cy + 450, 100, 100))
+        self.corridors.append(Corridor(cx - 550, cy - 50, 100, 100))
+        self.corridors.append(Corridor(cx + 450, cy - 50, 100, 100))
+
+        self.hazards.append(Hazard(id=1, x=cx - 250, y=cy - 250, radius=50, kind="lava", damage=10.0))
+        self.hazards.append(Hazard(id=2, x=cx + 250, y=cy - 250, radius=50, kind="lava", damage=10.0))
+        self.hazards.append(Hazard(id=3, x=cx - 250, y=cy + 250, radius=50, kind="lava", damage=10.0))
+        self.hazards.append(Hazard(id=4, x=cx + 250, y=cy + 250, radius=50, kind="lava", damage=10.0))
+
 ARENAS = {
+    "neural_ball": NeuralBallArena,
     "swarm_intelligence": SwarmIntelligenceArena,
     "clutch_plays": ClutchPlaysArena,
     "collect_booster": CollectBoosterArena,
