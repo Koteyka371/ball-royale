@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-arena-122] Create AI Commentary arena — *2026-06-21 22:22:49 UTC*
+
+Implement Create AI Commentary arena as described in game_design.md
+
+---
+
 ## [idea-arena-104] Create Heal Ally arena — *2026-06-21 22:16:40 UTC*
 
 Implement Create Heal Ally arena as described in game_design.md

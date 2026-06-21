@@ -2130,7 +2130,7 @@
     },
     {
       "id": "idea-arena-122",
-      "status": "todo",
+      "status": "done",
       "area": "arenas",
       "risk": "low",
       "title": "Create AI Commentary arena",
