@@ -834,7 +834,7 @@
     },
     {
       "id": "auto-implement-**ball-relationships**-—-balls-remember-",
-      "status": "todo",
+      "status": "done",
       "area": "skills",
       "risk": "medium",
       "allowed_paths": [
