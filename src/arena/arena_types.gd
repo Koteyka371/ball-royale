@@ -146,7 +146,38 @@ class BattleRoyaleShrinkingZoneArena extends ProceduralArena:
             if safe_zone_radius < 50.0:
                 safe_zone_radius = 50.0
 
+class TargetStrongArena extends ProceduralArena:
+	func generate() -> void:
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+		var w := float(width)
+		var h := float(height)
+		var cx := w / 2.0
+		var cy := h / 2.0
+
+		rooms.append(ProceduralArena.Room.new(cx - 300.0, cy - 300.0, 600.0, 600.0))
+		rooms.append(ProceduralArena.Room.new(100.0, 100.0, 200.0, 200.0))
+		rooms.append(ProceduralArena.Room.new(w - 300.0, 100.0, 200.0, 200.0))
+		rooms.append(ProceduralArena.Room.new(100.0, h - 300.0, 200.0, 200.0))
+		rooms.append(ProceduralArena.Room.new(w - 300.0, h - 300.0, 200.0, 200.0))
+
+		corridors.append(ProceduralArena.Corridor.new(200.0, 300.0, 100.0, cy - 600.0))
+		corridors.append(ProceduralArena.Corridor.new(w - 300.0, 300.0, 100.0, cy - 600.0))
+		corridors.append(ProceduralArena.Corridor.new(200.0, cy + 300.0, 100.0, h - cy - 600.0))
+		corridors.append(ProceduralArena.Corridor.new(w - 300.0, cy + 300.0, 100.0, h - cy - 600.0))
+
+		var haz0 = ProceduralArena.Hazard.new()
+		haz0.id = 0
+		haz0.x = cx
+		haz0.y = cy
+		haz0.radius = 100.0
+		haz0.kind = "lava"
+		haz0.damage = 25.0
+		hazards.append(haz0)
+
 const ARENAS = [
+    "target_strong",
     "battle_royale_shrinking_zone",
 	"emotional_contagion",
 	"body_block",

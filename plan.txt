@@ -1,0 +1,5 @@
+To implement Target Strong arena:
+1. create TargetStrongArena in src/arena/arena_types.py
+2. create TargetStrongArena in src/arena/arena_types.gd
+3. register "target_strong" in both python and gd dictionaries
+4. create a test test_arena_target_strong.py
