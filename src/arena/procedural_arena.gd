@@ -386,3 +386,37 @@ class ClutchPlaysArena:
         hazards.append(ProceduralArena.Hazard.new(2, cx + 150, cy - 150, 50.0, "spikes", 20.0))
         hazards.append(ProceduralArena.Hazard.new(3, cx - 150, cy + 150, 50.0, "spikes", 20.0))
         hazards.append(ProceduralArena.Hazard.new(4, cx + 150, cy + 150, 50.0, "spikes", 20.0))
+
+class NeuralBallArena extends ProceduralArena:
+    func generate():
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = width
+        var h = height
+
+        var input_x = w * 0.15
+        var hidden_x = w * 0.5
+        var output_x = w * 0.85
+
+        rooms.append(ProceduralArena.Room.new(input_x - 50.0, h * 0.2 - 50.0, 100.0, 100.0))
+        rooms.append(ProceduralArena.Room.new(input_x - 50.0, h * 0.4 - 50.0, 100.0, 100.0))
+        rooms.append(ProceduralArena.Room.new(input_x - 50.0, h * 0.6 - 50.0, 100.0, 100.0))
+        rooms.append(ProceduralArena.Room.new(input_x - 50.0, h * 0.8 - 50.0, 100.0, 100.0))
+
+        rooms.append(ProceduralArena.Room.new(hidden_x - 75.0, h * 0.25 - 75.0, 150.0, 150.0))
+        rooms.append(ProceduralArena.Room.new(hidden_x - 75.0, h * 0.5 - 75.0, 150.0, 150.0))
+        rooms.append(ProceduralArena.Room.new(hidden_x - 75.0, h * 0.75 - 75.0, 150.0, 150.0))
+
+        rooms.append(ProceduralArena.Room.new(output_x - 100.0, h * 0.35 - 100.0, 200.0, 200.0))
+        rooms.append(ProceduralArena.Room.new(output_x - 100.0, h * 0.65 - 100.0, 200.0, 200.0))
+
+        var ys1 = [h*0.2, h*0.4, h*0.6, h*0.8]
+        for y in ys1:
+            corridors.append(ProceduralArena.Corridor.new(input_x, y - 25.0, hidden_x - input_x, 50.0))
+
+        var ys2 = [h*0.25, h*0.5, h*0.75]
+        for y in ys2:
+            corridors.append(ProceduralArena.Corridor.new(hidden_x, y - 25.0, output_x - hidden_x, 50.0))
+
+        hazards.append(ProceduralArena.Hazard.new(0, hidden_x, h * 0.5, 30.0, "lava", 20.0))

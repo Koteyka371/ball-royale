@@ -613,7 +613,46 @@ class ClutchPlaysArena(ProceduralArena):
         self.hazards.append(Hazard(id=3, x=cx - 150, y=cy + 150, radius=50.0, kind="spikes", damage=20.0))
         self.hazards.append(Hazard(id=4, x=cx + 150, y=cy + 150, radius=50.0, kind="spikes", damage=20.0))
 
+
+class NeuralBallArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+
+        # Draw a network shape: 4 inputs -> 3 hidden -> 3 outputs
+        input_x = w * 0.15
+        hidden_x = w * 0.5
+        output_x = w * 0.85
+
+        # Inputs
+        self.rooms.append(Room(input_x - 50, h * 0.2 - 50, 100, 100))
+        self.rooms.append(Room(input_x - 50, h * 0.4 - 50, 100, 100))
+        self.rooms.append(Room(input_x - 50, h * 0.6 - 50, 100, 100))
+        self.rooms.append(Room(input_x - 50, h * 0.8 - 50, 100, 100))
+
+        # Hidden
+        self.rooms.append(Room(hidden_x - 75, h * 0.25 - 75, 150, 150))
+        self.rooms.append(Room(hidden_x - 75, h * 0.5 - 75, 150, 150))
+        self.rooms.append(Room(hidden_x - 75, h * 0.75 - 75, 150, 150))
+
+        # Outputs
+        self.rooms.append(Room(output_x - 100, h * 0.35 - 100, 200, 200))
+        self.rooms.append(Room(output_x - 100, h * 0.65 - 100, 200, 200))
+
+        # Corridors between layers
+        for y in [h*0.2, h*0.4, h*0.6, h*0.8]:
+            self.corridors.append(Corridor(input_x, y - 25, hidden_x - input_x, 50))
+
+        for y in [h*0.25, h*0.5, h*0.75]:
+            self.corridors.append(Corridor(hidden_x, y - 25, output_x - hidden_x, 50))
+
+        # Hazards
+        self.hazards.append(Hazard(0, hidden_x, h * 0.5, 30.0, "lava", 20.0))
+
 ARENAS = {
+    "neural_ball": NeuralBallArena,
     "clutch_plays": ClutchPlaysArena,
     "collect_booster": CollectBoosterArena,
     "reposition": RepositionArena,
