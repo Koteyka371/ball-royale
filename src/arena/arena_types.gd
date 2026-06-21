@@ -133,5 +133,6 @@ const ARENAS = [
     "finals_1v1",
     "team_wipes",
     "ambush",
-    "physics_chain_reactions"
+    "physics_chain_reactions",
+    "wait_and_watch"
 ]
