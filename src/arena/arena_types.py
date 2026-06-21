@@ -613,8 +613,32 @@ class ClutchPlaysArena(ProceduralArena):
         self.hazards.append(Hazard(id=3, x=cx - 150, y=cy + 150, radius=50.0, kind="spikes", damage=20.0))
         self.hazards.append(Hazard(id=4, x=cx + 150, y=cy + 150, radius=50.0, kind="spikes", damage=20.0))
 
+class AmbushArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central battle room
+        self.rooms.append(Room(cx - 150, cy - 150, 300, 300))
+
+        # Ambush hiding spots (dead ends)
+        self.rooms.append(Room(50, cy - 50, 100, 100)) # Left
+        self.rooms.append(Room(w - 150, cy - 50, 100, 100)) # Right
+        self.rooms.append(Room(cx - 50, 50, 100, 100)) # Top
+        self.rooms.append(Room(cx - 50, h - 150, 100, 100)) # Bottom
+
+        # Corridors connecting spots to center
+        self.corridors.append(Corridor(150, cy - 25, cx - 150 - 150, 50)) # Left
+        self.corridors.append(Corridor(cx + 150, cy - 25, w - cx - 150 - 150, 50)) # Right
+        self.corridors.append(Corridor(cx - 25, 150, 50, cy - 150 - 150)) # Top
+        self.corridors.append(Corridor(cx - 25, cy + 150, 50, h - cy - 150 - 150)) # Bottom
+
 ARENAS = {
     "clutch_plays": ClutchPlaysArena,
+    "ambush": AmbushArena,
     "collect_booster": CollectBoosterArena,
     "reposition": RepositionArena,
     "avoid_trap": AvoidTrapArena,
