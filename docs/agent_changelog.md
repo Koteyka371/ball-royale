@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-arena-121] Create Emotional Contagion arena — *2026-06-21 16:28:42 UTC*
+
+Implement Create Emotional Contagion arena as described in game_design.md
+
+---
+
 ## [idea-arena-125] Create Physics Chain Reactions arena — *2026-06-21 14:21:11 UTC*
 
 Implement Create Physics Chain Reactions arena as described in game_design.md
