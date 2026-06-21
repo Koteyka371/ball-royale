@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [auto-implement-**target-strong**-—-атакует-самого-сильн] Implement **Target Strong** — атакует самого сильного skill — *2026-06-21 20:28:16 UTC*
+
+Create **Target Strong** — атакует самого сильного skill: для Tank
+
+---
+
 ## [idea-arena-093] Create Target Weak arena — *2026-06-21 18:29:57 UTC*
 
 Implement Create Target Weak arena as described in game_design.md

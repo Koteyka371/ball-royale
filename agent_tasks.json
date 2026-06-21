@@ -564,7 +564,7 @@
     },
     {
       "id": "auto-implement-**target-strong**-—-атакует-самого-сильн",
-      "status": "todo",
+      "status": "done",
       "area": "skills",
       "risk": "medium",
       "allowed_paths": [
