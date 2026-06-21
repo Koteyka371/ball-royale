@@ -410,6 +410,29 @@ class ClutchPlaysArena:
         hazards.append(ProceduralArena.Hazard.new(4, cx + 150, cy + 150, 50.0, "spikes", 20.0))
 
 
+class AICommentaryArena extends ProceduralArena:
+    func generate() -> void:
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = width
+        var h = height
+        var cx = w / 2.0
+        var cy = h / 2.0
+
+        rooms.append(ProceduralArena.Room.new(100.0, 100.0, 400.0, 400.0))
+        rooms.append(ProceduralArena.Room.new(w - 500.0, 100.0, 400.0, 400.0))
+        rooms.append(ProceduralArena.Room.new(100.0, h - 500.0, 400.0, 400.0))
+        rooms.append(ProceduralArena.Room.new(w - 500.0, h - 500.0, 400.0, 400.0))
+
+        corridors.append(ProceduralArena.Corridor.new(250.0, 450.0, 100.0, h - 900.0))
+        corridors.append(ProceduralArena.Corridor.new(w - 350.0, 450.0, 100.0, h - 900.0))
+        corridors.append(ProceduralArena.Corridor.new(450.0, 250.0, w - 900.0, 100.0))
+        corridors.append(ProceduralArena.Corridor.new(450.0, h - 350.0, w - 900.0, 100.0))
+
+        hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 200.0, "lava", 50.0))
+
+
 class TeamWipesArena extends ProceduralArena:
     func generate() -> void:
         rooms.clear()
