@@ -848,7 +848,36 @@ class EmotionalContagionArena(ProceduralArena):
         self.hazards.append(Hazard(id=7, x=cx + 150.0, y=cy + 150.0, radius=40.0, kind="spikes", damage=30.0))
 
 
+class NeuralBallArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        room_w = w * 0.1
+        room_h = h * 0.1
+
+        # Central room
+        self.rooms.append(Room(cx - w*0.15, cy - h*0.15, w*0.3, h*0.3))
+        # 4 Corner rooms
+        self.rooms.append(Room(w*0.1, h*0.1, room_w, room_h))
+        self.rooms.append(Room(w*0.8, h*0.1, room_w, room_h))
+        self.rooms.append(Room(w*0.1, h*0.8, room_w, room_h))
+        self.rooms.append(Room(w*0.8, h*0.8, room_w, room_h))
+
+        # Corridors linking corners to center.
+        self.corridors.append(Corridor(w*0.15, h*0.15, w*0.25, h*0.25))
+        self.corridors.append(Corridor(w*0.6, h*0.15, w*0.25, h*0.25))
+        self.corridors.append(Corridor(w*0.15, h*0.6, w*0.25, h*0.25))
+        self.corridors.append(Corridor(w*0.6, h*0.6, w*0.25, h*0.25))
+
+        # Hazards
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=w*0.025, kind="lava", damage=20.0))
+
 ARENAS = {
+    "neural_ball": NeuralBallArena,
     "emotional_contagion": EmotionalContagionArena,
     "body_block": BodyBlockArena,
     "meta_evolution": MetaEvolutionArena,
