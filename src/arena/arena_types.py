@@ -676,7 +676,43 @@ class SwarmIntelligenceArena(ProceduralArena):
         self.hazards.append(Hazard(id=2, x=cx - 100, y=cy + 100, radius=40.0, kind="spikes", damage=25.0))
         self.hazards.append(Hazard(id=3, x=cx + 100, y=cy + 100, radius=40.0, kind="spikes", damage=25.0))
 
+class AICommentaryArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central battle room
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+
+        # 4 Corner commentator booths
+        self.rooms.append(Room(100, 100, 200, 200))
+        self.rooms.append(Room(w - 300, 100, 200, 200))
+        self.rooms.append(Room(100, h - 300, 200, 200))
+        self.rooms.append(Room(w - 300, h - 300, 200, 200))
+
+        # Corridors
+        # Top-Left to Center
+        self.corridors.append(Corridor(150, 250, 100, cy - 500))
+        self.corridors.append(Corridor(150, cy - 350, cx - 450, 100))
+        # Top-Right to Center
+        self.corridors.append(Corridor(w - 250, 250, 100, cy - 500))
+        self.corridors.append(Corridor(cx + 350, cy - 350, w - cx - 600, 100))
+        # Bottom-Left to Center
+        self.corridors.append(Corridor(150, cy + 250, 100, h - cy - 500))
+        self.corridors.append(Corridor(150, cy + 250, cx - 450, 100))
+        # Bottom-Right to Center
+        self.corridors.append(Corridor(w - 250, cy + 250, 100, h - cy - 500))
+        self.corridors.append(Corridor(cx + 350, cy + 250, w - cx - 600, 100))
+
+        # Hazards in the center
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=50.0, kind="lava", damage=20.0))
+
 ARENAS = {
+    "ai_commentary": AICommentaryArena,
+
     "swarm_intelligence": SwarmIntelligenceArena,
     "clutch_plays": ClutchPlaysArena,
     "collect_booster": CollectBoosterArena,

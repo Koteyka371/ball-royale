@@ -453,3 +453,35 @@ class SwarmIntelligenceArena extends ProceduralArena:
         hazards.append(ProceduralArena.Hazard.new(1, cx + 100, cy - 100, 40.0, "spikes", 25.0))
         hazards.append(ProceduralArena.Hazard.new(2, cx - 100, cy + 100, 40.0, "spikes", 25.0))
         hazards.append(ProceduralArena.Hazard.new(3, cx + 100, cy + 100, 40.0, "spikes", 25.0))
+
+class AICommentaryArena extends ProceduralArena:
+    func generate() -> void:
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = width
+        var h = height
+        var cx = w / 2.0
+        var cy = h / 2.0
+
+        # Central room
+        rooms.append(ProceduralArena.Room.new(cx - 300.0, cy - 300.0, 600.0, 600.0))
+
+        # 4 Corner booths
+        rooms.append(ProceduralArena.Room.new(100.0, 100.0, 200.0, 200.0))
+        rooms.append(ProceduralArena.Room.new(w - 300.0, 100.0, 200.0, 200.0))
+        rooms.append(ProceduralArena.Room.new(100.0, h - 300.0, 200.0, 200.0))
+        rooms.append(ProceduralArena.Room.new(w - 300.0, h - 300.0, 200.0, 200.0))
+
+        # Corridors
+        corridors.append(ProceduralArena.Corridor.new(150.0, 250.0, 100.0, cy - 500.0))
+        corridors.append(ProceduralArena.Corridor.new(150.0, cy - 350.0, cx - 450.0, 100.0))
+        corridors.append(ProceduralArena.Corridor.new(w - 250.0, 250.0, 100.0, cy - 500.0))
+        corridors.append(ProceduralArena.Corridor.new(cx + 350.0, cy - 350.0, w - cx - 600.0, 100.0))
+        corridors.append(ProceduralArena.Corridor.new(150.0, cy + 250.0, 100.0, h - cy - 500.0))
+        corridors.append(ProceduralArena.Corridor.new(150.0, cy + 250.0, cx - 450.0, 100.0))
+        corridors.append(ProceduralArena.Corridor.new(w - 250.0, cy + 250.0, 100.0, h - cy - 500.0))
+        corridors.append(ProceduralArena.Corridor.new(cx + 350.0, cy + 250.0, w - cx - 600.0, 100.0))
+
+        # Hazards
+        hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 50.0, "lava", 20.0))

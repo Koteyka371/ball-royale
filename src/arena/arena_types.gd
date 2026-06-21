@@ -31,5 +31,6 @@ const ARENAS = [
     "ball_relationships",
     "clutch_plays",
     "collect_booster",
-    "finals_1v1"
+    "finals_1v1",
+    "ai_commentary"
 ]
