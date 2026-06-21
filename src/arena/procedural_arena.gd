@@ -340,3 +340,33 @@ class BallRelationshipsArena extends ProceduralArena:
         hazards.append(ProceduralArena.Hazard.new(1, cx + 150.0, cy - 150.0, 30.0, "lava", 20.0))
         hazards.append(ProceduralArena.Hazard.new(2, cx - 150.0, cy + 150.0, 30.0, "lava", 20.0))
         hazards.append(ProceduralArena.Hazard.new(3, cx + 150.0, cy + 150.0, 30.0, "lava", 20.0))
+
+class Finals1v1Arena extends ProceduralArena:
+    func generate():
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = width
+        var h = height
+        var cx = w / 2.0
+        var cy = h / 2.0
+
+        # Central epic combat room
+        rooms.append(ProceduralArena.Room.new(cx - 300.0, cy - 300.0, 600.0, 600.0))
+
+        # Two spawn rooms
+        rooms.append(ProceduralArena.Room.new(cx - 700.0, cy - 100.0, 200.0, 200.0)) # Left
+        rooms.append(ProceduralArena.Room.new(cx + 500.0, cy - 100.0, 200.0, 200.0)) # Right
+
+        # Corridors
+        corridors.append(ProceduralArena.Corridor.new(cx - 500.0, cy - 50.0, 200.0, 100.0)) # Left to center
+        corridors.append(ProceduralArena.Corridor.new(cx + 300.0, cy - 50.0, 200.0, 100.0)) # Right to center
+
+        # Ring of hazards in the central room
+        var num_hazards = 16
+        var radius = 280.0
+        for i in range(num_hazards):
+            var angle = 2.0 * PI * float(i) / float(num_hazards)
+            var hx = cx + radius * cos(angle)
+            var hy = cy + radius * sin(angle)
+            hazards.append(ProceduralArena.Hazard.new(i, hx, hy, 20.0, "lava", 10.0))

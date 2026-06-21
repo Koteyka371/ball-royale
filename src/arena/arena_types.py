@@ -571,6 +571,36 @@ class CollectBoosterArena(ProceduralArena):
         self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=40.0, kind="lava", damage=25.0))
 
 
+class Finals1v1Arena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central epic combat room
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+
+        # Two spawn rooms
+        self.rooms.append(Room(cx - 700, cy - 100, 200, 200)) # Left
+        self.rooms.append(Room(cx + 500, cy - 100, 200, 200)) # Right
+
+        # Corridors
+        self.corridors.append(Corridor(cx - 500, cy - 50, 200, 100)) # Left to center
+        self.corridors.append(Corridor(cx + 300, cy - 50, 200, 100)) # Right to center
+
+        # Ring of hazards in the central room
+        import math
+        num_hazards = 16
+        radius = 280
+        for i in range(num_hazards):
+            angle = 2 * math.pi * i / num_hazards
+            hx = cx + radius * math.cos(angle)
+            hy = cy + radius * math.sin(angle)
+            self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=20.0, kind="lava", damage=10.0))
+
+
 ARENAS = {
     "collect_booster": CollectBoosterArena,
     "reposition": RepositionArena,
@@ -598,7 +628,8 @@ ARENAS = {
     "comebacks": ComebacksArena,
     "circle_strafe": CircleStrafeArena,
     "epic_kills": EpicKillsArena,
-    "ball_relationships": BallRelationshipsArena
+    "ball_relationships": BallRelationshipsArena,
+    "finals_1v1": Finals1v1Arena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
