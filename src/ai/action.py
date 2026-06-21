@@ -1226,87 +1226,95 @@ class Action:
             self.ball.attack_timer -= delta
 
     def _kite(self, delta: float) -> None:
-        enemies = self._get_enemies()
-        if enemies:
-            target_msg = None
-            allies = self._get_allies()
-            for ally in allies:
-                msg = getattr(ally, "team_message", None)
-                if msg and isinstance(msg, dict) and msg.get("type") == "target_spotted":
-                    target_msg = msg
-                    break
-
-            if target_msg:
-                tx, ty = target_msg.get("x", self.ball.x), target_msg.get("y", self.ball.y)
-                target = min(enemies, key=lambda e: (e.x - tx) ** 2 + (e.y - ty) ** 2)
-            else:
-                target = min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
-
-            if getattr(self.ball, "team_message", None) is None:
-                self.ball.team_message = {"type": "target_spotted", "x": target.x, "y": target.y}
-
-            dx, dy = target.x - self.ball.x, target.y - self.ball.y
-            dist_sq = dx * dx + dy * dy
-            if dist_sq > 0.0001:
-                dist = math.sqrt(dist_sq)
-                nx, ny = dx / dist, dy / dist
-
-                attack_range = getattr(self.ball, "attack_range", 150.0)
-
-                if dist > attack_range:
-                    pass # Move towards
-                elif dist < attack_range * 0.8:
-                    nx, ny = -nx, -ny # Kite away
-                else:
-                    nx, ny = 0.0, 0.0 # Maintain distance
-
-                if nx != 0.0 or ny != 0.0:
-                    nx, ny = self._apply_obstacle_avoidance(nx, ny, target)
-                    nx, ny = self._apply_boid_rules(nx, ny)
-
-                    step = getattr(self.ball, "speed", 2.0) * delta * 60
-                    if dist < attack_range * 0.8:
-                        self.ball.x += nx * step
-                        self.ball.y += ny * step
-                    else:
-                        self.ball.x += nx * min(step, dist)
-                        self.ball.y += ny * min(step, dist)
-
-            # Recalculate distance after movement
-            dx, dy = target.x - self.ball.x, target.y - self.ball.y
-            dist_sq = dx * dx + dy * dy
-            dist = math.sqrt(dist_sq) if dist_sq > 0.0001 else 0.0
-            dist_after = dist
-
-            attack_range = getattr(self.ball, "attack_range", 150.0)
-
-            if dist_after <= attack_range:
-                # Uses skill when available and optimal
-                skill_timer = getattr(self.ball, "skill_timer", 0.0)
-                if skill_timer <= 0:
-                    if dist_after < attack_range * 0.8:
-                        if hasattr(self.ball, "use_skill"):
-                            self.ball.use_skill()
-                        self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
-
-                # Deal damage with attack timer
-                attack_timer = getattr(self.ball, "attack_timer", 0.0)
-                if attack_timer <= 0:
-                    if hasattr(self.world, "_deal_damage"):
-                        self.world._deal_damage(self.ball, target)
-                        if hasattr(target, "id") and hasattr(self.ball, "id"):
-                            # Ball Relationships - Balls remember each other
-                            # Rivalry skill: attacked me before -> attack on sight
-                            target_mem = getattr(target, "memory", {})
-                            target_mem[self.ball.id] = {"relation": "rival"}
-                            target.memory = target_mem
-
-                    speed = getattr(self.ball, "speed", 2.0)
-                    cooldown = max(0.2, 2.0 / speed if speed > 0 else 1.0)
-                    self.ball.attack_timer = cooldown
-        else:
+        """
+        Kite — держит дистанцию, атакует при приближении skill: для Sniper
+        Maintains distance from enemies, falling back when they get too close,
+        and uses attacks/skills to repel them.
+        """
+        active_enemies = self._get_enemies()
+        if not active_enemies:
             self._idle(delta)
+            return
 
+        target_message = None
+        team_allies = self._get_allies()
+        for ally in team_allies:
+            msg = getattr(ally, "team_message", None)
+            if msg and isinstance(msg, dict) and msg.get("type") == "target_spotted":
+                target_message = msg
+                break
+
+        if target_message:
+            t_x, t_y = target_message.get("x", self.ball.x), target_message.get("y", self.ball.y)
+            optimal_target = min(active_enemies, key=lambda e: (e.x - t_x) ** 2 + (e.y - t_y) ** 2)
+        else:
+            optimal_target = min(active_enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+
+        if getattr(self.ball, "team_message", None) is None:
+            self.ball.team_message = {"type": "target_spotted", "x": optimal_target.x, "y": optimal_target.y}
+
+        diff_x, diff_y = optimal_target.x - self.ball.x, optimal_target.y - self.ball.y
+        dist_squared = diff_x * diff_x + diff_y * diff_y
+
+        if dist_squared > 0.0001:
+            import math
+            actual_dist = math.sqrt(dist_squared)
+            norm_x, norm_y = diff_x / actual_dist, diff_y / actual_dist
+
+            ball_attack_range = getattr(self.ball, "attack_range", 150.0)
+
+            if actual_dist > ball_attack_range:
+                # Approach target if out of range
+                pass
+            elif actual_dist < ball_attack_range * 0.8:
+                # Fall back if target is too close
+                norm_x, norm_y = -norm_x, -norm_y
+            else:
+                # Hold position
+                norm_x, norm_y = 0.0, 0.0
+
+            if norm_x != 0.0 or norm_y != 0.0:
+                norm_x, norm_y = self._apply_obstacle_avoidance(norm_x, norm_y, optimal_target)
+                norm_x, norm_y = self._apply_boid_rules(norm_x, norm_y)
+
+                move_step = getattr(self.ball, "speed", 2.0) * delta * 60
+                if actual_dist < ball_attack_range * 0.8:
+                    self.ball.x += norm_x * move_step
+                    self.ball.y += norm_y * move_step
+                else:
+                    self.ball.x += norm_x * min(move_step, actual_dist)
+                    self.ball.y += norm_y * min(move_step, actual_dist)
+
+        # Recalculate distance after movement
+        diff_x_after, diff_y_after = optimal_target.x - self.ball.x, optimal_target.y - self.ball.y
+        dist_sq_after = diff_x_after * diff_x_after + diff_y_after * diff_y_after
+        import math
+        dist_after = math.sqrt(dist_sq_after) if dist_sq_after > 0.0001 else 0.0
+
+        ball_attack_range = getattr(self.ball, "attack_range", 150.0)
+
+        if dist_after <= ball_attack_range:
+            # Skill usage logic when enemy is close
+            skill_cd_timer = getattr(self.ball, "skill_timer", 0.0)
+            if skill_cd_timer <= 0:
+                if dist_after < ball_attack_range * 0.8:
+                    if hasattr(self.ball, "use_skill"):
+                        self.ball.use_skill()
+                    self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
+
+            # Attack logic
+            attack_cd_timer = getattr(self.ball, "attack_timer", 0.0)
+            if attack_cd_timer <= 0:
+                if hasattr(self.world, "_deal_damage"):
+                    self.world._deal_damage(self.ball, optimal_target)
+                    if hasattr(optimal_target, "id") and hasattr(self.ball, "id"):
+                        tgt_memory = getattr(optimal_target, "memory", {})
+                        tgt_memory[self.ball.id] = {"relation": "rival"}
+                        optimal_target.memory = tgt_memory
+
+                b_speed = getattr(self.ball, "speed", 2.0)
+                new_cooldown = max(0.2, 2.0 / b_speed if b_speed > 0 else 1.0)
+                self.ball.attack_timer = new_cooldown
     def _hide_behind(self, delta: float) -> None:
         enemies = self._get_enemies()
         allies = self._get_allies()
