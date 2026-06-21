@@ -1,4 +1,0 @@
-{
-  "title": "Fog of War and Line of Sight System",
-  "description": "Implement a fog of war system where balls can only see other entities if there is a clear line of sight, taking walls and obstacles in procedural arenas into account. This would greatly enhance 'hide behind' and 'ambush' behaviors by allowing true stealth mechanics."
-}
