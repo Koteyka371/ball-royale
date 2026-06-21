@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-arena-107] Create Escort arena — *2026-06-21 22:12:33 UTC*
+
+Implement Create Escort arena as described in game_design.md
+
+---
+
 ## [idea-arena-111] Create Wait and Watch arena — *2026-06-21 20:29:32 UTC*
 
 Implement Create Wait and Watch arena as described in game_design.md
