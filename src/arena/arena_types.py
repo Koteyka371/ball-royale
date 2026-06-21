@@ -696,6 +696,43 @@ class TeamWipesArena(ProceduralArena):
         self.hazards.append(Hazard(id=2, x=cx - 200.0, y=cy + 200.0, radius=40.0, kind="lava", damage=20.0))
         self.hazards.append(Hazard(id=3, x=cx + 200.0, y=cy + 200.0, radius=40.0, kind="lava", damage=20.0))
 
+class WaitAndWatchArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central fighting pit
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+
+        # 4 watching spots (outer rooms)
+        self.rooms.append(Room(cx - 900, cy - 900, 300, 300))
+        self.rooms.append(Room(cx + 600, cy - 900, 300, 300))
+        self.rooms.append(Room(cx - 900, cy + 600, 300, 300))
+        self.rooms.append(Room(cx + 600, cy + 600, 300, 300))
+
+        # Corridors from corners to center
+        self.corridors.append(Corridor(cx - 800, cy - 650, 100, 450))
+        self.corridors.append(Corridor(cx - 800, cy - 300, 550, 100))
+
+        self.corridors.append(Corridor(cx + 700, cy - 650, 100, 450))
+        self.corridors.append(Corridor(cx + 250, cy - 300, 550, 100))
+
+        self.corridors.append(Corridor(cx - 800, cy + 200, 100, 450))
+        self.corridors.append(Corridor(cx - 800, cy + 200, 550, 100))
+
+        self.corridors.append(Corridor(cx + 700, cy + 200, 100, 450))
+        self.corridors.append(Corridor(cx + 250, cy + 200, 550, 100))
+
+        # Hazards in center
+        self.hazards.append(Hazard(id=0, x=cx - 150, y=cy - 150, radius=50.0, kind="lava", damage=10.0))
+        self.hazards.append(Hazard(id=1, x=cx + 150, y=cy - 150, radius=50.0, kind="lava", damage=10.0))
+        self.hazards.append(Hazard(id=2, x=cx - 150, y=cy + 150, radius=50.0, kind="lava", damage=10.0))
+        self.hazards.append(Hazard(id=3, x=cx + 150, y=cy + 150, radius=50.0, kind="lava", damage=10.0))
+        self.hazards.append(Hazard(id=4, x=cx, y=cy, radius=80.0, kind="spikes", damage=25.0))
+
 ARENAS = {
     "swarm_intelligence": SwarmIntelligenceArena,
     "clutch_plays": ClutchPlaysArena,
@@ -727,7 +764,8 @@ ARENAS = {
     "epic_kills": EpicKillsArena,
     "ball_relationships": BallRelationshipsArena,
     "finals_1v1": Finals1v1Arena,
-    "team_wipes": TeamWipesArena
+    "team_wipes": TeamWipesArena,
+    "wait_and_watch": WaitAndWatchArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
