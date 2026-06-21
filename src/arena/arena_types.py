@@ -761,7 +761,44 @@ class MetaEvolutionArena(ProceduralArena):
         self.hazards.append(Hazard(id=4, x=cx + 600, y=cy + 320, radius=20.0, kind="spikes", damage=30.0))
 
 
+
+class BallGeneticsArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Main Testing Ground
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+
+        # Four Breeding Pens
+        self.rooms.append(Room(50, 50, 300, 300))
+        self.rooms.append(Room(w - 350, 50, 300, 300))
+        self.rooms.append(Room(50, h - 350, 300, 300))
+        self.rooms.append(Room(w - 350, h - 350, 300, 300))
+
+        # Corridors
+        self.corridors.append(Corridor(350, 150, 350, 100))
+        self.corridors.append(Corridor(cx + 300, 150, 350, 100))
+        self.corridors.append(Corridor(350, h - 250, 350, 100))
+        self.corridors.append(Corridor(cx + 300, h - 250, 350, 100))
+
+        self.corridors.append(Corridor(150, 350, 100, 350))
+        self.corridors.append(Corridor(w - 250, 350, 100, 350))
+        self.corridors.append(Corridor(150, cy + 300, 100, 350))
+        self.corridors.append(Corridor(w - 250, cy + 300, 100, 350))
+
+        # Hazards (Mutagens)
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=100.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=1, x=cx - 200, y=cy - 200, radius=40.0, kind="poison", damage=15.0))
+        self.hazards.append(Hazard(id=2, x=cx + 200, y=cy - 200, radius=40.0, kind="poison", damage=15.0))
+        self.hazards.append(Hazard(id=3, x=cx - 200, y=cy + 200, radius=40.0, kind="poison", damage=15.0))
+        self.hazards.append(Hazard(id=4, x=cx + 200, y=cy + 200, radius=40.0, kind="poison", damage=15.0))
+
 ARENAS = {
+    "ball_genetics": BallGeneticsArena,
     "meta_evolution": MetaEvolutionArena,
     "ambush": AmbushArena,
     "swarm_intelligence": SwarmIntelligenceArena,

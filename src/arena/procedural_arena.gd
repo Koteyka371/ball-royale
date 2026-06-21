@@ -511,3 +511,41 @@ class AmbushArena extends ProceduralArena:
 
         # 1 central hazard to discourage staying in the open
         hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 80.0, "lava", 20.0))
+
+
+class BallGeneticsArena extends ProceduralArena:
+    func generate():
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = width
+        var h = height
+        var cx = w / 2.0
+        var cy = h / 2.0
+
+        # Main Testing Ground
+        rooms.append(ProceduralArena.Room.new(cx - 300.0, cy - 300.0, 600.0, 600.0))
+
+        # Four Breeding Pens
+        rooms.append(ProceduralArena.Room.new(50.0, 50.0, 300.0, 300.0))
+        rooms.append(ProceduralArena.Room.new(w - 350.0, 50.0, 300.0, 300.0))
+        rooms.append(ProceduralArena.Room.new(50.0, h - 350.0, 300.0, 300.0))
+        rooms.append(ProceduralArena.Room.new(w - 350.0, h - 350.0, 300.0, 300.0))
+
+        # Corridors
+        corridors.append(ProceduralArena.Corridor.new(350.0, 150.0, 350.0, 100.0))
+        corridors.append(ProceduralArena.Corridor.new(cx + 300.0, 150.0, 350.0, 100.0))
+        corridors.append(ProceduralArena.Corridor.new(350.0, h - 250.0, 350.0, 100.0))
+        corridors.append(ProceduralArena.Corridor.new(cx + 300.0, h - 250.0, 350.0, 100.0))
+
+        corridors.append(ProceduralArena.Corridor.new(150.0, 350.0, 100.0, 350.0))
+        corridors.append(ProceduralArena.Corridor.new(w - 250.0, 350.0, 100.0, 350.0))
+        corridors.append(ProceduralArena.Corridor.new(150.0, cy + 300.0, 100.0, 350.0))
+        corridors.append(ProceduralArena.Corridor.new(w - 250.0, cy + 300.0, 100.0, 350.0))
+
+        # Hazards (Mutagens)
+        hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 100.0, "lava", 20.0))
+        hazards.append(ProceduralArena.Hazard.new(1, cx - 200.0, cy - 200.0, 40.0, "poison", 15.0))
+        hazards.append(ProceduralArena.Hazard.new(2, cx + 200.0, cy - 200.0, 40.0, "poison", 15.0))
+        hazards.append(ProceduralArena.Hazard.new(3, cx - 200.0, cy + 200.0, 40.0, "poison", 15.0))
+        hazards.append(ProceduralArena.Hazard.new(4, cx + 200.0, cy + 200.0, 40.0, "poison", 15.0))

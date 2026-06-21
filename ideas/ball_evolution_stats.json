@@ -1,0 +1,4 @@
+{
+  "title": "Ball Evolution Statistics & Tracking",
+  "description": "Create a dashboard overlay in spectator mode that tracks the most successful 'mutations' across iterations of the Ball Genetics arena, allowing the user to view the highest-winning genetic configurations (speed, attack, HP) and their lineage tree."
+}
