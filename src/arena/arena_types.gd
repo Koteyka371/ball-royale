@@ -64,7 +64,44 @@ class BodyBlockArena extends ProceduralArena:
         h0.damage = 25.0
         hazards.append(h0)
 
+class BattleRoyaleShrinkingZoneArena extends ProceduralArena:
+	func generate() -> void:
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+		var w := float(width)
+		var h := float(height)
+		var cx := w / 2.0
+		var cy := h / 2.0
+
+		rooms.append(ProceduralArena.Room.new(cx - 600, cy - 600, 1200, 1200))
+
+		rooms.append(ProceduralArena.Room.new(50, 50, 200, 200))
+		rooms.append(ProceduralArena.Room.new(w - 250, 50, 200, 200))
+		rooms.append(ProceduralArena.Room.new(50, h - 250, 200, 200))
+		rooms.append(ProceduralArena.Room.new(w - 250, h - 250, 200, 200))
+
+		corridors.append(ProceduralArena.Corridor.new(100, 200, 100, cy - 600 - 200))
+		corridors.append(ProceduralArena.Corridor.new(100, cy - 600, cx - 600 - 100 + 50, 100))
+
+		corridors.append(ProceduralArena.Corridor.new(w - 200, 200, 100, cy - 600 - 200))
+		corridors.append(ProceduralArena.Corridor.new(cx + 600 - 50, cy - 600, w - 200 - (cx + 600) + 50, 100))
+
+		corridors.append(ProceduralArena.Corridor.new(100, cy + 600, 100, h - 200 - (cy + 600)))
+		corridors.append(ProceduralArena.Corridor.new(100, cy + 600 - 100, cx - 600 - 100 + 50, 100))
+
+		corridors.append(ProceduralArena.Corridor.new(w - 200, cy + 600, 100, h - 200 - (cy + 600)))
+		corridors.append(ProceduralArena.Corridor.new(cx + 600 - 50, cy + 600 - 100, w - 200 - (cx + 600) + 50, 100))
+
+	func update_zone(current_tick: int, delta: float) -> void:
+		if current_tick != last_tick:
+			last_tick = current_tick
+			safe_zone_radius -= 10.0 * delta
+			if safe_zone_radius < 50.0:
+				safe_zone_radius = 50.0
+
 const ARENAS = [
+	"battle_royale_shrinking_zone",
 	"body_block",
 	"meta_evolution",
     "swarm_intelligence",
