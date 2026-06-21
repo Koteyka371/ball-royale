@@ -453,3 +453,34 @@ class SwarmIntelligenceArena extends ProceduralArena:
         hazards.append(ProceduralArena.Hazard.new(1, cx + 100, cy - 100, 40.0, "spikes", 25.0))
         hazards.append(ProceduralArena.Hazard.new(2, cx - 100, cy + 100, 40.0, "spikes", 25.0))
         hazards.append(ProceduralArena.Hazard.new(3, cx + 100, cy + 100, 40.0, "spikes", 25.0))
+
+class MetaEvolutionArena extends ProceduralArena:
+    func generate() -> void:
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = width
+        var h = height
+        var cx = w / 2.0
+        var cy = h / 2.0
+
+        # Central hub
+        rooms.append(ProceduralArena.Room.new(cx - 200, cy - 200, 400, 400))
+
+        # 4 evolution chambers
+        rooms.append(ProceduralArena.Room.new(cx - 700, cy - 700, 300, 300))
+        rooms.append(ProceduralArena.Room.new(cx + 400, cy - 700, 300, 300))
+        rooms.append(ProceduralArena.Room.new(cx - 700, cy + 400, 300, 300))
+        rooms.append(ProceduralArena.Room.new(cx + 400, cy + 400, 300, 300))
+
+        # Diagonal connectors
+        corridors.append(ProceduralArena.Corridor.new(cx - 450, cy - 450, 300, 300))
+        corridors.append(ProceduralArena.Corridor.new(cx + 150, cy - 450, 300, 300))
+        corridors.append(ProceduralArena.Corridor.new(cx - 450, cy + 150, 300, 300))
+        corridors.append(ProceduralArena.Corridor.new(cx + 150, cy + 150, 300, 300))
+
+        # Hazards in connectors
+        hazards.append(ProceduralArena.Hazard.new(0, cx - 300, cy - 300, 50.0, "fire", 20.0))
+        hazards.append(ProceduralArena.Hazard.new(1, cx + 300, cy - 300, 50.0, "fire", 20.0))
+        hazards.append(ProceduralArena.Hazard.new(2, cx - 300, cy + 300, 50.0, "fire", 20.0))
+        hazards.append(ProceduralArena.Hazard.new(3, cx + 300, cy + 300, 50.0, "fire", 20.0))

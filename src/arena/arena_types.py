@@ -676,6 +676,35 @@ class SwarmIntelligenceArena(ProceduralArena):
         self.hazards.append(Hazard(id=2, x=cx - 100, y=cy + 100, radius=40.0, kind="spikes", damage=25.0))
         self.hazards.append(Hazard(id=3, x=cx + 100, y=cy + 100, radius=40.0, kind="spikes", damage=25.0))
 
+class MetaEvolutionArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central hub
+        self.rooms.append(Room(cx - 200, cy - 200, 400, 400))
+
+        # 4 evolution chambers
+        self.rooms.append(Room(cx - 700, cy - 700, 300, 300))
+        self.rooms.append(Room(cx + 400, cy - 700, 300, 300))
+        self.rooms.append(Room(cx - 700, cy + 400, 300, 300))
+        self.rooms.append(Room(cx + 400, cy + 400, 300, 300))
+
+        # Diagonal connectors
+        self.corridors.append(Corridor(cx - 450, cy - 450, 300, 300))
+        self.corridors.append(Corridor(cx + 150, cy - 450, 300, 300))
+        self.corridors.append(Corridor(cx - 450, cy + 150, 300, 300))
+        self.corridors.append(Corridor(cx + 150, cy + 150, 300, 300))
+
+        # Hazards in connectors
+        self.hazards.append(Hazard(id=0, x=cx - 300, y=cy - 300, radius=50.0, kind="fire", damage=20.0))
+        self.hazards.append(Hazard(id=1, x=cx + 300, y=cy - 300, radius=50.0, kind="fire", damage=20.0))
+        self.hazards.append(Hazard(id=2, x=cx - 300, y=cy + 300, radius=50.0, kind="fire", damage=20.0))
+        self.hazards.append(Hazard(id=3, x=cx + 300, y=cy + 300, radius=50.0, kind="fire", damage=20.0))
+
 ARENAS = {
     "swarm_intelligence": SwarmIntelligenceArena,
     "clutch_plays": ClutchPlaysArena,
@@ -706,7 +735,8 @@ ARENAS = {
     "circle_strafe": CircleStrafeArena,
     "epic_kills": EpicKillsArena,
     "ball_relationships": BallRelationshipsArena,
-    "finals_1v1": Finals1v1Arena
+    "finals_1v1": Finals1v1Arena,
+    "meta_evolution": MetaEvolutionArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
