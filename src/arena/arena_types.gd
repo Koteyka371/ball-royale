@@ -64,6 +64,37 @@ class BodyBlockArena extends ProceduralArena:
         h0.damage = 25.0
         hazards.append(h0)
 
+class TargetWeakArena extends ProceduralArena:
+	func generate() -> void:
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+		var w := float(width)
+		var h := float(height)
+		var cx := w / 2.0
+		var cy := h / 2.0
+
+		rooms.append(ProceduralArena.Room.new(cx - 300, cy - 300, 600, 600))
+
+		rooms.append(ProceduralArena.Room.new(50, 50, 150, 150))
+		rooms.append(ProceduralArena.Room.new(w - 200, 50, 150, 150))
+		rooms.append(ProceduralArena.Room.new(50, h - 200, 150, 150))
+		rooms.append(ProceduralArena.Room.new(w - 200, h - 200, 150, 150))
+
+		corridors.append(ProceduralArena.Corridor.new(100, 200, 50, cy - 500))
+		corridors.append(ProceduralArena.Corridor.new(100, cy - 300, cx - 400, 50))
+
+		corridors.append(ProceduralArena.Corridor.new(w - 150, 200, 50, cy - 500))
+		corridors.append(ProceduralArena.Corridor.new(cx + 300, cy - 300, w - cx - 400, 50))
+
+		corridors.append(ProceduralArena.Corridor.new(100, cy + 300, 50, h - cy - 500))
+		corridors.append(ProceduralArena.Corridor.new(100, cy + 250, cx - 400, 50))
+
+		corridors.append(ProceduralArena.Corridor.new(w - 150, cy + 300, 50, h - cy - 500))
+		corridors.append(ProceduralArena.Corridor.new(cx + 300, cy + 250, w - cx - 400, 50))
+
+		hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 100.0, "lava", 20.0))
+
 const ARENAS = [
 	"body_block",
 	"meta_evolution",
@@ -98,5 +129,6 @@ const ARENAS = [
     "collect_booster",
     "finals_1v1",
     "team_wipes",
-    "ambush"
+    "ambush",
+    "target_weak"
 ]

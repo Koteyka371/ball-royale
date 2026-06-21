@@ -783,7 +783,41 @@ class BodyBlockArena(ProceduralArena):
         # A central hazard to force players into tighter chokes
         self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=50.0, kind="lava", damage=25.0))
 
+class TargetWeakArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # 1 Large Central Room
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+
+        # 4 Small Corner Rooms where weak enemies might hide
+        self.rooms.append(Room(50, 50, 150, 150))
+        self.rooms.append(Room(w - 200, 50, 150, 150))
+        self.rooms.append(Room(50, h - 200, 150, 150))
+        self.rooms.append(Room(w - 200, h - 200, 150, 150))
+
+        # Corridors connecting the corner rooms to the central room
+        self.corridors.append(Corridor(100, 200, 50, cy - 500))
+        self.corridors.append(Corridor(100, cy - 300, cx - 400, 50))
+
+        self.corridors.append(Corridor(w - 150, 200, 50, cy - 500))
+        self.corridors.append(Corridor(cx + 300, cy - 300, w - cx - 400, 50))
+
+        self.corridors.append(Corridor(100, cy + 300, 50, h - cy - 500))
+        self.corridors.append(Corridor(100, cy + 250, cx - 400, 50))
+
+        self.corridors.append(Corridor(w - 150, cy + 300, 50, h - cy - 500))
+        self.corridors.append(Corridor(cx + 300, cy + 250, w - cx - 400, 50))
+
+        # Central Hazard to cause initial damage
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=100.0, kind="lava", damage=20.0))
+
 ARENAS = {
+
     "body_block": BodyBlockArena,
     "meta_evolution": MetaEvolutionArena,
     "ambush": AmbushArena,
@@ -817,7 +851,8 @@ ARENAS = {
     "epic_kills": EpicKillsArena,
     "ball_relationships": BallRelationshipsArena,
     "finals_1v1": Finals1v1Arena,
-    "team_wipes": TeamWipesArena
+    "team_wipes": TeamWipesArena,
+    "target_weak": TargetWeakArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
