@@ -511,3 +511,23 @@ class AmbushArena extends ProceduralArena:
 
         # 1 central hazard to discourage staying in the open
         hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 80.0, "lava", 20.0))
+class HealAllyArena extends ProceduralArena:
+    func generate() -> void:
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = width
+        var h = height
+        var cx = w / 2.0
+        var cy = h / 2.0
+
+        # Large central battlefield
+        rooms.append(ProceduralArena.Room.new(cx - 300.0, cy - 300.0, 600.0, 600.0))
+
+        # Two small safe rooms for retreating to heal
+        rooms.append(ProceduralArena.Room.new(50.0, cy - 100.0, 200.0, 200.0))
+        rooms.append(ProceduralArena.Room.new(w - 250.0, cy - 100.0, 200.0, 200.0))
+
+        # Corridors connecting safe rooms to the central battlefield
+        corridors.append(ProceduralArena.Corridor.new(200.0, cy - 50.0, cx - 300.0 - 250.0 + 100.0, 100.0))
+        corridors.append(ProceduralArena.Corridor.new(cx + 250.0, cy - 50.0, w - 250.0 - (cx + 300.0) + 100.0, 100.0))

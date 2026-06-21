@@ -761,7 +761,27 @@ class MetaEvolutionArena(ProceduralArena):
         self.hazards.append(Hazard(id=4, x=cx + 600, y=cy + 320, radius=20.0, kind="spikes", damage=30.0))
 
 
+class HealAllyArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Large central battlefield
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+
+        # Two small safe rooms for retreating to heal
+        self.rooms.append(Room(50, cy - 100, 200, 200)) # Left safe room
+        self.rooms.append(Room(w - 250, cy - 100, 200, 200)) # Right safe room
+
+        # Corridors connecting safe rooms to the central battlefield
+        self.corridors.append(Corridor(200, cy - 50, cx - 300 - 250 + 100, 100)) # Left corridor
+        self.corridors.append(Corridor(cx + 250, cy - 50, w - 250 - (cx + 300) + 100, 100)) # Right corridor
+
 ARENAS = {
+    "heal_ally": HealAllyArena,
     "meta_evolution": MetaEvolutionArena,
     "ambush": AmbushArena,
     "swarm_intelligence": SwarmIntelligenceArena,
