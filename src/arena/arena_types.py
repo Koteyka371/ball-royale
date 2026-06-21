@@ -676,7 +676,32 @@ class SwarmIntelligenceArena(ProceduralArena):
         self.hazards.append(Hazard(id=2, x=cx - 100, y=cy + 100, radius=40.0, kind="spikes", damage=25.0))
         self.hazards.append(Hazard(id=3, x=cx + 100, y=cy + 100, radius=40.0, kind="spikes", damage=25.0))
 
+
+class TargetWeakArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # A large central room
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+
+        # Small hiding rooms in the corners for weak targets
+        self.rooms.append(Room(50, 50, 150, 150))
+        self.rooms.append(Room(w - 200, 50, 150, 150))
+        self.rooms.append(Room(50, h - 200, 150, 150))
+        self.rooms.append(Room(w - 200, h - 200, 150, 150))
+
+        # Corridors connecting corners to the center
+        self.corridors.append(Corridor(200, 100, cx - 300 - 200, 50)) # top-left to center
+        self.corridors.append(Corridor(cx + 300, 100, w - 200 - (cx + 300), 50)) # top-right to center
+        self.corridors.append(Corridor(200, h - 150, cx - 300 - 200, 50)) # bottom-left to center
+        self.corridors.append(Corridor(cx + 300, h - 150, w - 200 - (cx + 300), 50)) # bottom-right to center
+
 ARENAS = {
+    "target_weak": TargetWeakArena,
     "swarm_intelligence": SwarmIntelligenceArena,
     "clutch_plays": ClutchPlaysArena,
     "collect_booster": CollectBoosterArena,
