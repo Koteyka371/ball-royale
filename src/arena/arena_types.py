@@ -814,7 +814,29 @@ class PhysicsChainReactionsArena(ProceduralArena):
         self.hazards.append(Hazard(id=4, x=cx, y=cy, radius=80.0, kind="lava", damage=20.0))
 
 
+
+class EscortArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Start room at the bottom
+        self.rooms.append(Room(cx - 200, h - 400, 400, 300))
+        # End room at the top
+        self.rooms.append(Room(cx - 200, 100, 400, 300))
+
+        # Long connecting corridor
+        self.corridors.append(Corridor(cx - 100, 300, 200, h - 700))
+
+        # Side ambush rooms
+        self.rooms.append(Room(cx - 500, cy - 200, 400, 400))
+        self.rooms.append(Room(cx + 100, cy - 200, 400, 400))
+
 ARENAS = {
+    "escort": EscortArena,
     "body_block": BodyBlockArena,
     "meta_evolution": MetaEvolutionArena,
     "ambush": AmbushArena,

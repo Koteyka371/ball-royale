@@ -97,7 +97,27 @@ class PhysicsChainReactionsArena extends ProceduralArena:
         var h4 = ProceduralArena.Hazard.new()
         h4.id = 4; h4.x = cx; h4.y = cy; h4.radius = 80.0; h4.kind = "lava"; h4.damage = 20.0; hazards.append(h4)
 
+
+class EscortArena extends ProceduralArena:
+	func generate() -> void:
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+		var w := float(width)
+		var h := float(height)
+		var cx := w / 2.0
+		var cy := h / 2.0
+
+		rooms.append(ProceduralArena.Room.new(cx - 200, h - 400, 400, 300))
+		rooms.append(ProceduralArena.Room.new(cx - 200, 100, 400, 300))
+
+		corridors.append(ProceduralArena.Corridor.new(cx - 100, 300, 200, h - 700))
+
+		rooms.append(ProceduralArena.Room.new(cx - 500, cy - 200, 400, 400))
+		rooms.append(ProceduralArena.Room.new(cx + 100, cy - 200, 400, 400))
+
 const ARENAS = [
+	"escort",
 	"body_block",
 	"meta_evolution",
     "swarm_intelligence",
