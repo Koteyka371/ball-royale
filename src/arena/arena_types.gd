@@ -173,7 +173,23 @@ class WaitAndWatchArena extends ProceduralArena:
 		var h3 = ProceduralArena.Hazard.new(); h3.id = 3; h3.x = cx - 150; h3.y = cy + 150; h3.radius = 50.0; h3.kind = "spikes"; h3.damage = 30.0; hazards.append(h3)
 		var h4 = ProceduralArena.Hazard.new(); h4.id = 4; h4.x = cx + 150; h4.y = cy + 150; h4.radius = 50.0; h4.kind = "spikes"; h4.damage = 30.0; hazards.append(h4)
 
+class EscortArena extends ProceduralArena:
+	func generate():
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+		var w = self.width
+		var h = self.height
+		var cx = w / 2.0
+		var cy = h / 2.0
+		rooms.append(ProceduralArena.Room.new(cx - 200, h - 400, 400, 300))
+		rooms.append(ProceduralArena.Room.new(cx - 200, 100, 400, 300))
+		corridors.append(ProceduralArena.Corridor.new(cx - 100, 400, 200, h - 800))
+		var h1 = ProceduralArena.Hazard.new(); h1.id = 0; h1.x = cx - 150; h1.y = cy; h1.radius = 40.0; h1.kind = "lava"; h1.damage = 10.0; hazards.append(h1)
+		var h2 = ProceduralArena.Hazard.new(); h2.id = 1; h2.x = cx + 150; h2.y = cy; h2.radius = 40.0; h2.kind = "lava"; h2.damage = 10.0; hazards.append(h2)
+
 const ARENAS = [
+	"escort",
 	"wait_and_watch",
     "battle_royale_shrinking_zone",
 	"emotional_contagion",
