@@ -65,6 +65,7 @@ class BodyBlockArena extends ProceduralArena:
         hazards.append(h0)
 
 const ARENAS = [
+    "heal_ally",
 	"body_block",
 	"meta_evolution",
     "swarm_intelligence",

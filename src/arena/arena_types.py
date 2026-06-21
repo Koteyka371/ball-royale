@@ -783,7 +783,34 @@ class BodyBlockArena(ProceduralArena):
         # A central hazard to force players into tighter chokes
         self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=50.0, kind="lava", damage=25.0))
 
+class HealAllyArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+        self.rooms.append(Room(cx - 100, 100, 200, 200))
+        self.rooms.append(Room(cx - 100, h - 300, 200, 200))
+        self.rooms.append(Room(100, cy - 100, 200, 200))
+        self.rooms.append(Room(w - 300, cy - 100, 200, 200))
+
+        self.corridors.append(Corridor(cx - 50, 250, 100, cy - 500))
+        self.corridors.append(Corridor(cx - 50, cy + 250, 100, h - cy - 500))
+        self.corridors.append(Corridor(250, cy - 50, cx - 500, 100))
+        self.corridors.append(Corridor(cx + 250, cy - 50, w - cx - 500, 100))
+
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=100.0, kind="spikes", damage=10.0))
+        self.hazards.append(Hazard(id=1, x=cx - 200, y=cy, radius=50.0, kind="spikes", damage=10.0))
+        self.hazards.append(Hazard(id=2, x=cx + 200, y=cy, radius=50.0, kind="spikes", damage=10.0))
+        self.hazards.append(Hazard(id=3, x=cx, y=cy - 200, radius=50.0, kind="spikes", damage=10.0))
+        self.hazards.append(Hazard(id=4, x=cx, y=cy + 200, radius=50.0, kind="spikes", damage=10.0))
+
+
 ARENAS = {
+    "heal_ally": HealAllyArena,
     "body_block": BodyBlockArena,
     "meta_evolution": MetaEvolutionArena,
     "ambush": AmbushArena,

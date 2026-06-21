@@ -477,6 +477,34 @@ class SwarmIntelligenceArena extends ProceduralArena:
         hazards.append(ProceduralArena.Hazard.new(2, cx - 100, cy + 100, 40.0, "spikes", 25.0))
         hazards.append(ProceduralArena.Hazard.new(3, cx + 100, cy + 100, 40.0, "spikes", 25.0))
 
+class HealAllyArena extends ProceduralArena:
+    func generate() -> void:
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w := float(width)
+        var h := float(height)
+        var cx := w / 2.0
+        var cy := h / 2.0
+
+        rooms.append(ProceduralArena.Room.new(cx - 300, cy - 300, 600, 600))
+        rooms.append(ProceduralArena.Room.new(cx - 100, 100, 200, 200))
+        rooms.append(ProceduralArena.Room.new(cx - 100, h - 300, 200, 200))
+        rooms.append(ProceduralArena.Room.new(100, cy - 100, 200, 200))
+        rooms.append(ProceduralArena.Room.new(w - 300, cy - 100, 200, 200))
+
+        corridors.append(ProceduralArena.Corridor.new(cx - 50, 250, 100, cy - 500))
+        corridors.append(ProceduralArena.Corridor.new(cx - 50, cy + 250, 100, h - cy - 500))
+        corridors.append(ProceduralArena.Corridor.new(250, cy - 50, cx - 500, 100))
+        corridors.append(ProceduralArena.Corridor.new(cx + 250, cy - 50, w - cx - 500, 100))
+
+        hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 100.0, "spikes", 10.0))
+        hazards.append(ProceduralArena.Hazard.new(1, cx - 200, cy, 50.0, "spikes", 10.0))
+        hazards.append(ProceduralArena.Hazard.new(2, cx + 200, cy, 50.0, "spikes", 10.0))
+        hazards.append(ProceduralArena.Hazard.new(3, cx, cy - 200, 50.0, "spikes", 10.0))
+        hazards.append(ProceduralArena.Hazard.new(4, cx, cy + 200, 50.0, "spikes", 10.0))
+
+
 class AmbushArena extends ProceduralArena:
     func generate() -> void:
         rooms.clear()
