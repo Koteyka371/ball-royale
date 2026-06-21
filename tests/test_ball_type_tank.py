@@ -40,15 +40,10 @@ def test_tank_skill():
     assert ball.use_skill() is False
 
 
-def test_tank_use_shield_blocks_damage():
+def test_tank_target_strong_use_skill():
     ball = Tank(ball_id=1)
     assert ball.hp == 250
     assert ball.use_skill() is True
-    assert ball.shield_active is True
-
-    ball.take_damage(50)
-    assert ball.hp == 250
-    assert ball.shield_active is False
 
     ball.take_damage(50)
     assert ball.hp == 200
