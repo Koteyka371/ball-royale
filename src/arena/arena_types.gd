@@ -1,7 +1,40 @@
 class_name ArenaTypes
 extends RefCounted
 
+class MetaEvolutionArena extends ProceduralArena:
+	func generate():
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+		var w = self.width
+		var h = self.height
+		var cx = w / 2.0
+		var cy = h / 2.0
+
+		# Center Room
+		rooms.append(ProceduralArena.Room.new(cx - 200, cy - 200, 400, 400))
+		# Top Room
+		rooms.append(ProceduralArena.Room.new(cx - 150, cy - 700, 300, 300))
+		# Bottom Left
+		rooms.append(ProceduralArena.Room.new(cx - 700, cy + 100, 300, 300))
+		# Bottom Right
+		rooms.append(ProceduralArena.Room.new(cx + 400, cy + 100, 300, 300))
+
+		# Corridors
+		corridors.append(ProceduralArena.Corridor.new(cx - 50, cy - 400, 100, 200))
+		corridors.append(ProceduralArena.Corridor.new(cx - 400, cy + 150, 200, 100))
+		corridors.append(ProceduralArena.Corridor.new(cx + 200, cy + 150, 200, 100))
+
+		# Hazards
+		hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 30.0, "lava", 10.0))
+		hazards.append(ProceduralArena.Hazard.new(1, cx - 550, cy + 250, 80.0, "lava", 40.0))
+		hazards.append(ProceduralArena.Hazard.new(2, cx + 550, cy + 250, 40.0, "spikes", 30.0))
+		hazards.append(ProceduralArena.Hazard.new(3, cx + 500, cy + 180, 20.0, "spikes", 30.0))
+		hazards.append(ProceduralArena.Hazard.new(4, cx + 600, cy + 320, 20.0, "spikes", 30.0))
+
+
 const ARENAS = [
+	"meta_evolution",
     "swarm_intelligence",
     "avoid_trap",
     "kite",

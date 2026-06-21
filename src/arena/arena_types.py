@@ -730,7 +730,39 @@ class AmbushArena(ProceduralArena):
         # 1 central hazard to discourage staying in the open
         self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=80.0, kind="lava", damage=20.0))
 
+
+class MetaEvolutionArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Center Room
+        self.rooms.append(Room(cx - 200, cy - 200, 400, 400))
+        # Top Room
+        self.rooms.append(Room(cx - 150, cy - 700, 300, 300))
+        # Bottom Left
+        self.rooms.append(Room(cx - 700, cy + 100, 300, 300))
+        # Bottom Right
+        self.rooms.append(Room(cx + 400, cy + 100, 300, 300))
+
+        # Corridors
+        self.corridors.append(Corridor(cx - 50, cy - 400, 100, 200))
+        self.corridors.append(Corridor(cx - 400, cy + 150, 200, 100))
+        self.corridors.append(Corridor(cx + 200, cy + 150, 200, 100))
+
+        # Hazards
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=30.0, kind="lava", damage=10.0))
+        self.hazards.append(Hazard(id=1, x=cx - 550, y=cy + 250, radius=80.0, kind="lava", damage=40.0))
+        self.hazards.append(Hazard(id=2, x=cx + 550, y=cy + 250, radius=40.0, kind="spikes", damage=30.0))
+        self.hazards.append(Hazard(id=3, x=cx + 500, y=cy + 180, radius=20.0, kind="spikes", damage=30.0))
+        self.hazards.append(Hazard(id=4, x=cx + 600, y=cy + 320, radius=20.0, kind="spikes", damage=30.0))
+
+
 ARENAS = {
+    "meta_evolution": MetaEvolutionArena,
     "ambush": AmbushArena,
     "swarm_intelligence": SwarmIntelligenceArena,
     "clutch_plays": ClutchPlaysArena,
