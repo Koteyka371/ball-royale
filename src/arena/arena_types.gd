@@ -97,7 +97,27 @@ class PhysicsChainReactionsArena extends ProceduralArena:
         var h4 = ProceduralArena.Hazard.new()
         h4.id = 4; h4.x = cx; h4.y = cy; h4.radius = 80.0; h4.kind = "lava"; h4.damage = 20.0; hazards.append(h4)
 
+class NeuralBallArena extends ProceduralArena:
+    func generate() -> void:
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w := float(width)
+        var h := float(height)
+        var cx := w / 2.0
+        var cy := h / 2.0
+
+        rooms.append(ProceduralArena.Room.new(cx - 500.0, cy - 300.0, 400.0, 600.0))
+        rooms.append(ProceduralArena.Room.new(cx + 100.0, cy - 300.0, 400.0, 600.0))
+        corridors.append(ProceduralArena.Corridor.new(cx - 100.0, cy - 100.0, 200.0, 200.0))
+
+        var h0 = ProceduralArena.Hazard.new()
+        h0.id = 0; h0.x = cx - 100.0; h0.y = cy; h0.radius = 30.0; h0.kind = "spikes"; h0.damage = 20.0; hazards.append(h0)
+        var h1 = ProceduralArena.Hazard.new()
+        h1.id = 1; h1.x = cx + 100.0; h1.y = cy; h1.radius = 30.0; h1.kind = "spikes"; h1.damage = 20.0; hazards.append(h1)
+
 const ARENAS = [
+	"neural_ball",
 	"body_block",
 	"meta_evolution",
     "swarm_intelligence",

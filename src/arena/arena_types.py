@@ -814,7 +814,23 @@ class PhysicsChainReactionsArena(ProceduralArena):
         self.hazards.append(Hazard(id=4, x=cx, y=cy, radius=80.0, kind="lava", damage=20.0))
 
 
+class NeuralBallArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        self.rooms.append(Room(cx - 500, cy - 300, 400, 600))
+        self.rooms.append(Room(cx + 100, cy - 300, 400, 600))
+        self.corridors.append(Corridor(cx - 100, cy - 100, 200, 200))
+
+        self.hazards.append(Hazard(id=0, x=cx - 100, y=cy, radius=30.0, kind="spikes", damage=20.0))
+        self.hazards.append(Hazard(id=1, x=cx + 100, y=cy, radius=30.0, kind="spikes", damage=20.0))
+
 ARENAS = {
+    "neural_ball": NeuralBallArena,
     "body_block": BodyBlockArena,
     "meta_evolution": MetaEvolutionArena,
     "ambush": AmbushArena,
