@@ -213,7 +213,42 @@ class EscortArena extends ProceduralArena:
 		var h1 = ProceduralArena.Hazard.new(); h1.id = 0; h1.x = cx - 150; h1.y = cy; h1.radius = 40.0; h1.kind = "lava"; h1.damage = 10.0; hazards.append(h1)
 		var h2 = ProceduralArena.Hazard.new(); h2.id = 1; h2.x = cx + 150; h2.y = cy; h2.radius = 40.0; h2.kind = "lava"; h2.damage = 10.0; hazards.append(h2)
 
+class FleeArena extends ProceduralArena:
+	func _init(arena_size: float, seed_val: int = 0).(arena_size, arena_size, seed_val):
+		pass
+
+	func generate():
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+		var w = width
+		var h = height
+		var cx = w / 2.0
+		var cy = h / 2.0
+
+		var r0 = ProceduralArena.Room.new(); r0.x = cx - 200; r0.y = cy - 200; r0.width = 400; r0.height = 400; rooms.append(r0)
+		var r1 = ProceduralArena.Room.new(); r1.x = cx - 600; r1.y = cy - 600; r1.width = 300; r1.height = 300; rooms.append(r1)
+		var r2 = ProceduralArena.Room.new(); r2.x = cx + 300; r2.y = cy - 600; r2.width = 300; r2.height = 300; rooms.append(r2)
+		var r3 = ProceduralArena.Room.new(); r3.x = cx - 600; r3.y = cy + 300; r3.width = 300; r3.height = 300; rooms.append(r3)
+		var r4 = ProceduralArena.Room.new(); r4.x = cx + 300; r4.y = cy + 300; r4.width = 300; r4.height = 300; rooms.append(r4)
+
+		var c0 = ProceduralArena.Corridor.new(); c0.x = cx - 300; c0.y = cy - 300; c0.width = 100; c0.height = 100; corridors.append(c0)
+		var c1 = ProceduralArena.Corridor.new(); c1.x = cx + 200; c1.y = cy - 300; c1.width = 100; c1.height = 100; corridors.append(c1)
+		var c2 = ProceduralArena.Corridor.new(); c2.x = cx - 300; c2.y = cy + 200; c2.width = 100; c2.height = 100; corridors.append(c2)
+		var c3 = ProceduralArena.Corridor.new(); c3.x = cx + 200; c3.y = cy + 200; c3.width = 100; c3.height = 100; corridors.append(c3)
+
+		var h1 = ProceduralArena.Hazard.new()
+		h1.id = 1
+		h1.x = cx
+		h1.y = cy
+		h1.radius = 150.0
+		h1.kind = "lava"
+		h1.damage = 25.0
+		hazards.append(h1)
+
+
 const ARENAS = [
+	"flee",
 	"escort",
 	"wait_and_watch",
     "battle_royale_shrinking_zone",

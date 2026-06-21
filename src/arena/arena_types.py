@@ -995,7 +995,35 @@ class EscortArena(ProceduralArena):
         self.hazards.append(Hazard(id=0, x=cx - 150, y=cy, radius=40, kind="lava", damage=10))
         self.hazards.append(Hazard(id=1, x=cx + 150, y=cy, radius=40, kind="lava", damage=10))
 
+class FleeArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Center Room
+        self.rooms.append(Room(cx - 200, cy - 200, 400, 400))
+
+        # Outer Rooms (Corners)
+        self.rooms.append(Room(cx - 600, cy - 600, 300, 300))
+        self.rooms.append(Room(cx + 300, cy - 600, 300, 300))
+        self.rooms.append(Room(cx - 600, cy + 300, 300, 300))
+        self.rooms.append(Room(cx + 300, cy + 300, 300, 300))
+
+        # Corridors from center to corners
+        self.corridors.append(Corridor(cx - 300, cy - 300, 100, 100))
+        self.corridors.append(Corridor(cx + 200, cy - 300, 100, 100))
+        self.corridors.append(Corridor(cx - 300, cy + 200, 100, 100))
+        self.corridors.append(Corridor(cx + 200, cy + 200, 100, 100))
+
+        # Large danger hazard in center to encourage fleeing
+        self.hazards.append(Hazard(id=1, x=cx, y=cy, radius=150, kind="lava", damage=25))
+
+
 ARENAS = {
+    "flee": FleeArena,
     "escort": EscortArena,
     "wait_and_watch": WaitAndWatchArena,
     "battle_royale_shrinking_zone": BattleRoyaleShrinkingZoneArena,

@@ -21,7 +21,7 @@ class Hazard:
     var kind: String
     var damage: float
 
-    func _init(_id: int, _x: float, _y: float, _radius: float, _kind: String, _damage: float):
+    func _init(_id: int = 0, _x: float = 0.0, _y: float = 0.0, _radius: float = 0.0, _kind: String = "", _damage: float = 0.0):
         id = _id
         x = _x
         y = _y
@@ -35,7 +35,7 @@ class Room:
     var width: float
     var height: float
 
-    func _init(_x: float, _y: float, _w: float, _h: float):
+    func _init(_x: float = 0.0, _y: float = 0.0, _w: float = 0.0, _h: float = 0.0):
         x = _x
         y = _y
         width = _w
@@ -47,7 +47,7 @@ class Corridor:
     var width: float
     var height: float
 
-    func _init(_x: float, _y: float, _w: float, _h: float):
+    func _init(_x: float = 0.0, _y: float = 0.0, _w: float = 0.0, _h: float = 0.0):
         x = _x
         y = _y
         width = _w
