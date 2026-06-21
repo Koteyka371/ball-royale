@@ -476,3 +476,38 @@ class SwarmIntelligenceArena extends ProceduralArena:
         hazards.append(ProceduralArena.Hazard.new(1, cx + 100, cy - 100, 40.0, "spikes", 25.0))
         hazards.append(ProceduralArena.Hazard.new(2, cx - 100, cy + 100, 40.0, "spikes", 25.0))
         hazards.append(ProceduralArena.Hazard.new(3, cx + 100, cy + 100, 40.0, "spikes", 25.0))
+
+class AmbushArena extends ProceduralArena:
+    func generate() -> void:
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = width
+        var h = height
+        var cx = w / 2.0
+        var cy = h / 2.0
+
+        # 1 central combat zone
+        rooms.append(ProceduralArena.Room.new(cx - 300.0, cy - 300.0, 600.0, 600.0))
+
+        # 4 hiding spots (alcoves) in the corners
+        rooms.append(ProceduralArena.Room.new(50.0, 50.0, 150.0, 150.0))
+        rooms.append(ProceduralArena.Room.new(w - 200.0, 50.0, 150.0, 150.0))
+        rooms.append(ProceduralArena.Room.new(50.0, h - 200.0, 150.0, 150.0))
+        rooms.append(ProceduralArena.Room.new(w - 200.0, h - 200.0, 150.0, 150.0))
+
+        # Narrow corridors connecting hiding spots to the center
+        corridors.append(ProceduralArena.Corridor.new(100.0, 200.0, 50.0, cy - 400.0))
+        corridors.append(ProceduralArena.Corridor.new(100.0, cy - 300.0, cx - 300.0, 50.0))
+
+        corridors.append(ProceduralArena.Corridor.new(w - 150.0, 200.0, 50.0, cy - 400.0))
+        corridors.append(ProceduralArena.Corridor.new(cx + 300.0, cy - 300.0, w - cx - 300.0, 50.0))
+
+        corridors.append(ProceduralArena.Corridor.new(100.0, cy + 250.0, 50.0, h - cy - 400.0))
+        corridors.append(ProceduralArena.Corridor.new(100.0, cy + 250.0, cx - 300.0, 50.0))
+
+        corridors.append(ProceduralArena.Corridor.new(w - 150.0, cy + 250.0, 50.0, h - cy - 400.0))
+        corridors.append(ProceduralArena.Corridor.new(cx + 300.0, cy + 250.0, w - cx - 300.0, 50.0))
+
+        # 1 central hazard to discourage staying in the open
+        hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 80.0, "lava", 20.0))
