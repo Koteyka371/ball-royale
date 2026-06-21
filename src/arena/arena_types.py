@@ -895,7 +895,33 @@ class BattleRoyaleShrinkingZoneArena(ProceduralArena):
             if self.safe_zone_radius < 50.0:
                 self.safe_zone_radius = 50.0
 
+class WaitAndWatchArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+        self.rooms.append(Room(cx - 150, 50, 300, 200))
+        self.rooms.append(Room(cx - 150, h - 250, 300, 200))
+        self.rooms.append(Room(50, cy - 150, 200, 300))
+        self.rooms.append(Room(w - 250, cy - 150, 200, 300))
+
+        self.corridors.append(Corridor(cx - 50, 250, 100, cy - 550))
+        self.corridors.append(Corridor(cx - 50, cy + 300, 100, h - 550 - cy))
+        self.corridors.append(Corridor(250, cy - 50, cx - 550, 100))
+        self.corridors.append(Corridor(cx + 300, cy - 50, w - 550 - cx, 100))
+
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=100.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=1, x=cx - 150, y=cy - 150, radius=50.0, kind="spikes", damage=30.0))
+        self.hazards.append(Hazard(id=2, x=cx + 150, y=cy - 150, radius=50.0, kind="spikes", damage=30.0))
+        self.hazards.append(Hazard(id=3, x=cx - 150, y=cy + 150, radius=50.0, kind="spikes", damage=30.0))
+        self.hazards.append(Hazard(id=4, x=cx + 150, y=cy + 150, radius=50.0, kind="spikes", damage=30.0))
+
 ARENAS = {
+    "wait_and_watch": WaitAndWatchArena,
     "battle_royale_shrinking_zone": BattleRoyaleShrinkingZoneArena,
     "emotional_contagion": EmotionalContagionArena,
     "body_block": BodyBlockArena,
