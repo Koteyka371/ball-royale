@@ -571,7 +571,48 @@ class CollectBoosterArena(ProceduralArena):
         self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=40.0, kind="lava", damage=25.0))
 
 
+
+class MetaEvolutionArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # 5 rooms representing stages of evolution
+        # Central Apex room
+        self.rooms.append(Room(cx - 150, cy - 150, 300, 300))
+        # 4 outer generation rooms
+        self.rooms.append(Room(100, 100, 200, 200)) # Gen 1
+        self.rooms.append(Room(w - 300, 100, 200, 200)) # Gen 2
+        self.rooms.append(Room(w - 300, h - 300, 200, 200)) # Gen 3
+        self.rooms.append(Room(100, h - 300, 200, 200)) # Gen 4
+
+        # Connect Gen 1 to Gen 2
+        self.corridors.append(Corridor(250, 150, w - 500, 100))
+        # Connect Gen 2 to Gen 3
+        self.corridors.append(Corridor(w - 250, 250, 100, h - 500))
+        # Connect Gen 3 to Gen 4
+        self.corridors.append(Corridor(250, h - 250, w - 500, 100))
+        # Connect Gen 4 to Gen 1
+        self.corridors.append(Corridor(150, 250, 100, h - 500))
+
+        # Corridors to the center Apex
+        self.corridors.append(Corridor(cx - 50, 250, 100, cy - 400)) # Top to Center
+        self.corridors.append(Corridor(cx - 50, cy + 150, 100, h - cy - 400)) # Bottom to Center
+        self.corridors.append(Corridor(250, cy - 50, cx - 400, 100)) # Left to Center
+        self.corridors.append(Corridor(cx + 150, cy - 50, w - cx - 400, 100)) # Right to Center
+
+        # Hazards in central connecting corridors
+        self.hazards.append(Hazard(id=0, x=cx, y=400, radius=30.0, kind="lava", damage=10.0))
+        self.hazards.append(Hazard(id=1, x=cx, y=h-400, radius=30.0, kind="lava", damage=10.0))
+        self.hazards.append(Hazard(id=2, x=400, y=cy, radius=30.0, kind="lava", damage=10.0))
+        self.hazards.append(Hazard(id=3, x=w-400, y=cy, radius=30.0, kind="lava", damage=10.0))
+
 ARENAS = {
+
+    "meta_evolution": MetaEvolutionArena,
     "collect_booster": CollectBoosterArena,
     "reposition": RepositionArena,
     "avoid_trap": AvoidTrapArena,

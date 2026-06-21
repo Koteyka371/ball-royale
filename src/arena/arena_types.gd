@@ -28,5 +28,6 @@ const ARENAS = [
     "epic_kills",
     "reposition",
     "ball_relationships",
-    "collect_booster"
+    "collect_booster",
+    "meta_evolution"
 ]

@@ -34,3 +34,4 @@ Thumbs.db
 .dispatcher.lock
 .supervisor.lock
 replay.json
+.mypy_cache/
