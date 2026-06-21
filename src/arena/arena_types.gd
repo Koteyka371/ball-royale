@@ -146,7 +146,35 @@ class BattleRoyaleShrinkingZoneArena extends ProceduralArena:
             if safe_zone_radius < 50.0:
                 safe_zone_radius = 50.0
 
+class WaitAndWatchArena extends ProceduralArena:
+	func generate() -> void:
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+		var w = float(width)
+		var h = float(height)
+		var cx = w / 2.0
+		var cy = h / 2.0
+
+		rooms.append(ProceduralArena.Room.new(cx - 300, cy - 300, 600, 600))
+		rooms.append(ProceduralArena.Room.new(cx - 150, 50, 300, 200))
+		rooms.append(ProceduralArena.Room.new(cx - 150, h - 250, 300, 200))
+		rooms.append(ProceduralArena.Room.new(50, cy - 150, 200, 300))
+		rooms.append(ProceduralArena.Room.new(w - 250, cy - 150, 200, 300))
+
+		corridors.append(ProceduralArena.Corridor.new(cx - 50, 250, 100, cy - 550))
+		corridors.append(ProceduralArena.Corridor.new(cx - 50, cy + 300, 100, h - 550 - cy))
+		corridors.append(ProceduralArena.Corridor.new(250, cy - 50, cx - 550, 100))
+		corridors.append(ProceduralArena.Corridor.new(cx + 300, cy - 50, w - 550 - cx, 100))
+
+		var h0 = ProceduralArena.Hazard.new(); h0.id = 0; h0.x = cx; h0.y = cy; h0.radius = 100.0; h0.kind = "lava"; h0.damage = 20.0; hazards.append(h0)
+		var h1 = ProceduralArena.Hazard.new(); h1.id = 1; h1.x = cx - 150; h1.y = cy - 150; h1.radius = 50.0; h1.kind = "spikes"; h1.damage = 30.0; hazards.append(h1)
+		var h2 = ProceduralArena.Hazard.new(); h2.id = 2; h2.x = cx + 150; h2.y = cy - 150; h2.radius = 50.0; h2.kind = "spikes"; h2.damage = 30.0; hazards.append(h2)
+		var h3 = ProceduralArena.Hazard.new(); h3.id = 3; h3.x = cx - 150; h3.y = cy + 150; h3.radius = 50.0; h3.kind = "spikes"; h3.damage = 30.0; hazards.append(h3)
+		var h4 = ProceduralArena.Hazard.new(); h4.id = 4; h4.x = cx + 150; h4.y = cy + 150; h4.radius = 50.0; h4.kind = "spikes"; h4.damage = 30.0; hazards.append(h4)
+
 const ARENAS = [
+	"wait_and_watch",
     "battle_royale_shrinking_zone",
 	"emotional_contagion",
 	"body_block",
