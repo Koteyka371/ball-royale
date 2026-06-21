@@ -995,7 +995,27 @@ class EscortArena(ProceduralArena):
         self.hazards.append(Hazard(id=0, x=cx - 150, y=cy, radius=40, kind="lava", damage=10))
         self.hazards.append(Hazard(id=1, x=cx + 150, y=cy, radius=40, kind="lava", damage=10))
 
+class TargetStrongArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        self.rooms.append(Room(cx - 200, cy - 200, 400, 400))
+        self.rooms.append(Room(cx - 100, 50, 200, 150))
+        self.rooms.append(Room(cx - 100, h - 200, 200, 150))
+        self.rooms.append(Room(50, cy - 100, 150, 200))
+        self.rooms.append(Room(w - 200, cy - 100, 150, 200))
+
+        self.corridors.append(Corridor(cx - 50, 150, 100, cy - 300))
+        self.corridors.append(Corridor(cx - 50, cy + 150, 100, h - cy - 300))
+        self.corridors.append(Corridor(150, cy - 50, cx - 300, 100))
+        self.corridors.append(Corridor(cx + 150, cy - 50, w - cx - 300, 100))
+
 ARENAS = {
+    "target_strong": TargetStrongArena,
     "escort": EscortArena,
     "wait_and_watch": WaitAndWatchArena,
     "battle_royale_shrinking_zone": BattleRoyaleShrinkingZoneArena,

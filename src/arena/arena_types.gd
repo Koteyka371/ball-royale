@@ -213,7 +213,81 @@ class EscortArena extends ProceduralArena:
 		var h1 = ProceduralArena.Hazard.new(); h1.id = 0; h1.x = cx - 150; h1.y = cy; h1.radius = 40.0; h1.kind = "lava"; h1.damage = 10.0; hazards.append(h1)
 		var h2 = ProceduralArena.Hazard.new(); h2.id = 1; h2.x = cx + 150; h2.y = cy; h2.radius = 40.0; h2.kind = "lava"; h2.damage = 10.0; hazards.append(h2)
 
+class TargetStrongArena extends ProceduralArena:
+	func generate():
+		self.rooms.clear()
+		self.corridors.clear()
+		self.hazards.clear()
+		var w = self.width
+		var h = self.height
+		var cx = w / 2.0
+		var cy = h / 2.0
+
+		var r1 = ProceduralArena.Room.new()
+		r1.x = cx - 200
+		r1.y = cy - 200
+		r1.w = 400
+		r1.h = 400
+		self.rooms.append(r1)
+
+		var r2 = ProceduralArena.Room.new()
+		r2.x = cx - 100
+		r2.y = 50
+		r2.w = 200
+		r2.h = 150
+		self.rooms.append(r2)
+
+		var r3 = ProceduralArena.Room.new()
+		r3.x = cx - 100
+		r3.y = h - 200
+		r3.w = 200
+		r3.h = 150
+		self.rooms.append(r3)
+
+		var r4 = ProceduralArena.Room.new()
+		r4.x = 50
+		r4.y = cy - 100
+		r4.w = 150
+		r4.h = 200
+		self.rooms.append(r4)
+
+		var r5 = ProceduralArena.Room.new()
+		r5.x = w - 200
+		r5.y = cy - 100
+		r5.w = 150
+		r5.h = 200
+		self.rooms.append(r5)
+
+		var c1 = ProceduralArena.Corridor.new()
+		c1.x = cx - 50
+		c1.y = 150
+		c1.w = 100
+		c1.h = cy - 300
+		self.corridors.append(c1)
+
+		var c2 = ProceduralArena.Corridor.new()
+		c2.x = cx - 50
+		c2.y = cy + 150
+		c2.w = 100
+		c2.h = h - cy - 300
+		self.corridors.append(c2)
+
+		var c3 = ProceduralArena.Corridor.new()
+		c3.x = 150
+		c3.y = cy - 50
+		c3.w = cx - 300
+		c3.h = 100
+		self.corridors.append(c3)
+
+		var c4 = ProceduralArena.Corridor.new()
+		c4.x = cx + 150
+		c4.y = cy - 50
+		c4.w = w - cx - 300
+		c4.h = 100
+		self.corridors.append(c4)
+
 const ARENAS = [
+	"target_strong",
 	"escort",
 	"wait_and_watch",
     "battle_royale_shrinking_zone",
