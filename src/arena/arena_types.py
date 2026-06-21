@@ -327,6 +327,36 @@ class AggressiveChaseArena(ProceduralArena):
         self.corridors.append(Corridor(cx - 40, 50 + room_size, 80, cy - center_size/2 - (50 + room_size))) # Top
         self.corridors.append(Corridor(cx - 40, cy + center_size/2, 80, (h - 50 - room_size) - (cy + center_size/2))) # Bottom
 
+class FleeArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        self.rooms.append(Room(100.0, 100.0, 400.0, 400.0))
+        self.rooms.append(Room(w - 500.0, 100.0, 400.0, 400.0))
+        self.rooms.append(Room(100.0, h - 500.0, 400.0, 400.0))
+        self.rooms.append(Room(w - 500.0, h - 500.0, 400.0, 400.0))
+        self.rooms.append(Room(cx - 300.0, cy - 300.0, 600.0, 600.0))
+
+        self.corridors.append(Corridor(450.0, 200.0, w - 900.0, 200.0))
+        self.corridors.append(Corridor(450.0, h - 400.0, w - 900.0, 200.0))
+        self.corridors.append(Corridor(200.0, 450.0, 200.0, h - 900.0))
+        self.corridors.append(Corridor(w - 400.0, 450.0, 200.0, h - 900.0))
+
+        self.corridors.append(Corridor(cx - 100.0, 350.0, 200.0, cy - 650.0))
+        self.corridors.append(Corridor(cx - 100.0, cy + 250.0, 200.0, h - cy - 650.0))
+        self.corridors.append(Corridor(350.0, cy - 100.0, cx - 650.0, 200.0))
+        self.corridors.append(Corridor(cx + 250.0, cy - 100.0, w - cx - 650.0, 200.0))
+
+        self.hazards.append(Hazard(id=0, x=cx - 200.0, y=cy - 200.0, radius=40.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=1, x=cx + 200.0, y=cy - 200.0, radius=40.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=2, x=cx - 200.0, y=cy + 200.0, radius=40.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=3, x=cx + 200.0, y=cy + 200.0, radius=40.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=4, x=cx, y=cy, radius=60.0, kind="spikes", damage=10.0))
+
 class CircleStrafeArena(ProceduralArena):
     def generate(self):
         self.rooms.clear()
@@ -723,6 +753,7 @@ ARENAS = {
     "use_shield": UseShieldArena,
     "aggressive_chase": AggressiveChaseArena,
     "comebacks": ComebacksArena,
+    "flee": FleeArena,
     "circle_strafe": CircleStrafeArena,
     "epic_kills": EpicKillsArena,
     "ball_relationships": BallRelationshipsArena,
