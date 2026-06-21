@@ -146,6 +146,31 @@ class BattleRoyaleShrinkingZoneArena extends ProceduralArena:
             if safe_zone_radius < 50.0:
                 safe_zone_radius = 50.0
 
+class HealAllyArena extends ProceduralArena:
+    func generate():
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = self.width
+        var h = self.height
+        var cx = w / 2.0
+        var cy = h / 2.0
+
+        rooms.append(ProceduralArena.Room.new(cx - 300, cy - 300, 600, 600))
+        rooms.append(ProceduralArena.Room.new(100, 100, 300, 300))
+        rooms.append(ProceduralArena.Room.new(w - 400, 100, 300, 300))
+        rooms.append(ProceduralArena.Room.new(100, h - 400, 300, 300))
+        rooms.append(ProceduralArena.Room.new(w - 400, h - 400, 300, 300))
+
+        corridors.append(ProceduralArena.Corridor.new(350, 200, cx - 600, 100))
+        corridors.append(ProceduralArena.Corridor.new(cx - 350, 250, 100, cy - 500))
+        corridors.append(ProceduralArena.Corridor.new(cx + 250, 200, w - cx - 600, 100))
+        corridors.append(ProceduralArena.Corridor.new(cx + 250, 250, 100, cy - 500))
+        corridors.append(ProceduralArena.Corridor.new(350, h - 300, cx - 600, 100))
+        corridors.append(ProceduralArena.Corridor.new(cx - 350, cy + 250, 100, h - cy - 500))
+        corridors.append(ProceduralArena.Corridor.new(cx + 250, h - 300, w - cx - 600, 100))
+        corridors.append(ProceduralArena.Corridor.new(cx + 250, cy + 250, 100, h - cy - 500))
+
 class WaitAndWatchArena extends ProceduralArena:
 	func generate() -> void:
 		rooms.clear()
@@ -199,6 +224,7 @@ const ARENAS = [
     "choke_point",
     "use_shield",
     "retreat_to_ally",
+    "heal_ally",
     "buff_ally",
     "aggressive_chase",
     "comebacks",
