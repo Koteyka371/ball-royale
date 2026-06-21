@@ -64,7 +64,56 @@ class BodyBlockArena extends ProceduralArena:
         h0.damage = 25.0
         hazards.append(h0)
 
+class EmotionalContagionArena extends ProceduralArena:
+	func generate() -> void:
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+		var w := float(width)
+		var h := float(height)
+		var cx := w / 2.0
+		var cy := h / 2.0
+
+		# Center Room
+		rooms.append(ProceduralArena.Room.new(cx - 300, cy - 300, 600, 600))
+		# Top-Left
+		rooms.append(ProceduralArena.Room.new(cx - 700, cy - 700, 200, 200))
+		# Top-Right
+		rooms.append(ProceduralArena.Room.new(cx + 500, cy - 700, 200, 200))
+		# Bottom-Left
+		rooms.append(ProceduralArena.Room.new(cx - 700, cy + 500, 200, 200))
+		# Bottom-Right
+		rooms.append(ProceduralArena.Room.new(cx + 500, cy + 500, 200, 200))
+
+		# Corridors
+		# Top-Left L-shape
+		corridors.append(ProceduralArena.Corridor.new(cx - 550, cy - 550, 300, 100))
+		corridors.append(ProceduralArena.Corridor.new(cx - 350, cy - 550, 100, 300))
+
+		# Top-Right L-shape
+		corridors.append(ProceduralArena.Corridor.new(cx + 250, cy - 550, 300, 100))
+		corridors.append(ProceduralArena.Corridor.new(cx + 250, cy - 550, 100, 300))
+
+		# Bottom-Left L-shape
+		corridors.append(ProceduralArena.Corridor.new(cx - 550, cy + 450, 300, 100))
+		corridors.append(ProceduralArena.Corridor.new(cx - 350, cy + 250, 100, 300))
+
+		# Bottom-Right L-shape
+		corridors.append(ProceduralArena.Corridor.new(cx + 250, cy + 450, 300, 100))
+		corridors.append(ProceduralArena.Corridor.new(cx + 250, cy + 250, 100, 300))
+
+		# Hazards
+		var h0 = ProceduralArena.Hazard.new()
+		h0.id = 0
+		h0.x = cx
+		h0.y = cy
+		h0.radius = 80.0
+		h0.kind = "lava"
+		h0.damage = 20.0
+		hazards.append(h0)
+
 const ARENAS = [
+	"emotional_contagion",
 	"body_block",
 	"meta_evolution",
     "swarm_intelligence",

@@ -783,7 +783,47 @@ class BodyBlockArena(ProceduralArena):
         # A central hazard to force players into tighter chokes
         self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=50.0, kind="lava", damage=25.0))
 
+class EmotionalContagionArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Center Room
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+        # Top-Left
+        self.rooms.append(Room(cx - 700, cy - 700, 200, 200))
+        # Top-Right
+        self.rooms.append(Room(cx + 500, cy - 700, 200, 200))
+        # Bottom-Left
+        self.rooms.append(Room(cx - 700, cy + 500, 200, 200))
+        # Bottom-Right
+        self.rooms.append(Room(cx + 500, cy + 500, 200, 200))
+
+        # Corridors
+        # Top-Left L-shape
+        self.corridors.append(Corridor(cx - 550, cy - 550, 300, 100)) # Horizontal: connects to center top
+        self.corridors.append(Corridor(cx - 350, cy - 550, 100, 300)) # Vertical: connects down to center left
+
+        # Top-Right L-shape
+        self.corridors.append(Corridor(cx + 250, cy - 550, 300, 100))
+        self.corridors.append(Corridor(cx + 250, cy - 550, 100, 300))
+
+        # Bottom-Left L-shape
+        self.corridors.append(Corridor(cx - 550, cy + 450, 300, 100))
+        self.corridors.append(Corridor(cx - 350, cy + 250, 100, 300))
+
+        # Bottom-Right L-shape
+        self.corridors.append(Corridor(cx + 250, cy + 450, 300, 100))
+        self.corridors.append(Corridor(cx + 250, cy + 250, 100, 300))
+
+        # Hazards
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=80.0, kind="lava", damage=20.0))
+
 ARENAS = {
+    "emotional_contagion": EmotionalContagionArena,
     "body_block": BodyBlockArena,
     "meta_evolution": MetaEvolutionArena,
     "ambush": AmbushArena,
