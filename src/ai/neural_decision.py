@@ -1,5 +1,6 @@
 import os
 import json
+import numpy as np
 from typing import Any, Dict
 
 
@@ -55,15 +56,30 @@ class NeuralDecision:
         best_score = -9999.0
         best_action = "idle"
 
-        for i, action in enumerate(actions):
-            if i < len(biases):
-                score = biases[i]
-                for j in range(len(inputs)):
-                    if i < len(weights) and j < len(weights[i]):
-                        score += inputs[j] * weights[i][j]
-                if score > best_score:
-                    best_score = score
-                    best_action = action
+        # Use numpy for prediction
+        inputs_np = np.array(inputs)
+        weights_np = np.array(weights)
+        biases_np = np.array(biases)
+
+        try:
+            outputs = weights_np.dot(inputs_np) + biases_np
+            for i, action in enumerate(actions):
+                if i < len(outputs):
+                    score = outputs[i]
+                    if score > best_score:
+                        best_score = score
+                        best_action = action
+        except Exception:
+            # Fallback if shapes don't match (e.g. from tests with malformed weights)
+            for i, action in enumerate(actions):
+                if i < len(biases):
+                    score = biases[i]
+                    for j in range(len(inputs)):
+                        if i < len(weights) and j < len(weights[i]):
+                            score += inputs[j] * weights[i][j]
+                    if score > best_score:
+                        best_score = score
+                        best_action = action
 
         # Additional checks
         skill_timer = getattr(self.ball, "skill_timer", 0.0)
