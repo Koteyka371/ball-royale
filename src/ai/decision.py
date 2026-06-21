@@ -196,6 +196,10 @@ class Decision:
                 scores["chase"] += 100.0
                 scores["collect_booster"] -= 20.0
 
+        if b_type == "tank" and enemies_count > 0:
+            scores["attack"] += 150.0
+            scores["chase"] += 150.0
+
         if b_type == "tank" and allies_count > 0:
             scores["defend"] += 50.0
             scores["collect_booster"] -= 20.0
@@ -206,7 +210,7 @@ class Decision:
                 scores["use_skill"] += 300.0
             elif b_type == "scout" and (danger_level > 0.5 or opportunity_level > 0.5):
                 scores["use_skill"] += 200.0
-            elif b_type == "tank" and hp_percent < 0.5:
+            elif b_type == "tank" and hp_percent < 0.7:
                 scores["use_skill"] += 300.0
             elif b_type == "healer" and allies_count > 0:
                 scores["use_skill"] += 250.0
@@ -241,7 +245,7 @@ class Decision:
                         scores["use_skill"] += 200.0
                         scores["defend"] += 100.0
                     elif msg_type == "hold_position":
-                        scores["defend"] += 150.0
+                        scores["defend"] += 550.0
 
         # Coach Mode
         coach_strategy = perception_data.get("coach_strategy", "")
