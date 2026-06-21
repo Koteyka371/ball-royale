@@ -730,7 +730,42 @@ class AmbushArena(ProceduralArena):
         # 1 central hazard to discourage staying in the open
         self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=80.0, kind="lava", damage=20.0))
 
+
+class TargetStrongArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # 1 central combat zone
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+
+        # 4 outer spawn rooms
+        self.rooms.append(Room(100, 100, 200, 200))
+        self.rooms.append(Room(w - 300, 100, 200, 200))
+        self.rooms.append(Room(100, h - 300, 200, 200))
+        self.rooms.append(Room(w - 300, h - 300, 200, 200))
+
+        # Corridors connecting outer rooms to the center
+        self.corridors.append(Corridor(150, 250, 100, cy - 450))
+        self.corridors.append(Corridor(150, cy - 250, cx - 400, 100))
+
+        self.corridors.append(Corridor(w - 250, 250, 100, cy - 450))
+        self.corridors.append(Corridor(cx + 250, cy - 250, w - cx - 500, 100))
+
+        self.corridors.append(Corridor(150, cy + 250, 100, h - cy - 500))
+        self.corridors.append(Corridor(150, cy + 150, cx - 400, 100))
+
+        self.corridors.append(Corridor(w - 250, cy + 250, 100, h - cy - 500))
+        self.corridors.append(Corridor(cx + 250, cy + 150, w - cx - 500, 100))
+
+        # 1 central hazard
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=120.0, kind="lava", damage=25.0))
+
 ARENAS = {
+    "target_strong": TargetStrongArena,
     "ambush": AmbushArena,
     "swarm_intelligence": SwarmIntelligenceArena,
     "clutch_plays": ClutchPlaysArena,
