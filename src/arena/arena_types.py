@@ -783,7 +783,32 @@ class BodyBlockArena(ProceduralArena):
         # A central hazard to force players into tighter chokes
         self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=50.0, kind="lava", damage=25.0))
 
+class WaitAndWatchArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+        self.rooms.append(Room(100, 100, 200, 200))
+        self.rooms.append(Room(w - 300, 100, 200, 200))
+        self.rooms.append(Room(100, h - 300, 200, 200))
+        self.rooms.append(Room(w - 300, h - 300, 200, 200))
+
+
+
+        self.corridors.append(Corridor(200, 200, cx - 400, cy - 400)) # Top-Left
+        self.corridors.append(Corridor(cx + 200, 200, cx - 400, cy - 400)) # Top-Right
+        self.corridors.append(Corridor(200, cy + 200, cx - 400, cy - 400)) # Bottom-Left
+        self.corridors.append(Corridor(cx + 200, cy + 200, cx - 400, cy - 400)) # Bottom-Right
+
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=100.0, kind="lava", damage=25.0))
+
+
 ARENAS = {
+    "wait_and_watch": WaitAndWatchArena,
     "body_block": BodyBlockArena,
     "meta_evolution": MetaEvolutionArena,
     "ambush": AmbushArena,

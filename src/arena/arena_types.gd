@@ -64,7 +64,39 @@ class BodyBlockArena extends ProceduralArena:
         h0.damage = 25.0
         hazards.append(h0)
 
+class WaitAndWatchArena extends ProceduralArena:
+	func generate():
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+		var w = self.width
+		var h = self.height
+		var cx = w / 2.0
+		var cy = h / 2.0
+
+		rooms.append(ProceduralArena.Room.new(cx - 300, cy - 300, 600, 600))
+		rooms.append(ProceduralArena.Room.new(100, 100, 200, 200))
+		rooms.append(ProceduralArena.Room.new(w - 300, 100, 200, 200))
+		rooms.append(ProceduralArena.Room.new(100, h - 300, 200, 200))
+		rooms.append(ProceduralArena.Room.new(w - 300, h - 300, 200, 200))
+
+		corridors.append(ProceduralArena.Corridor.new(200, 200, cx - 400, cy - 400))
+		corridors.append(ProceduralArena.Corridor.new(cx + 200, 200, cx - 400, cy - 400))
+		corridors.append(ProceduralArena.Corridor.new(200, cy + 200, cx - 400, cy - 400))
+		corridors.append(ProceduralArena.Corridor.new(cx + 200, cy + 200, cx - 400, cy - 400))
+
+		var h0 = ProceduralArena.Hazard.new()
+		h0.id = 0
+		h0.x = cx
+		h0.y = cy
+		h0.radius = 100.0
+		h0.kind = "lava"
+		h0.damage = 25.0
+		hazards.append(h0)
+
+
 const ARENAS = [
+	"wait_and_watch",
 	"body_block",
 	"meta_evolution",
     "swarm_intelligence",
