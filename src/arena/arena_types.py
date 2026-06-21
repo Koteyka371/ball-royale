@@ -696,6 +696,30 @@ class TeamWipesArena(ProceduralArena):
         self.hazards.append(Hazard(id=2, x=cx - 200.0, y=cy + 200.0, radius=40.0, kind="lava", damage=20.0))
         self.hazards.append(Hazard(id=3, x=cx + 200.0, y=cy + 200.0, radius=40.0, kind="lava", damage=20.0))
 
+
+class EscortArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+        self.rooms.append(Room(100.0, cy - 150.0, 300.0, 300.0))
+        self.rooms.append(Room(w - 400.0, cy - 150.0, 300.0, 300.0))
+        self.corridors.append(Corridor(400.0, cy - 100.0, w - 800.0, 200.0))
+        self.rooms.append(Room(cx - 300.0, cy - 450.0, 200.0, 200.0))
+        self.rooms.append(Room(cx - 300.0, cy + 250.0, 200.0, 200.0))
+        self.rooms.append(Room(cx + 100.0, cy - 450.0, 200.0, 200.0))
+        self.rooms.append(Room(cx + 100.0, cy + 250.0, 200.0, 200.0))
+        self.corridors.append(Corridor(cx - 250.0, cy - 250.0, 100.0, 150.0))
+        self.corridors.append(Corridor(cx - 250.0, cy + 100.0, 100.0, 150.0))
+        self.corridors.append(Corridor(cx + 150.0, cy - 250.0, 100.0, 150.0))
+        self.corridors.append(Corridor(cx + 150.0, cy + 100.0, 100.0, 150.0))
+        self.hazards.append(Hazard(id=0, x=cx - 200.0, y=cy - 350.0, radius=40.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=1, x=cx - 200.0, y=cy + 350.0, radius=40.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=2, x=cx + 200.0, y=cy - 350.0, radius=40.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=3, x=cx + 200.0, y=cy + 350.0, radius=40.0, kind="lava", damage=20.0))
+
 ARENAS = {
     "swarm_intelligence": SwarmIntelligenceArena,
     "clutch_plays": ClutchPlaysArena,
@@ -727,7 +751,8 @@ ARENAS = {
     "epic_kills": EpicKillsArena,
     "ball_relationships": BallRelationshipsArena,
     "finals_1v1": Finals1v1Arena,
-    "team_wipes": TeamWipesArena
+    "team_wipes": TeamWipesArena,
+    "escort": EscortArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:

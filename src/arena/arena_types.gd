@@ -32,5 +32,6 @@ const ARENAS = [
     "clutch_plays",
     "collect_booster",
     "finals_1v1",
-    "team_wipes"
+    "team_wipes",
+    "escort"
 ]
