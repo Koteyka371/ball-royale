@@ -895,7 +895,45 @@ class BattleRoyaleShrinkingZoneArena(ProceduralArena):
             if self.safe_zone_radius < 50.0:
                 self.safe_zone_radius = 50.0
 
+
+class HealAllyArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Safe zones in corners for healing
+        self.rooms.append(Room(50.0, 50.0, 150.0, 150.0))
+        self.rooms.append(Room(w - 200.0, 50.0, 150.0, 150.0))
+        self.rooms.append(Room(50.0, h - 200.0, 150.0, 150.0))
+        self.rooms.append(Room(w - 200.0, h - 200.0, 150.0, 150.0))
+
+        # Central combat zone
+        self.rooms.append(Room(cx - 200.0, cy - 200.0, 400.0, 400.0))
+
+        # Connecting corridors
+        self.corridors.append(Corridor(100.0, 200.0, 50.0, cy - 350.0))
+        self.corridors.append(Corridor(100.0, cy - 150.0, cx - 250.0, 50.0))
+
+        self.corridors.append(Corridor(w - 150.0, 200.0, 50.0, cy - 350.0))
+        self.corridors.append(Corridor(cx + 200.0, cy - 150.0, cx - 250.0, 50.0))
+
+        self.corridors.append(Corridor(100.0, cy + 150.0, 50.0, h - cy - 350.0))
+        self.corridors.append(Corridor(100.0, cy + 100.0, cx - 250.0, 50.0))
+
+        self.corridors.append(Corridor(w - 150.0, cy + 150.0, 50.0, h - cy - 350.0))
+        self.corridors.append(Corridor(cx + 200.0, cy + 100.0, cx - 250.0, 50.0))
+
+        # Hazards in the center to cause damage
+        self.hazards.append(Hazard(id=0, x=cx - 100.0, y=cy - 100.0, radius=30.0, kind="lava", damage=15.0))
+        self.hazards.append(Hazard(id=1, x=cx + 100.0, y=cy - 100.0, radius=30.0, kind="lava", damage=15.0))
+        self.hazards.append(Hazard(id=2, x=cx - 100.0, y=cy + 100.0, radius=30.0, kind="lava", damage=15.0))
+        self.hazards.append(Hazard(id=3, x=cx + 100.0, y=cy + 100.0, radius=30.0, kind="lava", damage=15.0))
+
 ARENAS = {
+    "heal_ally": HealAllyArena,
     "battle_royale_shrinking_zone": BattleRoyaleShrinkingZoneArena,
     "emotional_contagion": EmotionalContagionArena,
     "body_block": BodyBlockArena,

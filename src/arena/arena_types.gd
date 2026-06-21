@@ -146,7 +146,73 @@ class BattleRoyaleShrinkingZoneArena extends ProceduralArena:
             if safe_zone_radius < 50.0:
                 safe_zone_radius = 50.0
 
+
+class HealAllyArena extends ProceduralArena:
+	func _init(arena_size: float, seed_val: int = 0).(arena_size, arena_size, seed_val):
+		pass
+
+	func generate() -> void:
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+		var w: float = self.width
+		var h: float = self.height
+		var cx: float = w / 2.0
+		var cy: float = h / 2.0
+
+		rooms.append(ProceduralArena.Room.new(50.0, 50.0, 150.0, 150.0))
+		rooms.append(ProceduralArena.Room.new(w - 200.0, 50.0, 150.0, 150.0))
+		rooms.append(ProceduralArena.Room.new(50.0, h - 200.0, 150.0, 150.0))
+		rooms.append(ProceduralArena.Room.new(w - 200.0, h - 200.0, 150.0, 150.0))
+		rooms.append(ProceduralArena.Room.new(cx - 200.0, cy - 200.0, 400.0, 400.0))
+
+		corridors.append(ProceduralArena.Corridor.new(100.0, 200.0, 50.0, cy - 350.0))
+		corridors.append(ProceduralArena.Corridor.new(100.0, cy - 150.0, cx - 250.0, 50.0))
+		corridors.append(ProceduralArena.Corridor.new(w - 150.0, 200.0, 50.0, cy - 350.0))
+		corridors.append(ProceduralArena.Corridor.new(cx + 200.0, cy - 150.0, cx - 250.0, 50.0))
+		corridors.append(ProceduralArena.Corridor.new(100.0, cy + 150.0, 50.0, h - cy - 350.0))
+		corridors.append(ProceduralArena.Corridor.new(100.0, cy + 100.0, cx - 250.0, 50.0))
+		corridors.append(ProceduralArena.Corridor.new(w - 150.0, cy + 150.0, 50.0, h - cy - 350.0))
+		corridors.append(ProceduralArena.Corridor.new(cx + 200.0, cy + 100.0, cx - 250.0, 50.0))
+
+		var h0 = ProceduralArena.Hazard.new()
+		h0.id = 0
+		h0.x = cx - 100.0
+		h0.y = cy - 100.0
+		h0.radius = 30.0
+		h0.kind = "lava"
+		h0.damage = 15.0
+		hazards.append(h0)
+
+		var h1 = ProceduralArena.Hazard.new()
+		h1.id = 1
+		h1.x = cx + 100.0
+		h1.y = cy - 100.0
+		h1.radius = 30.0
+		h1.kind = "lava"
+		h1.damage = 15.0
+		hazards.append(h1)
+
+		var h2 = ProceduralArena.Hazard.new()
+		h2.id = 2
+		h2.x = cx - 100.0
+		h2.y = cy + 100.0
+		h2.radius = 30.0
+		h2.kind = "lava"
+		h2.damage = 15.0
+		hazards.append(h2)
+
+		var h3 = ProceduralArena.Hazard.new()
+		h3.id = 3
+		h3.x = cx + 100.0
+		h3.y = cy + 100.0
+		h3.radius = 30.0
+		h3.kind = "lava"
+		h3.damage = 15.0
+		hazards.append(h3)
+
 const ARENAS = [
+	"heal_ally",
     "battle_royale_shrinking_zone",
 	"emotional_contagion",
 	"body_block",
