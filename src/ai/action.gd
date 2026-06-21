@@ -1736,6 +1736,21 @@ func _use_skill():
                 self.ball.x += cos(angle) * 100.0
                 self.ball.y += sin(angle) * 100.0
 
+        elif skill_name == "target_strong":
+            var enemies = _get_enemies()
+            if enemies.size() > 0:
+                var target = _find_strongest_enemy_deterministic(enemies)
+                var dx = target.x - self.ball.x
+                var dy = target.y - self.ball.y
+                var dist = sqrt(dx*dx + dy*dy)
+                if dist > 0.0001:
+                    self.ball.x += (dx/dist) * 150.0
+                    self.ball.y += (dy/dist) * 150.0
+            else:
+                var angle = randf() * PI * 2.0
+                self.ball.x += cos(angle) * 150.0
+                self.ball.y += sin(angle) * 150.0
+
         if "skill_cooldown" in self.ball:
             self.ball.skill_timer = self.ball.skill_cooldown
 

@@ -1132,6 +1132,23 @@ class Action:
                     self.ball.x += math.cos(angle) * 100.0
                     self.ball.y += math.sin(angle) * 100.0
 
+            elif skill_name == "target_strong":
+                import random
+                import math
+                enemies = self._get_enemies()
+                if enemies:
+                    target = self._find_strongest_enemy_deterministic(enemies)
+                    dx = target.x - self.ball.x
+                    dy = target.y - self.ball.y
+                    dist = math.sqrt(dx*dx + dy*dy)
+                    if dist > 0.0001:
+                        self.ball.x += (dx/dist) * 150.0
+                        self.ball.y += (dy/dist) * 150.0
+                else:
+                    angle = random.uniform(0, 2 * math.pi)
+                    self.ball.x += math.cos(angle) * 150.0
+                    self.ball.y += math.sin(angle) * 150.0
+
             if hasattr(self.ball, "skill_cooldown"):
                 self.ball.skill_timer = self.ball.skill_cooldown
 
