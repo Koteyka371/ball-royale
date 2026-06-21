@@ -1,0 +1,4 @@
+{
+  "title": "Neural Ball Deep Evolution Strategy",
+  "description": "Introduce an extended training phase for Neural balls where their initial starting weights are determined by parsing recent battle histories to automatically adapt to the meta. If a specific weapon type or ball is overperforming, the neural networks organically evolve their initial population biases (e.g. higher 'flee' weight when encountering that specific counter) to mimic a dynamically shifting ecosystem rather than starting from pure random noise each time."
+}

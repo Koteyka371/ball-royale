@@ -1,6 +1,7 @@
 import json
 import random
 import os
+import numpy as np
 from typing import List, Dict, Any
 
 class NeuralNet:
@@ -9,8 +10,8 @@ class NeuralNet:
         self.output_size = output_size
         # Simple linear layer (weights + biases)
         # weights[i][j] is the weight from input j to output i
-        self.weights = [[random.uniform(-1, 1) for _ in range(input_size)] for _ in range(output_size)]
-        self.biases = [random.uniform(-1, 1) for _ in range(output_size)]
+        self.weights = np.random.uniform(-1, 1, (output_size, input_size)).tolist()
+        self.biases = np.random.uniform(-1, 1, output_size).tolist()
 
     def predict(self, inputs: List[float]) -> List[float]:
         """Forward pass."""
@@ -18,22 +19,29 @@ class NeuralNet:
             # Fallback or truncate/pad if mismatch
             inputs = (inputs + [0.0]*self.input_size)[:self.input_size]
 
-        outputs = []
-        for i in range(self.output_size):
-            score = self.biases[i]
-            for j in range(self.input_size):
-                score += inputs[j] * self.weights[i][j]
-            outputs.append(score)
-        return outputs
+        inputs_np = np.array(inputs)
+        weights_np = np.array(self.weights)
+        biases_np = np.array(self.biases)
+        outputs_np = weights_np.dot(inputs_np) + biases_np
+        return outputs_np.tolist()
 
     def mutate(self, rate: float = 0.1, amount: float = 0.5) -> None:
-        """Randomly adjust weights and biases for genetic algorithm."""
-        for i in range(self.output_size):
-            if random.random() < rate:
-                self.biases[i] += random.uniform(-amount, amount)
-            for j in range(self.input_size):
-                if random.random() < rate:
-                    self.weights[i][j] += random.uniform(-amount, amount)
+        """Randomly adjust weights and biases for genetic algorithm using numpy."""
+        weights_np = np.array(self.weights)
+        biases_np = np.array(self.biases)
+
+        # Mutate biases
+        bias_mask = np.random.rand(self.output_size) < rate
+        bias_mutations = np.random.uniform(-amount, amount, self.output_size)
+        biases_np[bias_mask] += bias_mutations[bias_mask]
+
+        # Mutate weights
+        weight_mask = np.random.rand(self.output_size, self.input_size) < rate
+        weight_mutations = np.random.uniform(-amount, amount, (self.output_size, self.input_size))
+        weights_np[weight_mask] += weight_mutations[weight_mask]
+
+        self.weights = weights_np.tolist()
+        self.biases = biases_np.tolist()
 
     def clone(self) -> 'NeuralNet':
         """Create a deep copy of this network."""
