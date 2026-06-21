@@ -64,45 +64,46 @@ class Sniper:
         """
         self.current_action = "kite"
 
-        # Process ability cooldowns
+        # Update timers
         if getattr(self, "skill_timer", 0.0) > 0:
             self.skill_timer -= delta
         if getattr(self, "attack_timer", 0.0) > 0:
             self.attack_timer -= delta
 
-        if not target:
+        # Proceed only if target exists
+        if target is None:
             return
 
-        # Compute vector to target
-        dx = target.x - self.x
-        dy = target.y - self.y
-        distance = math.hypot(dx, dy)
+        # Calculate vector and distance to the target
+        diff_x = target.x - self.x
+        diff_y = target.y - self.y
+        dist = math.hypot(diff_x, diff_y)
 
-        if distance <= 0.0001:
+        if dist <= 0.0001:
             return
 
-        dir_x = dx / distance
-        dir_y = dy / distance
+        norm_x = diff_x / dist
+        norm_y = diff_y / dist
 
-        move_speed = self.SPEED * delta * 60.0
-        safe_distance = self.attack_range * 0.8
+        movement = self.SPEED * delta * 60.0
+        ideal_safe_dist = self.attack_range * 0.8
 
-        # Movement logic: Keep distance
-        if distance > self.attack_range:
-            # Move towards target if too far
-            step = min(move_speed, distance - self.attack_range)
-            self.x += dir_x * step
-            self.y += dir_y * step
-        elif distance < safe_distance:
-            # Move away from target if too close
-            self.x -= dir_x * move_speed
-            self.y -= dir_y * move_speed
+        # Maintain distance logic
+        if dist > self.attack_range:
+            # Too far, move closer
+            forward_step = min(movement, dist - self.attack_range)
+            self.x += norm_x * forward_step
+            self.y += norm_y * forward_step
+        elif dist < ideal_safe_dist:
+            # Too close, move away
+            self.x -= norm_x * movement
+            self.y -= norm_y * movement
 
-        # Re-evaluate distance after movement
-        new_dist = math.hypot(target.x - self.x, target.y - self.y)
+        # Re-evaluate distance after adjusting position
+        dist_updated = math.hypot(target.x - self.x, target.y - self.y)
 
-        # Attack or use skill if within range
-        if new_dist <= self.attack_range:
+        # Attack or skill if within range
+        if dist_updated <= self.attack_range:
             if self.skill_timer <= 0:
                 self.use_skill()
             elif getattr(self, 'attack_timer', 0.0) <= 0:
