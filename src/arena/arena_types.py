@@ -783,7 +783,32 @@ class BodyBlockArena(ProceduralArena):
         # A central hazard to force players into tighter chokes
         self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=50.0, kind="lava", damage=25.0))
 
+class FleeArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # 5 open rooms (center and corners) to allow fleeing
+        self.rooms.append(Room(cx - 200, cy - 200, 400, 400)) # Center
+        self.rooms.append(Room(100, cy - 150, 300, 300)) # Left
+        self.rooms.append(Room(w - 400, cy - 150, 300, 300)) # Right
+        self.rooms.append(Room(cx - 150, 100, 300, 300)) # Top
+        self.rooms.append(Room(cx - 150, h - 400, 300, 300)) # Bottom
+
+        # Long corridors to run away
+        self.corridors.append(Corridor(350, cy - 100, 500, 200)) # Left corridor
+        self.corridors.append(Corridor(cx + 150, cy - 100, 500, 200)) # Right corridor
+        self.corridors.append(Corridor(cx - 100, 350, 200, 500)) # Top corridor
+        self.corridors.append(Corridor(cx - 100, cy + 150, 200, 500)) # Bottom corridor
+
+        # A central hazard to avoid while running
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=80.0, kind="lava", damage=30.0))
+
 ARENAS = {
+    "flee": FleeArena,
     "body_block": BodyBlockArena,
     "meta_evolution": MetaEvolutionArena,
     "ambush": AmbushArena,
