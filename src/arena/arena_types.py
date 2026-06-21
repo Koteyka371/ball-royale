@@ -696,7 +696,42 @@ class TeamWipesArena(ProceduralArena):
         self.hazards.append(Hazard(id=2, x=cx - 200.0, y=cy + 200.0, radius=40.0, kind="lava", damage=20.0))
         self.hazards.append(Hazard(id=3, x=cx + 200.0, y=cy + 200.0, radius=40.0, kind="lava", damage=20.0))
 
+
+class AmbushArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # 1 central combat zone
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+
+        # 4 hiding spots (alcoves) in the corners
+        self.rooms.append(Room(50, 50, 150, 150))
+        self.rooms.append(Room(w - 200, 50, 150, 150))
+        self.rooms.append(Room(50, h - 200, 150, 150))
+        self.rooms.append(Room(w - 200, h - 200, 150, 150))
+
+        # Narrow corridors connecting hiding spots to the center
+        self.corridors.append(Corridor(100, 200, 50, cy - 400)) # Top-Left
+        self.corridors.append(Corridor(100, cy - 300, cx - 300, 50))
+
+        self.corridors.append(Corridor(w - 150, 200, 50, cy - 400)) # Top-Right
+        self.corridors.append(Corridor(cx + 300, cy - 300, w - cx - 300, 50))
+
+        self.corridors.append(Corridor(100, cy + 250, 50, h - cy - 400)) # Bottom-Left
+        self.corridors.append(Corridor(100, cy + 250, cx - 300, 50))
+
+        self.corridors.append(Corridor(w - 150, cy + 250, 50, h - cy - 400)) # Bottom-Right
+        self.corridors.append(Corridor(cx + 300, cy + 250, w - cx - 300, 50))
+
+        # 1 central hazard to discourage staying in the open
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=80.0, kind="lava", damage=20.0))
+
 ARENAS = {
+    "ambush": AmbushArena,
     "swarm_intelligence": SwarmIntelligenceArena,
     "clutch_plays": ClutchPlaysArena,
     "collect_booster": CollectBoosterArena,
