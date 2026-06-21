@@ -386,3 +386,37 @@ class ClutchPlaysArena:
         hazards.append(ProceduralArena.Hazard.new(2, cx + 150, cy - 150, 50.0, "spikes", 20.0))
         hazards.append(ProceduralArena.Hazard.new(3, cx - 150, cy + 150, 50.0, "spikes", 20.0))
         hazards.append(ProceduralArena.Hazard.new(4, cx + 150, cy + 150, 50.0, "spikes", 20.0))
+
+class TargetWeakArena extends ProceduralArena:
+    func generate():
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = width
+        var h = height
+        var cx = w / 2.0
+        var cy = h / 2.0
+
+        rooms.append(ProceduralArena.Room.new(cx - 400.0, cy - 400.0, 800.0, 800.0))
+
+        rooms.append(ProceduralArena.Room.new(50.0, 50.0, 150.0, 150.0))
+        rooms.append(ProceduralArena.Room.new(w - 200.0, 50.0, 150.0, 150.0))
+        rooms.append(ProceduralArena.Room.new(50.0, h - 200.0, 150.0, 150.0))
+        rooms.append(ProceduralArena.Room.new(w - 200.0, h - 200.0, 150.0, 150.0))
+
+        corridors.append(ProceduralArena.Corridor.new(100.0, 200.0, 50.0, cy - 600.0))
+        corridors.append(ProceduralArena.Corridor.new(100.0, cy - 400.0, cx - 500.0, 50.0))
+
+        corridors.append(ProceduralArena.Corridor.new(w - 150.0, 200.0, 50.0, cy - 600.0))
+        corridors.append(ProceduralArena.Corridor.new(cx + 400.0, cy - 400.0, w - cx - 550.0, 50.0))
+
+        corridors.append(ProceduralArena.Corridor.new(100.0, cy + 400.0, 50.0, h - cy - 600.0))
+        corridors.append(ProceduralArena.Corridor.new(100.0, cy + 350.0, cx - 500.0, 50.0))
+
+        corridors.append(ProceduralArena.Corridor.new(w - 150.0, cy + 400.0, 50.0, h - cy - 600.0))
+        corridors.append(ProceduralArena.Corridor.new(cx + 400.0, cy + 350.0, w - cx - 550.0, 50.0))
+
+        hazards.append(ProceduralArena.Hazard.new(0, cx - 200.0, cy - 200.0, 40.0, "lava", 20.0))
+        hazards.append(ProceduralArena.Hazard.new(1, cx + 200.0, cy - 200.0, 40.0, "spikes", 15.0))
+        hazards.append(ProceduralArena.Hazard.new(2, cx - 200.0, cy + 200.0, 40.0, "spikes", 15.0))
+        hazards.append(ProceduralArena.Hazard.new(3, cx + 200.0, cy + 200.0, 40.0, "lava", 20.0))

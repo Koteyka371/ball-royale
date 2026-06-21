@@ -3,6 +3,7 @@ extends RefCounted
 
 const ARENAS = [
     "avoid_trap",
+    "target_weak",
     "kite",
     "procedural",
     "cross",
