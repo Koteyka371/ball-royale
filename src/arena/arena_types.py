@@ -761,7 +761,30 @@ class MetaEvolutionArena(ProceduralArena):
         self.hazards.append(Hazard(id=4, x=cx + 600, y=cy + 320, radius=20.0, kind="spikes", damage=30.0))
 
 
+class BodyBlockArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # A central room where the main engagement happens
+        self.rooms.append(Room(cx - 400, cy - 200, 800, 400))
+
+        # Two smaller rooms representing "ally base" and "enemy spawn"
+        self.rooms.append(Room(cx - 700, cy - 100, 200, 200)) # Left ally base
+        self.rooms.append(Room(cx + 500, cy - 100, 200, 200)) # Right enemy base
+
+        # Narrow choke point corridors connecting the bases to the center room to force body blocking
+        self.corridors.append(Corridor(cx - 500, cy - 50, 100, 100))
+        self.corridors.append(Corridor(cx + 400, cy - 50, 100, 100))
+
+        # A central hazard to force players into tighter chokes
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=50.0, kind="lava", damage=25.0))
+
 ARENAS = {
+    "body_block": BodyBlockArena,
     "meta_evolution": MetaEvolutionArena,
     "ambush": AmbushArena,
     "swarm_intelligence": SwarmIntelligenceArena,
