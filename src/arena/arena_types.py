@@ -995,7 +995,47 @@ class EscortArena(ProceduralArena):
         self.hazards.append(Hazard(id=0, x=cx - 150, y=cy, radius=40, kind="lava", damage=10))
         self.hazards.append(Hazard(id=1, x=cx + 150, y=cy, radius=40, kind="lava", damage=10))
 
+class FunnyFailsArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # 5 rooms
+        self.rooms.append(Room(cx - 200, cy - 200, 400, 400)) # Center
+        self.rooms.append(Room(cx - 700, cy - 700, 300, 300)) # Top-Left
+        self.rooms.append(Room(cx + 400, cy - 700, 300, 300)) # Top-Right
+        self.rooms.append(Room(cx - 700, cy + 400, 300, 300)) # Bottom-Left
+        self.rooms.append(Room(cx + 400, cy + 400, 300, 300)) # Bottom-Right
+
+        # Corridors overlapping by 50px at each end -> length = gap + 100
+        # Center to Top-Left: gap X from (cx-400) to (cx-200) -> 200
+        self.corridors.append(Corridor(cx - 450, cy - 600, 300, 100)) # Horizontal TL
+        self.corridors.append(Corridor(cx - 250, cy - 650, 100, 500)) # Vertical TL
+
+        # Center to Top-Right
+        self.corridors.append(Corridor(cx + 150, cy - 600, 300, 100))
+        self.corridors.append(Corridor(cx + 150, cy - 650, 100, 500))
+
+        # Center to Bottom-Left
+        self.corridors.append(Corridor(cx - 450, cy + 500, 300, 100))
+        self.corridors.append(Corridor(cx - 250, cy + 150, 100, 400))
+
+        # Center to Bottom-Right
+        self.corridors.append(Corridor(cx + 150, cy + 500, 300, 100))
+        self.corridors.append(Corridor(cx + 150, cy + 150, 100, 400))
+
+        # Hazards
+        self.hazards.append(Hazard(0, cx, cy, 50.0, "lava", 20.0))
+        self.hazards.append(Hazard(1, cx - 300, cy - 600, 40.0, "lava", 20.0))
+        self.hazards.append(Hazard(2, cx + 300, cy - 600, 40.0, "lava", 20.0))
+        self.hazards.append(Hazard(3, cx - 300, cy + 500, 40.0, "lava", 20.0))
+        self.hazards.append(Hazard(4, cx + 300, cy + 500, 40.0, "lava", 20.0))
+
 ARENAS = {
+    "funny_fails": FunnyFailsArena,
     "escort": EscortArena,
     "wait_and_watch": WaitAndWatchArena,
     "battle_royale_shrinking_zone": BattleRoyaleShrinkingZoneArena,

@@ -1,6 +1,40 @@
 class_name ArenaTypes
 extends RefCounted
 
+class FunnyFailsArena extends ProceduralArena:
+	func generate():
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+		var w = self.width
+		var h = self.height
+		var cx = w / 2.0
+		var cy = h / 2.0
+
+		rooms.append(ProceduralArena.Room.new(cx - 200, cy - 200, 400, 400))
+		rooms.append(ProceduralArena.Room.new(cx - 700, cy - 700, 300, 300))
+		rooms.append(ProceduralArena.Room.new(cx + 400, cy - 700, 300, 300))
+		rooms.append(ProceduralArena.Room.new(cx - 700, cy + 400, 300, 300))
+		rooms.append(ProceduralArena.Room.new(cx + 400, cy + 400, 300, 300))
+
+		corridors.append(ProceduralArena.Corridor.new(cx - 450, cy - 600, 300, 100))
+		corridors.append(ProceduralArena.Corridor.new(cx - 250, cy - 650, 100, 500))
+
+		corridors.append(ProceduralArena.Corridor.new(cx + 150, cy - 600, 300, 100))
+		corridors.append(ProceduralArena.Corridor.new(cx + 150, cy - 650, 100, 500))
+
+		corridors.append(ProceduralArena.Corridor.new(cx - 450, cy + 500, 300, 100))
+		corridors.append(ProceduralArena.Corridor.new(cx - 250, cy + 150, 100, 400))
+
+		corridors.append(ProceduralArena.Corridor.new(cx + 150, cy + 500, 300, 100))
+		corridors.append(ProceduralArena.Corridor.new(cx + 150, cy + 150, 100, 400))
+
+		hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 50.0, "lava", 20.0))
+		hazards.append(ProceduralArena.Hazard.new(1, cx - 300, cy - 600, 40.0, "lava", 20.0))
+		hazards.append(ProceduralArena.Hazard.new(2, cx + 300, cy - 600, 40.0, "lava", 20.0))
+		hazards.append(ProceduralArena.Hazard.new(3, cx - 300, cy + 500, 40.0, "lava", 20.0))
+		hazards.append(ProceduralArena.Hazard.new(4, cx + 300, cy + 500, 40.0, "lava", 20.0))
+
 class MetaEvolutionArena extends ProceduralArena:
 	func generate():
 		rooms.clear()
@@ -214,6 +248,7 @@ class EscortArena extends ProceduralArena:
 		var h2 = ProceduralArena.Hazard.new(); h2.id = 1; h2.x = cx + 150; h2.y = cy; h2.radius = 40.0; h2.kind = "lava"; h2.damage = 10.0; hazards.append(h2)
 
 const ARENAS = [
+	"funny_fails",
 	"escort",
 	"wait_and_watch",
     "battle_royale_shrinking_zone",
