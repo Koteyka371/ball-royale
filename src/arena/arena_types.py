@@ -613,6 +613,31 @@ class ClutchPlaysArena(ProceduralArena):
         self.hazards.append(Hazard(id=3, x=cx - 150, y=cy + 150, radius=50.0, kind="spikes", damage=20.0))
         self.hazards.append(Hazard(id=4, x=cx + 150, y=cy + 150, radius=50.0, kind="spikes", damage=20.0))
 
+class AICommentaryArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        self.rooms.append(Room(cx - 150, cy - 150, 300, 300))
+        self.rooms.append(Room(cx - 300, 100, 600, 150))
+        self.rooms.append(Room(cx - 300, h - 250, 600, 150))
+        self.rooms.append(Room(100, cy - 300, 150, 600))
+        self.rooms.append(Room(w - 250, cy - 300, 150, 600))
+
+        self.corridors.append(Corridor(cx - 50, 200, 100, cy - 150 - 200 + 50))
+        self.corridors.append(Corridor(cx - 50, cy + 150 - 50, 100, h - 250 - (cy + 150) + 100))
+        self.corridors.append(Corridor(200, cy - 50, cx - 150 - 200 + 50, 100))
+        self.corridors.append(Corridor(cx + 150 - 50, cy - 50, w - 250 - (cx + 150) + 100, 100))
+
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=50.0, kind="lava", damage=25.0))
+        self.hazards.append(Hazard(id=1, x=cx - 200, y=175, radius=30.0, kind="spikes", damage=15.0))
+        self.hazards.append(Hazard(id=2, x=cx + 200, y=175, radius=30.0, kind="spikes", damage=15.0))
+        self.hazards.append(Hazard(id=3, x=cx - 200, y=h - 175, radius=30.0, kind="spikes", damage=15.0))
+        self.hazards.append(Hazard(id=4, x=cx + 200, y=h - 175, radius=30.0, kind="spikes", damage=15.0))
+
 ARENAS = {
     "clutch_plays": ClutchPlaysArena,
     "collect_booster": CollectBoosterArena,
@@ -641,7 +666,8 @@ ARENAS = {
     "comebacks": ComebacksArena,
     "circle_strafe": CircleStrafeArena,
     "epic_kills": EpicKillsArena,
-    "ball_relationships": BallRelationshipsArena
+    "ball_relationships": BallRelationshipsArena,
+    "ai_commentary": AICommentaryArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:

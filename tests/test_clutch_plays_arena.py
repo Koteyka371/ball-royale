@@ -1,5 +1,8 @@
-import pytest
-from src.arena.arena_types import get_arena, ClutchPlaysArena
+import sys
+import os
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
+from arena.arena_types import get_arena, ClutchPlaysArena
 
 def test_clutch_plays_arena():
     arena = get_arena("clutch_plays", arena_size=2000)

@@ -342,6 +342,33 @@ class BallRelationshipsArena extends ProceduralArena:
         hazards.append(ProceduralArena.Hazard.new(3, cx + 150.0, cy + 150.0, 30.0, "lava", 20.0))
 
 
+class AICommentaryArena extends ProceduralArena:
+    func generate() -> void:
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = width
+        var h = height
+        var cx = w / 2
+        var cy = h / 2
+
+        rooms.append(ProceduralArena.Room.new(cx - 150, cy - 150, 300, 300))
+        rooms.append(ProceduralArena.Room.new(cx - 300, 100, 600, 150))
+        rooms.append(ProceduralArena.Room.new(cx - 300, h - 250, 600, 150))
+        rooms.append(ProceduralArena.Room.new(100, cy - 300, 150, 600))
+        rooms.append(ProceduralArena.Room.new(w - 250, cy - 300, 150, 600))
+
+        corridors.append(ProceduralArena.Corridor.new(cx - 50, 200, 100, cy - 150 - 200 + 50))
+        corridors.append(ProceduralArena.Corridor.new(cx - 50, cy + 150 - 50, 100, h - 250 - (cy + 150) + 100))
+        corridors.append(ProceduralArena.Corridor.new(200, cy - 50, cx - 150 - 200 + 50, 100))
+        corridors.append(ProceduralArena.Corridor.new(cx + 150 - 50, cy - 50, w - 250 - (cx + 150) + 100, 100))
+
+        hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 50.0, "lava", 25.0))
+        hazards.append(ProceduralArena.Hazard.new(1, cx - 200, 175, 30.0, "spikes", 15.0))
+        hazards.append(ProceduralArena.Hazard.new(2, cx + 200, 175, 30.0, "spikes", 15.0))
+        hazards.append(ProceduralArena.Hazard.new(3, cx - 200, h - 175, 30.0, "spikes", 15.0))
+        hazards.append(ProceduralArena.Hazard.new(4, cx + 200, h - 175, 30.0, "spikes", 15.0))
+
 class ClutchPlaysArena:
     extends ProceduralArena
 
