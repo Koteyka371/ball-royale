@@ -761,7 +761,30 @@ class MetaEvolutionArena(ProceduralArena):
         self.hazards.append(Hazard(id=4, x=cx + 600, y=cy + 320, radius=20.0, kind="spikes", damage=30.0))
 
 
+class FunnyFailsArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w / 2, h / 2
+        self.rooms.append(Room(100, cy - 200, 300, 400))
+        self.rooms.append(Room(w - 400, cy - 200, 300, 400))
+        self.rooms.append(Room(cx - 200, 100, 400, 300))
+        self.rooms.append(Room(cx - 200, h - 400, 400, 300))
+        self.rooms.append(Room(cx - 150, cy - 150, 300, 300))
+        self.corridors.append(Corridor(350, cy - 50, 550, 100))
+        self.corridors.append(Corridor(cx + 100, cy - 50, 550, 100))
+        self.corridors.append(Corridor(cx - 50, 350, 100, 550))
+        self.corridors.append(Corridor(cx - 50, cy + 100, 100, 550))
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=80.0, kind="lava", damage=100.0))
+        self.hazards.append(Hazard(id=1, x=cx - 250, y=cy, radius=40.0, kind="spikes", damage=30.0))
+        self.hazards.append(Hazard(id=2, x=cx + 250, y=cy, radius=40.0, kind="spikes", damage=30.0))
+        self.hazards.append(Hazard(id=3, x=cx, y=cy - 250, radius=40.0, kind="spikes", damage=30.0))
+        self.hazards.append(Hazard(id=4, x=cx, y=cy + 250, radius=40.0, kind="spikes", damage=30.0))
+
 ARENAS = {
+
     "meta_evolution": MetaEvolutionArena,
     "ambush": AmbushArena,
     "swarm_intelligence": SwarmIntelligenceArena,
@@ -794,7 +817,8 @@ ARENAS = {
     "epic_kills": EpicKillsArena,
     "ball_relationships": BallRelationshipsArena,
     "finals_1v1": Finals1v1Arena,
-    "team_wipes": TeamWipesArena
+    "team_wipes": TeamWipesArena,
+    "funny_fails": FunnyFailsArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
