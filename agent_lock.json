@@ -4,8 +4,8 @@
       "name": "Jules Core",
       "area": "ai-core",
       "task_id": "auto-implement-**target-strong**-—-атакует-самого-сильн",
-      "status": "assigned",
-      "started_at": "2026-06-21T14:07:23.254097+00:00",
+      "status": "working",
+      "started_at": "2026-06-21T14:07:35.382818+00:00",
       "cycles_today": 1
     },
     "agent-2": {
