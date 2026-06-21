@@ -97,7 +97,43 @@ class PhysicsChainReactionsArena extends ProceduralArena:
         var h4 = ProceduralArena.Hazard.new()
         h4.id = 4; h4.x = cx; h4.y = cy; h4.radius = 80.0; h4.kind = "lava"; h4.damage = 20.0; hazards.append(h4)
 
+class TargetWeakArena extends ProceduralArena:
+    func _init(arena_size: float = 2000.0, seed_val: int = 0).(arena_size, arena_size, seed_val):
+        pass
+
+    func generate() -> void:
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = width
+        var h = height
+        var cx = w / 2.0
+        var cy = h / 2.0
+
+        rooms.append(ProceduralArena.Room.new(100, 100, 200, 200))
+        rooms.append(ProceduralArena.Room.new(w - 300, 100, 200, 200))
+        rooms.append(ProceduralArena.Room.new(100, h - 300, 200, 200))
+        rooms.append(ProceduralArena.Room.new(w - 300, h - 300, 200, 200))
+
+        rooms.append(ProceduralArena.Room.new(cx - 200, cy - 200, 400, 400))
+
+        corridors.append(ProceduralArena.Corridor.new(200, 200, cx - 200, cy - 200))
+        corridors.append(ProceduralArena.Corridor.new(cx, 200, cx - 200, cy - 200))
+        corridors.append(ProceduralArena.Corridor.new(200, cy, cx - 200, cy - 200))
+        corridors.append(ProceduralArena.Corridor.new(cx, cy, cx - 200, cy - 200))
+
+        var h0 = ProceduralArena.Hazard.new()
+        h0.id = 0; h0.x = cx - 100; h0.y = cy - 100; h0.radius = 50.0; h0.kind = "lava"; h0.damage = 20.0; hazards.append(h0)
+        var h1 = ProceduralArena.Hazard.new()
+        h1.id = 1; h1.x = cx + 100; h1.y = cy - 100; h1.radius = 50.0; h1.kind = "lava"; h1.damage = 20.0; hazards.append(h1)
+        var h2 = ProceduralArena.Hazard.new()
+        h2.id = 2; h2.x = cx - 100; h2.y = cy + 100; h2.radius = 50.0; h2.kind = "lava"; h2.damage = 20.0; hazards.append(h2)
+        var h3 = ProceduralArena.Hazard.new()
+        h3.id = 3; h3.x = cx + 100; h3.y = cy + 100; h3.radius = 50.0; h3.kind = "lava"; h3.damage = 20.0; hazards.append(h3)
+
+
 const ARENAS = [
+	"target_weak",
 	"body_block",
 	"meta_evolution",
     "swarm_intelligence",

@@ -814,7 +814,42 @@ class PhysicsChainReactionsArena(ProceduralArena):
         self.hazards.append(Hazard(id=4, x=cx, y=cy, radius=80.0, kind="lava", damage=20.0))
 
 
+class TargetWeakArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # 4 small corner rooms
+        self.rooms.append(Room(100, 100, 200, 200))
+        self.rooms.append(Room(w - 300, 100, 200, 200))
+        self.rooms.append(Room(100, h - 300, 200, 200))
+        self.rooms.append(Room(w - 300, h - 300, 200, 200))
+
+        # 1 central room
+        self.rooms.append(Room(cx - 200, cy - 200, 400, 400))
+
+        # 4 corridors connecting corners to center directly
+        # Top-Left
+        self.corridors.append(Corridor(200, 200, cx - 200, cy - 200))
+        # Top-Right
+        self.corridors.append(Corridor(cx, 200, cx - 200, cy - 200))
+        # Bottom-Left
+        self.corridors.append(Corridor(200, cy, cx - 200, cy - 200))
+        # Bottom-Right
+        self.corridors.append(Corridor(cx, cy, cx - 200, cy - 200))
+
+        # 4 lava hazards in the central room
+        self.hazards.append(Hazard(id=0, x=cx - 100, y=cy - 100, radius=50.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=1, x=cx + 100, y=cy - 100, radius=50.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=2, x=cx - 100, y=cy + 100, radius=50.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=3, x=cx + 100, y=cy + 100, radius=50.0, kind="lava", damage=20.0))
+
+
 ARENAS = {
+    "target_weak": TargetWeakArena,
     "body_block": BodyBlockArena,
     "meta_evolution": MetaEvolutionArena,
     "ambush": AmbushArena,
