@@ -97,7 +97,48 @@ class PhysicsChainReactionsArena extends ProceduralArena:
         var h4 = ProceduralArena.Hazard.new()
         h4.id = 4; h4.x = cx; h4.y = cy; h4.radius = 80.0; h4.kind = "lava"; h4.damage = 20.0; hazards.append(h4)
 
+class TargetWeakArena extends ProceduralArena:
+    func generate():
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = width
+        var h = height
+        var cx = w / 2.0
+        var cy = h / 2.0
+
+        var cr_w = w * 0.4
+        var cr_h = h * 0.4
+        rooms.append(ProceduralArena.Room.new(cx - cr_w/2.0, cy - cr_h/2.0, cr_w, cr_h))
+
+        var crn_w = w * 0.15
+        var crn_h = h * 0.15
+        rooms.append(ProceduralArena.Room.new(w * 0.05, h * 0.05, crn_w, crn_h))
+        rooms.append(ProceduralArena.Room.new(w * 0.8, h * 0.05, crn_w, crn_h))
+        rooms.append(ProceduralArena.Room.new(w * 0.05, h * 0.8, crn_w, crn_h))
+        rooms.append(ProceduralArena.Room.new(w * 0.8, h * 0.8, crn_w, crn_h))
+
+        corridors.append(ProceduralArena.Corridor.new(w * 0.2, h * 0.1, w * 0.1, h * 0.05))
+        corridors.append(ProceduralArena.Corridor.new(w * 0.7, h * 0.1, w * 0.1, h * 0.05))
+        corridors.append(ProceduralArena.Corridor.new(w * 0.2, h * 0.85, w * 0.1, h * 0.05))
+        corridors.append(ProceduralArena.Corridor.new(w * 0.7, h * 0.85, w * 0.1, h * 0.05))
+
+        corridors.append(ProceduralArena.Corridor.new(w * 0.1, h * 0.2, w * 0.05, h * 0.1))
+        corridors.append(ProceduralArena.Corridor.new(w * 0.85, h * 0.2, w * 0.05, h * 0.1))
+        corridors.append(ProceduralArena.Corridor.new(w * 0.1, h * 0.7, w * 0.05, h * 0.1))
+        corridors.append(ProceduralArena.Corridor.new(w * 0.85, h * 0.7, w * 0.05, h * 0.1))
+
+        var h0 = ProceduralArena.Hazard.new()
+        h0.id = 0
+        h0.x = cx
+        h0.y = cy
+        h0.radius = w * 0.05
+        h0.kind = "spikes"
+        h0.damage = 10.0
+        hazards.append(h0)
+
 const ARENAS = [
+    "target_weak",
 	"emotional_contagion",
 	"body_block",
 	"meta_evolution",
