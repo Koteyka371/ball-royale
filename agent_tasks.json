@@ -1824,7 +1824,7 @@
     },
     {
       "id": "idea-arena-104",
-      "status": "todo",
+      "status": "done",
       "area": "arenas",
       "risk": "low",
       "title": "Create Heal Ally arena",

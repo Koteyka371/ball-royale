@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-arena-104] Create Heal Ally arena — *2026-06-21 22:16:40 UTC*
+
+Implement Create Heal Ally arena as described in game_design.md
+
+---
+
 ## [idea-arena-107] Create Escort arena — *2026-06-21 22:12:33 UTC*
 
 Implement Create Escort arena as described in game_design.md
