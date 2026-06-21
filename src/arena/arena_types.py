@@ -783,7 +783,35 @@ class BodyBlockArena(ProceduralArena):
         # A central hazard to force players into tighter chokes
         self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=50.0, kind="lava", damage=25.0))
 
+
+class TargetStrongArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        self.rooms.append(Room(100, 100, w - 200, 200))
+        self.rooms.append(Room(100, h - 300, w - 200, 200))
+        self.rooms.append(Room(100, 300, 200, h - 600))
+        self.rooms.append(Room(w - 300, 300, 200, h - 600))
+
+        self.rooms.append(Room(cx - 200, cy - 200, 400, 400))
+
+        self.corridors.append(Corridor(cx - 100, 250, 200, cy - 400))
+        self.corridors.append(Corridor(cx - 100, cy + 150, 200, cy - 400))
+        self.corridors.append(Corridor(250, cy - 100, cx - 400, 200))
+        self.corridors.append(Corridor(cx + 150, cy - 100, cx - 400, 200))
+
+        self.hazards.append(Hazard(id=0, x=cx - 100, y=cy - 100, radius=30.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=1, x=cx + 100, y=cy - 100, radius=30.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=2, x=cx - 100, y=cy + 100, radius=30.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=3, x=cx + 100, y=cy + 100, radius=30.0, kind="lava", damage=20.0))
+
+
 ARENAS = {
+    "target_strong": TargetStrongArena,
     "body_block": BodyBlockArena,
     "meta_evolution": MetaEvolutionArena,
     "ambush": AmbushArena,

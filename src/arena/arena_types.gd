@@ -65,6 +65,7 @@ class BodyBlockArena extends ProceduralArena:
         hazards.append(h0)
 
 const ARENAS = [
+    "target_strong",
 	"body_block",
 	"meta_evolution",
     "swarm_intelligence",
