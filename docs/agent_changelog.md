@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-arena-093] Create Target Weak arena — *2026-06-21 18:29:57 UTC*
+
+Implement Create Target Weak arena as described in game_design.md
+
+---
+
 ## [idea-arena-126] Create Battle Royale Shrinking Zone arena — *2026-06-21 18:20:56 UTC*
 
 Implement Create Battle Royale Shrinking Zone arena as described in game_design.md

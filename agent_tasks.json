@@ -1637,7 +1637,7 @@
     },
     {
       "id": "idea-arena-093",
-      "status": "todo",
+      "status": "done",
       "area": "arenas",
       "risk": "low",
       "title": "Create Target Weak arena",
