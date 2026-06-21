@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-arena-111] Create Wait and Watch arena — *2026-06-21 20:29:32 UTC*
+
+Implement Create Wait and Watch arena as described in game_design.md
+
+---
+
 ## [auto-implement-**target-strong**-—-атакует-самого-сильн] Implement **Target Strong** — атакует самого сильного skill — *2026-06-21 20:28:16 UTC*
 
 Create **Target Strong** — атакует самого сильного skill: для Tank
