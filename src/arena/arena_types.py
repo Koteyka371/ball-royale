@@ -832,10 +832,18 @@ class EmotionalContagionArena(ProceduralArena):
         self.rooms.append(Room(w - 400.0, h - 400.0, 300.0, 300.0))
 
         # 4 corridors connecting quarantine rooms to center (with 50px overlap)
-        self.corridors.append(Corridor(200.0, 350.0, 100.0, cy - 600.0))
-        self.corridors.append(Corridor(w - 300.0, 350.0, 100.0, cy - 600.0))
-        self.corridors.append(Corridor(200.0, cy + 250.0, 100.0, h - cy - 600.0))
-        self.corridors.append(Corridor(w - 300.0, cy + 250.0, 100.0, h - cy - 600.0))
+        # Top-Left to Center
+        self.corridors.append(Corridor(150.0, 350.0, 100.0, cy - 650.0))
+        self.corridors.append(Corridor(150.0, cy - 300.0, cx - 450.0, 100.0))
+        # Top-Right to Center
+        self.corridors.append(Corridor(w - 250.0, 350.0, 100.0, cy - 650.0))
+        self.corridors.append(Corridor(cx + 300.0, cy - 300.0, w - cx - 550.0, 100.0))
+        # Bottom-Left to Center
+        self.corridors.append(Corridor(150.0, cy + 200.0, 100.0, h - cy - 550.0))
+        self.corridors.append(Corridor(150.0, cy + 200.0, cx - 450.0, 100.0))
+        # Bottom-Right to Center
+        self.corridors.append(Corridor(w - 250.0, cy + 200.0, 100.0, h - cy - 550.0))
+        self.corridors.append(Corridor(cx + 300.0, cy + 200.0, w - cx - 550.0, 100.0))
 
         # 8 hazards
         self.hazards.append(Hazard(id=0, x=250.0, y=250.0, radius=50.0, kind="lava", damage=20.0))
@@ -848,7 +856,35 @@ class EmotionalContagionArena(ProceduralArena):
         self.hazards.append(Hazard(id=7, x=cx + 150.0, y=cy + 150.0, radius=40.0, kind="spikes", damage=30.0))
 
 
+class AICommentaryArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        self.rooms.append(Room(cx - 300.0, cy - 300.0, 600.0, 600.0))
+        self.rooms.append(Room(100.0, 100.0, 300.0, 300.0))
+        self.rooms.append(Room(w - 400.0, 100.0, 300.0, 300.0))
+        self.rooms.append(Room(100.0, h - 400.0, 300.0, 300.0))
+        self.rooms.append(Room(w - 400.0, h - 400.0, 300.0, 300.0))
+
+        # Top-Left to Center
+        self.corridors.append(Corridor(150.0, 350.0, 100.0, cy - 650.0))
+        self.corridors.append(Corridor(150.0, cy - 300.0, cx - 450.0, 100.0))
+        # Top-Right to Center
+        self.corridors.append(Corridor(w - 250.0, 350.0, 100.0, cy - 650.0))
+        self.corridors.append(Corridor(cx + 300.0, cy - 300.0, w - cx - 550.0, 100.0))
+        # Bottom-Left to Center
+        self.corridors.append(Corridor(150.0, cy + 200.0, 100.0, h - cy - 550.0))
+        self.corridors.append(Corridor(150.0, cy + 200.0, cx - 450.0, 100.0))
+        # Bottom-Right to Center
+        self.corridors.append(Corridor(w - 250.0, cy + 200.0, 100.0, h - cy - 550.0))
+        self.corridors.append(Corridor(cx + 300.0, cy + 200.0, w - cx - 550.0, 100.0))
+
 ARENAS = {
+    "ai_commentary": AICommentaryArena,
     "emotional_contagion": EmotionalContagionArena,
     "body_block": BodyBlockArena,
     "meta_evolution": MetaEvolutionArena,

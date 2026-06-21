@@ -8,7 +8,7 @@ from arena.arena_types import EmotionalContagionArena
 def test_emotional_contagion_arena_generation():
     arena = EmotionalContagionArena(arena_size=2000.0, seed=42)
     assert len(arena.rooms) == 5
-    assert len(arena.corridors) == 4
+    assert len(arena.corridors) == 8
     assert len(arena.hazards) == 8
 
     # Check hazards exist and have expected properties

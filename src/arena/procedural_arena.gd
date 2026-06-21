@@ -493,10 +493,18 @@ class EmotionalContagionArena extends ProceduralArena:
         rooms.append(ProceduralArena.Room.new(100.0, h - 400.0, 300.0, 300.0))
         rooms.append(ProceduralArena.Room.new(w - 400.0, h - 400.0, 300.0, 300.0))
 
-        corridors.append(ProceduralArena.Corridor.new(200.0, 350.0, 100.0, cy - 600.0))
-        corridors.append(ProceduralArena.Corridor.new(w - 300.0, 350.0, 100.0, cy - 600.0))
-        corridors.append(ProceduralArena.Corridor.new(200.0, cy + 250.0, 100.0, h - cy - 600.0))
-        corridors.append(ProceduralArena.Corridor.new(w - 300.0, cy + 250.0, 100.0, h - cy - 600.0))
+        # Top-Left to Center
+        corridors.append(ProceduralArena.Corridor.new(150.0, 350.0, 100.0, cy - 650.0))
+        corridors.append(ProceduralArena.Corridor.new(150.0, cy - 300.0, cx - 450.0, 100.0))
+        # Top-Right to Center
+        corridors.append(ProceduralArena.Corridor.new(w - 250.0, 350.0, 100.0, cy - 650.0))
+        corridors.append(ProceduralArena.Corridor.new(cx + 300.0, cy - 300.0, w - cx - 550.0, 100.0))
+        # Bottom-Left to Center
+        corridors.append(ProceduralArena.Corridor.new(150.0, cy + 200.0, 100.0, h - cy - 550.0))
+        corridors.append(ProceduralArena.Corridor.new(150.0, cy + 200.0, cx - 450.0, 100.0))
+        # Bottom-Right to Center
+        corridors.append(ProceduralArena.Corridor.new(w - 250.0, cy + 200.0, 100.0, h - cy - 550.0))
+        corridors.append(ProceduralArena.Corridor.new(cx + 300.0, cy + 200.0, w - cx - 550.0, 100.0))
 
         hazards.append(ProceduralArena.Hazard.new(0, 250.0, 250.0, 50.0, "lava", 20.0))
         hazards.append(ProceduralArena.Hazard.new(1, w - 250.0, 250.0, 50.0, "lava", 20.0))
@@ -506,6 +514,36 @@ class EmotionalContagionArena extends ProceduralArena:
         hazards.append(ProceduralArena.Hazard.new(5, cx + 150.0, cy - 150.0, 40.0, "spikes", 30.0))
         hazards.append(ProceduralArena.Hazard.new(6, cx - 150.0, cy + 150.0, 40.0, "spikes", 30.0))
         hazards.append(ProceduralArena.Hazard.new(7, cx + 150.0, cy + 150.0, 40.0, "spikes", 30.0))
+
+class AICommentaryArena extends ProceduralArena:
+    func generate() -> void:
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = width
+        var h = height
+        var cx = w / 2.0
+        var cy = h / 2.0
+
+        rooms.append(ProceduralArena.Room.new(cx - 300.0, cy - 300.0, 600.0, 600.0))
+        rooms.append(ProceduralArena.Room.new(100.0, 100.0, 300.0, 300.0))
+        rooms.append(ProceduralArena.Room.new(w - 400.0, 100.0, 300.0, 300.0))
+        rooms.append(ProceduralArena.Room.new(100.0, h - 400.0, 300.0, 300.0))
+        rooms.append(ProceduralArena.Room.new(w - 400.0, h - 400.0, 300.0, 300.0))
+
+        # Top-Left to Center
+        corridors.append(ProceduralArena.Corridor.new(150.0, 350.0, 100.0, cy - 650.0))
+        corridors.append(ProceduralArena.Corridor.new(150.0, cy - 300.0, cx - 450.0, 100.0))
+        # Top-Right to Center
+        corridors.append(ProceduralArena.Corridor.new(w - 250.0, 350.0, 100.0, cy - 650.0))
+        corridors.append(ProceduralArena.Corridor.new(cx + 300.0, cy - 300.0, w - cx - 550.0, 100.0))
+        # Bottom-Left to Center
+        corridors.append(ProceduralArena.Corridor.new(150.0, cy + 200.0, 100.0, h - cy - 550.0))
+        corridors.append(ProceduralArena.Corridor.new(150.0, cy + 200.0, cx - 450.0, 100.0))
+        # Bottom-Right to Center
+        corridors.append(ProceduralArena.Corridor.new(w - 250.0, cy + 200.0, 100.0, h - cy - 550.0))
+        corridors.append(ProceduralArena.Corridor.new(cx + 300.0, cy + 200.0, w - cx - 550.0, 100.0))
+
 
 class AmbushArena extends ProceduralArena:
     func generate() -> void:
