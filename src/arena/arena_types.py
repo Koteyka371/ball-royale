@@ -783,10 +783,42 @@ class BodyBlockArena(ProceduralArena):
         # A central hazard to force players into tighter chokes
         self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=50.0, kind="lava", damage=25.0))
 
+class PhysicsChainReactionsArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central hub for bounces
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+
+        # 4 outer bounce zones
+        self.rooms.append(Room(cx - 700, cy - 200, 200, 400)) # Left
+        self.rooms.append(Room(cx + 500, cy - 200, 200, 400)) # Right
+        self.rooms.append(Room(cx - 200, cy - 700, 400, 200)) # Top
+        self.rooms.append(Room(cx - 200, cy + 500, 400, 200)) # Bottom
+
+        # Corridors with 50px overlap
+        self.corridors.append(Corridor(cx - 550, cy - 100, 300, 200)) # Left to Center
+        self.corridors.append(Corridor(cx + 250, cy - 100, 300, 200)) # Center to Right
+        self.corridors.append(Corridor(cx - 100, cy - 550, 200, 300)) # Top to Center
+        self.corridors.append(Corridor(cx - 100, cy + 250, 200, 300)) # Center to Bottom
+
+        # Hazards in center to force chaining
+        self.hazards.append(Hazard(id=0, x=cx - 150, y=cy - 150, radius=50.0, kind="spikes", damage=30.0))
+        self.hazards.append(Hazard(id=1, x=cx + 150, y=cy - 150, radius=50.0, kind="spikes", damage=30.0))
+        self.hazards.append(Hazard(id=2, x=cx - 150, y=cy + 150, radius=50.0, kind="spikes", damage=30.0))
+        self.hazards.append(Hazard(id=3, x=cx + 150, y=cy + 150, radius=50.0, kind="spikes", damage=30.0))
+        self.hazards.append(Hazard(id=4, x=cx, y=cy, radius=80.0, kind="lava", damage=20.0))
+
+
 ARENAS = {
     "body_block": BodyBlockArena,
     "meta_evolution": MetaEvolutionArena,
     "ambush": AmbushArena,
+    "physics_chain_reactions": PhysicsChainReactionsArena,
     "swarm_intelligence": SwarmIntelligenceArena,
     "clutch_plays": ClutchPlaysArena,
     "collect_booster": CollectBoosterArena,

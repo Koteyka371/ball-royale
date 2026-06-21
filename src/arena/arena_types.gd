@@ -64,6 +64,39 @@ class BodyBlockArena extends ProceduralArena:
         h0.damage = 25.0
         hazards.append(h0)
 
+class PhysicsChainReactionsArena extends ProceduralArena:
+    func generate() -> void:
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w := float(width)
+        var h := float(height)
+        var cx := w / 2.0
+        var cy := h / 2.0
+
+        rooms.append(ProceduralArena.Room.new(cx - 300, cy - 300, 600, 600))
+
+        rooms.append(ProceduralArena.Room.new(cx - 700, cy - 200, 200, 400))
+        rooms.append(ProceduralArena.Room.new(cx + 500, cy - 200, 200, 400))
+        rooms.append(ProceduralArena.Room.new(cx - 200, cy - 700, 400, 200))
+        rooms.append(ProceduralArena.Room.new(cx - 200, cy + 500, 400, 200))
+
+        corridors.append(ProceduralArena.Corridor.new(cx - 550, cy - 100, 300, 200))
+        corridors.append(ProceduralArena.Corridor.new(cx + 250, cy - 100, 300, 200))
+        corridors.append(ProceduralArena.Corridor.new(cx - 100, cy - 550, 200, 300))
+        corridors.append(ProceduralArena.Corridor.new(cx - 100, cy + 250, 200, 300))
+
+        var h0 = ProceduralArena.Hazard.new()
+        h0.id = 0; h0.x = cx - 150; h0.y = cy - 150; h0.radius = 50.0; h0.kind = "spikes"; h0.damage = 30.0; hazards.append(h0)
+        var h1 = ProceduralArena.Hazard.new()
+        h1.id = 1; h1.x = cx + 150; h1.y = cy - 150; h1.radius = 50.0; h1.kind = "spikes"; h1.damage = 30.0; hazards.append(h1)
+        var h2 = ProceduralArena.Hazard.new()
+        h2.id = 2; h2.x = cx - 150; h2.y = cy + 150; h2.radius = 50.0; h2.kind = "spikes"; h2.damage = 30.0; hazards.append(h2)
+        var h3 = ProceduralArena.Hazard.new()
+        h3.id = 3; h3.x = cx + 150; h3.y = cy + 150; h3.radius = 50.0; h3.kind = "spikes"; h3.damage = 30.0; hazards.append(h3)
+        var h4 = ProceduralArena.Hazard.new()
+        h4.id = 4; h4.x = cx; h4.y = cy; h4.radius = 80.0; h4.kind = "lava"; h4.damage = 20.0; hazards.append(h4)
+
 const ARENAS = [
 	"body_block",
 	"meta_evolution",
@@ -98,5 +131,6 @@ const ARENAS = [
     "collect_booster",
     "finals_1v1",
     "team_wipes",
-    "ambush"
+    "ambush",
+    "physics_chain_reactions"
 ]
