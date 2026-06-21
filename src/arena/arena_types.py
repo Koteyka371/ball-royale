@@ -848,6 +848,27 @@ class EmotionalContagionArena(ProceduralArena):
         self.hazards.append(Hazard(id=7, x=cx + 150.0, y=cy + 150.0, radius=40.0, kind="spikes", damage=30.0))
 
 
+
+class EscortArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        self.rooms.append(Room(50.0, cy - 200.0, 300.0, 400.0))
+        self.rooms.append(Room(w - 350.0, cy - 200.0, 300.0, 400.0))
+
+        self.corridors.append(Corridor(300.0, cy - 100.0, w - 600.0, 200.0))
+
+        self.hazards.append(Hazard(id=0, x=cx - 300.0, y=cy - 50.0, radius=40.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=1, x=cx - 300.0, y=cy + 50.0, radius=40.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=2, x=cx + 300.0, y=cy - 50.0, radius=40.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=3, x=cx + 300.0, y=cy + 50.0, radius=40.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=4, x=cx, y=cy - 50.0, radius=40.0, kind="spikes", damage=30.0))
+        self.hazards.append(Hazard(id=5, x=cx, y=cy + 50.0, radius=40.0, kind="spikes", damage=30.0))
+
 ARENAS = {
     "emotional_contagion": EmotionalContagionArena,
     "body_block": BodyBlockArena,
@@ -884,7 +905,8 @@ ARENAS = {
     "epic_kills": EpicKillsArena,
     "ball_relationships": BallRelationshipsArena,
     "finals_1v1": Finals1v1Arena,
-    "team_wipes": TeamWipesArena
+    "team_wipes": TeamWipesArena,
+    "escort": EscortArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
