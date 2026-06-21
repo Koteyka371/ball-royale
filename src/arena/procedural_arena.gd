@@ -511,3 +511,29 @@ class AmbushArena extends ProceduralArena:
 
         # 1 central hazard to discourage staying in the open
         hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 80.0, "lava", 20.0))
+
+class FunnyFailsArena extends ProceduralArena:
+    func generate():
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = width
+        var h = height
+        var cx = w / 2.0
+        var cy = h / 2.0
+
+        rooms.append(ProceduralArena.Room.new(cx - 100, cy - 100, 200, 200))
+        rooms.append(ProceduralArena.Room.new(cx - 400, cy - 100, 100, 200))
+        rooms.append(ProceduralArena.Room.new(cx + 300, cy - 100, 100, 200))
+        rooms.append(ProceduralArena.Room.new(cx - 100, cy - 400, 200, 100))
+        rooms.append(ProceduralArena.Room.new(cx - 100, cy + 300, 200, 100))
+
+        corridors.append(ProceduralArena.Corridor.new(cx - 300, cy - 50, 200, 100))
+        corridors.append(ProceduralArena.Corridor.new(cx + 100, cy - 50, 200, 100))
+        corridors.append(ProceduralArena.Corridor.new(cx - 50, cy - 300, 100, 200))
+        corridors.append(ProceduralArena.Corridor.new(cx - 50, cy + 100, 100, 200))
+
+        hazards.append(ProceduralArena.Hazard.new(0, cx - 100, cy - 100, 50.0, "lava", 50.0))
+        hazards.append(ProceduralArena.Hazard.new(1, cx + 100, cy - 100, 50.0, "lava", 50.0))
+        hazards.append(ProceduralArena.Hazard.new(2, cx - 100, cy + 100, 50.0, "lava", 50.0))
+        hazards.append(ProceduralArena.Hazard.new(3, cx + 100, cy + 100, 50.0, "lava", 50.0))

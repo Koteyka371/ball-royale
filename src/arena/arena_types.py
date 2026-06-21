@@ -814,7 +814,36 @@ class PhysicsChainReactionsArena(ProceduralArena):
         self.hazards.append(Hazard(id=4, x=cx, y=cy, radius=80.0, kind="lava", damage=20.0))
 
 
+class FunnyFailsArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # 1 central room, 4 side rooms
+        self.rooms.append(Room(cx - 100, cy - 100, 200, 200))
+        self.rooms.append(Room(cx - 400, cy - 100, 100, 200))
+        self.rooms.append(Room(cx + 300, cy - 100, 100, 200))
+        self.rooms.append(Room(cx - 100, cy - 400, 200, 100))
+        self.rooms.append(Room(cx - 100, cy + 300, 200, 100))
+
+        # 4 corridors connecting side rooms to central
+        self.corridors.append(Corridor(cx - 300, cy - 50, 200, 100))
+        self.corridors.append(Corridor(cx + 100, cy - 50, 200, 100))
+        self.corridors.append(Corridor(cx - 50, cy - 300, 100, 200))
+        self.corridors.append(Corridor(cx - 50, cy + 100, 100, 200))
+
+        # Big traps around the central paths
+        self.hazards.append(Hazard(id=0, x=cx - 100, y=cy - 100, radius=50.0, kind="lava", damage=50.0))
+        self.hazards.append(Hazard(id=1, x=cx + 100, y=cy - 100, radius=50.0, kind="lava", damage=50.0))
+        self.hazards.append(Hazard(id=2, x=cx - 100, y=cy + 100, radius=50.0, kind="lava", damage=50.0))
+        self.hazards.append(Hazard(id=3, x=cx + 100, y=cy + 100, radius=50.0, kind="lava", damage=50.0))
+
+
 ARENAS = {
+    "funny_fails": FunnyFailsArena,
     "body_block": BodyBlockArena,
     "meta_evolution": MetaEvolutionArena,
     "ambush": AmbushArena,

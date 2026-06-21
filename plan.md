@@ -1,39 +1,9 @@
-1. **Explore & Define Arena Layout**:
-   - Define exact dimensions for `BallRelationshipsArena` to satisfy Specificity Rule.
-   - For `arena_size = 2000` (`width` & `height`), `cx = 1000`, `cy = 1000`.
-   - 4 large spawn rooms at the corners (Rival, Ally, Grudge zones). Room sizes: 300x300.
-     - Top-Left: `(100, 100, 300, 300)`
-     - Top-Right: `(1600, 100, 300, 300)`
-     - Bottom-Left: `(100, 1600, 300, 300)`
-     - Bottom-Right: `(1600, 1600, 300, 300)`
-   - Central meeting room (where relationships form):
-     - Center: `(700, 700, 600, 600)`
-   - Corridors (connecting corners to center):
-     - Top-Left to Center: `(200, 400, 100, 300)`, `(200, 700, 500, 100)`
-     - Top-Right to Center: `(1700, 400, 100, 300)`, `(1300, 700, 500, 100)`
-     - Bottom-Left to Center: `(200, 1300, 100, 300)`, `(200, 1200, 500, 100)`
-     - Bottom-Right to Center: `(1700, 1300, 100, 300)`, `(1300, 1200, 500, 100)`
-   - Hazards in the center to create grudges:
-     - Hazard 1: `id=0, x=1000, y=1000, radius=50, kind="lava", damage=20`
+1. Add `FunnyFailsArena` in `src/arena/arena_types.py`. It should inherit from `ProceduralArena`. Define the `generate(self)` method to create an arena tailored for "Funny fails — шарик падает в ловушку". The layout could include a large central room with several large hazards (like "lava" or "spikes") or multiple rooms connected by narrow corridors with hazards in them to force mistakes. Register it in `ARENAS = { ... "funny_fails": FunnyFailsArena, ... }`.
 
-2. **Implement in Python (`src/arena/arena_types.py`)**:
-   - Create class `BallRelationshipsArena(ProceduralArena)` with `generate` method.
-   - Register it in `ARENAS` dictionary as `"ball_relationships"`.
+2. Add `FunnyFailsArena` in `src/arena/arena_types.gd` to mirror the Python version. Include `class FunnyFailsArena extends ProceduralArena: ...` inside `src/arena/procedural_arena.gd` (Wait, in `arena_types.gd` it has a string constant in `ARENAS` array, and the classes are in `procedural_arena.gd` based on my grepping earlier). Yes, I will add `"funny_fails"` to the `ARENAS` array in `arena_types.gd`, and implement the class in `procedural_arena.gd`.
 
-3. **Implement in GDScript (`src/arena/procedural_arena.gd`)**:
-   - Create class `BallRelationshipsArena extends ProceduralArena` with `generate` method.
+3. Create a test file `tests/test_arena_funny_fails.py` to ensure it generates correctly, similar to `test_clutch_plays_arena.py`.
 
-4. **Register in GDScript (`src/arena/arena_types.gd`)**:
-   - Add `"ball_relationships"` to `ARENAS` array.
+4. Generate a new feature idea JSON in `ideas/` directory.
 
-5. **Write Unit Test (`tests/test_ball_relationships_arena.py`)**:
-   - Verify `BallRelationshipsArena` layout (rooms and corridors count, overlaps).
-
-6. **Create Ideas File**:
-   - Make `ideas/` dir, create `ideas/ball_relationship_idea.json`.
-
-7. **Verify & Pre-Commit**:
-   - Run tests.
-   - Run `pre_commit_instructions`.
-
-8. **Submit**.
+5. Pre-commit step and submit.
