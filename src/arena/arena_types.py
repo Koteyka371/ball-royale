@@ -613,7 +613,29 @@ class ClutchPlaysArena(ProceduralArena):
         self.hazards.append(Hazard(id=3, x=cx - 150, y=cy + 150, radius=50.0, kind="spikes", damage=20.0))
         self.hazards.append(Hazard(id=4, x=cx + 150, y=cy + 150, radius=50.0, kind="spikes", damage=20.0))
 
+class BodyBlockArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Room 1: Left base (ends at x=400)
+        self.rooms.append(Room(100, cy - 200, 300, 400))
+        # Room 2: Right base (starts at x=w-400)
+        self.rooms.append(Room(w - 400, cy - 200, 300, 400))
+
+        # Chokepoint corridor (overlaps by 50px on each side)
+        # Starts at 350, ends at w-350
+        self.corridors.append(Corridor(350, cy - 50, w - 700, 100))
+
+        # Hazards forcing movement to chokepoint
+        self.hazards.append(Hazard(id=0, x=cx, y=cy - 200, radius=50.0, kind="spikes", damage=10.0))
+        self.hazards.append(Hazard(id=1, x=cx, y=cy + 200, radius=50.0, kind="spikes", damage=10.0))
+
 ARENAS = {
+    "body_block": BodyBlockArena,
     "clutch_plays": ClutchPlaysArena,
     "collect_booster": CollectBoosterArena,
     "reposition": RepositionArena,

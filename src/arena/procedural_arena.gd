@@ -386,3 +386,25 @@ class ClutchPlaysArena:
         hazards.append(ProceduralArena.Hazard.new(2, cx + 150, cy - 150, 50.0, "spikes", 20.0))
         hazards.append(ProceduralArena.Hazard.new(3, cx - 150, cy + 150, 50.0, "spikes", 20.0))
         hazards.append(ProceduralArena.Hazard.new(4, cx + 150, cy + 150, 50.0, "spikes", 20.0))
+
+class BodyBlockArena extends ProceduralArena:
+    func generate():
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = width
+        var h = height
+        var cx = w / 2.0
+        var cy = h / 2.0
+
+        # Room 1: Left base
+        rooms.append(ProceduralArena.Room.new(100.0, cy - 200.0, 300.0, 400.0))
+        # Room 2: Right base
+        rooms.append(ProceduralArena.Room.new(w - 400.0, cy - 200.0, 300.0, 400.0))
+
+        # Chokepoint corridor
+        corridors.append(ProceduralArena.Corridor.new(350.0, cy - 50.0, w - 700.0, 100.0))
+
+        # Hazards
+        hazards.append(ProceduralArena.Hazard.new(0, cx, cy - 200.0, 50.0, "spikes", 10.0))
+        hazards.append(ProceduralArena.Hazard.new(1, cx, cy + 200.0, 50.0, "spikes", 10.0))
