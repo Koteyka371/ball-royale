@@ -97,7 +97,36 @@ class PhysicsChainReactionsArena extends ProceduralArena:
         var h4 = ProceduralArena.Hazard.new()
         h4.id = 4; h4.x = cx; h4.y = cy; h4.radius = 80.0; h4.kind = "lava"; h4.damage = 20.0; hazards.append(h4)
 
+
+class FleeArena extends ProceduralArena:
+	func generate():
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+		var w = self.width
+		var h = self.height
+		var cx = w / 2.0
+		var cy = h / 2.0
+
+		# Center Room
+		rooms.append(ProceduralArena.Room.new(cx - 150, cy - 150, 300, 300))
+		# Top Left
+		rooms.append(ProceduralArena.Room.new(cx - 300, cy - 300, 150, 150))
+		# Top Right
+		rooms.append(ProceduralArena.Room.new(cx + 150, cy - 300, 150, 150))
+		# Bottom Left
+		rooms.append(ProceduralArena.Room.new(cx - 300, cy + 150, 150, 150))
+		# Bottom Right
+		rooms.append(ProceduralArena.Room.new(cx + 150, cy + 150, 150, 150))
+
+		# Corridors
+		corridors.append(ProceduralArena.Corridor.new(cx - 200, cy - 200, 100, 100))
+		corridors.append(ProceduralArena.Corridor.new(cx + 100, cy - 200, 100, 100))
+		corridors.append(ProceduralArena.Corridor.new(cx - 200, cy + 100, 100, 100))
+		corridors.append(ProceduralArena.Corridor.new(cx + 100, cy + 100, 100, 100))
+
 const ARENAS = [
+    "flee",
 	"emotional_contagion",
 	"body_block",
 	"meta_evolution",

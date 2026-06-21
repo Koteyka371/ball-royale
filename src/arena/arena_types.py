@@ -848,7 +848,34 @@ class EmotionalContagionArena(ProceduralArena):
         self.hazards.append(Hazard(id=7, x=cx + 150.0, y=cy + 150.0, radius=40.0, kind="spikes", damage=30.0))
 
 
+
+class FleeArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Center Room
+        self.rooms.append(Room(cx - 150, cy - 150, 300, 300))
+        # Top Left
+        self.rooms.append(Room(cx - 300, cy - 300, 150, 150))
+        # Top Right
+        self.rooms.append(Room(cx + 150, cy - 300, 150, 150))
+        # Bottom Left
+        self.rooms.append(Room(cx - 300, cy + 150, 150, 150))
+        # Bottom Right
+        self.rooms.append(Room(cx + 150, cy + 150, 150, 150))
+
+        # Corridors connecting corners to center
+        self.corridors.append(Corridor(cx - 200, cy - 200, 100, 100)) # TL to Center
+        self.corridors.append(Corridor(cx + 100, cy - 200, 100, 100)) # TR to Center
+        self.corridors.append(Corridor(cx - 200, cy + 100, 100, 100)) # BL to Center
+        self.corridors.append(Corridor(cx + 100, cy + 100, 100, 100)) # BR to Center
+
 ARENAS = {
+    "flee": FleeArena,
     "emotional_contagion": EmotionalContagionArena,
     "body_block": BodyBlockArena,
     "meta_evolution": MetaEvolutionArena,
