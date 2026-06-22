@@ -1980,6 +1980,8 @@ func _update_skill_timer(delta: float):
             self.ball.set_meta("attack_timer", attack_timer)
 
 func _kite(delta: float):
+    # auto-implement-kite-держит-дистанцию-атакует-при
+    # Kiting behavior implementation: keeping the distance and attacking
     # Kite — держит дистанцию, атакует при приближении skill: для Sniper
     var active_enemies = _get_enemies()
     if active_enemies.size() > 0:
@@ -2024,7 +2026,7 @@ func _kite(delta: float):
         if dist_sq > 0.0001:
             actual_dist = sqrt(dist_sq)
 
-        var b_speed = 2.0
+        var b_speed = float(2.0)
         if "speed" in self.ball: b_speed = self.ball.speed
 
         var b_attack_range = 150.0
@@ -2051,7 +2053,7 @@ func _kite(delta: float):
                 nx = boid_vec[0]
                 ny = boid_vec[1]
 
-                var step = b_speed * delta * 60.0
+                var step: float = b_speed * delta * 60.0
                 if actual_dist < b_attack_range * 0.8:
                     self.ball.x += nx * step
                     self.ball.y += ny * step
