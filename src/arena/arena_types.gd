@@ -313,7 +313,58 @@ class FleeArena extends ProceduralArena:
 		corridors.append(ProceduralArena.Corridor.new(cx - 50, cy + 150, 100, h - cy - 350))
 		var h1 = ProceduralArena.Hazard.new(); h1.id = 0; h1.x = cx; h1.y = cy; h1.radius = 100.0; h1.kind = "lava"; h1.damage = 20.0; hazards.append(h1)
 
+class NeuralBallArena extends ProceduralArena:
+	func generate():
+		self.rooms.clear()
+		self.corridors.clear()
+		self.hazards.clear()
+		var w = self.width
+		var h = self.height
+
+		# Input Layer
+		self.rooms.append(ProceduralArena.Room.new(w * 0.1, h * 0.2, 150.0, 150.0))
+		self.rooms.append(ProceduralArena.Room.new(w * 0.1, h * 0.5, 150.0, 150.0))
+		self.rooms.append(ProceduralArena.Room.new(w * 0.1, h * 0.8, 150.0, 150.0))
+
+		# Hidden Layer
+		self.rooms.append(ProceduralArena.Room.new(w * 0.5, h * 0.2, 150.0, 150.0))
+		self.rooms.append(ProceduralArena.Room.new(w * 0.5, h * 0.5, 150.0, 150.0))
+		self.rooms.append(ProceduralArena.Room.new(w * 0.5, h * 0.8, 150.0, 150.0))
+
+		# Output Layer
+		self.rooms.append(ProceduralArena.Room.new(w * 0.8, h * 0.35, 150.0, 150.0))
+		self.rooms.append(ProceduralArena.Room.new(w * 0.8, h * 0.65, 150.0, 150.0))
+
+		# Corridors
+		self.corridors.append(ProceduralArena.Corridor.new(w * 0.1 + 100.0, h * 0.2 + 50.0, w * 0.4, 50.0))
+		self.corridors.append(ProceduralArena.Corridor.new(w * 0.1 + 100.0, h * 0.5 + 50.0, w * 0.4, 50.0))
+		self.corridors.append(ProceduralArena.Corridor.new(w * 0.1 + 100.0, h * 0.8 + 50.0, w * 0.4, 50.0))
+		self.corridors.append(ProceduralArena.Corridor.new(w * 0.5 + 100.0, h * 0.2 + 50.0, w * 0.3, 50.0))
+		self.corridors.append(ProceduralArena.Corridor.new(w * 0.5 + 100.0, h * 0.8 + 50.0, w * 0.3, 50.0))
+
+		self.corridors.append(ProceduralArena.Corridor.new(w * 0.8 + 50.0, h * 0.2 + 50.0, 50.0, h * 0.15 + 50.0))
+		self.corridors.append(ProceduralArena.Corridor.new(w * 0.8 + 50.0, h * 0.65 + 50.0, 50.0, h * 0.15 + 50.0))
+
+		# Hazards
+		var h1 = ProceduralArena.Hazard.new()
+		h1.id = 0
+		h1.x = w * 0.5 + 75.0
+		h1.y = h * 0.35 + 75.0
+		h1.radius = 30.0
+		h1.kind = "spikes"
+		h1.damage = 20.0
+		self.hazards.append(h1)
+		var h2 = ProceduralArena.Hazard.new()
+		h2.id = 1
+		h2.x = w * 0.5 + 75.0
+		h2.y = h * 0.65 + 75.0
+		h2.radius = 30.0
+		h2.kind = "lava"
+		h2.damage = 50.0
+		self.hazards.append(h2)
+
 const ARENAS = [
+	"neural_ball",
 	"flee",
 	"ball_genetics",
 	"funny_fails",

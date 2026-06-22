@@ -1103,7 +1103,43 @@ class FleeArena(ProceduralArena):
         self.corridors.append(Corridor(cx - 50, cy + 150, 100, h - cy - 350))
         self.hazards.append(Hazard(0, cx, cy, 100.0, "lava", 20.0))
 
+class NeuralBallArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+
+        # Input Layer
+        self.rooms.append(Room(w * 0.1, h * 0.2, 150.0, 150.0))
+        self.rooms.append(Room(w * 0.1, h * 0.5, 150.0, 150.0))
+        self.rooms.append(Room(w * 0.1, h * 0.8, 150.0, 150.0))
+
+        # Hidden Layer
+        self.rooms.append(Room(w * 0.5, h * 0.2, 150.0, 150.0))
+        self.rooms.append(Room(w * 0.5, h * 0.5, 150.0, 150.0))
+        self.rooms.append(Room(w * 0.5, h * 0.8, 150.0, 150.0))
+
+        # Output Layer
+        self.rooms.append(Room(w * 0.8, h * 0.35, 150.0, 150.0))
+        self.rooms.append(Room(w * 0.8, h * 0.65, 150.0, 150.0))
+
+        # Corridors
+        self.corridors.append(Corridor(w * 0.1 + 100.0, h * 0.2 + 50.0, w * 0.4, 50.0))
+        self.corridors.append(Corridor(w * 0.1 + 100.0, h * 0.5 + 50.0, w * 0.4, 50.0))
+        self.corridors.append(Corridor(w * 0.1 + 100.0, h * 0.8 + 50.0, w * 0.4, 50.0))
+        self.corridors.append(Corridor(w * 0.5 + 100.0, h * 0.2 + 50.0, w * 0.3, 50.0))
+        self.corridors.append(Corridor(w * 0.5 + 100.0, h * 0.8 + 50.0, w * 0.3, 50.0))
+
+        self.corridors.append(Corridor(w * 0.8 + 50.0, h * 0.2 + 50.0, 50.0, h * 0.15 + 50.0))
+        self.corridors.append(Corridor(w * 0.8 + 50.0, h * 0.65 + 50.0, 50.0, h * 0.15 + 50.0))
+
+        # Hazards
+        self.hazards.append(Hazard(0, w * 0.5 + 75.0, h * 0.35 + 75.0, 30.0, "spikes", 20.0))
+        self.hazards.append(Hazard(1, w * 0.5 + 75.0, h * 0.65 + 75.0, 30.0, "lava", 50.0))
+
 ARENAS = {
+    "neural_ball": NeuralBallArena,
     "flee": FleeArena,
     "ball_genetics": BallGeneticsArena,
     "funny_fails": FunnyFailsArena,
