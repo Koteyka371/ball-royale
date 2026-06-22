@@ -1284,6 +1284,7 @@ class Action:
             self.ball.attack_timer -= delta
 
     def _kite(self, delta: float) -> None:
+        # Kiting mechanism: maintain distance and attack
         # auto-implement-kite-держит-дистанцию-атакует-при
         # Kiting behavior implementation: keeping the distance and attacking
         """
