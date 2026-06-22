@@ -175,6 +175,10 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
         scores["flank"] += 150.0
         scores["attack"] -= 50.0
 
+    if b_type == "sniper" or personality == "cautious":
+        scores["kite"] += 200.0
+        scores["attack"] -= 50.0
+
     if b_type == "scout":
         scores["collect_booster"] += 40.0
 

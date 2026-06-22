@@ -183,6 +183,10 @@ class Decision:
             scores["flank"] += 150.0
             scores["attack"] -= 50.0 # Prefer flanking over head-on attack
 
+        if b_type == "sniper" or personality == "cautious":
+            scores["kite"] += 200.0
+            scores["attack"] -= 50.0
+
         if b_type == "scout":
             scores["collect_booster"] += 40.0
 
