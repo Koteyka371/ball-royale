@@ -51,3 +51,30 @@ def test_ranger_actions():
     assert ball.current_action == "opportunistic"
     ball.idle(0.016)
     assert ball.current_action == "idle"
+
+class MockTarget:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+def test_ranger_kite_keep_distance():
+    ball = Ranger(ball_id=1, x=100.0, y=100.0)
+    target = MockTarget(100.0, 300.0) # dist = 200, attack_range = 50
+    # Expected to move closer
+    ball.kite(0.1, target)
+    assert ball.current_action == "kite"
+    assert ball.y > 100.0
+
+def test_ranger_kite_retreat():
+    ball = Ranger(ball_id=1, x=100.0, y=100.0)
+    target = MockTarget(100.0, 130.0) # dist = 30, < 50 * 0.8 (40)
+    # Expected to move away
+    ball.kite(0.1, target)
+    assert ball.y < 100.0
+
+def test_ranger_kite_use_skill():
+    ball = Ranger(ball_id=1, x=100.0, y=100.0)
+    target = MockTarget(100.0, 140.0) # dist = 40
+    ball.skill_timer = 0.0
+    ball.kite(0.1, target)
+    assert ball.skill_timer > 0.0

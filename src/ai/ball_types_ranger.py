@@ -68,6 +68,51 @@ class Ranger:
                 if self.attack_timer <= 0:
                     self.attack_timer = float(max(0.2, 2.0 / self.SPEED if self.SPEED > 0 else 1.0))
 
+    def kite(self, delta: float, target=None) -> None:
+        '''
+        Kite — держит дистанцию, атакует при приближении
+        '''
+        self.current_action = "kite"
+
+        if getattr(self, "skill_timer", 0.0) > 0:
+            self.skill_timer -= delta
+        if getattr(self, "attack_timer", 0.0) > 0:
+            self.attack_timer -= delta
+
+        if target is None:
+            return
+
+        diff_x = target.x - self.x
+        diff_y = target.y - self.y
+        dist = math.hypot(diff_x, diff_y)
+
+        if dist <= 0.0001:
+            return
+
+        dir_x = diff_x / dist
+        dir_y = diff_y / dist
+
+        spd_move = self.SPEED * delta * 60.0
+        safe_dist = self.attack_range * 0.8
+
+        if dist > self.attack_range:
+            m_step = min(spd_move, dist - self.attack_range)
+            self.x += dir_x * m_step
+            self.y += dir_y * m_step
+        elif dist < safe_dist:
+            self.x -= dir_x * spd_move
+            self.y -= dir_y * spd_move
+
+        new_dist = math.hypot(target.x - self.x, target.y - self.y)
+
+        if new_dist <= self.attack_range:
+            if getattr(self, "skill_timer", 0.0) <= 0:
+                self.skill_timer = getattr(self, "SKILL_COOLDOWN", 4.5)
+                self.current_action = "use_skill"
+            elif getattr(self, "attack_timer", 0.0) <= 0:
+                self.attack_timer = max(0.2, 2.0 / self.SPEED if self.SPEED > 0 else 1.0)
+                self.current_action = "attack"
+
     def defend(self, delta: float) -> None:
         self.current_action = "defend"
 
