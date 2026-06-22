@@ -247,7 +247,36 @@ class EscortArena extends ProceduralArena:
 		var h1 = ProceduralArena.Hazard.new(); h1.id = 0; h1.x = cx - 150; h1.y = cy; h1.radius = 40.0; h1.kind = "lava"; h1.damage = 10.0; hazards.append(h1)
 		var h2 = ProceduralArena.Hazard.new(); h2.id = 1; h2.x = cx + 150; h2.y = cy; h2.radius = 40.0; h2.kind = "lava"; h2.damage = 10.0; hazards.append(h2)
 
+
+class BallGeneticsArena extends ProceduralArena:
+	func generate() -> void:
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+		var w = float(width)
+		var h = float(height)
+		var cx = w / 2.0
+		var cy = h / 2.0
+
+		rooms.append(ProceduralArena.Room.new(cx - 300, cy - 300, 600, 600))
+		rooms.append(ProceduralArena.Room.new(cx - 150, cy - 800, 300, 300))
+		rooms.append(ProceduralArena.Room.new(cx - 150, cy + 500, 300, 300))
+		rooms.append(ProceduralArena.Room.new(cx - 800, cy - 150, 300, 300))
+		rooms.append(ProceduralArena.Room.new(cx + 500, cy - 150, 300, 300))
+
+		corridors.append(ProceduralArena.Corridor.new(cx - 50, cy - 550, 100, 300))
+		corridors.append(ProceduralArena.Corridor.new(cx - 50, cy + 250, 100, 300))
+		corridors.append(ProceduralArena.Corridor.new(cx - 550, cy - 50, 300, 100))
+		corridors.append(ProceduralArena.Corridor.new(cx + 250, cy - 50, 300, 100))
+
+		var h0 = ProceduralArena.Hazard.new(); h0.id = 0; h0.x = cx - 200; h0.y = cy - 200; h0.radius = 40.0; h0.kind = "lava"; h0.damage = 20.0; hazards.append(h0)
+		var h1 = ProceduralArena.Hazard.new(); h1.id = 1; h1.x = cx + 200; h1.y = cy - 200; h1.radius = 40.0; h1.kind = "lava"; h1.damage = 20.0; hazards.append(h1)
+		var h2 = ProceduralArena.Hazard.new(); h2.id = 2; h2.x = cx - 200; h2.y = cy + 200; h2.radius = 40.0; h2.kind = "lava"; h2.damage = 20.0; hazards.append(h2)
+		var h3 = ProceduralArena.Hazard.new(); h3.id = 3; h3.x = cx + 200; h3.y = cy + 200; h3.radius = 40.0; h3.kind = "lava"; h3.damage = 20.0; hazards.append(h3)
+		var h4 = ProceduralArena.Hazard.new(); h4.id = 4; h4.x = cx; h4.y = cy; h4.radius = 60.0; h4.kind = "spikes"; h4.damage = 30.0; hazards.append(h4)
+
 const ARENAS = [
+	"ball_genetics",
 	"funny_fails",
 	"escort",
 	"wait_and_watch",

@@ -1034,7 +1034,41 @@ class FunnyFailsArena(ProceduralArena):
         self.hazards.append(Hazard(3, cx - 300, cy + 500, 40.0, "lava", 20.0))
         self.hazards.append(Hazard(4, cx + 300, cy + 500, 40.0, "lava", 20.0))
 
+
+class BallGeneticsArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Center Room
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+        # Top Room
+        self.rooms.append(Room(cx - 150, cy - 800, 300, 300))
+        # Bottom Room
+        self.rooms.append(Room(cx - 150, cy + 500, 300, 300))
+        # Left Room
+        self.rooms.append(Room(cx - 800, cy - 150, 300, 300))
+        # Right Room
+        self.rooms.append(Room(cx + 500, cy - 150, 300, 300))
+
+        # Corridors
+        self.corridors.append(Corridor(cx - 50, cy - 550, 100, 300))
+        self.corridors.append(Corridor(cx - 50, cy + 250, 100, 300))
+        self.corridors.append(Corridor(cx - 550, cy - 50, 300, 100))
+        self.corridors.append(Corridor(cx + 250, cy - 50, 300, 100))
+
+        # Hazards
+        self.hazards.append(Hazard(id=0, x=cx - 200, y=cy - 200, radius=40.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=1, x=cx + 200, y=cy - 200, radius=40.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=2, x=cx - 200, y=cy + 200, radius=40.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=3, x=cx + 200, y=cy + 200, radius=40.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=4, x=cx, y=cy, radius=60.0, kind="spikes", damage=30.0))
+
 ARENAS = {
+    "ball_genetics": BallGeneticsArena,
     "funny_fails": FunnyFailsArena,
     "escort": EscortArena,
     "wait_and_watch": WaitAndWatchArena,
