@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-arena-118] Create Ball Genetics arena — *2026-06-22 09:00:38 UTC*
+
+Implement Create Ball Genetics arena as described in game_design.md
+
+---
+
 ## [idea-arena-094] Create Target Strong arena — *2026-06-22 02:20:32 UTC*
 
 Implement Create Target Strong arena as described in game_design.md
