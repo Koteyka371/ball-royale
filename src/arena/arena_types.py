@@ -1034,6 +1034,29 @@ class FunnyFailsArena(ProceduralArena):
         self.hazards.append(Hazard(3, cx - 300, cy + 500, 40.0, "lava", 20.0))
         self.hazards.append(Hazard(4, cx + 300, cy + 500, 40.0, "lava", 20.0))
 
+
+class NeuralBallArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2.0, h/2.0
+
+        self.rooms.append(Room(cx - 300.0, cy - 300.0, 600.0, 600.0))
+        self.rooms.append(Room(100.0, 100.0, 200.0, 200.0))
+        self.rooms.append(Room(w - 300.0, 100.0, 200.0, 200.0))
+        self.rooms.append(Room(100.0, h - 300.0, 200.0, 200.0))
+        self.rooms.append(Room(w - 300.0, h - 300.0, 200.0, 200.0))
+
+        self.corridors.append(Corridor(200.0, 300.0, 100.0, cy - 300.0))
+        self.corridors.append(Corridor(w - 300.0, 300.0, 100.0, cy - 300.0))
+        self.corridors.append(Corridor(200.0, cy + 300.0, 100.0, h - cy - 300.0))
+        self.corridors.append(Corridor(w - 300.0, cy + 300.0, 100.0, h - cy - 300.0))
+
+        self.hazards.append(Hazard(id=0, x=cx - 100.0, y=cy, radius=30.0, kind="lava", damage=20.0))
+        self.hazards.append(Hazard(id=1, x=cx + 100.0, y=cy, radius=30.0, kind="lava", damage=20.0))
+
 ARENAS = {
     "funny_fails": FunnyFailsArena,
     "escort": EscortArena,
@@ -1055,6 +1078,7 @@ ARENAS = {
     "heal_ally": HealAllyArena,
     "procedural": ProceduralArena,
     "cross": CrossArena,
+    "neural_ball": NeuralBallArena,
     "ring": RingArena,
     "four_rooms": FourRoomsArena,
     "grid": GridArena,

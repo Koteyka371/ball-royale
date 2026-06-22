@@ -247,12 +247,38 @@ class EscortArena extends ProceduralArena:
 		var h1 = ProceduralArena.Hazard.new(); h1.id = 0; h1.x = cx - 150; h1.y = cy; h1.radius = 40.0; h1.kind = "lava"; h1.damage = 10.0; hazards.append(h1)
 		var h2 = ProceduralArena.Hazard.new(); h2.id = 1; h2.x = cx + 150; h2.y = cy; h2.radius = 40.0; h2.kind = "lava"; h2.damage = 10.0; hazards.append(h2)
 
+
+class NeuralBallArena extends ProceduralArena:
+	func generate() -> void:
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+		var w = float(width)
+		var h = float(height)
+		var cx = w / 2.0
+		var cy = h / 2.0
+
+		rooms.append(ProceduralArena.Room.new(cx - 300.0, cy - 300.0, 600.0, 600.0))
+		rooms.append(ProceduralArena.Room.new(100.0, 100.0, 200.0, 200.0))
+		rooms.append(ProceduralArena.Room.new(w - 300.0, 100.0, 200.0, 200.0))
+		rooms.append(ProceduralArena.Room.new(100.0, h - 300.0, 200.0, 200.0))
+		rooms.append(ProceduralArena.Room.new(w - 300.0, h - 300.0, 200.0, 200.0))
+
+		corridors.append(ProceduralArena.Corridor.new(200.0, 300.0, 100.0, cy - 300.0))
+		corridors.append(ProceduralArena.Corridor.new(w - 300.0, 300.0, 100.0, cy - 300.0))
+		corridors.append(ProceduralArena.Corridor.new(200.0, cy + 300.0, 100.0, h - cy - 300.0))
+		corridors.append(ProceduralArena.Corridor.new(w - 300.0, cy + 300.0, 100.0, h - cy - 300.0))
+
+		var h1 = ProceduralArena.Hazard.new(); h1.id = 0; h1.x = cx - 100.0; h1.y = cy; h1.radius = 30.0; h1.kind = "lava"; h1.damage = 20.0; hazards.append(h1)
+		var h2 = ProceduralArena.Hazard.new(); h2.id = 1; h2.x = cx + 100.0; h2.y = cy; h2.radius = 30.0; h2.kind = "lava"; h2.damage = 20.0; hazards.append(h2)
+
 const ARENAS = [
 	"funny_fails",
 	"escort",
 	"wait_and_watch",
     "battle_royale_shrinking_zone",
 	"emotional_contagion",
+	"neural_ball",
 	"body_block",
 	"meta_evolution",
     "swarm_intelligence",
