@@ -1052,7 +1052,33 @@ class TargetStrongArena(ProceduralArena):
 
         self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=50.0, kind="lava", damage=25.0))
 
+
+class NeuralBallArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+        self.rooms.append(Room(cx - 600, cy - 100, 200, 200))
+        self.rooms.append(Room(cx + 400, cy - 100, 200, 200))
+        self.rooms.append(Room(cx - 100, cy - 600, 200, 200))
+        self.rooms.append(Room(cx - 100, cy + 400, 200, 200))
+
+        self.corridors.append(Corridor(cx - 450, cy - 50, 200, 100))
+        self.corridors.append(Corridor(cx + 250, cy - 50, 200, 100))
+        self.corridors.append(Corridor(cx - 50, cy - 450, 100, 200))
+        self.corridors.append(Corridor(cx - 50, cy + 250, 100, 200))
+
+        self.hazards.append(Hazard(0, cx - 200, cy - 200, 50.0, "lava", 20.0))
+        self.hazards.append(Hazard(1, cx + 200, cy - 200, 50.0, "lava", 20.0))
+        self.hazards.append(Hazard(2, cx - 200, cy + 200, 50.0, "lava", 20.0))
+        self.hazards.append(Hazard(3, cx + 200, cy + 200, 50.0, "lava", 20.0))
+
 ARENAS = {
+
     "funny_fails": FunnyFailsArena,
     "escort": EscortArena,
     "wait_and_watch": WaitAndWatchArena,
@@ -1095,7 +1121,8 @@ ARENAS = {
     "ball_relationships": BallRelationshipsArena,
     "finals_1v1": Finals1v1Arena,
     "team_wipes": TeamWipesArena,
-    "target_strong": TargetStrongArena
+    "target_strong": TargetStrongArena,
+    "neural_ball": NeuralBallArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:

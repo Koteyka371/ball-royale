@@ -267,7 +267,35 @@ class TargetStrongArena extends ProceduralArena:
 
         hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 50.0, "lava", 25.0))
 
+
+class NeuralBallArena extends ProceduralArena:
+    func generate():
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = width
+        var h = height
+        var cx = w / 2.0
+        var cy = h / 2.0
+
+        rooms.append(ProceduralArena.Room.new(cx - 300, cy - 300, 600, 600))
+        rooms.append(ProceduralArena.Room.new(cx - 600, cy - 100, 200, 200))
+        rooms.append(ProceduralArena.Room.new(cx + 400, cy - 100, 200, 200))
+        rooms.append(ProceduralArena.Room.new(cx - 100, cy - 600, 200, 200))
+        rooms.append(ProceduralArena.Room.new(cx - 100, cy + 400, 200, 200))
+
+        corridors.append(ProceduralArena.Corridor.new(cx - 450, cy - 50, 200, 100))
+        corridors.append(ProceduralArena.Corridor.new(cx + 250, cy - 50, 200, 100))
+        corridors.append(ProceduralArena.Corridor.new(cx - 50, cy - 450, 100, 200))
+        corridors.append(ProceduralArena.Corridor.new(cx - 50, cy + 250, 100, 200))
+
+        hazards.append(ProceduralArena.Hazard.new(0, cx - 200, cy - 200, 50.0, "lava", 20.0))
+        hazards.append(ProceduralArena.Hazard.new(1, cx + 200, cy - 200, 50.0, "lava", 20.0))
+        hazards.append(ProceduralArena.Hazard.new(2, cx - 200, cy + 200, 50.0, "lava", 20.0))
+        hazards.append(ProceduralArena.Hazard.new(3, cx + 200, cy + 200, 50.0, "lava", 20.0))
+
 const ARENAS = [
+
 	"funny_fails",
 	"escort",
 	"wait_and_watch",
@@ -310,5 +338,6 @@ const ARENAS = [
     "team_wipes",
     "ambush",
     "physics_chain_reactions",
-    "target_strong"
+    "target_strong",
+    "neural_ball"
 ]
