@@ -6,7 +6,6 @@ A ball controlled by a simple neural network.
 
 from ai.personality import Personality
 import random
-import numpy as np
 
 class Neural:
     BALL_TYPE = "neural"
@@ -37,8 +36,8 @@ class Neural:
         self.input_size = 4
         self.output_size = 3 # example: attack, flee, idle
 
-        self.weights = np.random.uniform(-1, 1, (self.input_size, self.output_size))
-        self.biases = np.random.uniform(-1, 1, self.output_size)
+        self.weights = [[random.uniform(-1, 1) for _ in range(self.output_size)] for _ in range(self.input_size)]
+        self.biases = [random.uniform(-1, 1) for _ in range(self.output_size)]
 
     def get_hp_percent(self) -> float:
         return self.hp / self.max_hp if self.max_hp > 0 else 0.0
@@ -70,14 +69,17 @@ class Neural:
 
             self.skill_timer = self.SKILL_COOLDOWN
 
-            # Predict next action using numpy
-            inputs = np.array([self.get_hp_percent(), self.AGGRESSION, float(self.kills), self.skill_timer])
+            # Predict next action without numpy
+            inputs = [self.get_hp_percent(), self.AGGRESSION, float(self.kills), self.skill_timer]
 
-            # Forward pass: inputs.dot(weights) + biases
-            outputs = np.dot(inputs, self.weights) + self.biases
+            # Forward pass: dot product + biases
+            outputs = []
+            for j in range(self.output_size):
+                dot_product = sum(inputs[i] * self.weights[i][j] for i in range(self.input_size))
+                outputs.append(dot_product + self.biases[j])
 
             # argmax
-            action_idx = int(np.argmax(outputs))
+            action_idx = outputs.index(max(outputs))
             actions = ["attack", "flee", "idle"]
             self.current_action = actions[action_idx]
 
