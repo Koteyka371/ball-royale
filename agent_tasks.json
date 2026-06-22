@@ -2079,7 +2079,7 @@
     },
     {
       "id": "idea-arena-119",
-      "status": "todo",
+      "status": "done",
       "area": "arenas",
       "risk": "low",
       "title": "Create Neural Ball arena",

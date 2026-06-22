@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-arena-119] Create Neural Ball arena — *2026-06-22 19:06:19 UTC*
+
+Implement Create Neural Ball arena as described in game_design.md
+
+---
+
 ## [idea-arena-099] Create Flee arena — *2026-06-22 15:00:05 UTC*
 
 Implement Create Flee arena as described in game_design.md
