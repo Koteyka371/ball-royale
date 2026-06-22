@@ -1034,7 +1034,32 @@ class FunnyFailsArena(ProceduralArena):
         self.hazards.append(Hazard(3, cx - 300, cy + 500, 40.0, "lava", 20.0))
         self.hazards.append(Hazard(4, cx + 300, cy + 500, 40.0, "lava", 20.0))
 
+
+class FleeArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        self.rooms.append(Room(50, 50, 300, 300))
+        self.rooms.append(Room(w - 350, 50, 300, 300))
+        self.rooms.append(Room(50, h - 350, 300, 300))
+        self.rooms.append(Room(w - 350, h - 350, 300, 300))
+
+        self.corridors.append(Corridor(300, 100, w - 600, 200))
+        self.corridors.append(Corridor(300, h - 300, w - 600, 200))
+        self.corridors.append(Corridor(100, 300, 200, h - 600))
+        self.corridors.append(Corridor(w - 300, 300, 200, h - 600))
+
+        self.corridors.append(Corridor(cx - 100, 50, 200, h - 100))
+        self.corridors.append(Corridor(50, cy - 100, w - 100, 200))
+
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=150.0, kind="lava", damage=20.0))
+
 ARENAS = {
+    "flee": FleeArena,
     "funny_fails": FunnyFailsArena,
     "escort": EscortArena,
     "wait_and_watch": WaitAndWatchArena,
