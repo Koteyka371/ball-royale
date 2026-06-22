@@ -69,14 +69,14 @@ class Neural:
 
             self.skill_timer = self.SKILL_COOLDOWN
 
-            # Predict next action without numpy
-            inputs = [self.get_hp_percent(), self.AGGRESSION, float(self.kills), self.skill_timer]
+            # Predict next action using numpy
+            import numpy as np
+            inputs = np.array([self.get_hp_percent(), self.AGGRESSION, float(self.kills), self.skill_timer])
 
             # Forward pass: dot product + biases
-            outputs = []
-            for j in range(self.output_size):
-                dot_product = sum(inputs[i] * self.weights[i][j] for i in range(self.input_size))
-                outputs.append(dot_product + self.biases[j])
+            # self.weights is (input_size, output_size)
+            outputs_np = np.dot(inputs, np.array(self.weights)) + np.array(self.biases)
+            outputs = outputs_np.tolist()
 
             # argmax
             action_idx = outputs.index(max(outputs))
