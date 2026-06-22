@@ -1284,6 +1284,8 @@ class Action:
             self.ball.attack_timer -= delta
 
     def _kite(self, delta: float) -> None:
+        # auto-implement-kite-держит-дистанцию-атакует-при
+        # Kiting behavior implementation: keeping the distance and attacking
         """
         Kite — держит дистанцию, атакует при приближении skill: для Sniper
         Maintains distance from enemies, falling back when they get too close,
@@ -1334,7 +1336,7 @@ class Action:
                 norm_x, norm_y = self._apply_obstacle_avoidance(norm_x, norm_y, optimal_target)
                 norm_x, norm_y = self._apply_boid_rules(norm_x, norm_y)
 
-                move_step = getattr(self.ball, "speed", 2.0) * delta * 60
+                move_step = float(getattr(self.ball, "speed", 2.0)) * delta * 60.0
                 if actual_dist < ball_attack_range * 0.8:
                     self.ball.x += norm_x * move_step
                     self.ball.y += norm_y * move_step
