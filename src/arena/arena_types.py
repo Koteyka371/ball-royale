@@ -1084,7 +1084,27 @@ class BallGeneticsArena(ProceduralArena):
         # Hazards representing genetic mutation zones
         self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=50.0, kind="lava", damage=10.0))
 
+
+class FleeArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+        self.rooms.append(Room(cx - 200, cy - 200, 400, 400))
+        self.rooms.append(Room(50, cy - 100, 200, 200))
+        self.rooms.append(Room(w - 250, cy - 100, 200, 200))
+        self.rooms.append(Room(cx - 100, 50, 200, 200))
+        self.rooms.append(Room(cx - 100, h - 250, 200, 200))
+        self.corridors.append(Corridor(200, cy - 50, cx - 350, 100))
+        self.corridors.append(Corridor(cx + 150, cy - 50, w - cx - 350, 100))
+        self.corridors.append(Corridor(cx - 50, 200, 100, cy - 350))
+        self.corridors.append(Corridor(cx - 50, cy + 150, 100, h - cy - 350))
+        self.hazards.append(Hazard(0, cx, cy, 100.0, "lava", 20.0))
+
 ARENAS = {
+    "flee": FleeArena,
     "ball_genetics": BallGeneticsArena,
     "funny_fails": FunnyFailsArena,
     "escort": EscortArena,
