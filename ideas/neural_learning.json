@@ -1,0 +1,4 @@
+{
+  "title": "Neural Ball Generative Terrain Learning",
+  "description": "The Neural Ball adapts its terrain preferences based on which type of procedural arenas yield the highest survival rates during generations of learning."
+}
