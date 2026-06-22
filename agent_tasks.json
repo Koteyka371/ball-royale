@@ -1739,7 +1739,7 @@
     },
     {
       "id": "idea-arena-099",
-      "status": "todo",
+      "status": "done",
       "area": "arenas",
       "risk": "low",
       "title": "Create Flee arena",
