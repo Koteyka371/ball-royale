@@ -1,5 +1,3 @@
-import pytest
-import math
 from ai.ball_types_sniper import Sniper
 
 class MockTarget:

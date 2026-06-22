@@ -1,4 +1,3 @@
-import pytest
 from arena.arena_types import AICommentaryArena
 
 def test_ai_commentary_arena():

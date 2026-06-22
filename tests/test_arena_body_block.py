@@ -1,4 +1,3 @@
-import pytest
 from arena.arena_types import BodyBlockArena
 
 def test_body_block_arena_generation():

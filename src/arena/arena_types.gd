@@ -247,6 +247,26 @@ class EscortArena extends ProceduralArena:
 		var h1 = ProceduralArena.Hazard.new(); h1.id = 0; h1.x = cx - 150; h1.y = cy; h1.radius = 40.0; h1.kind = "lava"; h1.damage = 10.0; hazards.append(h1)
 		var h2 = ProceduralArena.Hazard.new(); h2.id = 1; h2.x = cx + 150; h2.y = cy; h2.radius = 40.0; h2.kind = "lava"; h2.damage = 10.0; hazards.append(h2)
 
+
+class TargetStrongArena extends ProceduralArena:
+    func generate() -> void:
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = width
+        var h = height
+        var cx = w / 2.0
+        var cy = h / 2.0
+
+        rooms.append(ProceduralArena.Room.new(cx - 300.0, cy - 300.0, 600.0, 600.0))
+        rooms.append(ProceduralArena.Room.new(cx - 500.0, cy - 100.0, 200.0, 200.0))
+        rooms.append(ProceduralArena.Room.new(cx + 300.0, cy - 100.0, 200.0, 200.0))
+
+        corridors.append(ProceduralArena.Corridor.new(cx - 350.0, cy - 50.0, 100.0, 100.0))
+        corridors.append(ProceduralArena.Corridor.new(cx + 250.0, cy - 50.0, 100.0, 100.0))
+
+        hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 50.0, "lava", 25.0))
+
 const ARENAS = [
 	"funny_fails",
 	"escort",
@@ -289,5 +309,6 @@ const ARENAS = [
     "finals_1v1",
     "team_wipes",
     "ambush",
-    "physics_chain_reactions"
+    "physics_chain_reactions",
+    "target_strong"
 ]
