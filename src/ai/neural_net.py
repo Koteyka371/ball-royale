@@ -27,7 +27,7 @@ class NeuralNet:
         return outputs
 
     def mutate(self, rate: float = 0.1, amount: float = 0.5) -> None:
-        """Randomly adjust weights and biases for genetic algorithm using numpy."""
+        """Randomly adjust weights and biases for genetic algorithm."""
         # Mutate biases
         for i in range(self.output_size):
             if random.random() < rate:
