@@ -267,7 +267,33 @@ class TargetStrongArena extends ProceduralArena:
 
         hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 50.0, "lava", 25.0))
 
+
+class BallGeneticsArena extends ProceduralArena:
+	func generate() -> void:
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+		var w = width
+		var h = height
+		var cx = w / 2.0
+		var cy = h / 2.0
+
+		rooms.append(ProceduralArena.Room.new(cx - 300.0, cy - 300.0, 600.0, 600.0))
+
+		rooms.append(ProceduralArena.Room.new(cx - 600.0, cy - 600.0, 200.0, 200.0))
+		rooms.append(ProceduralArena.Room.new(cx + 400.0, cy - 600.0, 200.0, 200.0))
+		rooms.append(ProceduralArena.Room.new(cx - 600.0, cy + 400.0, 200.0, 200.0))
+		rooms.append(ProceduralArena.Room.new(cx + 400.0, cy + 400.0, 200.0, 200.0))
+
+		corridors.append(ProceduralArena.Corridor.new(cx - 450.0, cy - 450.0, 100.0, 200.0))
+		corridors.append(ProceduralArena.Corridor.new(cx + 350.0, cy - 450.0, 100.0, 200.0))
+		corridors.append(ProceduralArena.Corridor.new(cx - 450.0, cy + 250.0, 100.0, 200.0))
+		corridors.append(ProceduralArena.Corridor.new(cx + 350.0, cy + 250.0, 100.0, 200.0))
+
+		hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 50.0, "lava", 10.0))
+
 const ARENAS = [
+	"ball_genetics",
 	"funny_fails",
 	"escort",
 	"wait_and_watch",

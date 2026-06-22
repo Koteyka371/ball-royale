@@ -1052,7 +1052,40 @@ class TargetStrongArena(ProceduralArena):
 
         self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=50.0, kind="lava", damage=25.0))
 
+
+class BallGeneticsArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2.0, h/2.0
+
+        # Main genetics lab room (center)
+        self.rooms.append(Room(cx - 300.0, cy - 300.0, 600.0, 600.0))
+
+        # 4 smaller reproduction chambers (corners)
+        self.rooms.append(Room(cx - 600.0, cy - 600.0, 200.0, 200.0))
+        self.rooms.append(Room(cx + 400.0, cy - 600.0, 200.0, 200.0))
+        self.rooms.append(Room(cx - 600.0, cy + 400.0, 200.0, 200.0))
+        self.rooms.append(Room(cx + 400.0, cy + 400.0, 200.0, 200.0))
+
+        # Corridors linking chambers to main lab (overlapping)
+        # Main lab Y: [cy-300, cy+300]
+        # Top chambers Y: [cy-600, cy-400]
+        # Top corridors need to span Y from cy-450 to cy-250 (gap closed)
+        self.corridors.append(Corridor(cx - 450.0, cy - 450.0, 100.0, 200.0))
+        self.corridors.append(Corridor(cx + 350.0, cy - 450.0, 100.0, 200.0))
+        # Bottom chambers Y: [cy+400, cy+600]
+        # Bottom corridors need to span Y from cy+250 to cy+450
+        self.corridors.append(Corridor(cx - 450.0, cy + 250.0, 100.0, 200.0))
+        self.corridors.append(Corridor(cx + 350.0, cy + 250.0, 100.0, 200.0))
+
+        # Hazards representing genetic mutation zones
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=50.0, kind="lava", damage=10.0))
+
 ARENAS = {
+    "ball_genetics": BallGeneticsArena,
     "funny_fails": FunnyFailsArena,
     "escort": EscortArena,
     "wait_and_watch": WaitAndWatchArena,
