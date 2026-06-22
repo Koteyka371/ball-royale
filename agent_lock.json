@@ -27,10 +27,10 @@
     "agent-4": {
       "name": "Jules Content",
       "area": "content",
-      "task_id": "idea-arena-118",
-      "status": "working",
-      "started_at": "2026-06-22T08:44:02.397534+00:00",
-      "cycles_today": 1
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
+      "cycles_today": 0
     },
     "agent-5": {
       "name": "Jules Meta",
