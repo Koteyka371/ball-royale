@@ -1034,6 +1034,24 @@ class FunnyFailsArena(ProceduralArena):
         self.hazards.append(Hazard(3, cx - 300, cy + 500, 40.0, "lava", 20.0))
         self.hazards.append(Hazard(4, cx + 300, cy + 500, 40.0, "lava", 20.0))
 
+
+class TargetStrongArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+        self.rooms.append(Room(cx - 500, cy - 100, 200, 200))
+        self.rooms.append(Room(cx + 300, cy - 100, 200, 200))
+
+        self.corridors.append(Corridor(cx - 350, cy - 50, 100, 100))
+        self.corridors.append(Corridor(cx + 250, cy - 50, 100, 100))
+
+        self.hazards.append(Hazard(id=0, x=cx, y=cy, radius=50.0, kind="lava", damage=25.0))
+
 ARENAS = {
     "funny_fails": FunnyFailsArena,
     "escort": EscortArena,
@@ -1076,7 +1094,8 @@ ARENAS = {
     "ai_commentary": AICommentaryArena,
     "ball_relationships": BallRelationshipsArena,
     "finals_1v1": Finals1v1Arena,
-    "team_wipes": TeamWipesArena
+    "team_wipes": TeamWipesArena,
+    "target_strong": TargetStrongArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
