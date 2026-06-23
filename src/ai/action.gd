@@ -92,6 +92,7 @@ func execute(strategy: String, delta: float):
     elif strategy == "attack":
         _attack(delta)
     elif strategy == "kite":
+        # Cosmetics: kite verify
         _kite(delta)
     elif strategy == "chase":
         _chase(delta)

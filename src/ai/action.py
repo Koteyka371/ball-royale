@@ -81,6 +81,7 @@ class Action:
         elif strategy == "attack":
             self._attack(delta)
         elif strategy == "kite":
+            # Cosmetics: kite verify
             self._kite(delta)
         elif strategy == "chase":
             self._chase(delta)
