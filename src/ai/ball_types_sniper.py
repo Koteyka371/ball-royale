@@ -128,3 +128,4 @@ class Sniper:
 
     def __repr__(self) -> str:
         return f"{self.BALL_TYPE}#{self.id} HP={self.hp}/{self.max_hp} [{self.current_action}]"
+# Cosmetics: kite behavior confirmed
