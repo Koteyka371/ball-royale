@@ -1126,9 +1126,20 @@ class Action:
                     dist = math.sqrt(dx*dx + dy*dy)
                     if dist > 0.0001:
                         inputs = [dx/dist, dy/dist, getattr(self.ball, "hp", 100)/getattr(self.ball, "max_hp", 100), 1.0]
-                        weights = [[0.8, -0.2], [0.2, 0.8], [0.1, 0.1], [0.0, 0.0]]
-                        out_x = sum(inputs[i] * weights[i][0] for i in range(4))
-                        out_y = sum(inputs[i] * weights[i][1] for i in range(4))
+                        # Hidden layer with ReLU
+                        h_weights = [[0.5, -0.5, 0.1], [0.1, 0.5, -0.1], [0.0, 0.2, 0.8], [0.0, 0.0, 0.0]]
+                        h_biases = [0.1, 0.0, -0.1]
+                        hidden = []
+                        for j in range(3):
+                            val = sum(inputs[i] * h_weights[i][j] for i in range(4)) + h_biases[j]
+                            hidden.append(max(0.0, val))
+
+                        # Output layer
+                        o_weights = [[0.8, -0.2], [0.2, 0.8], [0.1, 0.1]]
+                        o_biases = [0.0, 0.0]
+                        out_x = sum(hidden[i] * o_weights[i][0] for i in range(3)) + o_biases[0]
+                        out_y = sum(hidden[i] * o_weights[i][1] for i in range(3)) + o_biases[1]
+
                         mag = math.sqrt(out_x*out_x + out_y*out_y)
                         if mag > 0.0001:
                             self.ball.x += (out_x/mag) * 80.0

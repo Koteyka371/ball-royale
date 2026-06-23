@@ -33,6 +33,11 @@ class NumpyArray:
             return NumpyArray([self.data[i] + other.data[i] for i in range(self.shape[0])])
         raise ValueError("Unsupported add shapes")
 
+    def relu(self):
+        if len(self.shape) == 1:
+            return NumpyArray([max(0.0, x) for x in self.data])
+        raise ValueError("Unsupported relu shape")
+
     def argmax(self):
         max_val = max(self.data)
         return self.data.index(max_val)
@@ -66,8 +71,11 @@ class Neural:
         self.input_size = 4
         self.output_size = 3 # example: attack, flee, idle
 
-        self.weights = NumpyArray([[random.uniform(-1, 1) for _ in range(self.output_size)] for _ in range(self.input_size)])
-        self.biases = NumpyArray([random.uniform(-1, 1) for _ in range(self.output_size)])
+        self.hidden_size = 5
+        self.hidden_weights = NumpyArray([[random.uniform(-1, 1) for _ in range(self.hidden_size)] for _ in range(self.input_size)])
+        self.hidden_biases = NumpyArray([random.uniform(-1, 1) for _ in range(self.hidden_size)])
+        self.output_weights = NumpyArray([[random.uniform(-1, 1) for _ in range(self.output_size)] for _ in range(self.hidden_size)])
+        self.output_biases = NumpyArray([random.uniform(-1, 1) for _ in range(self.output_size)])
 
     def get_hp_percent(self) -> float:
         return self.hp / self.max_hp if self.max_hp > 0 else 0.0
@@ -102,8 +110,9 @@ class Neural:
             # Predict next action using pure python NumpyArray abstraction
             inputs = NumpyArray([self.get_hp_percent(), self.AGGRESSION, float(self.kills), self.skill_timer])
 
-            # Forward pass: dot product + biases
-            outputs = inputs.dot(self.weights) + self.biases
+            # Forward pass with hidden layer and ReLU activation
+            hidden = (inputs.dot(self.hidden_weights) + self.hidden_biases).relu()
+            outputs = hidden.dot(self.output_weights) + self.output_biases
 
             # argmax
             action_idx = outputs.argmax()
