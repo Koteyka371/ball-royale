@@ -3,11 +3,11 @@ Auto-generated ball type: Neural
 A ball controlled by a simple neural network.
 """
 
-
 from ai.personality import Personality
 import random
 
 class NumpyArray:
+    """A pure python matrix abstraction."""
     def __init__(self, data):
         self.data = data
         if not data:
@@ -16,6 +16,16 @@ class NumpyArray:
             self.shape = (len(data), len(data[0]))
         else:
             self.shape = (len(data),)
+
+    def matmul(self, other):
+        if len(self.shape) == 2 and len(other.shape) == 2 and self.shape[1] == other.shape[0]:
+            result = [[0.0 for _ in range(other.shape[1])] for _ in range(self.shape[0])]
+            for i in range(self.shape[0]):
+                for j in range(other.shape[1]):
+                    for k in range(self.shape[1]):
+                        result[i][j] += self.data[i][k] * other.data[k][j]
+            return NumpyArray(result)
+        raise ValueError("Unsupported matmul shapes")
 
     def dot(self, other):
         if len(self.shape) == 1 and len(other.shape) == 2:
@@ -66,11 +76,8 @@ class Neural:
         self.current_action = "idle"
         self.skill_timer = 0.0
         self.personality = Personality("analytical")
-
-        # Simple neural network using numpy
         self.input_size = 4
-        self.output_size = 3 # example: attack, flee, idle
-
+        self.output_size = 3
         self.hidden_size = 5
         self.hidden_weights = NumpyArray([[random.uniform(-1, 1) for _ in range(self.hidden_size)] for _ in range(self.input_size)])
         self.hidden_biases = NumpyArray([random.uniform(-1, 1) for _ in range(self.hidden_size)])
@@ -104,21 +111,13 @@ class Neural:
 
     def use_skill(self) -> bool:
         if self.skill_timer <= 0:
-
             self.skill_timer = self.SKILL_COOLDOWN
-
-            # Predict next action using pure python NumpyArray abstraction
             inputs = NumpyArray([self.get_hp_percent(), self.AGGRESSION, float(self.kills), self.skill_timer])
-
-            # Forward pass with hidden layer and ReLU activation
             hidden = (inputs.dot(self.hidden_weights) + self.hidden_biases).relu()
             outputs = hidden.dot(self.output_weights) + self.output_biases
-
-            # argmax
             action_idx = outputs.argmax()
             actions = ["attack", "flee", "idle"]
             self.current_action = actions[action_idx]
-
             return True
         return False
 
