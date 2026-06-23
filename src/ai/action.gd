@@ -1715,6 +1715,31 @@ func _use_skill():
                 self.ball.set_meta("team_message", {"type": "action_skill_used", "radius": 150})
             elif "team_message" in self.ball:
                 self.ball.team_message = {"type": "action_skill_used", "radius": 150}
+        elif skill_name == "numpy":
+            var enemies = _get_enemies()
+            if enemies.size() > 0:
+                var target = null
+                var min_dist_sq = INF
+                for e in enemies:
+                    var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                    if dist_sq < min_dist_sq:
+                        min_dist_sq = dist_sq
+                        target = e
+                var dx = target.x - self.ball.x
+                var dy = target.y - self.ball.y
+                var dist = sqrt(min_dist_sq)
+                if dist > 0.0001:
+                    var hp_ratio = 1.0
+                    if "hp" in self.ball and "max_hp" in self.ball and self.ball.max_hp > 0:
+                        hp_ratio = self.ball.hp / self.ball.max_hp
+                    var inputs = [dx/dist, dy/dist, hp_ratio, 1.0]
+                    var weights = [[0.8, -0.2], [0.2, 0.8], [0.1, 0.1], [0.0, 0.0]]
+                    var out_x = inputs[0]*weights[0][0] + inputs[1]*weights[1][0] + inputs[2]*weights[2][0] + inputs[3]*weights[3][0]
+                    var out_y = inputs[0]*weights[0][1] + inputs[1]*weights[1][1] + inputs[2]*weights[2][1] + inputs[3]*weights[3][1]
+                    var mag = sqrt(out_x*out_x + out_y*out_y)
+                    if mag > 0.0001:
+                        self.ball.x += (out_x/mag) * 80.0
+                        self.ball.y += (out_y/mag) * 80.0
         elif skill_name == "dash":
             var enemies = _get_enemies()
             if enemies.size() > 0:
