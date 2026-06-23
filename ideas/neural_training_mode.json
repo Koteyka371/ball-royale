@@ -1,4 +1,0 @@
-{
-  "title": "Neural Training Mode",
-  "description": "Add a special offline game mode where players can battle explicitly against a neural ball that learns progressively over matches by continuously saving and loading updated weights. The network's fitness metric evaluates time survived and damage dealt. It's a way for players to have an ever-evolving opponent."
-}
