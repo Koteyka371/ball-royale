@@ -1736,6 +1736,11 @@ func _use_skill():
                 self.ball.x += cos(angle) * 100.0
                 self.ball.y += sin(angle) * 100.0
 
+        elif skill_name == "numpy":
+            if "current_action" in self.ball:
+                var action_to_exec = self.ball.get("current_action")
+                if action_to_exec in ["attack", "flee", "idle"]:
+                    execute(action_to_exec, delta)
         elif skill_name == "target_strong":
             var enemies = _get_enemies()
             if enemies.size() > 0:

@@ -7,6 +7,34 @@ A ball controlled by a simple neural network.
 from ai.personality import Personality
 import random
 
+
+class NumpyArray:
+    def __init__(self, data):
+        self.data = data
+
+    def dot(self, other):
+        if isinstance(self.data[0], list):
+            # Matrix-vector multiplication
+            # self.data is (N, M), other.data is (M,)
+            result = []
+            for row in self.data:
+                dot_prod = sum(a * b for a, b in zip(row, other.data))
+                result.append(dot_prod)
+            return NumpyArray(result)
+        else:
+            # Vector-vector dot product
+            return sum(a * b for a, b in zip(self.data, other.data))
+
+    def __add__(self, other):
+        if isinstance(other, NumpyArray):
+            return NumpyArray([a + b for a, b in zip(self.data, other.data)])
+        elif isinstance(other, list):
+            return NumpyArray([a + b for a, b in zip(self.data, other)])
+        return self
+
+    def argmax(self):
+        return self.data.index(max(self.data))
+
 class Neural:
     BALL_TYPE = "neural"
     HP = 100
@@ -72,17 +100,18 @@ class Neural:
             # Predict next action using pure python
             inputs = [self.get_hp_percent(), self.AGGRESSION, float(self.kills), self.skill_timer]
 
-            # Forward pass: dot product + biases
-            # self.weights is (input_size, output_size)
-            outputs = [0.0] * self.output_size
-            for j in range(self.output_size):
-                dot_prod = 0.0
-                for i in range(self.input_size):
-                    dot_prod += inputs[i] * self.weights[i][j]
-                outputs[j] = dot_prod + self.biases[j]
+            # Forward pass using our pure-python NumpyArray
+            # self.weights is shape (input_size, output_size)
+            # Transpose weights to (output_size, input_size) for easier multiplication
+            w_T = [[self.weights[i][j] for i in range(self.input_size)] for j in range(self.output_size)]
+
+            inputs_arr = NumpyArray(inputs)
+            weights_arr = NumpyArray(w_T)
+
+            outputs_arr = weights_arr.dot(inputs_arr) + self.biases
 
             # argmax
-            action_idx = outputs.index(max(outputs))
+            action_idx = outputs_arr.argmax()
             actions = ["attack", "flee", "idle"]
             self.current_action = actions[action_idx]
 

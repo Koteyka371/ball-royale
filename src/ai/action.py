@@ -1132,6 +1132,13 @@ class Action:
                     self.ball.x += math.cos(angle) * 100.0
                     self.ball.y += math.sin(angle) * 100.0
 
+            elif skill_name == "numpy":
+                # The neural ball sets current_action in its use_skill method.
+                # We should execute that action.
+                if hasattr(self.ball, "current_action"):
+                    action_to_exec = self.ball.current_action
+                    if action_to_exec in ("attack", "flee", "idle"):
+                        self.execute(action_to_exec, delta)
             elif skill_name == "target_strong":
                 import random
                 import math
