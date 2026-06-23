@@ -81,7 +81,7 @@ class Action:
         elif strategy == "attack":
             self._attack(delta)
         elif strategy == "kite":
-            # Cosmetics: kite verify
+            # Cosmetics: kite verify auto-implement-kite-держит-дистанцию-атакует-при
             self._kite(delta)
         elif strategy == "chase":
             self._chase(delta)
