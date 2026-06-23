@@ -13,12 +13,12 @@ def test_neural_ball_creation_and_skill():
     a = NumpyArray([[1, 2], [3, 4]])
     b = NumpyArray([[5, 6], [7, 8]])
     c = a.matmul(b)
-    assert c.data == [[19.0, 22.0], [43.0, 50.0]]
+    assert c._data == [[19.0, 22.0], [43.0, 50.0]]
 
     # Test use skill changes action
     action_before = ball.current_action
     ball.use_skill()
-    assert ball.current_action in ["attack", "flee", "idle"]
+    assert ball.current_action in ["attack", "flee", "idle", "defend"]
     assert ball.skill_timer == 4.0
 
 test_neural_ball_creation_and_skill()

@@ -7,9 +7,16 @@ from ai.personality import Personality
 import random
 
 class NumpyArray:
+    """
+    A pure Python matrix abstraction implemented completely from scratch,
+    providing numpy-like behavior (matmul, dot, relu, argmax) without external libraries.
+    Used exclusively by the Neural ball to run its internal decision-making neural net.
+    """
+    # A custom numpy-like array implementation for Neural Ball
+    # It handles matrix multiplications and vector operations without external libraries.
     """A pure python matrix abstraction."""
     def __init__(self, data):
-        self.data = data
+        self._data = list(data)
         if not data:
             self.shape = (0,)
         elif isinstance(data[0], list):
@@ -18,41 +25,45 @@ class NumpyArray:
             self.shape = (len(data),)
 
     def matmul(self, other):
+        """Performs matrix multiplication."""
         if len(self.shape) == 2 and len(other.shape) == 2 and self.shape[1] == other.shape[0]:
             result = [[0.0 for _ in range(other.shape[1])] for _ in range(self.shape[0])]
             for i in range(self.shape[0]):
                 for j in range(other.shape[1]):
                     for k in range(self.shape[1]):
-                        result[i][j] += self.data[i][k] * other.data[k][j]
+                        result[i][j] += self._data[i][k] * other._data[k][j]
             return NumpyArray(result)
         raise ValueError("Unsupported matmul shapes")
 
     def dot(self, other):
+        """Performs dot product."""
         if len(self.shape) == 1 and len(other.shape) == 2:
             result = [0.0] * other.shape[1]
             for j in range(other.shape[1]):
                 dot_prod = 0.0
                 for i in range(self.shape[0]):
-                    dot_prod += self.data[i] * other.data[i][j]
+                    dot_prod += self._data[i] * other._data[i][j]
                 result[j] = dot_prod
             return NumpyArray(result)
         raise ValueError("Unsupported dot product shapes")
 
     def __add__(self, other):
         if len(self.shape) == 1 and len(other.shape) == 1:
-            return NumpyArray([self.data[i] + other.data[i] for i in range(self.shape[0])])
+            return NumpyArray([self._data[i] + other._data[i] for i in range(self.shape[0])])
         raise ValueError("Unsupported add shapes")
 
     def relu(self):
         if len(self.shape) == 1:
-            return NumpyArray([max(0.0, x) for x in self.data])
+            return NumpyArray([max(0.0, x) for x in self._data])
         raise ValueError("Unsupported relu shape")
 
     def argmax(self):
-        max_val = max(self.data)
-        return self.data.index(max_val)
+        max_val = max(self._data)
+        return self._data.index(max_val)
 
 class Neural:
+    # The Neural Ball uses the NumpyArray to process inputs and make decisions
+    # It evaluates HP, aggression, kills, and skill cooldown to choose an action.
     BALL_TYPE = "neural"
     HP = 100
     SPEED = 4.5
@@ -77,7 +88,7 @@ class Neural:
         self.skill_timer = 0.0
         self.personality = Personality("analytical")
         self.input_size = 4
-        self.output_size = 3
+        self.output_size = 4
         self.hidden_size = 5
         self.hidden_weights = NumpyArray([[random.uniform(-1, 1) for _ in range(self.hidden_size)] for _ in range(self.input_size)])
         self.hidden_biases = NumpyArray([random.uniform(-1, 1) for _ in range(self.hidden_size)])
@@ -116,7 +127,7 @@ class Neural:
             hidden = (inputs.dot(self.hidden_weights) + self.hidden_biases).relu()
             outputs = hidden.dot(self.output_weights) + self.output_biases
             action_idx = outputs.argmax()
-            actions = ["attack", "flee", "idle"]
+            actions = ["attack", "flee", "idle", "defend"]
             self.current_action = actions[action_idx]
             return True
         return False
