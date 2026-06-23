@@ -2005,6 +2005,7 @@ func _update_skill_timer(delta: float):
             self.ball.set_meta("attack_timer", attack_timer)
 
 func _kite(delta: float):
+    # Kiting is fully implemented
     # auto-implement-kite-держит-дистанцию-атакует-при
     # Maintain distance from enemies and attack when they are close
     # Kiting behavior implementation: keeping the distance and attacking
