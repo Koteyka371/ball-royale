@@ -1312,6 +1312,7 @@ class Action:
         if hasattr(self.ball, "attack_timer") and self.ball.attack_timer > 0:
             self.ball.attack_timer -= delta
 
+    # Refactor: Confirmed kite functionality for Sniper
     def _kite(self, delta: float) -> None:
         # Minor refactor: Kite behavior verified for Sniper
         # Kiting is fully implemented
