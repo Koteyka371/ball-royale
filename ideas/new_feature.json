@@ -1,4 +1,0 @@
-{
-  "title": "Neural Ball Evolutions",
-  "description": "Balls can evolve over time if they survive longer, altering the weights of their neural networks locally before they participate in the next generation."
-}
