@@ -1981,6 +1981,7 @@ func _update_skill_timer(delta: float):
 
 func _kite(delta: float):
     # auto-implement-kite-держит-дистанцию-атакует-при
+    # Maintain distance from enemies and attack when they are close
     # Kiting behavior implementation: keeping the distance and attacking
     # Kite — держит дистанцию, атакует при приближении skill: для Sniper
     var active_enemies = _get_enemies()

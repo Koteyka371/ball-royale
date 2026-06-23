@@ -1286,6 +1286,7 @@ class Action:
     def _kite(self, delta: float) -> None:
         # Kiting mechanism: maintain distance and attack
         # auto-implement-kite-держит-дистанцию-атакует-при
+        # Maintain distance from enemies and attack when they are close
         # Kiting behavior implementation: keeping the distance and attacking
         """
         Kite — держит дистанцию, атакует при приближении skill: для Sniper

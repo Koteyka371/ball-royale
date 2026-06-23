@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Ball",
+  "description": "Introduce a skill that allows a ball to spawn a stationary clone with 1 HP. The clone distracts enemy AI targeting for a short duration, allowing the real ball to escape or reposition."
+}
