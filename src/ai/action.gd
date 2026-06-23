@@ -92,7 +92,7 @@ func execute(strategy: String, delta: float):
     elif strategy == "attack":
         _attack(delta)
     elif strategy == "kite":
-        # Cosmetics: kite verify
+        # Cosmetics: kite verify auto-implement-kite-держит-дистанцию-атакует-при
         _kite(delta)
     elif strategy == "chase":
         _chase(delta)
