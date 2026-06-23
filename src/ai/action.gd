@@ -1733,9 +1733,19 @@ func _use_skill():
                     if "hp" in self.ball and "max_hp" in self.ball and self.ball.max_hp > 0:
                         hp_ratio = self.ball.hp / self.ball.max_hp
                     var inputs = [dx/dist, dy/dist, hp_ratio, 1.0]
-                    var weights = [[0.8, -0.2], [0.2, 0.8], [0.1, 0.1], [0.0, 0.0]]
-                    var out_x = inputs[0]*weights[0][0] + inputs[1]*weights[1][0] + inputs[2]*weights[2][0] + inputs[3]*weights[3][0]
-                    var out_y = inputs[0]*weights[0][1] + inputs[1]*weights[1][1] + inputs[2]*weights[2][1] + inputs[3]*weights[3][1]
+
+                    var h_weights = [[0.5, -0.5, 0.1], [0.1, 0.5, -0.1], [0.0, 0.2, 0.8], [0.0, 0.0, 0.0]]
+                    var h_biases = [0.1, 0.0, -0.1]
+                    var hidden = [0.0, 0.0, 0.0]
+                    for j in range(3):
+                        var val = inputs[0]*h_weights[0][j] + inputs[1]*h_weights[1][j] + inputs[2]*h_weights[2][j] + inputs[3]*h_weights[3][j] + h_biases[j]
+                        hidden[j] = max(0.0, val)
+
+                    var o_weights = [[0.8, -0.2], [0.2, 0.8], [0.1, 0.1]]
+                    var o_biases = [0.0, 0.0]
+                    var out_x = hidden[0]*o_weights[0][0] + hidden[1]*o_weights[1][0] + hidden[2]*o_weights[2][0] + o_biases[0]
+                    var out_y = hidden[0]*o_weights[0][1] + hidden[1]*o_weights[1][1] + hidden[2]*o_weights[2][1] + o_biases[1]
+
                     var mag = sqrt(out_x*out_x + out_y*out_y)
                     if mag > 0.0001:
                         self.ball.x += (out_x/mag) * 80.0
