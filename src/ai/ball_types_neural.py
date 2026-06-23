@@ -7,6 +7,36 @@ A ball controlled by a simple neural network.
 from ai.personality import Personality
 import random
 
+class NumpyArray:
+    def __init__(self, data):
+        self.data = data
+        if not data:
+            self.shape = (0,)
+        elif isinstance(data[0], list):
+            self.shape = (len(data), len(data[0]))
+        else:
+            self.shape = (len(data),)
+
+    def dot(self, other):
+        if len(self.shape) == 1 and len(other.shape) == 2:
+            result = [0.0] * other.shape[1]
+            for j in range(other.shape[1]):
+                dot_prod = 0.0
+                for i in range(self.shape[0]):
+                    dot_prod += self.data[i] * other.data[i][j]
+                result[j] = dot_prod
+            return NumpyArray(result)
+        raise ValueError("Unsupported dot product shapes")
+
+    def __add__(self, other):
+        if len(self.shape) == 1 and len(other.shape) == 1:
+            return NumpyArray([self.data[i] + other.data[i] for i in range(self.shape[0])])
+        raise ValueError("Unsupported add shapes")
+
+    def argmax(self):
+        max_val = max(self.data)
+        return self.data.index(max_val)
+
 class Neural:
     BALL_TYPE = "neural"
     HP = 100
@@ -36,8 +66,8 @@ class Neural:
         self.input_size = 4
         self.output_size = 3 # example: attack, flee, idle
 
-        self.weights = [[random.uniform(-1, 1) for _ in range(self.output_size)] for _ in range(self.input_size)]
-        self.biases = [random.uniform(-1, 1) for _ in range(self.output_size)]
+        self.weights = NumpyArray([[random.uniform(-1, 1) for _ in range(self.output_size)] for _ in range(self.input_size)])
+        self.biases = NumpyArray([random.uniform(-1, 1) for _ in range(self.output_size)])
 
     def get_hp_percent(self) -> float:
         return self.hp / self.max_hp if self.max_hp > 0 else 0.0
@@ -69,20 +99,14 @@ class Neural:
 
             self.skill_timer = self.SKILL_COOLDOWN
 
-            # Predict next action using pure python
-            inputs = [self.get_hp_percent(), self.AGGRESSION, float(self.kills), self.skill_timer]
+            # Predict next action using pure python NumpyArray abstraction
+            inputs = NumpyArray([self.get_hp_percent(), self.AGGRESSION, float(self.kills), self.skill_timer])
 
             # Forward pass: dot product + biases
-            # self.weights is (input_size, output_size)
-            outputs = [0.0] * self.output_size
-            for j in range(self.output_size):
-                dot_prod = 0.0
-                for i in range(self.input_size):
-                    dot_prod += inputs[i] * self.weights[i][j]
-                outputs[j] = dot_prod + self.biases[j]
+            outputs = inputs.dot(self.weights) + self.biases
 
             # argmax
-            action_idx = outputs.index(max(outputs))
+            action_idx = outputs.argmax()
             actions = ["attack", "flee", "idle"]
             self.current_action = actions[action_idx]
 
