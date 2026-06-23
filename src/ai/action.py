@@ -1115,6 +1115,23 @@ class Action:
                 self.ball.team_message = {"type": "buff_command", "radius": 200}
             elif skill_name in ("Действие", "action_skill"):
                 self.ball.team_message = {"type": "action_skill_used", "radius": 150}
+            elif skill_name == "numpy":
+                import math
+                enemies = self._get_enemies()
+                if enemies:
+                    target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                    dx = target.x - self.ball.x
+                    dy = target.y - self.ball.y
+                    dist = math.sqrt(dx*dx + dy*dy)
+                    if dist > 0.0001:
+                        inputs = [dx/dist, dy/dist, getattr(self.ball, "hp", 100)/getattr(self.ball, "max_hp", 100), 1.0]
+                        weights = [[0.8, -0.2], [0.2, 0.8], [0.1, 0.1], [0.0, 0.0]]
+                        out_x = sum(inputs[i] * weights[i][0] for i in range(4))
+                        out_y = sum(inputs[i] * weights[i][1] for i in range(4))
+                        mag = math.sqrt(out_x*out_x + out_y*out_y)
+                        if mag > 0.0001:
+                            self.ball.x += (out_x/mag) * 80.0
+                            self.ball.y += (out_y/mag) * 80.0
             elif skill_name == "dash":
                 import random
                 import math
