@@ -235,6 +235,21 @@ class Action:
             if dist_sq > 0.0001 and dist_sq < safe_dist * safe_dist:
                 dist = math.sqrt(dist_sq)
                 force = 1.0 - (dist / safe_dist)
+                is_enemy = getattr(entity, "ball_type", None) != self.ball.ball_type and getattr(entity, "ball_type", None) != "spectator"
+                if is_enemy:
+                    damage = getattr(entity, "damage", 10.0)
+                    cd = max(0.1, getattr(entity, "attack_cooldown", 1.5))
+                    dps = damage / cd
+                    attack_range = getattr(entity, "attack_range", 150.0)
+
+                    danger_coefficient = 1.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "danger_grid"):
+                        # Dummy read from grid if available
+                        danger_coefficient += self.world.arena.danger_grid.get((int(entity.x//100), int(entity.y//100)), 0.0)
+
+                    if dist < attack_range:
+                        danger_coefficient += (dps / 10.0)
+                    force *= danger_coefficient
                 repulse_nx += (dx / dist) * force
                 repulse_ny += (dy / dist) * force
 
