@@ -89,6 +89,15 @@ class ZombieInfectionMode(GameMode):
                     else:
                         b.team = "Survivor"
 
+    def tick(self, world: Any, balls: List[Any]) -> None:
+        survivors = [b for b in balls if getattr(b, "team", "") == "Survivor"]
+        for survivor in survivors:
+            if not getattr(survivor, "alive", False):
+                survivor.team = "Zombie"
+                survivor.ball_type = "berserker"
+                survivor.hp = getattr(survivor, "max_hp", 100)
+                survivor.alive = True
+
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
         if not alive:

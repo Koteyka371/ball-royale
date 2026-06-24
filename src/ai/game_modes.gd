@@ -113,6 +113,22 @@ class ZombieInfectionMode extends GameMode:
                 else:
                     b.team = "Survivor"
 
+    func tick(world, balls: Array) -> void:
+        var survivors = []
+        for b in balls:
+            if ("team" in b) and b.team == "Survivor":
+                survivors.append(b)
+
+        for survivor in survivors:
+            if not survivor.alive:
+                survivor.team = "Zombie"
+                survivor.ball_type = "berserker"
+                if "max_hp" in survivor:
+                    survivor.hp = survivor.max_hp
+                else:
+                    survivor.hp = 100
+                survivor.alive = true
+
     func check_winner(world, balls: Array):
         var alive = []
         for b in balls:

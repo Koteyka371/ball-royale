@@ -65,6 +65,42 @@ def test_zombie_infection_mode():
     survivors[1].alive = False
     assert mode.check_winner(world, balls) == "Zombies"
 
+def test_zombie_infection_mode_resurrection():
+    mode = ZombieInfectionMode()
+    world = MockWorld()
+    balls = [MockBall(1), MockBall(2), MockBall(3)]
+
+    mode.setup(world, balls)
+    survivors = [b for b in balls if b.team == "Survivor"]
+
+    # Kill one survivor
+    survivors[0].alive = False
+
+    # Tick should resurrect it as a zombie
+    if hasattr(mode, 'tick'):
+        mode.tick(world, balls)
+
+    assert survivors[0].alive is True
+    assert survivors[0].team == "Zombie"
+    assert survivors[0].ball_type == "berserker"
+
+    # One survivor left
+    assert mode.check_winner(world, balls) is None
+
+    # Kill the last survivor
+    survivors[1].alive = False
+    if hasattr(mode, 'tick'):
+        mode.tick(world, balls)
+
+    assert survivors[1].alive is True
+    assert survivors[1].team == "Zombie"
+    assert survivors[1].ball_type == "berserker"
+
+    # Now everyone is a zombie, so zombies win?
+    # check_winner actually checks if survivors == 0 among ALIVE balls.
+    # Since we resurrected them, they are alive and team=Zombie, so survivors=0 -> Zombies win
+    assert mode.check_winner(world, balls) == "Zombies"
+
 def test_boss_fight_mode():
     mode = BossFightMode()
     world = MockWorld()
