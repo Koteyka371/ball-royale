@@ -1,4 +1,0 @@
-{
-  "title": "Capture the Flag Mode",
-  "description": "A team-based game mode where balls must coordinate to steal the enemy's flag (a special booster object) and return it to their base. Introduces new AI behaviors for defending the base, escorting the flag carrier, and intercepting enemy carriers."
-}

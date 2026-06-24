@@ -1,4 +1,0 @@
-{
-  "title": "Conveyor Belt Hazard",
-  "description": "Introduce a dynamic environmental hazard that shifts balls in a specific vector direction without altering their internal velocity. Technical implementation requires adding a `ConveyorBelt` subclass to `ProceduralArena.Hazard` in `src/arena/arena_types.py` with `direction_vector` and `speed_magnitude` properties, applying positional offsets in the game tick physics loop."
-}

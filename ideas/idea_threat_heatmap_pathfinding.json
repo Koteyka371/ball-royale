@@ -1,4 +1,0 @@
-{
-  "title": "Threat Heatmap Pathfinding",
-  "description": "Enhance A* navigation by overlaying a dynamic threat heatmap based on enemy DPS and attack ranges. Instead of finding the shortest path, A* will minimize a 'danger cost' function. Technical implementation involves creating a new helper method `_find_path` or modifying obstacle avoidance in `src/ai/action.py` to evaluate nodes using a new `danger_coefficient` grid maintained by the Arena state."
-}

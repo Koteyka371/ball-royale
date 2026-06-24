@@ -1,4 +1,0 @@
-{
-  "title": "Post-Match Death Heatmap Analytics",
-  "description": "Generate visual heatmaps overlaid on the arena after a match concludes to show death densities and choke points. Technical implementation requires maintaining an array of `death_coordinates` during gameplay and passing this data to a Godot shader material that renders radial gradients onto a UI overlay texture."
-}

@@ -1,4 +1,0 @@
-{
-  "title": "Ultimate Charge Resource",
-  "description": "Add a new class-specific resource called 'charge' that builds up when dealing or receiving damage, enabling a powerful ultimate skill once full. Technical implementation involves adding a `charge_level` state to the ball entity and updating the action scoring logic within `src/ai/decision.py` to dramatically increase the score for 'use_skill' when `charge_level >= 100`."
-}

@@ -2212,6 +2212,198 @@
         "Tests pass",
         "No regressions"
       ]
+    },
+    {
+      "id": "idea-126",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Threat Heatmap Pathfinding",
+      "description": "Enhance A* navigation by overlaying a dynamic threat heatmap based on enemy DPS and attack ranges. Instead of finding the shortest path, A* will minimize a 'danger cost' function. Technical implementation involves creating a new helper method `_find_path` or modifying obstacle avoidance in `src/ai/action.py` to evaluate nodes using a new `danger_coefficient` grid maintained by the Arena state.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-127",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Zombie Infection Mode",
+      "description": "A mode where one powerful 'Zombie' ball starts against a large number of regular balls. When a regular ball is killed by a Zombie, it resurrects as a Zombie. The regular balls win if they survive until the timer runs out, while the Zombies win if they infect everyone.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-128",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Arena",
+      "description": "An arena featuring a massive, slow-moving black hole in the center that gradually pulls all balls and boosters towards it. The gravitational pull gets stronger closer to the center, forcing balls to use their movement skills creatively to avoid being crushed while trying to push enemies in.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-129",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sniper Trap Placement",
+      "description": "Sniper balls can drop temporary traps while kiting. Enemies that step on these traps receive a slowing effect, allowing the Sniper to effectively maintain their distance and continue to deal damage safely.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-130",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Capture the Flag Mode",
+      "description": "A team-based game mode where balls must coordinate to steal the enemy's flag (a special booster object) and return it to their base. Introduces new AI behaviors for defending the base, escorting the flag carrier, and intercepting enemy carriers.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-131",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Fitness Evaluation for Neural Balls",
+      "description": "Enhance the evolutionary training system by using a dynamic fitness evaluation formula that penalizes passive survival (camping) and rewards active engagement. Technical implementation involves updating the fitness calculation at the end of matches to factor in `distance_traveled` and `damage_dealt`, dynamically adjusting generation weights for neural balls.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-132",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Night and Day Arena",
+      "description": "An arena that cycles between day and night phases. During the day, vision is unlimited and attack power is slightly buffed. During the night, vision is severely restricted, but speed is increased and stealth behaviors become more effective. This forces balls to dynamically switch between aggressive and defensive tactics.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-133",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Vampire Ball Type",
+      "description": "A new ball type that heals itself for a percentage of the damage it deals to enemies. It has low base HP but high attack speed, making it dangerous in prolonged 1v1 fights but weak against burst damage or crowd control.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-134",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Ultimate Charge Resource",
+      "description": "Add a new class-specific resource called 'charge' that builds up when dealing or receiving damage, enabling a powerful ultimate skill once full. Technical implementation involves adding a `charge_level` state to the ball entity and updating the action scoring logic within `src/ai/decision.py` to dramatically increase the score for 'use_skill' when `charge_level >= 100`.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-135",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mimic Ball Type",
+      "description": "A unique ball that starts with average stats and no skill. Upon killing an enemy or staying near them for a certain duration, it permanently copies the enemy's skill and slightly adjusts its stats to match. The Mimic's strategy is to survive early and hunt down high-value targets to copy their abilities.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-136",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Conveyor Belt Hazard",
+      "description": "Introduce a dynamic environmental hazard that shifts balls in a specific vector direction without altering their internal velocity. Technical implementation requires adding a `ConveyorBelt` subclass to `ProceduralArena.Hazard` in `src/arena/arena_types.py` with `direction_vector` and `speed_magnitude` properties, applying positional offsets in the game tick physics loop.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-137",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Post-Match Death Heatmap Analytics",
+      "description": "Generate visual heatmaps overlaid on the arena after a match concludes to show death densities and choke points. Technical implementation requires maintaining an array of `death_coordinates` during gameplay and passing this data to a Godot shader material that renders radial gradients onto a UI overlay texture.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }

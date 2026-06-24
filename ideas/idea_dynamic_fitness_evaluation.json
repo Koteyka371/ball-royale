@@ -1,4 +1,0 @@
-{
-  "title": "Dynamic Fitness Evaluation for Neural Balls",
-  "description": "Enhance the evolutionary training system by using a dynamic fitness evaluation formula that penalizes passive survival (camping) and rewards active engagement. Technical implementation involves updating the fitness calculation at the end of matches to factor in `distance_traveled` and `damage_dealt`, dynamically adjusting generation weights for neural balls."
-}
