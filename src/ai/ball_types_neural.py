@@ -6,7 +6,7 @@ No external libraries are used as per requirements.
 
 from ai.personality import Personality
 import random
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Any
 
 class NumpyArray:
     """
@@ -15,9 +15,9 @@ class NumpyArray:
     element-wise addition, relu activation, and argmax.
     """
     def __init__(self, data: Union[List[float], List[List[float]]]):
-        self._data = list(data)
+        self._data: List[Any] = list(data)
         if not data:
-            self.shape = (0,)
+            self.shape: Tuple[int, ...] = (0,)
         elif isinstance(data[0], list):
             self.shape = (len(data), len(data[0]))
         else:
@@ -49,19 +49,20 @@ class NumpyArray:
     def __add__(self, other: 'NumpyArray') -> 'NumpyArray':
         """Element-wise addition."""
         if len(self.shape) == 1 and len(other.shape) == 1:
-            return NumpyArray([self._data[i] + other._data[i] for i in range(self.shape[0])])
+            return NumpyArray([float(self._data[i]) + float(other._data[i]) for i in range(self.shape[0])])
         raise ValueError("Unsupported add shapes")
 
     def relu(self) -> 'NumpyArray':
         """Applies ReLU activation."""
         if len(self.shape) == 1:
-            return NumpyArray([max(0.0, x) for x in self._data])
+            return NumpyArray([max(0.0, float(x)) for x in self._data])
         raise ValueError("Unsupported relu shape")
 
     def argmax(self) -> int:
         """Returns the index of the maximum value."""
-        max_val = max(self._data)
-        return self._data.index(max_val)
+        float_data = [float(x) for x in self._data]
+        max_val = max(float_data)
+        return float_data.index(max_val)
 
 
 class Neural:
