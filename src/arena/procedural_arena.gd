@@ -12,6 +12,7 @@ var rng: RandomNumberGenerator
 var safe_zone_radius: float
 var safe_zone_center: Array
 var last_tick: int = -1
+var danger_grid: Dictionary = {}
 
 class Hazard:
     var id: int

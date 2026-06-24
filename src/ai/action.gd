@@ -302,6 +302,35 @@ func _apply_obstacle_avoidance(nx: float, ny: float, target=null, ignore_enemies
         if dist_sq > 0.0001 and dist_sq < safe_dist * safe_dist:
             var dist = sqrt(dist_sq)
             var force = 1.0 - (dist / safe_dist)
+            var is_enemy = false
+            if "ball_type" in entity and "ball_type" in self.ball:
+                is_enemy = entity.ball_type != self.ball.ball_type and entity.ball_type != "spectator"
+            elif entity.has_method("get_ball_type") and self.ball.has_method("get_ball_type"):
+                is_enemy = entity.get_ball_type() != self.ball.get_ball_type() and entity.get_ball_type() != "spectator"
+
+            if is_enemy:
+                var damage = 10.0
+                if "damage" in entity:
+                    damage = entity.damage
+                var cd = 1.5
+                if "attack_cooldown" in entity:
+                    cd = max(0.1, entity.attack_cooldown)
+                var dps = damage / cd
+                var attack_range = 150.0
+                if "attack_range" in entity:
+                    attack_range = entity.attack_range
+
+                var danger_coefficient = 1.0
+                if self.world != null and "arena" in self.world and "danger_grid" in self.world.arena:
+                    var grid_x = int(entity.x / 100)
+                    var grid_y = int(entity.y / 100)
+                    var key = str(grid_x) + "," + str(grid_y)
+                    if self.world.arena.danger_grid.has(key):
+                        danger_coefficient += self.world.arena.danger_grid[key]
+
+                if dist < attack_range:
+                    danger_coefficient += (dps / 10.0)
+                force *= danger_coefficient
             repulse_nx += (dx / dist) * force
             repulse_ny += (dy / dist) * force
 

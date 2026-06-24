@@ -1,0 +1,4 @@
+{
+  "title": "Interactive Danger Heatmap UI Overlay",
+  "description": "Visualize the `danger_grid` as a heatmap overlay in the spectator or coach mode UI. High danger areas will pulse in red, while safe zones appear green. This provides players with better insight into the AI's real-time risk assessment and movement decisions."
+}

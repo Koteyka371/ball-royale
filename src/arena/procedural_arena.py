@@ -41,6 +41,7 @@ class ProceduralArena:
         self.safe_zone_radius = arena_size * 0.7
         self.safe_zone_center = (arena_size / 2, arena_size / 2)
         self.last_tick = -1
+        self.danger_grid: dict[tuple[int, int], float] = {}
 
         self.generate()
 

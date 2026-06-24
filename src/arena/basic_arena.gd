@@ -8,6 +8,7 @@ var rng: RandomNumberGenerator
 var safe_zone_radius: float
 var safe_zone_center: Array
 var last_tick: int = -1
+var danger_grid: Dictionary = {}
 
 func _init(_arena_size: float = 2000.0, _seed = null):
     width = _arena_size
