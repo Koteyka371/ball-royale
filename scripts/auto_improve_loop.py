@@ -3,6 +3,7 @@ Auto-Improvement Loop.
 Runs quality checks, idea generation, test validation, and automatically creates task entries.
 """
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -87,7 +88,18 @@ def main():
                 tasks_to_add = idea_data if isinstance(idea_data, list) else [idea_data]
                 for t in tasks_to_add:
                     if "title" in t and "description" in t:
-                        task_id = t.get("id", f"idea-{len(manifest.get('tasks', []))}")
+                        max_id = 0
+                        for existing_task in manifest.get("tasks", []):
+                            tid = existing_task.get("id", "")
+                            match = re.search(r'idea-(\d+)', tid)
+                            if match:
+                                try:
+                                    num = int(match.group(1))
+                                    if num > max_id:
+                                        max_id = num
+                                except ValueError:
+                                    pass
+                        task_id = t.get("id", f"idea-{max_id + 1}")
                         if add_task(manifest, task_id, t["title"], t["description"], 
                                   t.get("area", "innovation"), t.get("risk", "medium"), 
                                   t.get("allowed_paths"), t.get("acceptance")):

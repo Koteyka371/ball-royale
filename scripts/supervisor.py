@@ -24,7 +24,7 @@ LOCK_FILE = "agent_lock.json"
 TASK_FILE = "agent_tasks.json"
 SUPERVISOR_LOCK = ".supervisor.lock"
 MAX_RETRIES = 5
-STALE_TIMEOUT_MIN = 45
+STALE_TIMEOUT_MIN = 60
 SUPERVISOR_ID = "supervisor"
 
 
@@ -973,6 +973,13 @@ def main():
                                     consecutive_failures += 1
                                     if consecutive_failures >= 3:
                                         print(f"    Still failing after {consecutive_failures} checks, giving up")
+                                        if agent_id:
+                                            pr_updates["agents"][agent_id] = {
+                                                "status": "idle",
+                                                "task_id": None,
+                                                "started_at": None,
+                                            }
+                                            pr_need_save = True
                                         break
                                     print(f"    Still failing ({elapsed}m)")
                                 elif new_ci == "pending":

@@ -2468,6 +2468,38 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-142",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Interactive Danger Heatmap UI Overlay",
+      "description": "Visualize the `danger_grid` as a heatmap overlay in the spectator or coach mode UI. High danger areas will pulse in red, while safe zones appear green. This provides players with better insight into the AI's real-time risk assessment and movement decisions.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-143",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Danger Zones Arena Mutator",
+      "description": "Introduce a new mutator where dynamic 'danger zones' spawn periodically on the map, registering as high values in the `danger_grid`. Balls must use the updated A* obstacle avoidance to navigate around these invisible traps or suffer massive damage if they traverse them.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }

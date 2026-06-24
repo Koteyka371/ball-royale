@@ -23,7 +23,7 @@ TASK_FILE = "agent_tasks.json"
 DISPATCHER_LOCK = ".dispatcher.lock"
 MAX_CYCLES_PER_AGENT = 30
 MAX_RETRIES = 5
-STALE_TIMEOUT_MIN = 45
+STALE_TIMEOUT_MIN = 60
 SUPERVISOR_ID = "supervisor"
 
 AGENT_AREAS = {
