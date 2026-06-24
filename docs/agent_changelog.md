@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [auto-implement-**kite**-—-держит-дистанцию,-атакует-при] Implement **Kite** — держит дистанцию, атакует при приближении skill — *2026-06-24 15:39:09 UTC*
+
+Create **Kite** — держит дистанцию, атакует при приближении skill: для Sniper
+
+---
+
 ## [idea-arena-119] Create Neural Ball arena — *2026-06-22 19:06:19 UTC*
 
 Implement Create Neural Ball arena as described in game_design.md

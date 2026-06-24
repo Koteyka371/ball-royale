@@ -580,7 +580,7 @@
     },
     {
       "id": "auto-implement-**kite**-—-держит-дистанцию,-атакует-при",
-      "status": "todo",
+      "status": "done",
       "area": "skills",
       "risk": "medium",
       "allowed_paths": [
