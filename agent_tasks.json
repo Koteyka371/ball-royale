@@ -2404,6 +2404,38 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-138",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Kiting Specializations",
+      "description": "Add varying kite distances depending on specific ball traits, e.g. Sniper kites at max range while a Skirmisher kites closely.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-139",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Kite Dynamic Retreat",
+      "description": "Allow kiting balls to drop small traps or obstacles when retreating from faster enemies.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
