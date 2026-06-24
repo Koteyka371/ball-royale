@@ -1,4 +1,0 @@
-{
-  "title": "Custom Neural Skill Input Node Editor",
-  "description": "Create a visual configuration interface in the UI (or simple JSON mapping system) where players can choose which inputs their custom Neural Ball has access to. Instead of standard HP, Aggression, Kills, and Timer, they could pipe in variables like Nearest Enemy Distance, Number of Allies, Boss HP, or Map Hazard Distance, to allow for custom fine-tuned Neural strategies."
-}

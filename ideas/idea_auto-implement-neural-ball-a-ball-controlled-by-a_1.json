@@ -1,4 +1,0 @@
-{
-  "title": "Neural Ball Deep Evolution Mode",
-  "description": "Introduce a game mode where only Neural Balls compete. After each round, a genetic algorithm breeds the top performing Neural Balls (combining their hidden and output weights) and mutates a fraction of the offspring to see which configuration converges on the optimal strategy. It would provide an evolutionary simulation angle to the game."
-}

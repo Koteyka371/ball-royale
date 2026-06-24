@@ -2436,6 +2436,38 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-140",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Custom Neural Skill Input Node Editor",
+      "description": "Create a visual configuration interface in the UI (or simple JSON mapping system) where players can choose which inputs their custom Neural Ball has access to. Instead of standard HP, Aggression, Kills, and Timer, they could pipe in variables like Nearest Enemy Distance, Number of Allies, Boss HP, or Map Hazard Distance, to allow for custom fine-tuned Neural strategies.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-141",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Neural Ball Deep Evolution Mode",
+      "description": "Introduce a game mode where only Neural Balls compete. After each round, a genetic algorithm breeds the top performing Neural Balls (combining their hidden and output weights) and mutates a fraction of the offspring to see which configuration converges on the optimal strategy. It would provide an evolutionary simulation angle to the game.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
