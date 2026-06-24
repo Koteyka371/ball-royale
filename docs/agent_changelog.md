@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-128] Black Hole Arena — *2026-06-24 23:22:19 UTC*
+
+An arena featuring a massive, slow-moving black hole in the center that gradually pulls all balls and boosters towards it. The gravitational pull gets stronger closer to the center, forcing balls to use their movement skills creatively to avoid being crushed while trying to push enemies in.
+
+---
+
 ## [idea-127] Zombie Infection Mode — *2026-06-24 21:21:54 UTC*
 
 A mode where one powerful 'Zombie' ball starts against a large number of regular balls. When a regular ball is killed by a Zombie, it resurrects as a Zombie. The regular balls win if they survive until the timer runs out, while the Zombies win if they infect everyone.
