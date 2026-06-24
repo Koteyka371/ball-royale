@@ -1,0 +1,4 @@
+{
+  "title": "Night and Day Arena",
+  "description": "An arena that cycles between day and night phases. During the day, vision is unlimited and attack power is slightly buffed. During the night, vision is severely restricted, but speed is increased and stealth behaviors become more effective. This forces balls to dynamically switch between aggressive and defensive tactics."
+}
