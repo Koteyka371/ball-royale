@@ -2215,7 +2215,7 @@
     },
     {
       "id": "idea-126",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Threat Heatmap Pathfinding",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-126] Threat Heatmap Pathfinding — *2026-06-24 19:32:03 UTC*
+
+Enhance A* navigation by overlaying a dynamic threat heatmap based on enemy DPS and attack ranges. Instead of finding the shortest path, A* will minimize a 'danger cost' function. Technical implementation involves creating a new helper method `_find_path` or modifying obstacle avoidance in `src/ai/action.py` to evaluate nodes using a new `danger_coefficient` grid maintained by the Arena state.
+
+---
+
 ## [auto-implement-**neural-ball**-—-a-ball-controlled-by-a] Implement **Neural Ball** — A ball controlled by a simple neural network skill — *2026-06-24 17:38:31 UTC*
 
 Create **Neural Ball** — A ball controlled by a simple neural network skill: numpy, no external libs
