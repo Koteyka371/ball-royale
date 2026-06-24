@@ -1,0 +1,4 @@
+{
+  "title": "Mimic Ball Type",
+  "description": "A unique ball that starts with average stats and no skill. Upon killing an enemy or staying near them for a certain duration, it permanently copies the enemy's skill and slightly adjusts its stats to match. The Mimic's strategy is to survive early and hunt down high-value targets to copy their abilities."
+}
