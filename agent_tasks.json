@@ -2500,6 +2500,38 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-144",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Vampire Mode",
+      "description": "A game mode where all balls slowly lose HP over time but regain HP when dealing damage or killing others. The last one standing wins.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-145",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "King of the Hill",
+      "description": "A game mode where a specific designated area in the center of the arena grants points to the balls inside it. The ball with the most points when the timer ends wins.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
