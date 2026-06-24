@@ -45,6 +45,50 @@ class Action:
                             self.ball.alive = False
 
             # Apply hazard damage
+
+            if hasattr(self.world.arena, "hazards"):
+                for hazard in self.world.arena.hazards:
+                    if hazard.kind == "black_hole":
+                        # Only update global state once per frame using the tick counter
+                        current_tick = getattr(self.world, "tick", 0)
+                        if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
+                            hazard.last_updated_tick = current_tick
+                            if not hasattr(hazard, "vx"):
+                                import random
+                                hazard.vx = random.uniform(-10.0, 10.0)
+                                hazard.vy = random.uniform(-10.0, 10.0)
+                            hazard.x += hazard.vx * delta
+                            hazard.y += hazard.vy * delta
+                            if hasattr(self.world.arena, "width") and hasattr(self.world.arena, "height"):
+                                if hazard.x < 100 or hazard.x > self.world.arena.width - 100:
+                                    hazard.vx *= -1
+                                if hazard.y < 100 or hazard.y > self.world.arena.height - 100:
+                                    hazard.vy *= -1
+
+                            # Pull boosters once per frame
+                            if hasattr(self.world, "boosters"):
+                                for b in self.world.boosters:
+                                    bdx = hazard.x - b.x
+                                    bdy = hazard.y - b.y
+                                    bdist_sq = bdx * bdx + bdy * bdy
+                                    if bdist_sq > 0.0001:
+                                        bdist = math.sqrt(bdist_sq)
+                                        bnx, bny = bdx / bdist, bdy / bdist
+                                        bpull_strength = (hazard.radius * 2.0 / max(10.0, bdist)) * 50.0 * delta
+                                        b.x += bnx * bpull_strength
+                                        b.y += bny * bpull_strength
+
+                        # Ball specific logic
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq > 0.0001:
+                            dist = math.sqrt(dist_sq)
+                            nx, ny = dx / dist, dy / dist
+                            pull_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 50.0 * delta
+                            self.ball.x += nx * pull_strength
+                            self.ball.y += ny * pull_strength
+
             if hasattr(self.world.arena, "hazards") and ball_type != "spectator":
                 for hazard in self.world.arena.hazards:
                     dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
