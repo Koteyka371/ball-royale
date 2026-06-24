@@ -34,3 +34,4 @@ Thumbs.db
 .dispatcher.lock
 .supervisor.lock
 replay.json
+temp_pyodide_env/
