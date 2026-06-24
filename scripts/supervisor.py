@@ -341,6 +341,73 @@ def invoke_jules(task_id, area, prompt, branch_name, token):
         return False
 
 
+def invoke_jules_brainstorm(token):
+    if not token:
+        return False
+    repo = os.environ.get('GITHUB_REPOSITORY', 'Koteyka371/ball-royale')
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+    branch_name = f"supervisor-brainstorm-{timestamp}"
+    task_id = "supervisor-brainstorm"
+
+    brainstorm_prompt = (
+        "Brainstorm at least 5 new creative and unique feature ideas, game modes, arenas, or ball types for Ball Royale. "
+        "Read docs/game_design.md and agent_tasks.json to understand what is already implemented or planned. "
+        "Write each new idea as a separate JSON file in the 'ideas/' directory (e.g., 'ideas/idea_brainstorm_1.json'). "
+        "Use unique filenames so they do not overwrite each other. "
+        "Format for each file: {\"title\": \"...\", \"description\": \"...\"}."
+    )
+
+    full_prompt = (
+        f"Project: Ball Royale — 2D battle royale with AI-controlled balls.\n\n"
+        f"TASK: {brainstorm_prompt}\n\n"
+        f"BRANCH: Create a new branch called '{branch_name}' for your changes.\n\n"
+        f"IMPORTANT RULES:\n"
+        f"1. Create branch '{branch_name}' from main\n"
+        f"2. Commit with clear messages explaining your changes\n"
+        f"3. Push branch to origin when done\n"
+        f"4. Create a Pull Request with title: [{task_id}] descriptive title\n"
+        f"5. Set PR body to: Task: {task_id}\n"
+        f"6. DO NOT modify files outside the ideas/ directory (no code or workflow changes)\n"
+        f"7. Label the PR with 'automated' label\n"
+        f"8. CRITICAL: You are 100% autonomous. NEVER ask the user for clarification, permission, or feedback.\n"
+    )
+
+    url = "https://jules.googleapis.com/v1alpha/sessions"
+    headers = {
+        "x-goog-api-key": token,
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "prompt": full_prompt,
+        "title": f"[{task_id}] Brainstorm new ideas",
+        "sourceContext": {
+            "source": f"sources/github/{repo}",
+            "githubRepoContext": {
+                "startingBranch": "main"
+            }
+        },
+        "requirePlanApproval": False,
+        "automationMode": "AUTO_CREATE_PR",
+    }
+
+    data_bytes = json.dumps(payload).encode("utf-8")
+    req = urllib.request.Request(url, data=data_bytes, headers=headers, method="POST")
+
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            body = json.loads(resp.read().decode("utf-8"))
+            session_name = body.get("name", "")
+            print(f"[Supervisor] Jules accepted brainstorm (session: {session_name})")
+            return True
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode("utf-8")
+        print(f"[Supervisor] Jules API error on brainstorm: {e.code} {error_body[:300]}")
+        return False
+    except Exception as e:
+        print(f"[Supervisor] Jules API exception on brainstorm: {e}")
+        return False
+
+
 def find_agent_by_task_id(lock_data, task_id):
     if not task_id:
         return ""
@@ -693,13 +760,39 @@ def main():
                 todo_count = sum(1 for t in tasks_data.get("tasks", []) if t.get("status") == "todo")
             except Exception:
                 todo_count = 0
+
+            token = os.environ.get("GITHUB_TOKEN", "")
+
+            if todo_count < 3:
+                print(f"[Supervisor] Todo task pool is low ({todo_count} tasks left). Checking if brainstorming is needed...")
+                has_active_brainstorm = False
+                if token:
+                    try:
+                        prs = get_open_prs()
+                        for pr in prs:
+                            pr_title = pr.get("title", "")
+                            pr_branch = pr.get("head", {}).get("ref", "")
+                            if "supervisor-brainstorm" in pr_title or "supervisor-brainstorm" in pr_branch:
+                                has_active_brainstorm = True
+                                break
+                    except Exception as e:
+                        print(f"[Supervisor] Error checking active brainstorm PRs: {e}")
+
+                if has_active_brainstorm:
+                    print("[Supervisor] Brainstorming session is already active, waiting for it to complete.")
+                else:
+                    j_token = os.environ.get("JULES_API_KEY", "") or os.environ.get("JULES_API_KEY_2", "")
+                    if j_token:
+                        invoke_jules_brainstorm(j_token)
+                    else:
+                        print("[Supervisor] Warning: No JULES API key available to trigger brainstorming")
+
             if todo_count > 0:
                 print(f"[Supervisor] All agents idle, {todo_count} tasks remaining, triggering dispatcher...")
-                token = os.environ.get("GITHUB_TOKEN", "")
                 if token:
                     trigger_dispatcher(token)
             else:
-                print("[Supervisor] All agents idle, no tasks remaining")
+                print("[Supervisor] All agents idle, no tasks remaining to dispatch.")
         else:
             working = [aid for aid, info in lock_data.get("agents", {}).items()
                        if aid != SUPERVISOR_ID and isinstance(info, dict)
@@ -727,8 +820,8 @@ def main():
                     print(f"    Skipped (no 'automated' label and no task_id)")
                     continue
                 
-                if task_id == "Auto":
-                    print(f"    Auto PR detected! Merging immediately to propagate tasks to main.")
+                if task_id in ("Auto", "supervisor-brainstorm"):
+                    print(f"    Auto/Brainstorm PR '{task_id}' detected! Merging immediately.")
                     branch_name = pr.get("head", {}).get("ref", "")
                     merge_pr(pr_num, branch_name=branch_name)
                     continue
