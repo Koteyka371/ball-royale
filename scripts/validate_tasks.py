@@ -75,6 +75,40 @@ def validate_manifest(data: dict[str, Any]) -> list[str]:
         if task["status"] == "todo":
             todo_count += 1
 
+    # Dependency graph validation
+    task_map = {t["id"]: t for t in tasks}
+    
+    # 1. Verify existence of dependencies
+    for task in tasks:
+        task_id = task["id"]
+        dependencies = task.get("depends_on", [])
+        if not isinstance(dependencies, list):
+            raise ValidationError(f"task {task_id}: depends_on must be an array")
+        for dep in dependencies:
+            if not isinstance(dep, str):
+                raise ValidationError(f"task {task_id}: dependency {dep} must be a string")
+            if dep not in task_map:
+                raise ValidationError(f"task {task_id}: depends on non-existent task {dep!r}")
+
+    # 2. Cycle detection (DFS)
+    visited = {}  # task_id -> state (0=unvisited, 1=visiting, 2=visited)
+    
+    def dfs(tid):
+        visited[tid] = 1  # visiting
+        task = task_map[tid]
+        for dep in task.get("depends_on", []):
+            state = visited.get(dep, 0)
+            if state == 1:
+                raise ValidationError(f"cyclic dependency detected: {tid} -> {dep}")
+            elif state == 0:
+                dfs(dep)
+        visited[tid] = 2  # visited
+
+    for task in tasks:
+        tid = task["id"]
+        if visited.get(tid, 0) == 0:
+            dfs(tid)
+
     if todo_count == 0:
         warnings.append("no todo tasks remain")
     elif todo_count < 3:

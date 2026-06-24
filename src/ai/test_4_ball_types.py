@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from ai.ball_types_neural import Neural
 from ai.decision import Decision
 from ai.ball_types_warrior import Warrior
@@ -20,6 +24,7 @@ class MockEntity:
 def test_warrior_priorities():
     world = MockWorld()
     warrior = Warrior(1)
+    warrior.skill_timer = 5.0
     layer = Decision(warrior, world)
 
     perception = {
@@ -40,6 +45,7 @@ def test_warrior_priorities():
 def test_scout_priorities():
     world = MockWorld()
     scout = Scout(1)
+    scout.skill_timer = 5.0
     layer = Decision(scout, world)
 
     # Test weak enemy
@@ -73,6 +79,7 @@ def test_scout_priorities():
 def test_tank_priorities():
     world = MockWorld()
     tank = Tank(1)
+    tank.skill_timer = 5.0
     layer = Decision(tank, world)
 
     perception = {
@@ -92,6 +99,7 @@ def test_tank_priorities():
 def test_healer_priorities():
     world = MockWorld()
     healer = Healer(1)
+    healer.skill_timer = 5.0
     layer = Decision(healer, world)
 
     perception = {

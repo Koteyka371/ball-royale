@@ -11,13 +11,16 @@ from pathlib import Path
 TASK_FILE = Path("agent_tasks.json")
 GAME_DESIGN_FILE = Path("docs/game_design.md")
 
+
 def load_json(path):
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
 
+
 def save_json(path, data):
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
+
 
 def task_exists(tasks, title_or_id):
     title_lower = title_or_id.lower()
@@ -25,6 +28,7 @@ def task_exists(tasks, title_or_id):
         if t.get("id", "").lower() == title_lower or t.get("title", "").lower() == title_lower:
             return True
     return False
+
 
 def add_task(manifest, task_id, title, desc, area, risk="medium", allowed_paths=None, acceptance=None):
     if task_exists(manifest.get("tasks", []), task_id) or task_exists(manifest.get("tasks", []), title):
@@ -48,6 +52,22 @@ def add_task(manifest, task_id, title, desc, area, risk="medium", allowed_paths=
     manifest.setdefault("tasks", []).append(new_task)
     print(f"[Auto-Improve] Generated task: {task_id} - {title}")
     return True
+
+
+def extract_test_traceback(pytest_output, test_name):
+    """
+    Extracts the specific traceback section of pytest_output for a given test_name.
+    Pytest splits failure details starting with "_________________ test_name _________________".
+    """
+    blocks = pytest_output.split("_________________")
+    for block in blocks:
+        if test_name in block:
+            clean_block = block.strip()
+            if len(clean_block) > 1500:
+                clean_block = clean_block[:1500] + "\n... (truncated)"
+            return clean_block
+    return pytest_output[-1200:]
+
 
 def main():
     if not TASK_FILE.exists():
@@ -79,6 +99,9 @@ def main():
     # 1. Run generate_ideas.py to pull tasks from game_design.md
     print("[Auto-Improve] Running idea generator...")
     try:
+        if modified:
+            save_json(TASK_FILE, manifest)
+            modified = False
         subprocess.run([sys.executable, "scripts/generate_ideas.py"], check=True)
         # Reload manifest as it might have been modified by generate_ideas.py
         manifest = load_json(TASK_FILE)
@@ -96,11 +119,9 @@ def main():
                 content = f.read_text(encoding="utf-8")
                 for i, line in enumerate(content.split("\n"), 1):
                     if "# TODO:" in line or "# FIXME:" in line:
-                        # Extract description
                         desc = line.split("TODO:", 1)[-1].split("FIXME:", 1)[-1].strip()
                         if len(desc) > 5:
                             title = f"Refactor TODO in {f.name}: {desc[:40]}"
-                            # Sanitize task ID
                             clean_stem = f.stem.replace("_", "-")
                             task_id = f"todo-refactor-{clean_stem}-{i}"
                             if add_task(manifest, task_id, title, f"Resolve the comment '# TODO: {desc}' in {f.name} line {i}", "meta", "low"):
@@ -144,13 +165,11 @@ def main():
     # 3. Run tests and catch failures
     print("[Auto-Improve] Running test suite to catch bugs...")
     try:
-        result = subprocess.run(["pytest", "tests/", "--tb=short"], capture_output=True, text=True)
+        result = subprocess.run(["pytest", "src/", "tests/", "--tb=short"], capture_output=True, text=True)
         if result.returncode != 0:
-            # We have test failures! Let's generate a bugfix task
             failures = []
             for line in result.stdout.split("\n"):
                 if "FAILED" in line:
-                    # e.g., tests/test_action.py::test_execute_flee FAILED
                     parts = line.split()
                     if len(parts) >= 2:
                         failures.append(parts[0])
@@ -160,12 +179,11 @@ def main():
                     test_name = fail.split("::")[-1]
                     task_id = f"bugfix-{test_name.replace('_', '-')}"
                     title = f"Fix failing test {test_name}"
-                    stdout_tail = result.stdout.strip()[-1500:]
-                    desc = f"The test {fail} is failing. Investigate and fix the logic so that it passes.\n\nPytest Output Snippet:\n```\n{stdout_tail}\n```"
+                    trace = extract_test_traceback(result.stdout, test_name)
+                    desc = f"The test {fail} is failing. Investigate and fix the logic so that it passes.\n\nSpecific Pytest Traceback:\n```\n{trace}\n```"
                     if add_task(manifest, task_id, title, desc, "meta", "medium", acceptance=[f"Test {test_name} passes successfully"]):
                         modified = True
             else:
-                # pytest crashed, syntax error, or setup failed
                 task_id = "bugfix-pytest-crash"
                 title = "Fix test suite runner / pytest crash"
                 err_summary = (result.stderr or result.stdout or "Unknown crash").strip()[:300]
@@ -184,6 +202,7 @@ def main():
         print("[Auto-Improve] No new auto-improvement tasks generated")
     
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

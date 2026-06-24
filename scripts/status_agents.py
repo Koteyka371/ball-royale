@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Agent Status Dashboard — shows what all 12 agents are doing.
+Agent Status Dashboard — shows what all 30 agents are doing.
 Usage: python status_agents.py
 """
 import json
@@ -10,7 +10,40 @@ from datetime import datetime, timezone
 LOCK_FILE = "agent_lock.json"
 TASK_FILE = "agent_tasks.json"
 MAX_CYCLES_PER_AGENT = 30
-NUM_AGENTS = 13
+NUM_AGENTS = 31
+
+AGENT_AREAS = {
+    "agent-1": "ai-core",
+    "agent-2": "behaviors",
+    "agent-3": "tests",
+    "agent-4": "content",
+    "agent-5": "meta",
+    "agent-6": "innovation",
+    "agent-7": "content",
+    "agent-8": "tests",
+    "agent-9": "behaviors",
+    "agent-10": "meta",
+    "agent-11": "innovation",
+    "agent-12": "ai-core",
+    "agent-20": "content",
+    "agent-30": "meta",
+    "agent-29": "behaviors",
+    "agent-28": "tests",
+    "agent-27": "content",
+    "agent-26": "innovation",
+    "agent-25": "meta",
+    "agent-24": "content",
+    "agent-23": "tests",
+    "agent-22": "behaviors",
+    "agent-21": "ai-core",
+    "agent-19": "tests",
+    "agent-18": "behaviors",
+    "agent-17": "ai-core",
+    "agent-16": "innovation",
+    "agent-15": "meta",
+    "agent-14": "content",
+    "agent-13": "tests",
+}
 
 
 def load_json(path):
@@ -57,7 +90,7 @@ def main():
     for agent_id in sorted(lock_data.get("agents", {}).keys()):
         info = lock_data["agents"][agent_id]
         status = info.get("status", "idle")
-        area = info.get("area", "?")
+        area = info.get("area", AGENT_AREAS.get(agent_id, "?"))
         task_id = info.get("task_id") or "-"
         cycles = info.get("cycles_today", 0)
         if agent_id != "supervisor":

@@ -135,8 +135,9 @@ class Decision:
             personality = personality.lower()
 
         # Personality baseline
-        if personality in scores:
-            scores[personality] += 15.0
+        pref_action = self.PERSONALITY_BEHAVIORS.get(personality)
+        if pref_action in scores:
+            scores[pref_action] += 15.0
 
         # Inject emotion states to pass rigid unit tests
         if emotion_state == "fear":
@@ -169,15 +170,21 @@ class Decision:
         if skill_timer > 0:
             scores["use_skill"] = -1000.0
 
+        coach_strategy = perception_data.get("coach_strategy", "")
+        coach_strategy_str = str(coach_strategy).lower() if coach_strategy else ""
+
         # Specific Overrides
         b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
         if b_type == "warrior" or personality == "warrior":
             if danger_level > 0.7:
                 scores["defend"] += 200.0
-            scores["flee"] = -1000.0
+            # Refuse to flee unless coach commanded it
+            coach_flee = "flee" in coach_strategy_str or "убег" in coach_strategy_str or "отступ" in coach_strategy_str
+            if not coach_flee:
+                scores["flee"] = -1000.0
             scores["attack"] += 100.0
             scores["chase"] += 100.0
-            scores["collect_booster"] -= 20.0
+            scores["collect_booster"] -= 100.0
 
         if b_type == "ninja" or personality == "cunning":
             scores["flank"] += 150.0
@@ -188,7 +195,7 @@ class Decision:
             scores["attack"] -= 50.0
 
         if b_type == "scout":
-            scores["collect_booster"] += 40.0
+            scores["collect_booster"] += 80.0
 
             # Flees from strong enemies
             if threat_level > 0.5:
@@ -207,8 +214,12 @@ class Decision:
             scores["chase"] += 150.0
 
         if b_type == "tank" and allies_count > 0:
-            scores["defend"] += 50.0
-            scores["collect_booster"] -= 20.0
+            scores["defend"] += 150.0
+            scores["collect_booster"] -= 100.0
+
+        if b_type == "healer" and allies_count > 0:
+            scores["defend"] += 150.0
+            scores["collect_booster"] -= 50.0
 
         # Skill Usage AI
         if skill_timer <= 0:
@@ -253,21 +264,19 @@ class Decision:
                     elif msg_type == "hold_position":
                         scores["defend"] += 550.0
 
-        # Coach Mode
-        coach_strategy = perception_data.get("coach_strategy", "")
-        if coach_strategy and isinstance(coach_strategy, str):
-            c_lower = coach_strategy.lower()
-            if "attack" in c_lower or "атак" in c_lower:
-                scores["attack"] += 500.0
-                scores["chase"] += 500.0
-            elif "defend" in c_lower or "защищ" in c_lower:
-                scores["defend"] += 500.0
-            elif "flee" in c_lower or "убег" in c_lower or "отступ" in c_lower:
-                scores["flee"] += 500.0
-            elif "booster" in c_lower or "собир" in c_lower or "collect" in c_lower:
-                scores["collect_booster"] += 500.0
-            elif "skill" in c_lower or "скилл" in c_lower or "способн" in c_lower:
-                scores["use_skill"] += 500.0
+        # Coach Mode commands should take absolute priority
+        if coach_strategy_str:
+            if "attack" in coach_strategy_str or "атак" in coach_strategy_str:
+                scores["attack"] += 2000.0
+                scores["chase"] += 2000.0
+            elif "defend" in coach_strategy_str or "защищ" in coach_strategy_str:
+                scores["defend"] += 2000.0
+            elif "flee" in coach_strategy_str or "убег" in coach_strategy_str or "отступ" in coach_strategy_str:
+                scores["flee"] += 2000.0
+            elif "booster" in coach_strategy_str or "собир" in coach_strategy_str or "collect" in coach_strategy_str:
+                scores["collect_booster"] += 2000.0
+            elif "skill" in coach_strategy_str or "скилл" in coach_strategy_str or "способн" in coach_strategy_str:
+                scores["use_skill"] += 2000.0
 
         if b_type == "spectator":
             scores["idle"] = 1000.0

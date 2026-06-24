@@ -245,6 +245,51 @@ def reset_daily_counters(lock_data):
     return lock_data, False
 
 
+def normalize_pattern(pattern):
+    p = pattern.strip().replace("\\", "/").lower()
+    if p.endswith("/**/*"):
+        p = p[:-5]
+    elif p.endswith("/**"):
+        p = p[:-3]
+    elif p.endswith("/*"):
+        p = p[:-2]
+    p = p.rstrip("/")
+    if p == "*":
+        return ""
+    return p
+
+
+def check_paths_overlap(paths1, paths2):
+    if not paths1 or not paths2:
+        return False
+
+    if isinstance(paths1, str):
+        paths1 = [paths1]
+    if isinstance(paths2, str):
+        paths2 = [paths2]
+
+    bases1 = []
+    for p in paths1:
+        if not isinstance(p, str):
+            continue
+        bases1.append(normalize_pattern(p))
+
+    bases2 = []
+    for p in paths2:
+        if not isinstance(p, str):
+            continue
+        bases2.append(normalize_pattern(p))
+
+    for b1 in bases1:
+        for b2 in bases2:
+            if b1 == "" or b2 == "":
+                return True
+            if b1 == b2 or b1.startswith(b2 + "/") or b2.startswith(b1 + "/"):
+                return True
+
+    return False
+
+
 def find_task_for_agent(agent_id, agent_area, lock_data, tasks_data, assigned_in_run):
     todo_tasks = [t for t in tasks_data.get("tasks", []) if t.get("status") == "todo"]
 
@@ -256,6 +301,13 @@ def find_task_for_agent(agent_id, agent_area, lock_data, tasks_data, assigned_in
             assigned_remote.add(ainfo["task_id"])
 
     done_tasks = {t.get("id") for t in tasks_data.get("tasks", []) if t.get("status") == "done"}
+
+    # Build allowed_paths of all currently active/assigned tasks
+    active_task_ids = assigned_remote.union(assigned_in_run)
+    active_paths_list = []
+    for t in tasks_data.get("tasks", []):
+        if t.get("id") in active_task_ids:
+            active_paths_list.append(t.get("allowed_paths", []))
 
     for task in todo_tasks:
         task_area = task.get("area", "")
@@ -279,6 +331,18 @@ def find_task_for_agent(agent_id, agent_area, lock_data, tasks_data, assigned_in
         
         if task_id not in assigned_remote and task_id not in assigned_in_run:
             if agent_area == "any" or mapped_area == agent_area:
+                # Check for path overlaps with currently running tasks
+                task_paths = task.get("allowed_paths", [])
+                overlap_found = False
+                for active_paths in active_paths_list:
+                    if check_paths_overlap(task_paths, active_paths):
+                        overlap_found = True
+                        break
+                
+                if overlap_found:
+                    print(f"[Dispatcher] Task {task_id} has path overlap with active task, skipping for now")
+                    continue
+
                 return task_id
 
     return None

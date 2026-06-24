@@ -125,8 +125,31 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     elif typeof(personality) == TYPE_STRING:
         personality = personality.to_lower()
 
-    if scores.has(personality):
-        scores[personality] += 15.0
+    var pref_action = ""
+    var behaviors = {
+        "warrior": "attack",
+        "tank": "defend",
+        "assassin": "chase",
+        "healer": "defend",
+        "sniper": "kite",
+        "bomber": "attack",
+        "berserker": "attack",
+        "juggernaut": "defend",
+        "rogue": "chase",
+        "guardian": "defend",
+        "phantom": "chase",
+        "swarm": "group_attack",
+        "scout": "collect_booster",
+        "king": "defend",
+        "aggressive": "attack",
+        "defender": "defend",
+        "spectator": "idle"
+    }
+    if behaviors.has(personality):
+        pref_action = behaviors[personality]
+
+    if scores.has(pref_action):
+        scores[pref_action] += 15.0
 
     if emotion_state == "fear":
         scores["flee"] += 1000.0
@@ -165,11 +188,17 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
 
     b_type = b_type.to_lower()
 
+    var coach_strategy = ""
+    if perception_data.has("coach_strategy"):
+        coach_strategy = str(perception_data["coach_strategy"]).to_lower()
+
     if b_type == "warrior" or personality == "warrior":
-        scores["flee"] = -1000.0
+        var coach_flee = "flee" in coach_strategy or "убег" in coach_strategy or "отступ" in coach_strategy
+        if not coach_flee:
+            scores["flee"] = -1000.0
         scores["attack"] += 100.0
         scores["chase"] += 100.0
-        scores["collect_booster"] -= 20.0
+        scores["collect_booster"] -= 100.0
 
     if b_type == "ninja" or personality == "cunning":
         scores["flank"] += 150.0
@@ -180,7 +209,7 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
         scores["attack"] -= 50.0
 
     if b_type == "scout":
-        scores["collect_booster"] += 40.0
+        scores["collect_booster"] += 80.0
 
         # Flees from strong enemies
         if threat_level > 0.5:
@@ -195,8 +224,12 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
             scores["collect_booster"] -= 20.0
 
     if b_type == "tank" and allies_count > 0.0:
-        scores["defend"] += 50.0
-        scores["collect_booster"] -= 20.0
+        scores["defend"] += 150.0
+        scores["collect_booster"] -= 100.0
+
+    if b_type == "healer" and allies_count > 0.0:
+        scores["defend"] += 150.0
+        scores["collect_booster"] -= 50.0
 
     # Skill Usage AI
     if skill_timer <= 0.0:
@@ -240,22 +273,18 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
                 elif msg_type == "hold_position":
                     scores["defend"] += 150.0
 
-    var coach_strategy = ""
-    if perception_data.has("coach_strategy"):
-        coach_strategy = str(perception_data["coach_strategy"]).to_lower()
-
     if coach_strategy != "":
         if "attack" in coach_strategy or "атак" in coach_strategy:
-            scores["attack"] += 500.0
-            scores["chase"] += 500.0
+            scores["attack"] += 2000.0
+            scores["chase"] += 2000.0
         elif "defend" in coach_strategy or "защищ" in coach_strategy:
-            scores["defend"] += 500.0
+            scores["defend"] += 2000.0
         elif "flee" in coach_strategy or "убег" in coach_strategy or "отступ" in coach_strategy:
-            scores["flee"] += 500.0
+            scores["flee"] += 2000.0
         elif "booster" in coach_strategy or "собир" in coach_strategy or "collect" in coach_strategy:
-            scores["collect_booster"] += 500.0
+            scores["collect_booster"] += 2000.0
         elif "skill" in coach_strategy or "скилл" in coach_strategy or "способн" in coach_strategy:
-            scores["use_skill"] += 500.0
+            scores["use_skill"] += 2000.0
 
     if b_type == "spectator":
         scores["idle"] = 1000.0

@@ -21,6 +21,9 @@ try:
 except ImportError:
     fcntl = None
 
+class TaskConflictError(Exception):
+    pass
+
 LOCK_FILE = "agent_lock.json"
 TASK_FILE = "agent_tasks.json"
 DISPATCHER_LOCK = ".dispatcher.lock"
@@ -38,6 +41,30 @@ AGENT_AREAS = {
     "agent-4": "content",
     "agent-5": "meta",
     "agent-6": "innovation",
+    "agent-7": "content",
+    "agent-8": "tests",
+    "agent-9": "behaviors",
+    "agent-10": "meta",
+    "agent-11": "innovation",
+    "agent-12": "ai-core",
+    "agent-20": "content",
+    "agent-30": "meta",
+    "agent-29": "behaviors",
+    "agent-28": "tests",
+    "agent-27": "content",
+    "agent-26": "innovation",
+    "agent-25": "meta",
+    "agent-24": "content",
+    "agent-23": "tests",
+    "agent-22": "behaviors",
+    "agent-21": "ai-core",
+    "agent-19": "tests",
+    "agent-18": "behaviors",
+    "agent-17": "ai-core",
+    "agent-16": "innovation",
+    "agent-15": "meta",
+    "agent-14": "content",
+    "agent-13": "tests",
 }
 
 AREA_TO_AGENT = {
@@ -171,6 +198,14 @@ def atomic_update(new_data, message):
             return False
 
         for agent_key, state in new_data.get("agents", {}).items():
+            target_task = state.get("task_id")
+            target_status = state.get("status")
+            if target_task and target_status in ("working", "assigned"):
+                for other_aid, other_ainfo in current.get("agents", {}).items():
+                    if other_aid != agent_key:
+                        if other_ainfo.get("task_id") == target_task and other_ainfo.get("status") in ("working", "assigned"):
+                            raise TaskConflictError(f"Task {target_task} is already claimed by {other_aid}")
+
             if agent_key in current.get("agents", {}):
                 for k, v in state.items():
                     if k in current["agents"][agent_key] and isinstance(current["agents"][agent_key][k], dict) and isinstance(v, dict):
@@ -496,17 +531,64 @@ def main():
             print(f"[{agent_id}] Agent is busy (status=working), skipping")
             return 0
 
+        # Task claim loop to handle race conditions and prevent double-claiming
+        claimed_successfully = False
         task_id = agent_info.get("task_id")
         area = agent_info.get("area", AGENT_AREAS.get(agent_id, ""))
-        if not task_id:
-            task_id = find_task_for_agent(agent_id, area, lock_data, tasks_data)
-            if not task_id:
-                task_id = find_task_for_agent(agent_id, "any", lock_data, tasks_data)
+        prompt = ""
+        task_area = ""
 
-        if not task_id:
-            print(f"[{agent_id}] No tasks found for area {area}")
-            print(f"[{agent_id}] Status: idle, nothing to do")
-            return 0
+        while not claimed_successfully:
+            if not task_id:
+                task_id = find_task_for_agent(agent_id, area, lock_data, tasks_data)
+                if not task_id:
+                    task_id = find_task_for_agent(agent_id, "any", lock_data, tasks_data)
+
+            if not task_id:
+                print(f"[{agent_id}] No tasks found for area {area}")
+                print(f"[{agent_id}] Status: idle, nothing to do")
+                return 0
+
+            task = None
+            for t in tasks_data.get("tasks", []):
+                if t.get("id") == task_id:
+                    task = t
+                    break
+
+            if not task:
+                print(f"[{agent_id}] Task {task_id} not found in task file")
+                return 0
+
+            prompt = task.get("description", "No description provided")
+            task_area = task.get("area", area)
+            print(f"[{agent_id}] Attempting to claim Task: {task_id} (Area: {task_area})")
+
+            now_iso = datetime.now(timezone.utc).isoformat()
+            update = {"agents": {agent_id: {
+                "status": "working",
+                "task_id": task_id,
+                "started_at": now_iso,
+            }}}
+
+            try:
+                if atomic_update(update, f"{agent_id}: start working on {task_id}"):
+                    claimed_successfully = True
+                else:
+                    print(f"[{agent_id}] Failed to update status due to push error, reloading and retrying...")
+                    time.sleep(2)
+                    lock_data = load_json(LOCK_FILE)
+            except TaskConflictError as e:
+                print(f"[{agent_id}] {e}. Retrying task selection...")
+                task_id = None
+                time.sleep(1)
+                try:
+                    lock_data = load_json(LOCK_FILE)
+                    tasks_data = load_json(TASK_FILE)
+                except Exception as ex:
+                    print(f"[{agent_id}] Failed to reload config files: {ex}")
+                    return 1
+
+        print(f"[{agent_id}] Starting work on task: {task_id}...")
 
         token_env = "JULES_API_KEY_2" if agent_num % 2 == 0 else "JULES_API_KEY"
         token = os.environ.get(token_env, "")
@@ -518,33 +600,6 @@ def main():
             else:
                 print(f"[{agent_id}] No token available (checked both JULES_API_KEY and JULES_API_KEY_2), skipping")
                 return 0
-
-        task = None
-        for t in tasks_data.get("tasks", []):
-            if t.get("id") == task_id:
-                task = t
-                break
-
-        if not task:
-            print(f"[{agent_id}] Task {task_id} not found in task file")
-            return 0
-
-        prompt = task.get("description", "No description provided")
-        task_area = task.get("area", area)
-        print(f"[{agent_id}] Task: {task_id}")
-        print(f"[{agent_id}] Area: {task_area} (agent default: {area})")
-        print(f"[{agent_id}] Prompt: {prompt[:100]}...")
-        print(f"[{agent_id}] Starting work...")
-
-        now_iso = datetime.now(timezone.utc).isoformat()
-        update = {"agents": {agent_id: {
-            "status": "working",
-            "task_id": task_id,
-            "started_at": now_iso,
-        }}}
-        if not atomic_update(update, f"{agent_id}: start working on {task_id}"):
-            print(f"[{agent_id}] Failed to update status")
-            return 1
 
         branch_name = sanitize_branch_name(task_id)
         success = invoke_jules(task_id, task_area, prompt, branch_name, token)
