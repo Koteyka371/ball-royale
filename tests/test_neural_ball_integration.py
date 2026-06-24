@@ -16,7 +16,6 @@ def test_neural_ball_creation_and_skill():
     assert c._data == [[19.0, 22.0], [43.0, 50.0]]
 
     # Test use skill changes action
-    action_before = ball.current_action
     ball.use_skill()
     assert ball.current_action in ["attack", "flee", "idle", "defend"]
     assert ball.skill_timer == 4.0
