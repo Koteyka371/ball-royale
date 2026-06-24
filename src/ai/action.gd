@@ -52,6 +52,57 @@ func execute(strategy: String, delta: float):
                     if self.ball.hp <= 0:
                         self.ball.alive = false
 
+
+        if "hazards" in self.world.arena:
+            for hazard in self.world.arena.hazards:
+                if hazard.kind == "black_hole":
+                    var current_tick = 0
+                    if "tick" in self.world:
+                        current_tick = self.world.tick
+                    if not hazard.has_meta("last_updated_tick") or hazard.get_meta("last_updated_tick") != current_tick:
+                        hazard.set_meta("last_updated_tick", current_tick)
+                        if not hazard.has_meta("vx"):
+                            hazard.set_meta("vx", 10.0)
+                            hazard.set_meta("vy", 10.0)
+                        var hvx = hazard.get_meta("vx")
+                        var hvy = hazard.get_meta("vy")
+                        hazard.x += hvx * delta
+                        hazard.y += hvy * delta
+                        if hazard.x < 100 or hazard.x > self.world.arena.width - 100:
+                            hazard.set_meta("vx", -hvx)
+                        if hazard.y < 100 or hazard.y > self.world.arena.height - 100:
+                            hazard.set_meta("vy", -hvy)
+
+                        if "boosters" in self.world:
+                            for b in self.world.boosters:
+                                var bdx = hazard.x - b.x
+                                var bdy = hazard.y - b.y
+                                var bdist_sq = bdx * bdx + bdy * bdy
+                                if bdist_sq > 0.0001:
+                                    var bdist = sqrt(bdist_sq)
+                                    var bnx = bdx / bdist
+                                    var bny = bdy / bdist
+                                    var bmin_dist = 10.0
+                                    if bdist > bmin_dist:
+                                        bmin_dist = bdist
+                                    var bpull_strength = (hazard.radius * 2.0 / bmin_dist) * 50.0 * delta
+                                    b.x += bnx * bpull_strength
+                                    b.y += bny * bpull_strength
+
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    if dist_sq > 0.0001:
+                        var dist = sqrt(dist_sq)
+                        var nx = dx / dist
+                        var ny = dy / dist
+                        var min_dist = 10.0
+                        if dist > min_dist:
+                            min_dist = dist
+                        var pull_strength = (hazard.radius * 2.0 / min_dist) * 50.0 * delta
+                        self.ball.x += nx * pull_strength
+                        self.ball.y += ny * pull_strength
+
         if ball_type != "spectator" and "hazards" in self.world.arena:
             for hazard in self.world.arena.hazards:
                 var dist = sqrt((self.ball.x - hazard.x) * (self.ball.x - hazard.x) + (self.ball.y - hazard.y) * (self.ball.y - hazard.y))

@@ -363,7 +363,34 @@ class NeuralBallArena extends ProceduralArena:
 		h2.damage = 50.0
 		self.hazards.append(h2)
 
+
+class BlackHoleArena extends ProceduralArena:
+	func generate():
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+		var w = width
+		var h = height
+		var cx = w / 2.0
+		var cy = h / 2.0
+		rooms.append(ProceduralArena.Room.new(cx - 300.0, cy - 300.0, 600.0, 600.0))
+		rooms.append(ProceduralArena.Room.new(50.0, 50.0, 200.0, 200.0))
+		rooms.append(ProceduralArena.Room.new(w - 250.0, 50.0, 200.0, 200.0))
+		rooms.append(ProceduralArena.Room.new(50.0, h - 250.0, 200.0, 200.0))
+		rooms.append(ProceduralArena.Room.new(w - 250.0, h - 250.0, 200.0, 200.0))
+		corridors.append(ProceduralArena.Corridor.new(100.0, 200.0, 100.0, cy - 400.0))
+		corridors.append(ProceduralArena.Corridor.new(100.0, cy - 300.0, cx - 300.0, 100.0))
+		corridors.append(ProceduralArena.Corridor.new(w - 200.0, 200.0, 100.0, cy - 400.0))
+		corridors.append(ProceduralArena.Corridor.new(cx + 200.0, cy - 300.0, w - cx - 300.0, 100.0))
+		corridors.append(ProceduralArena.Corridor.new(100.0, cy + 200.0, 100.0, h - cy - 400.0))
+		corridors.append(ProceduralArena.Corridor.new(100.0, cy + 200.0, cx - 300.0, 100.0))
+		corridors.append(ProceduralArena.Corridor.new(w - 200.0, cy + 200.0, 100.0, h - cy - 400.0))
+		corridors.append(ProceduralArena.Corridor.new(cx + 200.0, cy + 200.0, w - cx - 300.0, 100.0))
+		var h0 = ProceduralArena.Hazard.new(0, cx, cy, 200.0, "black_hole", 30.0)
+		hazards.append(h0)
+
 const ARENAS = [
+	"black_hole",
 	"neural_ball",
 	"flee",
 	"ball_genetics",
