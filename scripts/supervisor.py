@@ -350,11 +350,16 @@ def invoke_jules_brainstorm(token):
     task_id = "supervisor-brainstorm"
 
     brainstorm_prompt = (
-        "Brainstorm at least 5 new creative and unique feature ideas, game modes, arenas, or ball types for Ball Royale. "
-        "Read docs/game_design.md and agent_tasks.json to understand what is already implemented or planned. "
-        "Write each new idea as a separate JSON file in the 'ideas/' directory (e.g., 'ideas/idea_brainstorm_1.json'). "
-        "Use unique filenames so they do not overwrite each other. "
-        "Format for each file: {\"title\": \"...\", \"description\": \"...\"}."
+        "Brainstorm at least 5 new creative and highly specific ideas for the Ball Royale game. "
+        "Each idea MUST be written as a separate JSON file in the 'ideas/' directory (e.g. 'ideas/idea_gravity_trap.json'). "
+        "Format for each file: {\"title\": \"...\", \"description\": \"...\"}. "
+        "Keep filenames unique using descriptive snake_case names.\n\n"
+        "GUIDELINES FOR IDEAS:\n"
+        "1. NEW BALL PERSONALITIES/TYPES: Design specialized ball roles (e.g., Monk with shield redirection, Ghost with temporary invisibility, Berserker with damage scaling as HP drops).\n"
+        "2. PROCEDURAL ARENA HAZARDS: Design unique geometric or environmental hazards (e.g., Portal Arena linking sections, slippery Ice Arena, active Lava pits, black holes pulling balls).\n"
+        "3. NEW AI EMOTIONS/BEHAVIORS: Propose additions to the 4-stage brain pipeline (Perception -> Emotion -> Decision -> Action) (e.g., Panic state causing chaotic movements, Stealth mode, Teamwork coordination algorithms).\n"
+        "4. SPECTATOR OR CHAOS ENGAGEMENT: Design betting, voting, or random weather elements that fit the auto-battler/spectator sport genre.\n\n"
+        "Please read docs/game_design.md and agent_tasks.json to ensure you do not replicate existing features. Avoid generic ideas; think of concrete mechanics that can be implemented in the Godot/GDScript or Python codebase."
     )
 
     full_prompt = (
