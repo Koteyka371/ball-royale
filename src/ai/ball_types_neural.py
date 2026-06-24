@@ -1,21 +1,20 @@
 """
-Auto-generated ball type: Neural
-A ball controlled by a simple neural network.
+Neural Ball Implementation
+A ball controlled by a simple neural network using a custom numpy-like array implementation.
+No external libraries are used as per requirements.
 """
 
 from ai.personality import Personality
 import random
+from typing import List, Tuple, Union
 
 class NumpyArray:
     """
-    A pure Python matrix abstraction implemented completely from scratch,
-    providing numpy-like behavior (matmul, dot, relu, argmax) without external libraries.
-    Used exclusively by the Neural ball to run its internal decision-making neural net.
+    A pure Python matrix abstraction implemented completely from scratch.
+    Provides numpy-like behavior including matrix multiplication, dot product,
+    element-wise addition, relu activation, and argmax.
     """
-    # A custom numpy-like array implementation for Neural Ball
-    # It handles matrix multiplications and vector operations without external libraries.
-    """A pure python matrix abstraction."""
-    def __init__(self, data):
+    def __init__(self, data: Union[List[float], List[List[float]]]):
         self._data = list(data)
         if not data:
             self.shape = (0,)
@@ -24,7 +23,7 @@ class NumpyArray:
         else:
             self.shape = (len(data),)
 
-    def matmul(self, other):
+    def matmul(self, other: 'NumpyArray') -> 'NumpyArray':
         """Performs matrix multiplication."""
         if len(self.shape) == 2 and len(other.shape) == 2 and self.shape[1] == other.shape[0]:
             result = [[0.0 for _ in range(other.shape[1])] for _ in range(self.shape[0])]
@@ -35,8 +34,8 @@ class NumpyArray:
             return NumpyArray(result)
         raise ValueError("Unsupported matmul shapes")
 
-    def dot(self, other):
-        """Performs dot product."""
+    def dot(self, other: 'NumpyArray') -> 'NumpyArray':
+        """Performs dot product for 1D . 2D."""
         if len(self.shape) == 1 and len(other.shape) == 2:
             result = [0.0] * other.shape[1]
             for j in range(other.shape[1]):
@@ -47,23 +46,30 @@ class NumpyArray:
             return NumpyArray(result)
         raise ValueError("Unsupported dot product shapes")
 
-    def __add__(self, other):
+    def __add__(self, other: 'NumpyArray') -> 'NumpyArray':
+        """Element-wise addition."""
         if len(self.shape) == 1 and len(other.shape) == 1:
             return NumpyArray([self._data[i] + other._data[i] for i in range(self.shape[0])])
         raise ValueError("Unsupported add shapes")
 
-    def relu(self):
+    def relu(self) -> 'NumpyArray':
+        """Applies ReLU activation."""
         if len(self.shape) == 1:
             return NumpyArray([max(0.0, x) for x in self._data])
         raise ValueError("Unsupported relu shape")
 
-    def argmax(self):
+    def argmax(self) -> int:
+        """Returns the index of the maximum value."""
         max_val = max(self._data)
         return self._data.index(max_val)
 
+
 class Neural:
-    # The Neural Ball uses the NumpyArray to process inputs and make decisions
-    # It evaluates HP, aggression, kills, and skill cooldown to choose an action.
+    """
+    Neural Ball class.
+    Uses the custom NumpyArray to process inputs and make decisions.
+    Evaluates HP, aggression, kills, and skill cooldown to choose an action.
+    """
     BALL_TYPE = "neural"
     HP = 100
     SPEED = 4.5
@@ -87,15 +93,21 @@ class Neural:
         self.current_action = "idle"
         self.skill_timer = 0.0
         self.personality = Personality("analytical")
+
+        # Neural Network architecture
         self.input_size = 4
         self.output_size = 4
         self.hidden_size = 5
+
+        # Initialize weights and biases randomly between -1 and 1
         self.hidden_weights = NumpyArray([[random.uniform(-1, 1) for _ in range(self.hidden_size)] for _ in range(self.input_size)])
         self.hidden_biases = NumpyArray([random.uniform(-1, 1) for _ in range(self.hidden_size)])
+
         self.output_weights = NumpyArray([[random.uniform(-1, 1) for _ in range(self.output_size)] for _ in range(self.hidden_size)])
         self.output_biases = NumpyArray([random.uniform(-1, 1) for _ in range(self.output_size)])
 
     def get_hp_percent(self) -> float:
+        """Returns current HP as a percentage."""
         return self.hp / self.max_hp if self.max_hp > 0 else 0.0
 
     def flee(self, delta: float) -> None:
@@ -114,6 +126,7 @@ class Neural:
         self.current_action = "idle"
 
     def take_damage(self, amount: float) -> None:
+        """Handles taking damage."""
         if self.hp == self.max_hp and amount > 0:
             self.first_hit_taken = True
         self.hp -= amount
@@ -121,14 +134,32 @@ class Neural:
             self.alive = False
 
     def use_skill(self) -> bool:
+        """
+        Executes the numpy skill.
+        Runs the neural network forward pass to decide the next action.
+        """
         if self.skill_timer <= 0:
             self.skill_timer = self.SKILL_COOLDOWN
-            inputs = NumpyArray([self.get_hp_percent(), self.AGGRESSION, float(self.kills), self.skill_timer])
+
+            # Prepare inputs
+            inputs = NumpyArray([
+                self.get_hp_percent(),
+                self.AGGRESSION,
+                float(self.kills),
+                self.skill_timer
+            ])
+
+            # Forward pass: Hidden layer with ReLU
             hidden = (inputs.dot(self.hidden_weights) + self.hidden_biases).relu()
+
+            # Output layer (Logits)
             outputs = hidden.dot(self.output_weights) + self.output_biases
+
+            # Choose action
             action_idx = outputs.argmax()
             actions = ["attack", "flee", "idle", "defend"]
             self.current_action = actions[action_idx]
+
             return True
         return False
 
