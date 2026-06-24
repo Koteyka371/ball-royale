@@ -818,7 +818,7 @@
     },
     {
       "id": "auto-implement-**neural-ball**-—-a-ball-controlled-by-a",
-      "status": "todo",
+      "status": "done",
       "area": "skills",
       "risk": "medium",
       "allowed_paths": [

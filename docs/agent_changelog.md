@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [auto-implement-**neural-ball**-—-a-ball-controlled-by-a] Implement **Neural Ball** — A ball controlled by a simple neural network skill — *2026-06-24 17:38:31 UTC*
+
+Create **Neural Ball** — A ball controlled by a simple neural network skill: numpy, no external libs
+
+---
+
 ## [auto-implement-**kite**-—-держит-дистанцию,-атакует-при] Implement **Kite** — держит дистанцию, атакует при приближении skill — *2026-06-24 15:39:09 UTC*
 
 Create **Kite** — держит дистанцию, атакует при приближении skill: для Sniper
