@@ -2596,6 +2596,38 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-150",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Booster Trap",
+      "description": "A new procedural hazard that spawns looking exactly like a random booster. When a ball tries to collect it, it explodes and deals damage instead of granting a buff. Scouts could have a chance to identify them based on their perception score.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-151",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Fog of War Weather Event",
+      "description": "Periodically, the arena could fill with a thick fog that severely reduces the perception radius of all balls for 15-20 seconds. This would force balls into more close-range surprise encounters and make abilities like the ninja's stealth even more effective.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
