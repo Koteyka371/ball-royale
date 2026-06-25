@@ -2295,7 +2295,7 @@
     },
     {
       "id": "idea-131",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Dynamic Fitness Evaluation for Neural Balls",

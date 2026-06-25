@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-131] Dynamic Fitness Evaluation for Neural Balls — *2026-06-25 21:08:24 UTC*
+
+Enhance the evolutionary training system by using a dynamic fitness evaluation formula that penalizes passive survival (camping) and rewards active engagement. Technical implementation involves updating the fitness calculation at the end of matches to factor in `distance_traveled` and `damage_dealt`, dynamically adjusting generation weights for neural balls.
+
+---
+
 ## [idea-130] Capture the Flag Mode — *2026-06-25 08:55:04 UTC*
 
 A team-based game mode where balls must coordinate to steal the enemy's flag (a special booster object) and return it to their base. Introduces new AI behaviors for defending the base, escorting the flag carrier, and intercepting enemy carriers.
