@@ -44,9 +44,20 @@ def train_networks(generations=10, population_size=20, ticks=500):
             total_fitness = 0.0
             for ball in sim.balls:
                 score = ball.kills * 100.0
+
+                # Active engagement rewards
+                score += getattr(ball, "damage_dealt", 0.0) * 0.5
+                score += getattr(ball, "distance_traveled", 0.0) * 0.05
+
+                # Survival rewards
                 if ball.alive:
                     score += 50.0
                     score += ball.get_hp_percent() * 50.0
+
+                # Penalize passive survival (high survival time but low engagement)
+                if ball.alive and getattr(ball, "damage_dealt", 0.0) == 0 and getattr(ball, "distance_traveled", 0.0) < 500:
+                    score -= 50.0  # Camping penalty
+
                 total_fitness += score
 
             avg_fitness = total_fitness / max(1, len(sim.balls))

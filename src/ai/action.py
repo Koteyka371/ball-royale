@@ -175,8 +175,13 @@ class Action:
         self._update_skill_timer(delta)
 
         if delta > 0:
-            self.ball.vx = (self.ball.x - old_x) / delta
-            self.ball.vy = (self.ball.y - old_y) / delta
+            dx = self.ball.x - old_x
+            dy = self.ball.y - old_y
+            self.ball.vx = dx / delta
+            self.ball.vy = dy / delta
+
+            if hasattr(self.ball, "distance_traveled"):
+                self.ball.distance_traveled += math.sqrt(dx*dx + dy*dy)
 
 
 
