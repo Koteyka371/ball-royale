@@ -2564,6 +2564,38 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-148",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Trap Customization Sandbox",
+      "description": "Add a pre-game lobby where Snipers can pick trap variants like poison traps that apply DoT or stun traps that fully halt enemies for 1 second instead of slowing.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-149",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Global Traps Game Mode",
+      "description": "Create a new game mode where the entire arena starts littered with invisible traps, testing players' memory and movement caution rather than just dodging enemy shots.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
