@@ -436,5 +436,25 @@ const ARENAS = [
     "team_wipes",
     "ambush",
     "physics_chain_reactions",
-    "target_strong"
+    "target_strong",
+    "day_night"
 ]
+
+
+class DayNightArena extends ProceduralArena:
+    var is_night = false
+    var day_night_timer = 0.0
+    var phase_duration = 10.0
+
+    func _init(size: float = 2000.0, seed_val = null):
+        super(size, 5, seed_val)
+
+    func generate():
+        super.generate()
+
+    func update_zone(current_tick: int, delta: float) -> void:
+        super.update_zone(current_tick, delta)
+        day_night_timer += delta
+        if day_night_timer >= phase_duration:
+            day_night_timer = 0.0
+            is_night = not is_night

@@ -1161,6 +1161,23 @@ class BlackHoleArena(ProceduralArena):
         self.corridors.append(Corridor(cx + 200, cy + 200, w - cx - 300, 100))
         self.hazards.append(Hazard(0, cx, cy, 200.0, "black_hole", 30.0))
 
+class DayNightArena(ProceduralArena):
+    def __init__(self, arena_size: float = 2000.0, seed: int | None = None):
+        super().__init__(arena_size, 5, seed)
+        self.is_night = False
+        self.day_night_timer = 0.0
+        self.phase_duration = 10.0
+
+    def generate(self):
+        super().generate()
+
+    def update_zone(self, current_tick: int, delta: float):
+        super().update_zone(current_tick, delta)
+        self.day_night_timer += delta
+        if self.day_night_timer >= self.phase_duration:
+            self.day_night_timer = 0.0
+            self.is_night = not self.is_night
+
 ARENAS = {
     "black_hole": BlackHoleArena,
     "neural_ball": NeuralBallArena,
@@ -1208,7 +1225,8 @@ ARENAS = {
     "ball_relationships": BallRelationshipsArena,
     "finals_1v1": Finals1v1Arena,
     "team_wipes": TeamWipesArena,
-    "target_strong": TargetStrongArena
+    "target_strong": TargetStrongArena,
+    "day_night": DayNightArena
 }
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:

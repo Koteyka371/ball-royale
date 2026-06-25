@@ -19,6 +19,12 @@ class Perception:
         """
         perception_radius = getattr(self.ball, "perception_radius", 300.0)
 
+        if hasattr(self.world, "arena") and getattr(self.world.arena, "is_night", None) is not None:
+            if self.world.arena.is_night:
+                perception_radius = min(perception_radius, 100.0)
+            else:
+                perception_radius = max(perception_radius, 2000.0)
+
         data: Dict[str, Any] = {
             "enemies": [],
             "allies": [],
