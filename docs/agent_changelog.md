@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-130] Capture the Flag Mode — *2026-06-25 08:55:04 UTC*
+
+A team-based game mode where balls must coordinate to steal the enemy's flag (a special booster object) and return it to their base. Introduces new AI behaviors for defending the base, escorting the flag carrier, and intercepting enemy carriers.
+
+---
+
 ## [idea-129] Sniper Trap Placement — *2026-06-25 00:34:37 UTC*
 
 Sniper balls can drop temporary traps while kiting. Enemies that step on these traps receive a slowing effect, allowing the Sniper to effectively maintain their distance and continue to deal damage safely.
