@@ -116,7 +116,9 @@ class Decision:
             "flank": 0.0,
             "group_attack": 0.0,
             "hide_behind": 0.0,
-            "idle": 0.0
+            "idle": 0.0,
+            "escort": 0.0,
+            "intercept": 0.0
         }
 
         # Calculate scores using dot product
@@ -222,6 +224,25 @@ class Decision:
             scores["collect_booster"] -= 50.0
 
         # Skill Usage AI
+
+        # Capture the Flag logic
+        has_enemy_flag = any(getattr(a, "has_flag", False) for a in allies)
+        has_our_flag = any(getattr(e, "has_flag", False) for e in enemies)
+
+        if has_enemy_flag:
+            scores["escort"] += 800.0
+
+        if has_our_flag:
+            scores["intercept"] += 800.0
+
+        if b_type == "tank" or b_type == "healer":
+            if has_enemy_flag:
+                scores["escort"] += 200.0
+
+        if b_type == "assassin" or b_type == "ninja":
+            if has_our_flag:
+                scores["intercept"] += 200.0
+
         if skill_timer <= 0:
             if b_type == "warrior" and enemies_count >= 2:
                 scores["use_skill"] += 300.0
@@ -295,7 +316,7 @@ class Decision:
                 best_action = random.choice(possible) if possible else "idle"
                 best_score = scores.get(best_action, 0.0)
         else:
-            action_order = ["flee", "defend", "collect_booster", "attack", "target_weak", "chase", "use_skill", "kite", "flank", "group_attack", "hide_behind", "idle"]
+            action_order = ["intercept", "escort", "flee", "defend", "collect_booster", "attack", "target_weak", "chase", "use_skill", "kite", "flank", "group_attack", "hide_behind", "idle"]
             valid_actions = [k for k in scores.keys() if scores[k] > -500.0]
             sorted_actions = sorted(valid_actions, key=lambda k: (scores[k], -action_order.index(k) if k in action_order else 0), reverse=True)
             if not sorted_actions:

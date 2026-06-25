@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Booster Trap",
+  "description": "A new procedural hazard that spawns looking exactly like a random booster. When a ball tries to collect it, it explodes and deals damage instead of granting a buff. Scouts could have a chance to identify them based on their perception score."
+}

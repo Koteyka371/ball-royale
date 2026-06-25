@@ -146,6 +146,10 @@ class Action:
             self._chase(delta)
         elif strategy == "flank":
             self._flank(delta)
+        elif strategy == "escort":
+            self._escort(delta)
+        elif strategy == "intercept":
+            self._intercept(delta)
         elif strategy == "hide_behind":
             self._hide_behind(delta)
         elif strategy == "group_attack":
@@ -1494,6 +1498,127 @@ class Action:
                 b_speed = getattr(self.ball, "speed", 2.0)
                 new_cooldown = max(0.2, 2.0 / b_speed if b_speed > 0 else 1.0)
                 self.ball.attack_timer = new_cooldown
+
+    def _escort(self, delta: float) -> None:
+        allies = self._get_allies()
+        if not allies:
+            self._idle(delta)
+            return
+
+        # Find ally carrying flag
+        target_ally = None
+        for ally in allies:
+            if getattr(ally, "has_flag", False):
+                target_ally = ally
+                break
+
+        if not target_ally:
+            # Fallback to protecting closest/weakest ally
+            target_ally = min(allies, key=lambda a: (a.x - self.ball.x)**2 + (a.y - self.ball.y)**2)
+
+        # Position near the ally
+        dx = target_ally.x - self.ball.x
+        dy = target_ally.y - self.ball.y
+        dist_sq = dx*dx + dy*dy
+
+        # If too far, move towards them
+        if dist_sq > 2500: # distance 50
+            import math
+            dist = math.sqrt(dist_sq)
+            nx = dx / dist
+            ny = dy / dist
+
+            # Avoid obstacles and boid rules
+            nx, ny = self._apply_obstacle_avoidance(nx, ny)
+            nx, ny = self._apply_boid_rules(nx, ny)
+
+            speed = getattr(self.ball, "speed", 2.0)
+            step = speed * delta * 60.0
+
+            self.ball.x += nx * min(step, dist - 40)
+            self.ball.y += ny * min(step, dist - 40)
+        else:
+            # Attack enemies near the escorted ally
+            enemies = self._get_enemies()
+            if enemies:
+                closest_enemy = min(enemies, key=lambda e: (e.x - target_ally.x)**2 + (e.y - target_ally.y)**2)
+                enemy_dist_sq = (closest_enemy.x - target_ally.x)**2 + (closest_enemy.y - target_ally.y)**2
+
+                if enemy_dist_sq < 40000: # distance 200
+                    # Attack them
+                    self.ball.team_message = {"type": "target_spotted", "x": closest_enemy.x, "y": closest_enemy.y}
+                    attack_cd_timer = getattr(self.ball, "attack_timer", 0.0)
+                    if attack_cd_timer <= 0:
+                        my_dist_sq = (closest_enemy.x - self.ball.x)**2 + (closest_enemy.y - self.ball.y)**2
+                        if my_dist_sq < getattr(self.ball, "attack_range", 150.0)**2:
+                            if hasattr(self.world, "_deal_damage"):
+                                self.world._deal_damage(self.ball, closest_enemy)
+                            b_speed = getattr(self.ball, "speed", 2.0)
+                            new_cooldown = max(0.2, 2.0 / b_speed if b_speed > 0 else 1.0)
+                            self.ball.attack_timer = new_cooldown
+
+    def _intercept(self, delta: float) -> None:
+        enemies = self._get_enemies()
+        if not enemies:
+            self._idle(delta)
+            return
+
+        # Find enemy carrying flag
+        target_enemy = None
+        for enemy in enemies:
+            if getattr(enemy, "has_flag", False):
+                target_enemy = enemy
+                break
+
+        if not target_enemy:
+            # Fallback to normal chase
+            self._chase(delta)
+            return
+
+        # Predict enemy movement and intercept
+        dx = target_enemy.x - self.ball.x
+        dy = target_enemy.y - self.ball.y
+        dist_sq = dx*dx + dy*dy
+
+        import math
+        dist = math.sqrt(dist_sq) if dist_sq > 0 else 0
+
+        if dist > 0.0001:
+            nx = dx / dist
+            ny = dy / dist
+
+            # Predict slightly ahead based on enemy "velocity" if available
+            ex_vel = getattr(target_enemy, "vx", 0)
+            ey_vel = getattr(target_enemy, "vy", 0)
+
+            # Lead target
+            lead_x = nx + (ex_vel * 0.5)
+            lead_y = ny + (ey_vel * 0.5)
+
+            lead_mag = math.sqrt(lead_x*lead_x + lead_y*lead_y)
+            if lead_mag > 0:
+                nx = lead_x / lead_mag
+                ny = lead_y / lead_mag
+
+            nx, ny = self._apply_obstacle_avoidance(nx, ny)
+            nx, ny = self._apply_boid_rules(nx, ny)
+
+            speed = getattr(self.ball, "speed", 2.0)
+            step = speed * delta * 60.0
+
+            self.ball.x += nx * step
+            self.ball.y += ny * step
+
+            # Attack if close enough
+            if dist < getattr(self.ball, "attack_range", 150.0):
+                attack_cd_timer = getattr(self.ball, "attack_timer", 0.0)
+                if attack_cd_timer <= 0:
+                    if hasattr(self.world, "_deal_damage"):
+                        self.world._deal_damage(self.ball, target_enemy)
+                    b_speed = getattr(self.ball, "speed", 2.0)
+                    new_cooldown = max(0.2, 2.0 / b_speed if b_speed > 0 else 1.0)
+                    self.ball.attack_timer = new_cooldown
+
     def _hide_behind(self, delta: float) -> None:
         enemies = self._get_enemies()
         allies = self._get_allies()

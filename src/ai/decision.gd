@@ -102,7 +102,9 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
         "flank": 0.0,
         "group_attack": 0.0,
         "hide_behind": 0.0,
-        "idle": 0.0
+        "idle": 0.0,
+        "escort": 0.0,
+        "intercept": 0.0
     }
 
     for action in scores.keys():
@@ -232,6 +234,33 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
         scores["collect_booster"] -= 50.0
 
     # Skill Usage AI
+
+    var has_enemy_flag = false
+    for a in allies:
+        if "has_flag" in a and a.has_flag:
+            has_enemy_flag = true
+            break
+
+    var has_our_flag = false
+    for e in enemies:
+        if "has_flag" in e and e.has_flag:
+            has_our_flag = true
+            break
+
+    if has_enemy_flag:
+        scores["escort"] += 800.0
+
+    if has_our_flag:
+        scores["intercept"] += 800.0
+
+    if b_type == "tank" or b_type == "healer":
+        if has_enemy_flag:
+            scores["escort"] += 200.0
+
+    if b_type == "assassin" or b_type == "ninja":
+        if has_our_flag:
+            scores["intercept"] += 200.0
+
     if skill_timer <= 0.0:
         if b_type == "warrior" and enemies_count >= 2.0:
             scores["use_skill"] += 300.0
@@ -321,7 +350,7 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
             else:
                 best_score = 0.0
     else:
-        var action_order = ["flee", "defend", "collect_booster", "attack", "target_weak", "chase", "use_skill", "kite", "flank", "group_attack", "hide_behind", "idle"]
+        var action_order = ["intercept", "escort", "flee", "defend", "collect_booster", "attack", "target_weak", "chase", "use_skill", "kite", "flank", "group_attack", "hide_behind", "idle"]
         var possible_actions = []
         for k in scores.keys():
             if float(scores[k]) > -500.0:
