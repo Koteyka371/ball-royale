@@ -164,6 +164,8 @@ class Ball:
     skill_timer: float = 0.0
     alive: bool = True
     kills: int = 0
+    distance_traveled: float = 0.0
+    damage_dealt: float = 0.0
     first_hit_taken: bool = False
     current_action: str = "idle"
     personality: str = "idle"
@@ -363,7 +365,12 @@ class BattleSimulation:
             return
         if target.hp == target.max_hp and attacker.damage > 0:
             target.first_hit_taken = True
-        target.hp -= attacker.damage
+
+        actual_damage = min(target.hp, attacker.damage)
+        target.hp -= actual_damage
+        if hasattr(attacker, "damage_dealt"):
+            attacker.damage_dealt += actual_damage
+
         if target.hp <= 0:
             target.alive = False
             attacker.kills += 1

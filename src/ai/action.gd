@@ -210,14 +210,22 @@ func execute(strategy: String, delta: float):
     _update_skill_timer(delta)
 
     if delta > 0:
-        var vx = (self.ball.x - old_x) / delta
-        var vy = (self.ball.y - old_y) / delta
+        var dx = self.ball.x - old_x
+        var dy = self.ball.y - old_y
+        var vx = dx / delta
+        var vy = dy / delta
         if "vx" in self.ball:
             self.ball.vx = vx
             self.ball.vy = vy
         elif self.ball.has_method("set_meta"):
             self.ball.set_meta("vx", vx)
             self.ball.set_meta("vy", vy)
+
+        if "distance_traveled" in self.ball:
+            self.ball.distance_traveled += sqrt(dx*dx + dy*dy)
+        elif self.ball.has_method("get_meta"):
+            var current_dist = self.ball.get_meta("distance_traveled") if self.ball.has_meta("distance_traveled") else 0.0
+            self.ball.set_meta("distance_traveled", current_dist + sqrt(dx*dx + dy*dy))
 
 
 func _apply_boid_rules(nx: float, ny: float) -> Array:
