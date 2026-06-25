@@ -13,6 +13,18 @@ class Action:
         self.world = world
 
     def execute(self, strategy: str, delta: float) -> None:
+        if not hasattr(self.ball, "_base_speed_set"):
+            self.ball.base_speed = getattr(self.ball, "speed", 2.0)
+            self.ball.base_damage = getattr(self.ball, "damage", 10.0)
+            self.ball._base_speed_set = True
+
+        if hasattr(self.world, "arena") and getattr(self.world.arena, "is_night", None) is not None:
+            if self.world.arena.is_night:
+                self.ball.speed = self.ball.base_speed * 1.5
+                self.ball.damage = self.ball.base_damage
+            else:
+                self.ball.speed = self.ball.base_speed
+                self.ball.damage = self.ball.base_damage * 1.2
         if strategy == "target_weak":
             self._target_weak(delta)
             self._update_skill_timer(delta)
