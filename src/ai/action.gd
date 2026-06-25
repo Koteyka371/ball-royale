@@ -55,7 +55,17 @@ func execute(strategy: String, delta: float):
 
         if "hazards" in self.world.arena:
             for hazard in self.world.arena.hazards:
-                if hazard.kind == "black_hole":
+                if hazard.kind == "trap":
+                    var current_tick = 0
+                    if "tick" in self.world:
+                        current_tick = self.world.tick
+                    if not hazard.has_meta("last_updated_tick") or hazard.get_meta("last_updated_tick") != current_tick:
+                        hazard.set_meta("last_updated_tick", current_tick)
+                        var dur = 5.0
+                        if hazard.has_meta("duration"):
+                            dur = hazard.get_meta("duration")
+                        hazard.set_meta("duration", dur - delta)
+                elif hazard.kind == "black_hole":
                     var current_tick = 0
                     if "tick" in self.world:
                         current_tick = self.world.tick
@@ -103,10 +113,23 @@ func execute(strategy: String, delta: float):
                         self.ball.x += nx * pull_strength
                         self.ball.y += ny * pull_strength
 
+        if "hazards" in self.world.arena:
+            var alive_hazards = []
+            for h in self.world.arena.hazards:
+                if h.kind != "trap" or (h.has_meta("duration") and h.get_meta("duration") > 0.0):
+                    alive_hazards.append(h)
+            self.world.arena.hazards = alive_hazards
+
         if ball_type != "spectator" and "hazards" in self.world.arena:
             for hazard in self.world.arena.hazards:
                 var dist = sqrt((self.ball.x - hazard.x) * (self.ball.x - hazard.x) + (self.ball.y - hazard.y) * (self.ball.y - hazard.y))
                 if dist < (self.ball.radius + hazard.radius):
+                    if hazard.kind == "trap":
+                        if ball_type != "sniper":
+                            self.ball.x = (self.ball.x + old_x) / 2.0
+                            self.ball.y = (self.ball.y + old_y) / 2.0
+                        continue
+
                     var hazard_damage = hazard.damage * delta
                     if self.ball.has_method("take_damage"):
                         self.ball.take_damage(hazard_damage)
@@ -1852,6 +1875,18 @@ func _use_skill():
                 self.ball.x += cos(angle) * 100.0
                 self.ball.y += sin(angle) * 100.0
 
+        elif skill_name == "snipe":
+            if "arena" in self.world and "hazards" in self.world.arena:
+                var trap_id = self.world.arena.hazards.size() + randi() % 10000
+                var trap = ProceduralArena.Hazard.new()
+                trap.id = trap_id
+                trap.x = self.ball.x
+                trap.y = self.ball.y
+                trap.radius = 15.0
+                trap.kind = "trap"
+                trap.damage = 0.0
+                trap.set_meta("duration", 5.0)
+                self.world.arena.hazards.append(trap)
         elif skill_name == "target_strong":
             var enemies = _get_enemies()
             if enemies.size() > 0:

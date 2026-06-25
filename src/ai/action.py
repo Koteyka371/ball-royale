@@ -48,7 +48,12 @@ class Action:
 
             if hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if hazard.kind == "black_hole":
+                    if hazard.kind == "trap":
+                        current_tick = getattr(self.world, "tick", 0)
+                        if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
+                            hazard.last_updated_tick = current_tick
+                            hazard.duration = getattr(hazard, "duration", 5.0) - delta
+                    elif hazard.kind == "black_hole":
                         # Only update global state once per frame using the tick counter
                         current_tick = getattr(self.world, "tick", 0)
                         if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
@@ -89,10 +94,20 @@ class Action:
                             self.ball.x += nx * pull_strength
                             self.ball.y += ny * pull_strength
 
+            if hasattr(self.world.arena, "hazards"):
+                # Cleanup dead traps before checking collisions
+                self.world.arena.hazards = [h for h in self.world.arena.hazards if getattr(h, "duration", 1.0) > 0]
             if hasattr(self.world.arena, "hazards") and ball_type != "spectator":
                 for hazard in self.world.arena.hazards:
                     dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
                     if dist < (self.ball.radius + hazard.radius):
+                        if hazard.kind == "trap":
+                            if ball_type != "sniper":
+                                # Slowing effect: cancel half of their movement (acts as a slow zone)
+                                self.ball.x = (self.ball.x + old_x) / 2.0
+                                self.ball.y = (self.ball.y + old_y) / 2.0
+                            continue
+
                         hazard_damage = hazard.damage * delta
                         if hasattr(self.ball, "take_damage"):
                             self.ball.take_damage(hazard_damage)
@@ -1219,6 +1234,17 @@ class Action:
                     angle = random.uniform(0, 2 * math.pi)
                     self.ball.x += math.cos(angle) * 100.0
                     self.ball.y += math.sin(angle) * 100.0
+
+            elif skill_name == "snipe":
+                # Drop a temporary trap hazard
+                import random
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    trap_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
+                    from arena.procedural_arena import Hazard
+                    # We pass 0.0 damage, we will handle the slowing effect in the hazard logic
+                    trap = Hazard(trap_id, self.ball.x, self.ball.y, 15.0, "trap", 0.0)
+                    setattr(trap, 'duration', 5.0) # Trap lasts for 5 seconds
+                    self.world.arena.hazards.append(trap)
 
             elif skill_name == "target_strong":
                 import random
