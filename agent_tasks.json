@@ -2660,6 +2660,38 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-154",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Effects",
+      "description": "Add dynamic weather that impacts ball physics.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-155",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Boss Encounters",
+      "description": "Introduce powerful boss balls in the center of the arena.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
