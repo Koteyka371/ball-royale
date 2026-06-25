@@ -451,23 +451,18 @@ def check_all_agents_idle(lock_data):
 
 
 def trigger_dispatcher(token):
-    repo = os.environ.get("GITHUB_REPOSITORY", "Koteyka371/ball-royale")
-    url = f"https://api.github.com/repos/{repo}/actions/workflows/jules-dispatcher.yml/dispatches"
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"token {token}",
-    }
-    payload = {"ref": "main"}
-
-    data_bytes = json.dumps(payload).encode("utf-8")
-    req = urllib.request.Request(url, data=data_bytes, headers=headers, method="POST")
-
     try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            print("[Supervisor] Dispatcher triggered")
-            return True
+        print("[Supervisor] Running auto_improve_loop.py locally...")
+        subprocess.run([sys.executable, "scripts/auto_improve_loop.py"], check=False)
+        
+        print("[Supervisor] Running dispatch_agents.py locally...")
+        env = os.environ.copy()
+        if token:
+            env["GITHUB_TOKEN"] = token
+        subprocess.run([sys.executable, "scripts/dispatch_agents.py"], env=env, check=False)
+        return True
     except Exception as e:
-        print(f"[Supervisor] Failed to trigger dispatcher: {e}")
+        print(f"[Supervisor] Failed to run dispatcher locally: {e}")
         return False
 
 
