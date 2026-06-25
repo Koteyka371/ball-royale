@@ -2532,6 +2532,38 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-146",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Survival Mode",
+      "description": "A mode where the entire arena is slowly sucked into a massive black hole.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-147",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Wells",
+      "description": "Temporary gravity wells spawn randomly and pull balls towards them.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
