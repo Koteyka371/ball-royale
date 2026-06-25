@@ -2628,6 +2628,38 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-152",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Combo Abilities System",
+      "description": "Implement a synergy mechanic where combining specific skills from different ball types (e.g., water attack + lightning attack) creates enhanced combo effects like area paralysis or bonus damage, encouraging team coordination and diverse team compositions.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-153",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Variable Gravity Anomalies",
+      "description": "Introduce spatial anomalies that periodically alter the gravity in specific zones of the arena, affecting movement speed, trajectory of skills, and forcing players/AI to adapt their pathfinding and engagement strategies dynamically.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
