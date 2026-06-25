@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-129] Sniper Trap Placement — *2026-06-25 00:34:37 UTC*
+
+Sniper balls can drop temporary traps while kiting. Enemies that step on these traps receive a slowing effect, allowing the Sniper to effectively maintain their distance and continue to deal damage safely.
+
+---
+
 ## [idea-128] Black Hole Arena — *2026-06-24 23:22:19 UTC*
 
 An arena featuring a massive, slow-moving black hole in the center that gradually pulls all balls and boosters towards it. The gravitational pull gets stronger closer to the center, forcing balls to use their movement skills creatively to avoid being crushed while trying to push enemies in.
