@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-132] Night and Day Arena — *2026-06-25 22:35:17 UTC*
+
+An arena that cycles between day and night phases. During the day, vision is unlimited and attack power is slightly buffed. During the night, vision is severely restricted, but speed is increased and stealth behaviors become more effective. This forces balls to dynamically switch between aggressive and defensive tactics.
+
+---
+
 ## [idea-131] Dynamic Fitness Evaluation for Neural Balls — *2026-06-25 21:08:24 UTC*
 
 Enhance the evolutionary training system by using a dynamic fitness evaluation formula that penalizes passive survival (camping) and rewards active engagement. Technical implementation involves updating the fitness calculation at the end of matches to factor in `distance_traveled` and `damage_dealt`, dynamically adjusting generation weights for neural balls.
