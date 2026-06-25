@@ -212,11 +212,62 @@ class SurvivalMode(GameMode):
 
         return None
 
+
+class CaptureTheFlagMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Capture The Flag"
+        self.description = "Teams try to steal the enemy's flag (a special booster) and return it to their base."
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        mid = len(balls) // 2
+        for i, b in enumerate(balls):
+            if getattr(b, "ball_type", None) != "spectator":
+                if i < mid:
+                    b.team = "Red"
+                else:
+                    b.team = "Blue"
+
+        # Add flags (special boosters) if world has them
+        if hasattr(world, "boosters"):
+            # Add dicts that represent flag boosters
+            class FlagBooster:
+                def __init__(self, id, x, y, team):
+                    self.id = id
+                    self.x = x
+                    self.y = y
+                    self.is_flag = True
+                    self.team = team
+                    self.carrier = None
+                    self.ball_type = "booster"
+            red_flag = FlagBooster("red_flag", 100, 100, "Red")
+            blue_flag = FlagBooster("blue_flag", 900, 900, "Blue")
+            world.boosters.extend([red_flag, blue_flag])
+            if not hasattr(world, "flags"):
+                world.flags = {"Red": red_flag, "Blue": blue_flag}
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        # Basic check if someone scored or all enemies are dead
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        teams_alive = set(getattr(b, "team", "") for b in alive)
+
+        if len(teams_alive) == 1:
+            return list(teams_alive)[0]
+
+        # Simplified win condition for tests
+        if hasattr(world, "scores"):
+            if world.scores.get("Red", 0) >= 3:
+                return "Red"
+            if world.scores.get("Blue", 0) >= 3:
+                return "Blue"
+        return None
+
 GAME_MODES = {
     "battle_royale": BattleRoyaleMode(),
     "team_deathmatch": TeamDeathmatchMode(),
     "zombie_infection": ZombieInfectionMode(),
     "boss_fight": BossFightMode(),
     "vip_defense": VIPDefenseMode(),
-    "survival": SurvivalMode()
+    "survival": SurvivalMode(),
+    "capture_the_flag": CaptureTheFlagMode()
 }

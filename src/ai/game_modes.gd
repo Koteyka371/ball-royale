@@ -294,11 +294,65 @@ class SurvivalMode extends GameMode:
 
         return null
 
+
+class CaptureTheFlagMode extends GameMode:
+    func _init() -> void:
+        name = "Capture The Flag"
+        description = "Teams try to steal the enemy's flag and return it to their base."
+
+    func setup(world, balls: Array) -> void:
+        var valid_balls = []
+        for b in balls:
+            if b.ball_type != "spectator":
+                valid_balls.append(b)
+
+        var mid = valid_balls.size() / 2
+        for i in range(valid_balls.size()):
+            var b = valid_balls[i]
+            if i < mid:
+                b.team = "Red"
+            else:
+                b.team = "Blue"
+
+        if "boosters" in world:
+            var red_flag = {"id": "red_flag", "x": 100, "y": 100, "is_flag": true, "team": "Red", "carrier": null, "ball_type": "booster"}
+            var blue_flag = {"id": "blue_flag", "x": 900, "y": 900, "is_flag": true, "team": "Blue", "carrier": null, "ball_type": "booster"}
+            world.boosters.append(red_flag)
+            world.boosters.append(blue_flag)
+            if not "flags" in world:
+                world.flags = {"Red": red_flag, "Blue": blue_flag}
+
+    func check_winner(world, balls: Array):
+        var alive = []
+        for b in balls:
+            if b.alive and b.ball_type != "spectator":
+                alive.append(b)
+
+        if alive.size() == 0:
+            return "Draw"
+
+        var teams_alive = {}
+        for b in alive:
+            if b.has_method("get") or "team" in b:
+                teams_alive[b.team] = true
+
+        if teams_alive.size() == 1:
+            return teams_alive.keys()[0]
+
+        if "scores" in world:
+            if world.scores.has("Red") and world.scores["Red"] >= 3:
+                return "Red"
+            if world.scores.has("Blue") and world.scores["Blue"] >= 3:
+                return "Blue"
+
+        return null
+
 var GAME_MODES = {
     "battle_royale": BattleRoyaleMode.new(),
     "team_deathmatch": TeamDeathmatchMode.new(),
     "zombie_infection": ZombieInfectionMode.new(),
     "boss_fight": BossFightMode.new(),
     "vip_defense": VIPDefenseMode.new(),
-    "survival": SurvivalMode.new()
+    "survival": SurvivalMode.new(),
+    "capture_the_flag": CaptureTheFlagMode.new()
 }

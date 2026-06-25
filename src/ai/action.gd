@@ -172,6 +172,10 @@ func execute(strategy: String, delta: float):
         _chase(delta)
     elif strategy == "flank":
         _flank(delta)
+    elif strategy == "escort":
+        _escort(delta)
+    elif strategy == "intercept":
+        _intercept(delta)
     elif strategy == "hide_behind":
         _hide_behind(delta)
     elif strategy == "group_attack":
@@ -2266,6 +2270,159 @@ func _kite(delta: float):
                     self.ball.set_meta("attack_timer", cooldown)
     else:
         _idle(delta)
+
+
+func _escort(delta: float) -> void:
+    var allies = _get_allies()
+    if allies.size() == 0:
+        _idle(delta)
+        return
+
+    var target_ally = null
+    for ally in allies:
+        if "has_flag" in ally and ally.has_flag:
+            target_ally = ally
+            break
+
+    if target_ally == null:
+        var min_dist = 9999999.0
+        for ally in allies:
+            var d_sq = (ally.x - ball.x)*(ally.x - ball.x) + (ally.y - ball.y)*(ally.y - ball.y)
+            if d_sq < min_dist:
+                min_dist = d_sq
+                target_ally = ally
+
+    var dx = target_ally.x - ball.x
+    var dy = target_ally.y - ball.y
+    var dist_sq = dx*dx + dy*dy
+
+    if dist_sq > 2500.0:
+        var dist = sqrt(dist_sq)
+        var nx = dx / dist
+        var ny = dy / dist
+
+        var avoid = _apply_obstacle_avoidance(nx, ny)
+        nx = avoid[0]
+        ny = avoid[1]
+
+        var boid = _apply_boid_rules(nx, ny)
+        nx = boid[0]
+        ny = boid[1]
+
+        var b_speed = 2.0
+        if "speed" in ball:
+            b_speed = ball.speed
+        var step = b_speed * delta * 60.0
+
+        ball.x += nx * min(step, dist - 40.0)
+        ball.y += ny * min(step, dist - 40.0)
+    else:
+        var enemies = _get_enemies()
+        if enemies.size() > 0:
+            var closest_enemy = null
+            var e_min_dist = 9999999.0
+            for enemy in enemies:
+                var e_d_sq = (enemy.x - target_ally.x)*(enemy.x - target_ally.x) + (enemy.y - target_ally.y)*(enemy.y - target_ally.y)
+                if e_d_sq < e_min_dist:
+                    e_min_dist = e_d_sq
+                    closest_enemy = enemy
+
+            if e_min_dist < 40000.0:
+                ball.team_message = {"type": "target_spotted", "x": closest_enemy.x, "y": closest_enemy.y}
+                var attack_timer = 0.0
+                if "attack_timer" in ball:
+                    attack_timer = ball.attack_timer
+
+                if attack_timer <= 0.0:
+                    var my_dist = (closest_enemy.x - ball.x)*(closest_enemy.x - ball.x) + (closest_enemy.y - ball.y)*(closest_enemy.y - ball.y)
+                    var atk_range = 150.0
+                    if "attack_range" in ball:
+                        atk_range = ball.attack_range
+
+                    if my_dist < atk_range * atk_range:
+                        if world.has_method("_deal_damage"):
+                            world._deal_damage(ball, closest_enemy)
+                        var s_speed = 2.0
+                        if "speed" in ball:
+                            s_speed = ball.speed
+                        var new_cd = max(0.2, 2.0 / s_speed if s_speed > 0 else 1.0)
+                        ball.attack_timer = new_cd
+
+func _intercept(delta: float) -> void:
+    var enemies = _get_enemies()
+    if enemies.size() == 0:
+        _idle(delta)
+        return
+
+    var target_enemy = null
+    for enemy in enemies:
+        if "has_flag" in enemy and enemy.has_flag:
+            target_enemy = enemy
+            break
+
+    if target_enemy == null:
+        _chase(delta)
+        return
+
+    var dx = target_enemy.x - ball.x
+    var dy = target_enemy.y - ball.y
+    var dist_sq = dx*dx + dy*dy
+    var dist = 0.0
+    if dist_sq > 0.0:
+        dist = sqrt(dist_sq)
+
+    if dist > 0.0001:
+        var nx = dx / dist
+        var ny = dy / dist
+
+        var ex_vel = 0.0
+        var ey_vel = 0.0
+        if "vx" in target_enemy:
+            ex_vel = target_enemy.vx
+        if "vy" in target_enemy:
+            ey_vel = target_enemy.vy
+
+        var lead_x = nx + (ex_vel * 0.5)
+        var lead_y = ny + (ey_vel * 0.5)
+        var lead_mag = sqrt(lead_x*lead_x + lead_y*lead_y)
+
+        if lead_mag > 0.0:
+            nx = lead_x / lead_mag
+            ny = lead_y / lead_mag
+
+        var avoid = _apply_obstacle_avoidance(nx, ny)
+        nx = avoid[0]
+        ny = avoid[1]
+
+        var boid = _apply_boid_rules(nx, ny)
+        nx = boid[0]
+        ny = boid[1]
+
+        var b_speed = 2.0
+        if "speed" in ball:
+            b_speed = ball.speed
+        var step = b_speed * delta * 60.0
+
+        ball.x += nx * step
+        ball.y += ny * step
+
+        var atk_range = 150.0
+        if "attack_range" in ball:
+            atk_range = ball.attack_range
+
+        if dist < atk_range:
+            var attack_timer = 0.0
+            if "attack_timer" in ball:
+                attack_timer = ball.attack_timer
+
+            if attack_timer <= 0.0:
+                if world.has_method("_deal_damage"):
+                    world._deal_damage(ball, target_enemy)
+                var s_speed = 2.0
+                if "speed" in ball:
+                    s_speed = ball.speed
+                var new_cd = max(0.2, 2.0 / s_speed if s_speed > 0 else 1.0)
+                ball.attack_timer = new_cd
 
 func _hide_behind(delta: float):
     var enemies = _get_enemies()
