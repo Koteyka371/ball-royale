@@ -9,7 +9,7 @@ import math
 import time
 import sys
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Tuple, Any
 from collections import Counter
 
@@ -81,6 +81,7 @@ BALL_TYPES = {
     "spectator": {"hp": 99999, "speed": 5.0, "damage": 0, "radius": 5,
                   "perception_radius": 1000, "aggression": 0.0, "color": "white",
                   "skill": "observe", "skill_cooldown": 1.0},
+    "mimic": {"hp": 100, "speed": 2.0, "damage": 10, "radius": 10, "perception_radius": 250, "aggression": 0.5, "color": "magenta", "skill": "none", "skill_cooldown": 5.0},
     "chaos": {"hp": 100, "speed": 3.0, "damage": 15, "radius": 10,
               "perception_radius": 250, "aggression": 0.5, "color": "magenta",
               "skill": "random", "skill_cooldown": 2.0},
@@ -170,6 +171,50 @@ class Ball:
     current_action: str = "idle"
     personality: str = "idle"
 
+
+    copied_skill: str = ""
+    mimic_targets: dict = field(default_factory=dict)
+    copy_duration_required: float = 3.0
+
+    def _copy_stats_from(self, enemy):
+        self.max_hp = self.max_hp * 0.5 + enemy.max_hp * 0.5
+        self.hp = self.hp * 0.5 + enemy.hp * 0.5
+
+        base_s = getattr(self, "base_speed", getattr(self, "speed", 2.0))
+        target_speed = getattr(enemy, "speed", 2.0)
+        self.base_speed = base_s * 0.5 + target_speed * 0.5
+        self.speed = self.base_speed
+
+        base_d = getattr(self, "base_damage", getattr(self, "damage", 10.0))
+        target_damage = getattr(enemy, "damage", 10.0)
+        self.base_damage = base_d * 0.5 + target_damage * 0.5
+        self.damage = self.base_damage
+
+        self.copied_skill = getattr(enemy, "skill", "none")
+        self.skill = self.copied_skill
+
+    def process_mimicry(self, enemies, delta: float):
+        if self.copied_skill:
+            return
+
+        for e in enemies:
+            dist_sq = (e.x - self.x)**2 + (e.y - self.y)**2
+            if dist_sq < 2500:
+                if getattr(self, "mimic_targets", None) is None:
+                    self.mimic_targets = {}
+                if e.id not in self.mimic_targets:
+                    self.mimic_targets[e.id] = 0.0
+                self.mimic_targets[e.id] += delta
+
+                if self.mimic_targets[e.id] >= self.copy_duration_required:
+                    self._copy_stats_from(e)
+                    break
+            elif getattr(self, "mimic_targets", None) and e.id in self.mimic_targets:
+                self.mimic_targets[e.id] = max(0.0, self.mimic_targets[e.id] - delta * 0.5)
+
+    def notify_kill(self, victim):
+        if not getattr(self, "copied_skill", ""):
+            self._copy_stats_from(victim)
     def get_hp_percent(self) -> float:
         return self.hp / self.max_hp if self.max_hp > 0 else 0.0
 
@@ -376,6 +421,9 @@ class BattleSimulation:
             attacker.kills += 1
             self.stats["total_kills"] += 1
             self.stats["ball_types_killed"][target.ball_type] += 1
+
+            if hasattr(attacker, 'notify_kill'):
+                attacker.notify_kill(target)
             self.kill_log.append({
                 "tick": self.tick, "killer_id": attacker.id,
                 "killer_type": attacker.ball_type,

@@ -13,6 +13,10 @@ class Action:
         self.world = world
 
     def execute(self, strategy: str, delta: float) -> None:
+        if getattr(self.ball, "BALL_TYPE", "") == "mimic" and hasattr(self.ball, "process_mimicry"):
+            enemies = self._get_enemies()
+            self.ball.process_mimicry(enemies, delta)
+
         if not hasattr(self.ball, "_base_speed_set"):
             self.ball.base_speed = getattr(self.ball, "speed", 2.0)
             self.ball.base_damage = getattr(self.ball, "damage", 10.0)
