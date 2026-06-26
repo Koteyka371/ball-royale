@@ -2724,6 +2724,38 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-158",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "King of the Hill Mode",
+      "description": "Add a new game mode where teams score points by maintaining position within a central moving zone. Balls will need entirely new AI prioritization to value zone presence over raw damage.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-159",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Interactive Hazards",
+      "description": "Introduce dynamic hazards like explosive barrels or spike traps that balls can push into enemies or trigger manually via skills to create area denial zones.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
