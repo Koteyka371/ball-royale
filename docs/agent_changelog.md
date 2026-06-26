@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-134] Ultimate Charge Resource — *2026-06-26 11:06:38 UTC*
+
+Add a new class-specific resource called 'charge' that builds up when dealing or receiving damage, enabling a powerful ultimate skill once full. Technical implementation involves adding a `charge_level` state to the ball entity and updating the action scoring logic within `src/ai/decision.py` to dramatically increase the score for 'use_skill' when `charge_level >= 100`.
+
+---
+
 ## [idea-133] Vampire Ball Type — *2026-06-26 03:44:24 UTC*
 
 A new ball type that heals itself for a percentage of the damage it deals to enemies. It has low base HP but high attack speed, making it dangerous in prolonged 1v1 fights but weak against burst damage or crowd control.
