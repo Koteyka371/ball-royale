@@ -172,6 +172,11 @@ class Decision:
         if skill_timer > 0:
             scores["use_skill"] = -1000.0
 
+        # Ultimate Skill logic based on charge_level
+        charge_level = getattr(self.ball, "charge_level", 0.0)
+        if charge_level >= 100.0:
+            scores["use_skill"] += 3000.0
+
         coach_strategy = perception_data.get("coach_strategy", "")
         coach_strategy_str = str(coach_strategy).lower() if coach_strategy else ""
 

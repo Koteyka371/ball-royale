@@ -860,6 +860,18 @@ func _group_attack(delta: float):
         if attack_timer <= 0.0 and dist <= attack_range:
             if self.world != null and self.world.has_method("_deal_damage"):
                 self.world._deal_damage(self.ball, target)
+                if "charge_level" in self.ball:
+                    self.ball.charge_level = min(100.0, float(self.ball.charge_level) + 10.0)
+                elif self.ball.has_method("set_meta"):
+                    var cl = 0.0
+                    if self.ball.has_meta("charge_level"): cl = float(self.ball.get_meta("charge_level"))
+                    self.ball.set_meta("charge_level", min(100.0, cl + 10.0))
+                if "charge_level" in target:
+                    target.charge_level = min(100.0, float(target.charge_level) + 5.0)
+                elif target.has_method("set_meta"):
+                    var tcl = 0.0
+                    if target.has_meta("charge_level"): tcl = float(target.get_meta("charge_level"))
+                    target.set_meta("charge_level", min(100.0, tcl + 5.0))
                 var b_type_vamp1 = ""
                 if "ball_type" in self.ball:
                     b_type_vamp1 = str(self.ball.ball_type).to_lower()
@@ -1099,6 +1111,18 @@ func _flank(delta: float):
 
                 if self.world != null and self.world.has_method("_deal_damage"):
                     self.world._deal_damage(self.ball, target)
+                    if "charge_level" in self.ball:
+                        self.ball.charge_level = min(100.0, float(self.ball.charge_level) + 10.0)
+                    elif self.ball.has_method("set_meta"):
+                        var cl = 0.0
+                        if self.ball.has_meta("charge_level"): cl = float(self.ball.get_meta("charge_level"))
+                        self.ball.set_meta("charge_level", min(100.0, cl + 10.0))
+                    if "charge_level" in target:
+                        target.charge_level = min(100.0, float(target.charge_level) + 5.0)
+                    elif target.has_method("set_meta"):
+                        var tcl = 0.0
+                        if target.has_meta("charge_level"): tcl = float(target.get_meta("charge_level"))
+                        target.set_meta("charge_level", min(100.0, tcl + 5.0))
                     var b_type_vamp1 = ""
                     if "ball_type" in self.ball:
                         b_type_vamp1 = str(self.ball.ball_type).to_lower()
@@ -1243,6 +1267,18 @@ func _chase(delta: float):
             if attack_timer <= 0:
                 if self.world != null and self.world.has_method("_deal_damage"):
                     self.world._deal_damage(self.ball, target)
+                    if "charge_level" in self.ball:
+                        self.ball.charge_level = min(100.0, float(self.ball.charge_level) + 10.0)
+                    elif self.ball.has_method("set_meta"):
+                        var cl = 0.0
+                        if self.ball.has_meta("charge_level"): cl = float(self.ball.get_meta("charge_level"))
+                        self.ball.set_meta("charge_level", min(100.0, cl + 10.0))
+                    if "charge_level" in target:
+                        target.charge_level = min(100.0, float(target.charge_level) + 5.0)
+                    elif target.has_method("set_meta"):
+                        var tcl = 0.0
+                        if target.has_meta("charge_level"): tcl = float(target.get_meta("charge_level"))
+                        target.set_meta("charge_level", min(100.0, tcl + 5.0))
                     var b_type_vamp1 = ""
                     if "ball_type" in self.ball:
                         b_type_vamp1 = str(self.ball.ball_type).to_lower()
@@ -1537,6 +1573,18 @@ func _attack(delta: float):
 
                 if self.world != null and self.world.has_method("_deal_damage"):
                     self.world._deal_damage(self.ball, target)
+                    if "charge_level" in self.ball:
+                        self.ball.charge_level = min(100.0, float(self.ball.charge_level) + 10.0)
+                    elif self.ball.has_method("set_meta"):
+                        var cl = 0.0
+                        if self.ball.has_meta("charge_level"): cl = float(self.ball.get_meta("charge_level"))
+                        self.ball.set_meta("charge_level", min(100.0, cl + 10.0))
+                    if "charge_level" in target:
+                        target.charge_level = min(100.0, float(target.charge_level) + 5.0)
+                    elif target.has_method("set_meta"):
+                        var tcl = 0.0
+                        if target.has_meta("charge_level"): tcl = float(target.get_meta("charge_level"))
+                        target.set_meta("charge_level", min(100.0, tcl + 5.0))
                     var b_type_vamp1 = ""
                     if "ball_type" in self.ball:
                         b_type_vamp1 = str(self.ball.ball_type).to_lower()
@@ -1675,6 +1723,18 @@ func _defend(delta: float):
                 if attack_timer <= 0:
                     if self.world != null and self.world.has_method("_deal_damage"):
                         self.world._deal_damage(self.ball, target)
+                        if "charge_level" in self.ball:
+                            self.ball.charge_level = min(100.0, float(self.ball.charge_level) + 10.0)
+                        elif self.ball.has_method("set_meta"):
+                            var cl = 0.0
+                            if self.ball.has_meta("charge_level"): cl = float(self.ball.get_meta("charge_level"))
+                            self.ball.set_meta("charge_level", min(100.0, cl + 10.0))
+                        if "charge_level" in target:
+                            target.charge_level = min(100.0, float(target.charge_level) + 5.0)
+                        elif target.has_method("set_meta"):
+                            var tcl = 0.0
+                            if target.has_meta("charge_level"): tcl = float(target.get_meta("charge_level"))
+                            target.set_meta("charge_level", min(100.0, tcl + 5.0))
                         var b_type_vamp1 = ""
                         if "ball_type" in self.ball:
                             b_type_vamp1 = str(self.ball.ball_type).to_lower()
@@ -1880,6 +1940,23 @@ func _use_skill():
         skill_timer = self.ball.skill_timer
 
     if skill_timer <= 0.0 and self.ball.has_method("use_skill"):
+        self.ball.use_skill()
+        var cl = 0.0
+        if "charge_level" in self.ball:
+            cl = float(self.ball.charge_level)
+        elif self.ball.has_method("has_meta") and self.ball.has_meta("charge_level"):
+            cl = float(self.ball.get_meta("charge_level"))
+        if cl >= 100.0:
+            if "charge_level" in self.ball:
+                self.ball.charge_level = 0.0
+            elif self.ball.has_method("set_meta"):
+                self.ball.set_meta("charge_level", 0.0)
+            self.ball.charge_level = 0.0
+            var bd = 10.0
+            if "base_damage" in self.ball: bd = float(self.ball.base_damage)
+            elif "damage" in self.ball: bd = float(self.ball.damage)
+            self.ball.base_damage = bd * 2.0
+            self.ball.damage = self.ball.base_damage
         var skill_name = ""
         if "skill" in self.ball:
             skill_name = self.ball.skill
@@ -2180,6 +2257,18 @@ func _trigger_ripple_effect():
 
                 if is_enemy and self.world != null and self.world.has_method("_deal_damage"):
                     self.world._deal_damage(self.ball, other)
+                    if "charge_level" in self.ball:
+                        self.ball.charge_level = min(100.0, float(self.ball.charge_level) + 10.0)
+                    elif self.ball.has_method("set_meta"):
+                        var cl = 0.0
+                        if self.ball.has_meta("charge_level"): cl = float(self.ball.get_meta("charge_level"))
+                        self.ball.set_meta("charge_level", min(100.0, cl + 10.0))
+                    if "charge_level" in other:
+                        other.charge_level = min(100.0, float(other.charge_level) + 5.0)
+                    elif other.has_method("set_meta"):
+                        var tcl = 0.0
+                        if other.has_meta("charge_level"): tcl = float(other.get_meta("charge_level"))
+                        other.set_meta("charge_level", min(100.0, tcl + 5.0))
                     var b_type_vamp1 = ""
                     if "ball_type" in self.ball:
                         b_type_vamp1 = str(self.ball.ball_type).to_lower()
@@ -2335,6 +2424,18 @@ func _kite(delta: float):
             if attack_timer <= 0:
                 if self.world != null and self.world.has_method("_deal_damage"):
                     self.world._deal_damage(self.ball, optimal_target)
+                    if "charge_level" in self.ball:
+                        self.ball.charge_level = min(100.0, float(self.ball.charge_level) + 10.0)
+                    elif self.ball.has_method("set_meta"):
+                        var cl = 0.0
+                        if self.ball.has_meta("charge_level"): cl = float(self.ball.get_meta("charge_level"))
+                        self.ball.set_meta("charge_level", min(100.0, cl + 10.0))
+                    if "charge_level" in optimal_target:
+                        optimal_target.charge_level = min(100.0, float(optimal_target.charge_level) + 5.0)
+                    elif optimal_target.has_method("set_meta"):
+                        var tcl = 0.0
+                        if optimal_target.has_meta("charge_level"): tcl = float(optimal_target.get_meta("charge_level"))
+                        optimal_target.set_meta("charge_level", min(100.0, tcl + 5.0))
                     var b_type_vamp1 = ""
                     if "ball_type" in self.ball:
                         b_type_vamp1 = str(self.ball.ball_type).to_lower()
@@ -2435,6 +2536,18 @@ func _escort(delta: float) -> void:
                     if my_dist < atk_range * atk_range:
                         if world.has_method("_deal_damage"):
                             world._deal_damage(ball, closest_enemy)
+                            if "charge_level" in ball:
+                                ball.charge_level = min(100.0, float(ball.charge_level) + 10.0)
+                            elif ball.has_method("set_meta"):
+                                var cl = 0.0
+                                if ball.has_meta("charge_level"): cl = float(ball.get_meta("charge_level"))
+                                ball.set_meta("charge_level", min(100.0, cl + 10.0))
+                            if "charge_level" in closest_enemy:
+                                closest_enemy.charge_level = min(100.0, float(closest_enemy.charge_level) + 5.0)
+                            elif closest_enemy.has_method("set_meta"):
+                                var tcl = 0.0
+                                if closest_enemy.has_meta("charge_level"): tcl = float(closest_enemy.get_meta("charge_level"))
+                                closest_enemy.set_meta("charge_level", min(100.0, tcl + 5.0))
                             var b_type_vamp2 = ""
                             if "ball_type" in ball:
                                 b_type_vamp2 = str(ball.ball_type).to_lower()
@@ -2519,6 +2632,18 @@ func _intercept(delta: float) -> void:
             if attack_timer <= 0.0:
                 if world.has_method("_deal_damage"):
                     world._deal_damage(ball, target_enemy)
+                    if "charge_level" in ball:
+                        ball.charge_level = min(100.0, float(ball.charge_level) + 10.0)
+                    elif ball.has_method("set_meta"):
+                        var cl = 0.0
+                        if ball.has_meta("charge_level"): cl = float(ball.get_meta("charge_level"))
+                        ball.set_meta("charge_level", min(100.0, cl + 10.0))
+                    if "charge_level" in target_enemy:
+                        target_enemy.charge_level = min(100.0, float(target_enemy.charge_level) + 5.0)
+                    elif target_enemy.has_method("set_meta"):
+                        var tcl = 0.0
+                        if target_enemy.has_meta("charge_level"): tcl = float(target_enemy.get_meta("charge_level"))
+                        target_enemy.set_meta("charge_level", min(100.0, tcl + 5.0))
                     var b_type_vamp2 = ""
                     if "ball_type" in ball:
                         b_type_vamp2 = str(ball.ball_type).to_lower()
