@@ -1,0 +1,4 @@
+{
+  "title": "Weather Events",
+  "description": "Introduce random weather events (e.g. rain, snow, sandstorm) that dynamically affect arena hazards and ball visibility, forcing AI to adapt on the fly."
+}

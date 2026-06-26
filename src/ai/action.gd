@@ -10,6 +10,10 @@ func _init(ball_ref, world_ref):
 
 func execute(strategy: String, delta: float):
     var my_ball = self.ball
+
+    if my_ball.get("BALL_TYPE") == "mimic" and my_ball.has_method("process_mimicry"):
+        var enemies = self._get_enemies()
+        my_ball.process_mimicry(enemies, delta)
     if my_ball.has_method("has_meta") and not my_ball.has_meta("_base_speed_set"):
         var base_s = 2.0
         if "speed" in my_ball:
