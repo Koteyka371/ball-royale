@@ -182,6 +182,16 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     if skill_timer > 0.0:
         scores["use_skill"] = -1000.0
 
+    # Ultimate Skill logic based on charge_level
+    var charge_level = 0.0
+    if "charge_level" in self.ball:
+        charge_level = float(self.ball.charge_level)
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("charge_level"):
+        charge_level = float(self.ball.get_meta("charge_level"))
+
+    if charge_level >= 100.0:
+        scores["use_skill"] += 3000.0
+
     var b_type = ""
     if "ball_type" in self.ball:
         b_type = self.ball.ball_type

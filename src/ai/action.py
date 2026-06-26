@@ -575,6 +575,14 @@ class Action:
             if attack_timer <= 0 and dist <= attack_range:
                 if hasattr(self.world, "_deal_damage"):
                     self.world._deal_damage(self.ball, target)
+                    if not hasattr(self.ball, "charge_level"):
+                        self.ball.charge_level = 0.0
+                    if True:
+                        self.ball.charge_level = min(100.0, getattr(self.ball, "charge_level", 0.0) + 10.0)
+                    if not hasattr(target, "charge_level"):
+                        target.charge_level = 0.0
+                    if True:
+                        target.charge_level = min(100.0, getattr(target, "charge_level", 0.0) + 5.0)
                     b_type = getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower()
                     if b_type == 'vampire':
                         dmg = getattr(self.ball, 'damage', 10.0)
@@ -719,6 +727,14 @@ class Action:
 
                     if hasattr(self.world, "_deal_damage"):
                         self.world._deal_damage(self.ball, target)
+                        if not hasattr(self.ball, "charge_level"):
+                            self.ball.charge_level = 0.0
+                        if True:
+                            self.ball.charge_level = min(100.0, getattr(self.ball, "charge_level", 0.0) + 10.0)
+                        if not hasattr(target, "charge_level"):
+                            target.charge_level = 0.0
+                        if True:
+                            target.charge_level = min(100.0, getattr(target, "charge_level", 0.0) + 5.0)
                         b_type = getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower()
                         if b_type == 'vampire':
                             dmg = getattr(self.ball, 'damage', 10.0)
@@ -816,6 +832,14 @@ class Action:
                     attack_timer = getattr(self.ball, "attack_timer", 0.0)
                     if attack_timer <= 0:
                         self.world._deal_damage(self.ball, target)
+                        if not hasattr(self.ball, "charge_level"):
+                            self.ball.charge_level = 0.0
+                        if True:
+                            self.ball.charge_level = min(100.0, getattr(self.ball, "charge_level", 0.0) + 10.0)
+                        if not hasattr(target, "charge_level"):
+                            target.charge_level = 0.0
+                        if True:
+                            target.charge_level = min(100.0, getattr(target, "charge_level", 0.0) + 5.0)
                         b_type = getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower()
                         if b_type == 'vampire':
                             dmg = getattr(self.ball, 'damage', 10.0)
@@ -998,6 +1022,14 @@ class Action:
 
                     if hasattr(self.world, "_deal_damage"):
                         self.world._deal_damage(self.ball, target)
+                        if not hasattr(self.ball, "charge_level"):
+                            self.ball.charge_level = 0.0
+                        if True:
+                            self.ball.charge_level = min(100.0, getattr(self.ball, "charge_level", 0.0) + 10.0)
+                        if not hasattr(target, "charge_level"):
+                            target.charge_level = 0.0
+                        if True:
+                            target.charge_level = min(100.0, getattr(target, "charge_level", 0.0) + 5.0)
                         b_type = getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower()
                         if b_type == 'vampire':
                             dmg = getattr(self.ball, 'damage', 10.0)
@@ -1099,6 +1131,14 @@ class Action:
                         if attack_timer <= 0:
                             if hasattr(self.world, "_deal_damage"):
                                 self.world._deal_damage(self.ball, target_enemy)
+                                if not hasattr(self.ball, "charge_level"):
+                                    self.ball.charge_level = 0.0
+                                if True:
+                                    self.ball.charge_level = min(100.0, getattr(self.ball, "charge_level", 0.0) + 10.0)
+                                if not hasattr(target_enemy, "charge_level"):
+                                    target_enemy.charge_level = 0.0
+                                if True:
+                                    target_enemy.charge_level = min(100.0, getattr(target_enemy, "charge_level", 0.0) + 5.0)
                                 b_type = getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower()
                                 if b_type == 'vampire':
                                     dmg = getattr(self.ball, 'damage', 10.0)
@@ -1224,6 +1264,10 @@ class Action:
         skill_timer = getattr(self.ball, "skill_timer", 0.0)
         if skill_timer <= 0 and hasattr(self.ball, "use_skill"):
             self.ball.use_skill()
+            if getattr(self.ball, "charge_level", 0) >= 100:
+                self.ball.charge_level = 0
+                self.ball.base_damage = getattr(self.ball, "base_damage", getattr(self.ball, "damage", 10)) * 2
+                self.ball.damage = self.ball.base_damage
 
             skill_name = getattr(self.ball, "skill", getattr(self.ball, "SKILL", ""))
 
@@ -1425,6 +1469,14 @@ class Action:
                     is_enemy = getattr(other, "ball_type", "") != getattr(self.ball, "ball_type", "")
                     if is_enemy and hasattr(self.world, "_deal_damage"):
                         self.world._deal_damage(self.ball, other)
+                        if not hasattr(self.ball, "charge_level"):
+                            self.ball.charge_level = 0.0
+                        if True:
+                            self.ball.charge_level = min(100.0, getattr(self.ball, "charge_level", 0.0) + 10.0)
+                        if not hasattr(other, "charge_level"):
+                            other.charge_level = 0.0
+                        if True:
+                            other.charge_level = min(100.0, getattr(other, "charge_level", 0.0) + 5.0)
                         b_type = getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower()
                         if b_type == 'vampire':
                             dmg = getattr(self.ball, 'damage', 10.0)
@@ -1525,12 +1577,22 @@ class Action:
                     if hasattr(self.ball, "use_skill"):
                         self.ball.use_skill()
                     self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
+                    if getattr(self.ball, "charge_level", 0) >= 100:
+                        self.ball.charge_level = 0
 
             # Attack logic
             attack_cd_timer = getattr(self.ball, "attack_timer", 0.0)
             if attack_cd_timer <= 0:
                 if hasattr(self.world, "_deal_damage"):
                     self.world._deal_damage(self.ball, optimal_target)
+                    if not hasattr(self.ball, "charge_level"):
+                        self.ball.charge_level = 0.0
+                    if True:
+                        self.ball.charge_level = min(100.0, getattr(self.ball, "charge_level", 0.0) + 10.0)
+                    if not hasattr(optimal_target, "charge_level"):
+                        optimal_target.charge_level = 0.0
+                    if True:
+                        optimal_target.charge_level = min(100.0, getattr(optimal_target, "charge_level", 0.0) + 5.0)
                     b_type = getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower()
                     if b_type == 'vampire':
                         dmg = getattr(self.ball, 'damage', 10.0)
@@ -1598,6 +1660,14 @@ class Action:
                         if my_dist_sq < getattr(self.ball, "attack_range", 150.0)**2:
                             if hasattr(self.world, "_deal_damage"):
                                 self.world._deal_damage(self.ball, closest_enemy)
+                                if not hasattr(self.ball, "charge_level"):
+                                    self.ball.charge_level = 0.0
+                                if True:
+                                    self.ball.charge_level = min(100.0, getattr(self.ball, "charge_level", 0.0) + 10.0)
+                                if not hasattr(closest_enemy, "charge_level"):
+                                    closest_enemy.charge_level = 0.0
+                                if True:
+                                    closest_enemy.charge_level = min(100.0, getattr(closest_enemy, "charge_level", 0.0) + 5.0)
                                 b_type = getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower()
                                 if b_type == 'vampire':
                                     dmg = getattr(self.ball, 'damage', 10.0)
@@ -1664,6 +1734,14 @@ class Action:
                 if attack_cd_timer <= 0:
                     if hasattr(self.world, "_deal_damage"):
                         self.world._deal_damage(self.ball, target_enemy)
+                        if not hasattr(self.ball, "charge_level"):
+                            self.ball.charge_level = 0.0
+                        if True:
+                            self.ball.charge_level = min(100.0, getattr(self.ball, "charge_level", 0.0) + 10.0)
+                        if not hasattr(target_enemy, "charge_level"):
+                            target_enemy.charge_level = 0.0
+                        if True:
+                            target_enemy.charge_level = min(100.0, getattr(target_enemy, "charge_level", 0.0) + 5.0)
                         b_type = getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower()
                         if b_type == 'vampire':
                             dmg = getattr(self.ball, 'damage', 10.0)

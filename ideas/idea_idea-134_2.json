@@ -1,0 +1,4 @@
+{
+  "title": "King of the Hill Mode",
+  "description": "Add a new game mode where teams score points by maintaining position within a central moving zone. Balls will need entirely new AI prioritization to value zone presence over raw damage."
+}
