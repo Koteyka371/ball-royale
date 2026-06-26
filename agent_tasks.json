@@ -2692,6 +2692,38 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-156",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Necromancer ball type - raises minions",
+      "description": "A new ball type that can revive recently killed enemies as temporary weak minions to fight for it. Minions slowly decay in HP over time.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-157",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Poison Trap Hazard",
+      "description": "A new procedural hazard that applies a damage-over-time effect to any ball that passes through it, reducing their HP continuously for several ticks even after they leave the trap.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
