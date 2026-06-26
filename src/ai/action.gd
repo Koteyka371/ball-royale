@@ -2375,12 +2375,21 @@ func _kite(delta: float):
         var b_attack_range = 150.0
         if "attack_range" in self.ball: b_attack_range = self.ball.attack_range
 
+        var kite_ratio = 0.8
+        if "kite_ratio" in self.ball:
+            kite_ratio = self.ball.kite_ratio
+        if "traits" in self.ball:
+            if "Sniper" in self.ball.traits:
+                kite_ratio = 1.0
+            elif "Skirmisher" in self.ball.traits:
+                kite_ratio = 0.5
+
         if dist_sq > 0.0001:
             var nx = dx / actual_dist
             var ny = dy / actual_dist
             if actual_dist > b_attack_range:
                 pass
-            elif actual_dist < b_attack_range * 0.8:
+            elif actual_dist < b_attack_range * kite_ratio:
                 nx = -nx
                 ny = -ny
             else:
@@ -2397,7 +2406,7 @@ func _kite(delta: float):
                 ny = boid_vec[1]
 
                 var step: float = b_speed * delta * 60.0
-                if actual_dist < b_attack_range * 0.8:
+                if actual_dist < b_attack_range * kite_ratio:
                     self.ball.x += nx * step
                     self.ball.y += ny * step
                 elif actual_dist > b_attack_range:
@@ -2419,7 +2428,15 @@ func _kite(delta: float):
                 skill_timer = self.ball.skill_timer
 
             if skill_timer <= 0:
-                if dist_after < b_attack_range * 0.8:
+                var k_ratio = 0.8
+                if "kite_ratio" in self.ball:
+                    k_ratio = self.ball.kite_ratio
+                if "traits" in self.ball:
+                    if "Sniper" in self.ball.traits:
+                        k_ratio = 1.0
+                    elif "Skirmisher" in self.ball.traits:
+                        k_ratio = 0.5
+                if dist_after < b_attack_range * k_ratio:
                     if self.ball.has_method("use_skill"):
                         self.ball.use_skill()
                     var cd = 5.0

@@ -1551,10 +1551,18 @@ class Action:
             norm_x, norm_y = diff_x / actual_dist, diff_y / actual_dist
 
             ball_attack_range = getattr(self.ball, "attack_range", 150.0)
+            # Adjust kite distance based on traits if present
+            kite_ratio = getattr(self.ball, "kite_ratio", 0.8)
+            if hasattr(self.ball, "traits"):
+                if "Sniper" in self.ball.traits:
+                    kite_ratio = 1.0  # Max range
+                elif "Skirmisher" in self.ball.traits:
+                    kite_ratio = 0.5  # Kites closely
+
             if actual_dist > ball_attack_range:
                 # Approach target if out of range
                 pass
-            elif actual_dist < ball_attack_range * 0.8:
+            elif actual_dist < ball_attack_range * kite_ratio:
                 # Fall back if target is too close
                 norm_x, norm_y = -norm_x, -norm_y
             else:
@@ -1566,7 +1574,7 @@ class Action:
                 norm_x, norm_y = self._apply_boid_rules(norm_x, norm_y)
 
                 move_step = float(getattr(self.ball, "speed", 2.0)) * delta * 60.0
-                if actual_dist < ball_attack_range * 0.8:
+                if actual_dist < ball_attack_range * kite_ratio:
                     self.ball.x += norm_x * move_step
                     self.ball.y += norm_y * move_step
                 elif actual_dist > ball_attack_range:
@@ -1584,7 +1592,13 @@ class Action:
             # Skill usage logic when enemy is close
             skill_cd_timer = getattr(self.ball, "skill_timer", 0.0)
             if skill_cd_timer <= 0:
-                if dist_after < ball_attack_range * 0.8:
+                kite_ratio = getattr(self.ball, "kite_ratio", 0.8)
+                if hasattr(self.ball, "traits"):
+                    if "Sniper" in self.ball.traits:
+                        kite_ratio = 1.0
+                    elif "Skirmisher" in self.ball.traits:
+                        kite_ratio = 0.5
+                if dist_after < ball_attack_range * kite_ratio:
                     if hasattr(self.ball, "use_skill"):
                         self.ball.use_skill()
                     self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
