@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-133] Vampire Ball Type — *2026-06-26 03:44:24 UTC*
+
+A new ball type that heals itself for a percentage of the damage it deals to enemies. It has low base HP but high attack speed, making it dangerous in prolonged 1v1 fights but weak against burst damage or crowd control.
+
+---
+
 ## [idea-132] Night and Day Arena — *2026-06-25 22:35:17 UTC*
 
 An arena that cycles between day and night phases. During the day, vision is unlimited and attack power is slightly buffed. During the night, vision is severely restricted, but speed is increased and stealth behaviors become more effective. This forces balls to dynamically switch between aggressive and defensive tactics.
