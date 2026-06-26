@@ -1,0 +1,4 @@
+{
+  "title": "Weather Events System",
+  "description": "Introduce dynamic weather events (rain, snow, sandstorms) that occur periodically during a match, affecting ball physics such as movement speed, vision range, and attack accuracy."
+}
