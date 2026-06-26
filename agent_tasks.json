@@ -2788,6 +2788,38 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-162",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Portal Hazards",
+      "description": "Add a new hazard called Portal which instantly teleports a ball that touches it to a paired Portal location.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-163",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Healing Springs",
+      "description": "Add a new dynamic area called HealingSprings which works opposite to hazards: if a ball stays in this area, they slowly regenerate HP.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
