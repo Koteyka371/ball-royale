@@ -2820,6 +2820,38 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-164",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Team Allegiance Betrayal",
+      "description": "Add a new mechanic where specific ball types can manipulate enemies into temporarily betraying their own team, fighting alongside the manipulator for a short duration before returning to normal.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-165",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Events System",
+      "description": "Introduce dynamic weather events (rain, snow, sandstorms) that occur periodically during a match, affecting ball physics such as movement speed, vision range, and attack accuracy.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
