@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-138] Kiting Specializations — *2026-06-26 22:52:42 UTC*
+
+Add varying kite distances depending on specific ball traits, e.g. Sniper kites at max range while a Skirmisher kites closely.
+
+---
+
 ## [idea-137] Post-Match Death Heatmap Analytics — *2026-06-26 21:31:15 UTC*
 
 Generate visual heatmaps overlaid on the arena after a match concludes to show death densities and choke points. Technical implementation requires maintaining an array of `death_coordinates` during gameplay and passing this data to a Godot shader material that renders radial gradients onto a UI overlay texture.
