@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-137] Post-Match Death Heatmap Analytics — *2026-06-26 21:31:15 UTC*
+
+Generate visual heatmaps overlaid on the arena after a match concludes to show death densities and choke points. Technical implementation requires maintaining an array of `death_coordinates` during gameplay and passing this data to a Godot shader material that renders radial gradients onto a UI overlay texture.
+
+---
+
 ## [idea-136] Conveyor Belt Hazard — *2026-06-26 19:57:28 UTC*
 
 Introduce a dynamic environmental hazard that shifts balls in a specific vector direction without altering their internal velocity. Technical implementation requires adding a `ConveyorBelt` subclass to `ProceduralArena.Hazard` in `src/arena/arena_types.py` with `direction_vector` and `speed_magnitude` properties, applying positional offsets in the game tick physics loop.
