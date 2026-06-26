@@ -2,6 +2,12 @@ import random
 
 from arena.procedural_arena import ProceduralArena, Room, Hazard, Corridor
 
+class ConveyorBelt(Hazard):
+    def __init__(self, id: int, x: float, y: float, radius: float, damage: float, direction_vector: tuple[float, float], speed_magnitude: float):
+        super().__init__(id, x, y, radius, "conveyor_belt", damage)
+        self.direction_vector = direction_vector
+        self.speed_magnitude = speed_magnitude
+
 class CrossArena(ProceduralArena):
     def generate(self):
         self.rooms.clear()

@@ -69,6 +69,13 @@ class Action:
                         if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
                             hazard.last_updated_tick = current_tick
                             hazard.duration = getattr(hazard, "duration", 5.0) - delta
+                    elif hazard.kind == "conveyor_belt":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            self.ball.x += hazard.direction_vector[0] * hazard.speed_magnitude * delta
+                            self.ball.y += hazard.direction_vector[1] * hazard.speed_magnitude * delta
                     elif hazard.kind == "black_hole":
                         # Only update global state once per frame using the tick counter
                         current_tick = getattr(self.world, "tick", 0)

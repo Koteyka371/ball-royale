@@ -98,6 +98,13 @@ func execute(strategy: String, delta: float):
                         if hazard.has_meta("duration"):
                             dur = hazard.get_meta("duration")
                         hazard.set_meta("duration", dur - delta)
+                elif hazard.kind == "conveyor_belt":
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    if dist_sq < hazard.radius * hazard.radius:
+                        self.ball.x += hazard.direction_vector[0] * hazard.speed_magnitude * delta
+                        self.ball.y += hazard.direction_vector[1] * hazard.speed_magnitude * delta
                 elif hazard.kind == "black_hole":
                     var current_tick = 0
                     if "tick" in self.world:
