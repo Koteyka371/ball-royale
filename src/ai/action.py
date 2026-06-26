@@ -575,6 +575,10 @@ class Action:
             if attack_timer <= 0 and dist <= attack_range:
                 if hasattr(self.world, "_deal_damage"):
                     self.world._deal_damage(self.ball, target)
+                    b_type = getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower()
+                    if b_type == 'vampire':
+                        dmg = getattr(self.ball, 'damage', 10.0)
+                        self.ball.hp = min(getattr(self.ball, 'hp', 100.0) + dmg * 0.5, getattr(self.ball, 'max_hp', 100.0))
                     if hasattr(target, "id") and hasattr(self.ball, "id"):
                         # Ball Relationships - Balls remember each other
                         # Rivalry skill: attacked me before -> attack on sight
@@ -715,6 +719,10 @@ class Action:
 
                     if hasattr(self.world, "_deal_damage"):
                         self.world._deal_damage(self.ball, target)
+                        b_type = getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower()
+                        if b_type == 'vampire':
+                            dmg = getattr(self.ball, 'damage', 10.0)
+                            self.ball.hp = min(getattr(self.ball, 'hp', 100.0) + dmg * 0.5, getattr(self.ball, 'max_hp', 100.0))
                         if hasattr(target, "id") and hasattr(self.ball, "id"):
                             # Ball Relationships - Balls remember each other
                             # Rivalry skill: attacked me before -> attack on sight
@@ -808,6 +816,10 @@ class Action:
                     attack_timer = getattr(self.ball, "attack_timer", 0.0)
                     if attack_timer <= 0:
                         self.world._deal_damage(self.ball, target)
+                        b_type = getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower()
+                        if b_type == 'vampire':
+                            dmg = getattr(self.ball, 'damage', 10.0)
+                            self.ball.hp = min(getattr(self.ball, 'hp', 100.0) + dmg * 0.5, getattr(self.ball, 'max_hp', 100.0))
                         if hasattr(target, "id") and hasattr(self.ball, "id"):
                             # Ball Relationships - Balls remember each other
                             # Rivalry skill: attacked me before -> attack on sight
@@ -986,6 +998,10 @@ class Action:
 
                     if hasattr(self.world, "_deal_damage"):
                         self.world._deal_damage(self.ball, target)
+                        b_type = getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower()
+                        if b_type == 'vampire':
+                            dmg = getattr(self.ball, 'damage', 10.0)
+                            self.ball.hp = min(getattr(self.ball, 'hp', 100.0) + dmg * 0.5, getattr(self.ball, 'max_hp', 100.0))
                         if hasattr(target, "id") and hasattr(self.ball, "id"):
                             # Ball Relationships - Balls remember each other
                             # Rivalry skill: attacked me before -> attack on sight
@@ -1083,6 +1099,10 @@ class Action:
                         if attack_timer <= 0:
                             if hasattr(self.world, "_deal_damage"):
                                 self.world._deal_damage(self.ball, target_enemy)
+                                b_type = getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower()
+                                if b_type == 'vampire':
+                                    dmg = getattr(self.ball, 'damage', 10.0)
+                                    self.ball.hp = min(getattr(self.ball, 'hp', 100.0) + dmg * 0.5, getattr(self.ball, 'max_hp', 100.0))
                                 if hasattr(target_enemy, "id") and hasattr(self.ball, "id"):
                                     target_enemy.memory = getattr(target_enemy, "memory", {})
                                     # Ball Relationships - Balls remember each other
@@ -1405,6 +1425,10 @@ class Action:
                     is_enemy = getattr(other, "ball_type", "") != getattr(self.ball, "ball_type", "")
                     if is_enemy and hasattr(self.world, "_deal_damage"):
                         self.world._deal_damage(self.ball, other)
+                        b_type = getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower()
+                        if b_type == 'vampire':
+                            dmg = getattr(self.ball, 'damage', 10.0)
+                            self.ball.hp = min(getattr(self.ball, 'hp', 100.0) + dmg * 0.5, getattr(self.ball, 'max_hp', 100.0))
                         if hasattr(other, "id") and hasattr(self.ball, "id"):
                             # Ball Relationships - Balls remember each other
                             # Rivalry skill: attacked me before -> attack on sight
@@ -1507,6 +1531,10 @@ class Action:
             if attack_cd_timer <= 0:
                 if hasattr(self.world, "_deal_damage"):
                     self.world._deal_damage(self.ball, optimal_target)
+                    b_type = getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower()
+                    if b_type == 'vampire':
+                        dmg = getattr(self.ball, 'damage', 10.0)
+                        self.ball.hp = min(getattr(self.ball, 'hp', 100.0) + dmg * 0.5, getattr(self.ball, 'max_hp', 100.0))
                     if hasattr(optimal_target, "id") and hasattr(self.ball, "id"):
                         tgt_memory = getattr(optimal_target, "memory", {})
                         tgt_memory[self.ball.id] = {"relation": "rival"}
@@ -1570,6 +1598,10 @@ class Action:
                         if my_dist_sq < getattr(self.ball, "attack_range", 150.0)**2:
                             if hasattr(self.world, "_deal_damage"):
                                 self.world._deal_damage(self.ball, closest_enemy)
+                                b_type = getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower()
+                                if b_type == 'vampire':
+                                    dmg = getattr(self.ball, 'damage', 10.0)
+                                    self.ball.hp = min(getattr(self.ball, 'hp', 100.0) + dmg * 0.5, getattr(self.ball, 'max_hp', 100.0))
                             b_speed = getattr(self.ball, "speed", 2.0)
                             new_cooldown = max(0.2, 2.0 / b_speed if b_speed > 0 else 1.0)
                             self.ball.attack_timer = new_cooldown
@@ -1632,6 +1664,10 @@ class Action:
                 if attack_cd_timer <= 0:
                     if hasattr(self.world, "_deal_damage"):
                         self.world._deal_damage(self.ball, target_enemy)
+                        b_type = getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower()
+                        if b_type == 'vampire':
+                            dmg = getattr(self.ball, 'damage', 10.0)
+                            self.ball.hp = min(getattr(self.ball, 'hp', 100.0) + dmg * 0.5, getattr(self.ball, 'max_hp', 100.0))
                     b_speed = getattr(self.ball, "speed", 2.0)
                     new_cooldown = max(0.2, 2.0 / b_speed if b_speed > 0 else 1.0)
                     self.ball.attack_timer = new_cooldown
