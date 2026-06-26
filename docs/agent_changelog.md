@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-135] Mimic Ball Type — *2026-06-26 15:52:35 UTC*
+
+A unique ball that starts with average stats and no skill. Upon killing an enemy or staying near them for a certain duration, it permanently copies the enemy's skill and slightly adjusts its stats to match. The Mimic's strategy is to survive early and hunt down high-value targets to copy their abilities.
+
+---
+
 ## [idea-134] Ultimate Charge Resource — *2026-06-26 11:06:38 UTC*
 
 Add a new class-specific resource called 'charge' that builds up when dealing or receiving damage, enabling a powerful ultimate skill once full. Technical implementation involves adding a `charge_level` state to the ball entity and updating the action scoring logic within `src/ai/decision.py` to dramatically increase the score for 'use_skill' when `charge_level >= 100`.
