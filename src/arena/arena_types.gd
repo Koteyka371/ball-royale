@@ -1,6 +1,16 @@
 class_name ArenaTypes
 extends RefCounted
 
+class ConveyorBelt extends ProceduralArena.Hazard:
+    var direction_vector: Array
+    var speed_magnitude: float
+
+    func _init(_id: int, _x: float, _y: float, _radius: float, _damage: float, _dir_vec: Array, _speed: float):
+        super(_id, _x, _y, _radius, "conveyor_belt", _damage)
+        direction_vector = _dir_vec
+        speed_magnitude = _speed
+
+
 class FunnyFailsArena extends ProceduralArena:
 	func generate():
 		rooms.clear()
