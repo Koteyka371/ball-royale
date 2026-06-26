@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-136] Conveyor Belt Hazard — *2026-06-26 19:57:28 UTC*
+
+Introduce a dynamic environmental hazard that shifts balls in a specific vector direction without altering their internal velocity. Technical implementation requires adding a `ConveyorBelt` subclass to `ProceduralArena.Hazard` in `src/arena/arena_types.py` with `direction_vector` and `speed_magnitude` properties, applying positional offsets in the game tick physics loop.
+
+---
+
 ## [idea-135] Mimic Ball Type — *2026-06-26 15:52:35 UTC*
 
 A unique ball that starts with average stats and no skill. Upon killing an enemy or staying near them for a certain duration, it permanently copies the enemy's skill and slightly adjusts its stats to match. The Mimic's strategy is to survive early and hunt down high-value targets to copy their abilities.
