@@ -1,0 +1,4 @@
+{
+  "title": "Necromancer ball type - raises minions",
+  "description": "A new ball type that can revive recently killed enemies as temporary weak minions to fight for it. Minions slowly decay in HP over time."
+}

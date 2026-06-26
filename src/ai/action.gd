@@ -860,6 +860,14 @@ func _group_attack(delta: float):
         if attack_timer <= 0.0 and dist <= attack_range:
             if self.world != null and self.world.has_method("_deal_damage"):
                 self.world._deal_damage(self.ball, target)
+                var b_type_vamp1 = ""
+                if "ball_type" in self.ball:
+                    b_type_vamp1 = str(self.ball.ball_type).to_lower()
+                if b_type_vamp1 == "vampire":
+                    var dmg_vamp1 = 10.0
+                    if "damage" in self.ball: dmg_vamp1 = float(self.ball.damage)
+                    if "hp" in self.ball and "max_hp" in self.ball:
+                        self.ball.hp = min(self.ball.hp + dmg_vamp1 * 0.5, self.ball.max_hp)
 
                 if "id" in target and "id" in self.ball:
                     var target_memory = {}
@@ -1091,6 +1099,14 @@ func _flank(delta: float):
 
                 if self.world != null and self.world.has_method("_deal_damage"):
                     self.world._deal_damage(self.ball, target)
+                    var b_type_vamp1 = ""
+                    if "ball_type" in self.ball:
+                        b_type_vamp1 = str(self.ball.ball_type).to_lower()
+                    if b_type_vamp1 == "vampire":
+                        var dmg_vamp1 = 10.0
+                        if "damage" in self.ball: dmg_vamp1 = float(self.ball.damage)
+                        if "hp" in self.ball and "max_hp" in self.ball:
+                            self.ball.hp = min(self.ball.hp + dmg_vamp1 * 0.5, self.ball.max_hp)
                     if "id" in target and "id" in self.ball:
                         var mem = {}
                         if target.has_method("get_meta") and target.has_meta("memory"):
@@ -1227,6 +1243,14 @@ func _chase(delta: float):
             if attack_timer <= 0:
                 if self.world != null and self.world.has_method("_deal_damage"):
                     self.world._deal_damage(self.ball, target)
+                    var b_type_vamp1 = ""
+                    if "ball_type" in self.ball:
+                        b_type_vamp1 = str(self.ball.ball_type).to_lower()
+                    if b_type_vamp1 == "vampire":
+                        var dmg_vamp1 = 10.0
+                        if "damage" in self.ball: dmg_vamp1 = float(self.ball.damage)
+                        if "hp" in self.ball and "max_hp" in self.ball:
+                            self.ball.hp = min(self.ball.hp + dmg_vamp1 * 0.5, self.ball.max_hp)
                     if "id" in target and "id" in self.ball:
                         var mem = {}
                         if target.has_method("get_meta") and target.has_meta("memory"):
@@ -1513,6 +1537,14 @@ func _attack(delta: float):
 
                 if self.world != null and self.world.has_method("_deal_damage"):
                     self.world._deal_damage(self.ball, target)
+                    var b_type_vamp1 = ""
+                    if "ball_type" in self.ball:
+                        b_type_vamp1 = str(self.ball.ball_type).to_lower()
+                    if b_type_vamp1 == "vampire":
+                        var dmg_vamp1 = 10.0
+                        if "damage" in self.ball: dmg_vamp1 = float(self.ball.damage)
+                        if "hp" in self.ball and "max_hp" in self.ball:
+                            self.ball.hp = min(self.ball.hp + dmg_vamp1 * 0.5, self.ball.max_hp)
                     if "id" in target and "id" in self.ball:
                         var mem = {}
                         if target.has_method("get_meta") and target.has_meta("memory"):
@@ -1643,6 +1675,14 @@ func _defend(delta: float):
                 if attack_timer <= 0:
                     if self.world != null and self.world.has_method("_deal_damage"):
                         self.world._deal_damage(self.ball, target)
+                        var b_type_vamp1 = ""
+                        if "ball_type" in self.ball:
+                            b_type_vamp1 = str(self.ball.ball_type).to_lower()
+                        if b_type_vamp1 == "vampire":
+                            var dmg_vamp1 = 10.0
+                            if "damage" in self.ball: dmg_vamp1 = float(self.ball.damage)
+                            if "hp" in self.ball and "max_hp" in self.ball:
+                                self.ball.hp = min(self.ball.hp + dmg_vamp1 * 0.5, self.ball.max_hp)
                         if "id" in target and "id" in self.ball:
                             var mem = {}
                             if target.has_method("get_meta") and target.has_meta("memory"):
@@ -2140,6 +2180,14 @@ func _trigger_ripple_effect():
 
                 if is_enemy and self.world != null and self.world.has_method("_deal_damage"):
                     self.world._deal_damage(self.ball, other)
+                    var b_type_vamp1 = ""
+                    if "ball_type" in self.ball:
+                        b_type_vamp1 = str(self.ball.ball_type).to_lower()
+                    if b_type_vamp1 == "vampire":
+                        var dmg_vamp1 = 10.0
+                        if "damage" in self.ball: dmg_vamp1 = float(self.ball.damage)
+                        if "hp" in self.ball and "max_hp" in self.ball:
+                            self.ball.hp = min(self.ball.hp + dmg_vamp1 * 0.5, self.ball.max_hp)
                     if "id" in other and "id" in self.ball:
                         var mem = {}
                         if other.has_method("get_meta") and other.has_meta("memory"):
@@ -2287,6 +2335,14 @@ func _kite(delta: float):
             if attack_timer <= 0:
                 if self.world != null and self.world.has_method("_deal_damage"):
                     self.world._deal_damage(self.ball, optimal_target)
+                    var b_type_vamp1 = ""
+                    if "ball_type" in self.ball:
+                        b_type_vamp1 = str(self.ball.ball_type).to_lower()
+                    if b_type_vamp1 == "vampire":
+                        var dmg_vamp1 = 10.0
+                        if "damage" in self.ball: dmg_vamp1 = float(self.ball.damage)
+                        if "hp" in self.ball and "max_hp" in self.ball:
+                            self.ball.hp = min(self.ball.hp + dmg_vamp1 * 0.5, self.ball.max_hp)
                     if "id" in optimal_target and "id" in self.ball:
                         var mem = {}
                         if optimal_target.has_method("get_meta") and optimal_target.has_meta("memory"):
@@ -2379,6 +2435,14 @@ func _escort(delta: float) -> void:
                     if my_dist < atk_range * atk_range:
                         if world.has_method("_deal_damage"):
                             world._deal_damage(ball, closest_enemy)
+                            var b_type_vamp2 = ""
+                            if "ball_type" in ball:
+                                b_type_vamp2 = str(ball.ball_type).to_lower()
+                            if b_type_vamp2 == "vampire":
+                                var dmg_vamp2 = 10.0
+                                if "damage" in ball: dmg_vamp2 = float(ball.damage)
+                                if "hp" in ball and "max_hp" in ball:
+                                    ball.hp = min(ball.hp + dmg_vamp2 * 0.5, ball.max_hp)
                         var s_speed = 2.0
                         if "speed" in ball:
                             s_speed = ball.speed
@@ -2455,6 +2519,14 @@ func _intercept(delta: float) -> void:
             if attack_timer <= 0.0:
                 if world.has_method("_deal_damage"):
                     world._deal_damage(ball, target_enemy)
+                    var b_type_vamp2 = ""
+                    if "ball_type" in ball:
+                        b_type_vamp2 = str(ball.ball_type).to_lower()
+                    if b_type_vamp2 == "vampire":
+                        var dmg_vamp2 = 10.0
+                        if "damage" in ball: dmg_vamp2 = float(ball.damage)
+                        if "hp" in ball and "max_hp" in ball:
+                            ball.hp = min(ball.hp + dmg_vamp2 * 0.5, ball.max_hp)
                 var s_speed = 2.0
                 if "speed" in ball:
                     s_speed = ball.speed

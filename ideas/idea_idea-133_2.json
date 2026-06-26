@@ -1,0 +1,4 @@
+{
+  "title": "Poison Trap Hazard",
+  "description": "A new procedural hazard that applies a damage-over-time effect to any ball that passes through it, reducing their HP continuously for several ticks even after they leave the trap."
+}
