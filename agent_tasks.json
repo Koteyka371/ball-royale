@@ -2756,6 +2756,38 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-160",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Events",
+      "description": "Introduce random weather events (e.g. rain, snow, sandstorm) that dynamically affect arena hazards and ball visibility, forcing AI to adapt on the fly.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-161",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Team Objectives",
+      "description": "Add capture points or secondary objectives that reward surviving teams with global buffs, encouraging teamwork over pure deathmatch behavior.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
