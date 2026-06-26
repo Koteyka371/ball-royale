@@ -290,6 +290,7 @@ class BattleSimulation:
         self.tick = 0
         self.use_neural = use_neural
         self.kill_log: List[Dict[str, Any]] = []
+        self.death_coordinates: List[Dict[str, float]] = []
         self.stats: Dict[str, Any] = {
             "ticks": 0, "total_kills": 0, "survivors": 0, "winner": None,
             "battle_duration": 0.0, "actions_performed": Counter(),
@@ -424,6 +425,7 @@ class BattleSimulation:
 
             if hasattr(attacker, 'notify_kill'):
                 attacker.notify_kill(target)
+            self.death_coordinates.append({"x": target.x, "y": target.y})
             self.kill_log.append({
                 "tick": self.tick, "killer_id": attacker.id,
                 "killer_type": attacker.ball_type,
@@ -565,6 +567,16 @@ class BattleSimulation:
                 overlay.update([{"id": b.id, "type": b.ball_type, "hp": b.hp, "kills": kills_by_id.get(b.id, 0)} for b in self.balls])
                 for line in overlay.format_text().split("\n"):
                     print(f"  [UI] {line}")
+                print("\n" + "="*60)
+                print("  UI HEATMAP OVERLAY PREVIEW")
+                print("="*60)
+                try:
+                    from ui.heatmap.heatmap import HeatmapOverlay
+                    heatmap = HeatmapOverlay()
+                    heatmap.update(self.death_coordinates)
+                    heatmap.render_to_console()
+                except ImportError:
+                    pass
             except ImportError:
                 pass
 
@@ -710,6 +722,7 @@ if __name__ == "__main__":
             },
             "ball_types": BALL_TYPES,
             "kill_log": sim.kill_log,
+            "death_coordinates": sim.death_coordinates,
             "history": sim.history,
             "highlights": highlights
         }
