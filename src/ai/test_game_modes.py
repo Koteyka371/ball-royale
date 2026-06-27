@@ -152,3 +152,49 @@ def test_survival_mode():
     balls[2].alive = False
     balls[3].alive = False
     assert mode.check_winner(world, balls) == "Enemies"
+
+
+def test_vampire_royale_mode():
+    from ai.game_modes import VampireRoyaleMode
+    mode = VampireRoyaleMode()
+    class MBall:
+        def __init__(self, id, hp, btype):
+            self.id = id
+            self.hp = hp
+            self.max_hp = 100
+            self.ball_type = btype
+            self.alive = True
+            self.team = btype
+
+    b1 = MBall(1, 100, "warrior")
+    b2 = MBall(2, 100, "tank")
+    b3 = MBall(3, 100, "sniper")
+
+    balls = [b1, b2, b3]
+    world = MockWorld()
+
+    mode.setup(world, balls)
+    mode.tick(world, balls, delta=1.0) # lose 5 HP
+
+    assert b1.hp == 95
+    assert b2.hp == 95
+    assert b3.hp == 95
+
+    # 20 ticks = 100 HP loss
+    for _ in range(19):
+        mode.tick(world, balls, delta=1.0)
+
+    assert b1.hp == 0
+    assert not b1.alive
+    assert b2.hp == 0
+    assert not b2.alive
+    assert b3.hp == 0
+    assert not b3.alive
+
+    # One survives
+    b4 = MBall(4, 100, "warrior")
+    balls = [b4]
+    mode.setup(world, balls)
+
+    winner = mode.check_winner(world, balls)
+    assert winner == "warrior"

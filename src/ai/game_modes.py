@@ -10,6 +10,10 @@ class GameMode:
         """Called at the start of the battle to initialize mode-specific rules/teams."""
         pass
 
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        pass
+
+
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         """Called every tick to check if there is a winner. Returns winner name or None."""
         return None
@@ -101,7 +105,7 @@ class ZombieInfectionMode(GameMode):
                     else:
                         b.team = "Survivor"
 
-    def tick(self, world: Any, balls: List[Any]) -> None:
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         survivors = [b for b in balls if getattr(b, "team", "") == "Survivor"]
         for survivor in survivors:
             if not getattr(survivor, "alive", False):
@@ -298,7 +302,42 @@ class EvolutionarySimulationMode(GameMode):
 
         return None
 
+
+class VampireRoyaleMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Vampire Royale"
+        self.description = "All balls slowly lose HP over time but regain HP when dealing damage. Last one standing wins."
+        self.tick_timer = 0.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        self.tick_timer += delta
+        if self.tick_timer >= 1.0:
+            self.tick_timer = 0.0
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                    b.hp = max(0, getattr(b, "hp", 100) - 5.0)
+                    if b.hp <= 0:
+                        b.alive = False
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
+        if len(teams_alive) == 1:
+            if hasattr(self, '_award_skill_points'): self._award_skill_points()
+            return list(teams_alive)[0]
+
+        if len(alive) == 1:
+            if hasattr(self, '_award_skill_points'): self._award_skill_points()
+            return alive[0].ball_type
+
+        return None
+
 GAME_MODES = {
+    "vampire_royale": VampireRoyaleMode(),
     "battle_royale": BattleRoyaleMode(),
     "team_deathmatch": TeamDeathmatchMode(),
     "zombie_infection": ZombieInfectionMode(),

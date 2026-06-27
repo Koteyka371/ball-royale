@@ -940,6 +940,11 @@ func _group_attack(delta: float):
                     if "damage" in self.ball: dmg_vamp1 = float(self.ball.damage)
                     if "hp" in self.ball and "max_hp" in self.ball:
                         self.ball.hp = min(self.ball.hp + dmg_vamp1 * 0.5, self.ball.max_hp)
+                if "current_mode_name" in world and world.current_mode_name == "Vampire Royale":
+                    var dmg_vamp_mode = 10.0
+                    if "damage" in self.ball: dmg_vamp_mode = float(self.ball.damage)
+                    if "hp" in self.ball and "max_hp" in self.ball:
+                        self.ball.hp = min(self.ball.hp + dmg_vamp_mode * 2.0, self.ball.max_hp)
 
                 if "id" in target and "id" in self.ball:
                     var target_memory = {}
@@ -1196,6 +1201,11 @@ func _flank(delta: float):
                         if "damage" in self.ball: dmg_vamp1 = float(self.ball.damage)
                         if "hp" in self.ball and "max_hp" in self.ball:
                             self.ball.hp = min(self.ball.hp + dmg_vamp1 * 0.5, self.ball.max_hp)
+                    if "current_mode_name" in world and world.current_mode_name == "Vampire Royale":
+                        var dmg_vamp_mode = 10.0
+                        if "damage" in self.ball: dmg_vamp_mode = float(self.ball.damage)
+                        if "hp" in self.ball and "max_hp" in self.ball:
+                            self.ball.hp = min(self.ball.hp + dmg_vamp_mode * 2.0, self.ball.max_hp)
                     if "id" in target and "id" in self.ball:
                         var mem = {}
                         if target.has_method("get_meta") and target.has_meta("memory"):
@@ -1362,6 +1372,11 @@ func _chase(delta: float):
                         if "damage" in self.ball: dmg_vamp1 = float(self.ball.damage)
                         if "hp" in self.ball and "max_hp" in self.ball:
                             self.ball.hp = min(self.ball.hp + dmg_vamp1 * 0.5, self.ball.max_hp)
+                    if "current_mode_name" in world and world.current_mode_name == "Vampire Royale":
+                        var dmg_vamp_mode = 10.0
+                        if "damage" in self.ball: dmg_vamp_mode = float(self.ball.damage)
+                        if "hp" in self.ball and "max_hp" in self.ball:
+                            self.ball.hp = min(self.ball.hp + dmg_vamp_mode * 2.0, self.ball.max_hp)
                     if "id" in target and "id" in self.ball:
                         var mem = {}
                         if target.has_method("get_meta") and target.has_meta("memory"):
@@ -1678,6 +1693,11 @@ func _attack(delta: float):
                         if "damage" in self.ball: dmg_vamp1 = float(self.ball.damage)
                         if "hp" in self.ball and "max_hp" in self.ball:
                             self.ball.hp = min(self.ball.hp + dmg_vamp1 * 0.5, self.ball.max_hp)
+                    if "current_mode_name" in world and world.current_mode_name == "Vampire Royale":
+                        var dmg_vamp_mode = 10.0
+                        if "damage" in self.ball: dmg_vamp_mode = float(self.ball.damage)
+                        if "hp" in self.ball and "max_hp" in self.ball:
+                            self.ball.hp = min(self.ball.hp + dmg_vamp_mode * 2.0, self.ball.max_hp)
                     if "id" in target and "id" in self.ball:
                         var mem = {}
                         if target.has_method("get_meta") and target.has_meta("memory"):
@@ -2392,6 +2412,11 @@ func _trigger_ripple_effect():
                         if "damage" in self.ball: dmg_vamp1 = float(self.ball.damage)
                         if "hp" in self.ball and "max_hp" in self.ball:
                             self.ball.hp = min(self.ball.hp + dmg_vamp1 * 0.5, self.ball.max_hp)
+                    if "current_mode_name" in world and world.current_mode_name == "Vampire Royale":
+                        var dmg_vamp_mode = 10.0
+                        if "damage" in self.ball: dmg_vamp_mode = float(self.ball.damage)
+                        if "hp" in self.ball and "max_hp" in self.ball:
+                            self.ball.hp = min(self.ball.hp + dmg_vamp_mode * 2.0, self.ball.max_hp)
                     if "id" in other and "id" in self.ball:
                         var mem = {}
                         if other.has_method("get_meta") and other.has_meta("memory"):
@@ -2624,6 +2649,11 @@ func _kite(delta: float):
                         if "damage" in self.ball: dmg_vamp1 = float(self.ball.damage)
                         if "hp" in self.ball and "max_hp" in self.ball:
                             self.ball.hp = min(self.ball.hp + dmg_vamp1 * 0.5, self.ball.max_hp)
+                    if "current_mode_name" in world and world.current_mode_name == "Vampire Royale":
+                        var dmg_vamp_mode = 10.0
+                        if "damage" in self.ball: dmg_vamp_mode = float(self.ball.damage)
+                        if "hp" in self.ball and "max_hp" in self.ball:
+                            self.ball.hp = min(self.ball.hp + dmg_vamp_mode * 2.0, self.ball.max_hp)
                     if "id" in optimal_target and "id" in self.ball:
                         var mem = {}
                         if optimal_target.has_method("get_meta") and optimal_target.has_meta("memory"):
@@ -2746,6 +2776,11 @@ func _escort(delta: float) -> void:
                                 if "damage" in ball: dmg_vamp2 = float(ball.damage)
                                 if "hp" in ball and "max_hp" in ball:
                                     ball.hp = min(ball.hp + dmg_vamp2 * 0.5, ball.max_hp)
+                            if "current_mode_name" in world and world.current_mode_name == "Vampire Royale":
+                                var dmg_vamp_mode = 10.0
+                                if "damage" in ball: dmg_vamp_mode = float(ball.damage)
+                                if "hp" in ball and "max_hp" in ball:
+                                    ball.hp = min(ball.hp + dmg_vamp_mode * 2.0, ball.max_hp)
                         var s_speed = 2.0
                         if "speed" in ball:
                             s_speed = ball.speed
@@ -2842,6 +2877,11 @@ func _intercept(delta: float) -> void:
                         if "damage" in ball: dmg_vamp2 = float(ball.damage)
                         if "hp" in ball and "max_hp" in ball:
                             ball.hp = min(ball.hp + dmg_vamp2 * 0.5, ball.max_hp)
+                    if "current_mode_name" in world and world.current_mode_name == "Vampire Royale":
+                        var dmg_vamp_mode = 10.0
+                        if "damage" in ball: dmg_vamp_mode = float(ball.damage)
+                        if "hp" in ball and "max_hp" in ball:
+                            ball.hp = min(ball.hp + dmg_vamp_mode * 2.0, ball.max_hp)
                 var s_speed = 2.0
                 if "speed" in ball:
                     s_speed = ball.speed
