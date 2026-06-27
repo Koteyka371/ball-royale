@@ -79,10 +79,9 @@ class Neural:
     PERCEPTION_RADIUS = 300
     AGGRESSION = 0.5
     COLOR = "purple"
-    SKILL = "numpy"
     SKILL_COOLDOWN = 4.0
 
-    def __init__(self, ball_id: int, x: float = 0.0, y: float = 0.0):
+    def __init__(self, ball_id: int, x: float = 0.0, y: float = 0.0, skill: str = None):
         self.id = ball_id
         self.hp = float(self.HP)
         self.max_hp = float(self.HP)
@@ -93,6 +92,7 @@ class Neural:
         self.first_hit_taken = False
         self.current_action = "idle"
         self.skill_timer = 0.0
+        self.SKILL = skill if skill else random.choice(["dash", "shield", "heal"])
         self.personality = Personality("analytical")
 
         # Neural Network architecture
@@ -146,31 +146,11 @@ class Neural:
 
     def use_skill(self) -> bool:
         """
-        Executes the numpy skill.
-        Runs the neural network forward pass to decide the next action.
+        Sets the current action to use the equipped skill.
         """
         if self.skill_timer <= 0:
             self.skill_timer = self.SKILL_COOLDOWN
-
-            # Prepare inputs
-            inputs = NumpyArray([
-                self.get_hp_percent(),
-                self.AGGRESSION,
-                float(self.kills),
-                self.skill_timer
-            ])
-
-            # Forward pass: Hidden layer with ReLU
-            hidden = (inputs.dot(self.hidden_weights) + self.hidden_biases).relu()
-
-            # Output layer (Logits)
-            outputs = hidden.dot(self.output_weights) + self.output_biases
-
-            # Choose action
-            action_idx = outputs.argmax()
-            actions = ["attack", "flee", "idle", "defend"]
-            self.current_action = actions[action_idx]
-
+            self.current_action = "use_skill"
             return True
         return False
 

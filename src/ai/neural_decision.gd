@@ -77,6 +77,12 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
                         if d < val:
                             val = d
             inputs.append(val)
+        elif input_name == "skill_dash":
+            inputs.append(1.0 if ("SKILL" in self.ball and self.ball.SKILL == "dash") else 0.0)
+        elif input_name == "skill_shield":
+            inputs.append(1.0 if ("SKILL" in self.ball and self.ball.SKILL == "shield") else 0.0)
+        elif input_name == "skill_heal":
+            inputs.append(1.0 if ("SKILL" in self.ball and self.ball.SKILL == "heal") else 0.0)
         else:
             inputs.append(0.0)
 

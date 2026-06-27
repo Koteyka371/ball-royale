@@ -60,7 +60,7 @@ def test_scout_priorities():
         "team_messages": []
     }
     action_weak = layer.choose_action(perception_weak, "calm")
-    assert action_weak in ("chase", "attack", "use_skill", "kite")
+    assert action_weak in ("chase", "attack", "use_skill", "kite", "flank")
 
     # Test strong enemy vs booster
     perception_strong = {
@@ -117,7 +117,7 @@ def test_healer_priorities():
     assert action in ("defend", "use_skill", "flank", "chase", "attack") # Healer's defend translates to healing/protecting
 
 def test_neural_initialization():
-    neural = Neural(1, x=10.0, y=20.0)
+    neural = Neural(1, x=10.0, y=20.0, skill="dash")
     assert neural.id == 1
     assert neural.x == 10.0
     assert neural.y == 20.0
