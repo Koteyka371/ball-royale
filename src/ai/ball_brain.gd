@@ -20,6 +20,18 @@ var _current_decision = "idle"
 func _init(ball_ref, world_ref):
     self.ball = ball_ref
     self.world = world_ref
+
+    var pm = ProfileManager.new()
+    if "bonus_hp" in pm.data.get("bonuses", {}):
+        if "max_hp" in self.ball:
+            self.ball.max_hp += pm.data["bonuses"]["bonus_hp"] * 10
+            self.ball.hp = self.ball.max_hp
+    if "bonus_speed" in pm.data.get("bonuses", {}):
+        if "speed" in self.ball:
+            self.ball.speed += pm.data["bonuses"]["bonus_speed"] * 5
+    if "bonus_damage" in pm.data.get("bonuses", {}):
+        if "damage" in self.ball:
+            self.ball.damage += pm.data["bonuses"]["bonus_damage"] * 2
     self.perception_layer = Perception.new(self.ball, self.world)
     self.emotion_layer = EmotionLayer.new(self.ball, self.world)
     self.decision_layer = DecisionLayer.new(self.ball, self.world)

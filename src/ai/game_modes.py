@@ -32,20 +32,32 @@ class BattleRoyaleMode(GameMode):
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
         if not alive:
+            self._award_skill_points()
             return "Draw"
 
         teams_alive = set(b.team for b in alive if hasattr(b, "team"))
         if not teams_alive:
              types_alive = set(b.ball_type for b in alive)
              if len(types_alive) == 1:
+                 self._award_skill_points()
                  return list(types_alive)[0]
         elif len(teams_alive) == 1:
+            self._award_skill_points()
             return list(teams_alive)[0]
 
         if len(alive) == 1:
+            self._award_skill_points()
             return alive[0].ball_type
 
         return None
+
+    def _award_skill_points(self):
+        try:
+            from system.profile import ProfileManager
+            pm = ProfileManager("profile.json")
+            pm.add_skill_points(10)
+        except Exception:
+            pass
 
 class TeamDeathmatchMode(GameMode):
     def __init__(self):

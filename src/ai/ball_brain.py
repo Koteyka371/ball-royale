@@ -16,6 +16,22 @@ class BallBrain:
     def __init__(self, ball: Any, world: Any):
         self.ball = ball
         self.world = world
+
+        # Apply profile bonuses directly to the ball's stats upon creation
+        try:
+            from system.profile import ProfileManager
+            pm = ProfileManager("profile.json")
+            if "bonus_hp" in pm.data.get("bonuses", {}):
+                hp_percent = self.ball.hp / self.ball.max_hp if self.ball.max_hp > 0 else 1.0
+                self.ball.max_hp += pm.data["bonuses"]["bonus_hp"] * 10
+                self.ball.hp = self.ball.max_hp * hp_percent
+            if "bonus_speed" in pm.data.get("bonuses", {}):
+                self.ball.speed += pm.data["bonuses"]["bonus_speed"] * 5
+            if "bonus_damage" in pm.data.get("bonuses", {}):
+                self.ball.damage += pm.data["bonuses"]["bonus_damage"] * 2
+        except Exception as e:
+            # print(f"Error applying profile bonuses: {e}")
+            pass
         self.perception_layer = Perception(self.ball, self.world)
         self.emotion_layer = Emotion(self.ball, self.world)
         self.decision_layer = Decision(self.ball, self.world)
