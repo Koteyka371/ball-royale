@@ -347,6 +347,35 @@ class CaptureTheFlagMode extends GameMode:
 
         return null
 
+
+class EvolutionarySimulationMode extends GameMode:
+    func _init() -> void:
+        name = "Evolutionary Simulation"
+        description = "Only Neural Balls compete. After the match, a genetic algorithm breeds top performers."
+
+    func setup(world, balls: Array) -> void:
+        for i in range(balls.size()):
+            var b = balls[i]
+            if b.ball_type != "spectator":
+                b.ball_type = "neural"
+                b.team = "Neural_" + str(i)
+
+    func check_winner(world, balls: Array):
+        var alive = []
+        for b in balls:
+            if b.alive and b.ball_type != "spectator":
+                alive.append(b)
+
+        if alive.size() == 0:
+            return "Draw"
+
+        if alive.size() == 1:
+            if "team" in alive[0]:
+                return alive[0].team
+            return alive[0].ball_type
+
+        return null
+
 var GAME_MODES = {
     "battle_royale": BattleRoyaleMode.new(),
     "team_deathmatch": TeamDeathmatchMode.new(),
@@ -354,5 +383,6 @@ var GAME_MODES = {
     "boss_fight": BossFightMode.new(),
     "vip_defense": VIPDefenseMode.new(),
     "survival": SurvivalMode.new(),
-    "capture_the_flag": CaptureTheFlagMode.new()
+    "capture_the_flag": CaptureTheFlagMode.new(),
+    "evolutionary_simulation": EvolutionarySimulationMode.new()
 }
