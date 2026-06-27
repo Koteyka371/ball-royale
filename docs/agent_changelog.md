@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-170] Neural Skill Customization — *2026-06-27 17:12:11 UTC*
+
+Instead of a static skill like 'numpy', let the neural ball choose from a variety of skills (Dash, Shield, Heal) prior to battle, and provide the chosen skill as an input to the neural network so the network learns to adapt its playstyle according to the equipped skill.
+
+---
+
 ## [idea-172] Skill Tree Meta-Progression — *2026-06-27 14:27:26 UTC*
 
 Players earn skill points across matches to unlock passive bonuses or new types of balls permanently for their profile.
