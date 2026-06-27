@@ -29,6 +29,11 @@ class Action:
             else:
                 self.ball.speed = self.ball.base_speed
                 self.ball.damage = self.ball.base_damage * 1.2
+        else:
+            self.ball.speed = self.ball.base_speed
+
+        if getattr(self.ball, "stutter_timer", 0.0) > 0.0:
+            self.ball.speed = 0.01  # almost stopped to simulate pause
         if strategy == "target_weak":
             self._target_weak(delta)
             self._update_skill_timer(delta)
@@ -629,6 +634,8 @@ class Action:
                 speed = getattr(self.ball, "speed", 2.0)
                 cooldown = max(0.2, 2.0 / speed if speed > 0 else 1.0)
                 self.ball.attack_timer = cooldown
+                if cooldown >= 0.8:
+                    self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
         else:
             self._idle(delta)
 
@@ -786,6 +793,8 @@ class Action:
                     speed = getattr(self.ball, "speed", 2.0)
                     cooldown = max(0.2, 2.0 / speed if speed > 0 else 1.0)
                     self.ball.attack_timer = cooldown
+                    if cooldown >= 0.8:
+                        self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
         else:
             self._idle(delta)
 
@@ -884,6 +893,8 @@ class Action:
                             target_mem[self.ball.id] = {"relation": "rival"}
                             target.memory = target_mem
                         self.ball.attack_timer = max(0.2, 2.0 / getattr(self.ball, "speed", 2.0))
+                        if self.ball.attack_timer >= 0.8:
+                            self.ball.stutter_timer = min(self.ball.attack_timer * 0.4, 0.4)
                 return
         else:
             if dist_to_target > 0.01:
@@ -1085,6 +1096,8 @@ class Action:
                         speed = getattr(self.ball, "speed", 2.0)
                         cooldown = max(0.2, 2.0 / speed if speed > 0 else 1.0)
                     self.ball.attack_timer = cooldown
+                    if cooldown >= 0.8:
+                        self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
         else:
             self._idle(delta)
 
@@ -1189,6 +1202,8 @@ class Action:
                                 speed = getattr(self.ball, "speed", 2.0)
                                 cooldown = max(0.2, 2.0 / speed if speed > 0 else 1.0)
                             self.ball.attack_timer = cooldown
+                            if cooldown >= 0.8:
+                                self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
                 return
         elif personality in ("healer", "leader", "caring"):
             allies = self._get_allies()
@@ -1245,6 +1260,8 @@ class Action:
                             speed = getattr(self.ball, "speed", 2.0)
                             cooldown = max(0.2, 2.0 / speed if speed > 0 else 1.0)
                         self.ball.attack_timer = cooldown
+                        if cooldown >= 0.8:
+                            self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
                 return
 
         # Defend fallback
@@ -1364,7 +1381,7 @@ class Action:
                 import random
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     trap_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
-                    from arena.procedural_arena import Hazard
+                    from arena.procedural_arena import Hazard  # type: ignore
                     # We pass 0.0 damage, we will handle the slowing effect in the hazard logic
                     trap = Hazard(trap_id, self.ball.x, self.ball.y, 15.0, "trap", 0.0)
                     setattr(trap, 'duration', 5.0) # Trap lasts for 5 seconds
@@ -1534,6 +1551,8 @@ class Action:
             self.ball.attack_timer -= delta
         if hasattr(self.ball, "kite_trap_timer") and self.ball.kite_trap_timer > 0:
             self.ball.kite_trap_timer -= delta
+        if hasattr(self.ball, "stutter_timer") and self.ball.stutter_timer > 0:
+            self.ball.stutter_timer -= delta
 
     # Refactor: Confirmed kite functionality for Sniper
     def _kite(self, delta: float) -> None:
@@ -1613,7 +1632,7 @@ class Action:
                         import random
                         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                             trap_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
-                            from arena.procedural_arena import Hazard
+                            from arena.procedural_arena import Hazard  # type: ignore
                             trap = Hazard(trap_id, self.ball.x, self.ball.y, 10.0, "trap", 0.0)
                             setattr(trap, 'duration', 3.0)
                             self.world.arena.hazards.append(trap)
@@ -1671,6 +1690,8 @@ class Action:
                 b_speed = getattr(self.ball, "speed", 2.0)
                 new_cooldown = max(0.2, 2.0 / b_speed if b_speed > 0 else 1.0)
                 self.ball.attack_timer = new_cooldown
+                if new_cooldown >= 0.8:
+                    self.ball.stutter_timer = min(new_cooldown * 0.4, 0.4)
 
     def _escort(self, delta: float) -> None:
         allies = self._get_allies()
@@ -1741,6 +1762,8 @@ class Action:
                             b_speed = getattr(self.ball, "speed", 2.0)
                             new_cooldown = max(0.2, 2.0 / b_speed if b_speed > 0 else 1.0)
                             self.ball.attack_timer = new_cooldown
+                            if new_cooldown >= 0.8:
+                                self.ball.stutter_timer = min(new_cooldown * 0.4, 0.4)
 
     def _intercept(self, delta: float) -> None:
         enemies = self._get_enemies()
@@ -1815,6 +1838,8 @@ class Action:
                     b_speed = getattr(self.ball, "speed", 2.0)
                     new_cooldown = max(0.2, 2.0 / b_speed if b_speed > 0 else 1.0)
                     self.ball.attack_timer = new_cooldown
+                    if new_cooldown >= 0.8:
+                        self.ball.stutter_timer = min(new_cooldown * 0.4, 0.4)
 
     def _hide_behind(self, delta: float) -> None:
         enemies = self._get_enemies()
