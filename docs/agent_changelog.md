@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-166] Weapon-Specific Kiting Behaviors — *2026-06-27 20:14:36 UTC*
+
+Balls with short cooldown fast attacks can kite constantly, while balls with slow high-damage attacks pause to shoot and then reposition, bringing a stutter-step mechanic to combat.
+
+---
+
 ## [idea-143] Danger Zones Arena Mutator — *2026-06-27 18:41:44 UTC*
 
 Introduce a new mutator where dynamic 'danger zones' spawn periodically on the map, registering as high values in the `danger_grid`. Balls must use the updated A* obstacle avoidance to navigate around these invisible traps or suffer massive damage if they traverse them.
