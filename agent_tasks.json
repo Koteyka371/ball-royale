@@ -2471,7 +2471,7 @@
     },
     {
       "id": "idea-142",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Interactive Danger Heatmap UI Overlay",

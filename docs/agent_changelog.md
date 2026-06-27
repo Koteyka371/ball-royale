@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-142] Interactive Danger Heatmap UI Overlay — *2026-06-27 12:13:37 UTC*
+
+Visualize the `danger_grid` as a heatmap overlay in the spectator or coach mode UI. High danger areas will pulse in red, while safe zones appear green. This provides players with better insight into the AI's real-time risk assessment and movement decisions.
+
+---
+
 ## [idea-141] Neural Ball Deep Evolution Mode — *2026-06-27 10:18:14 UTC*
 
 Introduce a game mode where only Neural Balls compete. After each round, a genetic algorithm breeds the top performing Neural Balls (combining their hidden and output weights) and mutates a fraction of the offspring to see which configuration converges on the optimal strategy. It would provide an evolutionary simulation angle to the game.
