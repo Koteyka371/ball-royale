@@ -3119,6 +3119,38 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-175",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Profile Prestige System",
+      "description": "Once players unlock all balls and max out all passive bonuses, they can 'prestige' to reset their progress in exchange for a special cosmetic aura and a permanent 5% increase to base stats.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-176",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Daily Quests for Skill Points",
+      "description": "Players receive random daily quests (e.g., 'Survive for 5 minutes', 'Defeat 10 enemies with sniper ball') that reward extra skill points to accelerate profile progression.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
