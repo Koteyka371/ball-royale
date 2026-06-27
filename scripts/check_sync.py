@@ -24,8 +24,8 @@ def get_files_to_sync():
 def extract_python_methods(filepath):
     try:
         content = Path(filepath).read_text(encoding="utf-8")
-        # Find all def method_name(self, ...)
-        methods = re.findall(r'def\s+(\w+)\s*\(', content)
+        # Find all def method_name(self, ...) defined at class level (4 spaces indentation)
+        methods = re.findall(r'^\s{4}def\s+(\w+)\s*\(', content, re.MULTILINE)
         # Exclude private built-ins like __init__
         return {m for m in methods if not m.startswith("__")}
     except Exception:
@@ -70,7 +70,7 @@ def run_sync_check():
                 desc = (f"The Python class in {py_path.name} implements '{method}', "
                         f"but the GDScript counterpart {gd_path.name} is missing it. "
                         f"Please implement the same logic in GDScript.")
-                if add_task(manifest, task_id, title, desc, "content", "medium", allowed_paths=[gd_file]):
+                if add_task(manifest, task_id, title, desc, "content", "medium", allowed_paths=[Path(gd_file).as_posix()]):
                     modified = True
         else:
             print(f"  {gd_path.name} is in sync with {py_path.name}")

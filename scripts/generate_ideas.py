@@ -86,6 +86,34 @@ def generate_task_from_idea(idea: dict[str, str], index: int) -> dict[str, Any]:
         "ai": "ai-core"
     }
     
+    paths_map = {
+        "arena": [
+            "src/arena/arena_types.py",
+            "src/arena/arena_types.gd",
+            "src/arena/procedural_arena.py",
+            "src/arena/procedural_arena.gd",
+            "tests/test_arena_*.py",
+            "tests/test_procedural_*.py",
+            "src/arena/test_*.py"
+        ],
+        "ball_type": [
+            "src/ai/ball_types_*.py",
+            "src/ai/action.py",
+            "src/ai/action.gd"
+        ],
+        "ai": [
+            "src/ai/ball_brain.py",
+            "src/ai/decision.py",
+            "src/ai/perception.py",
+            "src/ai/emotion.py"
+        ],
+        "skill": [
+            "src/ai/action.py",
+            "src/ai/action.gd",
+            "tests/test_action*.py"
+        ]
+    }
+    
     return {
         "id": task_id,
         "status": "todo",
@@ -93,7 +121,7 @@ def generate_task_from_idea(idea: dict[str, str], index: int) -> dict[str, Any]:
         "risk": risk_map.get(idea["type"], "medium"),
         "title": idea["title"],
         "description": f"Implement {idea['title']} as described in game_design.md",
-        "allowed_paths": ["src/**", "tests/**"],
+        "allowed_paths": paths_map.get(idea["type"], ["src/ai/**", "src/arena/**", "tests/**"]),
         "acceptance": [
             f"{idea['title']} implemented",
             "Tests pass",

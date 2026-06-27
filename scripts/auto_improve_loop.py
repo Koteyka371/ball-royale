@@ -36,7 +36,12 @@ def add_task(manifest, task_id, title, desc, area, risk="medium", allowed_paths=
         return False
     
     if allowed_paths is None:
-        allowed_paths = ["src/**", "tests/**"]
+        if area in ("arenas", "arena-mechanics"):
+            allowed_paths = ["src/arena/**", "tests/**"]
+        elif area in ("ai-core", "behaviors", "ai-behaviors", "ai-ball-types", "innovation", "skills"):
+            allowed_paths = ["src/ai/**", "tests/**"]
+        else:
+            allowed_paths = ["src/ai/**", "src/arena/**", "tests/**"]
     if acceptance is None:
         acceptance = ["Feature implemented successfully", "Tests pass"]
 
@@ -136,7 +141,7 @@ def main():
                             title = f"Refactor TODO in {f.name}: {desc[:40]}"
                             clean_stem = f.stem.replace("_", "-")
                             task_id = f"todo-refactor-{clean_stem}-{i}"
-                            if add_task(manifest, task_id, title, f"Resolve the comment '# TODO: {desc}' in {f.name} line {i}", "meta", "low"):
+                            if add_task(manifest, task_id, title, f"Resolve the comment '# TODO: {desc}' in {f.name} line {i}", "meta", "low", allowed_paths=[str(f.as_posix()), "tests/**"]):
                                 modified = True
                                 todo_count += 1
             except Exception:
@@ -162,7 +167,7 @@ def main():
                         task_id = f"lint-{code.lower()}-{clean_filename}-{row}"
                         title = f"Fix lint {code} in {filename}"
                         desc = f"Ruff reported: {msg} in {filepath} line {row}"
-                        if add_task(manifest, task_id, title, desc, "meta", "low", acceptance=["Lint warning resolved"]):
+                        if add_task(manifest, task_id, title, desc, "meta", "low", allowed_paths=[filepath.replace("\\", "/"), "tests/**"], acceptance=["Lint warning resolved"]):
                             modified = True
                             lint_count += 1
                     if lint_count > 0:
@@ -193,7 +198,8 @@ def main():
                     title = f"Fix failing test {test_name}"
                     trace = extract_test_traceback(result.stdout, test_name)
                     desc = f"The test {fail} is failing. Investigate and fix the logic so that it passes.\n\nSpecific Pytest Traceback:\n```\n{trace}\n```"
-                    if add_task(manifest, task_id, title, desc, "meta", "medium", acceptance=[f"Test {test_name} passes successfully"]):
+                    test_file = fail.split("::")[0].replace("\\", "/")
+                    if add_task(manifest, task_id, title, desc, "meta", "medium", allowed_paths=[test_file, "src/ai/**", "src/arena/**"], acceptance=[f"Test {test_name} passes successfully"]):
                         modified = True
             else:
                 task_id = "bugfix-pytest-crash"

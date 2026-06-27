@@ -3112,7 +3112,7 @@
       "title": "Destructible Terrain",
       "description": "Walls and rooms can be broken using explosive abilities.",
       "allowed_paths": [
-        "src/**",
+        "src/arena/**",
         "tests/**"
       ],
       "acceptance": [
@@ -3128,7 +3128,7 @@
       "title": "Profile Prestige System",
       "description": "Once players unlock all balls and max out all passive bonuses, they can 'prestige' to reset their progress in exchange for a special cosmetic aura and a permanent 5% increase to base stats.",
       "allowed_paths": [
-        "src/**",
+        "src/ai/**",
         "tests/**"
       ],
       "acceptance": [
@@ -3144,7 +3144,7 @@
       "title": "Daily Quests for Skill Points",
       "description": "Players receive random daily quests (e.g., 'Survive for 5 minutes', 'Defeat 10 enemies with sniper ball') that reward extra skill points to accelerate profile progression.",
       "allowed_paths": [
-        "src/**",
+        "src/ai/**",
         "tests/**"
       ],
       "acceptance": [
@@ -3160,7 +3160,7 @@
       "title": "Interactive Training Mode",
       "description": "Allow user to fight against learning networks to shape their strategy.",
       "allowed_paths": [
-        "src/**",
+        "src/ai/**",
         "tests/**"
       ],
       "acceptance": [
@@ -3176,8 +3176,24 @@
       "title": "Custom Neural Skins",
       "description": "Skins for balls based on generation performance.",
       "allowed_paths": [
-        "src/**",
+        "src/ai/**",
+        "src/ui/**",
         "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "sync-gd-decision-get-weights",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Sync GDScript: Implement 'get_weights' in decision.gd",
+      "description": "The Python class in decision.py implements 'get_weights', but the GDScript counterpart decision.gd is missing it. Please implement the same logic in GDScript.",
+      "allowed_paths": [
+        "src/ai/decision.gd"
       ],
       "acceptance": [
         "Feature implemented successfully",

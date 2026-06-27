@@ -85,11 +85,39 @@ def find_missing_tasks(manifest: dict[str, Any], features: list[dict[str, str]])
     existing_titles = {t["title"].lower() for t in manifest.get("tasks", [])}
     new_tasks = []
     
+    paths_map = {
+        "arenas": [
+            "src/arena/arena_types.py",
+            "src/arena/arena_types.gd",
+            "src/arena/procedural_arena.py",
+            "src/arena/procedural_arena.gd",
+            "tests/test_arena_*.py",
+            "tests/test_procedural_*.py",
+            "src/arena/test_*.py"
+        ],
+        "content": [
+            "src/ai/ball_types_*.py",
+            "src/ai/action.py",
+            "src/ai/action.gd"
+        ],
+        "skills": [
+            "src/ai/action.py",
+            "src/ai/action.gd",
+            "tests/test_action*.py"
+        ],
+        "modes": [
+            "src/ai/game_modes.py",
+            "src/ai/game_modes.gd",
+            "tests/test_game_modes.py"
+        ]
+    }
+    
     for feature in features:
         if feature["title"].lower() not in existing_titles:
             task = {
                 "id": f"auto-{feature['title'].lower().replace(' ', '-')[:50]}",
                 **TASK_TEMPLATE,
+                "allowed_paths": paths_map.get(feature["area"], ["src/ai/**", "src/arena/**", "tests/**"]),
                 **feature
             }
             new_tasks.append(task)
