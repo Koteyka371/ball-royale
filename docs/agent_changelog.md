@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-172] Skill Tree Meta-Progression — *2026-06-27 14:27:26 UTC*
+
+Players earn skill points across matches to unlock passive bonuses or new types of balls permanently for their profile.
+
+---
+
 ## [idea-142] Interactive Danger Heatmap UI Overlay — *2026-06-27 12:13:37 UTC*
 
 Visualize the `danger_grid` as a heatmap overlay in the spectator or coach mode UI. High danger areas will pulse in red, while safe zones appear green. This provides players with better insight into the AI's real-time risk assessment and movement decisions.
