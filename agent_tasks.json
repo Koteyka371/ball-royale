@@ -2884,6 +2884,38 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-168",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Spawning",
+      "description": "Allow fragile fast balls to deploy a temporary decoy ball that enemies will aggro towards, allowing the real ball to escape or reposition.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-169",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Smoke Screen Traps",
+      "description": "Allow certain ball types to drop smoke screens that reduce enemy perception range while standing in them or line of sight through them.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
