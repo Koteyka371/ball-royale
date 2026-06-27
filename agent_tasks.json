@@ -2948,6 +2948,38 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-172",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Skill Tree Meta-Progression",
+      "description": "Players earn skill points across matches to unlock passive bonuses or new types of balls permanently for their profile.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-173",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Effects Simulator",
+      "description": "Add dynamic weather during matches (e.g., rain makes the arena slippery and affects movement physics, fog limits perception radius).",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
