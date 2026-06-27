@@ -14,11 +14,11 @@ def test_neural_initialization():
     assert neural.hp == neural.max_hp
     assert neural.hp == 100
     assert neural.skill_timer == 0.0
-    assert neural.SKILL == "numpy"
+    assert neural.SKILL in ["dash", "shield", "heal"]
 
     assert neural.use_skill() is True
     assert neural.skill_timer == 4.0
-    assert neural.current_action in ["attack", "flee", "idle"]
+    assert neural.current_action == "use_skill"
 
     neural.take_damage(20)
     assert neural.hp == 80

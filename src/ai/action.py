@@ -1314,6 +1314,12 @@ class Action:
                         if mag > 0.0001:
                             self.ball.x += (out_x/mag) * 80.0
                             self.ball.y += (out_y/mag) * 80.0
+            elif skill_name == "shield":
+                if hasattr(self.ball, "hp"):
+                    self.ball.hp = min(getattr(self.ball, "max_hp", 100), self.ball.hp + 20)
+            elif skill_name == "heal":
+                if hasattr(self.ball, "hp"):
+                    self.ball.hp = min(getattr(self.ball, "max_hp", 100), self.ball.hp + 30)
             elif skill_name == "dash":
                 import random
                 import math

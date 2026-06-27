@@ -17,7 +17,7 @@ def test_neural_ball_creation_and_skill():
 
     # Test use skill changes action
     ball.use_skill()
-    assert ball.current_action in ["attack", "flee", "idle", "defend"]
+    assert ball.current_action == "use_skill"
     assert ball.skill_timer == 4.0
 
 test_neural_ball_creation_and_skill()

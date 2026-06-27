@@ -61,6 +61,12 @@ class NeuralDecision:
                 if traps and hasattr(self.ball, "x") and hasattr(self.ball, "y"):
                     val = min((((t.x - self.ball.x)**2 + (t.y - self.ball.y)**2)**0.5 for t in traps if hasattr(t, "x") and hasattr(t, "y")), default=1000.0)
                 inputs.append(val)
+            elif input_name == "skill_dash":
+                inputs.append(1.0 if getattr(self.ball, "SKILL", "") == "dash" else 0.0)
+            elif input_name == "skill_shield":
+                inputs.append(1.0 if getattr(self.ball, "SKILL", "") == "shield" else 0.0)
+            elif input_name == "skill_heal":
+                inputs.append(1.0 if getattr(self.ball, "SKILL", "") == "heal" else 0.0)
             else:
                 inputs.append(0.0)
 

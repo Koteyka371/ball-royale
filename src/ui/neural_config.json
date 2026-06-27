@@ -4,6 +4,9 @@
     "hp_percent",
     "danger_level",
     "opportunity_score",
-    "threat_level"
+    "threat_level",
+    "skill_dash",
+    "skill_shield",
+    "skill_heal"
   ]
 }
