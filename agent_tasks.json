@@ -3199,6 +3199,38 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-179",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Expanding Danger Zones",
+      "description": "Danger zones not only spawn dynamically but slowly expand over time before disappearing, forcing a continuous change in safe paths and encouraging more dynamic movement.",
+      "allowed_paths": [
+        "src/ai/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-180",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Danger Zone Powerups",
+      "description": "Balls can collect a specific powerup that makes them immune to Danger Zones for a short time, allowing them to use the zones for shortcuts or to escape pursuers.",
+      "allowed_paths": [
+        "src/ai/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
