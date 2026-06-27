@@ -3231,6 +3231,38 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-181",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Flare Mechanism",
+      "description": "Introduce a deployable flare hazard that draws AI targeting logic, causing balls to attack the decoy instead of actual opponents for a short duration.",
+      "allowed_paths": [
+        "src/ai/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-182",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Stamina Based Dashing",
+      "description": "Add a stamina meter that allows balls to dash short distances to dodge attacks or gap-close, regenerating when moving slowly or standing still.",
+      "allowed_paths": [
+        "src/ai/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
