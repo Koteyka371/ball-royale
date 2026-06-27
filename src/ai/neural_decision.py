@@ -12,20 +12,57 @@ class NeuralDecision:
     def __init__(self, ball: Any, world: Any):
         self.ball = ball
         self.world = world
+        self.configured_inputs = ["hp_percent", "danger_level", "opportunity_score", "threat_level"]
+        config_path = os.path.join(os.path.dirname(__file__), "..", "ui", "neural_config.json")
+        if os.path.exists(config_path):
+            try:
+                with open(config_path, "r") as f:
+                    data = json.load(f)
+                    if "neural_inputs" in data:
+                        self.configured_inputs = data["neural_inputs"]
+            except Exception:
+                pass
 
     def choose_action(self, perception_data: Dict[str, Any], emotion_state: str) -> str:
         # 1. Extract inputs
-        hp_percent = 1.0
-        if hasattr(self.ball, "get_hp_percent"):
-            hp_percent = self.ball.get_hp_percent()
-        elif hasattr(self.ball, "hp") and hasattr(self.ball, "max_hp") and getattr(self.ball, "max_hp", 0) > 0:
-            hp_percent = float(self.ball.hp) / float(self.ball.max_hp)
-
-        danger_level = perception_data.get("danger_level", 0.0)
-        opportunity_score = perception_data.get("opportunity_score", 0.0)
-        threat_level = perception_data.get("threat_level", 0.0)
-
-        inputs = [hp_percent, danger_level, opportunity_score, threat_level]
+        inputs = []
+        for input_name in getattr(self, "configured_inputs", ["hp_percent", "danger_level", "opportunity_score", "threat_level"]):
+            if input_name == "hp_percent":
+                val = 1.0
+                if hasattr(self.ball, "get_hp_percent"):
+                    val = self.ball.get_hp_percent()
+                elif hasattr(self.ball, "hp") and hasattr(self.ball, "max_hp") and getattr(self.ball, "max_hp", 0) > 0:
+                    val = float(self.ball.hp) / float(self.ball.max_hp)
+                inputs.append(val)
+            elif input_name == "danger_level":
+                inputs.append(perception_data.get("danger_level", 0.0))
+            elif input_name == "opportunity_score":
+                inputs.append(perception_data.get("opportunity_score", 0.0))
+            elif input_name == "threat_level":
+                inputs.append(perception_data.get("threat_level", 0.0))
+            elif input_name == "nearest_enemy_distance":
+                enemies = perception_data.get("enemies", [])
+                val = 1000.0
+                if enemies and hasattr(self.ball, "x") and hasattr(self.ball, "y"):
+                    val = min((((e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)**0.5 for e in enemies if hasattr(e, "x") and hasattr(e, "y")), default=1000.0)
+                inputs.append(val)
+            elif input_name == "number_of_allies":
+                inputs.append(float(len(perception_data.get("allies", []))))
+            elif input_name == "boss_hp":
+                val = 0.0
+                enemies = perception_data.get("enemies", [])
+                bosses = [e for e in enemies if getattr(e, "ball_type", "") == "juggernaut"]
+                if bosses:
+                    val = float(getattr(bosses[0], "hp", 0.0))
+                inputs.append(val)
+            elif input_name == "map_hazard_distance":
+                traps = perception_data.get("traps", [])
+                val = 1000.0
+                if traps and hasattr(self.ball, "x") and hasattr(self.ball, "y"):
+                    val = min((((t.x - self.ball.x)**2 + (t.y - self.ball.y)**2)**0.5 for t in traps if hasattr(t, "x") and hasattr(t, "y")), default=1000.0)
+                inputs.append(val)
+            else:
+                inputs.append(0.0)
 
         # 2. Extract weights
         weights = getattr(self.ball, "nn_weights", None)

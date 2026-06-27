@@ -1,0 +1,4 @@
+{
+  "title": "Neural Skill Customization",
+  "description": "Instead of a static skill like 'numpy', let the neural ball choose from a variety of skills (Dash, Shield, Heal) prior to battle, and provide the chosen skill as an input to the neural network so the network learns to adapt its playstyle according to the equipped skill."
+}
