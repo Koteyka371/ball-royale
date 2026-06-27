@@ -2306,6 +2306,18 @@ func _update_skill_timer(delta: float):
     if "skill_timer" in self.ball and self.ball.skill_timer > 0:
         self.ball.skill_timer -= delta
 
+    var kite_trap_timer = 0.0
+    if "kite_trap_timer" in self.ball:
+        kite_trap_timer = self.ball.kite_trap_timer
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("kite_trap_timer"):
+        kite_trap_timer = self.ball.get_meta("kite_trap_timer")
+
+    if kite_trap_timer > 0:
+        if "kite_trap_timer" in self.ball:
+            self.ball.kite_trap_timer -= delta
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("kite_trap_timer", kite_trap_timer - delta)
+
     var attack_timer = 0.0
     if "attack_timer" in self.ball:
         attack_timer = self.ball.attack_timer
@@ -2409,6 +2421,30 @@ func _kite(delta: float):
                 if actual_dist < b_attack_range * kite_ratio:
                     self.ball.x += nx * step
                     self.ball.y += ny * step
+
+                    var kite_trap_timer = 0.0
+                    if "kite_trap_timer" in self.ball:
+                        kite_trap_timer = self.ball.kite_trap_timer
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("kite_trap_timer"):
+                        kite_trap_timer = self.ball.get_meta("kite_trap_timer")
+
+                    if kite_trap_timer <= 0.0:
+                        if "arena" in self.world and "hazards" in self.world.arena:
+                            var trap_id = self.world.arena.hazards.size() + randi() % 10000
+                            var trap = ProceduralArena.Hazard.new()
+                            trap.id = trap_id
+                            trap.x = self.ball.x
+                            trap.y = self.ball.y
+                            trap.radius = 10.0
+                            trap.kind = "trap"
+                            trap.damage = 0.0
+                            trap.set_meta("duration", 3.0)
+                            self.world.arena.hazards.append(trap)
+
+                            if "kite_trap_timer" in self.ball:
+                                self.ball.kite_trap_timer = 2.0
+                            elif self.ball.has_method("set_meta"):
+                                self.ball.set_meta("kite_trap_timer", 2.0)
                 elif actual_dist > b_attack_range:
                     self.ball.x += nx * min(step, actual_dist - b_attack_range)
                     self.ball.y += ny * min(step, actual_dist - b_attack_range)

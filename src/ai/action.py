@@ -1504,6 +1504,8 @@ class Action:
             self.ball.skill_timer -= delta
         if hasattr(self.ball, "attack_timer") and self.ball.attack_timer > 0:
             self.ball.attack_timer -= delta
+        if hasattr(self.ball, "kite_trap_timer") and self.ball.kite_trap_timer > 0:
+            self.ball.kite_trap_timer -= delta
 
     # Refactor: Confirmed kite functionality for Sniper
     def _kite(self, delta: float) -> None:
@@ -1577,6 +1579,17 @@ class Action:
                 if actual_dist < ball_attack_range * kite_ratio:
                     self.ball.x += norm_x * move_step
                     self.ball.y += norm_y * move_step
+                    # Drop a trap when retreating
+                    trap_timer = getattr(self.ball, "kite_trap_timer", 0.0)
+                    if trap_timer <= 0.0:
+                        import random
+                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                            trap_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
+                            from arena.procedural_arena import Hazard
+                            trap = Hazard(trap_id, self.ball.x, self.ball.y, 10.0, "trap", 0.0)
+                            setattr(trap, 'duration', 3.0)
+                            self.world.arena.hazards.append(trap)
+                            self.ball.kite_trap_timer = 2.0  # Trap cooldown
                 elif actual_dist > ball_attack_range:
                     self.ball.x += norm_x * min(move_step, actual_dist - ball_attack_range)
                     self.ball.y += norm_y * min(move_step, actual_dist - ball_attack_range)
