@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-147] Gravity Wells — *2026-06-27 21:26:58 UTC*
+
+Temporary gravity wells spawn randomly and pull balls towards them.
+
+---
+
 ## [idea-166] Weapon-Specific Kiting Behaviors — *2026-06-27 20:14:36 UTC*
 
 Balls with short cooldown fast attacks can kite constantly, while balls with slow high-damage attacks pause to shoot and then reposition, bringing a stutter-step mechanic to combat.
