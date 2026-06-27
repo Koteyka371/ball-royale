@@ -207,6 +207,8 @@ func update_zone(current_tick: int, delta: float) -> void:
         safe_zone_radius -= 10.0 * delta
         if safe_zone_radius < 50.0:
             safe_zone_radius = 50.0
+        if current_tick % 10 == 0:
+            _update_danger_grid()
 
 class CollectBoosterArena extends ProceduralArena:
     func generate():
@@ -581,3 +583,36 @@ class AmbushArena extends ProceduralArena:
 
         # 1 central hazard to discourage staying in the open
         hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 80.0, "lava", 20.0))
+
+func _update_danger_grid() -> void:
+    danger_grid.clear()
+
+    for h in hazards:
+        var grid_x = int(h.x / 100)
+        var grid_y = int(h.y / 100)
+        var r_cells = int(h.radius / 100) + 1
+        for i in range(grid_x - r_cells, grid_x + r_cells + 1):
+            for j in range(grid_y - r_cells, grid_y + r_cells + 1):
+                var cx = i * 100 + 50
+                var cy = j * 100 + 50
+                var dist = sqrt((cx - h.x)*(cx - h.x) + (cy - h.y)*(cy - h.y))
+                if dist <= h.radius + 50:
+                    var key = str(i) + "," + str(j)
+                    var current = 0.0
+                    if danger_grid.has(key):
+                        current = danger_grid[key]
+                    danger_grid[key] = current + (h.damage / 10.0)
+
+    var grid_w = int(width / 100) + 1
+    var grid_h = int(height / 100) + 1
+    for i in range(grid_w):
+        for j in range(grid_h):
+            var cx = i * 100 + 50
+            var cy = j * 100 + 50
+            var dist_to_center = sqrt((cx - safe_zone_center[0])*(cx - safe_zone_center[0]) + (cy - safe_zone_center[1])*(cy - safe_zone_center[1]))
+            if dist_to_center > safe_zone_radius:
+                var key = str(i) + "," + str(j)
+                var current = 0.0
+                if danger_grid.has(key):
+                    current = danger_grid[key]
+                danger_grid[key] = current + 5.0
