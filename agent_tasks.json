@@ -2493,8 +2493,13 @@
       "title": "Danger Zones Arena Mutator",
       "description": "Introduce a new mutator where dynamic 'danger zones' spawn periodically on the map, registering as high values in the `danger_grid`. Balls must use the updated A* obstacle avoidance to navigate around these invisible traps or suffer massive damage if they traverse them.",
       "allowed_paths": [
-        "src/**",
-        "tests/**"
+        "src/arena/arena_types.py",
+        "src/arena/arena_types.gd",
+        "src/arena/procedural_arena.py",
+        "src/arena/procedural_arena.gd",
+        "tests/test_arena_*.py",
+        "tests/test_procedural_*.py",
+        "src/arena/test_*.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
@@ -2509,8 +2514,10 @@
       "title": "Vampire Mode",
       "description": "A game mode where all balls slowly lose HP over time but regain HP when dealing damage or killing others. The last one standing wins.",
       "allowed_paths": [
-        "src/**",
-        "tests/**"
+        "src/ai/game_modes.py",
+        "src/ai/game_modes.gd",
+        "src/ai/test_game_modes.py",
+        "tests/test_game_modes.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
@@ -2525,8 +2532,10 @@
       "title": "King of the Hill",
       "description": "A game mode where a specific designated area in the center of the arena grants points to the balls inside it. The ball with the most points when the timer ends wins.",
       "allowed_paths": [
-        "src/**",
-        "tests/**"
+        "src/ai/game_modes.py",
+        "src/ai/game_modes.gd",
+        "src/ai/test_game_modes.py",
+        "tests/test_game_modes.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
@@ -2541,8 +2550,10 @@
       "title": "Black Hole Survival Mode",
       "description": "A mode where the entire arena is slowly sucked into a massive black hole.",
       "allowed_paths": [
-        "src/**",
-        "tests/**"
+        "src/ai/game_modes.py",
+        "src/ai/game_modes.gd",
+        "src/ai/test_game_modes.py",
+        "tests/test_game_modes.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
@@ -2557,8 +2568,13 @@
       "title": "Gravity Wells",
       "description": "Temporary gravity wells spawn randomly and pull balls towards them.",
       "allowed_paths": [
-        "src/**",
-        "tests/**"
+        "src/arena/arena_types.py",
+        "src/arena/arena_types.gd",
+        "src/arena/procedural_arena.py",
+        "src/arena/procedural_arena.gd",
+        "tests/test_arena_*.py",
+        "tests/test_procedural_*.py",
+        "src/arena/test_*.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
@@ -2573,8 +2589,13 @@
       "title": "Trap Customization Sandbox",
       "description": "Add a pre-game lobby where Snipers can pick trap variants like poison traps that apply DoT or stun traps that fully halt enemies for 1 second instead of slowing.",
       "allowed_paths": [
-        "src/**",
-        "tests/**"
+        "src/arena/arena_types.py",
+        "src/arena/arena_types.gd",
+        "src/arena/procedural_arena.py",
+        "src/arena/procedural_arena.gd",
+        "tests/test_arena_*.py",
+        "tests/test_procedural_*.py",
+        "src/arena/test_*.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
@@ -2589,8 +2610,10 @@
       "title": "Global Traps Game Mode",
       "description": "Create a new game mode where the entire arena starts littered with invisible traps, testing players' memory and movement caution rather than just dodging enemy shots.",
       "allowed_paths": [
-        "src/**",
-        "tests/**"
+        "src/ai/game_modes.py",
+        "src/ai/game_modes.gd",
+        "src/ai/test_game_modes.py",
+        "tests/test_game_modes.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
@@ -2605,8 +2628,13 @@
       "title": "Decoy Booster Trap",
       "description": "A new procedural hazard that spawns looking exactly like a random booster. When a ball tries to collect it, it explodes and deals damage instead of granting a buff. Scouts could have a chance to identify them based on their perception score.",
       "allowed_paths": [
-        "src/**",
-        "tests/**"
+        "src/arena/arena_types.py",
+        "src/arena/arena_types.gd",
+        "src/arena/procedural_arena.py",
+        "src/arena/procedural_arena.gd",
+        "tests/test_arena_*.py",
+        "tests/test_procedural_*.py",
+        "src/arena/test_*.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
@@ -2621,8 +2649,13 @@
       "title": "Fog of War Weather Event",
       "description": "Periodically, the arena could fill with a thick fog that severely reduces the perception radius of all balls for 15-20 seconds. This would force balls into more close-range surprise encounters and make abilities like the ninja's stealth even more effective.",
       "allowed_paths": [
-        "src/**",
-        "tests/**"
+        "src/arena/arena_types.py",
+        "src/arena/arena_types.gd",
+        "src/arena/procedural_arena.py",
+        "src/arena/procedural_arena.gd",
+        "tests/test_arena_*.py",
+        "tests/test_procedural_*.py",
+        "src/arena/test_*.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
@@ -2637,7 +2670,8 @@
       "title": "Combo Abilities System",
       "description": "Implement a synergy mechanic where combining specific skills from different ball types (e.g., water attack + lightning attack) creates enhanced combo effects like area paralysis or bonus damage, encouraging team coordination and diverse team compositions.",
       "allowed_paths": [
-        "src/**",
+        "src/ai/ball_types_*.py",
+        "src/arena/arena_types.py",
         "tests/**"
       ],
       "acceptance": [
@@ -2653,8 +2687,13 @@
       "title": "Variable Gravity Anomalies",
       "description": "Introduce spatial anomalies that periodically alter the gravity in specific zones of the arena, affecting movement speed, trajectory of skills, and forcing players/AI to adapt their pathfinding and engagement strategies dynamically.",
       "allowed_paths": [
-        "src/**",
-        "tests/**"
+        "src/arena/arena_types.py",
+        "src/arena/arena_types.gd",
+        "src/arena/procedural_arena.py",
+        "src/arena/procedural_arena.gd",
+        "tests/test_arena_*.py",
+        "tests/test_procedural_*.py",
+        "src/arena/test_*.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
@@ -2669,8 +2708,13 @@
       "title": "Weather Effects",
       "description": "Add dynamic weather that impacts ball physics.",
       "allowed_paths": [
-        "src/**",
-        "tests/**"
+        "src/arena/arena_types.py",
+        "src/arena/arena_types.gd",
+        "src/arena/procedural_arena.py",
+        "src/arena/procedural_arena.gd",
+        "tests/test_arena_*.py",
+        "tests/test_procedural_*.py",
+        "src/arena/test_*.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
@@ -2685,8 +2729,13 @@
       "title": "Boss Encounters",
       "description": "Introduce powerful boss balls in the center of the arena.",
       "allowed_paths": [
-        "src/**",
-        "tests/**"
+        "src/arena/arena_types.py",
+        "src/arena/arena_types.gd",
+        "src/arena/procedural_arena.py",
+        "src/arena/procedural_arena.gd",
+        "tests/test_arena_*.py",
+        "tests/test_procedural_*.py",
+        "src/arena/test_*.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
@@ -2701,7 +2750,8 @@
       "title": "Necromancer ball type - raises minions",
       "description": "A new ball type that can revive recently killed enemies as temporary weak minions to fight for it. Minions slowly decay in HP over time.",
       "allowed_paths": [
-        "src/**",
+        "src/ai/ball_types_*.py",
+        "src/arena/arena_types.py",
         "tests/**"
       ],
       "acceptance": [
@@ -2717,8 +2767,13 @@
       "title": "Poison Trap Hazard",
       "description": "A new procedural hazard that applies a damage-over-time effect to any ball that passes through it, reducing their HP continuously for several ticks even after they leave the trap.",
       "allowed_paths": [
-        "src/**",
-        "tests/**"
+        "src/arena/arena_types.py",
+        "src/arena/arena_types.gd",
+        "src/arena/procedural_arena.py",
+        "src/arena/procedural_arena.gd",
+        "tests/test_arena_*.py",
+        "tests/test_procedural_*.py",
+        "src/arena/test_*.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
@@ -2733,8 +2788,10 @@
       "title": "King of the Hill Mode",
       "description": "Add a new game mode where teams score points by maintaining position within a central moving zone. Balls will need entirely new AI prioritization to value zone presence over raw damage.",
       "allowed_paths": [
-        "src/**",
-        "tests/**"
+        "src/ai/game_modes.py",
+        "src/ai/game_modes.gd",
+        "src/ai/test_game_modes.py",
+        "tests/test_game_modes.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
@@ -2749,8 +2806,13 @@
       "title": "Interactive Hazards",
       "description": "Introduce dynamic hazards like explosive barrels or spike traps that balls can push into enemies or trigger manually via skills to create area denial zones.",
       "allowed_paths": [
-        "src/**",
-        "tests/**"
+        "src/arena/arena_types.py",
+        "src/arena/arena_types.gd",
+        "src/arena/procedural_arena.py",
+        "src/arena/procedural_arena.gd",
+        "tests/test_arena_*.py",
+        "tests/test_procedural_*.py",
+        "src/arena/test_*.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
@@ -2765,8 +2827,13 @@
       "title": "Weather Events",
       "description": "Introduce random weather events (e.g. rain, snow, sandstorm) that dynamically affect arena hazards and ball visibility, forcing AI to adapt on the fly.",
       "allowed_paths": [
-        "src/**",
-        "tests/**"
+        "src/arena/arena_types.py",
+        "src/arena/arena_types.gd",
+        "src/arena/procedural_arena.py",
+        "src/arena/procedural_arena.gd",
+        "tests/test_arena_*.py",
+        "tests/test_procedural_*.py",
+        "src/arena/test_*.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
@@ -2781,8 +2848,10 @@
       "title": "Team Objectives",
       "description": "Add capture points or secondary objectives that reward surviving teams with global buffs, encouraging teamwork over pure deathmatch behavior.",
       "allowed_paths": [
-        "src/**",
-        "tests/**"
+        "src/ai/game_modes.py",
+        "src/ai/game_modes.gd",
+        "src/ai/test_game_modes.py",
+        "tests/test_game_modes.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
@@ -2797,8 +2866,13 @@
       "title": "Portal Hazards",
       "description": "Add a new hazard called Portal which instantly teleports a ball that touches it to a paired Portal location.",
       "allowed_paths": [
-        "src/**",
-        "tests/**"
+        "src/arena/arena_types.py",
+        "src/arena/arena_types.gd",
+        "src/arena/procedural_arena.py",
+        "src/arena/procedural_arena.gd",
+        "tests/test_arena_*.py",
+        "tests/test_procedural_*.py",
+        "src/arena/test_*.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
@@ -2813,8 +2887,13 @@
       "title": "Healing Springs",
       "description": "Add a new dynamic area called HealingSprings which works opposite to hazards: if a ball stays in this area, they slowly regenerate HP.",
       "allowed_paths": [
-        "src/**",
-        "tests/**"
+        "src/arena/arena_types.py",
+        "src/arena/arena_types.gd",
+        "src/arena/procedural_arena.py",
+        "src/arena/procedural_arena.gd",
+        "tests/test_arena_*.py",
+        "tests/test_procedural_*.py",
+        "src/arena/test_*.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
@@ -2829,7 +2908,8 @@
       "title": "Team Allegiance Betrayal",
       "description": "Add a new mechanic where specific ball types can manipulate enemies into temporarily betraying their own team, fighting alongside the manipulator for a short duration before returning to normal.",
       "allowed_paths": [
-        "src/**",
+        "src/ai/ball_types_*.py",
+        "src/arena/arena_types.py",
         "tests/**"
       ],
       "acceptance": [
@@ -2845,8 +2925,13 @@
       "title": "Weather Events System",
       "description": "Introduce dynamic weather events (rain, snow, sandstorms) that occur periodically during a match, affecting ball physics such as movement speed, vision range, and attack accuracy.",
       "allowed_paths": [
-        "src/**",
-        "tests/**"
+        "src/arena/arena_types.py",
+        "src/arena/arena_types.gd",
+        "src/arena/procedural_arena.py",
+        "src/arena/procedural_arena.gd",
+        "tests/test_arena_*.py",
+        "tests/test_procedural_*.py",
+        "src/arena/test_*.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
@@ -2861,8 +2946,14 @@
       "title": "Weapon-Specific Kiting Behaviors",
       "description": "Balls with short cooldown fast attacks can kite constantly, while balls with slow high-damage attacks pause to shoot and then reposition, bringing a stutter-step mechanic to combat.",
       "allowed_paths": [
-        "src/**",
-        "tests/**"
+        "src/ai/action.py",
+        "src/ai/action.gd",
+        "src/ai/decision.py",
+        "src/ai/decision.gd",
+        "src/ai/ball_types_*.py",
+        "tests/test_action*.py",
+        "tests/test_kite*.py",
+        "tests/test_flank*.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
@@ -2877,8 +2968,13 @@
       "title": "Dynamic Kite Pathfinding",
       "description": "Improve kiting logic to not just run directly backward but find a path that avoids getting cornered by moving sideways or toward open spaces in the arena.",
       "allowed_paths": [
-        "src/**",
-        "tests/**"
+        "src/arena/arena_types.py",
+        "src/arena/arena_types.gd",
+        "src/arena/procedural_arena.py",
+        "src/arena/procedural_arena.gd",
+        "tests/test_arena_*.py",
+        "tests/test_procedural_*.py",
+        "src/arena/test_*.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
@@ -2893,8 +2989,14 @@
       "title": "Decoy Spawning",
       "description": "Allow fragile fast balls to deploy a temporary decoy ball that enemies will aggro towards, allowing the real ball to escape or reposition.",
       "allowed_paths": [
-        "src/**",
-        "tests/**"
+        "src/ai/action.py",
+        "src/ai/action.gd",
+        "src/ai/decision.py",
+        "src/ai/decision.gd",
+        "src/ai/ball_types_*.py",
+        "tests/test_action*.py",
+        "tests/test_kite*.py",
+        "tests/test_flank*.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
@@ -2909,8 +3011,13 @@
       "title": "Smoke Screen Traps",
       "description": "Allow certain ball types to drop smoke screens that reduce enemy perception range while standing in them or line of sight through them.",
       "allowed_paths": [
-        "src/**",
-        "tests/**"
+        "src/arena/arena_types.py",
+        "src/arena/arena_types.gd",
+        "src/arena/procedural_arena.py",
+        "src/arena/procedural_arena.gd",
+        "tests/test_arena_*.py",
+        "tests/test_procedural_*.py",
+        "src/arena/test_*.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
@@ -2925,8 +3032,14 @@
       "title": "Neural Skill Customization",
       "description": "Instead of a static skill like 'numpy', let the neural ball choose from a variety of skills (Dash, Shield, Heal) prior to battle, and provide the chosen skill as an input to the neural network so the network learns to adapt its playstyle according to the equipped skill.",
       "allowed_paths": [
-        "src/**",
-        "tests/**"
+        "src/ai/neural_*.py",
+        "src/ai/neural_*.gd",
+        "src/ai/neural_net.py",
+        "src/ai/genetics.py",
+        "src/ai/genetics.gd",
+        "src/ai/run_evolution.py",
+        "tests/test_neural*.py",
+        "tests/test_genetics*.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
@@ -2941,8 +3054,13 @@
       "title": "Custom Neural Training Environments",
       "description": "Allow players to spawn custom training arenas with specific scenarios (e.g. 5 juggernauts with no weapons, or maze-like maps with traps) where they can rapidly run neuroevolution specifically tailored to those situations to generate specialized neural balls before sending them to the main battle royale.",
       "allowed_paths": [
-        "src/**",
-        "tests/**"
+        "src/arena/arena_types.py",
+        "src/arena/arena_types.gd",
+        "src/arena/procedural_arena.py",
+        "src/arena/procedural_arena.gd",
+        "tests/test_arena_*.py",
+        "tests/test_procedural_*.py",
+        "src/arena/test_*.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
@@ -2957,8 +3075,8 @@
       "title": "Skill Tree Meta-Progression",
       "description": "Players earn skill points across matches to unlock passive bonuses or new types of balls permanently for their profile.",
       "allowed_paths": [
-        "src/**",
-        "tests/**"
+        "src/ai/development_phase.py",
+        "tests/test_development_phase.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
@@ -2973,8 +3091,13 @@
       "title": "Weather Effects Simulator",
       "description": "Add dynamic weather during matches (e.g., rain makes the arena slippery and affects movement physics, fog limits perception radius).",
       "allowed_paths": [
-        "src/**",
-        "tests/**"
+        "src/arena/arena_types.py",
+        "src/arena/arena_types.gd",
+        "src/arena/procedural_arena.py",
+        "src/arena/procedural_arena.gd",
+        "tests/test_arena_*.py",
+        "tests/test_procedural_*.py",
+        "src/arena/test_*.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
