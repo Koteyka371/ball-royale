@@ -29,7 +29,7 @@ class BallBrain:
                 self.ball.speed += pm.data["bonuses"]["bonus_speed"] * 5
             if "bonus_damage" in pm.data.get("bonuses", {}):
                 self.ball.damage += pm.data["bonuses"]["bonus_damage"] * 2
-        except Exception as e:
+        except Exception:
             # print(f"Error applying profile bonuses: {e}")
             pass
         self.perception_layer = Perception(self.ball, self.world)

@@ -175,6 +175,23 @@ class ProceduralArena:
             self.safe_zone_radius -= 10.0 * delta
             if self.safe_zone_radius < 50.0:
                 self.safe_zone_radius = 50.0
+
+        if current_tick % 600 == 0:
+            # Spawn dynamic danger zones periodically
+            import random
+
+            # Clear old dynamic hazards
+            self.hazards = [h for h in self.hazards if h.id < 1000]
+
+            num_zones = random.randint(1, 3)
+            for _ in range(num_zones):
+                x = random.uniform(200, self.width - 200)
+                y = random.uniform(200, self.height - 200)
+                radius = random.uniform(100.0, 250.0)
+                # Ensure hazard ID is unique
+                h_id = 1000 + len(self.hazards)
+                self.hazards.append(Hazard(id=h_id, x=x, y=y, radius=radius, kind="trap", damage=100.0))
+
             if current_tick % 10 == 0:
                 self._update_danger_grid()
 

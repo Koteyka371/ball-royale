@@ -344,6 +344,28 @@ class Action:
                 repulse_nx += (dx / dist) * force
                 repulse_ny += (dy / dist) * force
 
+
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "danger_grid"):
+            # Check grid cells ahead for danger
+            for step in [20, 50, 80]:
+                check_x = self.ball.x + nx * step
+                check_y = self.ball.y + ny * step
+                grid_x = int(check_x // 100)
+                grid_y = int(check_y // 100)
+                danger = self.world.arena.danger_grid.get((grid_x, grid_y), 0.0)
+                if danger > 1.0:
+                    # Repel from the danger cell center
+                    cell_cx = grid_x * 100 + 50
+                    cell_cy = grid_y * 100 + 50
+                    ddx = self.ball.x - cell_cx
+                    ddy = self.ball.y - cell_cy
+                    ddist_sq = ddx*ddx + ddy*ddy
+                    if ddist_sq > 0.0001:
+                        ddist = math.sqrt(ddist_sq)
+                        force = (danger / 10.0) * (1.0 / (ddist / 100.0 + 0.1))
+                        repulse_nx += (ddx / ddist) * force
+                        repulse_ny += (ddy / ddist) * force
+
         comb_nx = nx + repulse_nx * 0.5
         comb_ny = ny + repulse_ny * 0.5
 

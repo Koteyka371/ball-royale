@@ -9,6 +9,7 @@ var safe_zone_radius: float
 var safe_zone_center: Array
 var last_tick: int = -1
 var danger_grid: Dictionary = {}
+var hazards: Array = []
 
 func _init(_arena_size: float = 2000.0, _seed = null):
     width = _arena_size
@@ -56,11 +57,39 @@ func update_zone(current_tick: int, delta: float) -> void:
         safe_zone_radius -= 10.0 * delta
         if safe_zone_radius < 50.0:
             safe_zone_radius = 50.0
+        if current_tick % 600 == 0:
+            hazards.clear()
+            var num_zones = (randi() % 3) + 1
+            for i in range(num_zones):
+                var h = ProceduralArena.Hazard.new()
+                h.id = hazards.size()
+                h.x = randf_range(200, width - 200)
+                h.y = randf_range(200, height - 200)
+                h.radius = randf_range(100.0, 250.0)
+                h.kind = "trap"
+                h.damage = 100.0
+                hazards.append(h)
         if current_tick % 10 == 0:
             _update_danger_grid()
 
 func _update_danger_grid() -> void:
     danger_grid.clear()
+
+    for h in hazards:
+        var grid_x = int(h.x / 100)
+        var grid_y = int(h.y / 100)
+        var r_cells = int(h.radius / 100) + 1
+        for i in range(grid_x - r_cells, grid_x + r_cells + 1):
+            for j in range(grid_y - r_cells, grid_y + r_cells + 1):
+                var cx = i * 100 + 50
+                var cy = j * 100 + 50
+                var dist = sqrt((cx - h.x)*(cx - h.x) + (cy - h.y)*(cy - h.y))
+                if dist <= h.radius + 50:
+                    var key = str(i) + "," + str(j)
+                    var current = 0.0
+                    if danger_grid.has(key):
+                        current = danger_grid[key]
+                    danger_grid[key] = current + (h.damage / 10.0)
 
     var grid_w = int(width / 100) + 1
     var grid_h = int(height / 100) + 1
