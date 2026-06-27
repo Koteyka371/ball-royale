@@ -1,4 +1,0 @@
-{
-  "title": "Custom Neural Training Environments",
-  "description": "Allow players to spawn custom training arenas with specific scenarios (e.g. 5 juggernauts with no weapons, or maze-like maps with traps) where they can rapidly run neuroevolution specifically tailored to those situations to generate specialized neural balls before sending them to the main battle royale."
-}
