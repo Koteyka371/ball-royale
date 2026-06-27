@@ -28,6 +28,11 @@ class Spectator:
         self.current_action = "idle"
         self.skill_timer = 0.0
         self.personality = "spectator"
+        try:
+            from ui.heatmap.danger_grid_overlay import DangerGridOverlay  # type: ignore
+            self.danger_overlay = DangerGridOverlay()
+        except ImportError:
+            self.danger_overlay = None
 
     def get_hp_percent(self) -> float:
         return self.hp / self.max_hp if self.max_hp > 0 else 0.0
@@ -60,3 +65,8 @@ class Spectator:
 
     def __repr__(self) -> str:
         return f"{self.BALL_TYPE}#{self.id} HP={self.hp}/{self.max_hp} [{self.current_action}]"
+
+    def observe(self, world) -> None:
+        if hasattr(world, "arena") and hasattr(world.arena, "danger_grid"):
+            if self.danger_overlay:
+                self.danger_overlay.update_danger_grid(world.arena.danger_grid)

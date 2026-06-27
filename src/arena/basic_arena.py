@@ -48,3 +48,19 @@ class BasicArena:
             self.safe_zone_radius -= 10.0 * delta
             if self.safe_zone_radius < 50.0:
                 self.safe_zone_radius = 50.0
+            if current_tick % 10 == 0:
+                self._update_danger_grid()
+
+    def _update_danger_grid(self):
+        self.danger_grid.clear()
+
+        # Check safe zone
+        grid_w = int(self.width // 100) + 1
+        grid_h = int(self.height // 100) + 1
+        for i in range(grid_w):
+            for j in range(grid_h):
+                cx = i * 100 + 50
+                cy = j * 100 + 50
+                dist_to_center = ((cx - self.safe_zone_center[0])**2 + (cy - self.safe_zone_center[1])**2)**0.5
+                if dist_to_center > self.safe_zone_radius:
+                    self.danger_grid[(i, j)] = self.danger_grid.get((i, j), 0.0) + 5.0
