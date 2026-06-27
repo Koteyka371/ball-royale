@@ -5,7 +5,7 @@
       "area": "ai-core",
       "task_id": "idea-144",
       "status": "assigned",
-      "started_at": "2026-06-27T19:50:07.037249+00:00",
+      "started_at": "2026-06-27T21:01:52.093624+00:00",
       "cycles_today": 0
     },
     "agent-2": {
@@ -13,15 +13,15 @@
       "area": "behaviors",
       "task_id": "idea-147",
       "status": "assigned",
-      "started_at": "2026-06-27T19:50:07.037249+00:00",
+      "started_at": "2026-06-27T21:01:52.093624+00:00",
       "cycles_today": 0
     },
     "agent-3": {
       "name": "Jules Tests",
       "area": "tests",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "idea-168",
+      "status": "assigned",
+      "started_at": "2026-06-27T21:01:52.093624+00:00",
       "cycles_today": 0
     },
     "agent-4": {
