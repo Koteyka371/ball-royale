@@ -3263,6 +3263,54 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-183",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Teleporter hazards",
+      "description": "Add a new hazard kind 'teleporter' that when a ball steps on it, they are instantly transported to another random teleporter on the map or a random safe location, potentially dodging an attack or losing their target.",
+      "allowed_paths": [
+        "src/ai/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-184",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Controls Modifier",
+      "description": "A random event that happens mid-game, reversing the movement logic for all balls for 10 seconds, forcing them to adapt their AI vectors.",
+      "allowed_paths": [
+        "src/ai/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-185",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Teleportation Portals",
+      "description": "Special hazards that don't deal damage but teleport the ball to another random portal on the map, allowing for surprise flanks.",
+      "allowed_paths": [
+        "src/ai/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
