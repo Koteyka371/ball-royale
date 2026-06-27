@@ -81,6 +81,17 @@ class Action:
                         if dist_sq < hazard.radius * hazard.radius:
                             self.ball.x += hazard.direction_vector[0] * hazard.speed_magnitude * delta
                             self.ball.y += hazard.direction_vector[1] * hazard.speed_magnitude * delta
+                    elif hazard.kind == "gravity_well":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            if dist_sq > 0.0001:
+                                dist = math.sqrt(dist_sq)
+                                nx, ny = dx / dist, dy / dist
+                                pull_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 50.0 * delta
+                                self.ball.x += nx * pull_strength
+                                self.ball.y += ny * pull_strength
                     elif hazard.kind == "black_hole":
                         # Only update global state once per frame using the tick counter
                         current_tick = getattr(self.world, "tick", 0)

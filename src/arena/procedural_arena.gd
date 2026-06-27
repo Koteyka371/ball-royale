@@ -226,8 +226,12 @@ func update_zone(current_tick: int, delta: float) -> void:
                 h.x = x
                 h.y = y
                 h.radius = radius
-                h.kind = "trap"
-                h.damage = 100.0
+                if randf() < 0.2:
+                    h.kind = "gravity_well"
+                    h.damage = 0.0
+                else:
+                    h.kind = "trap"
+                    h.damage = 100.0
                 hazards.append(h)
 
         if current_tick % 10 == 0:
