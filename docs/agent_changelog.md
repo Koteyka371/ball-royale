@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-139] Kite Dynamic Retreat — *2026-06-27 00:13:26 UTC*
+
+Allow kiting balls to drop small traps or obstacles when retreating from faster enemies.
+
+---
+
 ## [idea-138] Kiting Specializations — *2026-06-26 22:52:42 UTC*
 
 Add varying kite distances depending on specific ball traits, e.g. Sniper kites at max range while a Skirmisher kites closely.
