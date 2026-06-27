@@ -1,4 +1,0 @@
-{
-  "title": "Dynamic Kite Pathfinding",
-  "description": "Improve kiting logic to not just run directly backward but find a path that avoids getting cornered by moving sideways or toward open spaces in the arena."
-}

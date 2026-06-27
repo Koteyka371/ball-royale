@@ -2852,6 +2852,38 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-166",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weapon-Specific Kiting Behaviors",
+      "description": "Balls with short cooldown fast attacks can kite constantly, while balls with slow high-damage attacks pause to shoot and then reposition, bringing a stutter-step mechanic to combat.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-167",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Kite Pathfinding",
+      "description": "Improve kiting logic to not just run directly backward but find a path that avoids getting cornered by moving sideways or toward open spaces in the arena.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
