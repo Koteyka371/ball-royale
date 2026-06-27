@@ -207,6 +207,29 @@ func update_zone(current_tick: int, delta: float) -> void:
         safe_zone_radius -= 10.0 * delta
         if safe_zone_radius < 50.0:
             safe_zone_radius = 50.0
+
+        if current_tick % 600 == 0:
+            var new_hazards = []
+            for h in hazards:
+                if h.id < 1000:
+                    new_hazards.append(h)
+            hazards = new_hazards
+
+            var num_zones = (randi() % 3) + 1
+            for i in range(num_zones):
+                var x = randf_range(200, width - 200)
+                var y = randf_range(200, height - 200)
+                var radius = randf_range(100.0, 250.0)
+                var h_id = 1000 + hazards.size()
+                var h = ProceduralArena.Hazard.new()
+                h.id = h_id
+                h.x = x
+                h.y = y
+                h.radius = radius
+                h.kind = "trap"
+                h.damage = 100.0
+                hazards.append(h)
+
         if current_tick % 10 == 0:
             _update_danger_grid()
 

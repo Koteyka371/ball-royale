@@ -460,6 +460,27 @@ func _apply_obstacle_avoidance(nx: float, ny: float, target=null, ignore_enemies
             repulse_nx += (dx / dist) * force
             repulse_ny += (dy / dist) * force
 
+
+    if self.world != null and "arena" in self.world and "danger_grid" in self.world.arena:
+        for step in [20, 50, 80]:
+            var check_x = self.ball.x + nx * step
+            var check_y = self.ball.y + ny * step
+            var grid_x = int(check_x / 100)
+            var grid_y = int(check_y / 100)
+            var key = str(grid_x) + "," + str(grid_y)
+            if self.world.arena.danger_grid.has(key):
+                var danger = self.world.arena.danger_grid[key]
+                if danger > 1.0:
+                    var cell_cx = grid_x * 100 + 50
+                    var cell_cy = grid_y * 100 + 50
+                    var ddx = self.ball.x - cell_cx
+                    var ddy = self.ball.y - cell_cy
+                    var ddist_sq = ddx*ddx + ddy*ddy
+                    if ddist_sq > 0.0001:
+                        var ddist = sqrt(ddist_sq)
+                        var force = (danger / 10.0) * (1.0 / (ddist / 100.0 + 0.1))
+                        repulse_nx += (ddx / ddist) * force
+                        repulse_ny += (ddy / ddist) * force
     var comb_nx = nx + repulse_nx * 0.5
     var comb_ny = ny + repulse_ny * 0.5
 
