@@ -3103,6 +3103,22 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-174",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Destructible Terrain",
+      "description": "Walls and rooms can be broken using explosive abilities.",
+      "allowed_paths": [
+        "src/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
