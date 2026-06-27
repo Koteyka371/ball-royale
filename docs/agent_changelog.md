@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-143] Danger Zones Arena Mutator — *2026-06-27 18:41:44 UTC*
+
+Introduce a new mutator where dynamic 'danger zones' spawn periodically on the map, registering as high values in the `danger_grid`. Balls must use the updated A* obstacle avoidance to navigate around these invisible traps or suffer massive damage if they traverse them.
+
+---
+
 ## [idea-170] Neural Skill Customization — *2026-06-27 17:12:11 UTC*
 
 Instead of a static skill like 'numpy', let the neural ball choose from a variety of skills (Dash, Shield, Heal) prior to battle, and provide the chosen skill as an input to the neural network so the network learns to adapt its playstyle according to the equipped skill.
