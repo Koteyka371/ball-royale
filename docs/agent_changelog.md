@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-144] Vampire Mode — *2026-06-27 21:27:29 UTC*
+
+A game mode where all balls slowly lose HP over time but regain HP when dealing damage or killing others. The last one standing wins.
+
+---
+
 ## [idea-147] Gravity Wells — *2026-06-27 21:26:58 UTC*
 
 Temporary gravity wells spawn randomly and pull balls towards them.
