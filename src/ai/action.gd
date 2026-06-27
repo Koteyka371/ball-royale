@@ -41,6 +41,19 @@ func execute(strategy: String, delta: float):
                     my_ball.speed = my_ball.get_meta("base_speed")
                 if "damage" in my_ball:
                     my_ball.damage = my_ball.get_meta("base_damage") * 1.2
+        else:
+            if "speed" in my_ball:
+                my_ball.speed = my_ball.get_meta("base_speed")
+
+        var st_timer = 0.0
+        if "stutter_timer" in my_ball:
+            st_timer = float(my_ball.stutter_timer)
+        elif my_ball.has_method("get_meta") and my_ball.has_meta("stutter_timer"):
+            st_timer = my_ball.get_meta("stutter_timer")
+
+        if st_timer > 0.0:
+            if "speed" in my_ball:
+                my_ball.speed = 0.01
 
     if strategy == "target_weak":
         _target_weak(delta)
@@ -935,6 +948,11 @@ func _group_attack(delta: float):
             var cooldown = 1.0
             if speed > 0: cooldown = max(0.2, 2.0 / speed)
             self.ball.attack_timer = cooldown
+            if cooldown >= 0.8:
+                if "stutter_timer" in self.ball:
+                    self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
+                elif self.ball.has_method("set_meta"):
+                    self.ball.set_meta("stutter_timer", min(cooldown * 0.4, 0.4))
 
     else:
         _idle(delta)
@@ -1184,8 +1202,18 @@ func _flank(delta: float):
                 var cooldown = max(0.2, 2.0 / speed if speed > 0 else 1.0)
                 if "attack_timer" in self.ball:
                     self.ball.attack_timer = cooldown
+                    if cooldown >= 0.8:
+                        if "stutter_timer" in self.ball:
+                            self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
+                        elif self.ball.has_method("set_meta"):
+                            self.ball.set_meta("stutter_timer", min(cooldown * 0.4, 0.4))
                 elif self.ball.has_method("set_meta"):
                     self.ball.set_meta("attack_timer", cooldown)
+                    if cooldown >= 0.8:
+                        if "stutter_timer" in self.ball:
+                            self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
+                        elif self.ball.has_method("set_meta"):
+                            self.ball.set_meta("stutter_timer", min(cooldown * 0.4, 0.4))
     else:
         _idle(delta)
 
@@ -1340,8 +1368,18 @@ func _chase(delta: float):
 
                 if "attack_timer" in self.ball:
                     self.ball.attack_timer = cooldown
+                    if cooldown >= 0.8:
+                        if "stutter_timer" in self.ball:
+                            self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
+                        elif self.ball.has_method("set_meta"):
+                            self.ball.set_meta("stutter_timer", min(cooldown * 0.4, 0.4))
                 elif self.ball.has_method("set_meta"):
                     self.ball.set_meta("attack_timer", cooldown)
+                    if cooldown >= 0.8:
+                        if "stutter_timer" in self.ball:
+                            self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
+                        elif self.ball.has_method("set_meta"):
+                            self.ball.set_meta("stutter_timer", min(cooldown * 0.4, 0.4))
             return
     else:
         if dist_to_target > 0.01:
@@ -1655,8 +1693,18 @@ func _attack(delta: float):
 
                 if "attack_timer" in self.ball:
                     self.ball.attack_timer = cooldown
+                    if cooldown >= 0.8:
+                        if "stutter_timer" in self.ball:
+                            self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
+                        elif self.ball.has_method("set_meta"):
+                            self.ball.set_meta("stutter_timer", min(cooldown * 0.4, 0.4))
                 elif self.ball.has_method("set_meta"):
                     self.ball.set_meta("attack_timer", cooldown)
+                    if cooldown >= 0.8:
+                        if "stutter_timer" in self.ball:
+                            self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
+                        elif self.ball.has_method("set_meta"):
+                            self.ball.set_meta("stutter_timer", min(cooldown * 0.4, 0.4))
     else:
         _idle(delta)
 
@@ -1803,8 +1851,18 @@ func _defend(delta: float):
 
                     if "attack_timer" in self.ball:
                         self.ball.attack_timer = cooldown
+                        if cooldown >= 0.8:
+                            if "stutter_timer" in self.ball:
+                                self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
+                            elif self.ball.has_method("set_meta"):
+                                self.ball.set_meta("stutter_timer", min(cooldown * 0.4, 0.4))
                     elif self.ball.has_method("set_meta"):
                         self.ball.set_meta("attack_timer", cooldown)
+                        if cooldown >= 0.8:
+                            if "stutter_timer" in self.ball:
+                                self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
+                            elif self.ball.has_method("set_meta"):
+                                self.ball.set_meta("stutter_timer", min(cooldown * 0.4, 0.4))
             return
     elif personality == "healer" or personality == "leader" or personality == "caring":
         var allies = _get_allies()
@@ -1884,8 +1942,18 @@ func _defend(delta: float):
 
                     if "attack_timer" in self.ball:
                         self.ball.attack_timer = cooldown
+                        if cooldown >= 0.8:
+                            if "stutter_timer" in self.ball:
+                                self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
+                            elif self.ball.has_method("set_meta"):
+                                self.ball.set_meta("stutter_timer", min(cooldown * 0.4, 0.4))
                     elif self.ball.has_method("set_meta"):
                         self.ball.set_meta("attack_timer", cooldown)
+                        if cooldown >= 0.8:
+                            if "stutter_timer" in self.ball:
+                                self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
+                            elif self.ball.has_method("set_meta"):
+                                self.ball.set_meta("stutter_timer", min(cooldown * 0.4, 0.4))
             return
 
     _idle(delta * 0.5)
@@ -2352,6 +2420,18 @@ func _update_skill_timer(delta: float):
         elif self.ball.has_method("set_meta"):
             self.ball.set_meta("attack_timer", attack_timer)
 
+    var stutter_timer = 0.0
+    if "stutter_timer" in self.ball:
+        stutter_timer = float(self.ball.stutter_timer)
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("stutter_timer"):
+        stutter_timer = self.ball.get_meta("stutter_timer")
+
+    if stutter_timer > 0.0:
+        if "stutter_timer" in self.ball:
+            self.ball.stutter_timer = stutter_timer - delta
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("stutter_timer", stutter_timer - delta)
+
 func _kite(delta: float):
     # Added Kite cosmetic comment
     # Kiting is fully implemented
@@ -2545,8 +2625,18 @@ func _kite(delta: float):
                 var cooldown = max(0.2, 2.0 / b_speed if b_speed > 0 else 1.0)
                 if "attack_timer" in self.ball:
                     self.ball.attack_timer = cooldown
+                    if cooldown >= 0.8:
+                        if "stutter_timer" in self.ball:
+                            self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
+                        elif self.ball.has_method("set_meta"):
+                            self.ball.set_meta("stutter_timer", min(cooldown * 0.4, 0.4))
                 elif self.ball.has_method("set_meta"):
                     self.ball.set_meta("attack_timer", cooldown)
+                    if cooldown >= 0.8:
+                        if "stutter_timer" in self.ball:
+                            self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
+                        elif self.ball.has_method("set_meta"):
+                            self.ball.set_meta("stutter_timer", min(cooldown * 0.4, 0.4))
     else:
         _idle(delta)
 
