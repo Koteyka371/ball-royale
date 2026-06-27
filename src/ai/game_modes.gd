@@ -10,6 +10,10 @@ class GameMode:
     func setup(world, balls: Array) -> void:
         pass
 
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        pass
+
+
     func check_winner(world, balls: Array):
         return null
 
@@ -120,7 +124,7 @@ class ZombieInfectionMode extends GameMode:
                 else:
                     b.team = "Survivor"
 
-    func tick(world, balls: Array) -> void:
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
         var survivors = []
         for b in balls:
             if ("team" in b) and b.team == "Survivor":
@@ -383,7 +387,53 @@ class EvolutionarySimulationMode extends GameMode:
 
         return null
 
+
+class VampireRoyaleMode extends GameMode:
+    var tick_timer = 0.0
+
+    func _init() -> void:
+        name = "Vampire Royale"
+        description = "All balls slowly lose HP over time but regain HP when dealing damage. Last one standing wins."
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        tick_timer += delta
+        if tick_timer >= 1.0:
+            tick_timer = 0.0
+            for b in balls:
+                if b.alive and b.ball_type != "spectator":
+                    if "hp" in b:
+                        b.hp = max(0, b.hp - 5.0)
+                        if b.hp <= 0:
+                            b.alive = false
+
+    func check_winner(world, balls: Array):
+        var alive = []
+        for b in balls:
+            if b.alive and b.ball_type != "spectator":
+                alive.append(b)
+
+        if alive.size() == 0:
+            return "Draw"
+
+        var teams_alive = {}
+        for b in alive:
+            if "team" in b:
+                teams_alive[b.team] = true
+            else:
+                teams_alive[b.ball_type] = true
+
+        if teams_alive.size() == 1:
+            if has_method("_award_skill_points"): _award_skill_points()
+            return teams_alive.keys()[0]
+
+        if alive.size() == 1:
+            if has_method("_award_skill_points"): _award_skill_points()
+            return alive[0].ball_type
+
+        return null
+
 var GAME_MODES = {
+    "vampire_royale": VampireRoyaleMode.new(),
     "battle_royale": BattleRoyaleMode.new(),
     "team_deathmatch": TeamDeathmatchMode.new(),
     "zombie_infection": ZombieInfectionMode.new(),
