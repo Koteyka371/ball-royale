@@ -45,10 +45,11 @@ class NeuralTrainer:
         for elite in elites:
             new_population.append(elite.clone())
 
-        # Fill the rest with mutated clones of elites
+# Fill the rest with crossed-over and mutated clones of elites
         while len(new_population) < self.population_size:
-            parent = random.choice(elites)
-            child = parent.clone()
+            parent1 = random.choice(elites)
+            parent2 = random.choice(elites)
+            child = parent1.crossover(parent2)
             child.mutate(rate=mutation_rate, amount=mutation_amount)
             new_population.append(child)
 

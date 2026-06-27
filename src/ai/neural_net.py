@@ -39,6 +39,22 @@ class NeuralNet:
                 if random.random() < rate:
                     self.weights[i][j] += random.uniform(-amount, amount)
 
+    def crossover(self, other: 'NeuralNet') -> 'NeuralNet':
+        """Combines weights and biases from this network and another."""
+        child = NeuralNet(self.input_size, self.output_size)
+        for i in range(self.output_size):
+            if random.random() < 0.5:
+                child.biases[i] = self.biases[i]
+            else:
+                child.biases[i] = other.biases[i]
+
+            for j in range(self.input_size):
+                if random.random() < 0.5:
+                    child.weights[i][j] = self.weights[i][j]
+                else:
+                    child.weights[i][j] = other.weights[i][j]
+        return child
+
     def clone(self) -> 'NeuralNet':
         """Create a deep copy of this network."""
         new_net = NeuralNet(self.input_size, self.output_size)

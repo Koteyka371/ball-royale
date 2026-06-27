@@ -262,6 +262,30 @@ class CaptureTheFlagMode(GameMode):
                 return "Blue"
         return None
 
+
+class EvolutionarySimulationMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Evolutionary Simulation"
+        self.description = "Only Neural Balls compete. After the match, a genetic algorithm breeds top performers."
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        # Convert everyone to Neural
+        for i, b in enumerate(balls):
+            if getattr(b, "ball_type", None) != "spectator":
+                b.ball_type = "neural"
+                b.team = f"Neural_{i}"
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+
+        if len(alive) == 1:
+            return alive[0].team
+
+        return None
+
 GAME_MODES = {
     "battle_royale": BattleRoyaleMode(),
     "team_deathmatch": TeamDeathmatchMode(),
@@ -269,5 +293,6 @@ GAME_MODES = {
     "boss_fight": BossFightMode(),
     "vip_defense": VIPDefenseMode(),
     "survival": SurvivalMode(),
-    "capture_the_flag": CaptureTheFlagMode()
+    "capture_the_flag": CaptureTheFlagMode(),
+    "evolutionary_simulation": EvolutionarySimulationMode()
 }
