@@ -2439,7 +2439,7 @@
     },
     {
       "id": "idea-140",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Custom Neural Skill Input Node Editor",

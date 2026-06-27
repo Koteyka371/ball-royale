@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-140] Custom Neural Skill Input Node Editor — *2026-06-27 08:12:54 UTC*
+
+Create a visual configuration interface in the UI (or simple JSON mapping system) where players can choose which inputs their custom Neural Ball has access to. Instead of standard HP, Aggression, Kills, and Timer, they could pipe in variables like Nearest Enemy Distance, Number of Allies, Boss HP, or Map Hazard Distance, to allow for custom fine-tuned Neural strategies.
+
+---
+
 ## [idea-139] Kite Dynamic Retreat — *2026-06-27 00:13:26 UTC*
 
 Allow kiting balls to drop small traps or obstacles when retreating from faster enemies.
