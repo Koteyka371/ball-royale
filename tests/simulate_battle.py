@@ -499,6 +499,14 @@ class BattleSimulation:
         self.stats["survivors"] = len(alive_balls)
         self.stats["battle_duration"] = round(elapsed, 3)
         self.stats["winner"] = alive_balls[0].ball_type if alive_balls else None
+
+        # Profile integration
+        try:
+            from system.profile import ProfileManager
+            pm = ProfileManager("profile.json")
+            pm.add_skill_points(10)  # Reward player 10 points for finishing a match
+        except Exception:
+            pass
         if alive_balls:
             self.stats["avg_hp_at_end"] = round(sum(b.hp for b in alive_balls) / len(alive_balls), 1)
         for b in self.balls:

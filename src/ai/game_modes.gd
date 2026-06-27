@@ -39,6 +39,7 @@ class BattleRoyaleMode extends GameMode:
                 alive.append(b)
 
         if alive.size() == 0:
+            _award_skill_points()
             return "Draw"
 
         var teams_alive = {}
@@ -49,12 +50,18 @@ class BattleRoyaleMode extends GameMode:
                 teams_alive[b.ball_type] = true
 
         if teams_alive.size() == 1:
+            _award_skill_points()
             return teams_alive.keys()[0]
 
         if alive.size() == 1:
+            _award_skill_points()
             return alive[0].ball_type
 
         return null
+
+    func _award_skill_points() -> void:
+        var pm = ProfileManager.new()
+        pm.add_skill_points(10)
 
 class TeamDeathmatchMode extends GameMode:
     func _init() -> void:
