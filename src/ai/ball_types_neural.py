@@ -3,7 +3,7 @@ Neural Ball Implementation
 A ball controlled by a simple neural network using a custom numpy-like array implementation.
 No external libraries are used as per requirements.
 """
-
+import os
 from ai.personality import Personality
 import random
 from typing import List, Tuple, Union, Any
@@ -97,6 +97,16 @@ class Neural:
 
         # Neural Network architecture
         self.input_size = 4
+        config_path = os.path.join(os.path.dirname(__file__), "..", "ui", "neural_config.json")
+        if os.path.exists(config_path):
+            try:
+                import json
+                with open(config_path, "r") as f:
+                    data = json.load(f)
+                    if "neural_inputs" in data:
+                        self.input_size = len(data["neural_inputs"])
+            except Exception:
+                pass
         self.output_size = 4
         self.hidden_size = 5
 
