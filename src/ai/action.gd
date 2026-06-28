@@ -121,6 +121,22 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+	# Temporal rift logic to modify local delta
+	if world != null and "arena" in world and "hazards" in world.arena:
+		for hazard in world.arena.hazards:
+			if hazard.get("kind") == "temporal_rift":
+				var my_rad = 10.0
+				if "radius" in self.ball:
+					my_rad = float(self.ball.radius)
+				var dist = sqrt((self.ball.x - hazard.x) * (self.ball.x - hazard.x) + (self.ball.y - hazard.y) * (self.ball.y - hazard.y))
+				if dist <= hazard.radius + my_rad:
+					var time_scale = 0.5
+					if "time_scale" in hazard:
+						time_scale = float(hazard.time_scale)
+					elif hazard.has_method("get_meta") and hazard.has_meta("time_scale"):
+						time_scale = float(hazard.get_meta("time_scale"))
+					delta *= time_scale
+					break
     var my_ball = self.ball
 
     var cl_timer = 0.0
@@ -356,6 +372,8 @@ func execute(strategy: String, delta: float):
 
         if "hazards" in self.world.arena:
             for hazard in self.world.arena.hazards:
+                if hazard.kind == "temporal_rift":
+			continue
                 if hazard.kind == "explosive_barrel":
                     var current_tick = world.get("tick") if world.has_method("get") else 0
                     if not hazard.has_meta("last_updated_tick") or hazard.get_meta("last_updated_tick") != current_tick:
@@ -573,6 +591,8 @@ func execute(strategy: String, delta: float):
             for hazard in self.world.arena.hazards:
                 var dist = sqrt((self.ball.x - hazard.x) * (self.ball.x - hazard.x) + (self.ball.y - hazard.y) * (self.ball.y - hazard.y))
                 if dist < (self.ball.radius + hazard.radius):
+                    if hazard.kind == "temporal_rift":
+			continue
                     if hazard.kind == "explosive_barrel":
                         if not hazard.has_meta("is_exploded") or not hazard.get_meta("is_exploded"):
                             var bvx = 0.0
