@@ -168,7 +168,6 @@ class BossFightMode extends GameMode:
     func _init() -> void:
         name = "Boss Fight"
         description = "Multiple players fight one giant boss."
-
     func setup(world, balls: Array) -> void:
         var valid_balls = []
         for b in balls:
@@ -183,6 +182,31 @@ class BossFightMode extends GameMode:
                 boss.hp = boss.max_hp
             if "damage" in boss:
                 boss.damage *= 2
+
+            # Position the boss in the center of the arena
+            var arena_width = 1000
+            var arena_height = 1000
+            if world != null and "arena" in world and world.arena != null:
+                if "width" in world.arena:
+                    arena_width = world.arena.width
+                if "height" in world.arena:
+                    arena_height = world.arena.height
+
+            if "x" in boss and "y" in boss:
+                boss.x = arena_width / 2.0
+                boss.y = arena_height / 2.0
+
+            if "radius" in boss:
+                boss.radius *= 3.0
+            elif boss.has_meta("radius"):
+                boss.set_meta("radius", boss.get_meta("radius") * 3.0)
+            else:
+                boss.set_meta("radius", 30.0)
+
+            if "base_speed" in boss:
+                boss.base_speed *= 0.8
+            elif boss.has_meta("base_speed"):
+                boss.set_meta("base_speed", boss.get_meta("base_speed") * 0.8)
 
             for i in range(1, valid_balls.size()):
                 valid_balls[i].team = "Hunters"
