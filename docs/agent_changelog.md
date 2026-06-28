@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-207] Consumable Trap Items — *2026-06-28 12:08:08 UTC*
+
+Allow players to pick up and place consumable traps like landmines or freeze traps to control the arena.
+
+---
+
 ## [idea-173] Weather Effects Simulator — *2026-06-28 12:04:23 UTC*
 
 Add dynamic weather during matches (e.g., rain makes the arena slippery and affects movement physics, fog limits perception radius).
