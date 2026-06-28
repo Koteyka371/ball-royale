@@ -45,6 +45,26 @@ func execute(strategy: String, delta: float):
             if "speed" in my_ball:
                 my_ball.speed = my_ball.get_meta("base_speed")
 
+
+        if self.world != null and "arena" in self.world and "weather" in self.world.arena:
+            if self.world.arena.weather == "rain":
+                if "speed" in my_ball:
+                    my_ball.speed = my_ball.get_meta("base_speed") * 1.5
+                if "damage" in my_ball:
+                    my_ball.damage = my_ball.get_meta("base_damage")
+                if "friction" in my_ball:
+                    my_ball.friction = my_ball.get_meta("base_friction", 0.5) * 0.2
+            elif self.world.arena.weather == "fog":
+                if "speed" in my_ball:
+                    my_ball.speed = my_ball.get_meta("base_speed") * 0.8
+                if "damage" in my_ball:
+                    my_ball.damage = my_ball.get_meta("base_damage")
+            else:
+                if "speed" in my_ball:
+                    my_ball.speed = my_ball.get_meta("base_speed")
+                if "damage" in my_ball:
+                    my_ball.damage = my_ball.get_meta("base_damage")
+
         var st_timer = 0.0
         if "stutter_timer" in my_ball:
             st_timer = float(my_ball.stutter_timer)

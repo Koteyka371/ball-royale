@@ -468,3 +468,27 @@ class DayNightArena extends ProceduralArena:
         if day_night_timer >= phase_duration:
             day_night_timer = 0.0
             is_night = not is_night
+
+class WeatherArena extends ProceduralArena:
+	var weather = "clear"
+	var weather_timer = 0.0
+	var phase_duration = 10.0
+
+	func _init(size: float = 2000.0, seed_val = null):
+		super(size, 5, seed_val)
+
+	func generate():
+		super.generate()
+
+	func update_zone(current_tick: int, delta: float) -> void:
+		super.update_zone(current_tick, delta)
+		weather_timer += delta
+		if weather_timer >= phase_duration:
+			weather_timer = 0.0
+			var r = randf()
+			if r < 0.33:
+				weather = "clear"
+			elif r < 0.66:
+				weather = "rain"
+			else:
+				weather = "fog"

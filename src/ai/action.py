@@ -32,6 +32,21 @@ class Action:
         else:
             self.ball.speed = self.ball.base_speed
 
+
+        if hasattr(self.world, "arena") and getattr(self.world.arena, "weather", None) is not None:
+            weather = self.world.arena.weather
+            if weather == "rain":
+                self.ball.speed = self.ball.base_speed * 1.5
+                self.ball.damage = self.ball.base_damage
+                if hasattr(self.ball, "friction"):
+                    self.ball.friction = getattr(self.ball, "base_friction", 0.5) * 0.2 # Slippery
+            elif weather == "fog":
+                self.ball.speed = self.ball.base_speed * 0.8
+                self.ball.damage = self.ball.base_damage
+            else:
+                self.ball.speed = self.ball.base_speed
+                self.ball.damage = self.ball.base_damage
+
         if getattr(self.ball, "is_decoy", False):
             self.ball.decoy_timer -= delta
             if self.ball.decoy_timer <= 0:

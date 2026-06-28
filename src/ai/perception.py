@@ -25,6 +25,13 @@ class Perception:
             else:
                 perception_radius = max(perception_radius, 2000.0)
 
+
+        if hasattr(self.world, "arena") and getattr(self.world.arena, "weather", None) is not None:
+            if self.world.arena.weather == "fog":
+                perception_radius = min(perception_radius, 100.0)
+            elif self.world.arena.weather == "rain":
+                perception_radius = max(perception_radius, 400.0)
+
         data: Dict[str, Any] = {
             "enemies": [],
             "allies": [],

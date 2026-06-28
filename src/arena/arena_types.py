@@ -1184,7 +1184,27 @@ class DayNightArena(ProceduralArena):
             self.day_night_timer = 0.0
             self.is_night = not self.is_night
 
+
+class WeatherArena(ProceduralArena):
+    def __init__(self, arena_size: float = 2000.0, seed: int | None = None):
+        super().__init__(arena_size, 5, seed)
+        self.weather = "clear"
+        self.weather_timer = 0.0
+        self.phase_duration = 10.0
+
+    def generate(self):
+        super().generate()
+
+    def update_zone(self, current_tick: int, delta: float):
+        super().update_zone(current_tick, delta)
+        self.weather_timer += delta
+        if self.weather_timer >= self.phase_duration:
+            self.weather_timer = 0.0
+            import random
+            self.weather = random.choice(["clear", "rain", "fog"])
+
 ARENAS = {
+    "weather": WeatherArena,
     "black_hole": BlackHoleArena,
     "neural_ball": NeuralBallArena,
     "flee": FleeArena,

@@ -1,0 +1,4 @@
+{
+  "title": "Dynamic Wind Effects",
+  "description": "Add a 'Wind' weather type that applies a constant directional force to all balls and hazards, challenging players and AI to adjust their pathfinding and shooting to account for wind drift."
+}
