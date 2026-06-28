@@ -88,6 +88,16 @@ func execute(strategy: String, delta: float):
             if "speed" in my_ball:
                 my_ball.speed = 0.01
 
+    # Handle minion decay
+    var is_minion = false
+    if self.ball.has_method("has_meta") and self.ball.has_meta("is_minion"):
+        is_minion = self.ball.get_meta("is_minion")
+    if is_minion:
+        self.ball.hp -= 2.0 * delta
+        if self.ball.hp <= 0:
+            self.ball.hp = 0
+            self.ball.alive = false
+
     var is_decoy = false
     if "is_decoy" in my_ball:
         is_decoy = my_ball.is_decoy
@@ -2337,6 +2347,50 @@ func _use_skill():
                 self.ball.set_meta("team_message", {"type": "buff_command", "radius": 200})
             elif "team_message" in self.ball:
                 self.ball.team_message = {"type": "buff_command", "radius": 200}
+        elif skill_name == "raise_dead":
+            if "dead_balls" in self.world and "balls" in self.world:
+                var recent_dead = []
+                for b in self.world.dead_balls:
+                    var time_since = 0.0
+                    if b.has_meta("time_since_death"):
+                        time_since = b.get_meta("time_since_death")
+                    var b_team = ""
+                    if "team" in b: b_team = b.team
+                    var self_team = ""
+                    if "team" in self.ball: self_team = self.ball.team
+                    if time_since < 5.0 and b_team != self_team:
+                        recent_dead.append(b)
+
+                if recent_dead.size() > 0:
+                    var target_dead = recent_dead[recent_dead.size() - 1]
+                    self.world.dead_balls.erase(target_dead)
+
+                    var minion = target_dead.duplicate()
+                    var next_id = randi() % 90000 + 10000
+                    if "next_id" in self.world:
+                        next_id = self.world.next_id
+                    minion.id = next_id
+
+                    var base_hp = 100.0
+                    if "max_hp" in target_dead: base_hp = float(target_dead.max_hp)
+                    minion.hp = base_hp * 0.3
+                    minion.max_hp = minion.hp
+
+                    if "team" in self.ball:
+                        minion.team = self.ball.team
+                    elif "ball_type" in self.ball:
+                        minion.team = self.ball.ball_type
+
+                    minion.set_meta("is_minion", true)
+                    minion.set_meta("minion_owner", self.ball.id)
+                    minion.alive = true
+
+                    if "skill_timer" in minion: minion.skill_timer = 0.0
+                    if "attack_timer" in minion: minion.attack_timer = 0.0
+                    if "current_action" in minion: minion.current_action = "idle"
+
+                    self.world.balls.append(minion)
+
         elif skill_name == "deploy_decoy":
             if "balls" in self.world:
                 var decoy = null
