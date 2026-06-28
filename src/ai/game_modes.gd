@@ -697,7 +697,7 @@ class WeatherChaosMode extends GameMode:
 		weather_timer += delta
 		if weather_timer > 10.0:
 			weather_timer = 0.0
-			var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm"]
+			var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm"]
 			weather = weathers[randi() % weathers.size()]
 			if weather == "wind":
 				if has_method("set_meta"):
@@ -713,6 +713,10 @@ class WeatherChaosMode extends GameMode:
 				world.arena.is_raining = true
 			else:
 				world.arena.is_raining = false
+			if weather == "sandstorm":
+				world.arena.is_sandstorming = true
+			else:
+				world.arena.is_sandstorming = false
 
 		for b in balls:
 			if b.alive and b.ball_type != "spectator":
@@ -786,6 +790,21 @@ class WeatherChaosMode extends GameMode:
 					if b.has_method("set_meta"):
 						b.set_meta("dash_range_mult", 1.0)
 						b.set_meta("steering_mult", 1.0)
+				elif weather == "sandstorm":
+					if "speed" in b: b.speed = base_spd * 0.7
+					if "damage" in b: b.damage = base_dmg
+					if b.has_method("set_meta"):
+						b.set_meta("dash_range_mult", 0.5)
+						b.set_meta("steering_mult", 0.5)
+						var sand_timer = 0.0
+						if b.has_meta("sandstorm_timer"):
+							sand_timer = b.get_meta("sandstorm_timer")
+						sand_timer += delta
+						if sand_timer >= 1.0:
+							sand_timer = 0.0
+							if "hp" in b:
+								b.hp -= 1.0
+						b.set_meta("sandstorm_timer", sand_timer)
 					if randf() < 0.05 * delta:
 						if "hp" in b: b.hp -= 20
 

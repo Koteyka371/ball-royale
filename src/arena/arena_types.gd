@@ -503,6 +503,8 @@ class DayNightArena extends ProceduralArena:
 
 class ThickFogArena extends ProceduralArena:
 	var is_foggy = false
+	var is_raining = false
+	var is_sandstorming = false
 	var fog_timer = 0.0
 	var phase_duration = 20.0
 

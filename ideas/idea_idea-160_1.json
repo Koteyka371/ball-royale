@@ -1,0 +1,4 @@
+{
+  "title": "Quicksand Hazard",
+  "description": "Add a new hazard called quicksand that spawns dynamically in the arena during the game. Balls that wander into the quicksand are slowed down significantly, and taking damage from other hazards while inside quicksand amplifies the damage."
+}
