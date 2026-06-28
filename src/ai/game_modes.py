@@ -449,6 +449,39 @@ class BlackHoleMode(GameMode):
 
         return None
 
+class PlayerVsNeuralMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Player vs Neural"
+        self.description = "Players fight against learning neural networks to shape their strategy."
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        players_count = min(1, len(valid_balls) // 2) if len(valid_balls) > 0 else 0
+        if players_count == 0 and len(valid_balls) > 1:
+            players_count = 1
+        for i, b in enumerate(valid_balls):
+            if i < players_count:
+                b.team = "Players"
+            else:
+                b.ball_type = "neural"
+                b.team = "Neural"
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+
+        players_alive = any(getattr(b, "team", "") == "Players" for b in alive)
+        neural_alive = any(getattr(b, "team", "") == "Neural" for b in alive)
+
+        if not players_alive:
+            return "Neural"
+        if not neural_alive:
+            return "Players"
+
+        return None
+
 GAME_MODES = {
     "black_hole": BlackHoleMode(),
     "king_of_the_hill": KingOfTheHillMode(),
@@ -460,5 +493,6 @@ GAME_MODES = {
     "vip_defense": VIPDefenseMode(),
     "survival": SurvivalMode(),
     "capture_the_flag": CaptureTheFlagMode(),
-    "evolutionary_simulation": EvolutionarySimulationMode()
+    "evolutionary_simulation": EvolutionarySimulationMode(),
+    "player_vs_neural": PlayerVsNeuralMode()
 }

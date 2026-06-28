@@ -1,0 +1,4 @@
+{
+  "title": "Interactive Hazards and Switches",
+  "description": "Add buttons or switches scattered across the arena that balls can collide with to trigger map-wide events, such as activating traps, opening new paths, or spawning powerful boosters."
+}
