@@ -230,7 +230,6 @@ class Action:
             if ball_type != "spectator":
                 cx, cy = getattr(self.world.arena, "safe_zone_center", (0, 0))
                 radius = getattr(self.world.arena, "safe_zone_radius", float('inf'))
-                import math
                 dist = math.sqrt((self.ball.x - cx)**2 + (self.ball.y - cy)**2)
                 if dist > radius:
                     is_immune = getattr(self.ball, "zone_immunity_timer", 0.0) > 0.0
@@ -336,8 +335,12 @@ class Action:
                             current_tick = getattr(self.world, "tick", 0)
                             last_teleport = getattr(self.ball, "last_teleport_tick", -100)
                             if current_tick - last_teleport > 10:  # Prevent immediate re-teleport
-                                if hazard.kind == "teleporter":
-                                    teleporters = [h for h in self.world.arena.hazards if h.kind == "teleporter" and h != hazard]
+                                if hasattr(hazard, "target_x") and hasattr(hazard, "target_y"):
+                                    # Use explicit pair links
+                                    self.ball.x = hazard.target_x
+                                    self.ball.y = hazard.target_y
+                                elif hazard.kind in ("teleporter", "portal"):
+                                    teleporters = [h for h in self.world.arena.hazards if h.kind == hazard.kind and h != hazard]
                                     if teleporters:
                                         import random
                                         target_tp = random.choice(teleporters)
@@ -492,8 +495,7 @@ class Action:
                                 if self.ball.hp <= 0:
                                     self.ball.alive = False
 
-                            import math
-                            dx = self.ball.x - hazard.x
+                                    dx = self.ball.x - hazard.x
                             dy = self.ball.y - hazard.y
                             dist = math.sqrt(dx*dx + dy*dy)
                             if dist > 0.0001:
@@ -647,7 +649,6 @@ class Action:
             self.ball.vy = dy / delta
 
             if hasattr(self.ball, "distance_traveled"):
-                import math
                 self.ball.distance_traveled += math.sqrt(dx*dx + dy*dy)
 
 
@@ -993,7 +994,6 @@ class Action:
             dx, dy = target.x - self.ball.x, target.y - self.ball.y
             dist_sq = dx * dx + dy * dy
             if dist_sq > 0.0001:
-                import math
                 dist = math.sqrt(dist_sq)
                 nx, ny = dx / dist, dy / dist
 
@@ -1268,7 +1268,6 @@ class Action:
         dy = target.y - self.ball.y
         dist_sq = dx * dx + dy * dy
         if dist_sq > 0.0001:
-            import math
             dist = math.sqrt(dist_sq)
             nx = dx / dist
             ny = dy / dist
@@ -1848,7 +1847,6 @@ class Action:
             self._idle(delta)
 
     def _use_skill(self) -> None:
-        import math
         skill_timer = getattr(self.ball, "skill_timer", 0.0)
         if skill_timer <= 0 and hasattr(self.ball, "use_skill"):
             self.ball.use_skill()
@@ -1899,7 +1897,6 @@ class Action:
             elif skill_name == "entangle":
                 enemies = self._get_enemies()
                 if enemies:
-                    import math
                     target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
                     self.ball.entangled_with_id = target.id
                     target.entangled_with_id = self.ball.id
@@ -1944,7 +1941,6 @@ class Action:
             elif skill_name in ("Действие", "action_skill"):
                 self.ball.team_message = {"type": "action_skill_used", "radius": 150}
             elif skill_name == "numpy":
-                import math
                 enemies = self._get_enemies()
                 if enemies:
                     target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
@@ -1983,7 +1979,6 @@ class Action:
             elif skill_name == "dash":
                 self._spawn_skill_particles("dash")
                 import random
-                import math
                 dash_range_mult = getattr(self.ball, "dash_range_mult", 1.0)
                 dash_dist = 100.0 * dash_range_mult
                 enemies = self._get_enemies()
@@ -2001,7 +1996,6 @@ class Action:
                     self.ball.y += math.sin(angle) * dash_dist
 
             elif skill_name == "elemental_burst":
-                import math
                 enemies = self._get_enemies()
 
                 # Check for other elementalists nearby (chain reaction)
@@ -2052,7 +2046,6 @@ class Action:
                     self.world.arena.hazards.append(trap)
 
             elif skill_name == "explosion":
-                import math
                 enemies = self._get_enemies()
                 explosion_radius = 100.0
                 explosion_damage = 50.0
@@ -2080,7 +2073,6 @@ class Action:
 
             elif skill_name == "target_strong":
                 import random
-                import math
                 enemies = self._get_enemies()
                 if enemies:
                     target = self._find_strongest_enemy_deterministic(enemies)
@@ -2187,7 +2179,6 @@ class Action:
             dist_sq = dx * dx + dy * dy
             min_dist = ball_radius + other_radius
             if dist_sq < min_dist * min_dist and dist_sq > 0.0001:
-                import math
                 dist = math.sqrt(dist_sq)
                 overlap = min_dist - dist
 
@@ -2240,7 +2231,6 @@ class Action:
             dy = other.y - self.ball.y
             dist_sq = dx * dx + dy * dy
             if dist_sq > 0.0001 and dist_sq < ripple_radius * ripple_radius:
-                import math
                 dist = math.sqrt(dist_sq)
                 nx = dx / dist
                 ny = dy / dist
@@ -2338,7 +2328,6 @@ class Action:
         dist_squared = diff_x * diff_x + diff_y * diff_y
 
         if dist_squared > 0.0001:
-            import math
             actual_dist = math.sqrt(dist_squared)
             norm_x, norm_y = diff_x / actual_dist, diff_y / actual_dist
 
@@ -2438,7 +2427,6 @@ class Action:
         # Recalculate distance after movement
         diff_x_after, diff_y_after = optimal_target.x - self.ball.x, optimal_target.y - self.ball.y
         dist_sq_after = diff_x_after * diff_x_after + diff_y_after * diff_y_after
-        import math
         dist_after = math.sqrt(dist_sq_after) if dist_sq_after > 0.0001 else 0.0
 
         ball_attack_range = getattr(self.ball, "attack_range", 150.0)
@@ -2515,7 +2503,6 @@ class Action:
 
         # If too far, move towards them
         if dist_sq > 2500: # distance 50
-            import math
             dist = math.sqrt(dist_sq)
             nx = dx / dist
             ny = dy / dist
@@ -2589,7 +2576,6 @@ class Action:
         dy = target_enemy.y - self.ball.y
         dist_sq = dx*dx + dy*dy
 
-        import math
         dist = math.sqrt(dist_sq) if dist_sq > 0 else 0
 
         if dist > 0.0001:
@@ -2717,7 +2703,6 @@ class Action:
         enemies = self._get_enemies()
         if enemies:
             target = self._get_target(enemies)
-            import math
             dx = target.x - self.ball.x
             dy = target.y - self.ball.y
             dist = math.sqrt(dx*dx + dy*dy)

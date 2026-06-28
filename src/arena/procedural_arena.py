@@ -116,8 +116,16 @@ class ProceduralArena:
 
         # Generate hazards
         num_hazards = self.num_rooms * 2
+
+        # Explicitly ensure portals spawn in pairs
+        portal_count = 0
+
         for i in range(num_hazards):
-            kind = random.choice(["spikes", "lava", "fake_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring"])
+            kind = random.choice(["spikes", "lava", "fake_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "portal"])
+
+            if kind == "portal":
+                portal_count += 1
+
             if kind == "spikes":
                 radius = random.uniform(15.0, 30.0)
                 damage = 20.0
@@ -136,12 +144,32 @@ class ProceduralArena:
             elif kind == "healing_spring":
                 radius = random.uniform(40.0, 80.0)
                 damage = -20.0
+            elif kind == "portal":
+                radius = 30.0
+                damage = 0.0
             else:
                 radius = 15.0
                 damage = 50.0
 
             hx, hy = self.get_random_spawn_point(radius)
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=radius, kind=kind, damage=damage))
+
+        # Ensure even number of portals, pair them up
+        portals = [h for h in self.hazards if h.kind == "portal"]
+        if len(portals) % 2 != 0:
+            # Remove the last portal to make it even
+            self.hazards.remove(portals[-1])
+            portals.pop()
+
+        # Assign targets
+        for i in range(0, len(portals), 2):
+            if i + 1 < len(portals):
+                p1 = portals[i]
+                p2 = portals[i+1]
+                p1.target_x = p2.x
+                p1.target_y = p2.y
+                p2.target_x = p1.x
+                p2.target_y = p1.y
 
     def get_random_spawn_point(self, radius: float) -> Tuple[float, float]:
         if not self.rooms:

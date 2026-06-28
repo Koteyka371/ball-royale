@@ -147,14 +147,16 @@ func generate():
     for i in range(num_hazards):
         var r = rng.randf()
         var kind = "spikes"
-        if r < 0.25:
+        if r < 0.2:
             kind = "lava"
-        elif r < 0.5:
+        elif r < 0.4:
             kind = "fake_booster"
-        elif r < 0.75:
+        elif r < 0.6:
             kind = "proximity_trap"
-        elif r < 0.9:
+        elif r < 0.8:
             kind = "spinning_laser"
+        elif r < 0.95:
+            kind = "portal"
 
         var radius = 15.0
         var damage = 20.0
@@ -170,12 +172,36 @@ func generate():
         elif kind == "spinning_laser":
             radius = rng.randf_range(100.0, 150.0)
             damage = 100.0
+        elif kind == "portal":
+            radius = 30.0
+            damage = 0.0
         else:
             radius = 15.0
             damage = 50.0
 
         var spawn_pt = get_random_spawn_point(radius)
         hazards.append(ProceduralArena.Hazard.new(i, spawn_pt[0], spawn_pt[1], radius, kind, damage))
+
+    # Ensure portals are in pairs and set target_x/y
+    var portals = []
+    for h in hazards:
+        if h.kind == "portal":
+            portals.append(h)
+
+    if portals.size() % 2 != 0:
+        var last_portal = portals.pop_back()
+        var idx = hazards.find(last_portal)
+        if idx != -1:
+            hazards.remove_at(idx)
+
+    for i in range(0, portals.size(), 2):
+        if i + 1 < portals.size():
+            var p1 = portals[i]
+            var p2 = portals[i+1]
+            p1.set_meta("target_x", p2.x)
+            p1.set_meta("target_y", p2.y)
+            p2.set_meta("target_x", p1.x)
+            p2.set_meta("target_y", p1.y)
 
 func get_random_spawn_point(radius: float) -> Array:
     if rooms.size() == 0:
