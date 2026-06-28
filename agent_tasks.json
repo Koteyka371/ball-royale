@@ -2919,7 +2919,7 @@
     },
     {
       "id": "idea-167",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Dynamic Kite Pathfinding",

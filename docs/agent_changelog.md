@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-167] Dynamic Kite Pathfinding — *2026-06-28 06:21:48 UTC*
+
+Improve kiting logic to not just run directly backward but find a path that avoids getting cornered by moving sideways or toward open spaces in the arena.
+
+---
+
 ## [sync-gd-decision-get-weights] Sync GDScript: Implement 'get_weights' in decision.gd — *2026-06-28 06:21:44 UTC*
 
 The Python class in decision.py implements 'get_weights', but the GDScript counterpart decision.gd is missing it. Please implement the same logic in GDScript.
