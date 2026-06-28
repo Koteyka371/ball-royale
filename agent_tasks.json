@@ -4242,7 +4242,7 @@
     },
     {
       "id": "idea-243",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Summoner Class",
@@ -5477,6 +5477,40 @@
         "src/ai/swap_decoy_ability.py",
         "src/ai/swap_decoy_ability.gd",
         "tests/test_swap_decoy_ability.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-316",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Necromancer Minion Synergy",
+      "description": "Introduce synergy mechanics for the Necromancer ball. When near its generated minions, the Necromancer gains increased movement speed and its attacks heal itself for a percentage of the damage dealt.",
+      "allowed_paths": [
+        "src/ai/necromancer_minion_synergy.py",
+        "src/ai/necromancer_minion_synergy.gd",
+        "tests/test_necromancer_minion_synergy.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-317",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Teleport Trap",
+      "description": "Add a new trap hazard that, when triggered, instantly swaps the positions of the victim and the trap's owner, disorienting enemies and allowing for creative escapes.",
+      "allowed_paths": [
+        "src/arena/quantum_teleport_trap.py",
+        "src/arena/quantum_teleport_trap.gd",
+        "tests/test_quantum_teleport_trap.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

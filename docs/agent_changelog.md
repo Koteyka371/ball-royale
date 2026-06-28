@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-243] Summoner Class — *2026-06-28 18:24:43 UTC*
+
+A ball type that actively summons weak but plentiful elemental minions over time rather than reanimating dead ones, creating small armies.
+
+---
+
 ## [idea-164] Team Allegiance Betrayal — *2026-06-28 17:27:45 UTC*
 
 Add a new mechanic where specific ball types can manipulate enemies into temporarily betraying their own team, fighting alongside the manipulator for a short duration before returning to normal.
