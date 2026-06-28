@@ -571,7 +571,7 @@ class WeatherChaosMode(GameMode):
         self.weather_timer += delta
         if self.weather_timer > 10.0:
             self.weather_timer = 0.0
-            weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm"]
+            weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "hurricane", "earthquake", "icy"]
             import random
             rnd = getattr(self, "random", random)
             self.weather = rnd.choice(weathers)
@@ -594,7 +594,43 @@ class WeatherChaosMode(GameMode):
             if not hasattr(b, "base_damage"):
                 b.base_damage = getattr(b, "damage", 10.0)
 
-            if self.weather == "clear":
+            if self.weather == "hurricane":
+                b.speed = b.base_speed * 0.9
+                b.damage = b.base_damage
+                b.dash_range_mult = 1.0
+                b.steering_mult = 0.5
+                arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+                arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+                cx = arena_width / 2.0
+                cy = arena_height / 2.0
+                import math
+                dx = b.x - cx
+                dy = b.y - cy
+                dist = math.hypot(dx, dy)
+                if dist > 0:
+                    tangent_x = -dy / dist
+                    tangent_y = dx / dist
+                    pull_x = -dx / dist
+                    pull_y = -dy / dist
+                    b.x += (tangent_x * 150.0 + pull_x * 50.0) * delta
+                    b.y += (tangent_y * 150.0 + pull_y * 50.0) * delta
+            elif self.weather == "earthquake":
+                b.speed = b.base_speed * 0.4
+                b.damage = b.base_damage
+                b.dash_range_mult = 0.1
+                b.steering_mult = 0.1
+                rnd = getattr(self, "random", __import__("random"))
+                b.x += rnd.uniform(-200.0, 200.0) * delta
+                b.y += rnd.uniform(-200.0, 200.0) * delta
+            elif self.weather == "icy":
+                b.speed = b.base_speed * 0.6
+                b.damage = b.base_damage
+                b.dash_range_mult = 2.0
+                b.steering_mult = 0.1
+                if hasattr(b, "vx") and hasattr(b, "vy"):
+                    b.x += getattr(b, "vx") * delta * 1.5
+                    b.y += getattr(b, "vy") * delta * 1.5
+            elif self.weather == "clear":
                 b.speed = b.base_speed
                 b.damage = b.base_damage
                 b.dash_range_mult = 1.0

@@ -1,0 +1,4 @@
+{
+  "title": "Portal Hazards",
+  "description": "Add new 'Portal' hazards to the procedural arena. When a ball collides with a portal, they are instantly teleported to the portal's linked counterpart, preserving their velocity. It adds a layer of spatial unpredictability to the battlefield."
+}

@@ -1,6 +1,5 @@
 import json
 import time
-import os
 
 class LeaderboardManager:
     SEASON_DURATION = 30 * 24 * 60 * 60  # 30 days in seconds

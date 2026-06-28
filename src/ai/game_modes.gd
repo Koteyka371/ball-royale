@@ -697,7 +697,7 @@ class WeatherChaosMode extends GameMode:
 		weather_timer += delta
 		if weather_timer > 10.0:
 			weather_timer = 0.0
-			var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm"]
+			var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "hurricane", "earthquake", "icy"]
 			weather = weathers[randi() % weathers.size()]
 			if weather == "wind":
 				if has_method("set_meta"):
