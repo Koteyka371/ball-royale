@@ -4174,7 +4174,7 @@
     },
     {
       "id": "idea-239",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy explosions",
@@ -5426,6 +5426,23 @@
         "src/ai/decoy_powerup.py",
         "src/ai/decoy_powerup.gd",
         "tests/test_decoy_powerup.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-313",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Poison Cloud Area",
+      "description": "A hazard that slowly expands and deals low damage to balls inside it, while occasionally debuffing their movement speed.",
+      "allowed_paths": [
+        "src/ai/poison_cloud_area.py",
+        "src/ai/poison_cloud_area.gd",
+        "tests/test_poison_cloud_area.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

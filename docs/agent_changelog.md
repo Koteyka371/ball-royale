@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-239] Decoy explosions — *2026-06-28 12:16:48 UTC*
+
+When a Trickster's decoy expires or takes fatal damage, it detonates and deals AoE damage, confusing enemies and opening opportunities for counter-attacks.
+
+---
+
 ## [idea-216] Shrinking Safe Zone Mode — *2026-06-28 12:11:41 UTC*
 
 A battle royale mode where the safe zone gradually shrinks, and balls take continuous damage outside of it.
