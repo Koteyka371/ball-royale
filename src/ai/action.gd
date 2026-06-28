@@ -405,6 +405,26 @@ func execute(strategy: String, delta: float):
                                     self.ball.hp -= poison_damage
                                     if self.ball.hp <= 0:
                                         self.ball.alive = false
+                            elif trap_variant == "emp":
+                                if "speed" in self.ball and "base_speed" in self.ball:
+                                    if self.ball.speed > self.ball.base_speed:
+                                        self.ball.speed = self.ball.base_speed
+                                if "ricochet_barrier_timer" in self.ball:
+                                    self.ball.ricochet_barrier_timer = 0.0
+                                if "zone_immunity_timer" in self.ball:
+                                    self.ball.zone_immunity_timer = 0.0
+                                var current_stutter = 0.0
+                                if "stutter_timer" in self.ball:
+                                    current_stutter = self.ball.stutter_timer
+                                elif self.ball.has_method("get_meta") and self.ball.has_meta("stutter_timer"):
+                                    current_stutter = self.ball.get_meta("stutter_timer")
+                                if 2.0 > current_stutter:
+                                    if "stutter_timer" in self.ball:
+                                        self.ball.stutter_timer = 2.0 + delta
+                                    elif self.ball.has_method("set_meta"):
+                                        self.ball.set_meta("stutter_timer", 2.0 + delta)
+                                self.ball.x = (self.ball.x + old_x) / 2.0
+                                self.ball.y = (self.ball.y + old_y) / 2.0
                             elif trap_variant == "stun":
                                 var is_stunned = false
                                 if "is_stunned" in self.ball:
