@@ -19,6 +19,18 @@ func scan() -> Dictionary:
         else:
             perception_radius = max(perception_radius, 2000.0)
 
+    if self.world != null and "arena" in self.world and "weather_type" in self.world.arena and self.world.arena.weather_type != "clear":
+        var weather = self.world.arena.weather_type
+        var intensity = 1.0
+        if "weather_intensity" in self.world.arena:
+            intensity = self.world.arena.weather_intensity
+        if weather == "rain":
+            perception_radius *= (1.0 - 0.2 * intensity)
+        elif weather == "snow":
+            perception_radius *= (1.0 - 0.3 * intensity)
+        elif weather == "sandstorm":
+            perception_radius *= (1.0 - 0.5 * intensity)
+
     var data = {
         "enemies": [],
         "allies": [],

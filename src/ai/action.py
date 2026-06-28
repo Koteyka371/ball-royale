@@ -22,6 +22,7 @@ class Action:
             self.ball.base_damage = getattr(self.ball, "damage", 10.0)
             self.ball._base_speed_set = True
 
+
         if hasattr(self.world, "arena") and getattr(self.world.arena, "is_night", None) is not None:
             if self.world.arena.is_night:
                 self.ball.speed = self.ball.base_speed * 1.5
@@ -31,6 +32,24 @@ class Action:
                 self.ball.damage = self.ball.base_damage * 1.2
         else:
             self.ball.speed = self.ball.base_speed
+
+        if hasattr(self.world, "arena") and getattr(self.world.arena, "weather_type", "clear") != "clear":
+            weather = self.world.arena.weather_type
+            intensity = getattr(self.world.arena, "weather_intensity", 1.0)
+            if weather == "rain":
+                self.ball.speed *= (1.0 - 0.2 * intensity)  # Slower in rain due to mud
+            elif weather == "snow":
+                self.ball.speed *= (1.0 - 0.4 * intensity)  # Much slower in snow
+            elif weather == "sandstorm":
+                # Damage over time
+                sand_damage = 2.0 * intensity * delta
+                if hasattr(self.ball, "take_damage"):
+                    self.ball.take_damage(sand_damage)
+                elif hasattr(self.ball, "hp"):
+                    self.ball.hp -= sand_damage
+                    if self.ball.hp <= 0:
+                        self.ball.alive = False
+
 
         if getattr(self.ball, "is_decoy", False):
             self.ball.decoy_timer -= delta

@@ -1,6 +1,7 @@
 import random
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import List, Tuple, Optional
+
 
 @dataclass
 class Room:
@@ -43,6 +44,11 @@ class ProceduralArena:
         self.last_tick = -1
         self.danger_grid: dict[tuple[int, int], float] = {}
 
+
+        self.weather_type = "clear"
+        self.weather_timer = 0.0
+        self.weather_duration = 15.0
+        self.weather_intensity = 0.0
         self.generate()
 
     def generate(self):
@@ -176,7 +182,15 @@ class ProceduralArena:
         return nearest_x, nearest_y, True
 
 
+
     def update_zone(self, current_tick: int, delta: float):
+        self.weather_timer += delta
+        if self.weather_timer >= self.weather_duration:
+            self.weather_timer = 0.0
+            self.weather_type = random.choice(["clear", "rain", "snow", "sandstorm"])
+            self.weather_intensity = random.uniform(0.5, 1.0)
+            self.weather_duration = random.uniform(10.0, 20.0)
+
         if current_tick != self.last_tick:
             self.last_tick = current_tick
             self.safe_zone_radius -= 10.0 * delta
@@ -185,8 +199,6 @@ class ProceduralArena:
 
         if current_tick % 600 == 0:
             # Spawn dynamic danger zones periodically
-            import random
-
             # Clear old dynamic hazards
             self.hazards = [h for h in self.hazards if h.id < 1000]
             num_zones = random.randint(1, 3)

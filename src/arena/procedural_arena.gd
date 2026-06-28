@@ -14,6 +14,11 @@ var safe_zone_center: Array
 var last_tick: int = -1
 var danger_grid: Dictionary = {}
 
+var weather_type = "clear"
+var weather_timer = 0.0
+var weather_duration = 15.0
+var weather_intensity = 0.0
+
 class Hazard:
     var id: int
     var x: float
@@ -208,6 +213,14 @@ func clamp_position(x: float, y: float, radius: float) -> Array:
 
 
 func update_zone(current_tick: int, delta: float) -> void:
+    weather_timer += delta
+    if weather_timer >= weather_duration:
+        weather_timer = 0.0
+        var choices = ["clear", "rain", "snow", "sandstorm"]
+        weather_type = choices[randi() % choices.size()]
+        weather_intensity = randf_range(0.5, 1.0)
+        weather_duration = randf_range(10.0, 20.0)
+
     if current_tick != last_tick:
         last_tick = current_tick
         safe_zone_radius -= 10.0 * delta
