@@ -423,11 +423,11 @@ class VampireRoyaleMode extends GameMode:
                 teams_alive[b.ball_type] = true
 
         if teams_alive.size() == 1:
-            if has_method("_award_skill_points"): _award_skill_points()
+            if has_method("_award_skill_points"): call("_award_skill_points")
             return teams_alive.keys()[0]
 
         if alive.size() == 1:
-            if has_method("_award_skill_points"): _award_skill_points()
+            if has_method("_award_skill_points"): call("_award_skill_points")
             return alive[0].ball_type
 
         return null
@@ -554,16 +554,104 @@ class BlackHoleMode extends GameMode:
                 teams_alive[b.ball_type] = true
 
         if teams_alive.size() == 1:
-            if has_method("_award_skill_points"): _award_skill_points()
+            if has_method("_award_skill_points"): call("_award_skill_points")
             return teams_alive.keys()[0]
 
         if alive.size() == 1:
-            if has_method("_award_skill_points"): _award_skill_points()
+            if has_method("_award_skill_points"): call("_award_skill_points")
+            return alive[0].ball_type
+
+        return null
+
+
+class DominationMode extends GameMode:
+    var points = []
+
+    func _init() -> void:
+        name = "Domination"
+        description = "Capture points to gain global buffs for your team."
+
+    func setup(world, balls: Array) -> void:
+        var mid = balls.size() / 2
+        for i in range(balls.size()):
+            var b = balls[i]
+            if b.ball_type != "spectator":
+                if i < mid:
+                    b.team = "Red"
+                else:
+                    b.team = "Blue"
+
+        points = []
+        points.append({"id": "A", "x": 300, "y": 500, "radius": 150.0, "capture_progress": 0.0, "owner": null})
+        points.append({"id": "B", "x": 500, "y": 500, "radius": 150.0, "capture_progress": 0.0, "owner": null})
+        points.append({"id": "C", "x": 700, "y": 500, "radius": 150.0, "capture_progress": 0.0, "owner": null})
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        for pt in points:
+            var red_count = 0
+            var blue_count = 0
+            for b in balls:
+                if b.alive and b.ball_type != "spectator":
+                    var dist_sq = (b.x - pt.x) * (b.x - pt.x) + (b.y - pt.y) * (b.y - pt.y)
+                    if dist_sq <= pt.radius * pt.radius:
+                        if b.get("team") == "Red":
+                            red_count += 1
+                        elif b.get("team") == "Blue":
+                            blue_count += 1
+
+            if red_count > blue_count:
+                pt.capture_progress += 10.0 * delta
+            elif blue_count > red_count:
+                pt.capture_progress -= 10.0 * delta
+
+            pt.capture_progress = clamp(pt.capture_progress, -100.0, 100.0)
+
+            var new_owner = null
+            if pt.capture_progress >= 100.0:
+                new_owner = "Red"
+            elif pt.capture_progress <= -100.0:
+                new_owner = "Blue"
+
+            if new_owner != null and new_owner != pt.owner:
+                pt.owner = new_owner
+                # Apply global buff
+                for b in balls:
+                    if b.alive and b.get("team") == new_owner:
+                        # Give buff
+                        if b.get("damage") != null:
+                            b.damage += 5.0
+                        if b.get("max_hp") != null:
+                            b.max_hp += 20.0
+                            b.hp += 20.0
+
+    func check_winner(world, balls: Array):
+        var alive = []
+        for b in balls:
+            if b.alive and b.ball_type != "spectator":
+                alive.append(b)
+
+        if alive.size() == 0:
+            if has_method("_award_skill_points"): call("_award_skill_points")
+            return "Draw"
+
+        var teams_alive = {}
+        for b in alive:
+            var t = b.get("team")
+            if t == null: t = b.ball_type
+            teams_alive[t] = true
+
+        if teams_alive.size() == 1:
+            if has_method("_award_skill_points"): call("_award_skill_points")
+            return teams_alive.keys()[0]
+
+        if alive.size() == 1:
+            if has_method("_award_skill_points"): call("_award_skill_points")
             return alive[0].ball_type
 
         return null
 
 var GAME_MODES = {
+    "domination": DominationMode.new(),
     "black_hole": BlackHoleMode.new(),
     "king_of_the_hill": KingOfTheHillMode.new(),
     "vampire_royale": VampireRoyaleMode.new(),

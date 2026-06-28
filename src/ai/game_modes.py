@@ -449,7 +449,94 @@ class BlackHoleMode(GameMode):
 
         return None
 
+
+class DominationMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Domination"
+        self.description = "Capture points to gain global buffs for your team."
+        self.points = []
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        mid = len(balls) // 2
+        for i, b in enumerate(balls):
+            if getattr(b, "ball_type", None) != "spectator":
+                if i < mid:
+                    b.team = "Red"
+                else:
+                    b.team = "Blue"
+
+        class ControlPoint:
+            def __init__(self, id, x, y):
+                self.id = id
+                self.x = x
+                self.y = y
+                self.radius = 150.0
+                self.capture_progress = 0.0 # -100 to 100. -100 is Blue, 100 is Red.
+                self.owner = None
+
+        self.points = [
+            ControlPoint("A", 300, 500),
+            ControlPoint("B", 500, 500),
+            ControlPoint("C", 700, 500)
+        ]
+
+        if hasattr(world, "boosters"):
+            # Attach to boosters list so UI can draw them if needed, or keep them separate.
+            # We'll just keep them in self.points for logic.
+            pass
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        for pt in self.points:
+            red_count = 0
+            blue_count = 0
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                    dist_sq = (b.x - pt.x)**2 + (b.y - pt.y)**2
+                    if dist_sq <= pt.radius**2:
+                        if getattr(b, "team", "") == "Red":
+                            red_count += 1
+                        elif getattr(b, "team", "") == "Blue":
+                            blue_count += 1
+
+            if red_count > blue_count:
+                pt.capture_progress += 10.0 * delta
+            elif blue_count > red_count:
+                pt.capture_progress -= 10.0 * delta
+
+            pt.capture_progress = max(-100.0, min(100.0, pt.capture_progress))
+
+            new_owner = None
+            if pt.capture_progress >= 100.0:
+                new_owner = "Red"
+            elif pt.capture_progress <= -100.0:
+                new_owner = "Blue"
+
+            if new_owner and new_owner != pt.owner:
+                pt.owner = new_owner
+                # Apply global buff
+                for b in balls:
+                    if getattr(b, "alive", False) and getattr(b, "team", "") == new_owner:
+                        # Give buff
+                        if hasattr(b, "damage"):
+                            b.damage += 5.0
+                        if hasattr(b, "max_hp"):
+                            b.max_hp += 20.0
+                            b.hp += 20.0
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
+        if len(teams_alive) == 1:
+            return list(teams_alive)[0]
+
+        return None
+
 GAME_MODES = {
+    "domination": DominationMode(),
     "black_hole": BlackHoleMode(),
     "king_of_the_hill": KingOfTheHillMode(),
     "vampire_royale": VampireRoyaleMode(),
