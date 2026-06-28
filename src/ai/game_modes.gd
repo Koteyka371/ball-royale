@@ -563,7 +563,72 @@ class BlackHoleMode extends GameMode:
 
         return null
 
+
+class MinefieldMode extends GameMode:
+    func _init() -> void:
+        name = "Minefield"
+        description = "The arena is littered with invisible traps. Memory and caution are your best friends."
+
+    func setup(world, balls: Array) -> void:
+        for b in balls:
+            if b.ball_type != "spectator":
+                if not "team" in b:
+                    b.team = b.ball_type
+
+        if world != null and "arena" in world and world.arena != null:
+            var arena_width = 1000.0
+            var arena_height = 1000.0
+            if "width" in world.arena:
+                arena_width = world.arena.width
+            if "height" in world.arena:
+                arena_height = world.arena.height
+
+            for i in range(50):
+                var x = 50.0 + randf() * (arena_width - 100.0)
+                var y = 50.0 + randf() * (arena_height - 100.0)
+                var radius = 15.0 + randf() * 15.0
+                var h_id = 20000 + i
+                var trap = ProceduralArena.Hazard.new()
+                trap.id = h_id
+                trap.x = x
+                trap.y = y
+                trap.radius = radius
+                trap.kind = "trap"
+                trap.damage = 20.0
+                trap.set_meta("is_invisible", true)
+                trap.set_meta("duration", 9999.0)
+
+                if "hazards" in world.arena:
+                    world.arena.hazards.append(trap)
+
+    func check_winner(world, balls: Array):
+        var alive = []
+        for b in balls:
+            if b.alive and b.ball_type != "spectator":
+                alive.append(b)
+
+        if alive.size() == 0:
+            return "Draw"
+
+        var teams_alive = {}
+        for b in alive:
+            if "team" in b:
+                teams_alive[b.team] = true
+            else:
+                teams_alive[b.ball_type] = true
+
+        if teams_alive.size() == 1:
+            if has_method("_award_skill_points"): _award_skill_points()
+            return teams_alive.keys()[0]
+
+        if alive.size() == 1:
+            if has_method("_award_skill_points"): _award_skill_points()
+            return alive[0].ball_type
+
+        return null
+
 var GAME_MODES = {
+    "minefield": MinefieldMode.new(),
     "black_hole": BlackHoleMode.new(),
     "king_of_the_hill": KingOfTheHillMode.new(),
     "vampire_royale": VampireRoyaleMode.new(),

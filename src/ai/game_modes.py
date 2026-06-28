@@ -449,7 +449,57 @@ class BlackHoleMode(GameMode):
 
         return None
 
+
+class MinefieldMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Minefield"
+        self.description = "The arena is littered with invisible traps. Memory and caution are your best friends."
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        import random
+        from arena.procedural_arena import Hazard # type: ignore
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator":
+                if not hasattr(b, "team"):
+                    b.team = getattr(b, "ball_type", "unknown")
+
+        if hasattr(world, "arena") and world.arena:
+            arena_width = getattr(world.arena, "width", 1000)
+            arena_height = getattr(world.arena, "height", 1000)
+
+            for i in range(50):
+                x = random.uniform(50, arena_width - 50)
+                y = random.uniform(50, arena_height - 50)
+                radius = random.uniform(15.0, 30.0)
+                h_id = 20000 + i
+                trap = Hazard(id=h_id, x=x, y=y, radius=radius, kind="trap", damage=20.0)
+                setattr(trap, "is_invisible", True)
+                setattr(trap, "duration", 9999.0)
+
+                if hasattr(world.arena, "hazards"):
+                    world.arena.hazards.append(trap)
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
+        if len(teams_alive) == 1:
+            if hasattr(self, '_award_skill_points'):
+                getattr(self, '_award_skill_points')()
+            return list(teams_alive)[0]
+
+        if len(alive) == 1:
+            if hasattr(self, '_award_skill_points'):
+                getattr(self, '_award_skill_points')()
+            return alive[0].ball_type
+
+        return None
+
 GAME_MODES = {
+    "minefield": MinefieldMode(),
     "black_hole": BlackHoleMode(),
     "king_of_the_hill": KingOfTheHillMode(),
     "vampire_royale": VampireRoyaleMode(),
