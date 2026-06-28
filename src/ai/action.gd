@@ -176,6 +176,35 @@ func execute(strategy: String, delta: float):
                         if hazard.has_meta("duration"):
                             dur = hazard.get_meta("duration")
                         hazard.set_meta("duration", dur - delta)
+                elif hazard.kind == "proximity_trap":
+                    var dist_x = hazard.x - self.ball.x
+                    var dist_y = hazard.y - self.ball.y
+                    var dist_sq = dist_x * dist_x + dist_y * dist_y
+                    if dist_sq < (hazard.radius + self.ball.radius) * (hazard.radius + self.ball.radius):
+                        var is_active = true
+                        if hazard.has_meta("active"):
+                            is_active = hazard.get_meta("active")
+                        if is_active:
+                            hazard.set_meta("active", false)
+                            hazard.set_meta("duration", 0.0)
+
+                            if self.ball.has_method("take_damage"):
+                                self.ball.take_damage(hazard.damage)
+                            elif "hp" in self.ball:
+                                self.ball.hp -= hazard.damage
+                                if self.ball.hp <= 0:
+                                    self.ball.alive = false
+
+                            var current_stutter = 0.0
+                            if "stutter_timer" in self.ball:
+                                current_stutter = self.ball.stutter_timer
+                            elif self.ball.has_method("get_meta") and self.ball.has_meta("stutter_timer"):
+                                current_stutter = self.ball.get_meta("stutter_timer")
+
+                            if "stutter_timer" in self.ball:
+                                self.ball.stutter_timer = current_stutter + 2.0
+                            elif self.ball.has_method("set_meta"):
+                                self.ball.set_meta("stutter_timer", current_stutter + 2.0)
                 elif hazard.kind == "portal":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
