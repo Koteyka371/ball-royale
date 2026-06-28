@@ -2,6 +2,33 @@ import random
 
 from arena.procedural_arena import ProceduralArena, Room, Hazard, Corridor
 
+class Portal(Hazard):
+    def __init__(self, id: int, x: float, y: float, radius: float, target_x: float, target_y: float):
+        super().__init__(id, x, y, radius, "portal", 0.0)
+        self.target_x = target_x
+        self.target_y = target_y
+
+class PortalArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        self.rooms.append(Room(50, 50, 200, 200))
+        self.rooms.append(Room(w-250, 50, 200, 200))
+        self.rooms.append(Room(50, h-250, 200, 200))
+        self.rooms.append(Room(w-250, h-250, 200, 200))
+        self.rooms.append(Room(cx-100, cy-100, 200, 200))
+
+        # Paired portals
+        self.hazards.append(Portal(id=0, x=150.0, y=150.0, radius=30.0, target_x=w-150.0, target_y=h-150.0))
+        self.hazards.append(Portal(id=1, x=w-150.0, y=h-150.0, radius=30.0, target_x=150.0, target_y=150.0))
+
+        self.hazards.append(Portal(id=2, x=w-150.0, y=150.0, radius=30.0, target_x=150.0, target_y=h-150.0))
+        self.hazards.append(Portal(id=3, x=150.0, y=h-150.0, radius=30.0, target_x=w-150.0, target_y=150.0))
+
 class ConveyorBelt(Hazard):
     def __init__(self, id: int, x: float, y: float, radius: float, damage: float, direction_vector: tuple[float, float], speed_magnitude: float):
         super().__init__(id, x, y, radius, "conveyor_belt", damage)

@@ -1,6 +1,37 @@
 class_name ArenaTypes
 extends RefCounted
 
+class Portal extends ProceduralArena.Hazard:
+    var target_x: float
+    var target_y: float
+
+    func _init(_id: int, _x: float, _y: float, _radius: float, _target_x: float, _target_y: float):
+        super(_id, _x, _y, _radius, "portal", 0.0)
+        target_x = _target_x
+        target_y = _target_y
+
+class PortalArena extends ProceduralArena:
+	func generate():
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+		var w = self.width
+		var h = self.height
+		var cx = w / 2.0
+		var cy = h / 2.0
+
+		rooms.append(ProceduralArena.Room.new(50, 50, 200, 200))
+		rooms.append(ProceduralArena.Room.new(w-250, 50, 200, 200))
+		rooms.append(ProceduralArena.Room.new(50, h-250, 200, 200))
+		rooms.append(ProceduralArena.Room.new(w-250, h-250, 200, 200))
+		rooms.append(ProceduralArena.Room.new(cx-100, cy-100, 200, 200))
+
+		hazards.append(ArenaTypes.Portal.new(0, 150.0, 150.0, 30.0, w-150.0, h-150.0))
+		hazards.append(ArenaTypes.Portal.new(1, w-150.0, h-150.0, 30.0, 150.0, 150.0))
+
+		hazards.append(ArenaTypes.Portal.new(2, w-150.0, 150.0, 30.0, 150.0, h-150.0))
+		hazards.append(ArenaTypes.Portal.new(3, 150.0, h-150.0, 30.0, w-150.0, 150.0))
+
 class ConveyorBelt extends ProceduralArena.Hazard:
     var direction_vector: Array
     var speed_magnitude: float

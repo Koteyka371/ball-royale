@@ -166,6 +166,21 @@ func execute(strategy: String, delta: float):
                         if hazard.has_meta("duration"):
                             dur = hazard.get_meta("duration")
                         hazard.set_meta("duration", dur - delta)
+                elif hazard.kind == "portal":
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    if dist_sq < hazard.radius * hazard.radius:
+                        var current_tick = 0
+                        if self.world.get("tick") != null:
+                            current_tick = self.world.tick
+                        var last_teleport = -100
+                        if self.ball.has_meta("last_teleport_tick"):
+                            last_teleport = self.ball.get_meta("last_teleport_tick")
+                        if current_tick - last_teleport > 10:
+                            self.ball.x = hazard.target_x
+                            self.ball.y = hazard.target_y
+                            self.ball.set_meta("last_teleport_tick", current_tick)
                 elif hazard.kind == "conveyor_belt":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
