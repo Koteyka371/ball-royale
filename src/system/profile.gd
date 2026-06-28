@@ -20,6 +20,8 @@ func load_profile():
             data = json.get_data()
             if not data.has("prestige_level"):
                 data["prestige_level"] = 0
+            if not data.has("quests"):
+                data["quests"] = []
             return
 
     # Default profile
@@ -31,8 +33,31 @@ func load_profile():
             "bonus_speed": 0,
             "bonus_damage": 0
         },
-        "prestige_level": 0
+        "prestige_level": 0,
+        "quests": []
     }
+
+func add_quest(quest_description: String, reward: int):
+    if not data.has("quests"):
+        data["quests"] = []
+    data["quests"].append({
+        "description": quest_description,
+        "reward": reward,
+        "completed": false
+    })
+    save_profile()
+
+func get_quests() -> Array:
+    return data.get("quests", [])
+
+func complete_quest(quest_index: int) -> bool:
+    if data.has("quests") and quest_index >= 0 and quest_index < data["quests"].size():
+        var quest = data["quests"][quest_index]
+        if not quest.get("completed", false):
+            quest["completed"] = true
+            add_skill_points(quest["reward"])
+            return true
+    return false
 
 func save_profile():
     var file = FileAccess.open(filename, FileAccess.WRITE)
@@ -79,7 +104,8 @@ func do_prestige() -> bool:
                 "bonus_speed": 0,
                 "bonus_damage": 0
             },
-            "prestige_level": current_prestige + 1
+            "prestige_level": current_prestige + 1,
+            "quests": []
         }
         save_profile()
         return true
