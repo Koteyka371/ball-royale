@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-164] Team Allegiance Betrayal — *2026-06-28 17:27:45 UTC*
+
+Add a new mechanic where specific ball types can manipulate enemies into temporarily betraying their own team, fighting alongside the manipulator for a short duration before returning to normal.
+
+---
+
 ## [idea-239] Decoy explosions — *2026-06-28 12:16:48 UTC*
 
 When a Trickster's decoy expires or takes fatal damage, it detonates and deals AoE damage, confusing enemies and opening opportunities for counter-attacks.
