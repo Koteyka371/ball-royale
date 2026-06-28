@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-189] Sniper Ricochet Trap — *2026-06-28 06:51:52 UTC*
+
+Add a new trap variant 'ricochet' for Snipers, which bounces enemy attacks back towards the attacker when placed, giving Snipers a temporary defensive barrier while kiting.
+
+---
+
 ## [idea-158] King of the Hill Mode — *2026-06-28 06:51:48 UTC*
 
 Add a new game mode where teams score points by maintaining position within a central moving zone. Balls will need entirely new AI prioritization to value zone presence over raw damage.
