@@ -32,6 +32,24 @@ func _init(ball_ref, world_ref):
     if "bonus_damage" in pm.data.get("bonuses", {}):
         if "damage" in self.ball:
             self.ball.damage += pm.data["bonuses"]["bonus_damage"] * 2
+
+    var prestige_level = pm.data.get("prestige_level", 0)
+    if prestige_level > 0:
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+            self.ball.set_meta("has_aura", true)
+        elif "has_aura" in self.ball:
+            self.ball.has_aura = true
+        var stat_multiplier = 1.0 + (0.05 * prestige_level)
+        if "max_hp" in self.ball:
+            var hp_percent = 1.0
+            if self.ball.max_hp > 0:
+                hp_percent = float(self.ball.hp) / float(self.ball.max_hp)
+            self.ball.max_hp *= stat_multiplier
+            self.ball.hp = self.ball.max_hp * hp_percent
+        if "speed" in self.ball:
+            self.ball.speed *= stat_multiplier
+        if "damage" in self.ball:
+            self.ball.damage *= stat_multiplier
     self.perception_layer = Perception.new(self.ball, self.world)
     self.emotion_layer = EmotionLayer.new(self.ball, self.world)
     self.decision_layer = DecisionLayer.new(self.ball, self.world)
