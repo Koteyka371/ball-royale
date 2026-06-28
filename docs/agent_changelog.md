@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-192] Elemental Synergies — *2026-06-28 06:41:07 UTC*
+
+Combine elemental skills for chain reactions.
+
+---
+
 ## [idea-157] Poison Trap Hazard — *2026-06-28 06:41:02 UTC*
 
 A new procedural hazard that applies a damage-over-time effect to any ball that passes through it, reducing their HP continuously for several ticks even after they leave the trap.
