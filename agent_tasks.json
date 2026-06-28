@@ -2744,7 +2744,7 @@
     },
     {
       "id": "idea-157",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Poison Trap Hazard",
@@ -3758,6 +3758,40 @@
         "src/ui/skin_specific_perks.gd",
         "src/ai/skin_specific_perks.py",
         "tests/test_skin_specific_perks.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-215",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Random Teleporters",
+      "description": "Add random teleporter pads to the arena that instantly move a ball to another random pad.",
+      "allowed_paths": [
+        "src/ai/random_teleporters.py",
+        "src/ai/random_teleporters.gd",
+        "tests/test_random_teleporters.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-216",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Safe Zone Mode",
+      "description": "A battle royale mode where the safe zone gradually shrinks, and balls take continuous damage outside of it.",
+      "allowed_paths": [
+        "src/ai/shrinking_safe_zone.py",
+        "src/ai/shrinking_safe_zone.gd",
+        "tests/test_shrinking_safe_zone.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

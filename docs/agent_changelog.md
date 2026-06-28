@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-157] Poison Trap Hazard — *2026-06-28 06:41:02 UTC*
+
+A new procedural hazard that applies a damage-over-time effect to any ball that passes through it, reducing their HP continuously for several ticks even after they leave the trap.
+
+---
+
 ## [idea-187] Multi-Zone Domination Mode — *2026-06-28 06:38:07 UTC*
 
 Instead of a single central zone, add three separate zones scattered across the arena that grant points. Players must split up their focus and defend multiple areas simultaneously.
