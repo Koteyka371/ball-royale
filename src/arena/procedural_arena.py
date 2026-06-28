@@ -26,6 +26,7 @@ class Hazard:
     kind: str
     damage: float
     active: bool = True
+    target_radius: float = 0.0
 
 
 class ProceduralArena:
@@ -116,7 +117,7 @@ class ProceduralArena:
         # Generate hazards
         num_hazards = self.num_rooms * 2
         for i in range(num_hazards):
-            kind = random.choice(["spikes", "lava", "fake_booster", "poison_cloud", "proximity_trap"])
+            kind = random.choice(["spikes", "lava", "fake_booster", "poison_cloud", "proximity_trap", "spinning_laser"])
             if kind == "spikes":
                 radius = random.uniform(15.0, 30.0)
                 damage = 20.0
@@ -129,6 +130,9 @@ class ProceduralArena:
             elif kind == "proximity_trap":
                 radius = random.uniform(20.0, 40.0)
                 damage = 30.0
+            elif kind == "spinning_laser":
+                radius = random.uniform(100.0, 150.0)
+                damage = 100.0
             else:
                 radius = 15.0
                 damage = 50.0

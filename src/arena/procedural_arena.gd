@@ -153,6 +153,8 @@ func generate():
             kind = "fake_booster"
         elif r < 0.75:
             kind = "proximity_trap"
+        elif r < 0.9:
+            kind = "spinning_laser"
 
         var radius = 15.0
         var damage = 20.0
@@ -165,6 +167,9 @@ func generate():
         elif kind == "proximity_trap":
             radius = rng.randf_range(20.0, 40.0)
             damage = 30.0
+        elif kind == "spinning_laser":
+            radius = rng.randf_range(100.0, 150.0)
+            damage = 100.0
         else:
             radius = 15.0
             damage = 50.0

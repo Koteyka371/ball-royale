@@ -251,6 +251,39 @@ func execute(strategy: String, delta: float):
                         if hazard.has_meta("duration"):
                             dur = hazard.get_meta("duration")
                         hazard.set_meta("duration", dur - delta)
+                elif hazard.kind == "spinning_laser":
+                    var current_tick = 0
+                    if "tick" in self.world:
+                        current_tick = self.world.tick
+                    if not hazard.has_meta("last_updated_tick") or hazard.get_meta("last_updated_tick") != current_tick:
+                        hazard.set_meta("last_updated_tick", current_tick)
+
+                        var angle = 0.0
+                        if hazard.has_meta("angle"):
+                            angle = hazard.get_meta("angle")
+                        angle += (PI / 2.0) * delta
+                        if angle > 2 * PI:
+                            angle -= 2 * PI
+                        hazard.set_meta("angle", angle)
+
+                        var on_timer = 3.0
+                        if hazard.has_meta("on_timer"):
+                            on_timer = hazard.get_meta("on_timer")
+                        on_timer -= delta
+
+                        var is_on = true
+                        if hazard.has_meta("is_on"):
+                            is_on = hazard.get_meta("is_on")
+
+                        if on_timer <= 0:
+                            is_on = not is_on
+                            if is_on:
+                                on_timer = 3.0
+                            else:
+                                on_timer = 2.0
+
+                        hazard.set_meta("on_timer", on_timer)
+                        hazard.set_meta("is_on", is_on)
                 elif hazard.kind == "proximity_trap":
                     var dist_x = hazard.x - self.ball.x
                     var dist_y = hazard.y - self.ball.y
@@ -451,6 +484,40 @@ func execute(strategy: String, delta: float):
                             self.ball.x += (dx/dist) * 200.0 * delta
                             self.ball.y += (dy/dist) * 200.0 * delta
                         continue
+                    elif hazard.kind == "spinning_laser":
+                        var is_on = true
+                        if hazard.has_meta("is_on"):
+                            is_on = hazard.get_meta("is_on")
+
+                        if is_on:
+                            var angle = 0.0
+                            if hazard.has_meta("angle"):
+                                angle = hazard.get_meta("angle")
+
+                            var beam_length = hazard.radius
+                            var beam_width = 20.0
+
+                            var dx = self.ball.x - hazard.x
+                            var dy = self.ball.y - hazard.y
+                            var dist = sqrt(dx*dx + dy*dy)
+
+                            if dist < beam_length:
+                                var normal_x = -sin(angle)
+                                var normal_y = cos(angle)
+                                var dist_to_beam = abs(dx * normal_x + dy * normal_y)
+
+                                if dist_to_beam < beam_width + self.ball.radius:
+                                    var hd = hazard.damage * delta
+                                    if self.ball.has_method("take_damage"):
+                                        self.ball.take_damage(hd)
+                                    elif "hp" in self.ball:
+                                        self.ball.hp -= hd
+                                        if self.ball.hp <= 0:
+                                            self.ball.alive = false
+
+                                    if dist > 0.0001:
+                                        self.ball.x += (dx/dist) * 100.0 * delta
+                                        self.ball.y += (dy/dist) * 100.0 * delta
                     elif hazard.kind == "poison_cloud":
                         if self.ball.has_method("set_meta"):
                             self.ball.set_meta("dot_duration", 3.0)
