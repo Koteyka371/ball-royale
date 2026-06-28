@@ -117,7 +117,7 @@ class ProceduralArena:
         # Generate hazards
         num_hazards = self.num_rooms * 2
         for i in range(num_hazards):
-            kind = random.choice(["spikes", "lava", "fake_booster", "poison_cloud", "proximity_trap", "spinning_laser"])
+            kind = random.choice(["spikes", "lava", "fake_booster", "poison_cloud", "proximity_trap", "spinning_laser", "teleporter"])
             if kind == "spikes":
                 radius = random.uniform(15.0, 30.0)
                 damage = 20.0
@@ -133,12 +133,23 @@ class ProceduralArena:
             elif kind == "spinning_laser":
                 radius = random.uniform(100.0, 150.0)
                 damage = 100.0
+            elif kind == "teleporter":
+                radius = random.uniform(20.0, 40.0)
+                damage = 0.0
+                target_x = 0.0
+                target_y = 0.0
             else:
                 radius = 15.0
                 damage = 50.0
 
             hx, hy = self.get_random_spawn_point(radius)
-            self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=radius, kind=kind, damage=damage))
+            new_hazard = Hazard(id=i, x=hx, y=hy, radius=radius, kind=kind, damage=damage)
+            if kind == "teleporter":
+                # Find another random point to be the destination
+                tx, ty = self.get_random_spawn_point(radius)
+                setattr(new_hazard, "target_x", tx)
+                setattr(new_hazard, "target_y", ty)
+            self.hazards.append(new_hazard)
 
     def get_random_spawn_point(self, radius: float) -> Tuple[float, float]:
         if not self.rooms:

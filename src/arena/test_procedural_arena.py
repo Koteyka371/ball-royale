@@ -28,7 +28,8 @@ def test_hazard_generation():
     arena = ProceduralArena(arena_size=1000.0, num_rooms=3, seed=42)
     assert len(arena.hazards) == arena.num_rooms * 2
     for hazard in arena.hazards:
-        assert hazard.kind in ["spikes", "lava", "fake_booster", "poison_cloud", "proximity_trap"]
+        assert hazard.kind in ["spikes", "lava", "fake_booster", "poison_cloud", "proximity_trap", "spinning_laser", "teleporter"]
         assert hazard.radius > 0
-        assert hazard.damage > 0
+        if hazard.kind != "teleporter":
+            assert hazard.damage > 0
         assert arena.is_point_inside(hazard.x, hazard.y, 0)

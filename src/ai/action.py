@@ -185,6 +185,7 @@ class Action:
                         if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
                             hazard.last_updated_tick = current_tick
                             # Update angle
+                            import math
                             hazard.angle = getattr(hazard, "angle", 0.0) + (math.pi / 2.0) * delta
                             if hazard.angle > 2 * math.pi:
                                 hazard.angle -= 2 * math.pi

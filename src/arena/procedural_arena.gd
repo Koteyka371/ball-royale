@@ -170,12 +170,20 @@ func generate():
         elif kind == "spinning_laser":
             radius = rng.randf_range(100.0, 150.0)
             damage = 100.0
+        elif kind == "teleporter":
+            radius = rng.randf_range(20.0, 40.0)
+            damage = 0.0
         else:
             radius = 15.0
             damage = 50.0
 
         var spawn_pt = get_random_spawn_point(radius)
-        hazards.append(ProceduralArena.Hazard.new(i, spawn_pt[0], spawn_pt[1], radius, kind, damage))
+        var new_hazard = ProceduralArena.Hazard.new(i, spawn_pt[0], spawn_pt[1], radius, kind, damage)
+        if kind == "teleporter":
+            var target_pt = get_random_spawn_point(radius)
+            new_hazard.set_meta("target_x", target_pt[0])
+            new_hazard.set_meta("target_y", target_pt[1])
+        hazards.append(new_hazard)
 
 func get_random_spawn_point(radius: float) -> Array:
     if rooms.size() == 0:

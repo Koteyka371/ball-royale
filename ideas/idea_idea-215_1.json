@@ -1,0 +1,4 @@
+{
+  "title": "Black Hole Hazard",
+  "description": "A hazard that slowly pulls nearby balls towards its center, applying a constant force that gets stronger the closer they get."
+}
