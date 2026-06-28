@@ -66,6 +66,17 @@ def find_new_ideas(
     return new_ideas
 
 
+def clean_name(title: str) -> str:
+    name = title.lower()
+    name = re.sub(r'ball type\s*-?\s*raises minions', 'necromancer', name)
+    name = re.sub(r'ball type\s*-?', 'ball', name)
+    name = re.sub(r'\b(system|hazard|event|mode|modifier|weather)\b', '', name)
+    name = name.strip()
+    name = re.sub(r'[^a-z0-9\s-]', '', name)
+    name = re.sub(r'[\s-]+', '_', name)
+    return name.strip('_')
+
+
 def generate_task_from_idea(idea: dict[str, str], index: int) -> dict[str, Any]:
     """Generate a task from an idea."""
     task_id = f"idea-{idea['type']}-{index:03d}"
@@ -86,34 +97,34 @@ def generate_task_from_idea(idea: dict[str, str], index: int) -> dict[str, Any]:
         "ai": "ai-core"
     }
     
-    paths_map = {
-        "arena": [
-            "src/arena/arena_types.py",
-            "src/arena/arena_types.gd",
-            "src/arena/procedural_arena.py",
-            "src/arena/procedural_arena.gd",
-            "tests/test_arena_*.py",
-            "tests/test_procedural_*.py",
-            "src/arena/test_*.py"
-        ],
-        "ball_type": [
-            "src/ai/ball_types_*.py",
-            "src/ai/action.py",
-            "src/ai/action.gd"
-        ],
-        "ai": [
-            "src/ai/ball_brain.py",
-            "src/ai/decision.py",
-            "src/ai/perception.py",
-            "src/ai/emotion.py"
-        ],
-        "skill": [
-            "src/ai/action.py",
-            "src/ai/action.gd",
-            "tests/test_action*.py"
-        ]
-    }
+    slug = clean_name(idea["title"])
     
+    if idea["type"] == "arena" or "arena" in idea["title"].lower() or "trap" in idea["title"].lower() or "hazard" in idea["title"].lower():
+        allowed_paths = [
+            f"src/arena/{slug}.py",
+            f"src/arena/{slug}.gd",
+            f"tests/test_{slug}.py"
+        ]
+    elif idea["type"] == "ball_type":
+        allowed_paths = [
+            f"src/ai/{slug}.py",
+            f"src/ai/{slug}.gd",
+            f"tests/test_{slug}.py"
+        ]
+    elif "ui" in idea["title"].lower() or "skin" in idea["title"].lower() or "prestige" in idea["title"].lower() or "quest" in idea["title"].lower():
+        allowed_paths = [
+            f"src/ui/{slug}.py",
+            f"src/ui/{slug}.gd",
+            f"src/ai/{slug}.py",
+            f"tests/test_{slug}.py"
+        ]
+    else:
+        allowed_paths = [
+            f"src/ai/{slug}.py",
+            f"src/ai/{slug}.gd",
+            f"tests/test_{slug}.py"
+        ]
+        
     return {
         "id": task_id,
         "status": "todo",
@@ -121,7 +132,7 @@ def generate_task_from_idea(idea: dict[str, str], index: int) -> dict[str, Any]:
         "risk": risk_map.get(idea["type"], "medium"),
         "title": idea["title"],
         "description": f"Implement {idea['title']} as described in game_design.md",
-        "allowed_paths": paths_map.get(idea["type"], ["src/ai/**", "src/arena/**", "tests/**"]),
+        "allowed_paths": allowed_paths,
         "acceptance": [
             f"{idea['title']} implemented",
             "Tests pass",

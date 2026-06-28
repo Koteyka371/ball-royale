@@ -36,12 +36,34 @@ def add_task(manifest, task_id, title, desc, area, risk="medium", allowed_paths=
         return False
     
     if allowed_paths is None:
-        if area in ("arenas", "arena-mechanics"):
-            allowed_paths = ["src/arena/**", "tests/**"]
-        elif area in ("ai-core", "behaviors", "ai-behaviors", "ai-ball-types", "innovation", "skills"):
-            allowed_paths = ["src/ai/**", "tests/**"]
+        name = title.lower()
+        name = re.sub(r'ball type\s*-?\s*raises minions', 'necromancer', name)
+        name = re.sub(r'ball type\s*-?', 'ball', name)
+        name = re.sub(r'\b(system|hazard|event|mode|modifier|weather)\b', '', name)
+        name = name.strip()
+        name = re.sub(r'[^a-z0-9\s-]', '', name)
+        name = re.sub(r'[\s-]+', '_', name)
+        slug = name.strip('_')
+        
+        if area in ("arenas", "arena-mechanics") or "arena" in title.lower() or "trap" in title.lower() or "hazard" in title.lower():
+            allowed_paths = [
+                f"src/arena/{slug}.py",
+                f"src/arena/{slug}.gd",
+                f"tests/test_{slug}.py"
+            ]
+        elif "ui" in title.lower() or "skin" in title.lower() or "prestige" in title.lower() or "quest" in title.lower():
+            allowed_paths = [
+                f"src/ui/{slug}.py",
+                f"src/ui/{slug}.gd",
+                f"src/ai/{slug}.py",
+                f"tests/test_{slug}.py"
+            ]
         else:
-            allowed_paths = ["src/ai/**", "src/arena/**", "tests/**"]
+            allowed_paths = [
+                f"src/ai/{slug}.py",
+                f"src/ai/{slug}.gd",
+                f"tests/test_{slug}.py"
+            ]
     if acceptance is None:
         acceptance = ["Feature implemented successfully", "Tests pass"]
 
