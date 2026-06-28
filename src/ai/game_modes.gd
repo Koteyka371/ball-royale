@@ -1321,7 +1321,62 @@ class DynamicHazardsMode extends GameMode:
 
 		world.arena.hazards = hazards_to_keep
 
+
+class BountyHuntMode extends GameMode:
+	var bounties = {} # team_id: ball_id
+	var bounty_selected = false
+	var buff_active_for_team = null
+	var buff_applied = false
+
+	func _init():
+		self.name = "bounty_hunt"
+
+	func tick(world, balls, delta):
+		if not bounty_selected and balls.size() > 0:
+			var teams = {}
+			for b in balls:
+				if not teams.has(b.team):
+					teams[b.team] = []
+				teams[b.team].append(b)
+
+			for team in teams.keys():
+				var team_balls = teams[team]
+				if team_balls.size() > 0:
+					var chosen = team_balls[randi() % team_balls.size()]
+					bounties[team] = chosen.id
+			bounty_selected = true
+
+		if bounty_selected:
+			var alive_bounties = {}
+			for b in balls:
+				if b.hp > 0:
+					for team in bounties.keys():
+						var b_id = bounties[team]
+						if b.id == b_id:
+							alive_bounties[team] = b
+
+			var teams_to_remove = []
+			for team in bounties.keys():
+				if not alive_bounties.has(team):
+					for other_team in bounties.keys():
+						if other_team != team:
+							buff_active_for_team = other_team
+					teams_to_remove.append(team)
+
+			for team in teams_to_remove:
+				bounties.erase(team)
+
+			if buff_active_for_team != null and not buff_applied:
+				for b in balls:
+					if b.team == buff_active_for_team and b.hp > 0:
+						b.attack *= 1.50
+						b.defense *= 1.50
+						b.speed *= 1.50
+						b.skill_points += 50.0
+				buff_applied = true
+
 var GAME_MODES = {
+	"bounty_hunt": BountyHuntMode.new(),
 	"memory_traps": MemoryTrapsMode.new(),
 	"vision_reduced": VisionReducedMode.new(),
 	"dynamic_hazards": DynamicHazardsMode.new(),

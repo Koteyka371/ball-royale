@@ -1081,7 +1081,58 @@ class DynamicHazardsMode(GameMode):
                     hazard.y < -100 or hazard.y > world.arena.height + 100):
                     world.arena.hazards.remove(hazard)
 
+
+class BountyHuntMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "bounty_hunt"
+        self.bounties = {} # team_id: ball_id
+        self.bounty_selected = False
+        self.buff_active_for_team = None
+
+    def tick(self, world, balls, delta):
+        if not self.bounty_selected and len(balls) > 0:
+            import random
+            teams = {}
+            for b in balls:
+                if b.team not in teams:
+                    teams[b.team] = []
+                teams[b.team].append(b)
+
+            for team, team_balls in teams.items():
+                if len(team_balls) > 0:
+                    chosen = random.choice(team_balls)
+                    self.bounties[team] = chosen.id
+            self.bounty_selected = True
+
+        if self.bounty_selected:
+            alive_bounties = {}
+            for b in balls:
+                if b.hp > 0:
+                    for team, b_id in self.bounties.items():
+                        if b.id == b_id:
+                            alive_bounties[team] = b
+
+            for team, b_id in list(self.bounties.items()):
+                if team not in alive_bounties:
+                    # Bounty is destroyed!
+                    # Give massive global buff to opposing teams
+                    for other_team in self.bounties.keys():
+                        if other_team != team:
+                            self.buff_active_for_team = other_team
+                    del self.bounties[team]
+
+            if self.buff_active_for_team is not None and not getattr(self, 'buff_applied', False):
+                for b in balls:
+                    if b.team == self.buff_active_for_team and b.hp > 0:
+                        b.attack *= 1.50
+                        b.defense *= 1.50
+                        b.speed *= 1.50
+                        b.skill_points += 50.0
+                self.buff_applied = True
+
 GAME_MODES = {
+    "bounty_hunt": BountyHuntMode(),
     "memory_traps": MemoryTrapsMode(),
     "vision_reduced": VisionReducedMode(),
     "dynamic_hazards": DynamicHazardsMode(),
