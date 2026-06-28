@@ -2557,6 +2557,7 @@ func _use_skill():
                             arena.call("queue_redraw")
 
         elif skill_name == "dash":
+            _spawn_skill_particles("dash")
             var enemies = _get_enemies()
             if enemies.size() > 0:
                 var target = null
@@ -2667,56 +2668,98 @@ func _spawn_skill_particles(skill_name: String = ""):
         particles.emitting = true
         particles.one_shot = true
 
+        # Base tier modifiers
+        var ball_skin = self.ball.get("skin") if self.ball.get("skin") != null else "default"
+        var tier_multiplier = 1.0
+        if ball_skin == "veteran":
+            tier_multiplier = 1.5
+        elif ball_skin == "elite":
+            tier_multiplier = 2.0
+        elif ball_skin == "legendary":
+            tier_multiplier = 3.0
+
+
         # Configure particle properties based on skill
         if skill_name == "wave_attack":
-            particles.amount = 50
+            particles.amount = int(50 * tier_multiplier)
             particles.spread = 360.0
-            particles.initial_velocity_min = 100.0
-            particles.initial_velocity_max = 150.0
-            particles.color = Color(0.2, 0.5, 1.0, 0.8) # Blue wave
-            particles.lifetime = 0.6
+            particles.initial_velocity_min = 100.0 * (1.0 + (tier_multiplier - 1.0) * 0.2)
+            particles.initial_velocity_max = 150.0 * (1.0 + (tier_multiplier - 1.0) * 0.2)
+            if ball_skin == "legendary":
+                particles.color = Color(0.8, 0.2, 1.0, 0.9) # Purple for legendary
+            elif ball_skin == "elite":
+                particles.color = Color(0.2, 0.8, 1.0, 0.9) # Cyan for elite
+            else:
+                particles.color = Color(0.2, 0.5, 1.0, 0.8) # Blue wave
+            particles.lifetime = 0.6 * (1.0 + (tier_multiplier - 1.0) * 0.2)
             particles.explosiveness = 0.9
         elif skill_name == "explosion":
-            particles.amount = 60
+            particles.amount = int(60 * tier_multiplier)
             particles.spread = 360.0
-            particles.initial_velocity_min = 150.0
-            particles.initial_velocity_max = 200.0
-            particles.color = Color(1.0, 0.3, 0.0, 0.9) # Fiery explosion
-            particles.lifetime = 0.4
+            particles.initial_velocity_min = 150.0 * (1.0 + (tier_multiplier - 1.0) * 0.2)
+            particles.initial_velocity_max = 200.0 * (1.0 + (tier_multiplier - 1.0) * 0.2)
+            if ball_skin == "legendary":
+                particles.color = Color(1.0, 0.0, 0.0, 1.0) # Intense red
+            elif ball_skin == "elite":
+                particles.color = Color(1.0, 0.5, 0.0, 1.0) # Orange
+            else:
+                particles.color = Color(1.0, 0.3, 0.0, 0.9) # Fiery explosion
+            particles.lifetime = 0.4 * (1.0 + (tier_multiplier - 1.0) * 0.2)
             particles.explosiveness = 1.0
         elif skill_name == "dash":
-            particles.amount = 20
-            particles.spread = 20.0
-            particles.initial_velocity_min = 30.0
-            particles.initial_velocity_max = 80.0
-            particles.color = Color(0.8, 0.8, 0.8, 0.5) # Dust/wind trail
-            particles.lifetime = 0.3
+            particles.amount = int(20 * tier_multiplier)
+            particles.spread = 20.0 * (1.0 + (tier_multiplier - 1.0) * 0.5)
+            particles.initial_velocity_min = 30.0 * (1.0 + (tier_multiplier - 1.0) * 0.3)
+            particles.initial_velocity_max = 80.0 * (1.0 + (tier_multiplier - 1.0) * 0.3)
+            if ball_skin == "legendary":
+                particles.color = Color(1.0, 0.8, 0.0, 0.8) # Golden trail
+            elif ball_skin == "elite":
+                particles.color = Color(0.8, 0.8, 1.0, 0.8) # Bright white/blue trail
+            elif ball_skin == "veteran":
+                particles.color = Color(0.6, 0.6, 0.6, 0.6) # Darker trail
+            else:
+                particles.color = Color(0.8, 0.8, 0.8, 0.5) # Dust/wind trail
+            particles.lifetime = 0.3 * (1.0 + (tier_multiplier - 1.0) * 0.2)
             particles.explosiveness = 0.5
             # Could orient opposite to velocity if we had it, but spread and low life is fine
         elif skill_name == "shield" or skill_name == "protect_ally":
-            particles.amount = 40
+            particles.amount = int(40 * tier_multiplier)
             particles.spread = 360.0
-            particles.initial_velocity_min = 20.0
-            particles.initial_velocity_max = 40.0
-            particles.color = Color(0.9, 0.8, 0.2, 0.7) # Golden/yellow aura
-            particles.lifetime = 0.8
+            particles.initial_velocity_min = 20.0 * (1.0 + (tier_multiplier - 1.0) * 0.2)
+            particles.initial_velocity_max = 40.0 * (1.0 + (tier_multiplier - 1.0) * 0.2)
+            if ball_skin == "legendary":
+                particles.color = Color(1.0, 0.9, 0.0, 0.9) # Bright gold aura
+            elif ball_skin == "elite":
+                particles.color = Color(0.9, 0.9, 0.5, 0.8) # Light gold aura
+            else:
+                particles.color = Color(0.9, 0.8, 0.2, 0.7) # Golden/yellow aura
+            particles.lifetime = 0.8 * (1.0 + (tier_multiplier - 1.0) * 0.2)
             particles.explosiveness = 0.2 # Sustained bubble look
         elif skill_name == "heal_ally":
-            particles.amount = 25
+            particles.amount = int(25 * tier_multiplier)
             particles.spread = 180.0
-            particles.initial_velocity_min = 40.0
-            particles.initial_velocity_max = 70.0
-            particles.gravity = Vector2(0, -50) # Floating up
-            particles.color = Color(0.2, 0.9, 0.3, 0.8) # Green healing
-            particles.lifetime = 0.7
+            particles.initial_velocity_min = 40.0 * (1.0 + (tier_multiplier - 1.0) * 0.2)
+            particles.initial_velocity_max = 70.0 * (1.0 + (tier_multiplier - 1.0) * 0.2)
+            particles.gravity = Vector2(0, -50 * (1.0 + (tier_multiplier - 1.0) * 0.2)) # Floating up
+            if ball_skin == "legendary":
+                particles.color = Color(0.0, 1.0, 0.5, 0.9) # Bright green/cyan
+            elif ball_skin == "elite":
+                particles.color = Color(0.2, 1.0, 0.2, 0.8) # Bright green
+            else:
+                particles.color = Color(0.2, 0.9, 0.3, 0.8) # Green healing
+            particles.lifetime = 0.7 * (1.0 + (tier_multiplier - 1.0) * 0.2)
             particles.explosiveness = 0.4
         else:
             # Default generic skill particles
-            particles.amount = 30
+            particles.amount = int(30 * tier_multiplier)
             particles.spread = 180.0
-            particles.initial_velocity_min = 50.0
-            particles.initial_velocity_max = 100.0
-            particles.lifetime = 0.5
+            particles.initial_velocity_min = 50.0 * (1.0 + (tier_multiplier - 1.0) * 0.2)
+            particles.initial_velocity_max = 100.0 * (1.0 + (tier_multiplier - 1.0) * 0.2)
+            if ball_skin == "legendary":
+                particles.color = Color(1.0, 1.0, 1.0, 0.9) # Bright white
+            elif ball_skin == "elite":
+                particles.color = Color(0.8, 0.8, 0.8, 0.8) # Light grey
+            particles.lifetime = 0.5 * (1.0 + (tier_multiplier - 1.0) * 0.2)
             particles.explosiveness = 0.8
 
         if skill_name != "heal_ally": particles.gravity = Vector2(0, 0)

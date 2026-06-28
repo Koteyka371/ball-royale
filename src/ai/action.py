@@ -1660,6 +1660,7 @@ class Action:
                 if hasattr(self.ball, "hp"):
                     self.ball.hp = min(getattr(self.ball, "max_hp", 100), self.ball.hp + 30)
             elif skill_name == "dash":
+                self._spawn_skill_particles("dash")
                 import random
                 import math
                 enemies = self._get_enemies()
@@ -1773,6 +1774,28 @@ class Action:
 
             if hasattr(self.ball, "skill_cooldown"):
                 self.ball.skill_timer = self.ball.skill_cooldown
+
+    def _spawn_skill_particles(self, skill_name: str = "") -> None:
+        '''
+        Python mocked visual effects for skill particles based on tier.
+        Actual visual implementation is in action.gd.
+        '''
+        tier_multiplier = 1.0
+        ball_skin = getattr(self.ball, "skin", "default")
+        if ball_skin == "veteran":
+            tier_multiplier = 1.5
+        elif ball_skin == "elite":
+            tier_multiplier = 2.0
+        elif ball_skin == "legendary":
+            tier_multiplier = 3.0
+
+        # Log or simulate particle emission for tests
+        if not hasattr(self.ball, "emitted_particles"):
+            self.ball.emitted_particles = []
+        self.ball.emitted_particles.append({
+            "skill": skill_name,
+            "multiplier": tier_multiplier
+        })
 
     def _idle(self, delta: float) -> None:
         speed = getattr(self.ball, "speed", 2.0)
