@@ -110,7 +110,7 @@
       "status": "working",
       "task_id": "idea-231",
       "started_at": "2026-06-28T11:55:18.780484+00:00",
-      "cycles_today": 5
+      "cycles_today": 6
     },
     "agent-14": {
       "name": "Jules Worker 14",
