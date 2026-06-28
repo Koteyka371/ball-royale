@@ -319,6 +319,20 @@ class Action:
                                         self.ball.hp -= poison_damage
                                         if self.ball.hp <= 0:
                                             self.ball.alive = False
+                                elif trap_variant == "emp":
+                                    if not getattr(self.ball, "is_emped", False):
+                                        self.ball.is_emped = True
+                                        self.ball.emp_timer = 2.0
+                                        # Reset positive buffs and disable abilities by increasing skill_timer
+                                        if hasattr(self.ball, "skill_timer"):
+                                            self.ball.skill_timer = max(getattr(self.ball, "skill_timer", 0.0), 2.0)
+
+                                        base_speed = getattr(self.ball, "base_speed", 100.0)
+                                        if getattr(self.ball, "speed", 0.0) > base_speed:
+                                            self.ball.speed = base_speed
+
+                                        if hasattr(self.ball, "damage_multiplier") and self.ball.damage_multiplier > 1.0:
+                                            self.ball.damage_multiplier = 1.0
                                 elif trap_variant == "stun":
                                     # Stun: fully halt for 1 second if not already stunned
                                     if not getattr(self.ball, "is_stunned", False):
@@ -442,7 +456,14 @@ class Action:
         elif strategy == "defend" and personality == "tank":
             self.ball.team_message = {"type": "hold_position", "x": self.ball.x, "y": self.ball.y}
 
+
+        if getattr(self.ball, "is_emped", False):
+            self.ball.emp_timer = getattr(self.ball, "emp_timer", 0.0) - delta
+            if self.ball.emp_timer <= 0:
+                self.ball.is_emped = False
+
         if getattr(self.ball, "is_stunned", False):
+
             stun_timer = getattr(self.ball, "stun_timer", 0.0)
             if stun_timer > 0:
                 self.ball.stun_timer -= delta

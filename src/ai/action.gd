@@ -444,6 +444,56 @@ func execute(strategy: String, delta: float):
                                     self.ball.hp -= poison_damage
                                     if self.ball.hp <= 0:
                                         self.ball.alive = false
+                            elif trap_variant == "emp":
+                                var is_emped = false
+                                if "is_emped" in self.ball:
+                                    is_emped = self.ball.is_emped
+                                elif self.ball.has_method("get_meta") and self.ball.has_meta("is_emped"):
+                                    is_emped = self.ball.get_meta("is_emped")
+
+                                if not is_emped:
+                                    if "is_emped" in self.ball:
+                                        self.ball.is_emped = true
+                                        self.ball.emp_timer = 2.0
+                                    elif self.ball.has_method("set_meta"):
+                                        self.ball.set_meta("is_emped", true)
+                                        self.ball.set_meta("emp_timer", 2.0)
+
+                                    if "skill_timer" in self.ball:
+                                        self.ball.skill_timer = max(self.ball.skill_timer, 2.0)
+                                    elif self.ball.has_method("set_meta"):
+                                        var cur_skill_timer = self.ball.get_meta("skill_timer") if self.ball.has_meta("skill_timer") else 0.0
+                                        self.ball.set_meta("skill_timer", max(cur_skill_timer, 2.0))
+
+                                    var base_speed = 100.0
+                                    if "base_speed" in self.ball:
+                                        base_speed = self.ball.base_speed
+                                    elif self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"):
+                                        base_speed = self.ball.get_meta("base_speed")
+
+                                    var current_speed = base_speed
+                                    if "speed" in self.ball:
+                                        current_speed = self.ball.speed
+                                    elif self.ball.has_method("get_meta") and self.ball.has_meta("speed"):
+                                        current_speed = self.ball.get_meta("speed")
+
+                                    if current_speed > base_speed:
+                                        if "speed" in self.ball:
+                                            self.ball.speed = base_speed
+                                        elif self.ball.has_method("set_meta"):
+                                            self.ball.set_meta("speed", base_speed)
+
+                                    var dmg_mult = 1.0
+                                    if "damage_multiplier" in self.ball:
+                                        dmg_mult = self.ball.damage_multiplier
+                                    elif self.ball.has_method("get_meta") and self.ball.has_meta("damage_multiplier"):
+                                        dmg_mult = self.ball.get_meta("damage_multiplier")
+
+                                    if dmg_mult > 1.0:
+                                        if "damage_multiplier" in self.ball:
+                                            self.ball.damage_multiplier = 1.0
+                                        elif self.ball.has_method("set_meta"):
+                                            self.ball.set_meta("damage_multiplier", 1.0)
                             elif trap_variant == "stun":
                                 var is_stunned = false
                                 if "is_stunned" in self.ball:
@@ -576,6 +626,23 @@ func execute(strategy: String, delta: float):
             self.ball.set_meta("team_message", {"type": "hold_position", "x": self.ball.x, "y": self.ball.y})
 
     var stun_timer = 0.0
+    var is_emped = false
+    if "is_emped" in self.ball:
+        is_emped = self.ball.is_emped
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("is_emped"):
+        is_emped = self.ball.get_meta("is_emped")
+
+    if is_emped:
+        if "emp_timer" in self.ball:
+            self.ball.emp_timer -= delta
+            if self.ball.emp_timer <= 0:
+                self.ball.is_emped = false
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("emp_timer"):
+            var cur = self.ball.get_meta("emp_timer") - delta
+            self.ball.set_meta("emp_timer", cur)
+            if cur <= 0:
+                self.ball.set_meta("is_emped", false)
+
     var is_stunned = false
     if "is_stunned" in self.ball:
         is_stunned = self.ball.is_stunned
