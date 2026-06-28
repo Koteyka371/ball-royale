@@ -8,10 +8,11 @@ from ai.ball_brain import BallBrain
 
 
 class MockBall:
-    def __init__(self, hp=100, max_hp=100, personality="idle"):
+    def __init__(self, hp=100, max_hp=100, personality="idle", skin="default"):
         self.hp = hp
         self.max_hp = max_hp
         self.personality = personality
+        self.skin = skin
         self.current_action = None
         self.x = 0
         self.y = 0
@@ -106,7 +107,7 @@ def test_decision_layer():
     perception_data = brain.perception()
     emotion = brain.emotion(perception_data)
     decision = brain.decision(perception_data, emotion)
-    assert decision in ["attack", "defend", "kite", "ricochet_attack"]
+    assert decision in ["attack", "defend", "kite", "ricochet_attack", "target_weak"]
 
     # High danger -> defend
     world.entities["enemies"] = [MockBall() for _ in range(4)] # danger_level = 0.8
@@ -129,7 +130,7 @@ def test_decision_layer():
     perception_data = brain.perception()
     emotion = brain.emotion(perception_data)
     decision = brain.decision(perception_data, emotion)
-    assert decision in ["collect_booster", "defend", "attack", "kite", "flank"]
+    assert decision in ["collect_booster", "defend", "attack", "kite", "flank", "ricochet_attack"]
 
 
 def test_action_layer():
@@ -153,3 +154,18 @@ def test_full_process():
     brain.process(0.1)
     # 1 enemy, hp 100 -> rage emotion (hp>80%, enemies>0). decision attack
     assert ball.current_action in ["attack", "chase", "kite"]
+
+
+def test_skin_perks():
+    ball = MockBall(hp=100, max_hp=100, skin="veteran")
+    world = MockWorld()
+    brain = BallBrain(ball, world)
+    assert getattr(ball, "status_resistance", 0.0) == 0.02
+
+    ball = MockBall(hp=100, max_hp=100, skin="legendary")
+    brain = BallBrain(ball, world)
+    assert getattr(ball, "has_aura", False) == True
+
+    ball = MockBall(hp=100, max_hp=100, skin="elite")
+    brain = BallBrain(ball, world)
+    assert getattr(ball, "speed", 100.0) == 10.5
