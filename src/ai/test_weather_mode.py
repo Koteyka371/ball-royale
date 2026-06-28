@@ -31,3 +31,9 @@ def test_weather_mode():
     mode.tick(world, balls, 0.1)
     assert balls[0].speed == 50.0
     assert balls[0].damage == 12.0
+
+    # Tick with thunderstorm
+    mode.weather = "thunderstorm"
+    mode.tick(world, balls, 0.1)
+    assert abs(balls[0].speed - 110.0) < 0.01
+    assert balls[0].damage == 15.0
