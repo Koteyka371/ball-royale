@@ -3490,7 +3490,7 @@
     },
     {
       "id": "idea-199",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Wall Bounce Mechanism",
@@ -4336,6 +4336,41 @@
         "src/ai/zone_control_points.py",
         "src/ai/zone_control_points.gd",
         "tests/test_zone_control_points.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-249",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Prestige Tokens",
+      "description": "When resetting for prestige, players also gain Prestige Tokens based on their past stats to unlock permanent minor upgrades across all balls.",
+      "allowed_paths": [
+        "src/ui/prestige_tokens.py",
+        "src/ui/prestige_tokens.gd",
+        "src/ai/prestige_tokens.py",
+        "tests/test_prestige_tokens.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-250",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Season Modifiers",
+      "description": "Each 30-day season introduces a unique global modifier, like 20% faster movement speed or reduced cooldowns for specific ball classes.",
+      "allowed_paths": [
+        "src/ai/season_modifiers.py",
+        "src/ai/season_modifiers.gd",
+        "tests/test_season_modifiers.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

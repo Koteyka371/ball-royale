@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-199] Wall Bounce Mechanism — *2026-06-28 07:56:40 UTC*
+
+Allow balls to use walls to bounce their attacks off or perform ricochet maneuvers to reach enemies behind obstacles.
+
+---
+
 ## [idea-203] Seasonal Prestige Rankings — *2026-06-28 07:48:50 UTC*
 
 Introduce seasonal leaderboards specifically tracking prestige levels. Players who achieve the highest prestige levels during a 30-day season receive unique, untradable cosmetic crowns and seasonal titles.
