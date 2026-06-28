@@ -3135,7 +3135,7 @@
     },
     {
       "id": "sync-gd-decision-get-weights",
-      "status": "todo",
+      "status": "done",
       "area": "content",
       "risk": "medium",
       "title": "Sync GDScript: Implement 'get_weights' in decision.gd",

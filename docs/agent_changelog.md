@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [sync-gd-decision-get-weights] Sync GDScript: Implement 'get_weights' in decision.gd — *2026-06-28 06:21:44 UTC*
+
+The Python class in decision.py implements 'get_weights', but the GDScript counterpart decision.gd is missing it. Please implement the same logic in GDScript.
+
+---
+
 ## [idea-179] Expanding Danger Zones — *2026-06-28 06:21:39 UTC*
 
 Danger zones not only spawn dynamically but slowly expand over time before disappearing, forcing a continuous change in safe paths and encouraging more dynamic movement.
