@@ -20,6 +20,9 @@ var x: float
 var y: float
 var alive: bool = true
 var kills: int = 0
+var level: int = 1
+var xp: float = 0.0
+var xp_to_next_level: float = 100.0
 var first_hit_taken: bool = false
 var current_action: String = "idle"
 var skill_timer: float = 0.0
@@ -139,3 +142,14 @@ func use_skill() -> bool:
         self.skill_timer = self.SKILL_COOLDOWN
         return true
     return false
+
+
+func level_up(perk: String = "hp") -> void:
+	level += 1
+	if perk == "hp":
+		max_hp += 20.0
+		hp += 20.0
+	elif perk == "damage":
+		damage += 5.0
+	elif perk == "speed":
+		base_speed += 0.5

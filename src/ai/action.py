@@ -9,9 +9,23 @@ class Action:
         if has_ricochet:
             if hasattr(self.world, "_deal_damage"):
                 self.world._deal_damage(target, attacker)
+            if hasattr(target, "xp"):
+                target.xp += 10.0
+                if target.xp >= target.xp_to_next_level:
+                    target.xp -= target.xp_to_next_level
+                    target.xp_to_next_level *= 1.5
+                    if hasattr(target, "level_up"):
+                        target.level_up('damage' if target.level % 2 == 0 else 'hp')
         else:
             if hasattr(self.world, "_deal_damage"):
                 self.world._deal_damage(attacker, target)
+            if hasattr(attacker, "xp"):
+                attacker.xp += 10.0
+                if attacker.xp >= attacker.xp_to_next_level:
+                    attacker.xp -= attacker.xp_to_next_level
+                    attacker.xp_to_next_level *= 1.5
+                    if hasattr(attacker, "level_up"):
+                        attacker.level_up('damage' if attacker.level % 2 == 0 else 'hp')
     """
     Action execution system.
     Executes the chosen behavior (strategy) by interacting with the ball.
@@ -1679,6 +1693,13 @@ class Action:
                 else:
                     if hasattr(self.world, "_collect_booster"):
                         self.world._collect_booster(self.ball, nearest)
+                        if hasattr(self.ball, "xp"):
+                            self.ball.xp += 20.0
+                            if self.ball.xp >= self.ball.xp_to_next_level:
+                                self.ball.xp -= self.ball.xp_to_next_level
+                                self.ball.xp_to_next_level *= 1.5
+                                if hasattr(self.ball, "level_up"):
+                                    self.ball.level_up('speed' if self.ball.level % 2 == 0 else 'hp')
         else:
             self._idle(delta)
 

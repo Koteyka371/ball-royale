@@ -20,6 +20,9 @@ class Easy:
         self.y = y
         self.alive = True
         self.kills = 0
+        self.level = 1
+        self.xp = 0.0
+        self.xp_to_next_level = 100.0
         self.first_hit_taken = False
         self.current_action = "idle"
         self.skill_timer = 0.0
@@ -56,6 +59,16 @@ class Easy:
             self.skill_timer = self.SKILL_COOLDOWN
             return True
         return False
+
+    def level_up(self, perk: str = 'hp') -> None:
+        self.level += 1
+        if perk == 'hp':
+            self.max_hp += 20
+            self.hp += 20
+        elif perk == 'damage':
+            self.DAMAGE += 5
+        elif perk == 'speed':
+            self.SPEED += 0.5
 
     def __repr__(self) -> str:
         return f"{self.BALL_TYPE}#{self.id} HP={self.hp}/{self.max_hp} [{self.current_action}]"

@@ -12,9 +12,23 @@ func _attempt_damage(attacker, target) -> void:
 	if has_ricochet:
 		if self.world != null and self.world.has_method("_deal_damage"):
 			self.world._deal_damage(target, attacker)
+		if "xp" in target:
+			target.xp += 10.0
+			if target.xp >= target.xp_to_next_level:
+				target.xp -= target.xp_to_next_level
+				target.xp_to_next_level *= 1.5
+				if target.has_method("level_up"):
+					target.level_up('damage' if target.level % 2 == 0 else 'hp')
 	else:
 		if self.world != null and self.world.has_method("_deal_damage"):
 			self.world._deal_damage(attacker, target)
+		if "xp" in attacker:
+			attacker.xp += 10.0
+			if attacker.xp >= attacker.xp_to_next_level:
+				attacker.xp -= attacker.xp_to_next_level
+				attacker.xp_to_next_level *= 1.5
+				if attacker.has_method("level_up"):
+					attacker.level_up('damage' if attacker.level % 2 == 0 else 'hp')
 
 
 var ball = null
