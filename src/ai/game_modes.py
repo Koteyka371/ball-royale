@@ -823,7 +823,72 @@ class ReverseEventMode(GameMode):
 
 
 
+
+class MemoryTrapsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Memory Traps"
+        self.description = "The arena is littered with invisible traps. Memorize their locations!"
+        self.traps = []
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        import random
+        self.traps = []
+        for i in range(50):
+            x = random.uniform(50, arena_width - 50)
+            y = random.uniform(50, arena_height - 50)
+            self.traps.append({"x": x, "y": y, "radius": 40.0, "cooldowns": {}})
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            b_id = getattr(b, "id", str(id(b)))
+            for trap in self.traps:
+                if b_id in trap["cooldowns"]:
+                    trap["cooldowns"][b_id] -= delta
+                    if trap["cooldowns"][b_id] <= 0:
+                        del trap["cooldowns"][b_id]
+
+                if b_id not in trap["cooldowns"]:
+                    dx = b.x - trap["x"]
+                    dy = b.y - trap["y"]
+                    dist_sq = dx*dx + dy*dy
+                    if dist_sq < trap["radius"]**2:
+                        b.hp -= 20.0
+                        trap["cooldowns"][b_id] = 1.0
+                        if b.hp <= 0:
+                            b.alive = False
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
+        if len(teams_alive) == 1:
+            return list(teams_alive)[0]
+
+        return None
+
 class CustomMatchMode(GameMode):
+
     def __init__(self):
         super().__init__()
         self.name = "Custom Match"
@@ -868,6 +933,7 @@ class CustomMatchMode(GameMode):
                         b._double_speed_applied = True
 
 GAME_MODES = {
+    "memory_traps": MemoryTrapsMode(),
     "custom_match": CustomMatchMode(),
     "reverse_event": ReverseEventMode(),
     "weather_chaos": WeatherChaosMode(),

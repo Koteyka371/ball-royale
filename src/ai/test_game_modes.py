@@ -1,6 +1,6 @@
 from ai.game_modes import (
     BattleRoyaleMode, TeamDeathmatchMode, ZombieInfectionMode,
-    BossFightMode, VIPDefenseMode, SurvivalMode
+    BossFightMode, VIPDefenseMode, SurvivalMode, MemoryTrapsMode
 )
 
 class MockBall:
@@ -15,7 +15,48 @@ class MockBall:
 class MockWorld:
     pass
 
+
+def test_memory_traps_mode():
+    mode = MemoryTrapsMode()
+    world = MockWorld()
+    setattr(world, "arena", type("Arena", (), {"width": 1000, "height": 1000})())
+
+    # Place a trap exactly at (500, 500)
+    mode.setup(world, [])
+    mode.traps = [{"x": 500.0, "y": 500.0, "radius": 40.0, "cooldowns": {}}]
+
+    b1 = MockBall("b1", "warrior")
+    b1.x = 500.0
+    b1.y = 500.0
+    b1.hp = 100.0
+
+    b2 = MockBall("b2", "scout")
+    b2.x = 100.0
+    b2.y = 100.0
+    b2.hp = 100.0
+
+    balls = [b1, b2]
+
+    mode.tick(world, balls, 0.016)
+
+    # b1 should take 20 damage, b2 should take 0
+    assert b1.hp == 80.0
+    assert b2.hp == 100.0
+
+    # Tick again immediately, b1 should not take damage due to cooldown
+    mode.tick(world, balls, 0.016)
+    assert b1.hp == 80.0
+
+    # Simulate time passing > 1.0s
+    mode.tick(world, balls, 1.1)
+
+    # The tick itself processes cooldown first, removing the ID.
+    # But since it processes the cooldown AND does distance check in the same loop,
+    # the exact behavior depends on order. In our logic, cooldown reduces, then if deleted, it damages.
+    assert b1.hp == 60.0
+
 def test_battle_royale_mode():
+
     mode = BattleRoyaleMode()
     world = MockWorld()
     balls = [MockBall(1, "warrior"), MockBall(2, "scout")]
