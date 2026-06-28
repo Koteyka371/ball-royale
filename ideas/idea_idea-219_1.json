@@ -1,4 +1,0 @@
-{
-  "title": "Tornado Hazard",
-  "description": "A random tornado spawns occasionally during the thunderstorm weather event. It acts as a dynamic hazard that pulls nearby balls towards it and launches them in a random direction, causing minor damage upon landing and resetting their movement."
-}

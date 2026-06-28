@@ -1,4 +1,0 @@
-{
-    "title": "Dynamic Safe Zone Migration",
-    "description": "Instead of the safe zone merely shrinking toward the center of the arena, make the safe zone's center slowly migrate around the arena as it shrinks. This forces players to constantly reposition and prevents them from simply camping the exact center early in the game."
-}

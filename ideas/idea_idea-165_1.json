@@ -1,4 +1,0 @@
-{
-  "title": "New Weather Type: Earthquake",
-  "description": "Periodically shakes the screen and applies a random impulse vector to all entities, disrupting aiming and movement patterns temporarily."
-}

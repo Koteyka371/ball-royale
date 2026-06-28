@@ -1,4 +1,0 @@
-{
-  "title": "Shrinking Arena Edge Effect",
-  "description": "To supplement shrinking zones, visually restrict the playable arena size by destroying the arena walls from the outside in, pushing all objects physically towards the center over time."
-}

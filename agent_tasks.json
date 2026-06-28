@@ -5448,6 +5448,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-314",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Illusion Trap",
+      "description": "Trickster's decoys can occasionally apply a visual distortion 'illusion' effect to enemies near them upon expiration, randomizing their perception so they momentarily see allies as enemies, leading to friendly fire incidents.",
+      "allowed_paths": [
+        "src/arena/decoy_illusion_trap.py",
+        "src/arena/decoy_illusion_trap.gd",
+        "tests/test_decoy_illusion_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-315",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Swap Decoy Ability",
+      "description": "Allow the Trickster to swap positions with their active decoy once before it expires. This gives them incredible mobility and the ability to pull off confusing jukes or escape lethal scenarios.",
+      "allowed_paths": [
+        "src/ai/swap_decoy_ability.py",
+        "src/ai/swap_decoy_ability.gd",
+        "tests/test_swap_decoy_ability.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }

@@ -1,4 +1,0 @@
-{
-  "title": "Shield breaking mechanism",
-  "description": "Currently the reflect shield reflects the first damage and is consumed. Allow the shield to have a maximum damage capacity so it can reflect multiple small hits before breaking."
-}

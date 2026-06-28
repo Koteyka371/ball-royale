@@ -1,4 +1,0 @@
-{
-  "title": "Time of Day Cycle",
-  "description": "Add a dynamic time-of-day cycle to matches. As it transitions from day to night, perception radii for all balls could decrease unless they have a 'night vision' trait. Certain ball types like 'vampire' could gain stat boosts at night."
-}
