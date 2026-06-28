@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-228] Portal Nodes Game Mode — *2026-06-28 11:07:39 UTC*
+
+Players must find and capture active portal nodes. Controlling a portal continuously drains other teams' score, but the active portal relocates randomly around the arena every 10 seconds.
+
+---
+
 ## [idea-165] Weather Events System — *2026-06-28 11:07:35 UTC*
 
 Introduce dynamic weather events (rain, snow, sandstorms) that occur periodically during a match, affecting ball physics such as movement speed, vision range, and attack accuracy.
