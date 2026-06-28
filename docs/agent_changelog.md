@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-156] Necromancer ball type - raises minions — *2026-06-28 07:27:41 UTC*
+
+A new ball type that can revive recently killed enemies as temporary weak minions to fight for it. Minions slowly decay in HP over time.
+
+---
+
 ## [idea-176] Daily Quests for Skill Points — *2026-06-28 07:27:37 UTC*
 
 Players receive random daily quests (e.g., 'Survive for 5 minutes', 'Defeat 10 enemies with sniper ball') that reward extra skill points to accelerate profile progression.
