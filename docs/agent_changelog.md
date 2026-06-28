@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-203] Seasonal Prestige Rankings — *2026-06-28 07:48:50 UTC*
+
+Introduce seasonal leaderboards specifically tracking prestige levels. Players who achieve the highest prestige levels during a 30-day season receive unique, untradable cosmetic crowns and seasonal titles.
+
+---
+
 ## [idea-180] Danger Zone Powerups — *2026-06-28 07:46:37 UTC*
 
 Balls can collect a specific powerup that makes them immune to Danger Zones for a short time, allowing them to use the zones for shortcuts or to escape pursuers.
