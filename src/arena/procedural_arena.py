@@ -263,6 +263,14 @@ class ProceduralArena:
             wall.target_radius = self.width
             setattr(wall, "duration", 8.0)
             self.hazards.append(wall)
+            h_id = 5000 + len(self.hazards)
+            rift = Hazard(id=h_id, x=self.width/2 + 200, y=self.height/2 + 200, radius=150.0, kind="temporal_rift", damage=0.0)
+            rift.time_scale = 0.5  # Slow time
+            self.hazards.append(rift)
+            h_id = 6000 + len(self.hazards)
+            rift2 = Hazard(id=h_id, x=self.width/2 - 200, y=self.height/2 - 200, radius=150.0, kind="temporal_rift", damage=0.0)
+            rift2.time_scale = 2.0  # Speed up time
+            self.hazards.append(rift2)
 
     def _update_danger_grid(self):
         self.danger_grid.clear()

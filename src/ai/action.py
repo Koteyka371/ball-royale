@@ -22,6 +22,17 @@ class Action:
         self.world = world
 
     def execute(self, strategy: str, delta: float) -> None:
+        local_delta = delta
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            for hazard in self.world.arena.hazards:
+                if hazard.kind == "temporal_rift":
+                    dx = hazard.x - self.ball.x
+                    dy = hazard.y - self.ball.y
+                    if (dx*dx + dy*dy) < hazard.radius * hazard.radius:
+                        local_delta *= getattr(hazard, "time_scale", 1.0)
+                        break
+        delta = local_delta
+
         # Apply Damage Over Time (DOT)
         if getattr(self.ball, "dot_duration", 0.0) > 0:
             dot_dmg = self.ball.dot_damage_per_tick * delta

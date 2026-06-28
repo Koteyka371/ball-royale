@@ -660,6 +660,14 @@ func _trigger_event(event_type: String, current_tick: int) -> void:
         wall.target_radius = width
         wall.set_meta("duration", 8.0)
         hazards.append(wall)
+        var h_id5 = 5000 + hazards.size()
+        var rift = ProceduralArena.Hazard.new(h_id5, width/2.0 + 200.0, height/2.0 + 200.0, 150.0, "temporal_rift", 0.0)
+        rift.set_meta("time_scale", 0.5)
+        hazards.append(rift)
+        var h_id6 = 6000 + hazards.size()
+        var rift2 = ProceduralArena.Hazard.new(h_id6, width/2.0 - 200.0, height/2.0 - 200.0, 150.0, "temporal_rift", 0.0)
+        rift2.set_meta("time_scale", 2.0)
+        hazards.append(rift2)
 
 func _update_danger_grid() -> void:
     danger_grid.clear()

@@ -25,6 +25,19 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+    var local_delta = delta
+    if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+        for hazard in self.world.arena.hazards:
+            if hazard.kind == "temporal_rift":
+                var dx = hazard.x - self.ball.x
+                var dy = hazard.y - self.ball.y
+                if (dx*dx + dy*dy) < hazard.radius * hazard.radius:
+                    var ts = 1.0
+                    if hazard.has_method("has_meta") and hazard.has_meta("time_scale"): ts = float(hazard.get_meta("time_scale"))
+                    local_delta *= ts
+                    break
+    delta = local_delta
+
     var my_ball = self.ball
 
     # Apply Damage Over Time (DOT)
