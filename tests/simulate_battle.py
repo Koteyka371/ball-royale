@@ -505,6 +505,7 @@ class BattleSimulation:
             from system.profile import ProfileManager
             pm = ProfileManager("profile.json")
             pm.add_skill_points(10)  # Reward player 10 points for finishing a match
+            pm.update_quest_progress("play_matches", 1)
         except Exception:
             pass
         if alive_balls:

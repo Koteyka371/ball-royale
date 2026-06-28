@@ -66,6 +66,7 @@ class BattleRoyaleMode extends GameMode:
     func _award_skill_points() -> void:
         var pm = ProfileManager.new()
         pm.add_skill_points(10)
+        pm.update_quest_progress("play_matches", 1)
 
 class TeamDeathmatchMode extends GameMode:
     func _init() -> void:

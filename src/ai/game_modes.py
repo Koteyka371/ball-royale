@@ -60,6 +60,7 @@ class BattleRoyaleMode(GameMode):
             from system.profile import ProfileManager  # type: ignore
             pm = ProfileManager("profile.json")
             pm.add_skill_points(10)
+            pm.update_quest_progress("play_matches", 1)
         except Exception:
             pass
 
