@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-229] Shrinking Arena Edge Effect — *2026-06-28 11:54:24 UTC*
+
+To supplement shrinking zones, visually restrict the playable arena size by destroying the arena walls from the outside in, pushing all objects physically towards the center over time.
+
+---
+
 ## [idea-202] Weather Effects on Arena — *2026-06-28 11:50:50 UTC*
 
 Introduce dynamic weather effects like rain, snow, or fog that affect visibility, friction, and movement speed.

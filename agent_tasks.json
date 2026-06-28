@@ -4004,7 +4004,7 @@
     },
     {
       "id": "idea-229",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Arena Edge Effect",
@@ -5307,6 +5307,40 @@
         "src/arena/conversion_module.py",
         "src/arena/conversion_module.gd",
         "tests/test_conversion_module.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-306",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tornado Weather Effect",
+      "description": "Add a tornado weather effect that spawns a small dynamic hazard that slowly moves around the map and sucks in balls that get too close, dealing damage and applying a dizzy effect (randomized controls) for a short duration.",
+      "allowed_paths": [
+        "src/ai/tornado_effect.py",
+        "src/ai/tornado_effect.gd",
+        "tests/test_tornado_effect.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-307",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Seasonal Arenas",
+      "description": "Introduce seasonal procedural arenas where the default weather and environmental hazards are fixed based on the season (e.g. Winter Arena has permanent snow and ice patches, Summer Arena has extreme heat that drains stamina faster).",
+      "allowed_paths": [
+        "src/arena/seasonal_arenas.py",
+        "src/arena/seasonal_arenas.gd",
+        "tests/test_seasonal_arenas.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
