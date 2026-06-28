@@ -7,6 +7,8 @@ class Action:
     def _attempt_damage(self, attacker, target) -> None:
         has_ricochet = getattr(target, "ricochet_barrier_timer", 0.0) > 0.0
         has_reflect_shield = getattr(target, "reflect_shield_active", False)
+
+        # Calculate base damage dealing
         if has_ricochet:
             if hasattr(self.world, "_deal_damage"):
                 self.world._deal_damage(target, attacker)
@@ -18,6 +20,59 @@ class Action:
         else:
             if hasattr(self.world, "_deal_damage"):
                 self.world._deal_damage(attacker, target)
+
+        # Chain lightning effect
+        if getattr(attacker, "chain_lightning_timer", 0.0) > 0:
+            enemies = self._get_enemies()
+            if enemies:
+                # Find other enemies close to the target
+                nearby_enemies = []
+                for e in enemies:
+                    if e != target and e != attacker:
+                        dist_sq = (e.x - target.x)**2 + (e.y - target.y)**2
+                        if dist_sq < 22500: # 150 radius for jump
+                            nearby_enemies.append((dist_sq, e))
+
+                nearby_enemies.sort(key=lambda x: x[0])
+
+                # Jump to up to 2 additional targets
+                jump_count = 0
+                has_original_damage = hasattr(attacker, "damage")
+                original_damage = getattr(attacker, "damage", 10.0)
+
+                for _, e in nearby_enemies:
+                    if jump_count >= 2:
+                        break
+
+                    # Temporarily reduce damage for chain bounce
+                    attacker.damage = original_damage * 0.5
+
+                    e_ricochet = getattr(e, "ricochet_barrier_timer", 0.0) > 0.0
+                    e_reflect = getattr(e, "reflect_shield_active", False)
+
+                    if e_ricochet:
+                        if hasattr(self.world, "_deal_damage"):
+                            self.world._deal_damage(e, attacker)
+                    elif e_reflect:
+                        e.reflect_shield_active = False
+                        if hasattr(self.world, "_deal_damage"):
+                            self.world._deal_damage(e, attacker)
+                    else:
+                        if hasattr(self.world, "_deal_damage"):
+                            self.world._deal_damage(attacker, e)
+
+                    # Spawn particles for lightning
+                    if hasattr(self, "_spawn_particles"):
+                        self._spawn_particles(target.x, target.y, "lightning")
+                        self._spawn_particles(e.x, e.y, "lightning")
+
+                    jump_count += 1
+
+                # Restore original damage
+                if has_original_damage:
+                    attacker.damage = original_damage
+                else:
+                    delattr(attacker, "damage")
     """
     Action execution system.
     Executes the chosen behavior (strategy) by interacting with the ball.
@@ -28,6 +83,12 @@ class Action:
         self.world = world
 
     def execute(self, strategy: str, delta: float) -> None:
+        # Chain lightning timer
+        if getattr(self.ball, "chain_lightning_timer", 0.0) > 0:
+            self.ball.chain_lightning_timer -= delta
+            if self.ball.chain_lightning_timer <= 0:
+                self.ball.chain_lightning_timer = 0.0
+
         # Entanglement logic
         if getattr(self.ball, "entangle_timer", 0.0) > 0:
             self.ball.entangle_timer -= delta
