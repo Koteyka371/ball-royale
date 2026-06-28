@@ -571,7 +571,7 @@ class WeatherChaosMode(GameMode):
         self.weather_timer += delta
         if self.weather_timer > 10.0:
             self.weather_timer = 0.0
-            weathers = ["clear", "rain", "fog", "snow", "wind"]
+            weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm"]
             import random
             rnd = getattr(self, "random", random)
             self.weather = rnd.choice(weathers)
@@ -611,6 +611,14 @@ class WeatherChaosMode(GameMode):
                 if hasattr(self, "wind_dx") and hasattr(self, "wind_dy"):
                     b.x += self.wind_dx * delta
                     b.y += self.wind_dy * delta
+            elif self.weather == "thunderstorm":
+                b.speed = b.base_speed * 1.1 # Panic speed
+                b.damage = b.base_damage * 1.5 # High damage due to electricity
+                # Random lightning strikes
+                if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                    # Struck by lightning!
+                    b.hp = getattr(b, "hp", 100) - 20
+
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]

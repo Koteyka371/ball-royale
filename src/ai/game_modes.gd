@@ -697,7 +697,7 @@ class WeatherChaosMode extends GameMode:
 		weather_timer += delta
 		if weather_timer > 10.0:
 			weather_timer = 0.0
-			var weathers = ["clear", "rain", "fog", "snow", "wind"]
+			var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm"]
 			weather = weathers[randi() % weathers.size()]
 			if weather == "wind":
 				if has_method("set_meta"):
@@ -746,6 +746,11 @@ class WeatherChaosMode extends GameMode:
 						wind_dy = get_meta("wind_dy")
 					b.x += wind_dx * delta
 					b.y += wind_dy * delta
+				elif weather == "thunderstorm":
+					if "speed" in b: b.speed = base_spd * 1.1
+					if "damage" in b: b.damage = base_dmg * 1.5
+					if randf() < 0.05 * delta:
+						if "hp" in b: b.hp -= 20
 
 	func check_winner(world, balls: Array):
 		var alive = []
