@@ -13,9 +13,24 @@ class Action:
         self.world = world
 
     def execute(self, strategy: str, delta: float) -> None:
+        # Apply Damage Over Time (DOT)
+        if getattr(self.ball, "dot_duration", 0.0) > 0:
+            dot_dmg = self.ball.dot_damage_per_tick * delta
+            if hasattr(self.ball, "take_damage"):
+                self.ball.take_damage(dot_dmg)
+            elif hasattr(self.ball, "hp"):
+                self.ball.hp -= dot_dmg
+                if self.ball.hp <= 0:
+                    self.ball.alive = False
+            self.ball.dot_duration -= delta
+
         if getattr(self.ball, "BALL_TYPE", "") == "mimic" and hasattr(self.ball, "process_mimicry"):
             enemies = self._get_enemies()
             self.ball.process_mimicry(enemies, delta)
+
+        if not hasattr(self.ball, "dot_duration"):
+            self.ball.dot_duration = 0.0
+            self.ball.dot_damage_per_tick = 0.0
 
         if not hasattr(self.ball, "_base_speed_set"):
             self.ball.base_speed = getattr(self.ball, "speed", 2.0)
@@ -169,6 +184,18 @@ class Action:
                                     # Normal: Slowing effect
                                     self.ball.x = (self.ball.x + old_x) / 2.0
                                     self.ball.y = (self.ball.y + old_y) / 2.0
+                            continue
+                        elif hazard.kind == "poison_cloud":
+                            self.ball.dot_duration = 3.0
+                            self.ball.dot_damage_per_tick = hazard.damage
+                            # Immediate application
+                            hazard_damage = hazard.damage * delta
+                            if hasattr(self.ball, "take_damage"):
+                                self.ball.take_damage(hazard_damage)
+                            elif hasattr(self.ball, "hp"):
+                                self.ball.hp -= hazard_damage
+                                if self.ball.hp <= 0:
+                                    self.ball.alive = False
                             continue
 
                         hazard_damage = hazard.damage * delta

@@ -1,0 +1,4 @@
+{
+  "title": "Weather Events System",
+  "description": "Introduce dynamic weather events to arenas, such as blizzards that slow down all balls' movement speeds temporarily, or solar flares that randomly overheat balls (disabling attacks for a few seconds). Weather is tied to the tick rate and provides a new layer of tactical unpredictability."
+}

@@ -1,4 +1,3 @@
-import pytest
 from ai.action import Action
 from arena.procedural_arena import ProceduralArena, Hazard
 

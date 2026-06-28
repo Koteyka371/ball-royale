@@ -11,9 +11,26 @@ func _init(ball_ref, world_ref):
 func execute(strategy: String, delta: float):
     var my_ball = self.ball
 
+    # Apply Damage Over Time (DOT)
+    if my_ball.has_method("has_meta") and my_ball.has_meta("dot_duration"):
+        var dot_dur = my_ball.get_meta("dot_duration")
+        if dot_dur > 0:
+            var dot_dmg = my_ball.get_meta("dot_damage_per_tick") * delta
+            if my_ball.has_method("take_damage"):
+                my_ball.take_damage(dot_dmg)
+            elif "hp" in my_ball:
+                my_ball.hp -= dot_dmg
+                if my_ball.hp <= 0:
+                    my_ball.alive = false
+            my_ball.set_meta("dot_duration", dot_dur - delta)
+
     if my_ball.get("BALL_TYPE") == "mimic" and my_ball.has_method("process_mimicry"):
         var enemies = self._get_enemies()
         my_ball.process_mimicry(enemies, delta)
+    if my_ball.has_method("has_meta") and not my_ball.has_meta("dot_duration"):
+        my_ball.set_meta("dot_duration", 0.0)
+        my_ball.set_meta("dot_damage_per_tick", 0.0)
+
     if my_ball.has_method("has_meta") and not my_ball.has_meta("_base_speed_set"):
         var base_s = 2.0
         if "speed" in my_ball:
@@ -247,6 +264,18 @@ func execute(strategy: String, delta: float):
                             else:
                                 self.ball.x = (self.ball.x + old_x) / 2.0
                                 self.ball.y = (self.ball.y + old_y) / 2.0
+                        continue
+                    elif hazard.kind == "poison_cloud":
+                        if self.ball.has_method("set_meta"):
+                            self.ball.set_meta("dot_duration", 3.0)
+                            self.ball.set_meta("dot_damage_per_tick", hazard.damage)
+                        var hd = hazard.damage * delta
+                        if self.ball.has_method("take_damage"):
+                            self.ball.take_damage(hd)
+                        elif "hp" in self.ball:
+                            self.ball.hp -= hd
+                            if self.ball.hp <= 0:
+                                self.ball.alive = false
                         continue
 
                     var hazard_damage = hazard.damage * delta
