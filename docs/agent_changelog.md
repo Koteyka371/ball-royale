@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-152] Combo Abilities System — *2026-06-28 09:21:55 UTC*
+
+Implement a synergy mechanic where combining specific skills from different ball types (e.g., water attack + lightning attack) creates enhanced combo effects like area paralysis or bonus damage, encouraging team coordination and diverse team compositions.
+
+---
+
 ## [idea-177] Interactive Training Mode — *2026-06-28 08:58:02 UTC*
 
 Allow user to fight against learning networks to shape their strategy.
