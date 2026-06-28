@@ -14,12 +14,12 @@ func _init(ball_ref, world_ref):
 
 
 
-var weights_cache = null
+static var _weights_cache = null
 
-func _get_weights() -> Dictionary:
-    if weights_cache != null:
-        return weights_cache
-    weights_cache = {}
+static func get_weights() -> Dictionary:
+    if _weights_cache != null:
+        return _weights_cache
+    _weights_cache = {}
     var file = FileAccess.open("res://src/ai/ai_weights.json", FileAccess.READ)
     if file != null:
         var text = file.get_as_text()
@@ -27,8 +27,8 @@ func _get_weights() -> Dictionary:
         var json = JSON.new()
         var err = json.parse(text)
         if err == OK:
-            weights_cache = json.get_data()
-    return weights_cache
+            _weights_cache = json.get_data()
+    return _weights_cache
 
 func choose_action(perception_data: Dictionary, emotion_state: String) -> String:
     var hp_percent = 1.0
@@ -88,7 +88,7 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
         "bias": 1.0
     }
 
-    var weights = _get_weights()
+    var weights = get_weights()
 
     var scores = {
         "flee": 0.0,
