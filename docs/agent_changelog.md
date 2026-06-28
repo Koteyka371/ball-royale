@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-150] Decoy Booster Trap — *2026-06-28 05:52:47 UTC*
+
+A new procedural hazard that spawns looking exactly like a random booster. When a ball tries to collect it, it explodes and deals damage instead of granting a buff. Scouts could have a chance to identify them based on their perception score.
+
+---
+
 ## [idea-145] King of the Hill — *2026-06-28 05:22:35 UTC*
 
 A game mode where a specific designated area in the center of the arena grants points to the balls inside it. The ball with the most points when the timer ends wins.

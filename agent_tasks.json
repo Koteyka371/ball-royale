@@ -2622,7 +2622,7 @@
     },
     {
       "id": "idea-150",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Booster Trap",
@@ -3303,6 +3303,70 @@
       "risk": "medium",
       "title": "Teleportation Portals",
       "description": "Special hazards that don't deal damage but teleport the ball to another random portal on the map, allowing for surprise flanks.",
+      "allowed_paths": [
+        "src/ai/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-186",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking King of the Hill Zone",
+      "description": "Make the King of the Hill zone gradually shrink as the game progresses, forcing players closer together and intensifying the fights for control in the center.",
+      "allowed_paths": [
+        "src/ai/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-187",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Multi-Zone Domination Mode",
+      "description": "Instead of a single central zone, add three separate zones scattered across the arena that grant points. Players must split up their focus and defend multiple areas simultaneously.",
+      "allowed_paths": [
+        "src/ai/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-188",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "EMP Trap Variant",
+      "description": "Introduce an EMP trap variant that disables enemies' abilities and removes all positive buffs (like speed boosts) for 2 seconds instead of dealing direct damage or stun, useful against highly aggressive ball types.",
+      "allowed_paths": [
+        "src/ai/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-189",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sniper Ricochet Trap",
+      "description": "Add a new trap variant 'ricochet' for Snipers, which bounces enemy attacks back towards the attacker when placed, giving Snipers a temporary defensive barrier while kiting.",
       "allowed_paths": [
         "src/ai/**",
         "tests/**"
