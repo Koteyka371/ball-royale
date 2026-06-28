@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-161] Team Objectives — *2026-06-28 06:21:34 UTC*
+
+Add capture points or secondary objectives that reward surviving teams with global buffs, encouraging teamwork over pure deathmatch behavior.
+
+---
+
 ## [idea-153] Variable Gravity Anomalies — *2026-06-28 06:21:30 UTC*
 
 Introduce spatial anomalies that periodically alter the gravity in specific zones of the arena, affecting movement speed, trajectory of skills, and forcing players/AI to adapt their pathfinding and engagement strategies dynamically.
