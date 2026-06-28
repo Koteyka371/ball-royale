@@ -94,6 +94,18 @@ class Action:
                         if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
                             hazard.last_updated_tick = current_tick
                             hazard.duration = getattr(hazard, "duration", 5.0) - delta
+                    elif hazard.kind == "portal":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            # Use teleport cooldown to prevent infinite bouncing between paired portals
+                            current_tick = getattr(self.world, "tick", 0)
+                            last_teleport = getattr(self.ball, "last_teleport_tick", -100)
+                            if current_tick - last_teleport > 10:  # Prevent immediate re-teleport
+                                self.ball.x = hazard.target_x
+                                self.ball.y = hazard.target_y
+                                self.ball.last_teleport_tick = current_tick
                     elif hazard.kind == "conveyor_belt":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
