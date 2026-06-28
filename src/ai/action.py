@@ -1461,7 +1461,7 @@ class Action:
                     trap = Hazard(trap_id, self.ball.x, self.ball.y, 15.0, "trap", 0.0)
                     setattr(trap, 'duration', 5.0) # Trap lasts for 5 seconds
 
-                    from system.lobby import lobby
+                    from system.lobby import lobby # type: ignore
                     trap_variant = lobby.get_trap_variant(self.ball.id)
                     setattr(trap, 'trap_variant', trap_variant)
 
@@ -1696,7 +1696,51 @@ class Action:
                 pass
             elif actual_dist < ball_attack_range * kite_ratio:
                 # Fall back if target is too close
-                norm_x, norm_y = -norm_x, -norm_y
+                # IMPROVEMENT: Instead of just running directly backward, find open space
+                # Default retreat vector
+                ret_x, ret_y = -norm_x, -norm_y
+
+                # Check for nearby walls to avoid getting cornered
+                arena_width = getattr(self.world.arena, "width", 800.0) if hasattr(self.world, "arena") else 800.0
+                arena_height = getattr(self.world.arena, "height", 600.0) if hasattr(self.world, "arena") else 600.0
+
+                margin = 100.0
+                wall_repel_x, wall_repel_y = 0.0, 0.0
+
+                if self.ball.x < margin:
+                    wall_repel_x += (margin - self.ball.x) / margin
+                elif self.ball.x > arena_width - margin:
+                    wall_repel_x -= (self.ball.x - (arena_width - margin)) / margin
+
+                if self.ball.y < margin:
+                    wall_repel_y += (margin - self.ball.y) / margin
+                elif self.ball.y > arena_height - margin:
+                    wall_repel_y -= (self.ball.y - (arena_height - margin)) / margin
+
+                # If we're near a wall, blend in a perpendicular (sideways) movement
+                if wall_repel_x != 0.0 or wall_repel_y != 0.0:
+                    # Perpendicular vectors to the target
+                    perp_x1, perp_y1 = -norm_y, norm_x
+                    perp_x2, perp_y2 = norm_y, -norm_x
+
+                    # Choose the perpendicular direction that moves us away from walls
+                    dot1 = perp_x1 * wall_repel_x + perp_y1 * wall_repel_y
+                    dot2 = perp_x2 * wall_repel_x + perp_y2 * wall_repel_y
+
+                    if dot1 > dot2:
+                        ret_x += perp_x1 * 1.5 + wall_repel_x
+                        ret_y += perp_y1 * 1.5 + wall_repel_y
+                    else:
+                        ret_x += perp_x2 * 1.5 + wall_repel_x
+                        ret_y += perp_y2 * 1.5 + wall_repel_y
+
+                # Normalize the resulting retreat vector
+                ret_len_sq = ret_x*ret_x + ret_y*ret_y
+                if ret_len_sq > 0.0001:
+                    ret_len = math.sqrt(ret_len_sq)
+                    norm_x, norm_y = ret_x / ret_len, ret_y / ret_len
+                else:
+                    norm_x, norm_y = -norm_x, -norm_y
             else:
                 # Hold position
                 norm_x, norm_y = 0.0, 0.0
@@ -1719,7 +1763,7 @@ class Action:
                             trap = Hazard(trap_id, self.ball.x, self.ball.y, 10.0, "trap", 0.0)
                             setattr(trap, 'duration', 3.0)
 
-                            from system.lobby import lobby
+                            from system.lobby import lobby # type: ignore
                             trap_variant = lobby.get_trap_variant(self.ball.id)
                             setattr(trap, 'trap_variant', trap_variant)
 

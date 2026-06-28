@@ -2658,8 +2658,63 @@ func _kite(delta: float):
             if actual_dist > b_attack_range:
                 pass
             elif actual_dist < b_attack_range * kite_ratio:
-                nx = -nx
-                ny = -ny
+                # Fall back if target is too close
+                # IMPROVEMENT: Instead of just running directly backward, find open space
+                # Default retreat vector
+                var ret_x = -nx
+                var ret_y = -ny
+
+                # Check for nearby walls to avoid getting cornered
+                var arena_width = 800.0
+                var arena_height = 600.0
+                if "arena" in self.world:
+                    if "width" in self.world.arena:
+                        arena_width = float(self.world.arena.width)
+                    if "height" in self.world.arena:
+                        arena_height = float(self.world.arena.height)
+
+                var margin = 100.0
+                var wall_repel_x = 0.0
+                var wall_repel_y = 0.0
+
+                if self.ball.x < margin:
+                    wall_repel_x += (margin - self.ball.x) / margin
+                elif self.ball.x > arena_width - margin:
+                    wall_repel_x -= (self.ball.x - (arena_width - margin)) / margin
+
+                if self.ball.y < margin:
+                    wall_repel_y += (margin - self.ball.y) / margin
+                elif self.ball.y > arena_height - margin:
+                    wall_repel_y -= (self.ball.y - (arena_height - margin)) / margin
+
+                # If we're near a wall, blend in a perpendicular (sideways) movement
+                if wall_repel_x != 0.0 or wall_repel_y != 0.0:
+                    # Perpendicular vectors to the target
+                    var perp_x1 = -ny
+                    var perp_y1 = nx
+                    var perp_x2 = ny
+                    var perp_y2 = -nx
+
+                    # Choose the perpendicular direction that moves us away from walls
+                    var dot1 = perp_x1 * wall_repel_x + perp_y1 * wall_repel_y
+                    var dot2 = perp_x2 * wall_repel_x + perp_y2 * wall_repel_y
+
+                    if dot1 > dot2:
+                        ret_x += perp_x1 * 1.5 + wall_repel_x
+                        ret_y += perp_y1 * 1.5 + wall_repel_y
+                    else:
+                        ret_x += perp_x2 * 1.5 + wall_repel_x
+                        ret_y += perp_y2 * 1.5 + wall_repel_y
+
+                # Normalize the resulting retreat vector
+                var ret_len_sq = ret_x*ret_x + ret_y*ret_y
+                if ret_len_sq > 0.0001:
+                    var ret_len = sqrt(ret_len_sq)
+                    nx = ret_x / ret_len
+                    ny = ret_y / ret_len
+                else:
+                    nx = -nx
+                    ny = -ny
             else:
                 nx = 0.0
                 ny = 0.0
