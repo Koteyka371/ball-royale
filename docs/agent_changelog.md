@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-155] Boss Encounters — *2026-06-28 06:33:38 UTC*
+
+Introduce powerful boss balls in the center of the arena.
+
+---
+
 ## [idea-178] Custom Neural Skins — *2026-06-28 06:31:45 UTC*
 
 Skins for balls based on generation performance.
