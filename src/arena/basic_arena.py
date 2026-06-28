@@ -51,6 +51,13 @@ class BasicArena:
             if self.safe_zone_radius < 50.0:
                 self.safe_zone_radius = 50.0
 
+            for h in self.hazards:
+                if hasattr(h, "target_radius"):
+                    if h.radius < h.target_radius:
+                        h.radius += (h.target_radius / 600.0) * delta * 60.0
+                        if h.radius > h.target_radius:
+                            h.radius = h.target_radius
+
         if current_tick % 600 == 0:
             import random
             self.hazards = []
@@ -58,11 +65,13 @@ class BasicArena:
             for _ in range(num_zones):
                 x = random.uniform(200, self.width - 200)
                 y = random.uniform(200, self.height - 200)
-                radius = random.uniform(100.0, 250.0)
-                self.hazards.append(Hazard(id=len(self.hazards), x=x, y=y, radius=radius, kind="trap", damage=100.0))
+                t_radius = random.uniform(100.0, 250.0)
+                new_hazard = Hazard(id=len(self.hazards), x=x, y=y, radius=10.0, kind="trap", damage=100.0)
+                new_hazard.target_radius = t_radius
+                self.hazards.append(new_hazard)
 
-            if current_tick % 10 == 0:
-                self._update_danger_grid()
+        if current_tick % 10 == 0:
+            self._update_danger_grid()
 
     def _update_danger_grid(self):
         self.danger_grid.clear()

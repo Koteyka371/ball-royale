@@ -1,0 +1,4 @@
+{
+  "title": "Interactive Arena Elements",
+  "description": "Add interactive objects scattered throughout the arena, such as breakable walls, explosive barrels, or bounce pads. Breakable walls could provide temporary cover that deteriorates under attack, explosive barrels could deal area-of-effect damage if detonated, and bounce pads could launch balls across the map for quick escapes or surprise attacks, adding a layer of tactical environmental usage."
+}
