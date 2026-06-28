@@ -766,52 +766,59 @@ def main():
 
         lock_data = load_json(LOCK_FILE)
 
-        all_idle = check_all_agents_idle(lock_data)
-
-        if all_idle:
-            try:
-                tasks_data = load_json(TASK_FILE)
-                todo_count = sum(1 for t in tasks_data.get("tasks", []) if t.get("status") == "todo")
-            except Exception:
-                todo_count = 0
-
-            token = os.environ.get("GITHUB_TOKEN", "")
-
-            if todo_count < 3:
-                print(f"[Supervisor] Todo task pool is low ({todo_count} tasks left). Checking if brainstorming is needed...")
-                has_active_brainstorm = False
-                if token:
-                    try:
-                        prs = get_open_prs()
-                        for pr in prs:
-                            pr_title = pr.get("title", "")
-                            pr_branch = pr.get("head", {}).get("ref", "")
-                            if "supervisor-brainstorm" in pr_title or "supervisor-brainstorm" in pr_branch:
-                                has_active_brainstorm = True
-                                break
-                    except Exception as e:
-                        print(f"[Supervisor] Error checking active brainstorm PRs: {e}")
-
-                if has_active_brainstorm:
-                    print("[Supervisor] Brainstorming session is already active, waiting for it to complete.")
-                else:
-                    j_token = os.environ.get("JULES_API_KEY", "") or os.environ.get("JULES_API_KEY_2", "")
-                    if j_token:
-                        invoke_jules_brainstorm(j_token)
-                    else:
-                        print("[Supervisor] Warning: No JULES API key available to trigger brainstorming")
-
-            if todo_count > 0:
-                print(f"[Supervisor] All agents idle, {todo_count} tasks remaining, triggering dispatcher...")
-                if token:
-                    trigger_dispatcher(token)
-            else:
-                print("[Supervisor] All agents idle, no tasks remaining to dispatch.")
-        else:
-            working = [aid for aid, info in lock_data.get("agents", {}).items()
+        idle_agents = [aid for aid, info in lock_data.get("agents", {}).items()
                        if aid != SUPERVISOR_ID and isinstance(info, dict)
-                       and info.get("status") in ("working", "assigned")]
-            print(f"[Supervisor] Active agents: {', '.join(working)}")
+                       and info.get("status") == "idle"]
+        working_agents = [aid for aid, info in lock_data.get("agents", {}).items()
+                          if aid != SUPERVISOR_ID and isinstance(info, dict)
+                          and info.get("status") in ("working", "assigned")]
+
+        print(f"[Supervisor] Active agents: {len(working_agents)}/30 ({', '.join(working_agents) if working_agents else 'none'})")
+        print(f"[Supervisor] Idle agents: {len(idle_agents)}/30")
+
+        try:
+            tasks_data = load_json(TASK_FILE)
+            todo_count = sum(1 for t in tasks_data.get("tasks", []) if t.get("status") == "todo")
+        except Exception:
+            todo_count = 0
+
+        token = os.environ.get("GITHUB_TOKEN", "")
+
+        if todo_count < 3:
+            print(f"[Supervisor] Todo task pool is low ({todo_count} tasks left). Checking if brainstorming is needed...")
+            has_active_brainstorm = False
+            if token:
+                try:
+                    prs = get_open_prs()
+                    for pr in prs:
+                        pr_title = pr.get("title", "")
+                        pr_branch = pr.get("head", {}).get("ref", "")
+                        if "supervisor-brainstorm" in pr_title or "supervisor-brainstorm" in pr_branch:
+                            has_active_brainstorm = True
+                            break
+                except Exception as e:
+                    print(f"[Supervisor] Error checking active brainstorm PRs: {e}")
+
+            if has_active_brainstorm:
+                print("[Supervisor] Brainstorming session is already active, waiting for it to complete.")
+            else:
+                j_token = os.environ.get("JULES_API_KEY", "") or os.environ.get("JULES_API_KEY_2", "")
+                if j_token:
+                    invoke_jules_brainstorm(j_token)
+                else:
+                    print("[Supervisor] Warning: No JULES API key available to trigger brainstorming")
+
+        if len(idle_agents) > 0 and todo_count > 0:
+            print(f"[Supervisor] Found {len(idle_agents)} idle agents and {todo_count} tasks. Triggering dispatcher...")
+            if token:
+                trigger_dispatcher(token)
+            else:
+                print("[Supervisor] Warning: GITHUB_TOKEN not available, cannot trigger dispatcher")
+        else:
+            if len(idle_agents) == 0:
+                print("[Supervisor] No idle agents available, skipping dispatch.")
+            else:
+                print("[Supervisor] No tasks remaining to dispatch.")
 
         print("\n[Supervisor] Checking open PRs...")
         prs = get_open_prs()

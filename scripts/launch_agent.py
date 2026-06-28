@@ -614,9 +614,10 @@ def main():
                 print(f"[{agent_id}] WARNING: Failed to update status after Jules success")
                 return 1
 
+            gh_token = os.environ.get("GITHUB_TOKEN", "") or token
             print(f"[{agent_id}] Polling for PR (branch={branch_name})...")
             for i in range(0, PR_POLL_MAX_MINUTES * 60, PR_POLL_INTERVAL):
-                if check_pr_created(task_id, token, agent_id):
+                if check_pr_created(task_id, gh_token, agent_id):
                     print(f"[{agent_id}] PR found!")
                     break
                 elapsed = i + PR_POLL_INTERVAL
