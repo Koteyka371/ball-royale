@@ -4,7 +4,7 @@ extends RefCounted
 var selections = {}
 
 func select_trap_variant(ball_id: int, variant: String) -> void:
-    if variant in ["normal", "poison", "stun"]:
+    if variant in ["normal", "poison", "stun", "ricochet"]:
         selections[ball_id] = variant
 
 func get_trap_variant(ball_id: int) -> String:

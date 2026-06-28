@@ -3,6 +3,15 @@ from typing import Any
 import random
 
 class Action:
+
+    def _attempt_damage(self, attacker, target) -> None:
+        has_ricochet = getattr(target, "ricochet_barrier_timer", 0.0) > 0.0
+        if has_ricochet:
+            if hasattr(self.world, "_deal_damage"):
+                self.world._deal_damage(target, attacker)
+        else:
+            if hasattr(self.world, "_deal_damage"):
+                self.world._deal_damage(attacker, target)
     """
     Action execution system.
     Executes the chosen behavior (strategy) by interacting with the ball.
@@ -685,7 +694,7 @@ class Action:
             attack_timer = getattr(self.ball, "attack_timer", 0.0)
             if attack_timer <= 0 and dist <= attack_range:
                 if hasattr(self.world, "_deal_damage"):
-                    self.world._deal_damage(self.ball, target)
+                    self._attempt_damage(self.ball, target)
                     if not hasattr(self.ball, "charge_level"):
                         self.ball.charge_level = 0.0
                     if True:
@@ -842,7 +851,7 @@ class Action:
                             self.ball.damage = original_damage * 2.0
 
                     if hasattr(self.world, "_deal_damage"):
-                        self.world._deal_damage(self.ball, target)
+                        self._attempt_damage(self.ball, target)
                         if not hasattr(self.ball, "charge_level"):
                             self.ball.charge_level = 0.0
                         if True:
@@ -952,7 +961,7 @@ class Action:
                 if hasattr(self.world, "_deal_damage"):
                     attack_timer = getattr(self.ball, "attack_timer", 0.0)
                     if attack_timer <= 0:
-                        self.world._deal_damage(self.ball, target)
+                        self._attempt_damage(self.ball, target)
                         if not hasattr(self.ball, "charge_level"):
                             self.ball.charge_level = 0.0
                         if True:
@@ -1147,7 +1156,7 @@ class Action:
                                     self.ball.damage = original_damage * 2.0
 
                     if hasattr(self.world, "_deal_damage"):
-                        self.world._deal_damage(self.ball, target)
+                        self._attempt_damage(self.ball, target)
                         if not hasattr(self.ball, "charge_level"):
                             self.ball.charge_level = 0.0
                         if True:
@@ -1308,7 +1317,7 @@ class Action:
                         attack_timer = getattr(self.ball, "attack_timer", 0.0)
                         if attack_timer <= 0:
                             if hasattr(self.world, "_deal_damage"):
-                                self.world._deal_damage(self.ball, target_enemy)
+                                self._attempt_damage(self.ball, target_enemy)
                                 if not hasattr(self.ball, "charge_level"):
                                     self.ball.charge_level = 0.0
                                 if True:
@@ -1567,6 +1576,9 @@ class Action:
                     trap_variant = lobby.get_trap_variant(self.ball.id)
                     setattr(trap, 'trap_variant', trap_variant)
 
+                    if trap_variant == "ricochet":
+                        self.ball.ricochet_barrier_timer = 3.0
+
                     self.world.arena.hazards.append(trap)
 
             elif skill_name == "target_strong":
@@ -1706,7 +1718,7 @@ class Action:
                 if speed > 2.5:
                     is_enemy = getattr(other, "ball_type", "") != getattr(self.ball, "ball_type", "")
                     if is_enemy and hasattr(self.world, "_deal_damage"):
-                        self.world._deal_damage(self.ball, other)
+                        self._attempt_damage(self.ball, other)
                         if not hasattr(self.ball, "charge_level"):
                             self.ball.charge_level = 0.0
                         if True:
@@ -1734,6 +1746,9 @@ class Action:
             self.ball.skill_timer -= delta
         if hasattr(self.ball, "attack_timer") and self.ball.attack_timer > 0:
             self.ball.attack_timer -= delta
+
+        if hasattr(self.ball, "ricochet_barrier_timer") and self.ball.ricochet_barrier_timer > 0:
+            self.ball.ricochet_barrier_timer -= delta
         if hasattr(self.ball, "kite_trap_timer") and self.ball.kite_trap_timer > 0:
             self.ball.kite_trap_timer -= delta
         if hasattr(self.ball, "stutter_timer") and self.ball.stutter_timer > 0:
@@ -1869,6 +1884,9 @@ class Action:
                             trap_variant = lobby.get_trap_variant(self.ball.id)
                             setattr(trap, 'trap_variant', trap_variant)
 
+                            if trap_variant == "ricochet":
+                                self.ball.ricochet_barrier_timer = 3.0
+
                             self.world.arena.hazards.append(trap)
                             self.ball.kite_trap_timer = 2.0  # Trap cooldown
                 elif actual_dist > ball_attack_range:
@@ -1903,7 +1921,7 @@ class Action:
             attack_cd_timer = getattr(self.ball, "attack_timer", 0.0)
             if attack_cd_timer <= 0:
                 if hasattr(self.world, "_deal_damage"):
-                    self.world._deal_damage(self.ball, optimal_target)
+                    self._attempt_damage(self.ball, optimal_target)
                     if not hasattr(self.ball, "charge_level"):
                         self.ball.charge_level = 0.0
                     if True:
@@ -1983,7 +2001,7 @@ class Action:
                         my_dist_sq = (closest_enemy.x - self.ball.x)**2 + (closest_enemy.y - self.ball.y)**2
                         if my_dist_sq < getattr(self.ball, "attack_range", 150.0)**2:
                             if hasattr(self.world, "_deal_damage"):
-                                self.world._deal_damage(self.ball, closest_enemy)
+                                self._attempt_damage(self.ball, closest_enemy)
                                 if not hasattr(self.ball, "charge_level"):
                                     self.ball.charge_level = 0.0
                                 if True:
@@ -2062,7 +2080,7 @@ class Action:
                 attack_cd_timer = getattr(self.ball, "attack_timer", 0.0)
                 if attack_cd_timer <= 0:
                     if hasattr(self.world, "_deal_damage"):
-                        self.world._deal_damage(self.ball, target_enemy)
+                        self._attempt_damage(self.ball, target_enemy)
                         if not hasattr(self.ball, "charge_level"):
                             self.ball.charge_level = 0.0
                         if True:
