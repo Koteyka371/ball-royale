@@ -1453,6 +1453,31 @@ class Action:
                     self.ball.x += math.cos(angle) * 100.0
                     self.ball.y += math.sin(angle) * 100.0
 
+            elif skill_name == "elemental_burst":
+                import math
+                enemies = self._get_enemies()
+
+                # Check for other elementalists nearby (chain reaction)
+                allies = [b for b in getattr(self.world, "balls", []) if getattr(b, "alive", False) and b.id != self.ball.id and getattr(b, "BALL_TYPE", "") == "elementalist"]
+
+                chain_bonus = 1.0
+                for ally in allies:
+                    dx = ally.x - self.ball.x
+                    dy = ally.y - self.ball.y
+                    if math.sqrt(dx*dx + dy*dy) < 150: # Nearby elementalist ally
+                        chain_bonus += 0.5 # 50% damage bonus per ally
+
+                burst_radius = 80 * chain_bonus
+                base_burst_dmg = 20 * chain_bonus
+
+                if enemies:
+                    for enemy in enemies:
+                        dx = enemy.x - self.ball.x
+                        dy = enemy.y - self.ball.y
+                        dist = math.sqrt(dx*dx + dy*dy)
+                        if dist <= burst_radius:
+                            if hasattr(enemy, "take_damage"):
+                                enemy.take_damage(base_burst_dmg)
             elif skill_name == "snipe":
                 # Drop a temporary trap hazard
                 import random
