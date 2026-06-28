@@ -358,15 +358,18 @@ class KingOfTheHillMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "King of the Hill"
-        self.description = "Control three separate zones scattered across the arena. First to 100 points wins."
+        self.description = "Control a central shrinking zone. First to 100 points wins."
         self.tick_timer = 0.0
+        self.game_time = 0.0
 
     def setup(self, world: Any, balls: List[Any]) -> None:
+        self.game_time = 0.0
         for b in balls:
             if getattr(b, "ball_type", None) != "spectator":
                 b.score = 0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        self.game_time += delta
         self.tick_timer += delta
         if self.tick_timer >= 0.5:
             self.tick_timer = 0.0
@@ -378,23 +381,17 @@ class KingOfTheHillMode(GameMode):
                 arena_width = getattr(world.arena, "width", 1000)
                 arena_height = getattr(world.arena, "height", 1000)
 
-            # Three separate zones
-            zones = [
-                (arena_width * 0.25, arena_height * 0.25),
-                (arena_width * 0.75, arena_height * 0.25),
-                (arena_width * 0.5, arena_height * 0.75)
-            ]
-            zone_radius = min(arena_width, arena_height) * 0.15
+            center_x = arena_width / 2.0
+            center_y = arena_height / 2.0
+
+            max_radius = min(arena_width, arena_height) * 0.5
+            min_radius = min(arena_width, arena_height) * 0.05
+            zone_radius = max(min_radius, max_radius - self.game_time * 5.0)
 
             for b in balls:
                 if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
-                    in_zone = False
-                    for zx, zy in zones:
-                        dist_sq = (b.x - zx) ** 2 + (b.y - zy) ** 2
-                        if dist_sq <= zone_radius ** 2:
-                            in_zone = True
-                            break
-                    if in_zone:
+                    dist_sq = (b.x - center_x) ** 2 + (b.y - center_y) ** 2
+                    if dist_sq <= zone_radius ** 2:
                         b.score = getattr(b, "score", 0) + 1
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:

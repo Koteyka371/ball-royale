@@ -459,47 +459,46 @@ class VampireRoyaleMode extends GameMode:
 
 class KingOfTheHillMode extends GameMode:
     var tick_timer = 0.0
+    var game_time = 0.0
 
     func _init() -> void:
         name = "King of the Hill"
-        description = "Control three separate zones scattered across the arena. First to 100 points wins."
+        description = "Control a central shrinking zone. First to 100 points wins."
 
     func setup(world, balls: Array) -> void:
+        game_time = 0.0
         for b in balls:
             if b.ball_type != "spectator":
                 b.set_meta("score", 0)
 
     func tick(world, balls: Array, delta: float = 0.016) -> void:
+        game_time += delta
         tick_timer += delta
         if tick_timer >= 0.5:
             tick_timer = 0.0
 
-            var arena_width = 1000
-            var arena_height = 1000
+            var arena_width = 1000.0
+            var arena_height = 1000.0
             if world != null and "arena" in world and world.arena != null:
                 if "width" in world.arena:
-                    arena_width = world.arena.width
+                    arena_width = float(world.arena.width)
                 if "height" in world.arena:
-                    arena_height = world.arena.height
+                    arena_height = float(world.arena.height)
 
-            var zones = [
-                Vector2(arena_width * 0.25, arena_height * 0.25),
-                Vector2(arena_width * 0.75, arena_height * 0.25),
-                Vector2(arena_width * 0.5, arena_height * 0.75)
-            ]
-            var zone_radius = min(arena_width, arena_height) * 0.15
+            var center_x = arena_width / 2.0
+            var center_y = arena_height / 2.0
+
+            var max_radius = min(arena_width, arena_height) * 0.5
+            var min_radius = min(arena_width, arena_height) * 0.05
+            var zone_radius = max(min_radius, max_radius - game_time * 5.0)
 
             for b in balls:
                 if b.alive and b.ball_type != "spectator":
-                    var in_zone = false
-                    for z in zones:
-                        var dx = b.x - z.x
-                        var dy = b.y - z.y
-                        var dist_sq = dx * dx + dy * dy
-                        if dist_sq <= zone_radius * zone_radius:
-                            in_zone = true
-                            break
-                    if in_zone:
+                    var dx = b.x - center_x
+                    var dy = b.y - center_y
+                    var dist_sq = dx * dx + dy * dy
+
+                    if dist_sq <= zone_radius * zone_radius:
                         var s = 0
                         if b.has_meta("score"):
                             s = b.get_meta("score")
