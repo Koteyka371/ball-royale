@@ -3082,7 +3082,7 @@
     },
     {
       "id": "idea-176",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Daily Quests for Skill Points",
@@ -4149,6 +4149,40 @@
         "src/ai/chain_lightning_skill.py",
         "src/ai/chain_lightning_skill.gd",
         "tests/test_chain_lightning_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-238",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather effects on perception",
+      "description": "Introduce dynamic weather (e.g., rain, sandstorm) that periodically changes perception rules globally during a match, such as reducing perception range or slowly damaging fast-moving entities.",
+      "allowed_paths": [
+        "src/ai/effects_on_perception.py",
+        "src/ai/effects_on_perception.gd",
+        "tests/test_effects_on_perception.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-239",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy explosions",
+      "description": "When a Trickster's decoy expires or takes fatal damage, it detonates and deals AoE damage, confusing enemies and opening opportunities for counter-attacks.",
+      "allowed_paths": [
+        "src/ai/decoy_explosions.py",
+        "src/ai/decoy_explosions.gd",
+        "tests/test_decoy_explosions.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
