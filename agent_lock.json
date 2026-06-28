@@ -19,9 +19,9 @@
     "agent-3": {
       "name": "Jules Tests",
       "area": "tests",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "sync-gd-decision-get-weights",
+      "status": "assigned",
+      "started_at": "2026-06-28T05:58:04.676792+00:00",
       "cycles_today": 1
     },
     "agent-4": {
