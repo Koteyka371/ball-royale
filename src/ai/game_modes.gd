@@ -33,10 +33,12 @@ class GameMode:
 class BattleRoyaleMode extends GameMode:
     var dark_phase_timer: float = 0.0
     var is_dark_phase: bool = false
+    var weather: String = "clear"
+    var weather_timer: float = 0.0
 
     func _init() -> void:
         name = "Battle Royale"
-        description = "Last man standing. Everyone for themselves. Includes periodic dark phases."
+        description = "Last man standing. Everyone for themselves. Includes periodic dark phases and dynamic weather."
 
     func setup(world, balls: Array) -> void:
         if not "dead_balls" in world:
@@ -73,6 +75,33 @@ class BattleRoyaleMode extends GameMode:
                         b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
 
         dark_phase_timer += delta
+        weather_timer += delta
+
+        if weather_timer >= 20.0:
+            weather_timer = 0.0
+            var weathers = ["clear", "clear", "rain", "sandstorm"]
+            weather = weathers[randi() % weathers.size()]
+
+        if world != null and "arena" in world:
+            if weather == "rain":
+                world.arena.is_raining = true
+            else:
+                world.arena.is_raining = false
+            if weather == "sandstorm":
+                world.arena.is_sandstorming = true
+            else:
+                world.arena.is_sandstorming = false
+
+        for b in balls:
+            if b.alive and weather in ["rain", "sandstorm"]:
+                var vel = 0.0
+                if "vx" in b and "vy" in b:
+                    vel = sqrt(b.vx * b.vx + b.vy * b.vy)
+                elif "speed" in b:
+                    vel = b.speed
+                if vel > 120.0:
+                    if "hp" in b:
+                        b.hp -= 5.0 * delta
 
         # Dark phase cycle: 20s normal, 10s dark
         if not is_dark_phase and dark_phase_timer >= 20.0:
@@ -805,6 +834,14 @@ class WeatherChaosMode extends GameMode:
 						b.y += b.vy * delta * 0.5
 					if b.has_method("set_meta"):
 						b.set_meta("attack_accuracy", 0.8)
+					var vel = 0.0
+					if "vx" in b and "vy" in b:
+						vel = sqrt(b.vx * b.vx + b.vy * b.vy)
+					elif "speed" in b:
+						vel = b.speed
+					if vel > 120.0:
+						if "hp" in b:
+							b.hp -= 5.0 * delta
 				elif weather == "fog":
 					if "speed" in b: b.speed = base_spd * 0.5
 					if "damage" in b: b.damage = base_dmg * 0.8
@@ -863,6 +900,14 @@ class WeatherChaosMode extends GameMode:
 							if "hp" in b:
 								b.hp -= 1.0
 						b.set_meta("sandstorm_timer", sand_timer)
+					var vel = 0.0
+					if "vx" in b and "vy" in b:
+						vel = sqrt(b.vx * b.vx + b.vy * b.vy)
+					elif "speed" in b:
+						vel = b.speed
+					if vel > 120.0:
+						if "hp" in b:
+							b.hp -= 5.0 * delta
 					if randf() < 0.05 * delta:
 						if "hp" in b: b.hp -= 20
 					if b.has_method("set_meta"):

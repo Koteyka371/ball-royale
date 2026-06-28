@@ -33,7 +33,9 @@ class BattleRoyaleMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Battle Royale"
-        self.description = "Last man standing. Everyone for themselves. Includes periodic dark phases."
+        self.description = "Last man standing. Everyone for themselves. Includes periodic dark phases and dynamic weather."
+        self.weather = "clear"
+        self.weather_timer = 0.0
         self.dark_phase_timer = 0.0
         self.is_dark_phase = False
 
@@ -61,6 +63,25 @@ class BattleRoyaleMode(GameMode):
                     b.time_since_death += delta
 
         self.dark_phase_timer += delta
+        self.weather_timer += delta
+
+        if self.weather_timer >= 20.0:
+            self.weather_timer = 0.0
+            weathers = ["clear", "clear", "rain", "sandstorm"]
+            self.weather = getattr(self, "random", __import__("random")).choice(weathers)
+
+        if hasattr(world, "arena"):
+            world.arena.is_raining = (self.weather == "rain")
+            world.arena.is_sandstorming = (self.weather == "sandstorm")
+
+        for b in balls:
+            if getattr(b, "alive", False):
+                if self.weather in ["rain", "sandstorm"]:
+                    import math
+                    vel = math.sqrt(getattr(b, "vx", 0)**2 + getattr(b, "vy", 0)**2) if hasattr(b, "vx") and hasattr(b, "vy") else getattr(b, "speed", 0)
+                    if vel > 120.0:
+                        if hasattr(b, "hp"):
+                            b.hp -= 5.0 * delta # slowly damage fast-moving entities
 
         # Dark phase cycle: 20s normal, 10s dark
         if not self.is_dark_phase and self.dark_phase_timer >= 20.0:
@@ -649,6 +670,11 @@ class WeatherChaosMode(GameMode):
                     b.x += getattr(b, "vx") * delta * 0.5
                     b.y += getattr(b, "vy") * delta * 0.5
                 b.attack_accuracy = 0.8
+                import math
+                vel = math.sqrt(getattr(b, "vx", 0)**2 + getattr(b, "vy", 0)**2) if hasattr(b, "vx") and hasattr(b, "vy") else getattr(b, "speed", 0)
+                if vel > 120.0:
+                    if hasattr(b, "hp"):
+                        b.hp -= 5.0 * delta # slowly damage fast-moving entities
             elif self.weather == "fog":
                 b.speed = b.base_speed * 0.5
                 b.damage = b.base_damage * 0.8
@@ -693,6 +719,13 @@ class WeatherChaosMode(GameMode):
                     b.sandstorm_timer = 0.0
                     if hasattr(b, "hp"):
                         b.hp -= 1.0 # 1 damage per sec
+
+                import math
+                vel = math.sqrt(getattr(b, "vx", 0)**2 + getattr(b, "vy", 0)**2) if hasattr(b, "vx") and hasattr(b, "vy") else getattr(b, "speed", 0)
+                if vel > 120.0:
+                    if hasattr(b, "hp"):
+                        b.hp -= 5.0 * delta # slowly damage fast-moving entities
+
                 # Random lightning strikes
                 if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
                     # Struck by lightning!
