@@ -11,9 +11,9 @@
     "agent-2": {
       "name": "Jules Behaviors",
       "area": "behaviors",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "idea-151",
+      "status": "assigned",
+      "started_at": "2026-06-28T05:54:10.765778+00:00",
       "cycles_today": 1
     },
     "agent-3": {
