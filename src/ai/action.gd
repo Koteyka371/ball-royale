@@ -149,6 +149,34 @@ func execute(strategy: String, delta: float):
 					inv.erase("placeable_trap")
 					self.ball.set_meta("inventory", inv)
 
+
+	# Mind control timer logic
+	var mc_timer = 0.0
+	var is_mc = false
+	if "mind_control_timer" in self.ball:
+		mc_timer = self.ball.mind_control_timer
+		is_mc = self.ball.is_mind_controlled if "is_mind_controlled" in self.ball else false
+	elif self.ball.has_method("has_meta") and self.ball.has_meta("mind_control_timer"):
+		mc_timer = self.ball.get_meta("mind_control_timer")
+		is_mc = self.ball.get_meta("is_mind_controlled") if self.ball.has_meta("is_mind_controlled") else false
+
+	if is_mc and mc_timer > 0.0:
+		mc_timer -= delta
+		if self.ball.has_method("set_meta"):
+			self.ball.set_meta("mind_control_timer", mc_timer)
+		else:
+			self.ball.mind_control_timer = mc_timer
+
+		if mc_timer <= 0.0:
+			if self.ball.has_method("set_meta"):
+				self.ball.set_meta("is_mind_controlled", false)
+				if self.ball.has_meta("original_team"):
+					self.ball.set_meta("team", self.ball.get_meta("original_team"))
+			else:
+				self.ball.is_mind_controlled = false
+				if "original_team" in self.ball:
+					self.ball.team = self.ball.original_team
+
 	# Temporal rift logic to modify local delta
 	if world != null and "arena" in world and "hazards" in world.arena:
 		for hazard in world.arena.hazards:
@@ -3416,6 +3444,45 @@ func _use_skill():
                         self.ball.set_meta("ricochet_barrier_timer", 3.0)
 
                 self.world.arena.hazards.append(trap)
+        elif skill_name == "mind_control":
+            var enemies = _get_enemies()
+            if enemies.size() > 0:
+                var target = null
+                var min_dist = 9999999.0
+                for e in enemies:
+                    var dx = e.x - self.ball.x
+                    var dy = e.y - self.ball.y
+                    var dist_sq = dx*dx + dy*dy
+                    if dist_sq < min_dist:
+                        min_dist = dist_sq
+                        target = e
+
+                if target != null and sqrt(min_dist) <= 200.0:
+                    var is_mc = false
+                    if "is_mind_controlled" in target: is_mc = target.is_mind_controlled
+                    elif target.has_method("has_meta") and target.has_meta("is_mind_controlled"): is_mc = target.get_meta("is_mind_controlled")
+
+                    if not is_mc:
+                        var orig_team = ""
+                        if "team" in target: orig_team = target.team
+                        elif target.has_method("has_meta") and target.has_meta("team"): orig_team = target.get_meta("team")
+
+                        var my_team = ""
+                        if "team" in self.ball: my_team = self.ball.team
+                        elif self.ball.has_method("has_meta") and self.ball.has_meta("team"): my_team = self.ball.get_meta("team")
+
+                        if target.has_method("set_meta"):
+                            target.set_meta("is_mind_controlled", true)
+                            target.set_meta("mind_control_timer", 5.0)
+                            target.set_meta("original_team", orig_team)
+                            target.set_meta("team", my_team)
+                        else:
+                            target.is_mind_controlled = true
+                            target.mind_control_timer = 5.0
+                            target.original_team = orig_team
+                            target.team = my_team
+
+                        _spawn_skill_particles("mind_control")
         elif skill_name == "ground_pound":
             var pound_radius = 120.0
             var pound_damage = 40.0
