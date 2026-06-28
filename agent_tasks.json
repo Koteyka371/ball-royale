@@ -3047,7 +3047,7 @@
     },
     {
       "id": "idea-174",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Destructible Terrain",
@@ -4013,6 +4013,74 @@
         "src/arena/shrinking_arena_edge_effect.py",
         "src/arena/shrinking_arena_edge_effect.gd",
         "tests/test_shrinking_arena_edge_effect.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-230",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounty Hunter Mode",
+      "description": "At the start of the match, one ball on each team is randomly selected as the 'Bounty'. If the Bounty is destroyed, the opposing team gains a massive global stat buff and extra skill points. Teams must balance defending their Bounty while hunting the enemy's.",
+      "allowed_paths": [
+        "src/ai/bounty_hunter.py",
+        "src/ai/bounty_hunter.gd",
+        "tests/test_bounty_hunter.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-231",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Portal Modifier items",
+      "description": "Items or boosters that allow players to throw a temporary exit portal anywhere on the arena, acting as a tactical escape hatch for a short duration.",
+      "allowed_paths": [
+        "src/ai/portal_items.py",
+        "src/ai/portal_items.gd",
+        "tests/test_portal_items.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-232",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Blackout Protocol Event",
+      "description": "Periodically during matches, the entire arena goes dark except for a small radius around each ball and objective. This forces close-quarters combat, increases the value of scout-type balls, and adds tension as players cannot see long-range threats.",
+      "allowed_paths": [
+        "src/ai/blackout_protocol.py",
+        "src/ai/blackout_protocol.gd",
+        "tests/test_blackout_protocol.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-233",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Synergy",
+      "description": "Portals could occasionally spawn linked to moving Black Hole hazards, so a ball that enters a portal could be launched out of the Black Hole, combining hazard behaviors dynamically.",
+      "allowed_paths": [
+        "src/ai/black_hole_synergy.py",
+        "src/ai/black_hole_synergy.gd",
+        "tests/test_black_hole_synergy.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-174] Destructible Terrain — *2026-06-28 07:08:38 UTC*
+
+Walls and rooms can be broken using explosive abilities.
+
+---
+
 ## [idea-198] Random Map Events — *2026-06-28 07:07:56 UTC*
 
 Periodically trigger random arena-wide events during matches, such as a localized meteor shower, sudden gravity changes, or moving walls. This will force players to adapt their positioning and prioritize surviving the environment along with enemy balls, keeping gameplay dynamic.
