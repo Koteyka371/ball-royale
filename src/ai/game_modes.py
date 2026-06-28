@@ -145,6 +145,16 @@ class BossFightMode(GameMode):
             boss.hp = boss.max_hp
             boss.damage = getattr(boss, "damage", 10) * 2
 
+            # Place boss in the center of the arena
+            arena_width = 1000
+            arena_height = 1000
+            if hasattr(world, "arena") and world.arena:
+                arena_width = getattr(world.arena, "width", 1000)
+                arena_height = getattr(world.arena, "height", 1000)
+
+            boss.x = arena_width / 2.0
+            boss.y = arena_height / 2.0
+
             for b in balls[1:]:
                 if getattr(b, "ball_type", None) != "spectator":
                     b.team = "Hunters"

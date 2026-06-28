@@ -184,6 +184,21 @@ class BossFightMode extends GameMode:
             if "damage" in boss:
                 boss.damage *= 2
 
+            # Place boss in the center of the arena
+            var arena_width = 1000.0
+            var arena_height = 1000.0
+            if world != null and world.get("arena") != null:
+                var arena = world.arena
+                if arena.get("width") != null:
+                    arena_width = float(arena.width)
+                if arena.get("height") != null:
+                    arena_height = float(arena.height)
+
+            if boss.get("x") != null:
+                boss.x = arena_width / 2.0
+            if boss.get("y") != null:
+                boss.y = arena_height / 2.0
+
             for i in range(1, valid_balls.size()):
                 valid_balls[i].team = "Hunters"
 

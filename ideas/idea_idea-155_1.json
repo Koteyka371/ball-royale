@@ -1,0 +1,4 @@
+{
+  "title": "Weather Effects Mode",
+  "description": "Introduce a new game mode or dynamic arena element where weather conditions change over time. For example, a snowstorm could reduce the perception radius and speed of all balls, while a thunderstorm could randomly strike areas causing area-of-effect damage. This adds an unpredictable environmental challenge that requires adaptable AI."
+}
