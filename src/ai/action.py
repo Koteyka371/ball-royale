@@ -406,6 +406,14 @@ class Action:
                                 if self.ball.hp <= 0:
                                     self.ball.alive = False
                             continue
+                        elif hazard.kind == "healing_spring":
+                            # Regenerate HP over time
+                            heal_amount = abs(hazard.damage) * delta
+                            if hasattr(self.ball, "hp") and hasattr(self.ball, "max_hp"):
+                                self.ball.hp += heal_amount
+                                if self.ball.hp > self.ball.max_hp:
+                                    self.ball.hp = self.ball.max_hp
+                            continue
 
                         hazard_damage = hazard.damage * delta
                         if hasattr(self.ball, "take_damage"):

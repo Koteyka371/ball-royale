@@ -536,6 +536,13 @@ func execute(strategy: String, delta: float):
                             if self.ball.hp <= 0:
                                 self.ball.alive = false
                         continue
+                    elif hazard.kind == "healing_spring":
+                        var heal_amount = abs(hazard.damage) * delta
+                        if "hp" in self.ball and "max_hp" in self.ball:
+                            self.ball.hp += heal_amount
+                            if self.ball.hp > self.ball.max_hp:
+                                self.ball.hp = self.ball.max_hp
+                        continue
 
                     var hazard_damage = hazard.damage * delta
                     if self.ball.has_method("take_damage"):
