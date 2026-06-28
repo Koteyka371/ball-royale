@@ -2,6 +2,14 @@ class_name ActionLayer
 extends RefCounted
 
 func _attempt_damage(attacker, target) -> void:
+	var attack_accuracy = 1.0
+	if "attack_accuracy" in attacker:
+		attack_accuracy = float(attacker.attack_accuracy)
+	elif attacker.has_method("get_meta") and attacker.has_meta("attack_accuracy"):
+		attack_accuracy = float(attacker.get_meta("attack_accuracy"))
+	if randf() > attack_accuracy:
+		return
+
 	var has_ricochet = false
 	if "ricochet_barrier_timer" in target and target.ricochet_barrier_timer > 0.0:
 		has_ricochet = true

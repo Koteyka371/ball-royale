@@ -740,6 +740,7 @@ class WeatherChaosMode extends GameMode:
 					if b.has_method("set_meta"):
 						b.set_meta("dash_range_mult", 1.0)
 						b.set_meta("steering_mult", 1.0)
+						b.set_meta("attack_accuracy", 1.0)
 				elif weather == "rain":
 					if "speed" in b: b.speed = base_spd * 0.8
 					if "damage" in b: b.damage = base_dmg
@@ -749,6 +750,8 @@ class WeatherChaosMode extends GameMode:
 					if "vx" in b and "vy" in b:
 						b.x += b.vx * delta * 0.5
 						b.y += b.vy * delta * 0.5
+					if b.has_method("set_meta"):
+						b.set_meta("attack_accuracy", 0.8)
 				elif weather == "fog":
 					if "speed" in b: b.speed = base_spd * 0.5
 					if "damage" in b: b.damage = base_dmg * 0.8
@@ -770,6 +773,8 @@ class WeatherChaosMode extends GameMode:
 							stacks = 0.0
 							b.set_meta("stutter_timer", 1.0)
 						b.set_meta("chill_stacks", stacks)
+					if b.has_method("set_meta"):
+						b.set_meta("attack_accuracy", 0.9)
 				elif weather == "wind":
 					if "speed" in b: b.speed = base_spd
 					if "damage" in b: b.damage = base_dmg
@@ -807,6 +812,8 @@ class WeatherChaosMode extends GameMode:
 						b.set_meta("sandstorm_timer", sand_timer)
 					if randf() < 0.05 * delta:
 						if "hp" in b: b.hp -= 20
+					if b.has_method("set_meta"):
+						b.set_meta("attack_accuracy", 0.5)
 
 	func check_winner(world, balls: Array):
 		var alive = []

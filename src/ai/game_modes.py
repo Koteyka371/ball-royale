@@ -599,6 +599,7 @@ class WeatherChaosMode(GameMode):
                 b.damage = b.base_damage
                 b.dash_range_mult = 1.0
                 b.steering_mult = 1.0
+                b.attack_accuracy = 1.0
             elif self.weather == "rain":
                 b.speed = b.base_speed * 0.8
                 b.damage = b.base_damage
@@ -609,6 +610,7 @@ class WeatherChaosMode(GameMode):
                 if hasattr(b, "vx") and hasattr(b, "vy"):
                     b.x += getattr(b, "vx") * delta * 0.5
                     b.y += getattr(b, "vy") * delta * 0.5
+                b.attack_accuracy = 0.8
             elif self.weather == "fog":
                 b.speed = b.base_speed * 0.5
                 b.damage = b.base_damage * 0.8
@@ -625,6 +627,7 @@ class WeatherChaosMode(GameMode):
                 if b.chill_stacks >= 3.0: # Arbitrary threshold, let's say 3 seconds in snow
                     b.chill_stacks = 0.0
                     b.stutter_timer = 1.0 # Freeze for 1 second
+                b.attack_accuracy = 0.9
             elif self.weather == "wind":
                 b.speed = b.base_speed
                 b.damage = b.base_damage
@@ -656,6 +659,7 @@ class WeatherChaosMode(GameMode):
                 if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
                     # Struck by lightning!
                     b.hp = getattr(b, "hp", 100) - 20
+                b.attack_accuracy = 0.5
 
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
