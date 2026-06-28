@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-146] Black Hole Survival Mode — *2026-06-28 05:58:11 UTC*
+
+A mode where the entire arena is slowly sucked into a massive black hole.
+
+---
+
 ## [idea-168] Decoy Spawning — *2026-06-28 05:54:18 UTC*
 
 Allow fragile fast balls to deploy a temporary decoy ball that enemies will aggro towards, allowing the real ball to escape or reposition.

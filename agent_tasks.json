@@ -2544,7 +2544,7 @@
     },
     {
       "id": "idea-146",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Survival Mode",
@@ -3399,6 +3399,38 @@
       "risk": "medium",
       "title": "Trap Detector Drone",
       "description": "A drone item that floats around the ball and highlights nearby traps, including fake boosters.",
+      "allowed_paths": [
+        "src/ai/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-192",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Elemental Synergies",
+      "description": "Combine elemental skills for chain reactions.",
+      "allowed_paths": [
+        "src/ai/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-193",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Map Weather Dynamics",
+      "description": "Weather conditions change throughout the match, affecting stats.",
       "allowed_paths": [
         "src/ai/**",
         "tests/**"
