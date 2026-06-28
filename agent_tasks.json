@@ -4106,7 +4106,7 @@
     },
     {
       "id": "idea-235",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Destructible Hazards",
@@ -5256,6 +5256,40 @@
         "src/ai/.py",
         "src/ai/.gd",
         "tests/test_.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-303",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decay Zones",
+      "description": "Certain areas of the map apply a temporary max HP debuff to entities inside them, making tanky balls vulnerable during late-game engagements.",
+      "allowed_paths": [
+        "src/ai/decay_zones.py",
+        "src/ai/decay_zones.gd",
+        "tests/test_decay_zones.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-304",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Tunnels Hazard",
+      "description": "Hazards that teleport balls to the other side of the arena, keeping their momentum but altering their trajectory unpredictably.",
+      "allowed_paths": [
+        "src/arena/quantum_tunnels.py",
+        "src/arena/quantum_tunnels.gd",
+        "tests/test_quantum_tunnels.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-235] Destructible Hazards — *2026-06-28 11:41:35 UTC*
+
+Allow powerful skills like explosion or ground_pound to permanently destroy hazards such as spikes and fake boosters, temporarily clearing a safe path.
+
+---
+
 ## [idea-208] Chronos Zones — *2026-06-28 11:35:14 UTC*
 
 Spawn temporal rifts that slow down or speed up the passage of time (affecting movement, attack cooldowns, and hazard ticks) only for entities within the rift, creating high-skill prediction windows.
