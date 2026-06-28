@@ -211,8 +211,12 @@ class ProceduralArena:
 
                 # Start with a very small radius and grow
                 is_gravity_well = random.random() < 0.2
-                kind = "gravity_well" if is_gravity_well else "trap"
-                damage = 0.0 if is_gravity_well else 100.0
+                if random.random() < 0.1:
+                    kind = "drone_item"
+                    damage = 0.0
+                else:
+                    kind = "gravity_well" if is_gravity_well else "trap"
+                    damage = 0.0 if is_gravity_well else 100.0
                 new_hazard = Hazard(id=h_id, x=x, y=y, radius=10.0, kind=kind, damage=damage)
                 new_hazard.target_radius = target_radius
                 self.hazards.append(new_hazard)

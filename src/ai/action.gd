@@ -2237,7 +2237,13 @@ func _collect_booster(delta: float):
         if "radius" in self.ball: ball_radius = self.ball.radius
 
         if dist <= ball_radius + 10:
-            if "kind" in nearest and nearest.kind == "fake_booster":
+            if "kind" in nearest and nearest.kind == "drone_item":
+                self.ball.has_drone = true
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "fake_booster":
                 if self.ball.has_method("take_damage"):
                     var dmg = 50.0
                     if "damage" in nearest: dmg = nearest.damage

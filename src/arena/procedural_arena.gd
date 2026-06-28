@@ -237,7 +237,10 @@ func update_zone(current_tick: int, delta: float) -> void:
                 var h_id = 1000 + hazards.size()
                 var h = ProceduralArena.Hazard.new(h_id, x, y, 10.0, "trap", 100.0)
                 h.target_radius = t_radius
-                if randf() < 0.2:
+                if randf() < 0.1:
+                    h.kind = "drone_item"
+                    h.damage = 0.0
+                elif randf() < 0.2:
                     h.kind = "gravity_well"
                     h.damage = 0.0
                 hazards.append(h)
