@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-211] Skin Tiers VFX — *2026-06-28 08:26:29 UTC*
+
+Add unique visual effects and particle trails based on the ball's skin tier (veteran, elite, legendary) during dashes and skill uses to make higher generation balls stand out.
+
+---
+
 ## [idea-214] Skin Specific Perks — *2026-06-28 08:26:24 UTC*
 
 Introduce minor passive perks tied to skins. For example, 'veteran' skins gain a 2% resistance to status effects, while 'legendary' skins generate a slight passive aura.
