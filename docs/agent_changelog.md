@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-214] Skin Specific Perks — *2026-06-28 08:26:24 UTC*
+
+Introduce minor passive perks tied to skins. For example, 'veteran' skins gain a 2% resistance to status effects, while 'legendary' skins generate a slight passive aura.
+
+---
+
 ## [idea-212] Dynamic Weather System — *2026-06-28 08:19:41 UTC*
 
 Add a weather system that changes dynamically during matches, affecting ball movement, visibility, or hazard types. E.g., rain makes surfaces slippery, while thunderstorms create random lightning strikes.

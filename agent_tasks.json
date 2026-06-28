@@ -3748,7 +3748,7 @@
     },
     {
       "id": "idea-214",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Skin Specific Perks",
@@ -4439,6 +4439,40 @@
         "src/ai/black_hole_gravity_scaling.py",
         "src/ai/black_hole_gravity_scaling.gd",
         "tests/test_black_hole_gravity_scaling.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-255",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Meteor Shower",
+      "description": "Meteors fall randomly on the arena, destroying cover and leaving crater hazards.",
+      "allowed_paths": [
+        "src/ai/meteor_shower.py",
+        "src/ai/meteor_shower.gd",
+        "tests/test_meteor_shower.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-256",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tornado Weather",
+      "description": "A tornado moves across the arena, pulling balls in and applying damage over time.",
+      "allowed_paths": [
+        "src/ai/tornado.py",
+        "src/ai/tornado.gd",
+        "tests/test_tornado.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
