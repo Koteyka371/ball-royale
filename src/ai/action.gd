@@ -30,6 +30,80 @@ func _attempt_damage(attacker, target) -> void:
 		if self.world != null and self.world.has_method("_deal_damage"):
 			self.world._deal_damage(attacker, target)
 
+	var cl_timer = 0.0
+	if "chain_lightning_timer" in attacker:
+		cl_timer = attacker.chain_lightning_timer
+	elif attacker.has_method("get_meta") and attacker.has_meta("chain_lightning_timer"):
+		cl_timer = attacker.get_meta("chain_lightning_timer")
+
+	if cl_timer > 0.0:
+		var enemies = self._get_enemies()
+		if enemies.size() > 0:
+			var nearby = []
+			for e in enemies:
+				if e != target and e != attacker:
+					var dist_sq = pow(e.x - target.x, 2) + pow(e.y - target.y, 2)
+					if dist_sq < 22500: # 150 radius
+						nearby.append({"dist": dist_sq, "entity": e})
+
+			nearby.sort_custom(func(a, b): return a["dist"] < b["dist"])
+
+			var jump_count = 0
+			var has_orig_dmg = "damage" in attacker
+			var orig_dmg = 10.0
+			if has_orig_dmg:
+				orig_dmg = attacker.damage
+
+			for item in nearby:
+				if jump_count >= 2:
+					break
+
+				var e = item["entity"]
+				# Temporarily set damage to half of original (or 5.0 if no original)
+				# Only if attacker is an object that allows setting dynamic properties or has the property
+				if typeof(attacker) == TYPE_OBJECT and attacker.has_method("set"):
+					attacker.set("damage", orig_dmg * 0.5)
+				elif "damage" in attacker:
+					attacker.damage = orig_dmg * 0.5
+
+				var e_ricochet = false
+				if "ricochet_barrier_timer" in e and e.ricochet_barrier_timer > 0.0:
+					e_ricochet = true
+				elif e.has_method("get_meta") and e.has_meta("ricochet_barrier_timer") and e.get_meta("ricochet_barrier_timer") > 0.0:
+					e_ricochet = true
+
+				var e_reflect = false
+				if "reflect_shield_active" in e and e.reflect_shield_active:
+					e_reflect = true
+				elif e.has_method("get_meta") and e.has_meta("reflect_shield_active") and e.get_meta("reflect_shield_active"):
+					e_reflect = true
+
+				if e_ricochet:
+					if self.world != null and self.world.has_method("_deal_damage"):
+						self.world._deal_damage(e, attacker)
+				elif e_reflect:
+					if "reflect_shield_active" in e:
+						e.reflect_shield_active = false
+					elif e.has_method("set_meta"):
+						e.set_meta("reflect_shield_active", false)
+					if self.world != null and self.world.has_method("_deal_damage"):
+						self.world._deal_damage(e, attacker)
+				else:
+					if self.world != null and self.world.has_method("_deal_damage"):
+						self.world._deal_damage(attacker, e)
+
+				if self.has_method("_spawn_particles"):
+					self._spawn_particles(target.x, target.y, "lightning")
+					self._spawn_particles(e.x, e.y, "lightning")
+
+				jump_count += 1
+
+			if has_orig_dmg:
+				if typeof(attacker) == TYPE_OBJECT and attacker.has_method("set"):
+					attacker.set("damage", orig_dmg)
+				elif "damage" in attacker:
+					attacker.damage = orig_dmg
+
 
 var ball = null
 var world = null
@@ -40,6 +114,19 @@ func _init(ball_ref, world_ref):
 
 func execute(strategy: String, delta: float):
     var my_ball = self.ball
+
+    var cl_timer = 0.0
+    if "chain_lightning_timer" in self.ball:
+        cl_timer = self.ball.chain_lightning_timer
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("chain_lightning_timer"):
+        cl_timer = self.ball.get_meta("chain_lightning_timer")
+    if cl_timer > 0.0:
+        cl_timer -= delta
+        if cl_timer < 0.0: cl_timer = 0.0
+        if "chain_lightning_timer" in self.ball:
+            self.ball.chain_lightning_timer = cl_timer
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("chain_lightning_timer", cl_timer)
 
     # Entanglement logic
     if my_ball.has_method("has_meta") and my_ball.has_meta("entangle_timer"):
@@ -2605,6 +2692,17 @@ func _collect_booster(delta: float):
                     var dmg = 50.0
                     if "damage" in nearest: dmg = nearest.damage
                     self.ball.take_damage(dmg)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "chain_lightning":
+                var dur = 5.0
+                if "duration" in nearest: dur = nearest.duration
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("chain_lightning_timer", dur)
+                elif "chain_lightning_timer" in self.ball:
+                    self.ball.chain_lightning_timer = dur
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
