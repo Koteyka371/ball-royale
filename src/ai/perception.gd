@@ -70,6 +70,7 @@ func scan() -> Dictionary:
             if dist <= perception_radius:
                 if "kind" in h and h.kind == "fake_booster":
                     var is_scout = ("ball_type" in self.ball and self.ball.ball_type == "scout")
+                    var has_drone = ("has_drone" in self.ball and self.ball.has_drone)
                     var p_score = 0.0
                     if "perception_score" in self.ball:
                         p_score = self.ball.perception_score
@@ -78,6 +79,9 @@ func scan() -> Dictionary:
                     if is_scout:
                         if p_score > 50 or randf() < 0.3:
                             identified = true
+
+                    if has_drone:
+                        identified = true
 
                     if identified:
                         var found = false
@@ -95,6 +99,14 @@ func scan() -> Dictionary:
                                 break
                         if not found:
                             data["boosters"].append(h)
+                elif "kind" in h and h.kind == "drone_item":
+                    var found = false
+                    for b in data["boosters"]:
+                        if "id" in b and "id" in h and b.id == h.id:
+                            found = true
+                            break
+                    if not found:
+                        data["boosters"].append(h)
                 else:
                     var found = false
                     for t in data["traps"]:

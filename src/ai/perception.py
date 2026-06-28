@@ -76,12 +76,16 @@ class Perception:
                 if dist <= perception_radius:
                     if getattr(h, "kind", "") == "fake_booster":
                         is_scout = getattr(self.ball, "ball_type", "") == "scout"
+                        has_drone = getattr(self.ball, "has_drone", False)
                         perception_score = getattr(self.ball, "perception_score", 0.0)
 
                         identified = False
                         if is_scout:
                             if perception_score > 50 or random.random() < 0.3:
                                 identified = True
+
+                        if has_drone:
+                            identified = True
 
                         if identified:
                             if not any(getattr(t, "id", None) == h.id for t in data["traps"]):
@@ -91,8 +95,12 @@ class Perception:
                                 data["boosters"].append(h)
                     else:
                         # Make sure it's not already in there by id
-                        if not any(getattr(t, "id", None) == h.id for t in data["traps"]):
-                            data["traps"].append(h)
+                        if getattr(h, "kind", "") == "drone_item":
+                            if not any(getattr(b, "id", None) == h.id for b in data["boosters"]):
+                                data["boosters"].append(h)
+                        else:
+                            if not any(getattr(t, "id", None) == h.id for t in data["traps"]):
+                                data["traps"].append(h)
 
         for enemy in data["enemies"]:
             dist = calc_dist(enemy)
