@@ -1023,7 +1023,73 @@ class DynamicHazardsMode(GameMode):
                     hazard.y < -100 or hazard.y > world.arena.height + 100):
                     world.arena.hazards.remove(hazard)
 
+
+class EscortMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Escort Mode"
+        self.description = "Defend the slow-moving payload ball as it travels to the goal. Attackers try to destroy it."
+        self.payload = None
+        self.goal_x = 0.0
+        self.goal_y = 0.0
+        self.payload_speed = 30.0
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        mid = len(balls) // 2
+        for i, b in enumerate(balls):
+            if getattr(b, "ball_type", None) != "spectator":
+                if i < mid:
+                    b.team = "Defenders"
+                else:
+                    b.team = "Attackers"
+
+        defenders = [b for b in balls if getattr(b, "team", "") == "Defenders"]
+        if defenders:
+            self.payload = defenders[0]
+            self.payload.team = "Payload"
+            self.payload.ball_type = "juggernaut"
+            self.payload.hp = 1000.0
+            self.payload.max_hp = 1000.0
+            self.payload.speed = self.payload_speed
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        # Start at top-left, go to bottom-right
+        if self.payload:
+            self.payload.x = 100.0
+            self.payload.y = 100.0
+
+        self.goal_x = arena_width - 100
+        self.goal_y = arena_height - 100
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        if self.payload and getattr(self.payload, "alive", False):
+            import math
+            dx = self.goal_x - self.payload.x
+            dy = self.goal_y - self.payload.y
+            dist = math.sqrt(dx*dx + dy*dy)
+            if dist > 5.0:
+                self.payload.x += (dx / dist) * self.payload.speed * delta
+                self.payload.y += (dy / dist) * self.payload.speed * delta
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        if not self.payload or not getattr(self.payload, "alive", False):
+            return "Attackers"
+
+        import math
+        dx = self.goal_x - self.payload.x
+        dy = self.goal_y - self.payload.y
+        if math.sqrt(dx*dx + dy*dy) < 50.0:
+            return "Defenders"
+
+        # If time runs out, attackers win? No timer currently.
+        return None
+
 GAME_MODES = {
+    "escort_mode": EscortMode(),
     "memory_traps": MemoryTrapsMode(),
     "dynamic_hazards": DynamicHazardsMode(),
     "custom_match": CustomMatchMode(),

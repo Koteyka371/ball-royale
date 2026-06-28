@@ -287,3 +287,62 @@ def test_domination_mode():
     assert balls[2].damage == 10.0
     assert balls[2].max_hp == 100.0
     assert balls[2].hp == 100.0
+
+
+def test_escort_mode():
+    from ai.game_modes import EscortMode
+
+    class MockBall:
+        def __init__(self, **kwargs):
+            for k, v in kwargs.items():
+                setattr(self, k, v)
+            self.alive = True
+
+    mode = EscortMode()
+    class MockWorld:
+        class MockArena:
+            width = 1000
+            height = 1000
+        arena = MockArena()
+        dead_balls = []
+
+    world = MockWorld()
+    balls = [
+        MockBall(id=1, ball_type="easy", x=0, y=0, hp=100, max_hp=100, speed=100, damage=10, radius=20, perception_radius=200, aggression=1.0, color="red", skill=None, skill_cooldown=0.0),
+        MockBall(id=2, ball_type="easy", x=100, y=100, hp=100, max_hp=100, speed=100, damage=10, radius=20, perception_radius=200, aggression=1.0, color="blue", skill=None, skill_cooldown=0.0),
+        MockBall(id=3, ball_type="easy", x=200, y=200, hp=100, max_hp=100, speed=100, damage=10, radius=20, perception_radius=200, aggression=1.0, color="green", skill=None, skill_cooldown=0.0),
+        MockBall(id=4, ball_type="easy", x=300, y=300, hp=100, max_hp=100, speed=100, damage=10, radius=20, perception_radius=200, aggression=1.0, color="yellow", skill=None, skill_cooldown=0.0)
+    ]
+
+    for b in balls:
+        b.alive = True
+
+    mode.setup(world, balls)
+
+    assert mode.payload is not None
+    assert mode.payload.team == "Payload"
+    assert mode.payload.ball_type == "juggernaut"
+    assert mode.payload.hp == 1000.0
+
+    # Check teams
+    assert balls[0].team == "Payload" # Defenders[0]
+    assert balls[1].team == "Defenders"
+    assert balls[2].team == "Attackers"
+    assert balls[3].team == "Attackers"
+
+    assert mode.check_winner(world, balls) is None
+
+    # Tick should move payload toward goal
+    old_x, old_y = mode.payload.x, mode.payload.y
+    mode.tick(world, balls, delta=1.0)
+    assert mode.payload.x > old_x or mode.payload.y > old_y
+
+    # Kill payload -> Attackers win
+    mode.payload.alive = False
+    assert mode.check_winner(world, balls) == "Attackers"
+
+    # Revive payload, move to goal -> Defenders win
+    mode.payload.alive = True
+    mode.payload.x = mode.goal_x
+    mode.payload.y = mode.goal_y
+    assert mode.check_winner(world, balls) == "Defenders"

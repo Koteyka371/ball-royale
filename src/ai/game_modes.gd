@@ -1242,7 +1242,78 @@ class DynamicHazardsMode extends GameMode:
 
 		world.arena.hazards = hazards_to_keep
 
+
+class EscortMode extends GameMode:
+	var payload = null
+	var goal_x = 0.0
+	var goal_y = 0.0
+	var payload_speed = 30.0
+
+	func _init():
+		super._init()
+		name = "Escort Mode"
+		description = "Defend the slow-moving payload ball as it travels to the goal. Attackers try to destroy it."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		var mid = balls.size() / 2
+		for i in range(balls.size()):
+			var b = balls[i]
+			if b.get("ball_type") != "spectator":
+				if i < mid:
+					b.team = "Defenders"
+				else:
+					b.team = "Attackers"
+
+		var defenders = []
+		for b in balls:
+			if b.get("team") == "Defenders":
+				defenders.append(b)
+
+		if defenders.size() > 0:
+			payload = defenders[0]
+			payload.team = "Payload"
+			payload.ball_type = "juggernaut"
+			payload.hp = 1000.0
+			payload.max_hp = 1000.0
+			payload.speed = payload_speed
+
+		var arena_width = 1000
+		var arena_height = 1000
+		if world.get("arena"):
+			arena_width = world.arena.get("width", 1000)
+			arena_height = world.arena.get("height", 1000)
+
+		if payload != null:
+			payload.x = 100.0
+			payload.y = 100.0
+
+		goal_x = arena_width - 100.0
+		goal_y = arena_height - 100.0
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+		if payload != null and payload.get("alive", false):
+			var dx = goal_x - payload.x
+			var dy = goal_y - payload.y
+			var dist = sqrt(dx*dx + dy*dy)
+			if dist > 5.0:
+				payload.x += (dx / dist) * payload.speed * delta
+				payload.y += (dy / dist) * payload.speed * delta
+
+	func check_winner(world, balls):
+		if payload == null or not payload.get("alive", false):
+			return "Attackers"
+
+		var dx = goal_x - payload.x
+		var dy = goal_y - payload.y
+		if sqrt(dx*dx + dy*dy) < 50.0:
+			return "Defenders"
+
+		return null
+
 var GAME_MODES = {
+	"escort_mode": EscortMode.new(),
 	"memory_traps": MemoryTrapsMode.new(),
 	"dynamic_hazards": DynamicHazardsMode.new(),
 	"custom_match": CustomMatchMode.new(),
