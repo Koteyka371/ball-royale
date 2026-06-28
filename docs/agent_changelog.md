@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-178] Custom Neural Skins — *2026-06-28 06:31:45 UTC*
+
+Skins for balls based on generation performance.
+
+---
+
 ## [idea-171] Custom Neural Training Environments — *2026-06-28 06:23:18 UTC*
 
 Allow players to spawn custom training arenas with specific scenarios (e.g. 5 juggernauts with no weapons, or maze-like maps with traps) where they can rapidly run neuroevolution specifically tailored to those situations to generate specialized neural balls before sending them to the main battle royale.

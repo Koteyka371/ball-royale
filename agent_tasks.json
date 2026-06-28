@@ -3117,7 +3117,7 @@
     },
     {
       "id": "idea-178",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Custom Neural Skins",
@@ -3654,6 +3654,40 @@
         "src/ai/chronos_zones.py",
         "src/ai/chronos_zones.gd",
         "tests/test_chronos_zones.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-209",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Systems",
+      "description": "Introduce dynamic weather to arenas that affect physics and perception. For example, rain could make the terrain slippery (increasing drift) and reduce perception range for AI balls, while wind could constantly apply a slight directional force to all balls, requiring AI to adapt to the changing environment.",
+      "allowed_paths": [
+        "src/ai/systems.py",
+        "src/ai/systems.gd",
+        "tests/test_systems.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-210",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "King of the Hill Game Mode",
+      "description": "A new team-based or free-for-all mode where balls earn points by staying inside a dynamically moving circular zone on the map. The neural networks would have to be retrained to prioritize positional control and defending a stationary spot rather than pure survival or aggressive hunting.",
+      "allowed_paths": [
+        "src/ai/king_of_the_hill_game.py",
+        "src/ai/king_of_the_hill_game.gd",
+        "tests/test_king_of_the_hill_game.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
