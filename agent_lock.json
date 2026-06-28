@@ -59,9 +59,9 @@
     "agent-7": {
       "name": "Jules Worker 7",
       "area": "content",
-      "task_id": "idea-155",
-      "status": "working",
-      "started_at": "2026-06-28T06:13:36.344565+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 0
     },
     "agent-8": {
@@ -83,9 +83,9 @@
     "agent-10": {
       "name": "Jules Worker 10",
       "area": "meta",
-      "task_id": "idea-158",
-      "status": "working",
-      "started_at": "2026-06-28T06:13:43.051895+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 0
     },
     "agent-11": {
