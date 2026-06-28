@@ -88,6 +88,22 @@ class Action:
         self.world = world
 
     def execute(self, strategy: str, delta: float) -> None:
+        # Check inventory for traps to place if fleeing or defending
+        if strategy in ("flee", "defend") and hasattr(self.ball, "inventory") and "placeable_trap" in self.ball.inventory:
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                import random
+                from arena.procedural_arena import Hazard
+                trap_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
+                trap = Hazard(trap_id, self.ball.x, self.ball.y, 20.0, "trap", 0.0)
+
+                trap_type = random.choice(["mine", "freeze"])
+                setattr(trap, 'duration', 10.0)
+                setattr(trap, 'trap_variant', trap_type)
+                setattr(trap, 'owner_id', getattr(self.ball, 'id', None))
+
+                self.world.arena.hazards.append(trap)
+                self.ball.inventory.remove("placeable_trap")
+
         # Temporal rift logic to modify local delta
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for hazard in self.world.arena.hazards:
@@ -461,6 +477,8 @@ class Action:
                                 if speed > 300.0 or hazard_speed > 300.0:
                                     hazard.is_exploded = True
                         elif hazard.kind == "trap":
+                            if getattr(hazard, "owner_id", None) == getattr(self.ball, "id", object()):
+                                continue
                             if ball_type != "sniper":
                                 trap_variant = getattr(hazard, "trap_variant", "normal")
                                 if trap_variant == "poison":
@@ -486,6 +504,23 @@ class Action:
 
                                         if hasattr(self.ball, "damage_multiplier") and self.ball.damage_multiplier > 1.0:
                                             self.ball.damage_multiplier = 1.0
+                                elif trap_variant == "mine":
+                                    # Mine: large damage
+                                    if hasattr(self.ball, "take_damage"):
+                                        self.ball.take_damage(50.0)
+                                    elif hasattr(self.ball, "hp"):
+                                        self.ball.hp -= 50.0
+                                        if self.ball.hp <= 0:
+                                            self.ball.alive = False
+                                    hazard.duration = 0.0 # Destroy trap
+                                elif trap_variant == "freeze":
+                                    # Freeze: halt for 2 seconds
+                                    if not getattr(self.ball, "is_stunned", False):
+                                        self.ball.is_stunned = True
+                                        self.ball.stun_timer = 2.0
+                                    self.ball.x = old_x
+                                    self.ball.y = old_y
+                                    hazard.duration = 0.0 # Destroy trap
                                 elif trap_variant == "stun":
                                     # Stun: fully halt for 1 second if not already stunned
                                     if not getattr(self.ball, "is_stunned", False):
@@ -1867,6 +1902,13 @@ class Action:
                                     other_ball.has_drone = False
                                     other_ball.has_shield = False
                                     other_ball.speed_booster_timer = 0.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                elif getattr(nearest, "kind", None) == "placeable_trap_item":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("placeable_trap")
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
