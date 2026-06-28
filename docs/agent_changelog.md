@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-200] Prestige Mutators — *2026-06-28 08:04:50 UTC*
+
+After hitting Prestige Level 5, players unlock 'Mutator Options' for their custom matches, allowing them to apply fun physics changes (like zero gravity or explosive collisions) in private games.
+
+---
+
 ## [idea-199] Wall Bounce Mechanism — *2026-06-28 07:56:40 UTC*
 
 Allow balls to use walls to bounce their attacks off or perform ricochet maneuvers to reach enemies behind obstacles.
