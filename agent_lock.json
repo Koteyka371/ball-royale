@@ -20,8 +20,8 @@
       "name": "Jules Tests",
       "area": "tests",
       "task_id": "sync-gd-decision-get-weights",
-      "status": "assigned",
-      "started_at": "2026-06-28T05:58:04.676792+00:00",
+      "status": "working",
+      "started_at": "2026-06-28T06:02:14.197826+00:00",
       "cycles_today": 1
     },
     "agent-4": {
