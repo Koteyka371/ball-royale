@@ -22,6 +22,7 @@ class Hazard:
     var target_radius: float
     var kind: String
     var damage: float
+    var active: bool
 
     func _init(_id: int, _x: float, _y: float, _radius: float, _kind: String, _damage: float):
         id = _id
@@ -31,6 +32,8 @@ class Hazard:
         target_radius = _radius
         kind = _kind
         damage = _damage
+        active = true
+        set_meta("active", true)
 
 class Room:
     var x: float
@@ -144,10 +147,12 @@ func generate():
     for i in range(num_hazards):
         var r = rng.randf()
         var kind = "spikes"
-        if r < 0.33:
+        if r < 0.25:
             kind = "lava"
-        elif r < 0.66:
+        elif r < 0.5:
             kind = "fake_booster"
+        elif r < 0.75:
+            kind = "proximity_trap"
 
         var radius = 15.0
         var damage = 20.0
@@ -157,6 +162,9 @@ func generate():
         elif kind == "lava":
             radius = rng.randf_range(30.0, 60.0)
             damage = 50.0
+        elif kind == "proximity_trap":
+            radius = rng.randf_range(20.0, 40.0)
+            damage = 30.0
         else:
             radius = 15.0
             damage = 50.0

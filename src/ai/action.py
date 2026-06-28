@@ -104,6 +104,27 @@ class Action:
                         if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
                             hazard.last_updated_tick = current_tick
                             hazard.duration = getattr(hazard, "duration", 5.0) - delta
+                    elif hazard.kind == "proximity_trap":
+                        # Deal damage and apply slow
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < (hazard.radius + self.ball.radius) ** 2:
+                            if getattr(hazard, "active", True):
+                                hazard.active = False
+                                hazard.duration = 0.0 # Setup for cleanup
+
+                                # Take damage
+                                if hasattr(self.ball, "take_damage"):
+                                    self.ball.take_damage(hazard.damage)
+                                elif hasattr(self.ball, "hp"):
+                                    self.ball.hp -= hazard.damage
+                                    if self.ball.hp <= 0:
+                                        self.ball.alive = False
+
+                                # Slow down the ball using stutter_timer logic
+                                self.ball.stutter_timer = getattr(self.ball, "stutter_timer", 0.0) + 2.0
+
                     elif hazard.kind == "portal":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
