@@ -571,12 +571,14 @@ class WeatherChaosMode(GameMode):
         self.weather_timer += delta
         if self.weather_timer > 10.0:
             self.weather_timer = 0.0
-            weathers = ["clear", "rain", "fog", "snow"]
-            if hasattr(self, "random"):
-                self.weather = self.random.choice(weathers)
-            else:
-                import random
-                self.weather = random.choice(weathers)
+            weathers = ["clear", "rain", "fog", "snow", "wind"]
+            import random
+            rnd = getattr(self, "random", random)
+            self.weather = rnd.choice(weathers)
+
+            if self.weather == "wind":
+                self.wind_dx = rnd.uniform(-50.0, 50.0)
+                self.wind_dy = rnd.uniform(-50.0, 50.0)
 
         valid_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
 
@@ -592,12 +594,23 @@ class WeatherChaosMode(GameMode):
             elif self.weather == "rain":
                 b.speed = b.base_speed * 0.8
                 b.damage = b.base_damage
+                # slide more
+                if hasattr(b, "vx") and hasattr(b, "vy"):
+                    b.x += getattr(b, "vx") * delta * 0.5
+                    b.y += getattr(b, "vy") * delta * 0.5
             elif self.weather == "fog":
                 b.speed = b.base_speed * 0.5
                 b.damage = b.base_damage * 0.8
             elif self.weather == "snow":
-                b.speed = b.base_speed * 0.6
+                b.speed = b.base_speed * 0.5 # slowed down
                 b.damage = b.base_damage * 1.2
+            elif self.weather == "wind":
+                b.speed = b.base_speed
+                b.damage = b.base_damage
+                # push balls in a specific direction
+                if hasattr(self, "wind_dx") and hasattr(self, "wind_dy"):
+                    b.x += self.wind_dx * delta
+                    b.y += self.wind_dy * delta
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]

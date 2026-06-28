@@ -29,5 +29,5 @@ def test_weather_mode():
     # Tick with snow
     mode.weather = "snow"
     mode.tick(world, balls, 0.1)
-    assert balls[0].speed == 60.0
+    assert balls[0].speed == 50.0
     assert balls[0].damage == 12.0

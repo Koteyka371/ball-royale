@@ -697,8 +697,12 @@ class WeatherChaosMode extends GameMode:
 		weather_timer += delta
 		if weather_timer > 10.0:
 			weather_timer = 0.0
-			var weathers = ["clear", "rain", "fog", "snow"]
+			var weathers = ["clear", "rain", "fog", "snow", "wind"]
 			weather = weathers[randi() % weathers.size()]
+			if weather == "wind":
+				if has_method("set_meta"):
+					set_meta("wind_dx", (randf() * 100.0) - 50.0)
+					set_meta("wind_dy", (randf() * 100.0) - 50.0)
 
 		for b in balls:
 			if b.alive and b.ball_type != "spectator":
@@ -722,12 +726,26 @@ class WeatherChaosMode extends GameMode:
 				elif weather == "rain":
 					if "speed" in b: b.speed = base_spd * 0.8
 					if "damage" in b: b.damage = base_dmg
+					if "vx" in b and "vy" in b:
+						b.x += b.vx * delta * 0.5
+						b.y += b.vy * delta * 0.5
 				elif weather == "fog":
 					if "speed" in b: b.speed = base_spd * 0.5
 					if "damage" in b: b.damage = base_dmg * 0.8
 				elif weather == "snow":
-					if "speed" in b: b.speed = base_spd * 0.6
+					if "speed" in b: b.speed = base_spd * 0.5
 					if "damage" in b: b.damage = base_dmg * 1.2
+				elif weather == "wind":
+					if "speed" in b: b.speed = base_spd
+					if "damage" in b: b.damage = base_dmg
+					var wind_dx = 0.0
+					var wind_dy = 0.0
+					if has_method("has_meta") and has_meta("wind_dx"):
+						wind_dx = get_meta("wind_dx")
+					if has_method("has_meta") and has_meta("wind_dy"):
+						wind_dy = get_meta("wind_dy")
+					b.x += wind_dx * delta
+					b.y += wind_dy * delta
 
 	func check_winner(world, balls: Array):
 		var alive = []
