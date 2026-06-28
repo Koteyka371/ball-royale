@@ -262,7 +262,7 @@ class Decision:
                 scores["use_skill"] += 300.0
             elif b_type == "scout" and (danger_level > 0.5 or opportunity_level > 0.5):
                 scores["use_skill"] += 200.0
-            elif b_type == "tank" and hp_percent < 0.7:
+            elif b_type == "tank" and hp_percent < 0.8:
                 scores["use_skill"] += 300.0
             elif b_type == "healer" and allies_count > 0:
                 scores["use_skill"] += 250.0

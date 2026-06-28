@@ -176,6 +176,7 @@ class Action:
                         dy = hazard.y - self.ball.y
                         dist_sq = dx * dx + dy * dy
                         if dist_sq < (hazard.radius + self.ball.radius) ** 2:
+                            import math
                             dist = math.sqrt(dist_sq)
                             if dist > 0.0001:
                                 overlap = hazard.radius + self.ball.radius - dist
