@@ -3714,7 +3714,7 @@
     },
     {
       "id": "idea-212",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Dynamic Weather System",
@@ -4422,6 +4422,23 @@
         "src/ai/floor_is_lava_mutator.py",
         "src/ai/floor_is_lava_mutator.gd",
         "tests/test_floor_is_lava_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-254",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Gravity Scaling",
+      "description": "Increase the gravity pull strength of the black hole hazard over time, until it pulls all balls in the arena, creating an intense end-game mechanic.",
+      "allowed_paths": [
+        "src/ai/black_hole_gravity_scaling.py",
+        "src/ai/black_hole_gravity_scaling.gd",
+        "tests/test_black_hole_gravity_scaling.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

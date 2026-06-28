@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-212] Dynamic Weather System — *2026-06-28 08:19:41 UTC*
+
+Add a weather system that changes dynamically during matches, affecting ball movement, visibility, or hazard types. E.g., rain makes surfaces slippery, while thunderstorms create random lightning strikes.
+
+---
+
 ## [idea-183] Teleporter hazards — *2026-06-28 08:13:04 UTC*
 
 Add a new hazard kind 'teleporter' that when a ball steps on it, they are instantly transported to another random teleporter on the map or a random safe location, potentially dodging an attack or losing their target.
