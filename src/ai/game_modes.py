@@ -57,7 +57,7 @@ class BattleRoyaleMode(GameMode):
 
     def _award_skill_points(self):
         try:
-            from system.profile import ProfileManager
+            from system.profile import ProfileManager  # type: ignore
             pm = ProfileManager("profile.json")
             pm.add_skill_points(10)
         except Exception:
@@ -327,16 +327,74 @@ class VampireRoyaleMode(GameMode):
 
         teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
         if len(teams_alive) == 1:
-            if hasattr(self, '_award_skill_points'): self._award_skill_points()
+            if hasattr(self, '_award_skill_points'):
+                self._award_skill_points()
             return list(teams_alive)[0]
 
         if len(alive) == 1:
-            if hasattr(self, '_award_skill_points'): self._award_skill_points()
+            if hasattr(self, '_award_skill_points'):
+                self._award_skill_points()
             return alive[0].ball_type
 
         return None
 
+
+class KingOfTheHillMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "King of the Hill"
+        self.description = "Stay in the center area to earn points. First to 100 points wins."
+        self.tick_timer = 0.0
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator":
+                b.score = 0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        self.tick_timer += delta
+        if self.tick_timer >= 0.5:
+            self.tick_timer = 0.0
+
+            # Find the center of the arena
+            arena_width = 1000
+            arena_height = 1000
+            if hasattr(world, "arena") and world.arena:
+                arena_width = getattr(world.arena, "width", 1000)
+                arena_height = getattr(world.arena, "height", 1000)
+
+            center_x = arena_width / 2
+            center_y = arena_height / 2
+            zone_radius = min(arena_width, arena_height) * 0.2
+
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                    dist_sq = (b.x - center_x) ** 2 + (b.y - center_y) ** 2
+                    if dist_sq <= zone_radius ** 2:
+                        b.score = getattr(b, "score", 0) + 1
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+
+        best_score = -1
+        best_team = None
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator":
+                score = getattr(b, "score", 0)
+                if score >= 100:
+                    return getattr(b, "team", b.ball_type)
+                if score > best_score:
+                    best_score = score
+                    best_team = getattr(b, "team", b.ball_type)  # noqa: F841
+
+        # We don't have access to game timer here directly.
+        # So we just return when score >= 100. If time runs out, game loop usually handles it and can just pick the one with max score.
+        return None
+
 GAME_MODES = {
+    "king_of_the_hill": KingOfTheHillMode(),
     "vampire_royale": VampireRoyaleMode(),
     "battle_royale": BattleRoyaleMode(),
     "team_deathmatch": TeamDeathmatchMode(),
