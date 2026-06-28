@@ -1,6 +1,9 @@
 class_name ProfileManager
 extends RefCounted
 
+const TOTAL_BALLS = 34
+const MAX_BONUS_LEVEL = 10
+
 var filename = "user://profile.json"
 var data = {}
 
@@ -15,6 +18,8 @@ func load_profile():
         var error = json.parse(text)
         if error == OK:
             data = json.get_data()
+            if not data.has("prestige_level"):
+                data["prestige_level"] = 0
             return
 
     # Default profile
@@ -25,7 +30,8 @@ func load_profile():
             "bonus_hp": 0,
             "bonus_speed": 0,
             "bonus_damage": 0
-        }
+        },
+        "prestige_level": 0
     }
 
 func save_profile():
@@ -49,6 +55,32 @@ func upgrade_bonus(bonus_name: String, cost: int) -> bool:
     if data["bonuses"].has(bonus_name) and data["skill_points"] >= cost:
         data["skill_points"] -= cost
         data["bonuses"][bonus_name] += 1
+        save_profile()
+        return true
+    return false
+
+func can_prestige() -> bool:
+    var unlocked_balls = data.get("unlocked_balls", [])
+    var unlocked_all_balls = unlocked_balls.size() >= TOTAL_BALLS
+    var bonuses = data.get("bonuses", {})
+    var maxed_hp = bonuses.get("bonus_hp", 0) >= MAX_BONUS_LEVEL
+    var maxed_speed = bonuses.get("bonus_speed", 0) >= MAX_BONUS_LEVEL
+    var maxed_damage = bonuses.get("bonus_damage", 0) >= MAX_BONUS_LEVEL
+    return unlocked_all_balls and maxed_hp and maxed_speed and maxed_damage
+
+func do_prestige() -> bool:
+    if can_prestige():
+        var current_prestige = data.get("prestige_level", 0)
+        data = {
+            "skill_points": 0,
+            "unlocked_balls": ["basic"],
+            "bonuses": {
+                "bonus_hp": 0,
+                "bonus_speed": 0,
+                "bonus_damage": 0
+            },
+            "prestige_level": current_prestige + 1
+        }
         save_profile()
         return true
     return false

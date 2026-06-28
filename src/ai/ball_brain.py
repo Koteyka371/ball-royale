@@ -29,6 +29,22 @@ class BallBrain:
                 self.ball.speed += pm.data["bonuses"]["bonus_speed"] * 5
             if "bonus_damage" in pm.data.get("bonuses", {}):
                 self.ball.damage += pm.data["bonuses"]["bonus_damage"] * 2
+
+            # Apply prestige aura and permanent stat increase
+            prestige_level = pm.data.get("prestige_level", 0)
+            if prestige_level > 0:
+                self.ball.has_aura = True
+                stat_multiplier = 1.0 + (0.05 * prestige_level)
+
+                hp_percent = self.ball.hp / self.ball.max_hp if getattr(self.ball, 'max_hp', 0) > 0 else 1.0
+                if hasattr(self.ball, 'max_hp'):
+                    self.ball.max_hp *= stat_multiplier
+                if hasattr(self.ball, 'hp'):
+                    self.ball.hp = self.ball.max_hp * hp_percent
+                if hasattr(self.ball, 'speed'):
+                    self.ball.speed *= stat_multiplier
+                if hasattr(self.ball, 'damage'):
+                    self.ball.damage *= stat_multiplier
         except Exception:
             # print(f"Error applying profile bonuses: {e}")
             pass

@@ -1,6 +1,9 @@
 import json
 
 class ProfileManager:
+    TOTAL_BALLS = 34
+    MAX_BONUS_LEVEL = 10
+
     def __init__(self, filename="profile.json"):
         self.filename = filename
         self.data = self.load()
@@ -17,7 +20,8 @@ class ProfileManager:
                     "bonus_hp": 0,
                     "bonus_speed": 0,
                     "bonus_damage": 0
-                }
+                },
+                "prestige_level": 0
             }
 
     def save(self):
@@ -40,6 +44,30 @@ class ProfileManager:
         if bonus_name in self.data["bonuses"] and self.data["skill_points"] >= cost:
             self.data["skill_points"] -= cost
             self.data["bonuses"][bonus_name] += 1
+            self.save()
+            return True
+        return False
+
+    def can_prestige(self):
+        unlocked_all_balls = len(self.data.get("unlocked_balls", [])) >= self.TOTAL_BALLS
+        maxed_hp = self.data.get("bonuses", {}).get("bonus_hp", 0) >= self.MAX_BONUS_LEVEL
+        maxed_speed = self.data.get("bonuses", {}).get("bonus_speed", 0) >= self.MAX_BONUS_LEVEL
+        maxed_damage = self.data.get("bonuses", {}).get("bonus_damage", 0) >= self.MAX_BONUS_LEVEL
+        return unlocked_all_balls and maxed_hp and maxed_speed and maxed_damage
+
+    def do_prestige(self):
+        if self.can_prestige():
+            prestige_level = self.data.get("prestige_level", 0) + 1
+            self.data = {
+                "skill_points": 0,
+                "unlocked_balls": ["basic"],
+                "bonuses": {
+                    "bonus_hp": 0,
+                    "bonus_speed": 0,
+                    "bonus_damage": 0
+                },
+                "prestige_level": prestige_level
+            }
             self.save()
             return True
         return False
