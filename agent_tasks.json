@@ -3936,7 +3936,7 @@
     },
     {
       "id": "idea-225",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Camouflage Drone Skill",
@@ -5000,6 +5000,40 @@
         "src/arena/orbital_laser_strike.py",
         "src/arena/orbital_laser_strike.gd",
         "tests/test_orbital_laser_strike.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-288",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity well",
+      "description": "A hazard that pulls players towards it",
+      "allowed_paths": [
+        "src/ai/gravity_well.py",
+        "src/ai/gravity_well.gd",
+        "tests/test_gravity_well.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-289",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Windstorm",
+      "description": "Pushes all players in a random direction",
+      "allowed_paths": [
+        "src/ai/windstorm.py",
+        "src/ai/windstorm.gd",
+        "tests/test_windstorm.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

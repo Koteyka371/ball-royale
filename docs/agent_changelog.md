@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-225] Camouflage Drone Skill — *2026-06-28 10:57:53 UTC*
+
+A variant of the drone that temporarily masks the player's presence from enemies outside a very short radius, making them drop aggro.
+
+---
+
 ## [idea-188] EMP Trap Variant — *2026-06-28 10:54:57 UTC*
 
 Introduce an EMP trap variant that disables enemies' abilities and removes all positive buffs (like speed boosts) for 2 seconds instead of dealing direct damage or stun, useful against highly aggressive ball types.
