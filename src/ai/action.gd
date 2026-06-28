@@ -333,6 +333,80 @@ func execute(strategy: String, delta: float):
                             self.ball.x += (dx/dist) * 200.0 * delta
                             self.ball.y += (dy/dist) * 200.0 * delta
                         continue
+                    elif hazard.kind == "breakable_wall":
+                        var overlap = (self.ball.radius + hazard.radius) - dist
+                        if dist > 0.0001:
+                            var dx = self.ball.x - hazard.x
+                            var dy = self.ball.y - hazard.y
+                            self.ball.x += (dx/dist) * overlap
+                            self.ball.y += (dy/dist) * overlap
+                        var attack_timer = 0.0
+                        if "attack_timer" in self.ball:
+                            attack_timer = self.ball.attack_timer
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("attack_timer"):
+                            attack_timer = self.ball.get_meta("attack_timer")
+                        if attack_timer <= 0.0:
+                            var dmg = 10.0
+                            if "damage" in self.ball:
+                                dmg = self.ball.damage
+                            if not hazard.has_meta("hp"):
+                                hazard.set_meta("hp", 100.0)
+                            var hp = hazard.get_meta("hp")
+                            hp -= dmg
+                            hazard.set_meta("hp", hp)
+                            if hp <= 0:
+                                hazard.set_meta("duration", -1.0)
+                            var b_speed = 2.0
+                            if "speed" in self.ball:
+                                b_speed = self.ball.speed
+                            var new_cd = 1.0
+                            if b_speed > 0:
+                                new_cd = 2.0 / b_speed
+                            if new_cd < 0.2:
+                                new_cd = 0.2
+                            if "attack_timer" in self.ball:
+                                self.ball.attack_timer = new_cd
+                            elif self.ball.has_method("set_meta"):
+                                self.ball.set_meta("attack_timer", new_cd)
+                        continue
+                    elif hazard.kind == "explosive_barrel":
+                        var overlap = (self.ball.radius + hazard.radius) - dist
+                        if dist > 0.0001:
+                            var dx = self.ball.x - hazard.x
+                            var dy = self.ball.y - hazard.y
+                            self.ball.x += (dx/dist) * overlap
+                            self.ball.y += (dy/dist) * overlap
+                        var attack_timer = 0.0
+                        if "attack_timer" in self.ball:
+                            attack_timer = self.ball.attack_timer
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("attack_timer"):
+                            attack_timer = self.ball.get_meta("attack_timer")
+                        if attack_timer <= 0.0:
+                            hazard.set_meta("duration", -1.0)
+                            if "arena" in self.world and "hazards" in self.world.arena:
+                                var explosion = ProceduralArena.Hazard.new(hazard.id + 10000, hazard.x, hazard.y, 100.0, "meteor", 50.0)
+                                explosion.set_meta("duration", 0.5)
+                                self.world.arena.hazards.append(explosion)
+                            var b_speed = 2.0
+                            if "speed" in self.ball:
+                                b_speed = self.ball.speed
+                            var new_cd = 1.0
+                            if b_speed > 0:
+                                new_cd = 2.0 / b_speed
+                            if new_cd < 0.2:
+                                new_cd = 0.2
+                            if "attack_timer" in self.ball:
+                                self.ball.attack_timer = new_cd
+                            elif self.ball.has_method("set_meta"):
+                                self.ball.set_meta("attack_timer", new_cd)
+                        continue
+                    elif hazard.kind == "bounce_pad":
+                        if dist > 0.0001:
+                            var dx = self.ball.x - hazard.x
+                            var dy = self.ball.y - hazard.y
+                            self.ball.x += (dx/dist) * 800.0 * delta
+                            self.ball.y += (dy/dist) * 800.0 * delta
+                        continue
                     elif hazard.kind == "poison_cloud":
                         if self.ball.has_method("set_meta"):
                             self.ball.set_meta("dot_duration", 3.0)

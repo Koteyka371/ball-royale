@@ -243,6 +243,66 @@ class Action:
                                 self.ball.x += (dx/dist) * 200.0 * delta
                                 self.ball.y += (dy/dist) * 200.0 * delta
                             continue
+                        elif hazard.kind == "breakable_wall":
+                            dx = self.ball.x - hazard.x
+                            dy = self.ball.y - hazard.y
+                            overlap = (self.ball.radius + hazard.radius) - dist
+                            if dist > 0.0001:
+                                self.ball.x += (dx/dist) * overlap
+                                self.ball.y += (dy/dist) * overlap
+                            # Attack the wall
+                            attack_timer = getattr(self.ball, "attack_timer", 0.0)
+                            if attack_timer <= 0:
+                                dmg = getattr(self.ball, "damage", 10.0)
+                                if not hasattr(hazard, "hp"):
+                                    hazard.hp = 100.0
+                                hazard.hp -= dmg
+                                if hazard.hp <= 0:
+                                    hazard.duration = 0.0 # Destroy
+                                b_speed = getattr(self.ball, "speed", 2.0)
+                                new_cooldown = max(0.2, 2.0 / b_speed if b_speed > 0 else 1.0)
+                                self.ball.attack_timer = new_cooldown
+                            continue
+                        elif hazard.kind == "explosive_barrel":
+                            dx = self.ball.x - hazard.x
+                            dy = self.ball.y - hazard.y
+                            overlap = (self.ball.radius + hazard.radius) - dist
+                            if dist > 0.0001:
+                                self.ball.x += (dx/dist) * overlap
+                                self.ball.y += (dy/dist) * overlap
+                            # Explode when attacked
+                            attack_timer = getattr(self.ball, "attack_timer", 0.0)
+                            if attack_timer <= 0:
+                                hazard.duration = 0.0 # Destroy
+                                # AoE damage
+                                explosion_radius = 100.0
+                                if hasattr(self.world, "get_nearby_entities"):
+                                    entities = self.world.get_nearby_entities(hazard, explosion_radius)
+                                    nearby = []
+                                    if isinstance(entities, dict):
+                                        nearby = entities.get("enemies", []) + entities.get("allies", [])
+                                    else:
+                                        nearby = [e for e in entities if getattr(e, "alive", True)]
+                                    for e in nearby:
+                                        if hasattr(e, "take_damage"):
+                                            e.take_damage(50.0)
+                                        elif hasattr(e, "hp"):
+                                            e.hp -= 50.0
+                                            if e.hp <= 0:
+                                                e.alive = False
+                                b_speed = getattr(self.ball, "speed", 2.0)
+                                new_cooldown = max(0.2, 2.0 / b_speed if b_speed > 0 else 1.0)
+                                self.ball.attack_timer = new_cooldown
+                            continue
+                        elif hazard.kind == "bounce_pad":
+                            # Propels the ball
+                            dx = self.ball.x - hazard.x
+                            dy = self.ball.y - hazard.y
+                            if dist > 0.0001:
+                                # High push force
+                                self.ball.x += (dx/dist) * 800.0 * delta
+                                self.ball.y += (dy/dist) * 800.0 * delta
+                            continue
                         elif hazard.kind == "poison_cloud":
                             self.ball.dot_duration = 3.0
                             self.ball.dot_damage_per_tick = hazard.damage

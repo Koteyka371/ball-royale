@@ -144,10 +144,16 @@ func generate():
     for i in range(num_hazards):
         var r = rng.randf()
         var kind = "spikes"
-        if r < 0.33:
+        if r < 0.2:
             kind = "lava"
-        elif r < 0.66:
+        elif r < 0.4:
             kind = "fake_booster"
+        elif r < 0.6:
+            kind = "breakable_wall"
+        elif r < 0.8:
+            kind = "explosive_barrel"
+        else:
+            kind = "bounce_pad"
 
         var radius = 15.0
         var damage = 20.0
@@ -157,6 +163,15 @@ func generate():
         elif kind == "lava":
             radius = rng.randf_range(30.0, 60.0)
             damage = 50.0
+        elif kind == "breakable_wall":
+            radius = rng.randf_range(30.0, 50.0)
+            damage = 0.0
+        elif kind == "explosive_barrel":
+            radius = rng.randf_range(15.0, 20.0)
+            damage = 0.0
+        elif kind == "bounce_pad":
+            radius = rng.randf_range(20.0, 35.0)
+            damage = 0.0
         else:
             radius = 15.0
             damage = 50.0
