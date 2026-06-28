@@ -1,0 +1,4 @@
+{
+  "title": "Shrinking Safe Zone Mode",
+  "description": "A battle royale mode where the play area gradually shrinks over time. Players outside the safe zone take continuous damage, forcing engagements in a smaller and smaller space until only one survives."
+}

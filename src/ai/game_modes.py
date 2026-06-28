@@ -683,7 +683,70 @@ class MovingZoneMode(GameMode):
                     return getattr(b, "team", b.ball_type)
         return None
 
+
+class MinefieldMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Minefield"
+        self.description = "The arena is littered with invisible traps. Memory and caution are key."
+        self.mines = []
+        import random
+        self.random = random
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator":
+                b.team = b.ball_type
+
+        # Generate traps across the map
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        num_mines = 50 # adjust density as needed
+        self.mines = []
+        for _ in range(num_mines):
+            x = self.random.uniform(50, arena_width - 50)
+            y = self.random.uniform(50, arena_height - 50)
+            radius = self.random.uniform(15, 30)
+            damage = 50.0
+            # invisible mine
+            self.mines.append({"x": x, "y": y, "radius": radius, "damage": damage, "active": True})
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        valid_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+
+        for b in valid_balls:
+            for mine in self.mines:
+                if mine["active"]:
+                    dx = b.x - mine["x"]
+                    dy = b.y - mine["y"]
+                    dist_sq = dx*dx + dy*dy
+                    if dist_sq <= (mine["radius"] + getattr(b, "radius", 10))**2:
+                        # Boom
+                        mine["active"] = False
+                        if hasattr(b, "take_damage"):
+                            b.take_damage(mine["damage"])
+                        elif hasattr(b, "hp"):
+                            b.hp -= mine["damage"]
+                            if b.hp <= 0:
+                                b.alive = False
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
+        if len(teams_alive) == 1:
+            return list(teams_alive)[0]
+
+        if len(alive) == 1:
+            return alive[0].ball_type
+
+        return None
+
 GAME_MODES = {
+    "minefield": MinefieldMode(),
     "weather_chaos": WeatherChaosMode(),
     "domination": DominationMode(),
     "black_hole": BlackHoleMode(),

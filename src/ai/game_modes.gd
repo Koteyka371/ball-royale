@@ -838,7 +838,80 @@ class MovingZoneMode extends GameMode:
 
         return null
 
+
+class MinefieldMode extends GameMode:
+    var mines = []
+
+    func _init() -> void:
+        name = "Minefield"
+        description = "The arena is littered with invisible traps. Memory and caution are key."
+
+    func setup(world, balls: Array) -> void:
+        for b in balls:
+            if b.ball_type != "spectator":
+                b.team = b.ball_type
+
+        var arena_width = 1000.0
+        var arena_height = 1000.0
+        if world != null and "arena" in world and world.arena != null:
+            if "width" in world.arena: arena_width = float(world.arena.width)
+            if "height" in world.arena: arena_height = float(world.arena.height)
+
+        mines = []
+        var num_mines = 50
+        for i in range(num_mines):
+            var x = 50.0 + randf() * (arena_width - 100.0)
+            var y = 50.0 + randf() * (arena_height - 100.0)
+            var radius = 15.0 + randf() * 15.0
+            mines.append({"x": x, "y": y, "radius": radius, "damage": 50.0, "active": true})
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        for b in balls:
+            if b.alive and b.ball_type != "spectator":
+                var br = 10.0
+                if "radius" in b: br = b.radius
+                for m in mines:
+                    if m.active:
+                        var dx = b.x - m.x
+                        var dy = b.y - m.y
+                        var dist_sq = dx*dx + dy*dy
+                        if dist_sq <= (m.radius + br) * (m.radius + br):
+                            m.active = false
+                            if b.has_method("take_damage"):
+                                b.call("take_damage", m.damage)
+                            elif "hp" in b:
+                                b.hp -= m.damage
+                                if b.hp <= 0:
+                                    b.alive = false
+
+    func check_winner(world, balls: Array):
+        var alive = []
+        for b in balls:
+            if b.alive and b.ball_type != "spectator":
+                alive.append(b)
+
+        if alive.size() == 0:
+            if has_method("_award_skill_points"): call("_award_skill_points")
+            return "Draw"
+
+        var teams_alive = {}
+        for b in alive:
+            var t = b.ball_type
+            if "team" in b: t = b.team
+            teams_alive[t] = true
+
+        if teams_alive.size() == 1:
+            if has_method("_award_skill_points"): call("_award_skill_points")
+            return teams_alive.keys()[0]
+
+        if alive.size() == 1:
+            if has_method("_award_skill_points"): call("_award_skill_points")
+            return alive[0].ball_type
+
+        return null
+
 var GAME_MODES = {
+    "minefield": MinefieldMode.new(),
     "weather_chaos": WeatherChaosMode.new(),
     "domination": DominationMode.new(),
     "black_hole": BlackHoleMode.new(),
