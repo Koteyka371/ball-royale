@@ -241,6 +241,28 @@ class Action:
             if self.ball.decoy_timer <= 0:
                 self.ball.alive = False
                 self.ball.hp = 0
+
+        # Global decoy explosion check
+        if hasattr(self.world, "balls"):
+            for b in self.world.balls:
+                if getattr(b, "is_decoy", False):
+                    if getattr(b, "hp", 1.0) <= 0 or getattr(b, "decoy_timer", 1.0) <= 0 or not getattr(b, "alive", True):
+                        if not getattr(b, "_decoy_exploded", False):
+                            b._decoy_exploded = True
+                            b.alive = False
+                            b.hp = 0
+                            import math
+                            for other in self.world.balls:
+                                if getattr(other, "alive", False) and getattr(other, "team", getattr(b, "team", "")) != getattr(b, "team", "") and getattr(other, "id", None) != getattr(b, "id", None):
+                                    dx = other.x - b.x
+                                    dy = other.y - b.y
+                                    dist = math.sqrt(dx*dx + dy*dy)
+                                    if dist <= 100.0:
+                                        other.hp -= 30.0
+                                        other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 2.0
+                                        if other.hp <= 0:
+                                            other.alive = False
+
         if getattr(self.ball, "stutter_timer", 0.0) > 0.0:
             self.ball.speed = 0.01  # almost stopped to simulate pause
         if strategy == "target_weak":
