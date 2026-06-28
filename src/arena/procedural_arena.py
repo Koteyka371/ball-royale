@@ -117,7 +117,7 @@ class ProceduralArena:
         # Generate hazards
         num_hazards = self.num_rooms * 2
         for i in range(num_hazards):
-            kind = random.choice(["spikes", "lava", "fake_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring"])
+            kind = random.choice(["spikes", "lava", "fake_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift"])
             if kind == "spikes":
                 radius = random.uniform(15.0, 30.0)
                 damage = 20.0
@@ -136,12 +136,18 @@ class ProceduralArena:
             elif kind == "healing_spring":
                 radius = random.uniform(40.0, 80.0)
                 damage = -20.0
+            elif kind == "temporal_rift":
+                radius = random.uniform(60.0, 100.0)
+                damage = 0.0
             else:
                 radius = 15.0
                 damage = 50.0
 
             hx, hy = self.get_random_spawn_point(radius)
-            self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=radius, kind=kind, damage=damage))
+            new_hazard = Hazard(id=i, x=hx, y=hy, radius=radius, kind=kind, damage=damage)
+            if kind == "temporal_rift":
+                new_hazard.time_scale = random.choice([0.5, 1.5, 2.0])
+            self.hazards.append(new_hazard)
 
     def get_random_spawn_point(self, radius: float) -> Tuple[float, float]:
         if not self.rooms:
@@ -228,6 +234,7 @@ class ProceduralArena:
                 h_id = 1000 + len(self.hazards)
 
                 # Start with a very small radius and grow
+                is_temporal_rift = random.random() < 0.1
                 is_gravity_well = random.random() < 0.2
                 if random.random() < 0.1:
                     kind = "drone_item"
@@ -236,9 +243,11 @@ class ProceduralArena:
                     kind = "stealth_drone_item"
                     damage = 0.0
                 else:
-                    kind = "gravity_well" if is_gravity_well else "trap"
-                    damage = 0.0 if is_gravity_well else 100.0
+                    kind = "temporal_rift" if is_temporal_rift else ("gravity_well" if is_gravity_well else "trap")
+                    damage = 0.0 if (is_gravity_well or is_temporal_rift) else 100.0
                 new_hazard = Hazard(id=h_id, x=x, y=y, radius=10.0, kind=kind, damage=damage)
+                if kind == "temporal_rift":
+                    new_hazard.time_scale = random.choice([0.5, 1.5, 2.0])
                 new_hazard.target_radius = target_radius
                 self.hazards.append(new_hazard)
 
@@ -279,6 +288,9 @@ class ProceduralArena:
 
         # Check hazards
         for h in self.hazards:
+            import math
+            if math.isnan(h.x) or math.isnan(h.y) or math.isnan(h.radius):
+                continue
             grid_x = int(h.x // 100)
             grid_y = int(h.y // 100)
             r_cells = int(h.radius // 100) + 1

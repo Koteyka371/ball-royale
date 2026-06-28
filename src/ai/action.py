@@ -88,6 +88,16 @@ class Action:
         self.world = world
 
     def execute(self, strategy: str, delta: float) -> None:
+        # Temporal rift logic to modify local delta
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            for hazard in self.world.arena.hazards:
+                if getattr(hazard, "kind", "") == "temporal_rift":
+                    import math
+                    dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
+                    if dist <= hazard.radius + getattr(self.ball, "radius", 10.0):
+                        time_scale = getattr(hazard, "time_scale", 0.5)
+                        delta *= time_scale
+                        break
         # Chain lightning timer
         if getattr(self.ball, "chain_lightning_timer", 0.0) > 0:
             self.ball.chain_lightning_timer -= delta
@@ -256,6 +266,8 @@ class Action:
 
             if hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
+                    if hazard.kind == "temporal_rift":
+                        continue
                     if hazard.kind == "explosive_barrel":
                         current_tick = getattr(self.world, "tick", 0)
                         if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
@@ -428,6 +440,8 @@ class Action:
                 for hazard in self.world.arena.hazards:
                     dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
                     if dist < (self.ball.radius + hazard.radius):
+                        if hazard.kind == "temporal_rift":
+                            continue
                         if hazard.kind == "explosive_barrel":
                             if not getattr(hazard, "is_exploded", False):
                                 bvx = getattr(self.ball, "vx", 0.0)
