@@ -596,6 +596,88 @@ class BlackHoleMode extends GameMode:
         return null
 
 
+class WeatherChaosMode extends GameMode:
+	var weather: String = "clear"
+	var weather_timer: float = 0.0
+
+	func _init() -> void:
+		name = "Weather Chaos"
+		description = "Weather conditions change throughout the match, affecting stats."
+
+	func setup(world, balls: Array) -> void:
+		for b in balls:
+			if b.ball_type != "spectator":
+				b.team = b.ball_type
+				if not b.has_meta("base_speed"):
+					if "speed" in b:
+						b.set_meta("base_speed", b.speed)
+					else:
+						b.set_meta("base_speed", 100.0)
+				if not b.has_meta("base_damage"):
+					if "damage" in b:
+						b.set_meta("base_damage", b.damage)
+					else:
+						b.set_meta("base_damage", 10.0)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		weather_timer += delta
+		if weather_timer > 10.0:
+			weather_timer = 0.0
+			var weathers = ["clear", "rain", "fog", "snow"]
+			weather = weathers[randi() % weathers.size()]
+
+		for b in balls:
+			if b.alive and b.ball_type != "spectator":
+				if not b.has_meta("base_speed"):
+					if "speed" in b:
+						b.set_meta("base_speed", b.speed)
+					else:
+						b.set_meta("base_speed", 100.0)
+				if not b.has_meta("base_damage"):
+					if "damage" in b:
+						b.set_meta("base_damage", b.damage)
+					else:
+						b.set_meta("base_damage", 10.0)
+
+				var base_spd = b.get_meta("base_speed")
+				var base_dmg = b.get_meta("base_damage")
+
+				if weather == "clear":
+					if "speed" in b: b.speed = base_spd
+					if "damage" in b: b.damage = base_dmg
+				elif weather == "rain":
+					if "speed" in b: b.speed = base_spd * 0.8
+					if "damage" in b: b.damage = base_dmg
+				elif weather == "fog":
+					if "speed" in b: b.speed = base_spd * 0.5
+					if "damage" in b: b.damage = base_dmg * 0.8
+				elif weather == "snow":
+					if "speed" in b: b.speed = base_spd * 0.6
+					if "damage" in b: b.damage = base_dmg * 1.2
+
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.alive and b.ball_type != "spectator":
+				alive.append(b)
+
+		if alive.size() == 0:
+			if has_method("_award_skill_points"): call("_award_skill_points")
+			return "Draw"
+
+		var teams_alive = {}
+		for b in alive:
+			var t = b.ball_type
+			if "team" in b:
+				t = b.team
+			teams_alive[t] = true
+
+		if teams_alive.size() == 1:
+			if has_method("_award_skill_points"): call("_award_skill_points")
+			return teams_alive.keys()[0]
+
+		return null
+
 class DominationMode extends GameMode:
     var points = []
 
@@ -683,6 +765,7 @@ class DominationMode extends GameMode:
         return null
 
 var GAME_MODES = {
+    "weather_chaos": WeatherChaosMode.new(),
     "domination": DominationMode.new(),
     "black_hole": BlackHoleMode.new(),
     "king_of_the_hill": KingOfTheHillMode.new(),
