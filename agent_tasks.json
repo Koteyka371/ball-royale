@@ -2983,7 +2983,7 @@
     },
     {
       "id": "idea-168",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Spawning",
@@ -3367,6 +3367,38 @@
       "risk": "medium",
       "title": "Sniper Ricochet Trap",
       "description": "Add a new trap variant 'ricochet' for Snipers, which bounces enemy attacks back towards the attacker when placed, giving Snipers a temporary defensive barrier while kiting.",
+      "allowed_paths": [
+        "src/ai/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-190",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirror Shield",
+      "description": "A temporary shield that reflects the first source of damage back to the attacker or trap.",
+      "allowed_paths": [
+        "src/ai/**",
+        "tests/**"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-191",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Trap Detector Drone",
+      "description": "A drone item that floats around the ball and highlights nearby traps, including fake boosters.",
       "allowed_paths": [
         "src/ai/**",
         "tests/**"

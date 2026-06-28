@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-168] Decoy Spawning — *2026-06-28 05:54:18 UTC*
+
+Allow fragile fast balls to deploy a temporary decoy ball that enemies will aggro towards, allowing the real ball to escape or reposition.
+
+---
+
 ## [idea-150] Decoy Booster Trap — *2026-06-28 05:52:47 UTC*
 
 A new procedural hazard that spawns looking exactly like a random booster. When a ball tries to collect it, it explodes and deals damage instead of granting a buff. Scouts could have a chance to identify them based on their perception score.
