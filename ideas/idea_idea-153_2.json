@@ -1,0 +1,4 @@
+{
+  "title": "Chronos Zones",
+  "description": "Spawn temporal rifts that slow down or speed up the passage of time (affecting movement, attack cooldowns, and hazard ticks) only for entities within the rift, creating high-skill prediction windows."
+}
