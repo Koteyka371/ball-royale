@@ -215,7 +215,7 @@ func execute(strategy: String, delta: float):
                                 self.ball.stutter_timer = current_stutter + 2.0
                             elif self.ball.has_method("set_meta"):
                                 self.ball.set_meta("stutter_timer", current_stutter + 2.0)
-                elif hazard.kind == "portal":
+                elif hazard.kind == "portal" or hazard.kind == "teleporter":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
                     var dist_sq = dx * dx + dy * dy
@@ -227,8 +227,22 @@ func execute(strategy: String, delta: float):
                         if self.ball.has_meta("last_teleport_tick"):
                             last_teleport = self.ball.get_meta("last_teleport_tick")
                         if current_tick - last_teleport > 10:
-                            self.ball.x = hazard.target_x
-                            self.ball.y = hazard.target_y
+                            if hazard.kind == "teleporter":
+                                var teleporters = []
+                                for h in self.world.arena.hazards:
+                                    if h.kind == "teleporter" and h != hazard:
+                                        teleporters.append(h)
+                                if teleporters.size() > 0:
+                                    var target_tp = teleporters[randi() % teleporters.size()]
+                                    self.ball.x = target_tp.x
+                                    self.ball.y = target_tp.y
+                                else:
+                                    self.ball.x = randf_range(100.0, self.world.arena.width - 100.0)
+                                    self.ball.y = randf_range(100.0, self.world.arena.height - 100.0)
+                            else:
+                                if hazard.get("target_x") != null:
+                                    self.ball.x = hazard.target_x
+                                    self.ball.y = hazard.target_y
                             self.ball.set_meta("last_teleport_tick", current_tick)
                 elif hazard.kind == "conveyor_belt":
                     var dx = hazard.x - self.ball.x

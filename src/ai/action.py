@@ -139,7 +139,7 @@ class Action:
                                 # Slow down the ball using stutter_timer logic
                                 self.ball.stutter_timer = getattr(self.ball, "stutter_timer", 0.0) + 2.0
 
-                    elif hazard.kind == "portal":
+                    elif hazard.kind in ("portal", "teleporter"):
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
                         dist_sq = dx * dx + dy * dy
@@ -148,8 +148,21 @@ class Action:
                             current_tick = getattr(self.world, "tick", 0)
                             last_teleport = getattr(self.ball, "last_teleport_tick", -100)
                             if current_tick - last_teleport > 10:  # Prevent immediate re-teleport
-                                self.ball.x = hazard.target_x
-                                self.ball.y = hazard.target_y
+                                if hazard.kind == "teleporter":
+                                    teleporters = [h for h in self.world.arena.hazards if h.kind == "teleporter" and h != hazard]
+                                    if teleporters:
+                                        import random
+                                        target_tp = random.choice(teleporters)
+                                        self.ball.x = target_tp.x
+                                        self.ball.y = target_tp.y
+                                    else:
+                                        # Random safe location
+                                        import random
+                                        self.ball.x = random.uniform(100, self.world.arena.width - 100)
+                                        self.ball.y = random.uniform(100, self.world.arena.height - 100)
+                                else:
+                                    self.ball.x = getattr(hazard, "target_x", hazard.x)
+                                    self.ball.y = getattr(hazard, "target_y", hazard.y)
                                 self.ball.last_teleport_tick = current_tick
                     elif hazard.kind == "conveyor_belt":
                         dx = hazard.x - self.ball.x
