@@ -109,10 +109,12 @@ func execute(strategy: String, delta: float):
             my_ball.set_meta("dot_duration", dot_dur - delta)
 
     if world != null and "arena" in world:
+        # Dynamic weather: rain makes the arena slippery and affects movement physics
         if world.arena.get("is_raining") == true:
+            # Dynamic weather feature: Slippery arena in rain
             if "vx" in my_ball and "vy" in my_ball:
-                my_ball.x += my_ball.vx * delta * 0.2
-                my_ball.y += my_ball.vy * delta * 0.2
+                my_ball.x += my_ball.vx * delta * 0.75
+                my_ball.y += my_ball.vy * delta * 0.75
 
     var gm = null
     if world != null and "game_mode" in world:

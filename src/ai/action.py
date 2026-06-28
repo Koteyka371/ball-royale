@@ -83,10 +83,12 @@ class Action:
 
         # Weather friction
         if hasattr(self.world, "arena") and hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+            # Dynamic weather: rain makes the arena slippery and affects movement physics
             if getattr(self.world.arena, "is_raining", False):
-                # Slippery: apply momentum (friction slide)
-                self.ball.x += getattr(self.ball, "vx") * delta * 0.2
-                self.ball.y += getattr(self.ball, "vy") * delta * 0.2
+                # Dynamic weather feature: Slippery arena in rain
+                # Drastically reduce friction by applying a larger percentage of velocity
+                self.ball.x += getattr(self.ball, "vx") * delta * 0.75
+                self.ball.y += getattr(self.ball, "vy") * delta * 0.75
             if getattr(self.world.arena, "is_foggy", False):
                 pass # Fog has no friction effect, snow has speed change
 

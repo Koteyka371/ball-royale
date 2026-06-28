@@ -710,7 +710,10 @@ class WeatherChaosMode extends GameMode:
 			else:
 				world.arena.is_foggy = false
 			if weather == "rain":
+				# Dynamic weather: rain makes the arena slippery
 				world.arena.is_raining = true
+				if has_method("set_meta"):
+					set_meta("slippery", true)
 			else:
 				world.arena.is_raining = false
 			if weather == "sandstorm":
@@ -1242,7 +1245,69 @@ class DynamicHazardsMode extends GameMode:
 
 		world.arena.hazards = hazards_to_keep
 
+
+class DynamicWeatherMode extends GameMode:
+	var weather: String = "clear"
+	var weather_timer: float = 0.0
+
+	func _init():
+		name = "Dynamic Weather Match"
+		description = "A standard match with dynamic weather conditions (rain, fog, wind)."
+
+	func setup(world, balls: Array) -> void:
+		for b in balls:
+			if b.get("ball_type") != "spectator":
+				if not b.get("team"):
+					b.set("team", b.get("ball_type"))
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		weather_timer += delta
+		if weather_timer > 5.0:
+			weather_timer = 0.0
+			var weathers = ["clear", "rain", "fog", "wind"]
+			weather = weathers[randi() % weathers.size()]
+			if weather == "wind":
+				if has_method("set_meta"):
+					set_meta("wind_dx", (randf() * 200.0) - 100.0)
+					set_meta("wind_dy", (randf() * 200.0) - 100.0)
+
+		if world != null and "arena" in world:
+			world.arena.is_foggy = (weather == "fog")
+			world.arena.is_raining = (weather == "rain")
+
+		for b in balls:
+			if not b.get("alive") or b.get("ball_type") == "spectator":
+				continue
+			if weather == "wind":
+				var wind_dx = 0.0
+				var wind_dy = 0.0
+				if has_method("has_meta") and has_meta("wind_dx"):
+					wind_dx = get_meta("wind_dx")
+				if has_method("has_meta") and has_meta("wind_dy"):
+					wind_dy = get_meta("wind_dy")
+				b.x += wind_dx * delta
+				b.y += wind_dy * delta
+
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.get("alive") and b.get("ball_type") != "spectator":
+				alive.append(b)
+		if alive.size() == 0:
+			return "Draw"
+		var teams_alive = {}
+		for b in alive:
+			var t = b.get("team")
+			if not t: t = b.get("ball_type")
+			teams_alive[t] = true
+		if teams_alive.keys().size() == 1:
+			return teams_alive.keys()[0]
+		if alive.size() == 1:
+			return alive[0].get("ball_type")
+		return null
+
 var GAME_MODES = {
+	"dynamic_weather": DynamicWeatherMode.new(),
 	"memory_traps": MemoryTrapsMode.new(),
 	"dynamic_hazards": DynamicHazardsMode.new(),
 	"custom_match": CustomMatchMode.new(),

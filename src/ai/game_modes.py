@@ -583,6 +583,7 @@ class WeatherChaosMode(GameMode):
         # Apply weather effects to the arena
         if hasattr(world, "arena"):
             world.arena.is_foggy = (self.weather in ["fog", "snow"])
+            # Dynamic weather: rain makes the arena slippery
             world.arena.is_raining = (self.weather == "rain")
             world.arena.is_sandstorming = (self.weather == "sandstorm")
 
@@ -1023,7 +1024,67 @@ class DynamicHazardsMode(GameMode):
                     hazard.y < -100 or hazard.y > world.arena.height + 100):
                     world.arena.hazards.remove(hazard)
 
+
+class DynamicWeatherMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Dynamic Weather Match"
+        self.description = "A standard match with dynamic weather conditions (rain, fog, wind)."
+        self.weather = "clear"
+        self.weather_timer = 0.0
+
+    def setup(self, world, balls):
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator":
+                b.team = getattr(b, "team", b.ball_type)
+
+    def tick(self, world, balls, delta=0.016):
+        import random
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+
+        self.weather_timer += delta
+        if self.weather_timer > 5.0:
+            self.weather_timer = 0.0
+            weathers = ["clear", "rain", "fog", "wind"]
+            self.weather = random.choice(weathers)
+            if self.weather == "wind":
+                self.wind_dx = random.uniform(-100.0, 100.0)
+                self.wind_dy = random.uniform(-100.0, 100.0)
+
+        if hasattr(world, "arena"):
+            world.arena.is_foggy = (self.weather == "fog")
+            world.arena.is_raining = (self.weather == "rain")
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+            if self.weather == "wind" and hasattr(self, "wind_dx"):
+                b.x += self.wind_dx * delta
+                b.y += self.wind_dy * delta
+
+    def check_winner(self, world, balls):
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", "Unknown")) for b in alive)
+        if len(teams_alive) == 1:
+            return list(teams_alive)[0]
+        if len(alive) == 1:
+            return alive[0].ball_type
+        return None
+
 GAME_MODES = {
+    "dynamic_weather": DynamicWeatherMode(),
     "memory_traps": MemoryTrapsMode(),
     "dynamic_hazards": DynamicHazardsMode(),
     "custom_match": CustomMatchMode(),
