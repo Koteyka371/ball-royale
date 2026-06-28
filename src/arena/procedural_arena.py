@@ -183,6 +183,15 @@ class ProceduralArena:
             if self.safe_zone_radius < 50.0:
                 self.safe_zone_radius = 50.0
 
+            # Slowly expand dynamic hazards
+            for h in self.hazards:
+                if h.id >= 1000 and hasattr(h, "target_radius"):
+                    if h.radius < h.target_radius:
+                        # Grow proportionally to reach target in roughly 600 ticks
+                        h.radius += (h.target_radius / 600.0) * delta * 60.0 # Assuming 60 ticks per second
+                        if h.radius > h.target_radius:
+                            h.radius = h.target_radius
+
         if current_tick % 600 == 0:
             # Spawn dynamic danger zones periodically
             import random
@@ -193,16 +202,20 @@ class ProceduralArena:
             for _ in range(num_zones):
                 x = random.uniform(200, self.width - 200)
                 y = random.uniform(200, self.height - 200)
-                radius = random.uniform(100.0, 250.0)
+                target_radius = random.uniform(100.0, 250.0)
                 # Ensure hazard ID is unique
                 h_id = 1000 + len(self.hazards)
-                if random.random() < 0.2:
-                    self.hazards.append(Hazard(id=h_id, x=x, y=y, radius=radius, kind="gravity_well", damage=0.0))
-                else:
-                    self.hazards.append(Hazard(id=h_id, x=x, y=y, radius=radius, kind="trap", damage=100.0))
 
-            if current_tick % 10 == 0:
-                self._update_danger_grid()
+                # Start with a very small radius and grow
+                is_gravity_well = random.random() < 0.2
+                kind = "gravity_well" if is_gravity_well else "trap"
+                damage = 0.0 if is_gravity_well else 100.0
+                new_hazard = Hazard(id=h_id, x=x, y=y, radius=10.0, kind=kind, damage=damage)
+                new_hazard.target_radius = target_radius
+                self.hazards.append(new_hazard)
+
+        if current_tick % 10 == 0:
+            self._update_danger_grid()
 
     def _update_danger_grid(self):
         self.danger_grid.clear()

@@ -19,6 +19,7 @@ class Hazard:
     var x: float
     var y: float
     var radius: float
+    var target_radius: float
     var kind: String
     var damage: float
 
@@ -27,6 +28,7 @@ class Hazard:
         x = _x
         y = _y
         radius = _radius
+        target_radius = _radius
         kind = _kind
         damage = _damage
 
@@ -214,6 +216,12 @@ func update_zone(current_tick: int, delta: float) -> void:
         if safe_zone_radius < 50.0:
             safe_zone_radius = 50.0
 
+        for h in hazards:
+            if h.id >= 1000 and h.radius < h.target_radius:
+                h.radius += (h.target_radius / 600.0) * delta * 60.0
+                if h.radius > h.target_radius:
+                    h.radius = h.target_radius
+
         if current_tick % 600 == 0:
             var new_hazards = []
             for h in hazards:
@@ -225,19 +233,13 @@ func update_zone(current_tick: int, delta: float) -> void:
             for i in range(num_zones):
                 var x = randf_range(200, width - 200)
                 var y = randf_range(200, height - 200)
-                var radius = randf_range(100.0, 250.0)
+                var t_radius = randf_range(100.0, 250.0)
                 var h_id = 1000 + hazards.size()
-                var h = ProceduralArena.Hazard.new()
-                h.id = h_id
-                h.x = x
-                h.y = y
-                h.radius = radius
+                var h = ProceduralArena.Hazard.new(h_id, x, y, 10.0, "trap", 100.0)
+                h.target_radius = t_radius
                 if randf() < 0.2:
                     h.kind = "gravity_well"
                     h.damage = 0.0
-                else:
-                    h.kind = "trap"
-                    h.damage = 100.0
                 hazards.append(h)
 
         if current_tick % 10 == 0:
