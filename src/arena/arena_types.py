@@ -1184,7 +1184,22 @@ class DayNightArena(ProceduralArena):
             self.day_night_timer = 0.0
             self.is_night = not self.is_night
 
+class ThickFogArena(ProceduralArena):
+    def __init__(self, arena_size: float = 2000.0, seed: int | None = None):
+        super().__init__(arena_size, 5, seed)
+        self.is_foggy = False
+        self.fog_timer = 0.0
+        self.phase_duration = 20.0
+
+    def update_zone(self, current_tick: int, delta: float):
+        super().update_zone(current_tick, delta)
+        self.fog_timer += delta
+        if self.fog_timer >= self.phase_duration:
+            self.fog_timer = 0.0
+            self.is_foggy = not self.is_foggy
+
 ARENAS = {
+    "thick_fog": ThickFogArena,
     "black_hole": BlackHoleArena,
     "neural_ball": NeuralBallArena,
     "flee": FleeArena,
