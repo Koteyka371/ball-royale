@@ -3337,7 +3337,7 @@
     },
     {
       "id": "idea-190",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mirror Shield",
@@ -4796,6 +4796,40 @@
         "src/ai/magnetize_powerup.py",
         "src/ai/magnetize_powerup.gd",
         "tests/test_magnetize_powerup.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-276",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quicksand Hazard",
+      "description": "Add a new hazard called quicksand that spawns dynamically in the arena during the game. Balls that wander into the quicksand are slowed down significantly, and taking damage from other hazards while inside quicksand amplifies the damage.",
+      "allowed_paths": [
+        "src/arena/quicksand.py",
+        "src/arena/quicksand.gd",
+        "tests/test_quicksand.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-277",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirage Ability",
+      "description": "Introduce a new Mirage ability for some ball types that allows them to create false copies of themselves when weather conditions are foggy or sandstorming. This will confuse the enemies by giving them fake targets to attack.",
+      "allowed_paths": [
+        "src/ai/mirage_ability.py",
+        "src/ai/mirage_ability.gd",
+        "tests/test_mirage_ability.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
