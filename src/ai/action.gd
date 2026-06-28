@@ -121,6 +121,34 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+	if (strategy == "flee" or strategy == "defend") and self.ball.has_meta("inventory"):
+		var inv = self.ball.get_meta("inventory")
+		if inv.has("placeable_trap"):
+			if world != null and "arena" in world and "hazards" in world.arena:
+				var arena = world.arena
+				var trap_id = arena.hazards.size() + randi() % 10000
+
+				var trap = null
+				if load("res://src/arena/procedural_arena.gd") != null:
+					trap = load("res://src/arena/procedural_arena.gd").Hazard.new()
+					trap.id = trap_id
+					trap.x = self.ball.x
+					trap.y = self.ball.y
+					trap.radius = 20.0
+					trap.kind = "trap"
+					trap.damage = 0.0
+					trap.set_meta("duration", 10.0)
+
+					var trap_type = "mine"
+					if randf() > 0.5:
+						trap_type = "freeze"
+					trap.set_meta("trap_variant", trap_type)
+					trap.set_meta("owner_id", self.ball.id)
+
+					arena.hazards.append(trap)
+					inv.erase("placeable_trap")
+					self.ball.set_meta("inventory", inv)
+
 	# Temporal rift logic to modify local delta
 	if world != null and "arena" in world and "hazards" in world.arena:
 		for hazard in world.arena.hazards:
@@ -628,6 +656,12 @@ func execute(strategy: String, delta: float):
                             if speed > 300.0 or hazard_speed > 300.0:
                                 hazard.set_meta("is_exploded", true)
                     elif hazard.kind == "trap":
+                        var trap_owner_id = null
+                        if hazard.has_method("get_meta") and hazard.has_meta("owner_id"):
+                            trap_owner_id = hazard.get_meta("owner_id")
+
+                        if trap_owner_id != null and trap_owner_id == self.ball.id:
+                            continue
                         if ball_type != "sniper":
                             var trap_variant = "normal"
                             if hazard.has_meta("trap_variant"):
@@ -691,6 +725,37 @@ func execute(strategy: String, delta: float):
                                             self.ball.damage_multiplier = 1.0
                                         elif self.ball.has_method("set_meta"):
                                             self.ball.set_meta("damage_multiplier", 1.0)
+                            elif trap_variant == "mine":
+                                if self.ball.has_method("take_damage"):
+                                    self.ball.take_damage(50.0)
+                                elif "hp" in self.ball:
+                                    self.ball.hp -= 50.0
+                                    if self.ball.hp <= 0:
+                                        self.ball.alive = false
+                                if hazard.has_method("set_meta"):
+                                    hazard.set_meta("duration", 0.0)
+                                elif "duration" in hazard:
+                                    hazard.duration = 0.0
+                            elif trap_variant == "freeze":
+                                var is_stunned = false
+                                if "is_stunned" in self.ball:
+                                    is_stunned = self.ball.is_stunned
+                                elif self.ball.has_method("get_meta") and self.ball.has_meta("is_stunned"):
+                                    is_stunned = self.ball.get_meta("is_stunned")
+
+                                if not is_stunned:
+                                    if "is_stunned" in self.ball:
+                                        self.ball.is_stunned = true
+                                        self.ball.stun_timer = 2.0
+                                    elif self.ball.has_method("set_meta"):
+                                        self.ball.set_meta("is_stunned", true)
+                                        self.ball.set_meta("stun_timer", 2.0)
+                                self.ball.x = old_x
+                                self.ball.y = old_y
+                                if hazard.has_method("set_meta"):
+                                    hazard.set_meta("duration", 0.0)
+                                elif "duration" in hazard:
+                                    hazard.duration = 0.0
                             elif trap_variant == "stun":
                                 var is_stunned = false
                                 if "is_stunned" in self.ball:
@@ -2815,6 +2880,16 @@ func _collect_booster(delta: float):
                 var dur = 5.0
                 if "duration" in nearest: dur = nearest.duration
                 self.ball.set_meta("zone_immunity_timer", dur)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "placeable_trap_item":
+                if not self.ball.has_meta("inventory"):
+                    self.ball.set_meta("inventory", [])
+                var inv = self.ball.get_meta("inventory")
+                inv.append("placeable_trap")
+                self.ball.set_meta("inventory", inv)
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:

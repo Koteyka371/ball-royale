@@ -1,0 +1,4 @@
+{
+    "title": "Weather Events",
+    "description": "Introduce dynamic weather events such as Rain (reduces friction, making balls slide further), Snow (slows down movement), and Thunderstorms (random lightning strikes that EMP balls in an area)."
+}
