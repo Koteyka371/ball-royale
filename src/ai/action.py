@@ -171,6 +171,77 @@ class Action:
                         if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
                             hazard.last_updated_tick = current_tick
                             hazard.duration = getattr(hazard, "duration", 5.0) - delta
+                    elif hazard.kind == "breakable_wall":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < (hazard.radius + self.ball.radius) ** 2:
+                            dist = math.sqrt(dist_sq)
+                            if dist > 0.0001:
+                                overlap = hazard.radius + self.ball.radius - dist
+                                nx, ny = dx / dist, dy / dist
+                                self.ball.x -= nx * overlap
+                                self.ball.y -= ny * overlap
+                            speed = math.sqrt(getattr(self.ball, 'vx', 0)**2 + getattr(self.ball, 'vy', 0)**2)
+                            if speed > 50:
+                                hazard.hp -= speed * delta
+                                if hazard.hp <= 0:
+                                    hazard.active = False
+                                    hazard.x = -9999
+                                    hazard.y = -9999
+                    elif hazard.kind == "explosive_barrel":
+                        if not getattr(hazard, "active", True):
+                            continue
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < (hazard.radius + self.ball.radius) ** 2:
+                            hazard.active = False
+                            hazard.x = -9999
+                            hazard.y = -9999
+                            explosion_radius = 100.0
+                            if hasattr(self.world, "get_nearby_entities"):
+                                entities = self.world.get_nearby_entities(hazard, explosion_radius)
+                                nearby = []
+                                if isinstance(entities, dict):
+                                    nearby = entities.get("enemies", []) + entities.get("allies", [])
+                                elif isinstance(entities, list):
+                                    nearby = entities
+                                for entity in nearby:
+                                    if hasattr(entity, "take_damage"):
+                                        entity.take_damage(hazard.damage)
+                                    elif hasattr(entity, "hp"):
+                                        entity.hp -= hazard.damage
+                                        if entity.hp <= 0:
+                                            entity.alive = False
+                            else:
+                                if hasattr(self.ball, "take_damage"):
+                                    self.ball.take_damage(hazard.damage)
+                                elif hasattr(self.ball, "hp"):
+                                    self.ball.hp -= hazard.damage
+                                    if self.ball.hp <= 0:
+                                        self.ball.alive = False
+                    elif hazard.kind == "bounce_pad":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < (hazard.radius + self.ball.radius) ** 2:
+                            # Use stutter_timer/tick logic to ensure we only bounce once every so often
+                            current_tick = getattr(self.world, "tick", 0)
+                            last_bounce = getattr(self.ball, "last_bounce_tick", -100)
+                            if current_tick - last_bounce > 10:
+                                self.ball.last_bounce_tick = current_tick
+                                if getattr(self.ball, 'vx', 0) == 0 and getattr(self.ball, 'vy', 0) == 0:
+                                    import random
+                                    self.ball.vx = random.uniform(-1, 1) * 500
+                                    self.ball.vy = random.uniform(-1, 1) * 500
+                                else:
+                                    # Normalize and launch
+                                    speed = math.sqrt(self.ball.vx**2 + self.ball.vy**2)
+                                    nx = self.ball.vx / speed
+                                    ny = self.ball.vy / speed
+                                    self.ball.vx = nx * max(speed * 2.0, 500.0)
+                                    self.ball.vy = ny * max(speed * 2.0, 500.0)
                     elif hazard.kind == "proximity_trap":
                         # Deal damage and apply slow
                         dx = hazard.x - self.ball.x

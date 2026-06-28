@@ -251,6 +251,92 @@ func execute(strategy: String, delta: float):
                         if hazard.has_meta("duration"):
                             dur = hazard.get_meta("duration")
                         hazard.set_meta("duration", dur - delta)
+                elif hazard.kind == "breakable_wall":
+                    var dist_x = hazard.x - self.ball.x
+                    var dist_y = hazard.y - self.ball.y
+                    var dist_sq = dist_x * dist_x + dist_y * dist_y
+                    if dist_sq < (hazard.radius + self.ball.radius) * (hazard.radius + self.ball.radius):
+                        var dist = sqrt(dist_sq)
+                        if dist > 0.0001:
+                            var overlap = hazard.radius + self.ball.radius - dist
+                            var nx = dist_x / dist
+                            var ny = dist_y / dist
+                            self.ball.x -= nx * overlap
+                            self.ball.y -= ny * overlap
+                        var bvx = 0.0
+                        var bvy = 0.0
+                        if "vx" in self.ball: bvx = self.ball.vx
+                        if "vy" in self.ball: bvy = self.ball.vy
+                        var speed = sqrt(bvx * bvx + bvy * bvy)
+                        if speed > 50:
+                            hazard.hp -= speed * delta
+                            if hazard.hp <= 0:
+                                hazard.active = false
+                                hazard.x = -9999
+                                hazard.y = -9999
+                elif hazard.kind == "explosive_barrel":
+                    if not hazard.active:
+                        continue
+                    var dist_x = hazard.x - self.ball.x
+                    var dist_y = hazard.y - self.ball.y
+                    var dist_sq = dist_x * dist_x + dist_y * dist_y
+                    if dist_sq < (hazard.radius + self.ball.radius) * (hazard.radius + self.ball.radius):
+                        hazard.active = false
+                        hazard.x = -9999
+                        hazard.y = -9999
+                        if self.world.has_method("get_nearby_entities"):
+                            var entities = self.world.get_nearby_entities(hazard, 100.0)
+                            var nearby = []
+                            if typeof(entities) == TYPE_DICTIONARY:
+                                if entities.has("enemies"):
+                                    for e in entities.enemies: nearby.append(e)
+                                if entities.has("allies"):
+                                    for e in entities.allies: nearby.append(e)
+                            elif typeof(entities) == TYPE_ARRAY:
+                                nearby = entities
+                            for e in nearby:
+                                if e.has_method("take_damage"):
+                                    e.take_damage(hazard.damage)
+                                elif "hp" in e:
+                                    e.hp -= hazard.damage
+                                    if e.hp <= 0:
+                                        e.alive = false
+                        else:
+                            if self.ball.has_method("take_damage"):
+                                self.ball.take_damage(hazard.damage)
+                            elif "hp" in self.ball:
+                                self.ball.hp -= hazard.damage
+                                if self.ball.hp <= 0:
+                                    self.ball.alive = false
+                elif hazard.kind == "bounce_pad":
+                    var dist_x = hazard.x - self.ball.x
+                    var dist_y = hazard.y - self.ball.y
+                    var dist_sq = dist_x * dist_x + dist_y * dist_y
+                    if dist_sq < (hazard.radius + self.ball.radius) * (hazard.radius + self.ball.radius):
+                        var current_tick = 0
+                        if self.world.get("tick") != null:
+                            current_tick = self.world.tick
+                        var last_bounce = -100
+                        if self.ball.has_meta("last_bounce_tick"):
+                            last_bounce = self.ball.get_meta("last_bounce_tick")
+                        if current_tick - last_bounce > 10:
+                            self.ball.set_meta("last_bounce_tick", current_tick)
+                            var bvx = 0.0
+                            var bvy = 0.0
+                            if "vx" in self.ball: bvx = self.ball.vx
+                            if "vy" in self.ball: bvy = self.ball.vy
+                            if bvx == 0 and bvy == 0:
+                                if "vx" in self.ball: self.ball.vx = randf_range(-1, 1) * 500
+                                if "vy" in self.ball: self.ball.vy = randf_range(-1, 1) * 500
+                            else:
+                                var speed = sqrt(bvx * bvx + bvy * bvy)
+                                var nx = bvx / speed
+                                var ny = bvy / speed
+                                var target_speed = speed * 2.0
+                                if target_speed < 500.0:
+                                    target_speed = 500.0
+                                if "vx" in self.ball: self.ball.vx = nx * target_speed
+                                if "vy" in self.ball: self.ball.vy = ny * target_speed
                 elif hazard.kind == "proximity_trap":
                     var dist_x = hazard.x - self.ball.x
                     var dist_y = hazard.y - self.ball.y
