@@ -320,6 +320,98 @@ func execute(strategy: String, delta: float):
                 my_ball.set_meta("alive", false)
             if "hp" in my_ball:
                 my_ball.hp = 0.0
+
+    if world != null and "balls" in world:
+        for b in world.balls:
+            var b_is_decoy = false
+            if "is_decoy" in b:
+                b_is_decoy = b.is_decoy
+            elif b.has_method("get_meta") and b.has_meta("is_decoy"):
+                b_is_decoy = b.get_meta("is_decoy")
+
+            if b_is_decoy:
+                var b_hp = 1.0
+                if "hp" in b:
+                    b_hp = b.hp
+                var b_dt = 1.0
+                if "decoy_timer" in b:
+                    b_dt = b.decoy_timer
+                elif b.has_method("get_meta") and b.has_meta("decoy_timer"):
+                    b_dt = b.get_meta("decoy_timer")
+                var b_alive = true
+                if "alive" in b:
+                    b_alive = b.alive
+                elif b.has_method("get_meta") and b.has_meta("alive"):
+                    b_alive = b.get_meta("alive")
+
+                if b_hp <= 0.0 or b_dt <= 0.0 or not b_alive:
+                    var b_exploded = false
+                    if "_decoy_exploded" in b:
+                        b_exploded = b._decoy_exploded
+                    elif b.has_method("get_meta") and b.has_meta("_decoy_exploded"):
+                        b_exploded = b.get_meta("_decoy_exploded")
+
+                    if not b_exploded:
+                        if "_decoy_exploded" in b:
+                            b._decoy_exploded = true
+                        elif b.has_method("set_meta"):
+                            b.set_meta("_decoy_exploded", true)
+
+                        if "alive" in b:
+                            b.alive = false
+                        elif b.has_method("set_meta"):
+                            b.set_meta("alive", false)
+                        if "hp" in b:
+                            b.hp = 0.0
+
+                        var b_team = ""
+                        if "team" in b:
+                            b_team = b.team
+
+                        var b_id = -1
+                        if "id" in b:
+                            b_id = b.id
+                        elif b.has_method("get_meta") and b.has_meta("id"):
+                            b_id = b.get_meta("id")
+
+                        for other in world.balls:
+                            var other_alive = false
+                            if "alive" in other:
+                                other_alive = other.alive
+                            elif other.has_method("get_meta") and other.has_meta("alive"):
+                                other_alive = other.get_meta("alive")
+
+                            var other_team = ""
+                            if "team" in other:
+                                other_team = other.team
+
+                            var other_id = -1
+                            if "id" in other:
+                                other_id = other.id
+                            elif other.has_method("get_meta") and other.has_meta("id"):
+                                other_id = other.get_meta("id")
+
+                            if other_alive and other_team != b_team and other_id != b_id:
+                                var dx = other.x - b.x
+                                var dy = other.y - b.y
+                                var dist = sqrt(dx*dx + dy*dy)
+                                if dist <= 100.0:
+                                    if "hp" in other:
+                                        other.hp -= 30.0
+                                        if other.hp <= 0:
+                                            if "alive" in other:
+                                                other.alive = false
+                                            elif other.has_method("set_meta"):
+                                                other.set_meta("alive", false)
+
+                                    if "stutter_timer" in other:
+                                        other.stutter_timer += 2.0
+                                    elif other.has_method("has_meta") and other.has_method("set_meta") and other.has_method("get_meta"):
+                                        var current_stutter = 0.0
+                                        if other.has_meta("stutter_timer"):
+                                            current_stutter = other.get_meta("stutter_timer")
+                                        other.set_meta("stutter_timer", current_stutter + 2.0)
+
     if strategy == "target_weak":
         _target_weak(delta)
         _update_skill_timer(delta)
