@@ -3071,6 +3071,25 @@ func _use_skill():
             var explosion_radius = 100.0
             var explosion_damage = 50.0
 
+            var elemental_effect = ""
+
+            # Check for elemental interactions with hazards
+            if world != null and world.has_method("get_arena"):
+                var arena = world.call("get_arena")
+                if arena != null and "hazards" in arena:
+                    for hazard in arena.hazards:
+                        if (hazard.kind == "lava" or hazard.kind == "poison_cloud") and hazard.active:
+                            var hx = hazard.x - self.ball.x
+                            var hy = hazard.y - self.ball.y
+                            var h_dist = sqrt(hx*hx + hy*hy)
+                            if h_dist <= explosion_radius + hazard.radius:
+                                explosion_radius = 200.0
+                                if hazard.kind == "lava":
+                                    elemental_effect = "fire_aura"
+                                elif hazard.kind == "poison_cloud":
+                                    elemental_effect = "poison_aura"
+                                break
+
             # Deal damage
             for e in enemies:
                 var dx = e.x - self.ball.x
@@ -3079,6 +3098,19 @@ func _use_skill():
                 if dist <= explosion_radius:
                     if e.has_method("take_damage"):
                         e.take_damage(explosion_damage)
+
+                        if elemental_effect == "fire_aura":
+                            if e.has_method("set_meta"):
+                                var current_burn = 0.0
+                                if e.has_meta("burn_timer"):
+                                    current_burn = e.get_meta("burn_timer")
+                                e.set_meta("burn_timer", current_burn + 5.0)
+                        elif elemental_effect == "poison_aura":
+                            if e.has_method("set_meta"):
+                                var current_poison = 0.0
+                                if e.has_meta("poison_timer"):
+                                    current_poison = e.get_meta("poison_timer")
+                                e.set_meta("poison_timer", current_poison + 5.0)
 
             # Break walls/corridors
             if world != null and world.has_method("get_arena"):

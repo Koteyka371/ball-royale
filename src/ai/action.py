@@ -1867,8 +1867,9 @@ class Action:
     def _use_skill(self) -> None:
         import math
         skill_timer = getattr(self.ball, "skill_timer", 0.0)
-        if skill_timer <= 0 and hasattr(self.ball, "use_skill"):
-            self.ball.use_skill()
+        if skill_timer <= 0 and (hasattr(self.ball, "use_skill") or getattr(self.ball, "active_skill", None) is not None):
+            if hasattr(self.ball, "use_skill"):
+                self.ball.use_skill()
 
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
@@ -1877,9 +1878,11 @@ class Action:
                             hazard.is_exploded = True
 
             skill_name = getattr(self.ball, "skill", getattr(self.ball, "SKILL", ""))
+            if hasattr(self.ball, "active_skill"):
+                skill_name = self.ball.active_skill
 
             # Synergy Logic
-            allies = [b for b in getattr(self.world, "balls", []) if b.id != self.ball.id and getattr(b, "team", "") == getattr(self.ball, "team", "") and getattr(b, "alive", True)]
+            allies = [b for b in getattr(self.world, "balls", []) if getattr(b, "id", None) != self.ball.id and getattr(b, "team", "") == getattr(self.ball, "team", "") and getattr(b, "alive", True)]
             synergy_multiplier = 1.0
 
             for ally in allies:
@@ -2074,15 +2077,40 @@ class Action:
                 explosion_radius = 100.0
                 explosion_damage = 50.0
 
+                elemental_effect = None
+
+                # Check for elemental interactions with hazards
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    for hazard in self.world.arena.hazards:
+                        if hasattr(hazard, "kind") and hazard.kind in ["lava", "poison_cloud"] and getattr(hazard, "active", True):
+                            hx = getattr(hazard, "x", 0) - getattr(self.ball, "x", 0)
+                            hy = getattr(hazard, "y", 0) - getattr(self.ball, "y", 0)
+                            h_dist = math.sqrt(hx*hx + hy*hy)
+                            # If explosion hits the hazard
+                            if h_dist <= explosion_radius + getattr(hazard, "radius", 0):
+                                # Trigger secondary explosion: larger radius, hazard-specific effect
+                                explosion_radius = 200.0
+                                # Add elemental debuff effect based on hazard kind
+                                if hazard.kind == "lava":
+                                    elemental_effect = "fire_aura"
+                                elif hazard.kind == "poison_cloud":
+                                    elemental_effect = "poison_aura"
+                                break
+
                 # Deal damage to enemies
                 if enemies:
                     for enemy in enemies:
-                        dx = enemy.x - self.ball.x
-                        dy = enemy.y - self.ball.y
+                        dx = getattr(enemy, "x", 0) - self.ball.x
+                        dy = getattr(enemy, "y", 0) - self.ball.y
                         dist = math.sqrt(dx*dx + dy*dy)
                         if dist <= explosion_radius:
                             if hasattr(enemy, "take_damage"):
                                 enemy.take_damage(explosion_damage)
+                                # Apply elemental effects if secondary explosion occurred
+                                if elemental_effect == "fire_aura":
+                                    enemy.burn_timer = getattr(enemy, "burn_timer", 0) + 5.0
+                                elif elemental_effect == "poison_aura":
+                                    enemy.poison_timer = getattr(enemy, "poison_timer", 0) + 5.0
 
                 # Break walls/corridors if arena supports it
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "rooms"):
