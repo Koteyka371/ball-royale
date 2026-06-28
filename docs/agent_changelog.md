@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-234] Chain Reaction Explosions — *2026-06-28 11:32:46 UTC*
+
+When an explosion hits a specific hazard like lava or poison cloud, it triggers a secondary elemental explosion spreading the effect over a larger area.
+
+---
+
 ## [idea-232] Blackout Protocol Event — *2026-06-28 11:27:48 UTC*
 
 Periodically during matches, the entire arena goes dark except for a small radius around each ball and objective. This forces close-quarters combat, increases the value of scout-type balls, and adds tension as players cannot see long-range threats.

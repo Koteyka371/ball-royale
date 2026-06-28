@@ -4089,7 +4089,7 @@
     },
     {
       "id": "idea-234",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chain Reaction Explosions",
@@ -5205,6 +5205,40 @@
         "src/ai/heavy_attacks.py",
         "src/ai/heavy_attacks.gd",
         "tests/test_heavy_attacks.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-300",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Night Vision Goggles Powerup",
+      "description": "A new collectible powerup that spawns during Battle Royale matches. When collected, the ball's base_perception_radius is greatly increased and it becomes immune to the vision reduction of dark phases, giving it a massive tactical advantage during the blackout.",
+      "allowed_paths": [
+        "src/ai/night_vision_goggles_powerup.py",
+        "src/ai/night_vision_goggles_powerup.gd",
+        "tests/test_night_vision_goggles_powerup.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-301",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Flare Gun Skill",
+      "description": "Add a new 'flare' active skill that certain ball types (like scout or a new 'spotter' class) can use during dark phases. The flare shoots to a target location and acts as a temporary light source, restoring vision in a large radius around it and revealing any hidden enemies in its area of effect for 5 seconds.",
+      "allowed_paths": [
+        "src/ai/flare_gun_skill.py",
+        "src/ai/flare_gun_skill.gd",
+        "tests/test_flare_gun_skill.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
