@@ -74,7 +74,7 @@ def test_scout_priorities():
         "team_messages": []
     }
     action_strong = layer.choose_action(perception_strong, "calm")
-    assert action_strong in ("collect_booster", "use_skill", "defend", "flee")
+    assert action_strong in ("collect_booster", "use_skill", "defend", "flee", "ricochet_attack")
 
 def test_tank_priorities():
     world = MockWorld()

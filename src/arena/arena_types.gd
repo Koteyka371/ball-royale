@@ -430,7 +430,30 @@ class BlackHoleArena extends ProceduralArena:
 		var h0 = ProceduralArena.Hazard.new(0, cx, cy, 200.0, "black_hole", 30.0)
 		hazards.append(h0)
 
+
+class DynamicWeatherArena extends ProceduralArena:
+    var is_foggy = false
+    var is_raining = false
+    var is_snowing = false
+    var weather_timer = 0.0
+    var phase_duration = 10.0
+    var current_weather = 0
+
+    func _init(size: float = 2000.0, seed_val = null):
+        super(size, 5, seed_val)
+
+    func update_zone(current_tick: int, delta: float) -> void:
+        super.update_zone(current_tick, delta)
+        weather_timer += delta
+        if weather_timer >= phase_duration:
+            weather_timer = 0.0
+            current_weather = (current_weather + 1) % 4
+            is_foggy = (current_weather == 1)
+            is_raining = (current_weather == 2)
+            is_snowing = (current_weather == 3)
+
 const ARENAS = [
+    "dynamic_weather",
 	"thick_fog",
 	"black_hole",
 	"neural_ball",

@@ -1,4 +1,4 @@
 {
-  "title": "Weather Synergies",
-  "description": "Certain ball types gain unique buffs during specific weather conditions. E.g., Fireball takes damage in rain, but Iceball moves faster in snow."
+  "title": "Tornado Hazard Event",
+  "description": "Introduce a random Tornado weather event that picks up balls and hazards in its path, spinning them around and throwing them in random directions after a few seconds, dealing falling damage."
 }

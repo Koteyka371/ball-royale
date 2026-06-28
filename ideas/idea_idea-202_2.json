@@ -1,4 +1,4 @@
 {
-  "title": "Global Weather Announcements",
-  "description": "Add UI notifications or commentary when weather changes, giving players time to adapt."
+  "title": "Lightning Rod Ball Type",
+  "description": "Add a new ball type called 'Lightning Rod' that thrives in thunderstorm weather. It absorbs lightning strikes without taking damage, converting the energy into a massive temporary speed and damage boost."
 }

@@ -1225,7 +1225,29 @@ class ThickFogArena(ProceduralArena):
             self.fog_timer = 0.0
             self.is_foggy = not self.is_foggy
 
+
+class DynamicWeatherArena(ProceduralArena):
+    def __init__(self, arena_size: float = 2000.0, seed: int | None = None):
+        super().__init__(arena_size, 5, seed)
+        self.is_foggy = False
+        self.is_raining = False
+        self.is_snowing = False
+        self.weather_timer = 0.0
+        self.phase_duration = 10.0
+        self.current_weather = 0
+
+    def update_zone(self, current_tick: int, delta: float):
+        super().update_zone(current_tick, delta)
+        self.weather_timer += delta
+        if self.weather_timer >= self.phase_duration:
+            self.weather_timer = 0.0
+            self.current_weather = (self.current_weather + 1) % 4
+            self.is_foggy = (self.current_weather == 1)
+            self.is_raining = (self.current_weather == 2)
+            self.is_snowing = (self.current_weather == 3)
+
 ARENAS = {
+    "dynamic_weather": DynamicWeatherArena,
     "thick_fog": ThickFogArena,
     "black_hole": BlackHoleArena,
     "neural_ball": NeuralBallArena,

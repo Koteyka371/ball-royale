@@ -134,8 +134,8 @@ func execute(strategy: String, delta: float):
         # But wait, self.ball is usually a custom class instance.
 
     if my_ball.has_method("has_meta") and my_ball.has_meta("_base_speed_set"):
-        if self.world != null and "arena" in self.world and "is_night" in self.world.arena:
-            if self.world.arena.is_night:
+        if self.world != null and "arena" in self.world:
+            if self.world.arena.get("is_night") == true:
                 if "speed" in my_ball:
                     my_ball.speed = my_ball.get_meta("base_speed") * 1.5
                 if "damage" in my_ball:
@@ -143,8 +143,15 @@ func execute(strategy: String, delta: float):
             else:
                 if "speed" in my_ball:
                     my_ball.speed = my_ball.get_meta("base_speed")
-                if "damage" in my_ball:
+                if "damage" in my_ball and "is_night" in self.world.arena:
                     my_ball.damage = my_ball.get_meta("base_damage") * 1.2
+                elif "damage" in my_ball:
+                    my_ball.damage = my_ball.get_meta("base_damage")
+
+            if self.world.arena.get("is_snowing") == true and "speed" in my_ball:
+                my_ball.speed *= 0.5
+            if self.world.arena.get("is_raining") == true and "speed" in my_ball:
+                my_ball.speed *= 0.8
         else:
             if "speed" in my_ball:
                 my_ball.speed = my_ball.get_meta("base_speed")

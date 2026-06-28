@@ -81,8 +81,7 @@ class Action:
                 # Slippery: apply momentum (friction slide)
                 self.ball.x += getattr(self.ball, "vx") * delta * 0.2
                 self.ball.y += getattr(self.ball, "vy") * delta * 0.2
-            if getattr(self.world.arena, "is_foggy", False):
-                pass # Fog has no friction effect, snow has speed change
+
 
         # Zero gravity processing (friction)
         gm = getattr(self.world, "game_mode", None)
@@ -108,13 +107,18 @@ class Action:
             self.ball.base_damage = getattr(self.ball, "damage", 10.0)
             self.ball._base_speed_set = True
 
-        if hasattr(self.world, "arena") and getattr(self.world.arena, "is_night", None) is not None:
-            if self.world.arena.is_night:
+        if hasattr(self.world, "arena"):
+            if getattr(self.world.arena, "is_night", False):
                 self.ball.speed = self.ball.base_speed * 1.5
                 self.ball.damage = self.ball.base_damage
             else:
                 self.ball.speed = self.ball.base_speed
-                self.ball.damage = self.ball.base_damage * 1.2
+                self.ball.damage = getattr(self.ball, "base_damage", getattr(self.ball, "damage", 10.0)) * 1.2 if getattr(self.world.arena, "is_night", None) is not None else getattr(self.ball, "base_damage", getattr(self.ball, "damage", 10.0))
+
+            if getattr(self.world.arena, "is_snowing", False):
+                self.ball.speed = self.ball.speed * 0.5
+            if getattr(self.world.arena, "is_raining", False):
+                self.ball.speed = self.ball.speed * 0.8
         else:
             self.ball.speed = self.ball.base_speed
 
