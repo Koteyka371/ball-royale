@@ -449,7 +449,83 @@ class BlackHoleMode(GameMode):
 
         return None
 
+
+class ZoneControlMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Zone Control"
+        self.description = "Teams score points by maintaining position within a central moving zone."
+        self.tick_timer = 0.0
+        self.zone_x = 500.0
+        self.zone_y = 500.0
+        self.zone_radius = 150.0
+        self.zone_vx = 60.0
+        self.zone_vy = 40.0
+        self.teams_scores = {}
+
+    def setup(self, world, balls):
+        arena_width = getattr(getattr(world, "arena", None), "width", 1000)
+        arena_height = getattr(getattr(world, "arena", None), "height", 1000)
+        self.zone_x = arena_width / 2.0
+        self.zone_y = arena_height / 2.0
+        self.teams_scores = {}
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator":
+                team = getattr(b, "team", b.ball_type)
+                self.teams_scores[team] = 0
+                b.score = 0
+
+    def tick(self, world, balls, delta=0.016):
+        arena_width = getattr(getattr(world, "arena", None), "width", 1000)
+        arena_height = getattr(getattr(world, "arena", None), "height", 1000)
+
+        self.zone_x += self.zone_vx * delta
+        self.zone_y += self.zone_vy * delta
+
+        if self.zone_x - self.zone_radius < 0:
+            self.zone_x = self.zone_radius
+            self.zone_vx *= -1
+        elif self.zone_x + self.zone_radius > arena_width:
+            self.zone_x = arena_width - self.zone_radius
+            self.zone_vx *= -1
+
+        if self.zone_y - self.zone_radius < 0:
+            self.zone_y = self.zone_radius
+            self.zone_vy *= -1
+        elif self.zone_y + self.zone_radius > arena_height:
+            self.zone_y = arena_height - self.zone_radius
+            self.zone_vy *= -1
+
+        self.tick_timer += delta
+        if self.tick_timer >= 0.5:
+            self.tick_timer = 0.0
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                    dx = b.x - self.zone_x
+                    dy = b.y - self.zone_y
+                    dist_sq = dx*dx + dy*dy
+                    if dist_sq <= self.zone_radius**2:
+                        team = getattr(b, "team", b.ball_type)
+                        if team not in self.teams_scores:
+                            self.teams_scores[team] = 0
+                        self.teams_scores[team] += 1
+                        b.score = getattr(b, "score", 0) + 1
+
+    def check_winner(self, world, balls):
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+
+        for team, score in self.teams_scores.items():
+            if score >= 100:
+                if hasattr(self, '_award_skill_points'):
+                    self._award_skill_points()
+                return team
+
+        return None
+
 GAME_MODES = {
+    "zone_control": ZoneControlMode(),
     "black_hole": BlackHoleMode(),
     "king_of_the_hill": KingOfTheHillMode(),
     "vampire_royale": VampireRoyaleMode(),

@@ -563,7 +563,105 @@ class BlackHoleMode extends GameMode:
 
         return null
 
+
+class ZoneControlMode extends GameMode:
+    var tick_timer = 0.0
+    var zone_x = 500.0
+    var zone_y = 500.0
+    var zone_radius = 150.0
+    var zone_vx = 60.0
+    var zone_vy = 40.0
+    var teams_scores = {}
+
+    func _init() -> void:
+        name = "Zone Control"
+        description = "Teams score points by maintaining position within a central moving zone."
+
+    func setup(world, balls: Array) -> void:
+        var arena_width = 1000
+        var arena_height = 1000
+        if world != null and "arena" in world and world.arena != null:
+            if "width" in world.arena:
+                arena_width = world.arena.width
+            if "height" in world.arena:
+                arena_height = world.arena.height
+
+        zone_x = arena_width / 2.0
+        zone_y = arena_height / 2.0
+        teams_scores.clear()
+
+        for b in balls:
+            if b.ball_type != "spectator":
+                var team = b.ball_type
+                if "team" in b:
+                    team = b.team
+                teams_scores[team] = 0
+                b.set_meta("score", 0)
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        var arena_width = 1000
+        var arena_height = 1000
+        if world != null and "arena" in world and world.arena != null:
+            if "width" in world.arena:
+                arena_width = world.arena.width
+            if "height" in world.arena:
+                arena_height = world.arena.height
+
+        zone_x += zone_vx * delta
+        zone_y += zone_vy * delta
+
+        if zone_x - zone_radius < 0:
+            zone_x = zone_radius
+            zone_vx *= -1
+        elif zone_x + zone_radius > arena_width:
+            zone_x = arena_width - zone_radius
+            zone_vx *= -1
+
+        if zone_y - zone_radius < 0:
+            zone_y = zone_radius
+            zone_vy *= -1
+        elif zone_y + zone_radius > arena_height:
+            zone_y = arena_height - zone_radius
+            zone_vy *= -1
+
+        tick_timer += delta
+        if tick_timer >= 0.5:
+            tick_timer = 0.0
+            for b in balls:
+                if b.alive and b.ball_type != "spectator":
+                    var dx = b.x - zone_x
+                    var dy = b.y - zone_y
+                    var dist_sq = dx * dx + dy * dy
+                    if dist_sq <= zone_radius * zone_radius:
+                        var team = b.ball_type
+                        if "team" in b:
+                            team = b.team
+                        if not teams_scores.has(team):
+                            teams_scores[team] = 0
+                        teams_scores[team] += 1
+
+                        var s = 0
+                        if b.has_meta("score"):
+                            s = b.get_meta("score")
+                        b.set_meta("score", s + 1)
+
+    func check_winner(world, balls: Array):
+        var alive = []
+        for b in balls:
+            if b.alive and b.ball_type != "spectator":
+                alive.append(b)
+
+        if alive.size() == 0:
+            return "Draw"
+
+        for team in teams_scores.keys():
+            if teams_scores[team] >= 100:
+                return team
+
+        return null
+
 var GAME_MODES = {
+    "zone_control": ZoneControlMode.new(),
     "black_hole": BlackHoleMode.new(),
     "king_of_the_hill": KingOfTheHillMode.new(),
     "vampire_royale": VampireRoyaleMode.new(),

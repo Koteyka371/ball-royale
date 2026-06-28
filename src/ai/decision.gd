@@ -91,6 +91,7 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     var weights = _get_weights()
 
     var scores = {
+        "hold_zone": 0.0,
         "flee": 0.0,
         "defend": 0.0,
         "collect_booster": 0.0,
@@ -331,7 +332,20 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
             if k != "idle":
                 scores[k] = -1000.0
 
+
+    var mode_name = ""
+    if self.world != null and "game_mode" in self.world and self.world.game_mode != null:
+        if "name" in self.world.game_mode:
+            mode_name = self.world.game_mode.name
+
+    if mode_name == "Zone Control":
+        scores["hold_zone"] += 3000.0
+        scores["attack"] -= 500.0
+        scores["chase"] -= 500.0
+        scores["defend"] -= 500.0
+
     var best_action = "idle"
+
     var best_score = -9999.0
 
     var difficulty = "medium"
@@ -360,7 +374,7 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
             else:
                 best_score = 0.0
     else:
-        var action_order = ["intercept", "escort", "flee", "defend", "collect_booster", "attack", "target_weak", "chase", "use_skill", "kite", "flank", "group_attack", "hide_behind", "idle"]
+        var action_order = ["hold_zone", "intercept", "escort", "flee", "defend", "collect_booster", "attack", "target_weak", "chase", "use_skill", "kite", "flank", "group_attack", "hide_behind", "idle"]
         var possible_actions = []
         for k in scores.keys():
             if float(scores[k]) > -500.0:

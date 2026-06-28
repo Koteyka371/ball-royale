@@ -323,6 +323,8 @@ func execute(strategy: String, delta: float):
         _hide_behind(delta)
     elif strategy == "group_attack":
         _group_attack(delta)
+    elif strategy == "hold_zone":
+        _hold_zone(delta)
     elif strategy == "defend":
         _defend(delta)
     elif strategy == "opportunistic" or strategy == "collect booster":
@@ -1818,7 +1820,37 @@ func _attack(delta: float):
     else:
         _idle(delta)
 
+
+func _hold_zone(delta: float):
+    var mode = null
+    if self.world != null and "game_mode" in self.world:
+        mode = self.world.game_mode
+
+    if mode != null and "name" in mode and mode.name == "Zone Control":
+        var zx = self.ball.x
+        var zy = self.ball.y
+        var z_radius = 150.0
+
+        if "zone_x" in mode:
+            zx = mode.zone_x
+        if "zone_y" in mode:
+            zy = mode.zone_y
+        if "zone_radius" in mode:
+            z_radius = mode.zone_radius
+
+        var dx = zx - self.ball.x
+        var dy = zy - self.ball.y
+        var dist = sqrt(dx*dx + dy*dy)
+
+        if dist > z_radius * 0.4:
+            _move_towards(zx, zy, delta)
+        else:
+            _defend(delta)
+    else:
+        _defend(delta)
+
 func _defend(delta: float):
+
     var personality = "idle"
     if "personality" in self.ball:
         personality = self.ball.personality

@@ -225,6 +225,8 @@ class Action:
             self._hide_behind(delta)
         elif strategy == "group_attack":
             self._group_attack(delta)
+        elif strategy == "hold_zone":
+            self._hold_zone(delta)
         elif strategy == "defend":
             self._defend(delta)
         elif strategy in ("opportunistic", "collect_booster", "collect booster"):
@@ -1156,7 +1158,28 @@ class Action:
         else:
             self._idle(delta)
 
+
+    def _hold_zone(self, delta: float) -> None:
+        import math
+        mode = getattr(self.world, "game_mode", None)
+        if mode and getattr(mode, "name", "") == "Zone Control":
+            zx = getattr(mode, "zone_x", self.ball.x)
+            zy = getattr(mode, "zone_y", self.ball.y)
+            z_radius = getattr(mode, "zone_radius", 150)
+
+            dx = zx - self.ball.x
+            dy = zy - self.ball.y
+            dist = math.sqrt(dx*dx + dy*dy)
+
+            if dist > z_radius * 0.4:
+                self._move_towards(zx, zy, delta)
+            else:
+                self._defend(delta)
+        else:
+            self._defend(delta)
+
     def _defend(self, delta: float) -> None:
+
         personality = getattr(self.ball, "personality", "idle")
         if personality in ("tank", "defender", "guardian", "juggernaut"):
             enemies = self._get_enemies()

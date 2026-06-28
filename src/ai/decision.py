@@ -105,6 +105,7 @@ class Decision:
         weights = self.__class__.get_weights()
 
         scores = {
+            "hold_zone": 0.0,
             "flee": 0.0,
             "defend": 0.0,
             "collect_booster": 0.0,
@@ -118,7 +119,8 @@ class Decision:
             "hide_behind": 0.0,
             "idle": 0.0,
             "escort": 0.0,
-            "intercept": 0.0
+            "intercept": 0.0,
+            "hold_zone": 0.0
         }
 
         # Calculate scores using dot product
@@ -310,7 +312,16 @@ class Decision:
                 if k != "idle":
                     scores[k] = -1000.0
 
+
+        mode_name = getattr(getattr(self.world, "game_mode", None), "name", "")
+        if mode_name == "Zone Control":
+            scores["hold_zone"] += 3000.0
+            scores["attack"] -= 500.0
+            scores["chase"] -= 500.0
+            scores["defend"] -= 500.0
+
         difficulty = getattr(self.ball, "difficulty", "medium").lower()
+
 
         if difficulty == "chaos":
             if skill_timer <= 0.0 and random.random() < 0.8:
@@ -321,7 +332,7 @@ class Decision:
                 best_action = random.choice(possible) if possible else "idle"
                 best_score = scores.get(best_action, 0.0)
         else:
-            action_order = ["intercept", "escort", "flee", "defend", "collect_booster", "attack", "target_weak", "chase", "use_skill", "kite", "flank", "group_attack", "hide_behind", "idle"]
+            action_order = ["hold_zone", "intercept", "escort", "flee", "defend", "collect_booster", "attack", "target_weak", "chase", "use_skill", "kite", "flank", "group_attack", "hide_behind", "idle"]
             valid_actions = [k for k in scores.keys() if scores[k] > -500.0]
             sorted_actions = sorted(valid_actions, key=lambda k: (scores[k], -action_order.index(k) if k in action_order else 0), reverse=True)
             if not sorted_actions:
