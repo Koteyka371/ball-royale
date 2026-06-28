@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-183] Teleporter hazards — *2026-06-28 08:13:04 UTC*
+
+Add a new hazard kind 'teleporter' that when a ball steps on it, they are instantly transported to another random teleporter on the map or a random safe location, potentially dodging an attack or losing their target.
+
+---
+
 ## [idea-200] Prestige Mutators — *2026-06-28 08:04:50 UTC*
 
 After hitting Prestige Level 5, players unlock 'Mutator Options' for their custom matches, allowing them to apply fun physics changes (like zero gravity or explosive collisions) in private games.
