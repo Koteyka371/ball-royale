@@ -1003,7 +1003,93 @@ class ReverseEventMode extends GameMode:
 					b.x -= vx * delta * 2 # Reverse the velocity applied in action.gd
 					b.y -= vy * delta * 2
 
+
+class MemoryTrapsMode extends GameMode:
+	var traps = []
+
+	func _init() -> void:
+		name = "Memory Traps"
+		description = "The arena is littered with invisible traps. Memorize their locations!"
+
+	func setup(world, balls: Array) -> void:
+		if not "dead_balls" in world:
+			world.dead_balls = []
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world != null and "arena" in world and world.arena != null:
+			if "width" in world.arena: arena_width = float(world.arena.width)
+			if "height" in world.arena: arena_height = float(world.arena.height)
+
+		traps.clear()
+		for i in range(50):
+			var x = randf() * (arena_width - 100.0) + 50.0
+			var y = randf() * (arena_height - 100.0) + 50.0
+			traps.append({"x": x, "y": y, "radius": 40.0, "cooldowns": {}})
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if not "dead_balls" in world:
+			world.dead_balls = []
+		for b in balls:
+			if not b.alive:
+				if not world.dead_balls.has(b):
+					if b.has_method("set_meta"):
+						b.set_meta("time_since_death", 0.0)
+					world.dead_balls.append(b)
+				else:
+					if b.has_method("get_meta") and b.has_meta("time_since_death"):
+						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+
+			if not b.alive or b.ball_type == "spectator":
+				continue
+
+			var b_id = str(b.get_instance_id()) if b.has_method("get_instance_id") else str(b)
+
+			for trap in traps:
+				if trap.cooldowns.has(b_id):
+					trap.cooldowns[b_id] -= delta
+					if trap.cooldowns[b_id] <= 0:
+						trap.cooldowns.erase(b_id)
+
+				if not trap.cooldowns.has(b_id):
+					var dx = b.x - trap.x
+					var dy = b.y - trap.y
+					var dist_sq = dx*dx + dy*dy
+					if dist_sq < trap.radius * trap.radius:
+						if "hp" in b:
+							b.hp -= 20.0
+							trap.cooldowns[b_id] = 1.0
+							if b.hp <= 0:
+								b.alive = false
+
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.alive and b.ball_type != "spectator":
+				alive.append(b)
+
+		if alive.size() == 0:
+			if has_method("_award_skill_points"): call("_award_skill_points")
+			return "Draw"
+
+		var teams_alive = {}
+		for b in alive:
+			var t = b.get("team")
+			if t == null: t = b.ball_type
+			teams_alive[t] = true
+
+		if teams_alive.size() == 1:
+			if has_method("_award_skill_points"): call("_award_skill_points")
+			return teams_alive.keys()[0]
+
+		if alive.size() == 1:
+			if has_method("_award_skill_points"): call("_award_skill_points")
+			return alive[0].ball_type
+
+		return null
+
 class CustomMatchMode extends GameMode:
+
 	var mutators = []
 	var mutators_active = false
 
@@ -1052,6 +1138,7 @@ class CustomMatchMode extends GameMode:
 
 
 var GAME_MODES = {
+	"memory_traps": MemoryTrapsMode.new(),
 	"custom_match": CustomMatchMode.new(),
 	"reverse_event": ReverseEventMode.new(),
     "weather_chaos": WeatherChaosMode.new(),
