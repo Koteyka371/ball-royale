@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-151] Fog of War Weather Event — *2026-06-28 06:21:53 UTC*
+
+Periodically, the arena could fill with a thick fog that severely reduces the perception radius of all balls for 15-20 seconds. This would force balls into more close-range surprise encounters and make abilities like the ninja's stealth even more effective.
+
+---
+
 ## [idea-167] Dynamic Kite Pathfinding — *2026-06-28 06:21:48 UTC*
 
 Improve kiting logic to not just run directly backward but find a path that avoids getting cornered by moving sideways or toward open spaces in the arena.
