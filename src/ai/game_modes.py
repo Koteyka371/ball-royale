@@ -343,7 +343,7 @@ class KingOfTheHillMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "King of the Hill"
-        self.description = "Stay in the center area to earn points. First to 100 points wins."
+        self.description = "Control three separate zones scattered across the arena. First to 100 points wins."
         self.tick_timer = 0.0
 
     def setup(self, world: Any, balls: List[Any]) -> None:
@@ -356,21 +356,30 @@ class KingOfTheHillMode(GameMode):
         if self.tick_timer >= 0.5:
             self.tick_timer = 0.0
 
-            # Find the center of the arena
+            # Find the arena dimensions
             arena_width = 1000
             arena_height = 1000
             if hasattr(world, "arena") and world.arena:
                 arena_width = getattr(world.arena, "width", 1000)
                 arena_height = getattr(world.arena, "height", 1000)
 
-            center_x = arena_width / 2
-            center_y = arena_height / 2
-            zone_radius = min(arena_width, arena_height) * 0.2
+            # Three separate zones
+            zones = [
+                (arena_width * 0.25, arena_height * 0.25),
+                (arena_width * 0.75, arena_height * 0.25),
+                (arena_width * 0.5, arena_height * 0.75)
+            ]
+            zone_radius = min(arena_width, arena_height) * 0.15
 
             for b in balls:
                 if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
-                    dist_sq = (b.x - center_x) ** 2 + (b.y - center_y) ** 2
-                    if dist_sq <= zone_radius ** 2:
+                    in_zone = False
+                    for zx, zy in zones:
+                        dist_sq = (b.x - zx) ** 2 + (b.y - zy) ** 2
+                        if dist_sq <= zone_radius ** 2:
+                            in_zone = True
+                            break
+                    if in_zone:
                         b.score = getattr(b, "score", 0) + 1
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
