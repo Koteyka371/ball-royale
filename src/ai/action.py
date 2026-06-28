@@ -84,6 +84,7 @@ class Action:
             if ball_type != "spectator":
                 cx, cy = getattr(self.world.arena, "safe_zone_center", (0, 0))
                 radius = getattr(self.world.arena, "safe_zone_radius", float('inf'))
+                import math
                 dist = math.sqrt((self.ball.x - cx)**2 + (self.ball.y - cy)**2)
                 if dist > radius:
                     zone_damage = 10.0 * delta
@@ -207,6 +208,34 @@ class Action:
                                     self.ball.x = (self.ball.x + old_x) / 2.0
                                     self.ball.y = (self.ball.y + old_y) / 2.0
                             continue
+
+                        elif hazard.kind == "meteor":
+                            hazard_damage = hazard.damage * delta
+                            if hasattr(self.ball, "take_damage"):
+                                self.ball.take_damage(hazard_damage)
+                            elif hasattr(self.ball, "hp"):
+                                self.ball.hp -= hazard_damage
+                                if self.ball.hp <= 0:
+                                    self.ball.alive = False
+                            continue
+                        elif hazard.kind == "laser_wall":
+                            # Special effect: laser wall burns and pushes
+                            hazard_damage = hazard.damage * delta
+                            if hasattr(self.ball, "take_damage"):
+                                self.ball.take_damage(hazard_damage)
+                            elif hasattr(self.ball, "hp"):
+                                self.ball.hp -= hazard_damage
+                                if self.ball.hp <= 0:
+                                    self.ball.alive = False
+
+                            import math
+                            dx = self.ball.x - hazard.x
+                            dy = self.ball.y - hazard.y
+                            dist = math.sqrt(dx*dx + dy*dy)
+                            if dist > 0.0001:
+                                self.ball.x += (dx/dist) * 200.0 * delta
+                                self.ball.y += (dy/dist) * 200.0 * delta
+                            continue
                         elif hazard.kind == "poison_cloud":
                             self.ball.dot_duration = 3.0
                             self.ball.dot_damage_per_tick = hazard.damage
@@ -303,6 +332,7 @@ class Action:
             self.ball.vy = dy / delta
 
             if hasattr(self.ball, "distance_traveled"):
+                import math
                 self.ball.distance_traveled += math.sqrt(dx*dx + dy*dy)
 
 
