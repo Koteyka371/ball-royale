@@ -5516,6 +5516,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-318",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aura Stacking Buffs",
+      "description": "Balls emit a small aura based on their ball type. When multiple friendly balls of different types are close to each other, their auras stack, granting passive buffs (like increased health regen, damage reduction, or speed) to all balls within the combined radius. This encourages tighter group formations and diverse team compositions.",
+      "allowed_paths": [
+        "src/ai/aura_stacking_buffs.py",
+        "src/ai/aura_stacking_buffs.gd",
+        "tests/test_aura_stacking_buffs.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
