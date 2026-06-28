@@ -194,8 +194,37 @@ func execute(strategy: String, delta: float):
                 if dist < (self.ball.radius + hazard.radius):
                     if hazard.kind == "trap":
                         if ball_type != "sniper":
-                            self.ball.x = (self.ball.x + old_x) / 2.0
-                            self.ball.y = (self.ball.y + old_y) / 2.0
+                            var trap_variant = "normal"
+                            if hazard.has_meta("trap_variant"):
+                                trap_variant = hazard.get_meta("trap_variant")
+
+                            if trap_variant == "poison":
+                                var poison_damage = 5.0 * delta
+                                if self.ball.has_method("take_damage"):
+                                    self.ball.take_damage(poison_damage)
+                                elif "hp" in self.ball:
+                                    self.ball.hp -= poison_damage
+                                    if self.ball.hp <= 0:
+                                        self.ball.alive = false
+                            elif trap_variant == "stun":
+                                var is_stunned = false
+                                if "is_stunned" in self.ball:
+                                    is_stunned = self.ball.is_stunned
+                                elif self.ball.has_method("get_meta") and self.ball.has_meta("is_stunned"):
+                                    is_stunned = self.ball.get_meta("is_stunned")
+
+                                if not is_stunned:
+                                    if "is_stunned" in self.ball:
+                                        self.ball.is_stunned = true
+                                        self.ball.stun_timer = 1.0
+                                    elif self.ball.has_method("set_meta"):
+                                        self.ball.set_meta("is_stunned", true)
+                                        self.ball.set_meta("stun_timer", 1.0)
+                                self.ball.x = old_x
+                                self.ball.y = old_y
+                            else:
+                                self.ball.x = (self.ball.x + old_x) / 2.0
+                                self.ball.y = (self.ball.y + old_y) / 2.0
                         continue
 
                     var hazard_damage = hazard.damage * delta
@@ -228,6 +257,30 @@ func execute(strategy: String, delta: float):
             self.ball.set_meta("team_message", {"type": "wounded_call", "x": self.ball.x, "y": self.ball.y})
         elif strategy == "defend" and personality == "tank":
             self.ball.set_meta("team_message", {"type": "hold_position", "x": self.ball.x, "y": self.ball.y})
+
+    var stun_timer = 0.0
+    var is_stunned = false
+    if "is_stunned" in self.ball:
+        is_stunned = self.ball.is_stunned
+        if is_stunned:
+            stun_timer = self.ball.stun_timer
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("is_stunned"):
+        is_stunned = self.ball.get_meta("is_stunned")
+        if is_stunned:
+            stun_timer = self.ball.get_meta("stun_timer")
+
+    if is_stunned:
+        if stun_timer > 0.0:
+            if "stun_timer" in self.ball:
+                self.ball.stun_timer -= delta
+            elif self.ball.has_method("set_meta"):
+                self.ball.set_meta("stun_timer", stun_timer - delta)
+            return
+        else:
+            if "is_stunned" in self.ball:
+                self.ball.is_stunned = false
+            elif self.ball.has_method("set_meta"):
+                self.ball.set_meta("is_stunned", false)
 
     if strategy == "flee":
         _flee(delta)
@@ -2179,6 +2232,11 @@ func _use_skill():
                 trap.kind = "trap"
                 trap.damage = 0.0
                 trap.set_meta("duration", 5.0)
+
+                var lobby = PreGameLobby.get_instance()
+                var trap_variant = lobby.get_trap_variant(self.ball.id)
+                trap.set_meta("trap_variant", trap_variant)
+
                 self.world.arena.hazards.append(trap)
         elif skill_name == "target_strong":
             var enemies = _get_enemies()
@@ -2580,6 +2638,11 @@ func _kite(delta: float):
                             trap.kind = "trap"
                             trap.damage = 0.0
                             trap.set_meta("duration", 3.0)
+
+                            var lobby = PreGameLobby.get_instance()
+                            var trap_variant = lobby.get_trap_variant(self.ball.id)
+                            trap.set_meta("trap_variant", trap_variant)
+
                             self.world.arena.hazards.append(trap)
 
                             if "kite_trap_timer" in self.ball:
