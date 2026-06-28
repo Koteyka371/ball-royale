@@ -2795,7 +2795,7 @@
     },
     {
       "id": "idea-160",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather Events",
@@ -4762,6 +4762,40 @@
         "src/arena/weaponized_hazards.py",
         "src/arena/weaponized_hazards.gd",
         "tests/test_weaponized_hazards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-274",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Time Stop Skill",
+      "description": "A rare ultimate skill that freezes all other balls and dynamic hazards for 2 seconds, allowing the user to reposition or secure critical hits without retaliation.",
+      "allowed_paths": [
+        "src/ai/time_stop_skill.py",
+        "src/ai/time_stop_skill.gd",
+        "tests/test_time_stop_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-275",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Magnetize Powerup",
+      "description": "A new powerup that temporarily draws nearby smaller hazards or other powerups towards the player, making it easier to gather resources but also increasing the risk of pulling in dangerous objects.",
+      "allowed_paths": [
+        "src/ai/magnetize_powerup.py",
+        "src/ai/magnetize_powerup.gd",
+        "tests/test_magnetize_powerup.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-160] Weather Events — *2026-06-28 10:03:09 UTC*
+
+Introduce random weather events (e.g. rain, snow, sandstorm) that dynamically affect arena hazards and ball visibility, forcing AI to adapt on the fly.
+
+---
+
 ## [idea-163] Healing Springs — *2026-06-28 09:47:49 UTC*
 
 Add a new dynamic area called HealingSprings which works opposite to hazards: if a ball stays in this area, they slowly regenerate HP.
