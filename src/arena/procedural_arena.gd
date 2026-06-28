@@ -23,6 +23,8 @@ class Hazard:
     var kind: String
     var damage: float
     var active: bool
+    var target_x: float = 0.0
+    var target_y: float = 0.0
 
     func _init(_id: int, _x: float, _y: float, _radius: float, _kind: String, _damage: float):
         id = _id

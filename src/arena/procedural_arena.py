@@ -26,6 +26,8 @@ class Hazard:
     kind: str
     damage: float
     active: bool = True
+    target_x: float = 0.0
+    target_y: float = 0.0
 
 
 class ProceduralArena:
@@ -115,6 +117,30 @@ class ProceduralArena:
 
         # Generate hazards
         num_hazards = self.num_rooms * 2
+
+        # Add portals
+        if self.num_rooms >= 2:
+            portal_count = random.randint(1, 3)
+            for p in range(portal_count):
+                r1 = random.choice(self.rooms)
+                r2 = random.choice(self.rooms)
+                while r1 == r2:
+                    r2 = random.choice(self.rooms)
+
+                hx1 = random.uniform(r1.x + 30, r1.x + r1.width - 30)
+                hy1 = random.uniform(r1.y + 30, r1.y + r1.height - 30)
+                hx2 = random.uniform(r2.x + 30, r2.x + r2.width - 30)
+                hy2 = random.uniform(r2.y + 30, r2.y + r2.height - 30)
+
+                h1 = Hazard(id=len(self.hazards) + 10000 + p*2, x=hx1, y=hy1, radius=25.0, kind="portal", damage=0.0)
+                h1.target_x = hx2
+                h1.target_y = hy2
+                self.hazards.append(h1)
+
+                h2 = Hazard(id=len(self.hazards) + 10000 + p*2 + 1, x=hx2, y=hy2, radius=25.0, kind="portal", damage=0.0)
+                h2.target_x = hx1
+                h2.target_y = hy1
+                self.hazards.append(h2)
         for i in range(num_hazards):
             kind = random.choice(["spikes", "lava", "fake_booster", "poison_cloud", "proximity_trap"])
             if kind == "spikes":
