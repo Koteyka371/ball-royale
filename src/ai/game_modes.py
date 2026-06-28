@@ -33,7 +33,9 @@ class BattleRoyaleMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Battle Royale"
-        self.description = "Last man standing. Everyone for themselves."
+        self.description = "Last man standing. Everyone for themselves. Includes periodic dark phases."
+        self.dark_phase_timer = 0.0
+        self.is_dark_phase = False
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         if not hasattr(world, "dead_balls"):
@@ -45,6 +47,42 @@ class BattleRoyaleMode(GameMode):
                 b.alive = False
             else:
                 b.team = b.ball_type # Default behavior
+                b.base_perception_radius = getattr(b, "perception_radius", 250.0)
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+
+        self.dark_phase_timer += delta
+
+        # Dark phase cycle: 20s normal, 10s dark
+        if not self.is_dark_phase and self.dark_phase_timer >= 20.0:
+            self.is_dark_phase = True
+            self.dark_phase_timer = 0.0
+
+            # Apply dark phase
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                    b.base_perception_radius = getattr(b, "perception_radius", 250.0)
+                    if b.ball_type == "scout":
+                        b.perception_radius = 120.0
+                    else:
+                        b.perception_radius = 60.0
+        elif self.is_dark_phase and self.dark_phase_timer >= 10.0:
+            self.is_dark_phase = False
+            self.dark_phase_timer = 0.0
+
+            # Restore normal phase
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                    b.perception_radius = getattr(b, "base_perception_radius", 250.0)
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]

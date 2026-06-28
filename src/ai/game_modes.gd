@@ -31,9 +31,12 @@ class GameMode:
         return null
 
 class BattleRoyaleMode extends GameMode:
+    var dark_phase_timer: float = 0.0
+    var is_dark_phase: bool = false
+
     func _init() -> void:
         name = "Battle Royale"
-        description = "Last man standing. Everyone for themselves."
+        description = "Last man standing. Everyone for themselves. Includes periodic dark phases."
 
     func setup(world, balls: Array) -> void:
         if not "dead_balls" in world:
@@ -50,6 +53,56 @@ class BattleRoyaleMode extends GameMode:
                 b.alive = false
             else:
                 b.team = b.ball_type
+                var base_perc = 250.0
+                if "perception_radius" in b:
+                    base_perc = float(b.perception_radius)
+                if b.has_method("set_meta"):
+                    b.set_meta("base_perception_radius", base_perc)
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        if not "dead_balls" in world:
+            world.dead_balls = []
+        for b in balls:
+            if not b.alive:
+                if not world.dead_balls.has(b):
+                    if b.has_method("set_meta"):
+                        b.set_meta("time_since_death", 0.0)
+                    world.dead_balls.append(b)
+                else:
+                    if b.has_method("get_meta") and b.has_meta("time_since_death"):
+                        b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+
+        dark_phase_timer += delta
+
+        # Dark phase cycle: 20s normal, 10s dark
+        if not is_dark_phase and dark_phase_timer >= 20.0:
+            is_dark_phase = true
+            dark_phase_timer = 0.0
+
+            # Apply dark phase
+            for b in balls:
+                if b.alive and b.ball_type != "spectator":
+                    var current_perc = 250.0
+                    if "perception_radius" in b:
+                        current_perc = float(b.perception_radius)
+                    if b.has_method("set_meta"):
+                        b.set_meta("base_perception_radius", current_perc)
+
+                    if b.ball_type == "scout":
+                        b.perception_radius = 120.0
+                    else:
+                        b.perception_radius = 60.0
+        elif is_dark_phase and dark_phase_timer >= 10.0:
+            is_dark_phase = false
+            dark_phase_timer = 0.0
+
+            # Restore normal phase
+            for b in balls:
+                if b.alive and b.ball_type != "spectator":
+                    var base_perc = 250.0
+                    if b.has_method("get_meta") and b.has_meta("base_perception_radius"):
+                        base_perc = b.get_meta("base_perception_radius")
+                    b.perception_radius = base_perc
 
     func check_winner(world, balls: Array):
         var alive = []
