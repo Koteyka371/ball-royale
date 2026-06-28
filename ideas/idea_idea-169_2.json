@@ -1,0 +1,4 @@
+{
+  "title": "Weather effects on perception",
+  "description": "Introduce dynamic weather (e.g., rain, sandstorm) that periodically changes perception rules globally during a match, such as reducing perception range or slowly damaging fast-moving entities."
+}
