@@ -2308,6 +2308,43 @@ func _use_skill():
                 self.ball.x += cos(angle) * 100.0
                 self.ball.y += sin(angle) * 100.0
 
+        elif skill_name == "elemental_burst":
+            var enemies = self._get_enemies()
+            var allies = []
+            if "balls" in self.world:
+                for b in self.world.balls:
+                    var is_alive = true
+                    if "alive" in b:
+                        is_alive = b.alive
+                    elif b.has_method("has_meta") and b.has_meta("alive"):
+                        is_alive = b.get_meta("alive")
+                    var b_id = -1
+                    if "id" in b:
+                        b_id = b.id
+                    var b_type = ""
+                    if "BALL_TYPE" in b:
+                        b_type = b.BALL_TYPE
+                    elif b.has_method("has_meta") and b.has_meta("BALL_TYPE"):
+                        b_type = b.get_meta("BALL_TYPE")
+                    if is_alive and b_id != self.ball.id and b_type == "elementalist":
+                        allies.append(b)
+
+            var chain_bonus = 1.0
+            for ally in allies:
+                var dx = ally.x - self.ball.x
+                var dy = ally.y - self.ball.y
+                if sqrt(dx*dx + dy*dy) < 150.0:
+                    chain_bonus += 0.5
+
+            var burst_radius = 80.0 * chain_bonus
+            var base_burst_dmg = 20.0 * chain_bonus
+
+            for enemy in enemies:
+                var dx = enemy.x - self.ball.x
+                var dy = enemy.y - self.ball.y
+                if sqrt(dx*dx + dy*dy) <= burst_radius:
+                    if enemy.has_method("take_damage"):
+                        enemy.take_damage(base_burst_dmg)
         elif skill_name == "snipe":
             if "arena" in self.world and "hazards" in self.world.arena:
                 var trap_id = self.world.arena.hazards.size() + randi() % 10000
