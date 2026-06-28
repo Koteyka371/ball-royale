@@ -2958,7 +2958,7 @@
     },
     {
       "id": "idea-169",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Smoke Screen Traps",
@@ -4115,6 +4115,40 @@
         "src/arena/destructible_hazards.py",
         "src/arena/destructible_hazards.gd",
         "tests/test_destructible_hazards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-236",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Mine Trap",
+      "description": "A new trap type that, when triggered, creates a small black hole that pulls nearby balls towards it for a short duration.",
+      "allowed_paths": [
+        "src/arena/gravity_mine_trap.py",
+        "src/arena/gravity_mine_trap.gd",
+        "tests/test_gravity_mine_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-237",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Lightning Skill",
+      "description": "A new skill that strikes an enemy with lightning which then arcs to up to 3 nearby enemies, dealing reduced damage on each bounce.",
+      "allowed_paths": [
+        "src/ai/chain_lightning_skill.py",
+        "src/ai/chain_lightning_skill.gd",
+        "tests/test_chain_lightning_skill.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

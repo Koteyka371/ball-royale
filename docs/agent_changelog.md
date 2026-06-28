@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-169] Smoke Screen Traps — *2026-06-28 07:25:56 UTC*
+
+Allow certain ball types to drop smoke screens that reduce enemy perception range while standing in them or line of sight through them.
+
+---
+
 ## [idea-184] Reverse Controls Modifier — *2026-06-28 07:17:01 UTC*
 
 A random event that happens mid-game, reversing the movement logic for all balls for 10 seconds, forcing them to adapt their AI vectors.
