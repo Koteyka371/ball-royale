@@ -683,7 +683,47 @@ class MovingZoneMode(GameMode):
                     return getattr(b, "team", b.ball_type)
         return None
 
+
+
+class ReverseEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Reverse Event"
+        self.description = "A random event reverses movement logic for 10 seconds."
+        self.event_timer = 0.0
+        self.event_active = False
+        self.event_duration = 0.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if not self.event_active:
+            self.event_timer += delta
+
+        if not self.event_active and self.event_timer > 20.0:
+            import random
+            if random.random() < 0.1:  # 10% chance every 20 seconds to trigger
+                self.event_active = True
+                self.event_duration = 10.0
+                self.event_timer = 0.0
+                print("REVERSE EVENT TRIGGERED!")
+            else:
+                self.event_timer = 0.0
+
+        if self.event_active:
+            self.event_duration -= delta
+            if self.event_duration <= 0:
+                self.event_active = False
+                self.event_timer = 0.0
+                print("REVERSE EVENT ENDED!")
+
+            # Apply reverse logic directly to balls
+            for b in balls:
+                if getattr(b, "alive", False):
+                    b.x -= getattr(b, "vx", 0) * delta * 2 # Reverse the velocity applied in action.py
+                    b.y -= getattr(b, "vy", 0) * delta * 2
+
+
 GAME_MODES = {
+    "reverse_event": ReverseEventMode(),
     "weather_chaos": WeatherChaosMode(),
     "domination": DominationMode(),
     "black_hole": BlackHoleMode(),
