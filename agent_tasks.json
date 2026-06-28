@@ -3645,7 +3645,7 @@
     },
     {
       "id": "idea-208",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chronos Zones",
@@ -5239,6 +5239,23 @@
         "src/ai/flare_gun_skill.py",
         "src/ai/flare_gun_skill.gd",
         "tests/test_flare_gun_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-302",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather System",
+      "description": "Add dynamic weather that affects perception radius and ball movement speed.",
+      "allowed_paths": [
+        "src/ai/.py",
+        "src/ai/.gd",
+        "tests/test_.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
