@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-171] Custom Neural Training Environments — *2026-06-28 06:23:18 UTC*
+
+Allow players to spawn custom training arenas with specific scenarios (e.g. 5 juggernauts with no weapons, or maze-like maps with traps) where they can rapidly run neuroevolution specifically tailored to those situations to generate specialized neural balls before sending them to the main battle royale.
+
+---
+
 ## [idea-151] Fog of War Weather Event — *2026-06-28 06:21:53 UTC*
 
 Periodically, the arena could fill with a thick fog that severely reduces the perception radius of all balls for 15-20 seconds. This would force balls into more close-range surprise encounters and make abilities like the ninja's stealth even more effective.

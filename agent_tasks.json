@@ -2997,7 +2997,7 @@
     },
     {
       "id": "idea-171",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Custom Neural Training Environments",
@@ -3431,6 +3431,229 @@
         "src/arena/laser_traps.py",
         "src/arena/laser_traps.gd",
         "tests/test_laser_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-196",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Effects in the Arena",
+      "description": "Introduce dynamic weather effects like rain, snow, or wind that randomly occur during matches. Rain could reduce friction making balls slide more, snow could slow down movement, and strong winds could slightly alter trajectories or push balls in a specific direction. These effects would force players and AI to adapt their movement and strategies on the fly.",
+      "allowed_paths": [
+        "src/arena/effects_in_the_arena.py",
+        "src/arena/effects_in_the_arena.gd",
+        "tests/test_effects_in_the_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-197",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Payload Escort Mode",
+      "description": "Introduce an Escort Mode where one team has to defend a slow-moving, high-HP 'payload' ball as it travels across the map to a designated goal. The other team tries to destroy it. This encourages formation fighting and continuous frontline pushing.",
+      "allowed_paths": [
+        "src/ai/payload_escort.py",
+        "src/ai/payload_escort.gd",
+        "tests/test_payload_escort.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-198",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Random Map Events",
+      "description": "Periodically trigger random arena-wide events during matches, such as a localized meteor shower, sudden gravity changes, or moving walls. This will force players to adapt their positioning and prioritize surviving the environment along with enemy balls, keeping gameplay dynamic.",
+      "allowed_paths": [
+        "src/ai/random_map_events.py",
+        "src/ai/random_map_events.gd",
+        "tests/test_random_map_events.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-199",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Wall Bounce Mechanism",
+      "description": "Allow balls to use walls to bounce their attacks off or perform ricochet maneuvers to reach enemies behind obstacles.",
+      "allowed_paths": [
+        "src/ai/wall_bounce_mechanism.py",
+        "src/ai/wall_bounce_mechanism.gd",
+        "tests/test_wall_bounce_mechanism.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-200",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Prestige Mutators",
+      "description": "After hitting Prestige Level 5, players unlock 'Mutator Options' for their custom matches, allowing them to apply fun physics changes (like zero gravity or explosive collisions) in private games.",
+      "allowed_paths": [
+        "src/ui/prestige_mutators.py",
+        "src/ui/prestige_mutators.gd",
+        "src/ai/prestige_mutators.py",
+        "tests/test_prestige_mutators.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-201",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Arena Traps",
+      "description": "Introduce dynamic traps in the arena that are triggered by proximity, dealing damage or slowing down balls that step on them.",
+      "allowed_paths": [
+        "src/arena/arena_traps.py",
+        "src/arena/arena_traps.gd",
+        "tests/test_arena_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-202",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Effects on Arena",
+      "description": "Introduce dynamic weather effects like rain, snow, or fog that affect visibility, friction, and movement speed.",
+      "allowed_paths": [
+        "src/arena/effects_on_arena.py",
+        "src/arena/effects_on_arena.gd",
+        "tests/test_effects_on_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-203",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Seasonal Prestige Rankings",
+      "description": "Introduce seasonal leaderboards specifically tracking prestige levels. Players who achieve the highest prestige levels during a 30-day season receive unique, untradable cosmetic crowns and seasonal titles.",
+      "allowed_paths": [
+        "src/ui/seasonal_prestige_rankings.py",
+        "src/ui/seasonal_prestige_rankings.gd",
+        "src/ai/seasonal_prestige_rankings.py",
+        "tests/test_seasonal_prestige_rankings.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-204",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Interactive Arena Elements",
+      "description": "Add interactive objects scattered throughout the arena, such as breakable walls, explosive barrels, or bounce pads. Breakable walls could provide temporary cover that deteriorates under attack, explosive barrels could deal area-of-effect damage if detonated, and bounce pads could launch balls across the map for quick escapes or surprise attacks, adding a layer of tactical environmental usage.",
+      "allowed_paths": [
+        "src/arena/interactive_arena_elements.py",
+        "src/arena/interactive_arena_elements.gd",
+        "tests/test_interactive_arena_elements.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-205",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Entanglement Modules",
+      "description": "Allow balls to 'entangle' with each other or specific arena features. When one entangled entity is damaged or moves, the other experiences a proportionate effect, introducing entirely new risk/reward mechanics and team synergy opportunities.",
+      "allowed_paths": [
+        "src/ai/quantum_entanglement_modules.py",
+        "src/ai/quantum_entanglement_modules.gd",
+        "tests/test_quantum_entanglement_modules.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-206",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Teleportation Pads",
+      "description": "Place teleportation pads in procedural arenas that instantly transport balls to another linked pad.",
+      "allowed_paths": [
+        "src/ai/teleportation_pads.py",
+        "src/ai/teleportation_pads.gd",
+        "tests/test_teleportation_pads.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-207",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Consumable Trap Items",
+      "description": "Allow players to pick up and place consumable traps like landmines or freeze traps to control the arena.",
+      "allowed_paths": [
+        "src/arena/consumable_trap_items.py",
+        "src/arena/consumable_trap_items.gd",
+        "tests/test_consumable_trap_items.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-208",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chronos Zones",
+      "description": "Spawn temporal rifts that slow down or speed up the passage of time (affecting movement, attack cooldowns, and hazard ticks) only for entities within the rift, creating high-skill prediction windows.",
+      "allowed_paths": [
+        "src/ai/chronos_zones.py",
+        "src/ai/chronos_zones.gd",
+        "tests/test_chronos_zones.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
