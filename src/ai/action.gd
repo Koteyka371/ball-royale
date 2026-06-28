@@ -3093,22 +3093,30 @@ func _use_skill():
 
             var elemental_effect = ""
 
-            # Check for elemental interactions with hazards
+            # Check for elemental interactions and hazard destruction
             if world != null and world.has_method("get_arena"):
                 var arena = world.call("get_arena")
                 if arena != null and "hazards" in arena:
+                    var hazards_to_remove = []
                     for hazard in arena.hazards:
-                        if (hazard.kind == "lava" or hazard.kind == "poison_cloud") and hazard.active:
-                            var hx = hazard.x - self.ball.x
-                            var hy = hazard.y - self.ball.y
-                            var h_dist = sqrt(hx*hx + hy*hy)
-                            if h_dist <= explosion_radius + hazard.radius:
-                                explosion_radius = 200.0
-                                if hazard.kind == "lava":
-                                    elemental_effect = "fire_aura"
-                                elif hazard.kind == "poison_cloud":
-                                    elemental_effect = "poison_aura"
-                                break
+                        var hx = hazard.x - self.ball.x
+                        var hy = hazard.y - self.ball.y
+                        var h_dist = sqrt(hx*hx + hy*hy)
+                        if h_dist <= explosion_radius + hazard.radius:
+                            if "kind" in hazard:
+                                if hazard.kind == "spikes" or hazard.kind == "fake_booster":
+                                    hazards_to_remove.append(hazard)
+                                elif (hazard.kind == "lava" or hazard.kind == "poison_cloud") and hazard.active:
+                                    explosion_radius = 200.0
+                                    if hazard.kind == "lava":
+                                        elemental_effect = "fire_aura"
+                                    elif hazard.kind == "poison_cloud":
+                                        elemental_effect = "poison_aura"
+
+                    for h in hazards_to_remove:
+                        var idx = arena.hazards.find(h)
+                        if idx != -1:
+                            arena.hazards.remove_at(idx)
 
             # Deal damage
             for e in enemies:
@@ -3237,6 +3245,39 @@ func _use_skill():
                         self.ball.set_meta("ricochet_barrier_timer", 3.0)
 
                 self.world.arena.hazards.append(trap)
+        elif skill_name == "ground_pound":
+            var pound_radius = 120.0
+            var pound_damage = 40.0
+
+            # Deal damage to enemies
+            var enemies = _get_enemies()
+            if enemies != null:
+                for enemy in enemies:
+                    var dx = enemy.x - self.ball.x
+                    var dy = enemy.y - self.ball.y
+                    var dist = sqrt(dx*dx + dy*dy)
+                    if dist <= pound_radius + (enemy.radius if "radius" in enemy else 0):
+                        if enemy.has_method("take_damage"):
+                            enemy.take_damage(pound_damage)
+
+            # Destroy hazards
+            if world != null and world.has_method("get_arena"):
+                var arena = world.call("get_arena")
+                if arena != null and "hazards" in arena:
+                    var hazards_to_remove = []
+                    for hazard in arena.hazards:
+                        var hx = hazard.x - self.ball.x
+                        var hy = hazard.y - self.ball.y
+                        var h_dist = sqrt(hx*hx + hy*hy)
+                        if h_dist <= pound_radius + (hazard.radius if "radius" in hazard else 0):
+                            if "kind" in hazard and (hazard.kind == "spikes" or hazard.kind == "fake_booster"):
+                                hazards_to_remove.append(hazard)
+
+                    for h in hazards_to_remove:
+                        var idx = arena.hazards.find(h)
+                        if idx != -1:
+                            arena.hazards.remove_at(idx)
+
         elif skill_name == "target_strong":
             var enemies = _get_enemies()
             if enemies.size() > 0:
