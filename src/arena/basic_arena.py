@@ -20,8 +20,14 @@ class BasicArena:
                 self.rng.uniform(radius, self.height - radius))
 
     def is_point_inside(self, x: float, y: float, radius: float) -> bool:
-        return (radius <= x <= self.width - radius and
-                radius <= y <= self.height - radius)
+        if not (radius <= x <= self.width - radius and radius <= y <= self.height - radius):
+            return False
+
+        import math
+        cx, cy = self.safe_zone_center
+        sz_radius = self.safe_zone_radius
+        dist = math.hypot(x - cx, y - cy)
+        return dist <= sz_radius - radius
 
     def clamp_position(self, x: float, y: float, radius: float) -> Tuple[float, float, bool]:
         bounced = False
@@ -40,6 +46,23 @@ class BasicArena:
             bounced = True
         elif y > self.height - radius:
             new_y = self.height - radius
+            bounced = True
+
+        import math
+        cx, cy = self.safe_zone_center
+        sz_radius = self.safe_zone_radius
+        dist = math.hypot(new_x - cx, new_y - cy)
+
+        # If outside the safe zone, push inwards towards safe zone edge
+        if dist > sz_radius - radius:
+            if dist > 0.0001:
+                dir_x = (new_x - cx) / dist
+                dir_y = (new_y - cy) / dist
+                new_x = cx + dir_x * (sz_radius - radius)
+                new_y = cy + dir_y * (sz_radius - radius)
+            else:
+                new_x = cx
+                new_y = cy
             bounced = True
 
         return new_x, new_y, bounced

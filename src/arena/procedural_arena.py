@@ -158,6 +158,13 @@ class ProceduralArena:
                 random.uniform(room.y + radius, room.y + room.height - radius))
 
     def is_point_inside(self, x: float, y: float, radius: float) -> bool:
+        import math
+        sz_cx, sz_cy = self.safe_zone_center
+        sz_radius = self.safe_zone_radius
+        dist = math.hypot(x - sz_cx, y - sz_cy)
+        if dist > sz_radius - radius:
+            return False
+
         # Check rooms
         for r in self.rooms:
             if r.x + radius <= x <= r.x + r.width - radius and r.y + radius <= y <= r.y + r.height - radius:
@@ -193,6 +200,22 @@ class ProceduralArena:
             if dist < min_dist:
                 min_dist = dist
                 nearest_x, nearest_y = cx, cy
+
+        import math
+        sz_cx, sz_cy = self.safe_zone_center
+        sz_radius = self.safe_zone_radius
+        dist = math.hypot(nearest_x - sz_cx, nearest_y - sz_cy)
+
+        # If outside the safe zone, push inwards towards safe zone edge
+        if dist > sz_radius - radius:
+            if dist > 0.0001:
+                dir_x = (nearest_x - sz_cx) / dist
+                dir_y = (nearest_y - sz_cy) / dist
+                nearest_x = sz_cx + dir_x * (sz_radius - radius)
+                nearest_y = sz_cy + dir_y * (sz_radius - radius)
+            else:
+                nearest_x = sz_cx
+                nearest_y = sz_cy
 
         return nearest_x, nearest_y, True
 
