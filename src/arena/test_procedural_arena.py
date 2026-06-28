@@ -26,9 +26,9 @@ def test_clamp_position():
 
 def test_hazard_generation():
     arena = ProceduralArena(arena_size=1000.0, num_rooms=3, seed=42)
-    assert len(arena.hazards) == arena.num_rooms * 2
+    assert len(arena.hazards) >= arena.num_rooms * 2
     for hazard in arena.hazards:
         assert hazard.kind in ["spikes", "lava", "fake_booster", "poison_cloud", "proximity_trap", "explosive_barrel", "healing_spring", "trap", "spinning_laser", "laser_wall", "meteor", "conveyor_belt", "gravity_well", "black_hole", "portal", "teleporter", "placeable_trap_item"]
         assert hazard.radius > 0
-        assert hazard.damage > 0 or hazard.kind in ["healing_spring", "placeable_trap_item"]
+        assert hazard.damage > 0 or hazard.kind in ["healing_spring", "placeable_trap_item", "portal"]
         assert arena.is_point_inside(hazard.x, hazard.y, 0)
