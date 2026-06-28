@@ -1554,6 +1554,19 @@ class Action:
         skill_timer = getattr(self.ball, "skill_timer", 0.0)
         if skill_timer <= 0 and hasattr(self.ball, "use_skill"):
             self.ball.use_skill()
+            # Trigger nearby explosive barrels manually via skills to create area denial zones
+            if hasattr(self.world, 'arena') and hasattr(self.world.arena, 'hazards'):
+                for hazard in self.world.arena.hazards:
+                    if hazard.kind == 'explosive_barrel':
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx*dx + dy*dy
+                        if dist_sq < (getattr(self.ball, 'radius', 10) + hazard.radius + 100)**2:
+                            # Explode into poison cloud for area denial
+                            hazard.kind = 'poison_cloud'
+                            hazard.radius *= 3.0
+                            hazard.damage = getattr(self.ball, 'damage', 20.0) * 0.5
+                            setattr(hazard, 'duration', 10.0)
             if getattr(self.ball, "charge_level", 0) >= 100:
                 self.ball.charge_level = 0
                 self.ball.base_damage = getattr(self.ball, "base_damage", getattr(self.ball, "damage", 10)) * 2
@@ -1829,6 +1842,26 @@ class Action:
                 self.ball.y += ny * overlap
                 bounced = True
 
+        if hasattr(self.world, 'arena') and hasattr(self.world.arena, 'hazards'):
+            for hazard in self.world.arena.hazards:
+                if hazard.kind == 'explosive_barrel':
+                    dx = self.ball.x - hazard.x
+                    dy = self.ball.y - hazard.y
+                    dist_sq = dx * dx + dy * dy
+                    min_dist = ball_radius + hazard.radius
+                    if dist_sq < min_dist * min_dist and dist_sq > 0.0001:
+                        import math
+                        dist = math.sqrt(dist_sq)
+                        overlap = min_dist - dist
+                        nx = dx / dist
+                        ny = dy / dist
+                        # Push the ball slightly away
+                        self.ball.x += nx * (overlap * 0.5)
+                        self.ball.y += ny * (overlap * 0.5)
+                        # Push the barrel
+                        hazard.x -= nx * (overlap * 0.5)
+                        hazard.y -= ny * (overlap * 0.5)
+                        bounced = True
         return bounced
 
     def _trigger_ripple_effect(self) -> None:
@@ -2063,6 +2096,19 @@ class Action:
                     if hasattr(self.ball, "use_skill"):
                         self.ball.use_skill()
                     self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
+            # Trigger nearby explosive barrels manually via skills to create area denial zones
+            if hasattr(self.world, 'arena') and hasattr(self.world.arena, 'hazards'):
+                for hazard in self.world.arena.hazards:
+                    if hazard.kind == 'explosive_barrel':
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx*dx + dy*dy
+                        if dist_sq < (getattr(self.ball, 'radius', 10) + hazard.radius + 100)**2:
+                            # Explode into poison cloud for area denial
+                            hazard.kind = 'poison_cloud'
+                            hazard.radius *= 3.0
+                            hazard.damage = getattr(self.ball, 'damage', 20.0) * 0.5
+                            setattr(hazard, 'duration', 10.0)
                     if getattr(self.ball, "charge_level", 0) >= 100:
                         self.ball.charge_level = 0
 

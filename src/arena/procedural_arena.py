@@ -116,7 +116,7 @@ class ProceduralArena:
         # Generate hazards
         num_hazards = self.num_rooms * 2
         for i in range(num_hazards):
-            kind = random.choice(["spikes", "lava", "fake_booster", "poison_cloud", "proximity_trap"])
+            kind = random.choice(["spikes", "lava", "fake_booster", "poison_cloud", "proximity_trap", "explosive_barrel"])
             if kind == "spikes":
                 radius = random.uniform(15.0, 30.0)
                 damage = 20.0
@@ -129,6 +129,9 @@ class ProceduralArena:
             elif kind == "proximity_trap":
                 radius = random.uniform(20.0, 40.0)
                 damage = 30.0
+            elif kind == "explosive_barrel":
+                radius = random.uniform(15.0, 25.0)
+                damage = 50.0
             else:
                 radius = 15.0
                 damage = 50.0
@@ -208,7 +211,7 @@ class ProceduralArena:
             self.hazards = [h for h in self.hazards if h.id < 1000]
 
             # Periodically trigger random arena-wide events
-            event_type = random.choice(["meteor_shower", "gravity_shift", "moving_walls", "none"])
+            event_type = random.choice(["meteor_shower", "gravity_shift", "moving_walls", "barrel_drop", "none"])
             if event_type != "none":
                 self._trigger_event(event_type, current_tick)
 
@@ -256,6 +259,17 @@ class ProceduralArena:
             gw.target_radius = self.width/2
             setattr(gw, "duration", 10.0)
             self.hazards.append(gw)
+        elif event_type == "barrel_drop":
+            # Drop explosive barrels around the arena
+            num_barrels = random.randint(3, 8)
+            for _ in range(num_barrels):
+                x = random.uniform(100, self.width - 100)
+                y = random.uniform(100, self.height - 100)
+                h_id = 5000 + len(self.hazards) + random.randint(0, 1000)
+                barrel = Hazard(id=h_id, x=x, y=y, radius=20.0, kind="explosive_barrel", damage=50.0)
+                barrel.target_radius = 20.0
+                setattr(barrel, "duration", 30.0)
+                self.hazards.append(barrel)
         elif event_type == "moving_walls":
             # Add horizontal and vertical laser walls
             h_id = 4000 + len(self.hazards)

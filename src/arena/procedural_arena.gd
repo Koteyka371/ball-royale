@@ -151,8 +151,10 @@ func generate():
             kind = "lava"
         elif r < 0.5:
             kind = "fake_booster"
-        elif r < 0.75:
+        elif r < 0.60:
             kind = "proximity_trap"
+        elif r < 0.85:
+            kind = "explosive_barrel"
 
         var radius = 15.0
         var damage = 20.0
@@ -165,6 +167,9 @@ func generate():
         elif kind == "proximity_trap":
             radius = rng.randf_range(20.0, 40.0)
             damage = 30.0
+        elif kind == "explosive_barrel":
+            radius = rng.randf_range(15.0, 25.0)
+            damage = 50.0
         else:
             radius = 15.0
             damage = 50.0
@@ -238,7 +243,7 @@ func update_zone(current_tick: int, delta: float) -> void:
                     new_hazards.append(h)
             hazards = new_hazards
 
-            var event_types = ["meteor_shower", "gravity_shift", "moving_walls", "none"]
+            var event_types = ["meteor_shower", "gravity_shift", "moving_walls", "barrel_drop", "none"]
             var event_type = event_types[randi() % event_types.size()]
             if event_type != "none":
                 _trigger_event(event_type, current_tick)
@@ -654,6 +659,16 @@ func _trigger_event(event_type: String, current_tick: int) -> void:
         gw.target_radius = width/2
         gw.set_meta("duration", 10.0)
         hazards.append(gw)
+    elif event_type == "barrel_drop":
+        var num_barrels = randi() % 6 + 3
+        for _i in range(num_barrels):
+            var x = rng.randf_range(100, width - 100)
+            var y = rng.randf_range(100, height - 100)
+            var h_id = 5000 + hazards.size() + (randi() % 1000)
+            var barrel = ProceduralArena.Hazard.new(h_id, x, y, 20.0, "explosive_barrel", 50.0)
+            barrel.target_radius = 20.0
+            barrel.set_meta("duration", 30.0)
+            hazards.append(barrel)
     elif event_type == "moving_walls":
         var h_id = 4000 + hazards.size()
         var wall = ProceduralArena.Hazard.new(h_id, width/2, height/2, 100.0, "laser_wall", 50.0)

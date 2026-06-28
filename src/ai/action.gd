@@ -2370,6 +2370,23 @@ func _use_skill():
             cl = float(self.ball.charge_level)
         elif self.ball.has_method("has_meta") and self.ball.has_meta("charge_level"):
             cl = float(self.ball.get_meta("charge_level"))
+        # Trigger nearby explosive barrels manually via skills to create area denial zones
+        if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+            for hazard in self.world.arena.hazards:
+                if hazard.kind == "explosive_barrel":
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx*dx + dy*dy
+                    var br = 10.0
+                    if "radius" in self.ball: br = self.ball.radius
+                    if dist_sq < (br + hazard.radius + 100) * (br + hazard.radius + 100):
+                        # Explode into poison cloud for area denial
+                        hazard.kind = "poison_cloud"
+                        hazard.radius *= 3.0
+                        var dmg = 20.0
+                        if "damage" in self.ball: dmg = self.ball.damage
+                        hazard.damage = dmg * 0.5
+                        if hazard.has_method("set_meta"): hazard.set_meta("duration", 10.0)
         if cl >= 100.0:
             if "charge_level" in self.ball:
                 self.ball.charge_level = 0.0
@@ -2789,6 +2806,25 @@ func _resolve_collisions() -> bool:
             self.ball.y += ny * overlap
             bounced = true
 
+    if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+        for hazard in self.world.arena.hazards:
+            if hazard.kind == "explosive_barrel":
+                var dx = self.ball.x - hazard.x
+                var dy = self.ball.y - hazard.y
+                var dist_sq = dx * dx + dy * dy
+                var min_dist = ball_radius + hazard.radius
+                if dist_sq < min_dist * min_dist and dist_sq > 0.0001:
+                    var dist = sqrt(dist_sq)
+                    var overlap = min_dist - dist
+                    var nx = dx / dist
+                    var ny = dy / dist
+                    # Push the ball slightly away
+                    self.ball.x += nx * (overlap * 0.5)
+                    self.ball.y += ny * (overlap * 0.5)
+                    # Push the barrel
+                    hazard.x -= nx * (overlap * 0.5)
+                    hazard.y -= ny * (overlap * 0.5)
+                    bounced = true
     return bounced
 
 func _trigger_ripple_effect():
