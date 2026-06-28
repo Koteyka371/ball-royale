@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-145] King of the Hill — *2026-06-28 05:22:35 UTC*
+
+A game mode where a specific designated area in the center of the arena grants points to the balls inside it. The ball with the most points when the timer ends wins.
+
+---
+
 ## [idea-148] Trap Customization Sandbox — *2026-06-28 05:14:12 UTC*
 
 Add a pre-game lobby where Snipers can pick trap variants like poison traps that apply DoT or stun traps that fully halt enemies for 1 second instead of slowing.
