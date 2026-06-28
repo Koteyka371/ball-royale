@@ -2846,7 +2846,7 @@
     },
     {
       "id": "idea-163",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Healing Springs",
@@ -4728,6 +4728,40 @@
         "src/ai/hologram_decoy_skill.py",
         "src/ai/hologram_decoy_skill.gd",
         "tests/test_hologram_decoy_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-272",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "King of the Hill - Dynamic Safe Zone",
+      "description": "A game mode where the safe zone constantly moves around the map and shrinks, forcing players into intense close-quarters combat as they try to stay inside.",
+      "allowed_paths": [
+        "src/ai/king_of_the_hill_dynamic_safe_zone.py",
+        "src/ai/king_of_the_hill_dynamic_safe_zone.gd",
+        "tests/test_king_of_the_hill_dynamic_safe_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-273",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weaponized Hazards",
+      "description": "Allow specific ball types, like Elementalists or Brawlers, to grab and throw map hazards (e.g. lava rocks, spike traps) at enemies for burst damage.",
+      "allowed_paths": [
+        "src/arena/weaponized_hazards.py",
+        "src/arena/weaponized_hazards.gd",
+        "tests/test_weaponized_hazards.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

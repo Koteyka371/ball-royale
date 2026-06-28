@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-163] Healing Springs — *2026-06-28 09:47:49 UTC*
+
+Add a new dynamic area called HealingSprings which works opposite to hazards: if a ball stays in this area, they slowly regenerate HP.
+
+---
+
 ## [idea-220] Dynamic Map Hazards — *2026-06-28 09:44:57 UTC*
 
 Introduce dynamic map hazards such as lava pits or rolling boulders that appear and move across the arena periodically.
