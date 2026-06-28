@@ -33,6 +33,17 @@ class Action:
                     self.ball.alive = False
             self.ball.dot_duration -= delta
 
+        # Zero gravity processing (friction)
+        gm = getattr(self.world, "game_mode", None)
+        if gm and getattr(gm, "name", "") == "Custom Match":
+            if getattr(gm, "mutators_active", False) and "zero_gravity" in getattr(gm, "mutators", []):
+                # Apply friction
+                if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+                    self.ball.vx *= (1.0 - 0.5 * delta)
+                    self.ball.vy *= (1.0 - 0.5 * delta)
+                    self.ball.x += self.ball.vx * delta
+                    self.ball.y += self.ball.vy * delta
+
         if getattr(self.ball, "BALL_TYPE", "") == "mimic" and hasattr(self.ball, "process_mimicry"):
             enemies = self._get_enemies()
             self.ball.process_mimicry(enemies, delta)
@@ -1814,6 +1825,22 @@ class Action:
                 self.ball.x += nx * overlap
                 self.ball.y += ny * overlap
                 bounced = True
+
+                gm = getattr(self.world, "game_mode", None)
+                if gm and getattr(gm, "name", "") == "Custom Match":
+                    if getattr(gm, "mutators_active", False) and "explosive_collisions" in getattr(gm, "mutators", []):
+                        if hasattr(self.ball, "take_damage"):
+                            self.ball.take_damage(5.0)
+                        elif hasattr(self.ball, "hp"):
+                            self.ball.hp -= 5.0
+                            if self.ball.hp <= 0:
+                                self.ball.alive = False
+                        # apply knockback
+                        if hasattr(self.ball, "vx"):
+                            self.ball.vx += nx * 100.0
+                        if hasattr(self.ball, "vy"):
+                            self.ball.vy += ny * 100.0
+
 
         return bounced
 

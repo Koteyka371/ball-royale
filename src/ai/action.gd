@@ -40,6 +40,17 @@ func execute(strategy: String, delta: float):
                     my_ball.alive = false
             my_ball.set_meta("dot_duration", dot_dur - delta)
 
+    var gm = null
+    if world != null and "game_mode" in world:
+        gm = world.game_mode
+    if gm != null and gm.name == "Custom Match":
+        if gm.get("mutators_active") == true and "zero_gravity" in gm.get("mutators", []):
+            if "vx" in my_ball and "vy" in my_ball:
+                my_ball.vx *= (1.0 - 0.5 * delta)
+                my_ball.vy *= (1.0 - 0.5 * delta)
+                my_ball.x += my_ball.vx * delta
+                my_ball.y += my_ball.vy * delta
+
     if my_ball.get("BALL_TYPE") == "mimic" and my_ball.has_method("process_mimicry"):
         var enemies = self._get_enemies()
         my_ball.process_mimicry(enemies, delta)

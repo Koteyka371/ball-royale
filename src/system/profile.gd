@@ -84,6 +84,9 @@ func upgrade_bonus(bonus_name: String, cost: int) -> bool:
         return true
     return false
 
+func are_mutators_unlocked() -> bool:
+	return data.get("prestige_level", 0) >= 5
+
 func can_prestige() -> bool:
     var unlocked_balls = data.get("unlocked_balls", [])
     var unlocked_all_balls = unlocked_balls.size() >= TOTAL_BALLS
