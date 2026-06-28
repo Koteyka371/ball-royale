@@ -25,6 +25,7 @@ class Hazard:
     radius: float
     kind: str
     damage: float
+    target_radius: float = 0.0
 
 class ProceduralArena:
     def __init__(self, arena_size: float = 2000.0, num_rooms: int = 5, seed: int | None = None):

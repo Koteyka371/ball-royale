@@ -30,7 +30,7 @@ class Spectator:
         self.personality = "spectator"
         try:
             from ui.heatmap.danger_grid_overlay import DangerGridOverlay  # type: ignore
-            self.danger_overlay = DangerGridOverlay()
+            self.danger_overlay: DangerGridOverlay | None = DangerGridOverlay()
         except ImportError:
             self.danger_overlay = None
 

@@ -1,5 +1,3 @@
-import pytest
-import math
 from ai.action import Action
 from ai.decision import Decision
 from ai.game_modes import MovingZoneMode

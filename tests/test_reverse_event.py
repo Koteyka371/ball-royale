@@ -1,5 +1,4 @@
-import pytest
-from src.ai.game_modes import ReverseEventMode
+from ai.game_modes import ReverseEventMode
 
 class MockBall:
     def __init__(self, id, ball_type="basic"):

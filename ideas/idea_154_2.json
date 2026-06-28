@@ -1,0 +1,1 @@
+{"title": "Clean up auto test scripts", "description": "Refactor auto test to handle different MYPYPATH gracefully"}

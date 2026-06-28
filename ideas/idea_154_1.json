@@ -1,0 +1,1 @@
+{"title": "Fix mypy errors for CI", "description": "Ensure mypy checks pass cleanly in CI"}

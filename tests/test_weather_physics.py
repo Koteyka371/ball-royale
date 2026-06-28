@@ -1,12 +1,10 @@
-import pytest
 import sys
 import os
 
 # Add src directory to PYTHONPATH
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
-from src.ai.game_modes import WeatherChaosMode
-from src.ai.action import Action
+from ai.game_modes import WeatherChaosMode
 
 class MockBall:
     def __init__(self):
