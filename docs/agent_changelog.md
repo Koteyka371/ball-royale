@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-216] Shrinking Safe Zone Mode — *2026-06-28 12:11:41 UTC*
+
+A battle royale mode where the safe zone gradually shrinks, and balls take continuous damage outside of it.
+
+---
+
 ## [idea-207] Consumable Trap Items — *2026-06-28 12:08:08 UTC*
 
 Allow players to pick up and place consumable traps like landmines or freeze traps to control the arena.

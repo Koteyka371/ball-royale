@@ -3783,7 +3783,7 @@
     },
     {
       "id": "idea-216",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Safe Zone Mode",
@@ -5409,6 +5409,23 @@
         "src/arena/destructible_terrain_hazards.py",
         "src/arena/destructible_terrain_hazards.gd",
         "tests/test_destructible_terrain_hazards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-312",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Powerup",
+      "description": "Add a new powerup that allows a ball to spawn a visual clone of itself. The decoy will move around randomly or towards enemies to confuse them, while the real ball can reposition or attack safely.",
+      "allowed_paths": [
+        "src/ai/decoy_powerup.py",
+        "src/ai/decoy_powerup.gd",
+        "tests/test_decoy_powerup.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
