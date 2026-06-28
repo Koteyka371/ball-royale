@@ -106,6 +106,7 @@ class Decision:
 
         scores = {
             "flee": 0.0,
+            "ricochet_attack": 0.0,
             "defend": 0.0,
             "collect_booster": 0.0,
             "attack": 0.0,
@@ -329,7 +330,7 @@ class Decision:
                 best_action = random.choice(possible) if possible else "idle"
                 best_score = scores.get(best_action, 0.0)
         else:
-            action_order = ["hold_zone", "intercept", "escort", "flee", "defend", "collect_booster", "attack", "target_weak", "chase", "use_skill", "kite", "flank", "group_attack", "hide_behind", "idle"]
+            action_order = ["ricochet_attack", "hold_zone", "intercept", "escort", "flee", "defend", "collect_booster", "attack", "target_weak", "chase", "use_skill", "kite", "flank", "group_attack", "hide_behind", "idle"]
             valid_actions = [k for k in scores.keys() if scores[k] > -500.0]
             sorted_actions = sorted(valid_actions, key=lambda k: (scores[k], -action_order.index(k) if k in action_order else 0), reverse=True)
             if not sorted_actions:
