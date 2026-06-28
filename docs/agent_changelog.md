@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-153] Variable Gravity Anomalies — *2026-06-28 06:21:30 UTC*
+
+Introduce spatial anomalies that periodically alter the gravity in specific zones of the arena, affecting movement speed, trajectory of skills, and forcing players/AI to adapt their pathfinding and engagement strategies dynamically.
+
+---
+
 ## [idea-175] Profile Prestige System — *2026-06-28 06:21:26 UTC*
 
 Once players unlock all balls and max out all passive bonuses, they can 'prestige' to reset their progress in exchange for a special cosmetic aura and a permanent 5% increase to base stats.
