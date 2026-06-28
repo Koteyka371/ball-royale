@@ -1328,7 +1328,84 @@ class DynamicHazardsMode extends GameMode:
 
 		world.arena.hazards = hazards_to_keep
 
+
+class PortalNodeMode extends GameMode:
+    var portal_timer: float = 0.0
+    var portal_x: float = 500.0
+    var portal_y: float = 500.0
+    var capture_radius: float = 100.0
+    var drain_rate: float = 5.0
+    var team_scores: Dictionary = {}
+
+    func _init() -> void:
+        name = "Portal Node"
+        description = "Capture and hold the moving portal node."
+
+    func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
+        team_scores.clear()
+        for b in balls:
+            var team = "Solo"
+            if "team" in b:
+                team = b.team
+            if not team_scores.has(team):
+                team_scores[team] = 1000.0
+
+        var arena_w = 1000.0
+        var arena_h = 1000.0
+        if "arena" in world and world.arena != null:
+            if "width" in world.arena:
+                arena_w = float(world.arena.width)
+            if "height" in world.arena:
+                arena_h = float(world.arena.height)
+        portal_x = arena_w / 2.0
+        portal_y = arena_h / 2.0
+        portal_timer = 0.0
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        super.tick(world, balls, delta)
+
+        portal_timer += delta
+        if portal_timer >= 10.0:
+            portal_timer = 0.0
+            var arena_w = 1000.0
+            var arena_h = 1000.0
+            if "arena" in world and world.arena != null:
+                if "width" in world.arena:
+                    arena_w = float(world.arena.width)
+                if "height" in world.arena:
+                    arena_h = float(world.arena.height)
+            portal_x = randf_range(100.0, max(100.0, arena_w - 100.0))
+            portal_y = randf_range(100.0, max(100.0, arena_h - 100.0))
+            print("Portal moved to ", portal_x, ", ", portal_y)
+
+        # Count balls in portal radius per team
+        var teams_in_radius: Dictionary = {}
+        for b in balls:
+            if not b.alive:
+                continue
+            var dx = b.position.x - portal_x
+            var dy = b.position.y - portal_y
+            var dist = sqrt(dx*dx + dy*dy)
+            if dist <= capture_radius:
+                var team = "Solo"
+                if "team" in b:
+                    team = b.team
+                if not teams_in_radius.has(team):
+                    teams_in_radius[team] = 0
+                teams_in_radius[team] += 1
+
+        # If exactly one team is in the radius, they capture it and drain others
+        if teams_in_radius.size() == 1:
+            var controlling_team = teams_in_radius.keys()[0]
+            for t in team_scores.keys():
+                if t != controlling_team:
+                    team_scores[t] -= drain_rate * delta
+                    if team_scores[t] < 0:
+                        team_scores[t] = 0.0
+
 var GAME_MODES = {
+    "portal_node": PortalNodeMode.new(),
 	"memory_traps": MemoryTrapsMode.new(),
 	"vision_reduced": VisionReducedMode.new(),
 	"dynamic_hazards": DynamicHazardsMode.new(),

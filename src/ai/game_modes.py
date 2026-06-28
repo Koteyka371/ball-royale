@@ -1085,7 +1085,69 @@ class DynamicHazardsMode(GameMode):
                     hazard.y < -100 or hazard.y > world.arena.height + 100):
                     world.arena.hazards.remove(hazard)
 
+
+class PortalNodeMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Portal Node"
+        self.description = "Capture and hold the moving portal node."
+        self.portal_timer = 0.0
+        self.portal_x = 500.0
+        self.portal_y = 500.0
+        self.capture_radius = 100.0
+        self.drain_rate = 5.0
+        self.team_scores = {}
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.team_scores = {}
+        for b in balls:
+            team = getattr(b, "team", "Solo")
+            if team not in self.team_scores:
+                self.team_scores[team] = 1000.0
+
+        arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.portal_x = arena_w / 2.0
+        self.portal_y = arena_h / 2.0
+        self.portal_timer = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math, random
+
+        self.portal_timer += delta
+        if self.portal_timer >= 10.0:
+            self.portal_timer = 0.0
+            arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+            arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+            self.portal_x = random.uniform(100, arena_w - 100)
+            self.portal_y = random.uniform(100, arena_h - 100)
+            print(f"Portal moved to {self.portal_x}, {self.portal_y}")
+
+        # Count balls in portal radius per team
+        teams_in_radius = {}
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+            dx = b.position.x - self.portal_x
+            dy = b.position.y - self.portal_y
+            dist = math.sqrt(dx*dx + dy*dy)
+            if dist <= self.capture_radius:
+                team = getattr(b, "team", "Solo")
+                teams_in_radius[team] = teams_in_radius.get(team, 0) + 1
+
+        # If exactly one team is in the radius, they capture it and drain others
+        if len(teams_in_radius) == 1:
+            controlling_team = list(teams_in_radius.keys())[0]
+            for t in self.team_scores:
+                if t != controlling_team:
+                    self.team_scores[t] -= self.drain_rate * delta
+                    if self.team_scores[t] < 0:
+                        self.team_scores[t] = 0.0
+
 GAME_MODES = {
+    "portal_node": PortalNodeMode(),
     "memory_traps": MemoryTrapsMode(),
     "vision_reduced": VisionReducedMode(),
     "dynamic_hazards": DynamicHazardsMode(),
