@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-193] Map Weather Dynamics — *2026-06-28 06:51:44 UTC*
+
+Weather conditions change throughout the match, affecting stats.
+
+---
+
 ## [idea-192] Elemental Synergies — *2026-06-28 06:41:07 UTC*
 
 Combine elemental skills for chain reactions.

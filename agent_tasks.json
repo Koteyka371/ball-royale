@@ -3388,7 +3388,7 @@
     },
     {
       "id": "idea-193",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Map Weather Dynamics",
@@ -3792,6 +3792,57 @@
         "src/ai/shrinking_safe_zone.py",
         "src/ai/shrinking_safe_zone.gd",
         "tests/test_shrinking_safe_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-217",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Draft Mode (Pick and Ban Phase)",
+      "description": "Before the start of a Royale match, teams take turns picking ball types and banning ball types, creating strategic synergies and denying counter-comps to the opponent teams.",
+      "allowed_paths": [
+        "src/ai/draft_pick_and_ban_phase.py",
+        "src/ai/draft_pick_and_ban_phase.gd",
+        "tests/test_draft_pick_and_ban_phase.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-218",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Revenge Nemesis Mechanic",
+      "description": "If a ball eliminates the same enemy multiple times across different matches (tracked via persistent profile data), they become Nemeses. In future matches, the Nemesis enemy deals 20% bonus damage to their rival, but yields double points/charge level upon being defeated.",
+      "allowed_paths": [
+        "src/ai/revenge_nemesis_mechanic.py",
+        "src/ai/revenge_nemesis_mechanic.gd",
+        "tests/test_revenge_nemesis_mechanic.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-219",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Effects (Rain/Snow/Wind)",
+      "description": "Dynamic weather events that change physics (e.g. wind pushes balls, rain makes surface slippery/increases dash range but reduces steering, snow slows down balls and applies chill stacks that occasionally freeze balls for 1 second).",
+      "allowed_paths": [
+        "src/ai/effects_rainsnowwind.py",
+        "src/ai/effects_rainsnowwind.gd",
+        "tests/test_effects_rainsnowwind.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
