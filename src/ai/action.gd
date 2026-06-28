@@ -3237,6 +3237,51 @@ func _use_skill():
                         self.ball.set_meta("ricochet_barrier_timer", 3.0)
 
                 self.world.arena.hazards.append(trap)
+        elif skill_name == "chain_lightning":
+            var enemies = _get_enemies()
+            if enemies.size() > 0:
+                var target = enemies[0]
+                var min_dist_sq = (target.x - self.ball.x)*(target.x - self.ball.x) + (target.y - self.ball.y)*(target.y - self.ball.y)
+                for i in range(1, enemies.size()):
+                    var dist_sq = (enemies[i].x - self.ball.x)*(enemies[i].x - self.ball.x) + (enemies[i].y - self.ball.y)*(enemies[i].y - self.ball.y)
+                    if dist_sq < min_dist_sq:
+                        min_dist_sq = dist_sq
+                        target = enemies[i]
+
+                var hit_enemies = [target]
+                var current_target = target
+                var current_damage = 20.0 * 1.5
+                if "damage" in self.ball:
+                    current_damage = self.ball.damage * 1.5
+
+                if target.has_method("take_damage"):
+                    target.take_damage(current_damage)
+
+                var bounces = 3
+                var arc_range = 200.0
+
+                for _b in range(bounces):
+                    current_damage *= 0.6
+                    var next_target = null
+                    var min_d = 999999.0
+
+                    for enemy in enemies:
+                        if not enemy in hit_enemies:
+                            var dx = enemy.x - current_target.x
+                            var dy = enemy.y - current_target.y
+                            var d = sqrt(dx*dx + dy*dy)
+                            if d < arc_range and d < min_d:
+                                min_d = d
+                                next_target = enemy
+
+                    if next_target != null:
+                        if next_target.has_method("take_damage"):
+                            next_target.take_damage(current_damage)
+                        hit_enemies.append(next_target)
+                        current_target = next_target
+                    else:
+                        break
+
         elif skill_name == "target_strong":
             var enemies = _get_enemies()
             if enemies.size() > 0:

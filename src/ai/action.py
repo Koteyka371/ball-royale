@@ -2137,6 +2137,43 @@ class Action:
                     except ImportError:
                         pass
 
+            elif skill_name == "chain_lightning":
+                import math
+                enemies = self._get_enemies()
+                if enemies:
+                    target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                    hit_enemies = [target]
+                    current_target = target
+                    current_damage = getattr(self.ball, "damage", 20.0) * 1.5
+
+                    if hasattr(target, "take_damage"):
+                        target.take_damage(current_damage)
+
+                    bounces = 3
+                    arc_range = 200.0
+
+                    for _ in range(bounces):
+                        current_damage *= 0.6
+                        next_target = None
+                        min_dist = float('inf')
+
+                        for enemy in enemies:
+                            if enemy not in hit_enemies:
+                                dx = enemy.x - current_target.x
+                                dy = enemy.y - current_target.y
+                                dist = math.sqrt(dx*dx + dy*dy)
+                                if dist < arc_range and dist < min_dist:
+                                    min_dist = dist
+                                    next_target = enemy
+
+                        if next_target:
+                            if hasattr(next_target, "take_damage"):
+                                next_target.take_damage(current_damage)
+                            hit_enemies.append(next_target)
+                            current_target = next_target
+                        else:
+                            break
+
             elif skill_name == "target_strong":
                 import random
                 import math

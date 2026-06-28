@@ -1,0 +1,4 @@
+{
+  "title": "Gravity Well Hazard",
+  "description": "A new procedural hazard that spawns in the arena. It acts as a black hole, constantly pulling all entities towards its center. If a ball reaches the center, it takes continuous damage."
+}

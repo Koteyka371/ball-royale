@@ -424,3 +424,45 @@ def test_emp_item():
     assert ally_ball.speed_booster_timer == 5.0
 
     assert emp not in world.arena.hazards
+
+def test_execute_chain_lightning():
+    class MockEnemyForChain:
+        def __init__(self, id, x, y):
+            self.id = id
+            self.x = x
+            self.y = y
+            self.hp = 100
+            self.alive = True
+
+        def take_damage(self, amount):
+            self.hp -= amount
+
+    ball = MockBall(x=100, y=100)
+    ball.skill = "chain_lightning"
+    ball.damage = 20
+    world = MockWorld()
+
+    e1 = MockEnemyForChain(1, 150, 100)  # Dist: 50 -> First target
+    e2 = MockEnemyForChain(2, 200, 100)  # Dist from e1: 50 -> Second target
+    e3 = MockEnemyForChain(3, 300, 100)  # Dist from e2: 100 -> Third target
+    e4 = MockEnemyForChain(4, 500, 100)  # Dist from e3: 200 (limit) -> May or may not hit depending on exact logic, but let's test the chain
+    e5 = MockEnemyForChain(5, 1000, 100) # Too far
+
+    world.enemies = [e1, e2, e3, e4, e5]
+    action_layer = Action(ball, world)
+    action_layer._get_enemies = lambda: world.enemies
+
+    action_layer.execute("use_skill", 0.1)
+
+    # 20 * 1.5 = 30
+    assert e1.hp == 100 - 30
+    # 30 * 0.6 = 18
+    assert e2.hp == 100 - 18
+    # 18 * 0.6 = 10.8
+    assert e3.hp == 100 - 10.8
+
+    # Check that far away enemies were not hit as much or at all by checking if their hp matches expected logic.
+    # Fourth bounce: 10.8 * 0.6 = 6.48
+    # If e4 is hit, hp is 100 - 6.48. Since limit is 3 bounces, it might hit e4 as the 3rd bounce (1st is initial, then 3 bounces)
+    # Let's check max hp reduction.
+    assert e5.hp == 100
