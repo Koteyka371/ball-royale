@@ -622,7 +622,7 @@ class WeatherChaosMode extends GameMode:
 		weather_timer += delta
 		if weather_timer > 10.0:
 			weather_timer = 0.0
-			var weathers = ["clear", "rain", "fog", "snow"]
+			var weathers = ["clear", "rain", "fog", "snow", "wind_east", "wind_west", "storm"]
 			weather = weathers[randi() % weathers.size()]
 
 		for b in balls:
@@ -653,6 +653,20 @@ class WeatherChaosMode extends GameMode:
 				elif weather == "snow":
 					if "speed" in b: b.speed = base_spd * 0.6
 					if "damage" in b: b.damage = base_dmg * 1.2
+				elif weather == "wind_east":
+					if "speed" in b: b.speed = base_spd
+					if "damage" in b: b.damage = base_dmg
+					if "x" in b: b.x += 150.0 * delta
+				elif weather == "wind_west":
+					if "speed" in b: b.speed = base_spd
+					if "damage" in b: b.damage = base_dmg
+					if "x" in b: b.x -= 150.0 * delta
+				elif weather == "storm":
+					if "speed" in b: b.speed = base_spd * 0.7
+					if "damage" in b: b.damage = base_dmg
+					if "x" in b and "y" in b:
+						b.x += (randf() * 200.0 - 100.0) * delta
+						b.y += (randf() * 200.0 - 100.0) * delta
 
 	func check_winner(world, balls: Array):
 		var alive = []

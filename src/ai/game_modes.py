@@ -495,7 +495,7 @@ class WeatherChaosMode(GameMode):
         self.weather_timer += delta
         if self.weather_timer > 10.0:
             self.weather_timer = 0.0
-            weathers = ["clear", "rain", "fog", "snow"]
+            weathers = ["clear", "rain", "fog", "snow", "wind_east", "wind_west", "storm"]
             if hasattr(self, "random"):
                 self.weather = self.random.choice(weathers)
             else:
@@ -522,6 +522,20 @@ class WeatherChaosMode(GameMode):
             elif self.weather == "snow":
                 b.speed = b.base_speed * 0.6
                 b.damage = b.base_damage * 1.2
+            elif self.weather == "wind_east":
+                b.speed = b.base_speed
+                b.damage = b.base_damage
+                b.x += 150.0 * delta
+            elif self.weather == "wind_west":
+                b.speed = b.base_speed
+                b.damage = b.base_damage
+                b.x -= 150.0 * delta
+            elif self.weather == "storm":
+                b.speed = b.base_speed * 0.7
+                b.damage = b.base_damage
+                import random
+                b.x += random.uniform(-100, 100) * delta
+                b.y += random.uniform(-100, 100) * delta
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
