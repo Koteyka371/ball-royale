@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-180] Danger Zone Powerups — *2026-06-28 07:46:37 UTC*
+
+Balls can collect a specific powerup that makes them immune to Danger Zones for a short time, allowing them to use the zones for shortcuts or to escape pursuers.
+
+---
+
 ## [idea-201] Arena Traps — *2026-06-28 07:37:08 UTC*
 
 Introduce dynamic traps in the arena that are triggered by proximity, dealing damage or slowing down balls that step on them.

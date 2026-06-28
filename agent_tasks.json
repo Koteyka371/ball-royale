@@ -3167,7 +3167,7 @@
     },
     {
       "id": "idea-180",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Danger Zone Powerups",
@@ -4251,6 +4251,57 @@
         "src/ai/summoner_class.py",
         "src/ai/summoner_class.gd",
         "tests/test_summoner_class.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-244",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather specific buffs",
+      "description": "Balls gain specific buffs during certain weather conditions, such as 'Fire' balls dealing more damage in clear weather or 'Water' balls healing slightly in the rain.",
+      "allowed_paths": [
+        "src/ai/specific_buffs.py",
+        "src/ai/specific_buffs.gd",
+        "tests/test_specific_buffs.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-245",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather specific hazards",
+      "description": "Introduce hazards that only spawn during certain weather conditions, like tornadoes during wind storms or lightning strikes during rain.",
+      "allowed_paths": [
+        "src/arena/specific_hazards.py",
+        "src/arena/specific_hazards.gd",
+        "tests/test_specific_hazards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-246",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bumper Balls",
+      "description": "A new mode where balls deal zero damage but bounce each other with much higher knockback, aiming to push opponents off the arena.",
+      "allowed_paths": [
+        "src/ai/bumper_balls.py",
+        "src/ai/bumper_balls.gd",
+        "tests/test_bumper_balls.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
