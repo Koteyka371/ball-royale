@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-223] Chain Lightning Booster — *2026-06-28 10:46:34 UTC*
+
+A rare consumable booster that temporarily imbues the ball's attacks with chain lightning. The attack jumps to up to 2 additional nearby enemies, dealing 50% damage to secondary targets.
+
+---
+
 ## [idea-227] Night Mode — *2026-06-28 10:46:30 UTC*
 
 A variant mode where visibility is severely reduced, relying on a narrow cone of light or sonar-like pulses for perception.
