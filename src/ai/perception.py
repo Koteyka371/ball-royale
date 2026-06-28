@@ -35,6 +35,9 @@ class Perception:
         if hasattr(self.world, "arena") and getattr(self.world.arena, "is_sandstorming", None) is not None:
             if self.world.arena.is_sandstorming:
                 perception_radius = perception_radius * 0.3
+        if hasattr(self.world, "arena") and getattr(self.world.arena, "is_snowing", None) is not None:
+            if self.world.arena.is_snowing:
+                perception_radius = perception_radius * 0.6
 
         data: Dict[str, Any] = {
             "enemies": [],

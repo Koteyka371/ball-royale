@@ -623,6 +623,7 @@ class WeatherChaosMode(GameMode):
             world.arena.is_foggy = (self.weather in ["fog", "snow"])
             world.arena.is_raining = (self.weather == "rain")
             world.arena.is_sandstorming = (self.weather == "sandstorm")
+            world.arena.is_snowing = (self.weather == "snow")
 
         valid_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
 

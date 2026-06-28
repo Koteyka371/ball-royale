@@ -770,6 +770,10 @@ class WeatherChaosMode extends GameMode:
 				world.arena.is_sandstorming = true
 			else:
 				world.arena.is_sandstorming = false
+			if weather == "snow":
+				world.arena.is_snowing = true
+			else:
+				world.arena.is_snowing = false
 
 		for b in balls:
 			if b.alive and b.ball_type != "spectator":
