@@ -185,6 +185,11 @@ func get_random_spawn_point(radius: float) -> Array:
             rng.randf_range(room.y + radius, room.y + room.height - radius)]
 
 func is_point_inside(x: float, y: float, radius: float) -> bool:
+    var sz_cx = safe_zone_center[0]
+    var sz_cy = safe_zone_center[1]
+    var dist = sqrt((x - sz_cx)*(x - sz_cx) + (y - sz_cy)*(y - sz_cy))
+    if dist > safe_zone_radius - radius:
+        return false
     for r in rooms:
         if r.x + radius <= x and x <= r.x + r.width - radius and r.y + radius <= y and y <= r.y + r.height - radius:
             return true
@@ -218,6 +223,20 @@ func clamp_position(x: float, y: float, radius: float) -> Array:
             min_dist = dist
             nearest_x = cx
             nearest_y = cy
+
+    var sz_cx = safe_zone_center[0]
+    var sz_cy = safe_zone_center[1]
+    var sz_dist = sqrt((nearest_x - sz_cx)*(nearest_x - sz_cx) + (nearest_y - sz_cy)*(nearest_y - sz_cy))
+
+    if sz_dist > safe_zone_radius - radius:
+        if sz_dist > 0.0001:
+            var dir_x = (nearest_x - sz_cx) / sz_dist
+            var dir_y = (nearest_y - sz_cy) / sz_dist
+            nearest_x = sz_cx + dir_x * (safe_zone_radius - radius)
+            nearest_y = sz_cy + dir_y * (safe_zone_radius - radius)
+        else:
+            nearest_x = sz_cx
+            nearest_y = sz_cy
 
     return [nearest_x, nearest_y, true]
 
