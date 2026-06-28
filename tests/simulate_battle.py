@@ -21,6 +21,9 @@ from arena.arena_types import get_arena # type: ignore
 
 
 BALL_TYPES = {
+    "necromancer": {"hp": 90, "speed": 2.0, "damage": 15, "radius": 10,
+                    "perception_radius": 320, "aggression": 0.3, "color": "black",
+                    "skill": "raise_dead", "skill_cooldown": 8.0},
     "warrior": {"hp": 120, "speed": 2.0, "damage": 15, "radius": 12,
                 "perception_radius": 250, "aggression": 0.9, "color": "red",
                 "skill": "wave_attack", "skill_cooldown": 5.0},
@@ -173,6 +176,9 @@ class Ball:
     personality: str = "idle"
 
 
+    is_minion: bool = False
+    minion_owner: int = -1
+    time_since_death: float = 0.0
     copied_skill: str = ""
     mimic_targets: dict = field(default_factory=dict)
     copy_duration_required: float = 3.0
@@ -283,6 +289,7 @@ class BattleSimulation:
         self.height = arena_size
         self.arena = get_arena(arena_type, arena_size, seed=seed)
         self.balls: List[Ball] = []
+        self.dead_balls: List[Ball] = []
         self.boosters: List[Booster] = []
         self.max_ticks = max_ticks
         self.num_balls = num_balls
@@ -385,6 +392,11 @@ class BattleSimulation:
 
         for ball in self.balls:
             if not ball.alive:
+                if ball in self.dead_balls:
+                    ball.time_since_death += self._delta
+                else:
+                    ball.time_since_death = 0.0
+                    self.dead_balls.append(ball)
                 continue
 
             brain = self.brains.get(ball.id)

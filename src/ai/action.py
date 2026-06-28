@@ -56,6 +56,13 @@ class Action:
         else:
             self.ball.speed = self.ball.base_speed
 
+# Handle minion decay
+        if getattr(self.ball, "is_minion", False):
+            self.ball.hp -= 2.0 * delta  # Decay 2 HP per second
+            if self.ball.hp <= 0:
+                self.ball.hp = 0
+                self.ball.alive = False
+
         if getattr(self.ball, "is_decoy", False):
             self.ball.decoy_timer -= delta
             if self.ball.decoy_timer <= 0:
@@ -1521,6 +1528,31 @@ class Action:
 
             if skill_name == "command":
                 self.ball.team_message = {"type": "buff_command", "radius": 200}
+            elif skill_name == "raise_dead":
+                if hasattr(self.world, "dead_balls") and hasattr(self.world, "balls"):
+                    recent_dead = [b for b in self.world.dead_balls if getattr(b, "time_since_death", 0) < 5.0 and getattr(b, "team", "") != getattr(self.ball, "team", "")]
+                    if recent_dead:
+                        # Revive the most recently dead enemy as a weak minion
+                        import copy
+                        target_dead = recent_dead[-1]
+                        self.world.dead_balls.remove(target_dead)
+
+                        minion = copy.copy(target_dead)
+                        minion.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                        minion.hp = getattr(target_dead, "max_hp", 100) * 0.3 # Weak minion
+                        minion.max_hp = minion.hp
+                        minion.team = getattr(self.ball, "team", self.ball.ball_type)
+                        minion.is_minion = True
+                        minion.minion_owner = self.ball.id
+                        minion.alive = True
+                        # Minion decays over time, handled in action.py execute loop
+
+                        # Reset some stats
+                        minion.skill_timer = 0
+                        minion.attack_timer = 0
+                        minion.current_action = "idle"
+
+                        self.world.balls.append(minion)
             elif skill_name == "deploy_decoy":
                 import copy
                 if hasattr(self.world, "balls"):

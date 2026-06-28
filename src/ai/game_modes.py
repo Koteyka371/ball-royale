@@ -7,10 +7,21 @@ class GameMode:
         self.description = "Base game mode"
 
     def setup(self, world: Any, balls: List[Any]) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
         """Called at the start of the battle to initialize mode-specific rules/teams."""
         pass
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
         pass
 
 
@@ -25,6 +36,8 @@ class BattleRoyaleMode(GameMode):
         self.description = "Last man standing. Everyone for themselves."
 
     def setup(self, world: Any, balls: List[Any]) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
         valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
         for i, b in enumerate(valid_balls):
             if i >= 20:
@@ -70,6 +83,8 @@ class TeamDeathmatchMode(GameMode):
         self.description = "Two teams fight until one is eliminated."
 
     def setup(self, world: Any, balls: List[Any]) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
         # Split into two teams
         mid = len(balls) // 2
         for i, b in enumerate(balls):
@@ -93,6 +108,8 @@ class ZombieInfectionMode(GameMode):
         self.description = "One zombie infects others. Survivors win if time runs out."
 
     def setup(self, world: Any, balls: List[Any]) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
         import random
         # Pick 1 random zombie
         if balls:
@@ -106,6 +123,15 @@ class ZombieInfectionMode(GameMode):
                         b.team = "Survivor"
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
         survivors = [b for b in balls if getattr(b, "team", "") == "Survivor"]
         for survivor in survivors:
             if not getattr(survivor, "alive", False):
@@ -137,6 +163,8 @@ class BossFightMode(GameMode):
         self.name = "Boss Fight"
         self.description = "Multiple players fight one giant boss."
     def setup(self, world: Any, balls: List[Any]) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
         if balls:
             boss = balls[0]
             boss.team = "Boss"
@@ -186,6 +214,8 @@ class VIPDefenseMode(GameMode):
         self.description = "Protect the VIP. If the VIP dies, the attackers win."
 
     def setup(self, world: Any, balls: List[Any]) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
         mid = len(balls) // 2
         for i, b in enumerate(balls):
             if getattr(b, "ball_type", None) != "spectator":
@@ -220,6 +250,8 @@ class SurvivalMode(GameMode):
         self.description = "Players team up to survive against waves of enemies (simulated by having many enemies)."
 
     def setup(self, world: Any, balls: List[Any]) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
         players_count = min(4, len(balls))
         for i, b in enumerate(balls):
             if getattr(b, "ball_type", None) != "spectator":
@@ -251,6 +283,8 @@ class CaptureTheFlagMode(GameMode):
         self.description = "Teams try to steal the enemy's flag (a special booster) and return it to their base."
 
     def setup(self, world: Any, balls: List[Any]) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
         mid = len(balls) // 2
         for i, b in enumerate(balls):
             if getattr(b, "ball_type", None) != "spectator":
@@ -301,6 +335,8 @@ class EvolutionarySimulationMode(GameMode):
         self.description = "Only Neural Balls compete. After the match, a genetic algorithm breeds top performers."
 
     def setup(self, world: Any, balls: List[Any]) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
         # Convert everyone to Neural
         for i, b in enumerate(balls):
             if getattr(b, "ball_type", None) != "spectator":
@@ -326,6 +362,15 @@ class VampireRoyaleMode(GameMode):
         self.tick_timer = 0.0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
         self.tick_timer += delta
         if self.tick_timer >= 1.0:
             self.tick_timer = 0.0
@@ -363,12 +408,23 @@ class KingOfTheHillMode(GameMode):
         self.game_time = 0.0
 
     def setup(self, world: Any, balls: List[Any]) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
         self.game_time = 0.0
         for b in balls:
             if getattr(b, "ball_type", None) != "spectator":
                 b.score = 0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
         self.game_time += delta
         self.tick_timer += delta
         if self.tick_timer >= 0.5:
@@ -423,6 +479,15 @@ class BlackHoleMode(GameMode):
         self.black_hole_radius = 50.0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
         import math
         arena_width = 1000
         arena_height = 1000
@@ -483,6 +548,8 @@ class WeatherChaosMode(GameMode):
         self.random = random
 
     def setup(self, world: Any, balls: List[Any]) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
         valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
         for b in valid_balls:
             b.team = b.ball_type
@@ -492,6 +559,15 @@ class WeatherChaosMode(GameMode):
                 b.base_damage = getattr(b, "damage", 10.0)
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
         self.weather_timer += delta
         if self.weather_timer > 10.0:
             self.weather_timer = 0.0
@@ -542,6 +618,8 @@ class DominationMode(GameMode):
         self.points = []
 
     def setup(self, world: Any, balls: List[Any]) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
         mid = len(balls) // 2
         for i, b in enumerate(balls):
             if getattr(b, "ball_type", None) != "spectator":
@@ -571,6 +649,15 @@ class DominationMode(GameMode):
             pass
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
         for pt in self.points:
             red_count = 0
             blue_count = 0
