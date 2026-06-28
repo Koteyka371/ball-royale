@@ -2444,27 +2444,106 @@ func _use_skill():
 
     if skill_timer <= 0.0 and self.ball.has_method("use_skill"):
         self.ball.use_skill()
-        var cl = 0.0
-        if "charge_level" in self.ball:
-            cl = float(self.ball.charge_level)
-        elif self.ball.has_method("has_meta") and self.ball.has_meta("charge_level"):
-            cl = float(self.ball.get_meta("charge_level"))
-        if cl >= 100.0:
-            if "charge_level" in self.ball:
-                self.ball.charge_level = 0.0
-            elif self.ball.has_method("set_meta"):
-                self.ball.set_meta("charge_level", 0.0)
-            self.ball.charge_level = 0.0
-            var bd = 10.0
-            if "base_damage" in self.ball: bd = float(self.ball.base_damage)
-            elif "damage" in self.ball: bd = float(self.ball.damage)
-            self.ball.base_damage = bd * 2.0
-            self.ball.damage = self.ball.base_damage
+
         var skill_name = ""
         if "skill" in self.ball:
             skill_name = self.ball.skill
         elif "SKILL" in self.ball:
             skill_name = self.ball.SKILL
+
+        # Synergy Logic
+        var allies = []
+        if self.world.has("balls"):
+            for b in self.world.balls:
+                var is_alive = true
+                if "alive" in b: is_alive = b.alive
+                elif b.has_method("has_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+
+                var team = ""
+                if "team" in b: team = b.team
+                elif b.has_method("has_meta") and b.has_meta("team"): team = b.get_meta("team")
+
+                var my_team = ""
+                if "team" in self.ball: my_team = self.ball.team
+                elif self.ball.has_method("has_meta") and self.ball.has_meta("team"): my_team = self.ball.get_meta("team")
+
+                var b_id = -1
+                if "id" in b: b_id = b.id
+                elif b.has_method("has_meta") and b.has_meta("id"): b_id = b.get_meta("id")
+
+                var my_id = -2
+                if "id" in self.ball: my_id = self.ball.id
+                elif self.ball.has_method("has_meta") and self.ball.has_meta("id"): my_id = self.ball.get_meta("id")
+
+                if b_id != my_id and team == my_team and is_alive:
+                    allies.append(b)
+
+        var synergy_multiplier = 1.0
+
+        for ally in allies:
+            var ally_skill = ""
+            if "skill" in ally: ally_skill = ally.skill
+            elif "SKILL" in ally: ally_skill = ally.SKILL
+
+            if (skill_name == "elemental_burst" and ally_skill == "lightning_strike") or \
+               (skill_name == "lightning_strike" and ally_skill == "elemental_burst") or \
+               (skill_name == "fireball" and ally_skill == "smokescreen") or \
+               (skill_name == "smokescreen" and ally_skill == "fireball"):
+
+                var dx = self.ball.x - ally.x
+                var dy = self.ball.y - ally.y
+                if dx*dx + dy*dy < 40000:
+                    synergy_multiplier = 1.5
+
+                    if (skill_name == "elemental_burst" or ally_skill == "elemental_burst") and (skill_name == "lightning_strike" or ally_skill == "lightning_strike"):
+                        var enemies = _get_enemies()
+                        for enemy in enemies:
+                            var edx = enemy.x - self.ball.x
+                            var edy = enemy.y - self.ball.y
+                            if edx*edx + edy*edy < 40000:
+                                if "is_stunned" in enemy: enemy.is_stunned = true
+                                elif enemy.has_method("set_meta"): enemy.set_meta("is_stunned", true)
+
+                                var current_stun = 0.0
+                                if "stun_timer" in enemy: current_stun = enemy.stun_timer
+                                elif enemy.has_method("has_meta") and enemy.has_meta("stun_timer"): current_stun = enemy.get_meta("stun_timer")
+
+                                var new_stun = max(current_stun, 2.0)
+                                if "stun_timer" in enemy: enemy.stun_timer = new_stun
+                                elif enemy.has_method("set_meta"): enemy.set_meta("stun_timer", new_stun)
+
+                    elif (skill_name == "fireball" or ally_skill == "fireball") and (skill_name == "smokescreen" or ally_skill == "smokescreen"):
+                        var enemies = _get_enemies()
+                        for enemy in enemies:
+                            var edx = enemy.x - self.ball.x
+                            var edy = enemy.y - self.ball.y
+                            if edx*edx + edy*edy < 40000:
+                                if "hp" in enemy: enemy.hp -= 5
+                                elif enemy.has_method("has_meta") and enemy.has_meta("hp"): enemy.set_meta("hp", enemy.get_meta("hp") - 5)
+
+                    break
+
+        var cl = 0.0
+        if "charge_level" in self.ball:
+            cl = float(self.ball.charge_level)
+        elif self.ball.has_method("has_meta") and self.ball.has_meta("charge_level"):
+            cl = float(self.ball.get_meta("charge_level"))
+
+        var bd = 10.0
+        if "base_damage" in self.ball: bd = float(self.ball.base_damage)
+        elif "damage" in self.ball: bd = float(self.ball.damage)
+
+        if cl >= 100.0:
+            if "charge_level" in self.ball:
+                self.ball.charge_level = 0.0
+            elif self.ball.has_method("set_meta"):
+                self.ball.set_meta("charge_level", 0.0)
+            self.ball.base_damage = bd * 2.0 * synergy_multiplier
+        else:
+            self.ball.base_damage = bd * synergy_multiplier
+
+        self.ball.damage = self.ball.base_damage
+
 
 
         self.ball.use_skill()
