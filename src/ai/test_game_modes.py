@@ -198,3 +198,51 @@ def test_vampire_royale_mode():
 
     winner = mode.check_winner(world, balls)
     assert winner == "warrior"
+
+def test_domination_mode():
+    from ai.game_modes import DominationMode
+    mode = DominationMode()
+    world = MockWorld()
+    balls = [MockBall(1, "warrior"), MockBall(2, "scout"), MockBall(3, "mage"), MockBall(4, "tank")]
+
+    # Initialize some required stats to test the buff
+    for b in balls:
+        b.damage = 10.0
+        b.max_hp = 100.0
+        b.hp = 100.0
+
+    mode.setup(world, balls)
+
+    # Check teams
+    assert balls[0].team == "Red"
+    assert balls[1].team == "Red"
+    assert balls[2].team == "Blue"
+    assert balls[3].team == "Blue"
+
+    # Check points are initialized
+    assert len(mode.points) == 3
+    pt = mode.points[0]
+
+    # Move Red balls to point A
+    balls[0].x, balls[0].y = pt.x, pt.y
+    balls[1].x, balls[1].y = pt.x, pt.y
+    # Move Blue ball away
+    balls[2].x, balls[2].y = 0, 0
+    balls[3].x, balls[3].y = 0, 0
+
+    # Tick should capture the point over time
+    # 10.0 per tick * 10 ticks = 100
+    for _ in range(10):
+        mode.tick(world, balls, delta=1.0)
+
+    assert pt.owner == "Red"
+
+    # Red should receive buff: +5 damage, +20 max hp
+    assert balls[0].damage == 15.0
+    assert balls[0].max_hp == 120.0
+    assert balls[0].hp == 120.0
+
+    # Blue should not
+    assert balls[2].damage == 10.0
+    assert balls[2].max_hp == 100.0
+    assert balls[2].hp == 100.0
