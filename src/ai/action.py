@@ -175,6 +175,15 @@ class Action:
             self.ball.base_damage = getattr(self.ball, "damage", 10.0)
             self.ball._base_speed_set = True
 
+        if not hasattr(self.ball, "max_stamina"):
+            self.ball.max_stamina = 100.0
+            self.ball.stamina = 100.0
+
+        self.ball.is_dashing = False
+        if strategy in ["chase", "flee", "attack"] and getattr(self.ball, "stamina", 0) >= 30.0:
+            self.ball.is_dashing = True
+            self.ball.speed = self.ball.base_speed * 2.0
+
         if hasattr(self.world, "arena") and getattr(self.world.arena, "is_night", None) is not None:
             if self.world.arena.is_night:
                 self.ball.speed = self.ball.base_speed * 1.5
@@ -640,6 +649,14 @@ class Action:
             dy = self.ball.y - old_y
             self.ball.vx = dx / delta
             self.ball.vy = dy / delta
+
+            # Stamina regen/drain
+            import math
+            dist = math.sqrt(dx*dx + dy*dy)
+            if getattr(self.ball, "is_dashing", False):
+                self.ball.stamina = max(0.0, getattr(self.ball, "stamina", 0.0) - 50.0 * delta)
+            elif dist / max(0.0001, delta * 60) < getattr(self.ball, "base_speed", 2.0) * 0.5:
+                self.ball.stamina = min(getattr(self.ball, "max_stamina", 100.0), getattr(self.ball, "stamina", 0.0) + 30.0 * delta)
 
             if hasattr(self.ball, "distance_traveled"):
                 import math
@@ -2560,6 +2577,14 @@ class Action:
                             self.ball.attack_timer = new_cooldown
                             if new_cooldown >= 0.8:
                                 self.ball.stutter_timer = min(new_cooldown * 0.4, 0.4)
+
+        # Regen/Drain Stamina at end of execution
+        import math
+        dist = math.sqrt((getattr(self.ball, "x", 0) - old_x)**2 + (getattr(self.ball, "y", 0) - old_y)**2)
+        if getattr(self.ball, "is_dashing", False):
+            self.ball.stamina = max(0.0, getattr(self.ball, "stamina", 0.0) - 50.0 * delta)
+        elif dist / max(0.0001, delta * 60) < getattr(self.ball, "base_speed", 2.0) * 0.5:
+            self.ball.stamina = min(getattr(self.ball, "max_stamina", 100.0), getattr(self.ball, "stamina", 0.0) + 30.0 * delta)
 
     def _intercept(self, delta: float) -> None:
         enemies = self._get_enemies()

@@ -1,0 +1,4 @@
+{
+  "title": "Exhaustion Effect",
+  "description": "Balls with 0 stamina are briefly exhausted, slowing their base speed and lowering their damage until stamina regenerates to at least 20%."
+}

@@ -27,7 +27,8 @@ class StatsOverlay:
                 top_killers.append({
                     "id": b.get('id', '?'),
                     "type": str(b.get('type', 'unknown')).upper(),
-                    "kills": b.get('kills', 0)
+                    "kills": b.get('kills', 0),
+                    "stamina": b.get('stamina', 100.0)
                 })
         self.stats["top_killers"] = top_killers
 
@@ -41,5 +42,5 @@ class StatsOverlay:
         if self.stats['top_killers']:
             lines.append("Top Killers:")
             for k in self.stats['top_killers']:
-                lines.append(f" - {k['type']}-{k['id']}: {k['kills']} kills")
+                lines.append(f" - {k['type']}-{k['id']}: {k['kills']} kills (Stamina: {int(k.get('stamina', 100))}%)")
         return "\n".join(lines)

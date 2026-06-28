@@ -44,7 +44,8 @@ func update_stats(balls_data: Array):
         var b_type = str(b.get("type", "unknown")).to_upper()
         var b_id = str(b.get("id", "?"))
         var b_kills = b.get("kills", 0)
-        top_killers.append(" - %s-%s: %d kills" % [b_type, b_id, b_kills])
+        var b_stam = int(b.get("stamina", 100.0))
+        top_killers.append(" - %s-%s: %d kills (Stamina: %d%%)" % [b_type, b_id, b_kills, b_stam])
 
     if top_killers.size() > 0:
         text += "\nTop Killers:\n" + "\n".join(top_killers)
