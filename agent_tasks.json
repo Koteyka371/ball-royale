@@ -3303,7 +3303,7 @@
     },
     {
       "id": "idea-188",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "EMP Trap Variant",
@@ -4932,6 +4932,74 @@
         "src/arena/magnetic_hazards.py",
         "src/arena/magnetic_hazards.gd",
         "tests/test_magnetic_hazards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-284",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Ball Skill",
+      "description": "A new skill that creates an AI-controlled illusion of the ball that deals no damage but taunts nearby enemies into attacking it, absorbing one hit before exploding.",
+      "allowed_paths": [
+        "src/ai/decoy_ball_skill.py",
+        "src/ai/decoy_ball_skill.gd",
+        "tests/test_decoy_ball_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-285",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Fog of War Mode",
+      "description": "Similar to vision reduced mode but a completely dark screen with only a cone of light matching the AI's actual perception radius.",
+      "allowed_paths": [
+        "src/ai/fog_of_war.py",
+        "src/ai/fog_of_war.gd",
+        "tests/test_fog_of_war.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-286",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Invisibility Cloak Item",
+      "description": "A new collectable item that drastically reduces the collector's radius for perception by other balls for a limited time.",
+      "allowed_paths": [
+        "src/ai/invisibility_cloak_item.py",
+        "src/ai/invisibility_cloak_item.gd",
+        "tests/test_invisibility_cloak_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-287",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Orbital Laser Strike Hazard",
+      "description": "A new procedural arena hazard that paints a large target area on the ground for 3 seconds before dealing massive localized damage and applying a strong outward knockback.",
+      "allowed_paths": [
+        "src/arena/orbital_laser_strike.py",
+        "src/arena/orbital_laser_strike.gd",
+        "tests/test_orbital_laser_strike.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

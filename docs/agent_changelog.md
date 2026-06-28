@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-188] EMP Trap Variant — *2026-06-28 10:54:57 UTC*
+
+Introduce an EMP trap variant that disables enemies' abilities and removes all positive buffs (like speed boosts) for 2 seconds instead of dealing direct damage or stun, useful against highly aggressive ball types.
+
+---
+
 ## [idea-223] Chain Lightning Booster — *2026-06-28 10:46:34 UTC*
 
 A rare consumable booster that temporarily imbues the ball's attacks with chain lightning. The attack jumps to up to 2 additional nearby enemies, dealing 50% damage to secondary targets.
