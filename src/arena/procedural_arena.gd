@@ -222,12 +222,18 @@ func update_zone(current_tick: int, delta: float) -> void:
                 if h.radius > h.target_radius:
                     h.radius = h.target_radius
 
+
         if current_tick % 600 == 0:
             var new_hazards = []
             for h in hazards:
                 if h.id < 1000:
                     new_hazards.append(h)
             hazards = new_hazards
+
+            var event_types = ["meteor_shower", "gravity_shift", "moving_walls", "none"]
+            var event_type = event_types[randi() % event_types.size()]
+            if event_type != "none":
+                _trigger_event(event_type, current_tick)
 
             var num_zones = (randi() % 3) + 1
             for i in range(num_zones):
@@ -621,6 +627,31 @@ class AmbushArena extends ProceduralArena:
 
         # 1 central hazard to discourage staying in the open
         hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 80.0, "lava", 20.0))
+
+
+func _trigger_event(event_type: String, current_tick: int) -> void:
+    if event_type == "meteor_shower":
+        var num_meteors = (randi() % 11) + 5
+        for i in range(num_meteors):
+            var x = randf_range(50, width - 50)
+            var y = randf_range(50, height - 50)
+            var h_id = 2000 + hazards.size() + (randi() % 1000)
+            var meteor = ProceduralArena.Hazard.new(h_id, x, y, 30.0, "meteor", 200.0)
+            meteor.target_radius = 30.0
+            meteor.set_meta("duration", 5.0)
+            hazards.append(meteor)
+    elif event_type == "gravity_shift":
+        var h_id = 3000 + hazards.size()
+        var gw = ProceduralArena.Hazard.new(h_id, width/2, height/2, width/2, "gravity_well", 0.0)
+        gw.target_radius = width/2
+        gw.set_meta("duration", 10.0)
+        hazards.append(gw)
+    elif event_type == "moving_walls":
+        var h_id = 4000 + hazards.size()
+        var wall = ProceduralArena.Hazard.new(h_id, width/2, height/2, 100.0, "laser_wall", 50.0)
+        wall.target_radius = width
+        wall.set_meta("duration", 8.0)
+        hazards.append(wall)
 
 func _update_danger_grid() -> void:
     danger_grid.clear()

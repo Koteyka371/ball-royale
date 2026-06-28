@@ -297,6 +297,32 @@ func execute(strategy: String, delta: float):
                                 self.ball.x = (self.ball.x + old_x) / 2.0
                                 self.ball.y = (self.ball.y + old_y) / 2.0
                         continue
+
+                    elif hazard.kind == "meteor":
+                        var hd = hazard.damage * delta
+                        if self.ball.has_method("take_damage"):
+                            self.ball.take_damage(hd)
+                        elif "hp" in self.ball:
+                            self.ball.hp -= hd
+                            if self.ball.hp <= 0:
+                                self.ball.alive = false
+                        continue
+                    elif hazard.kind == "laser_wall":
+                        var hd = hazard.damage * delta
+                        if self.ball.has_method("take_damage"):
+                            self.ball.take_damage(hd)
+                        elif "hp" in self.ball:
+                            self.ball.hp -= hd
+                            if self.ball.hp <= 0:
+                                self.ball.alive = false
+
+                        var dx = self.ball.x - hazard.x
+                        var dy = self.ball.y - hazard.y
+                        var dist = sqrt(dx*dx + dy*dy)
+                        if dist > 0.0001:
+                            self.ball.x += (dx/dist) * 200.0 * delta
+                            self.ball.y += (dy/dist) * 200.0 * delta
+                        continue
                     elif hazard.kind == "poison_cloud":
                         if self.ball.has_method("set_meta"):
                             self.ball.set_meta("dot_duration", 3.0)

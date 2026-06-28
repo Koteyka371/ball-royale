@@ -195,12 +195,18 @@ class ProceduralArena:
                         if h.radius > h.target_radius:
                             h.radius = h.target_radius
 
+
         if current_tick % 600 == 0:
-            # Spawn dynamic danger zones periodically
             import random
 
             # Clear old dynamic hazards
             self.hazards = [h for h in self.hazards if h.id < 1000]
+
+            # Periodically trigger random arena-wide events
+            event_type = random.choice(["meteor_shower", "gravity_shift", "moving_walls", "none"])
+            if event_type != "none":
+                self._trigger_event(event_type, current_tick)
+
             num_zones = random.randint(1, 3)
             for _ in range(num_zones):
                 x = random.uniform(200, self.width - 200)
@@ -223,6 +229,35 @@ class ProceduralArena:
 
         if current_tick % 10 == 0:
             self._update_danger_grid()
+
+
+    def _trigger_event(self, event_type: str, current_tick: int):
+        import random
+        if event_type == "meteor_shower":
+            # Spawn multiple small, high-damage hazards quickly
+            num_meteors = random.randint(5, 15)
+            for _ in range(num_meteors):
+                x = random.uniform(50, self.width - 50)
+                y = random.uniform(50, self.height - 50)
+                h_id = 2000 + len(self.hazards) + random.randint(0, 1000)
+                meteor = Hazard(id=h_id, x=x, y=y, radius=30.0, kind="meteor", damage=200.0)
+                meteor.target_radius = 30.0
+                setattr(meteor, "duration", 5.0)
+                self.hazards.append(meteor)
+        elif event_type == "gravity_shift":
+            # Add a massive gravity well in the center
+            h_id = 3000 + len(self.hazards)
+            gw = Hazard(id=h_id, x=self.width/2, y=self.height/2, radius=self.width/2, kind="gravity_well", damage=0.0)
+            gw.target_radius = self.width/2
+            setattr(gw, "duration", 10.0)
+            self.hazards.append(gw)
+        elif event_type == "moving_walls":
+            # Add horizontal and vertical laser walls
+            h_id = 4000 + len(self.hazards)
+            wall = Hazard(id=h_id, x=self.width/2, y=self.height/2, radius=100.0, kind="laser_wall", damage=50.0)
+            wall.target_radius = self.width
+            setattr(wall, "duration", 8.0)
+            self.hazards.append(wall)
 
     def _update_danger_grid(self):
         self.danger_grid.clear()
