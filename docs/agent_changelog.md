@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-173] Weather Effects Simulator — *2026-06-28 12:04:23 UTC*
+
+Add dynamic weather during matches (e.g., rain makes the arena slippery and affects movement physics, fog limits perception radius).
+
+---
+
 ## [idea-229] Shrinking Arena Edge Effect — *2026-06-28 11:54:24 UTC*
 
 To supplement shrinking zones, visually restrict the playable arena size by destroying the arena walls from the outside in, pushing all objects physically towards the center over time.

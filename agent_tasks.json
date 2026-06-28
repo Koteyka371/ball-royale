@@ -3030,7 +3030,7 @@
     },
     {
       "id": "idea-173",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather Effects Simulator",
@@ -5341,6 +5341,40 @@
         "src/arena/seasonal_arenas.py",
         "src/arena/seasonal_arenas.gd",
         "tests/test_seasonal_arenas.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-308",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Safe Zone Migration",
+      "description": "Instead of the safe zone merely shrinking toward the center of the arena, make the safe zone's center slowly migrate around the arena as it shrinks. This forces players to constantly reposition and prevents them from simply camping the exact center early in the game.",
+      "allowed_paths": [
+        "src/ai/dynamic_safe_zone_migration.py",
+        "src/ai/dynamic_safe_zone_migration.gd",
+        "tests/test_dynamic_safe_zone_migration.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-309",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Zone Collapse Event",
+      "description": "At the very end of the match when the shrinking zone reaches its minimum radius, trigger a sudden 'Collapse Event' where the zone collapses entirely into a single point, dramatically increasing damage and pulling all remaining balls inward with a strong gravitational force to force an immediate winner.",
+      "allowed_paths": [
+        "src/ai/shrinking_zone_collapse.py",
+        "src/ai/shrinking_zone_collapse.gd",
+        "tests/test_shrinking_zone_collapse.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
