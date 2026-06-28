@@ -9,7 +9,21 @@ func _attempt_damage(attacker, target) -> void:
 		if target.get_meta("ricochet_barrier_timer") > 0.0:
 			has_ricochet = true
 
+	var has_reflect = false
+	if "reflect_shield_active" in target and target.reflect_shield_active:
+		has_reflect = true
+	elif target.has_method("get_meta") and target.has_meta("reflect_shield_active"):
+		if target.get_meta("reflect_shield_active"):
+			has_reflect = true
+
 	if has_ricochet:
+		if self.world != null and self.world.has_method("_deal_damage"):
+			self.world._deal_damage(target, attacker)
+	elif has_reflect:
+		if "reflect_shield_active" in target:
+			target.reflect_shield_active = false
+		elif target.has_method("set_meta"):
+			target.set_meta("reflect_shield_active", false)
 		if self.world != null and self.world.has_method("_deal_damage"):
 			self.world._deal_damage(target, attacker)
 	else:
@@ -3180,6 +3194,23 @@ func _trigger_ripple_effect():
 func _update_skill_timer(delta: float):
     if "skill_timer" in self.ball and self.ball.skill_timer > 0:
         self.ball.skill_timer -= delta
+
+    var reflect_shield_timer = 0.0
+    if "reflect_shield_timer" in self.ball:
+        reflect_shield_timer = self.ball.reflect_shield_timer
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("reflect_shield_timer"):
+        reflect_shield_timer = self.ball.get_meta("reflect_shield_timer")
+
+    if reflect_shield_timer > 0:
+        if "reflect_shield_timer" in self.ball:
+            self.ball.reflect_shield_timer -= delta
+            if self.ball.reflect_shield_timer <= 0:
+                self.ball.reflect_shield_active = false
+        elif self.ball.has_method("set_meta"):
+            var new_timer = reflect_shield_timer - delta
+            self.ball.set_meta("reflect_shield_timer", new_timer)
+            if new_timer <= 0:
+                self.ball.set_meta("reflect_shield_active", false)
 
 
     var ricochet_barrier_timer = 0.0

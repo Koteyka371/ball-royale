@@ -6,7 +6,13 @@ class Action:
 
     def _attempt_damage(self, attacker, target) -> None:
         has_ricochet = getattr(target, "ricochet_barrier_timer", 0.0) > 0.0
+        has_reflect_shield = getattr(target, "reflect_shield_active", False)
         if has_ricochet:
+            if hasattr(self.world, "_deal_damage"):
+                self.world._deal_damage(target, attacker)
+        elif has_reflect_shield:
+            # Shield consumes on use and reflects damage
+            target.reflect_shield_active = False
             if hasattr(self.world, "_deal_damage"):
                 self.world._deal_damage(target, attacker)
         else:
@@ -205,12 +211,24 @@ class Action:
                                 hazard.duration = 0.0 # Setup for cleanup
 
                                 # Take damage
-                                if hasattr(self.ball, "take_damage"):
-                                    self.ball.take_damage(hazard.damage)
-                                elif hasattr(self.ball, "hp"):
-                                    self.ball.hp -= hazard.damage
-                                    if self.ball.hp <= 0:
-                                        self.ball.alive = False
+                                if getattr(self.ball, "reflect_shield_active", False):
+                                    self.ball.reflect_shield_active = False
+                                    if hasattr(hazard, "owner_id") and hasattr(self.world, "balls"):
+                                        # Try to find owner and deal damage to them
+                                        for b in self.world.balls:
+                                            if getattr(b, "id", None) == hazard.owner_id:
+                                                if hasattr(self.world, "_deal_damage"):
+                                                    self.world._deal_damage(self.ball, b)
+                                                elif hasattr(b, "take_damage"):
+                                                    b.take_damage(hazard.damage)
+                                                break
+                                else:
+                                    if hasattr(self.ball, "take_damage"):
+                                        self.ball.take_damage(hazard.damage)
+                                    elif hasattr(self.ball, "hp"):
+                                        self.ball.hp -= hazard.damage
+                                        if self.ball.hp <= 0:
+                                            self.ball.alive = False
 
                                 # Slow down the ball using stutter_timer logic
                                 self.ball.stutter_timer = getattr(self.ball, "stutter_timer", 0.0) + 2.0
@@ -1802,6 +1820,9 @@ class Action:
             elif skill_name == "shield":
                 if hasattr(self.ball, "hp"):
                     self.ball.hp = min(getattr(self.ball, "max_hp", 100), self.ball.hp + 20)
+                # Activate reflect shield
+                self.ball.reflect_shield_active = True
+                self.ball.reflect_shield_timer = 5.0
             elif skill_name == "heal":
                 if hasattr(self.ball, "hp"):
                     self.ball.hp = min(getattr(self.ball, "max_hp", 100), self.ball.hp + 30)
@@ -2113,6 +2134,10 @@ class Action:
             self.ball.kite_trap_timer -= delta
         if hasattr(self.ball, "stutter_timer") and self.ball.stutter_timer > 0:
             self.ball.stutter_timer -= delta
+        if hasattr(self.ball, "reflect_shield_timer") and self.ball.reflect_shield_timer > 0:
+            self.ball.reflect_shield_timer -= delta
+            if self.ball.reflect_shield_timer <= 0:
+                self.ball.reflect_shield_active = False
 
     # Refactor: Confirmed kite functionality for Sniper
     def _kite(self, delta: float) -> None:
