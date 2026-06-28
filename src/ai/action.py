@@ -2079,23 +2079,29 @@ class Action:
 
                 elemental_effect = None
 
-                # Check for elemental interactions with hazards
+                # Check for elemental interactions and hazard destruction
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    hazards_to_remove = []
                     for hazard in self.world.arena.hazards:
-                        if hasattr(hazard, "kind") and hazard.kind in ["lava", "poison_cloud"] and getattr(hazard, "active", True):
-                            hx = getattr(hazard, "x", 0) - getattr(self.ball, "x", 0)
-                            hy = getattr(hazard, "y", 0) - getattr(self.ball, "y", 0)
-                            h_dist = math.sqrt(hx*hx + hy*hy)
-                            # If explosion hits the hazard
-                            if h_dist <= explosion_radius + getattr(hazard, "radius", 0):
-                                # Trigger secondary explosion: larger radius, hazard-specific effect
-                                explosion_radius = 200.0
-                                # Add elemental debuff effect based on hazard kind
-                                if hazard.kind == "lava":
-                                    elemental_effect = "fire_aura"
-                                elif hazard.kind == "poison_cloud":
-                                    elemental_effect = "poison_aura"
-                                break
+                        hx = getattr(hazard, "x", 0) - getattr(self.ball, "x", 0)
+                        hy = getattr(hazard, "y", 0) - getattr(self.ball, "y", 0)
+                        h_dist = math.sqrt(hx*hx + hy*hy)
+                        if h_dist <= explosion_radius + getattr(hazard, "radius", 0):
+                            if hasattr(hazard, "kind"):
+                                if hazard.kind in ["spikes", "fake_booster"]:
+                                    hazards_to_remove.append(hazard)
+                                elif hazard.kind in ["lava", "poison_cloud"] and getattr(hazard, "active", True):
+                                    # Trigger secondary explosion: larger radius, hazard-specific effect
+                                    explosion_radius = 200.0
+                                    # Add elemental debuff effect based on hazard kind
+                                    if hazard.kind == "lava":
+                                        elemental_effect = "fire_aura"
+                                    elif hazard.kind == "poison_cloud":
+                                        elemental_effect = "poison_aura"
+
+                    for h in hazards_to_remove:
+                        if h in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(h)
 
                 # Deal damage to enemies
                 if enemies:
@@ -2122,6 +2128,37 @@ class Action:
                         self.world.arena.rooms.append(new_room)
                     except ImportError:
                         pass
+
+            elif skill_name == "ground_pound":
+                import math
+                pound_radius = 120.0
+                pound_damage = 40.0
+
+                # Deal damage to enemies
+                enemies = self._get_enemies()
+                if enemies:
+                    for enemy in enemies:
+                        dx = getattr(enemy, "x", 0) - self.ball.x
+                        dy = getattr(enemy, "y", 0) - self.ball.y
+                        dist = math.sqrt(dx*dx + dy*dy)
+                        if dist <= pound_radius + getattr(enemy, "radius", 0):
+                            enemy.take_damage(pound_damage)
+                            # Stun effect or knockback could be added here
+
+                # Destroy hazards
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    hazards_to_remove = []
+                    for hazard in self.world.arena.hazards:
+                        hx = getattr(hazard, "x", 0) - getattr(self.ball, "x", 0)
+                        hy = getattr(hazard, "y", 0) - getattr(self.ball, "y", 0)
+                        h_dist = math.sqrt(hx*hx + hy*hy)
+                        if h_dist <= pound_radius + getattr(hazard, "radius", 0):
+                            if hasattr(hazard, "kind") and hazard.kind in ["spikes", "fake_booster"]:
+                                hazards_to_remove.append(hazard)
+
+                    for h in hazards_to_remove:
+                        if h in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(h)
 
             elif skill_name == "target_strong":
                 import random
