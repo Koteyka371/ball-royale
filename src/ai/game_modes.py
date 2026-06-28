@@ -980,6 +980,64 @@ class CustomMatchMode(GameMode):
 
 from ai.interactive_training import InteractiveTrainingMode
 
+
+class VisionReducedMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Vision Reduced"
+        self.description = "Visibility is severely reduced. AI relies on narrow cones of light or sonar-like pulses."
+        self.pulse_timer = 0.0
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator":
+                b.base_perception_radius = getattr(b, "perception_radius", 250)
+                b.perception_radius = 50.0  # Severely reduced base visibility
+                b.team = b.ball_type
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+
+        self.pulse_timer += delta
+        is_pulse_active = False
+        if self.pulse_timer >= 3.0:
+            if self.pulse_timer >= 3.5:
+                self.pulse_timer = 0.0
+            else:
+                is_pulse_active = True
+
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                # Sonar-like pulses temporarily restore or enhance perception
+                if is_pulse_active:
+                    b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 1.5
+                else:
+                    b.perception_radius = 50.0
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
+        if len(teams_alive) == 1:
+            return list(teams_alive)[0]
+
+        if len(alive) == 1:
+            return alive[0].ball_type
+
+        return None
+
 class DynamicHazardsMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -1025,6 +1083,7 @@ class DynamicHazardsMode(GameMode):
 
 GAME_MODES = {
     "memory_traps": MemoryTrapsMode(),
+    "vision_reduced": VisionReducedMode(),
     "dynamic_hazards": DynamicHazardsMode(),
     "custom_match": CustomMatchMode(),
     "reverse_event": ReverseEventMode(),

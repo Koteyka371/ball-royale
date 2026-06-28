@@ -1194,6 +1194,85 @@ class CustomMatchMode extends GameMode:
 
 
 
+
+class VisionReducedMode extends GameMode:
+	var pulse_timer: float = 0.0
+
+	func _init() -> void:
+		name = "Vision Reduced"
+		description = "Visibility is severely reduced. AI relies on narrow cones of light or sonar-like pulses."
+
+	func setup(world, balls: Array) -> void:
+		if not "dead_balls" in world:
+			world.dead_balls = []
+		for b in balls:
+			if b.ball_type != "spectator":
+				var base_perc = 250.0
+				if "perception_radius" in b:
+					base_perc = float(b.perception_radius)
+				if b.has_method("set_meta"):
+					b.set_meta("base_perception_radius", base_perc)
+				b.perception_radius = 50.0
+				if not "team" in b:
+					b.team = b.ball_type
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if not "dead_balls" in world:
+			world.dead_balls = []
+		for b in balls:
+			if not b.alive:
+				if not world.dead_balls.has(b):
+					if b.has_method("set_meta"):
+						b.set_meta("time_since_death", 0.0)
+					world.dead_balls.append(b)
+				else:
+					if b.has_method("get_meta") and b.has_meta("time_since_death"):
+						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+
+		pulse_timer += delta
+		var is_pulse_active = false
+		if pulse_timer >= 3.0:
+			if pulse_timer >= 3.5:
+				pulse_timer = 0.0
+			else:
+				is_pulse_active = true
+
+		for b in balls:
+			if b.alive and b.ball_type != "spectator":
+				if is_pulse_active:
+					var base_perc = 250.0
+					if b.has_method("get_meta") and b.has_meta("base_perception_radius"):
+						base_perc = b.get_meta("base_perception_radius")
+					b.perception_radius = base_perc * 1.5
+				else:
+					b.perception_radius = 50.0
+
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.alive and b.ball_type != "spectator":
+				alive.append(b)
+
+		if alive.size() == 0:
+			if has_method("_award_skill_points"): call("_award_skill_points")
+			return "Draw"
+
+		var teams_alive = {}
+		for b in alive:
+			var t = b.get("team")
+			if t == null: t = b.ball_type
+			teams_alive[t] = true
+
+		if teams_alive.size() == 1:
+			if has_method("_award_skill_points"): call("_award_skill_points")
+			return teams_alive.keys()[0]
+
+		if alive.size() == 1:
+			if has_method("_award_skill_points"): call("_award_skill_points")
+			return alive[0].ball_type
+
+		return null
+
 class DynamicHazardsMode extends GameMode:
 	var spawn_timer = 0.0
 	var rng = RandomNumberGenerator.new()
@@ -1244,6 +1323,7 @@ class DynamicHazardsMode extends GameMode:
 
 var GAME_MODES = {
 	"memory_traps": MemoryTrapsMode.new(),
+	"vision_reduced": VisionReducedMode.new(),
 	"dynamic_hazards": DynamicHazardsMode.new(),
 	"custom_match": CustomMatchMode.new(),
 	"reverse_event": ReverseEventMode.new(),
