@@ -102,7 +102,20 @@ func scan() -> Dictionary:
 
     data["enemies"] = []
     for e in entities.get("enemies", []):
-        if not intersects_smoke.call(e): data["enemies"].append(e)
+        if intersects_smoke.call(e): continue
+
+        var e_has_stealth = false
+        if "has_stealth_drone" in e and e.has_stealth_drone:
+            e_has_stealth = true
+        elif e.has_method("get_meta") and e.has_meta("has_stealth_drone") and e.get_meta("has_stealth_drone"):
+            e_has_stealth = true
+
+        if e_has_stealth:
+            var dist = sqrt(pow(e.x - bx_curr, 2) + pow(e.y - by_curr, 2))
+            if dist > 80.0:
+                continue
+
+        data["enemies"].append(e)
     data["allies"] = []
     for e in entities.get("allies", []):
         if not intersects_smoke.call(e): data["allies"].append(e)
@@ -162,7 +175,7 @@ func scan() -> Dictionary:
                                 break
                         if not found:
                             data["boosters"].append(h)
-                elif "kind" in h and h.kind == "drone_item":
+                elif "kind" in h and (h.kind == "drone_item" or h.kind == "stealth_drone_item"):
                     var found = false
                     for b in data["boosters"]:
                         if "id" in b and "id" in h and b.id == h.id:
