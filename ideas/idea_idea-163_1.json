@@ -1,0 +1,4 @@
+{
+  "title": "Time Rift Mechanics",
+  "description": "Introduce a rare dynamic hazard called 'Time Rift'. Balls entering a Time Rift have their tick rate momentarily doubled while active cooldowns tick down faster, enabling intense burst plays but draining their HP slightly per tick."
+}

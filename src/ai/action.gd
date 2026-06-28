@@ -155,6 +155,16 @@ func execute(strategy: String, delta: float):
                             var pull_strength = (hazard.radius * 2.0 / min_dist) * 50.0 * delta
                             self.ball.x += nx * pull_strength
                             self.ball.y += ny * pull_strength
+                elif hazard.kind == "HealingSprings":
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    if dist_sq < hazard.radius * hazard.radius:
+                        var heal_amount = 10.0 * delta
+                        if self.ball.has_method("heal"):
+                            self.ball.heal(heal_amount)
+                        elif "hp" in self.ball and "max_hp" in self.ball:
+                            self.ball.hp = min(self.ball.max_hp, self.ball.hp + heal_amount)
                 elif hazard.kind == "black_hole":
                     var current_tick = 0
                     if "tick" in self.world:

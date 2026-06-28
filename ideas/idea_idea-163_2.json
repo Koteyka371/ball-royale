@@ -1,0 +1,4 @@
+{
+  "title": "Shrink Ray Booster",
+  "description": "Add a new booster type called 'Shrink Ray'. When picked up, the ball temporarily shrinks by 30% in radius, increasing movement speed and evasiveness but making them take slightly more knockback from attacks."
+}

@@ -97,6 +97,16 @@ class Action:
                                 pull_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 50.0 * delta
                                 self.ball.x += nx * pull_strength
                                 self.ball.y += ny * pull_strength
+                    elif hazard.kind == "HealingSprings":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            heal_amount = 10.0 * delta
+                            if hasattr(self.ball, "heal"):
+                                self.ball.heal(heal_amount)
+                            elif hasattr(self.ball, "hp") and hasattr(self.ball, "max_hp"):
+                                self.ball.hp = min(self.ball.max_hp, self.ball.hp + heal_amount)
                     elif hazard.kind == "black_hole":
                         # Only update global state once per frame using the tick counter
                         current_tick = getattr(self.world, "tick", 0)

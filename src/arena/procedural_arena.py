@@ -196,8 +196,11 @@ class ProceduralArena:
                 radius = random.uniform(100.0, 250.0)
                 # Ensure hazard ID is unique
                 h_id = 1000 + len(self.hazards)
-                if random.random() < 0.2:
+                rand_val = random.random()
+                if rand_val < 0.2:
                     self.hazards.append(Hazard(id=h_id, x=x, y=y, radius=radius, kind="gravity_well", damage=0.0))
+                elif rand_val < 0.4:
+                    self.hazards.append(Hazard(id=h_id, x=x, y=y, radius=radius, kind="HealingSprings", damage=0.0))
                 else:
                     self.hazards.append(Hazard(id=h_id, x=x, y=y, radius=radius, kind="trap", damage=100.0))
 
