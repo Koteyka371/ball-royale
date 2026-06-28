@@ -838,7 +838,49 @@ class MovingZoneMode extends GameMode:
 
         return null
 
+
+
+class ReverseEventMode extends GameMode:
+	var event_timer: float = 0.0
+	var event_active: bool = false
+	var event_duration: float = 0.0
+
+	func _init() -> void:
+		name = "Reverse Event"
+		description = "A random event reverses movement logic for 10 seconds."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if not event_active:
+			event_timer += delta
+
+		if not event_active and event_timer > 20.0:
+			if randf() < 0.1:  # 10% chance every 20 seconds to trigger
+				event_active = true
+				event_duration = 10.0
+				event_timer = 0.0
+				print("REVERSE EVENT TRIGGERED!")
+			else:
+				event_timer = 0.0
+
+		if event_active:
+			event_duration -= delta
+			if event_duration <= 0:
+				event_active = false
+				event_timer = 0.0
+				print("REVERSE EVENT ENDED!")
+
+			# Apply reverse logic directly to balls
+			for b in balls:
+				if b.alive:
+					var vx = 0.0
+					var vy = 0.0
+					if "vx" in b: vx = b.vx
+					if "vy" in b: vy = b.vy
+					b.x -= vx * delta * 2 # Reverse the velocity applied in action.gd
+					b.y -= vy * delta * 2
+
 var GAME_MODES = {
+	"reverse_event": ReverseEventMode.new(),
     "weather_chaos": WeatherChaosMode.new(),
     "domination": DominationMode.new(),
     "black_hole": BlackHoleMode.new(),
