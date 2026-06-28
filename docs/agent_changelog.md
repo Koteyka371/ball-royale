@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-184] Reverse Controls Modifier — *2026-06-28 07:17:01 UTC*
+
+A random event that happens mid-game, reversing the movement logic for all balls for 10 seconds, forcing them to adapt their AI vectors.
+
+---
+
 ## [idea-174] Destructible Terrain — *2026-06-28 07:08:38 UTC*
 
 Walls and rooms can be broken using explosive abilities.

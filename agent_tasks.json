@@ -3235,7 +3235,7 @@
     },
     {
       "id": "idea-184",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Reverse Controls Modifier",
@@ -4081,6 +4081,40 @@
         "src/ai/black_hole_synergy.py",
         "src/ai/black_hole_synergy.gd",
         "tests/test_black_hole_synergy.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-234",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Reaction Explosions",
+      "description": "When an explosion hits a specific hazard like lava or poison cloud, it triggers a secondary elemental explosion spreading the effect over a larger area.",
+      "allowed_paths": [
+        "src/ai/chain_reaction_explosions.py",
+        "src/ai/chain_reaction_explosions.gd",
+        "tests/test_chain_reaction_explosions.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-235",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Destructible Hazards",
+      "description": "Allow powerful skills like explosion or ground_pound to permanently destroy hazards such as spikes and fake boosters, temporarily clearing a safe path.",
+      "allowed_paths": [
+        "src/arena/destructible_hazards.py",
+        "src/arena/destructible_hazards.gd",
+        "tests/test_destructible_hazards.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
