@@ -55,6 +55,28 @@ func execute(strategy: String, delta: float):
             if "speed" in my_ball:
                 my_ball.speed = 0.01
 
+    var is_decoy = false
+    if "is_decoy" in my_ball:
+        is_decoy = my_ball.is_decoy
+    elif my_ball.has_method("get_meta") and my_ball.has_meta("is_decoy"):
+        is_decoy = my_ball.get_meta("is_decoy")
+
+    if is_decoy:
+        var dt = 0.0
+        if "decoy_timer" in my_ball:
+            my_ball.decoy_timer -= delta
+            dt = my_ball.decoy_timer
+        elif my_ball.has_method("get_meta") and my_ball.has_meta("decoy_timer"):
+            dt = my_ball.get_meta("decoy_timer") - delta
+            my_ball.set_meta("decoy_timer", dt)
+
+        if dt <= 0.0:
+            if "alive" in my_ball:
+                my_ball.alive = false
+            elif my_ball.has_method("set_meta"):
+                my_ball.set_meta("alive", false)
+            if "hp" in my_ball:
+                my_ball.hp = 0.0
     if strategy == "target_weak":
         _target_weak(delta)
         _update_skill_timer(delta)
@@ -2170,6 +2192,31 @@ func _use_skill():
                 self.ball.set_meta("team_message", {"type": "buff_command", "radius": 200})
             elif "team_message" in self.ball:
                 self.ball.team_message = {"type": "buff_command", "radius": 200}
+        elif skill_name == "deploy_decoy":
+            if "balls" in self.world:
+                var decoy = null
+                if self.ball.has_method("duplicate"):
+                    decoy = self.ball.duplicate()
+                elif self.ball is Dictionary:
+                    decoy = self.ball.duplicate()
+
+                if decoy != null:
+                    if "id" in decoy:
+                        decoy.id = randi() % 90000 + 10000
+                    if "hp" in decoy and "max_hp" in decoy:
+                        decoy.max_hp = float(self.ball.max_hp) * 0.1
+                        decoy.hp = decoy.max_hp
+                    if "damage" in decoy:
+                        decoy.damage = 0.0
+                    if decoy.has_method("set_meta"):
+                        decoy.set_meta("is_decoy", true)
+                        decoy.set_meta("decoy_timer", 5.0)
+                    elif decoy is Dictionary:
+                        decoy["is_decoy"] = true
+                        decoy["decoy_timer"] = 5.0
+                    else:
+                        pass # fallback if not possible
+                    self.world.balls.append(decoy)
         elif skill_name == "Действие" or skill_name == "action_skill":
             if self.ball.has_method("set_meta"):
                 self.ball.set_meta("team_message", {"type": "action_skill_used", "radius": 150})

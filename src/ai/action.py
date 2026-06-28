@@ -32,6 +32,11 @@ class Action:
         else:
             self.ball.speed = self.ball.base_speed
 
+        if getattr(self.ball, "is_decoy", False):
+            self.ball.decoy_timer -= delta
+            if self.ball.decoy_timer <= 0:
+                self.ball.alive = False
+                self.ball.hp = 0
         if getattr(self.ball, "stutter_timer", 0.0) > 0.0:
             self.ball.speed = 0.01  # almost stopped to simulate pause
         if strategy == "target_weak":
@@ -1383,6 +1388,17 @@ class Action:
 
             if skill_name == "command":
                 self.ball.team_message = {"type": "buff_command", "radius": 200}
+            elif skill_name == "deploy_decoy":
+                import copy
+                if hasattr(self.world, "balls"):
+                    decoy = copy.copy(self.ball)
+                    decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                    decoy.hp = getattr(self.ball, "max_hp", 100) * 0.1
+                    decoy.max_hp = decoy.hp
+                    decoy.damage = 0
+                    decoy.is_decoy = True
+                    decoy.decoy_timer = 5.0
+                    self.world.balls.append(decoy)
             elif skill_name in ("Действие", "action_skill"):
                 self.ball.team_message = {"type": "action_skill_used", "radius": 150}
             elif skill_name == "numpy":
