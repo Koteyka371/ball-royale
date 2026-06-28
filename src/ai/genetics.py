@@ -51,6 +51,7 @@ class BallGenetics:
             "damage": getattr(ball, "damage", 15.0),
             "max_hp": getattr(ball, "max_hp", 100.0),
             "color": getattr(ball, "color", "red"),
+            "skin": getattr(ball, "skin", "default"),
             "skill": getattr(ball, "skill", "dash"),
             "skill_cooldown": getattr(ball, "skill_cooldown", 5.0),
             "ball_type": getattr(ball, "ball_type", "unknown")
@@ -102,6 +103,22 @@ class BallGenetics:
         for _ in range(count):
             parent_dna = random.choice(eligible_parents)
             child_dna = self.mutate(parent_dna)
+
+            # Apply skin based on survivals of the parent it came from
+            survivals = 0
+            for hash_v, d in self.population_history.items():
+                if d["dna"] == parent_dna:
+                    survivals = d["survivals"]
+                    break
+            if survivals >= 10:
+                child_dna["skin"] = "legendary"
+            elif survivals >= 5:
+                child_dna["skin"] = "elite"
+            elif survivals >= 3:
+                child_dna["skin"] = "veteran"
+            else:
+                child_dna["skin"] = "default"
+
             offspring.append(child_dna)
 
         return offspring

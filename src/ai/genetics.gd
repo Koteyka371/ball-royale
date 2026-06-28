@@ -49,6 +49,7 @@ func extract_dna(ball: Object) -> Dictionary:
 		"damage": ball.get("damage") if "damage" in ball else 15.0,
 		"max_hp": ball.get("max_hp") if "max_hp" in ball else 100.0,
 		"color": ball.get("color") if "color" in ball else "red",
+		"skin": ball.get("skin") if "skin" in ball else "default",
 		"skill": ball.get("skill") if "skill" in ball else "dash",
 		"skill_cooldown": ball.get("skill_cooldown") if "skill_cooldown" in ball else 5.0,
 		"ball_type": ball.get("ball_type") if "ball_type" in ball else "unknown"
@@ -91,6 +92,22 @@ func generate_offspring(count: int) -> Array:
 	for i in range(count):
 		var parent_dna = eligible_parents[randi() % eligible_parents.size()]
 		var child_dna = mutate(parent_dna)
+
+		var survivals = 0
+		for hash_v in population_history.keys():
+			if population_history[hash_v]["dna"] == parent_dna:
+				survivals = population_history[hash_v]["survivals"]
+				break
+
+		if survivals >= 10:
+			child_dna["skin"] = "legendary"
+		elif survivals >= 5:
+			child_dna["skin"] = "elite"
+		elif survivals >= 3:
+			child_dna["skin"] = "veteran"
+		else:
+			child_dna["skin"] = "default"
+
 		offspring.append(child_dna)
 
 	return offspring

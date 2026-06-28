@@ -162,6 +162,7 @@ class Ball:
     color: str
     skill: str
     skill_cooldown: float
+    skin: str = "default"
     skill_timer: float = 0.0
     alive: bool = True
     kills: int = 0
@@ -326,6 +327,7 @@ class BattleSimulation:
                 perception_radius=cfg["perception_radius"],
                 aggression=cfg["aggression"], color=cfg["color"],
                 skill=cfg["skill"], skill_cooldown=cfg["skill_cooldown"],
+                skin=cfg.get("skin", "default"),
             ))
 
     def _spawn_boosters(self, count: int):

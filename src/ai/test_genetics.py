@@ -13,6 +13,7 @@ class MockBall:
         self.color = color
         self.skill = skill
         self.ball_type = ball_type
+        self.skin = "default"
 
 def test_extract_dna():
     # The genetics logic to reproduce after N battles is already implemented fully
@@ -26,6 +27,7 @@ def test_extract_dna():
     assert dna["damage"] == 20.0
     assert dna["max_hp"] == 150.0
     assert dna["color"] == "red"
+    assert dna["skin"] == "default"
     assert dna["skill"] == "dash"
     assert dna["ball_type"] == "warrior"
     assert dna["skill_cooldown"] == 4.0
@@ -117,3 +119,13 @@ def test_mutate():
     # Should append _evolved
     if child != dna:
         assert child["ball_type"] == "warrior_evolved"
+
+def test_generation_skins():
+    genetics = BallGenetics(battles_to_reproduce=3)
+    ball = MockBall(2.0, 15.0, 100.0, "red", "dash", "warrior")
+    for _ in range(5):
+        genetics.register_survivors([ball])
+
+    offspring = genetics.generate_offspring(1)
+    assert len(offspring) == 1
+    assert offspring[0]["skin"] == "elite"

@@ -34,6 +34,7 @@ def run_evolution(generations=5, num_balls=50):
                 ball.max_hp = dna.get("max_hp", ball.max_hp)
                 ball.hp = ball.max_hp
                 ball.color = dna.get("color", ball.color)
+                ball.skin = dna.get("skin", getattr(ball, "skin", "default"))
                 ball.skill = dna.get("skill", ball.skill)
                 ball.ball_type = dna.get("ball_type", ball.ball_type)
 
@@ -55,7 +56,7 @@ def run_evolution(generations=5, num_balls=50):
             sample = survivors[0]
             print(f"Sample Survivor Stats ({sample.ball_type}):")
             print(f"  HP: {sample.max_hp:.1f} | DMG: {sample.damage:.1f} | SPD: {sample.speed:.1f}")
-            print(f"  Skill: {sample.skill} | Color: {sample.color}")
+            print(f"  Skill: {sample.skill} | Color: {sample.color} | Skin: {getattr(sample, 'skin', 'default')}")
         else:
             print("No survivors this generation!")
 
