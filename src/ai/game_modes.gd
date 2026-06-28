@@ -1154,5 +1154,6 @@ var GAME_MODES = {
     "vip_defense": VIPDefenseMode.new(),
     "survival": SurvivalMode.new(),
     "capture_the_flag": CaptureTheFlagMode.new(),
-    "evolutionary_simulation": EvolutionarySimulationMode.new()
+    "evolutionary_simulation": EvolutionarySimulationMode.new(),
+    "interactive_training": load("res://src/ai/interactive_training.gd").new()
 }

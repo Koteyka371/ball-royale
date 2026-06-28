@@ -940,6 +940,7 @@ class CustomMatchMode(GameMode):
                         b.speed = b.base_speed * 2
                         b._double_speed_applied = True
 
+from ai.interactive_training import InteractiveTrainingMode
 GAME_MODES = {
     "memory_traps": MemoryTrapsMode(),
     "custom_match": CustomMatchMode(),
@@ -957,5 +958,6 @@ GAME_MODES = {
     "vip_defense": VIPDefenseMode(),
     "survival": SurvivalMode(),
     "capture_the_flag": CaptureTheFlagMode(),
-    "evolutionary_simulation": EvolutionarySimulationMode()
+    "evolutionary_simulation": EvolutionarySimulationMode(),
+    "interactive_training": InteractiveTrainingMode()
 }

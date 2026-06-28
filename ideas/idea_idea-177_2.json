@@ -1,0 +1,4 @@
+{
+  "title": "Wind Gust Weather Event",
+  "description": "Periodically pushes all balls in a random direction, forcing them to constantly adjust movement to stay on target."
+}
