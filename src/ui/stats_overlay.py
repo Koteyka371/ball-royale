@@ -12,7 +12,7 @@ class StatsOverlay:
     def update(self, balls: List[Dict[str, Any]]) -> None:
         """
         Expects a list of dictionaries representing balls.
-        Each ball should have 'id', 'type', 'hp', 'kills'.
+        Each ball should have 'id', 'type', 'hp', 'stamina', 'kills'.
         """
         alive_balls = [b for b in balls if b.get('hp', 0) > 0]
         self.stats["alive_count"] = len(alive_balls)
@@ -27,7 +27,8 @@ class StatsOverlay:
                 top_killers.append({
                     "id": b.get('id', '?'),
                     "type": str(b.get('type', 'unknown')).upper(),
-                    "kills": b.get('kills', 0)
+                    "kills": b.get('kills', 0),
+                    "stamina": int(b.get('stamina', 100))
                 })
         self.stats["top_killers"] = top_killers
 
@@ -41,5 +42,5 @@ class StatsOverlay:
         if self.stats['top_killers']:
             lines.append("Top Killers:")
             for k in self.stats['top_killers']:
-                lines.append(f" - {k['type']}-{k['id']}: {k['kills']} kills")
+                lines.append(f" - {k['type']}-{k['id']}: {k['kills']} kills | Stamina: {k.get('stamina', 100)}")
         return "\n".join(lines)

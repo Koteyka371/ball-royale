@@ -25,6 +25,23 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+
+    if not self.ball.has_meta("stamina"):
+        var max_s = self.ball.get_meta("max_stamina") if self.ball.has_meta("max_stamina") else 100.0
+        self.ball.set_meta("stamina", max_s)
+        self.ball.set_meta("max_stamina", max_s)
+
+    var stamina = self.ball.get_meta("stamina")
+    var max_stamina = self.ball.get_meta("max_stamina")
+
+    var vx = self.ball.get("vx") if "vx" in self.ball else 0.0
+    var vy = self.ball.get("vy") if "vy" in self.ball else 0.0
+    var velocity = sqrt(vx*vx + vy*vy)
+
+    if strategy == "idle" or velocity < 10.0:
+        self.ball.set_meta("stamina", min(max_stamina, stamina + 20.0 * delta))
+    elif strategy == "defend" or strategy == "hide_behind":
+        self.ball.set_meta("stamina", min(max_stamina, stamina + 10.0 * delta))
     var my_ball = self.ball
 
     # Apply Damage Over Time (DOT)
@@ -2555,28 +2572,31 @@ func _use_skill():
                         arena.rooms.append(new_room)
                         if arena.has_method("queue_redraw"):
                             arena.call("queue_redraw")
-
         elif skill_name == "dash":
-            _spawn_skill_particles("dash")
-            var enemies = _get_enemies()
-            if enemies.size() > 0:
-                var target = null
-                var min_dist_sq = INF
-                for e in enemies:
-                    var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
-                    if dist_sq < min_dist_sq:
-                        min_dist_sq = dist_sq
-                        target = e
-                var dx = target.x - self.ball.x
-                var dy = target.y - self.ball.y
-                var dist = sqrt(min_dist_sq)
-                if dist > 0.0001:
-                    self.ball.x += (dx/dist) * 100.0
-                    self.ball.y += (dy/dist) * 100.0
-            else:
-                var angle = randf() * PI * 2.0
-                self.ball.x += cos(angle) * 100.0
-                self.ball.y += sin(angle) * 100.0
+            var stamina = self.ball.get_meta("stamina") if self.ball.has_meta("stamina") else 100.0
+            if stamina >= 30.0:
+                self.ball.set_meta("stamina", stamina - 30.0)
+                _spawn_skill_particles("dash")
+                var enemies = _get_enemies()
+                if enemies.size() > 0:
+                    var target = null
+                    var min_dist_sq = INF
+                    for e in enemies:
+                        var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                        if dist_sq < min_dist_sq:
+                            min_dist_sq = dist_sq
+                            target = e
+                    var dx = target.x - self.ball.x
+                    var dy = target.y - self.ball.y
+                    var dist = sqrt(min_dist_sq)
+                    if dist > 0.0001:
+                        self.ball.x += (dx/dist) * 150.0
+                        self.ball.y += (dy/dist) * 150.0
+                else:
+                    var angle = randf() * PI * 2.0
+                    self.ball.x += cos(angle) * 150.0
+                    self.ball.y += sin(angle) * 150.0
+
 
         elif skill_name == "elemental_burst":
             var enemies = self._get_enemies()

@@ -22,6 +22,23 @@ class Action:
         self.world = world
 
     def execute(self, strategy: str, delta: float) -> None:
+
+        if not hasattr(self.ball, "stamina"):
+            self.ball.stamina = getattr(self.ball, "max_stamina", 100.0)
+            self.ball.max_stamina = getattr(self.ball, "max_stamina", 100.0)
+
+        # Regenerate stamina if moving slowly
+        speed = getattr(self.ball, "speed", 0.0)
+        # assuming basic delta movement, we can check effective velocity if needed or simply regenerate
+        current_vx = getattr(self.ball, "vx", 0.0)
+        current_vy = getattr(self.ball, "vy", 0.0)
+        import math
+        velocity = math.sqrt(current_vx**2 + current_vy**2)
+
+        if strategy == "idle" or velocity < 10.0:
+            self.ball.stamina = min(self.ball.max_stamina, self.ball.stamina + 20.0 * delta)
+        elif strategy in ["defend", "hide_behind"]:
+            self.ball.stamina = min(self.ball.max_stamina, self.ball.stamina + 10.0 * delta)
         # Apply Damage Over Time (DOT)
         if getattr(self.ball, "dot_duration", 0.0) > 0:
             dot_dmg = self.ball.dot_damage_per_tick * delta
@@ -1660,22 +1677,27 @@ class Action:
                 if hasattr(self.ball, "hp"):
                     self.ball.hp = min(getattr(self.ball, "max_hp", 100), self.ball.hp + 30)
             elif skill_name == "dash":
-                self._spawn_skill_particles("dash")
-                import random
-                import math
-                enemies = self._get_enemies()
-                if enemies:
-                    target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
-                    dx = target.x - self.ball.x
-                    dy = target.y - self.ball.y
-                    dist = math.sqrt(dx*dx + dy*dy)
-                    if dist > 0.0001:
-                        self.ball.x += (dx/dist) * 100.0
-                        self.ball.y += (dy/dist) * 100.0
-                else:
-                    angle = random.uniform(0, 2 * math.pi)
-                    self.ball.x += math.cos(angle) * 100.0
-                    self.ball.y += math.sin(angle) * 100.0
+                stamina = getattr(self.ball, "stamina", 100.0)
+                if stamina >= 30.0:
+                    self.ball.stamina -= 30.0
+                    self._spawn_skill_particles("dash")
+                    import random
+                    import math
+                    enemies = self._get_enemies()
+                    if enemies:
+                        target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                        dx = target.x - self.ball.x
+                        dy = target.y - self.ball.y
+                        dist = math.sqrt(dx*dx + dy*dy)
+                        if dist > 0.0001:
+                            self.ball.x += (dx/dist) * 150.0
+                            self.ball.y += (dy/dist) * 150.0
+                    else:
+                        angle = random.uniform(0, 2 * math.pi)
+                        self.ball.x += math.cos(angle) * 150.0
+                        self.ball.y += math.sin(angle) * 150.0
+
+
 
             elif skill_name == "elemental_burst":
                 import math
