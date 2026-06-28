@@ -3286,7 +3286,7 @@
     },
     {
       "id": "idea-187",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Multi-Zone Domination Mode",
@@ -3688,6 +3688,76 @@
         "src/ai/king_of_the_hill_game.py",
         "src/ai/king_of_the_hill_game.gd",
         "tests/test_king_of_the_hill_game.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-211",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Skin Tiers VFX",
+      "description": "Add unique visual effects and particle trails based on the ball's skin tier (veteran, elite, legendary) during dashes and skill uses to make higher generation balls stand out.",
+      "allowed_paths": [
+        "src/ui/skin_tiers_vfx.py",
+        "src/ui/skin_tiers_vfx.gd",
+        "src/ai/skin_tiers_vfx.py",
+        "tests/test_skin_tiers_vfx.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-212",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Weather System",
+      "description": "Add a weather system that changes dynamically during matches, affecting ball movement, visibility, or hazard types. E.g., rain makes surfaces slippery, while thunderstorms create random lightning strikes.",
+      "allowed_paths": [
+        "src/ai/dynamic.py",
+        "src/ai/dynamic.gd",
+        "tests/test_dynamic.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-213",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Level Up Skill Tree",
+      "description": "Introduce a mid-match level-up system where balls earn experience by dealing damage or capturing objectives, allowing them to choose perks or upgrade their base stats like speed, max HP, or damage dynamically.",
+      "allowed_paths": [
+        "src/ai/level_up_skill_tree.py",
+        "src/ai/level_up_skill_tree.gd",
+        "tests/test_level_up_skill_tree.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-214",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Skin Specific Perks",
+      "description": "Introduce minor passive perks tied to skins. For example, 'veteran' skins gain a 2% resistance to status effects, while 'legendary' skins generate a slight passive aura.",
+      "allowed_paths": [
+        "src/ui/skin_specific_perks.py",
+        "src/ui/skin_specific_perks.gd",
+        "src/ai/skin_specific_perks.py",
+        "tests/test_skin_specific_perks.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

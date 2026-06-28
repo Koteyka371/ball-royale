@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-187] Multi-Zone Domination Mode — *2026-06-28 06:38:07 UTC*
+
+Instead of a single central zone, add three separate zones scattered across the arena that grant points. Players must split up their focus and defend multiple areas simultaneously.
+
+---
+
 ## [idea-155] Boss Encounters — *2026-06-28 06:33:38 UTC*
 
 Introduce powerful boss balls in the center of the arena.
