@@ -22,6 +22,10 @@ func load_profile():
                 data["prestige_level"] = 0
             if not data.has("quests"):
                 data["quests"] = []
+            if not data.has("cosmetics"):
+                data["cosmetics"] = []
+            if not data.has("titles"):
+                data["titles"] = []
             return
 
     # Default profile
@@ -34,7 +38,9 @@ func load_profile():
             "bonus_damage": 0
         },
         "prestige_level": 0,
-        "quests": []
+        "quests": [],
+        "cosmetics": [],
+        "titles": []
     }
 
 func add_quest(quest_description: String, reward: int):
@@ -105,8 +111,26 @@ func do_prestige() -> bool:
                 "bonus_damage": 0
             },
             "prestige_level": current_prestige + 1,
-            "quests": []
+            "quests": [],
+            "cosmetics": data.get("cosmetics", []),
+            "titles": data.get("titles", [])
         }
         save_profile()
+        var lm = load("res://src/system/leaderboard.gd").new(self)
+        lm.update_prestige("local_player", current_prestige + 1)
+        lm.check_season()
         return true
     return false
+func add_cosmetic(cosmetic_name: String):
+    if not data.has("cosmetics"):
+        data["cosmetics"] = []
+    if not data["cosmetics"].has(cosmetic_name):
+        data["cosmetics"].append(cosmetic_name)
+        save_profile()
+
+func add_title(title_name: String):
+    if not data.has("titles"):
+        data["titles"] = []
+    if not data["titles"].has(title_name):
+        data["titles"].append(title_name)
+        save_profile()

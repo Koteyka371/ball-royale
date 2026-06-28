@@ -1,4 +1,5 @@
 import json
+from system.leaderboard import LeaderboardManager
 
 class ProfileManager:
     TOTAL_BALLS = 34
@@ -14,6 +15,10 @@ class ProfileManager:
                 data = json.load(f)
                 if "quests" not in data:
                     data["quests"] = []
+                if "cosmetics" not in data:
+                    data["cosmetics"] = []
+                if "titles" not in data:
+                    data["titles"] = []
                 return data
         except (FileNotFoundError, json.JSONDecodeError):
             return {
@@ -25,7 +30,9 @@ class ProfileManager:
                     "bonus_damage": 0
                 },
                 "prestige_level": 0,
-                "quests": []
+                "quests": [],
+                "cosmetics": [],
+                "titles": []
             }
 
     def add_quest(self, quest_description, reward):
@@ -93,8 +100,26 @@ class ProfileManager:
                     "bonus_damage": 0
                 },
                 "prestige_level": prestige_level,
-                "quests": []
+                "quests": [],
+                "cosmetics": self.data.get("cosmetics", []),
+                "titles": self.data.get("titles", [])
             }
             self.save()
+            lm = LeaderboardManager("leaderboard.json", profile_manager=self)
+            lm.update_prestige("local_player", prestige_level)
+            lm.check_season()
             return True
         return False
+    def add_cosmetic(self, cosmetic_name):
+        if "cosmetics" not in self.data:
+            self.data["cosmetics"] = []
+        if cosmetic_name not in self.data["cosmetics"]:
+            self.data["cosmetics"].append(cosmetic_name)
+            self.save()
+
+    def add_title(self, title_name):
+        if "titles" not in self.data:
+            self.data["titles"] = []
+        if title_name not in self.data["titles"]:
+            self.data["titles"].append(title_name)
+            self.save()
