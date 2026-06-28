@@ -580,6 +580,11 @@ class WeatherChaosMode(GameMode):
                 self.wind_dx = rnd.uniform(-50.0, 50.0)
                 self.wind_dy = rnd.uniform(-50.0, 50.0)
 
+        # Apply weather effects to the arena
+        if hasattr(world, "arena"):
+            world.arena.is_foggy = (self.weather in ["fog", "snow"])
+            world.arena.is_raining = (self.weather == "rain")
+
         valid_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
 
         for b in valid_balls:

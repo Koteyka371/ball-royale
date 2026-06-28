@@ -94,6 +94,12 @@ func execute(strategy: String, delta: float):
                     my_ball.alive = false
             my_ball.set_meta("dot_duration", dot_dur - delta)
 
+    if world != null and "arena" in world:
+        if world.arena.get("is_raining") == true:
+            if "vx" in my_ball and "vy" in my_ball:
+                my_ball.x += my_ball.vx * delta * 0.2
+                my_ball.y += my_ball.vy * delta * 0.2
+
     var gm = null
     if world != null and "game_mode" in world:
         gm = world.game_mode
