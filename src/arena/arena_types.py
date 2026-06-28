@@ -1227,6 +1227,7 @@ class ThickFogArena(ProceduralArena):
         self.is_foggy = False
         self.is_raining = False
         self.is_sandstorming = False
+        self.is_snowing = False
         self.fog_timer = 0.0
         self.phase_duration = 20.0
 

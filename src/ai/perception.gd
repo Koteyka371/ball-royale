@@ -29,6 +29,9 @@ func scan() -> Dictionary:
     if self.world != null and "arena" in self.world and "is_sandstorming" in self.world.arena:
         if self.world.arena.is_sandstorming:
             perception_radius = perception_radius * 0.3
+    if self.world != null and "arena" in self.world and "is_snowing" in self.world.arena:
+        if self.world.arena.is_snowing:
+            perception_radius = perception_radius * 0.6
 
     var data = {
         "enemies": [],

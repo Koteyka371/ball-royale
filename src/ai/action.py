@@ -163,6 +163,10 @@ class Action:
                 # Slippery: apply momentum (friction slide)
                 self.ball.x += getattr(self.ball, "vx") * delta * 0.2
                 self.ball.y += getattr(self.ball, "vy") * delta * 0.2
+            if getattr(self.world.arena, "is_snowing", False):
+                # Extra slippery: apply even more momentum
+                self.ball.x += getattr(self.ball, "vx") * delta * 0.4
+                self.ball.y += getattr(self.ball, "vy") * delta * 0.4
             if getattr(self.world.arena, "is_foggy", False):
                 pass # Fog has no friction effect, snow has speed change
 

@@ -224,6 +224,10 @@ func execute(strategy: String, delta: float):
             if "vx" in my_ball and "vy" in my_ball:
                 my_ball.x += my_ball.vx * delta * 0.2
                 my_ball.y += my_ball.vy * delta * 0.2
+        if world.arena.get("is_snowing") == true:
+            if "vx" in my_ball and "vy" in my_ball:
+                my_ball.x += my_ball.vx * delta * 0.4
+                my_ball.y += my_ball.vy * delta * 0.4
 
     var gm = null
     if world != null and "game_mode" in world:
