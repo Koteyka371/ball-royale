@@ -17,7 +17,7 @@ class Rogue:
     PERCEPTION_RADIUS = 280
     AGGRESSION = 0.75
     COLOR = "yellow"
-    SKILL = "steal_boost"
+    SKILL = "smokescreen"
     SKILL_COOLDOWN = 2.0
 
     def __init__(self, ball_id: int, x: float = 0.0, y: float = 0.0):

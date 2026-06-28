@@ -1580,6 +1580,14 @@ class Action:
                         if dist <= burst_radius:
                             if hasattr(enemy, "take_damage"):
                                 enemy.take_damage(base_burst_dmg)
+            elif skill_name == "smokescreen":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    import random
+                    trap_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
+                    from arena.procedural_arena import Hazard  # type: ignore
+                    smoke = Hazard(trap_id, self.ball.x, self.ball.y, 80.0, "smokescreen", 0.0)
+                    setattr(smoke, 'duration', 5.0)
+                    self.world.arena.hazards.append(smoke)
             elif skill_name == "snipe":
                 # Drop a temporary trap hazard
                 import random

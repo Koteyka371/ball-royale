@@ -48,11 +48,42 @@ class Perception:
         if not self.world or not hasattr(self.world, "get_nearby_entities"):
             return data
 
+        in_smoke = False
+        smoke_hazards = []
+        bx_curr, by_curr = getattr(self.ball, "x", 0), getattr(self.ball, "y", 0)
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            for h in self.world.arena.hazards:
+                if getattr(h, "kind", "") == "smokescreen":
+                    smoke_hazards.append(h)
+                    dist = math.sqrt((getattr(h, "x", 0) - bx_curr)**2 + (getattr(h, "y", 0) - by_curr)**2)
+                    if dist <= getattr(h, "radius", 0):
+                        in_smoke = True
+        if in_smoke:
+            perception_radius = min(perception_radius, 50.0)
+
         entities = self.world.get_nearby_entities(self.ball, perception_radius)
-        data["enemies"] = entities.get("enemies", [])
-        data["allies"] = entities.get("allies", [])
-        data["boosters"] = entities.get("boosters", [])
-        data["traps"] = entities.get("traps", [])
+        def intersects_smoke(ent):
+            ex, ey = getattr(ent, "x", 0), getattr(ent, "y", 0)
+            for h in smoke_hazards:
+                hx, hy, hr = getattr(h, "x", 0), getattr(h, "y", 0), getattr(h, "radius", 0)
+                dx = ex - bx_curr
+                dy = ey - by_curr
+                l2 = dx*dx + dy*dy
+                if l2 == 0:
+                    dist = math.sqrt((hx - bx_curr)**2 + (hy - by_curr)**2)
+                else:
+                    t = max(0, min(1, ((hx - bx_curr) * dx + (hy - by_curr) * dy) / l2))
+                    px = bx_curr + t * dx
+                    py = by_curr + t * dy
+                    dist = math.sqrt((hx - px)**2 + (hy - py)**2)
+                if dist <= hr:
+                    return True
+            return False
+
+        data["enemies"] = [e for e in entities.get("enemies", []) if not intersects_smoke(e)]
+        data["allies"] = [e for e in entities.get("allies", []) if not intersects_smoke(e)]
+        data["boosters"] = [e for e in entities.get("boosters", []) if not intersects_smoke(e)]
+        data["traps"] = [e for e in entities.get("traps", []) if not intersects_smoke(e)]
 
         # Calculate distances and scores
         threat = 0.0

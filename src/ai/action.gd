@@ -2434,6 +2434,12 @@ func _use_skill():
                 if sqrt(dx*dx + dy*dy) <= burst_radius:
                     if enemy.has_method("take_damage"):
                         enemy.take_damage(base_burst_dmg)
+        elif skill_name == "smokescreen":
+            if "arena" in self.world and "hazards" in self.world.arena:
+                var trap_id = self.world.arena.hazards.size() + randi() % 10000
+                var smoke = ProceduralArena.Hazard.new(trap_id, self.ball.x, self.ball.y, 80.0, "smokescreen", 0.0)
+                smoke.set_meta("duration", 5.0)
+                self.world.arena.hazards.append(smoke)
         elif skill_name == "snipe":
             if "arena" in self.world and "hazards" in self.world.arena:
                 var trap_id = self.world.arena.hazards.size() + randi() % 10000

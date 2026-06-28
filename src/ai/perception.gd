@@ -41,17 +41,74 @@ func scan() -> Dictionary:
     if not self.world or not self.world.has_method("get_nearby_entities"):
         return data
 
-    var entities = self.world.get_nearby_entities(self.ball, perception_radius)
-    data["enemies"] = entities.get("enemies", [])
-    data["allies"] = entities.get("allies", [])
-    data["boosters"] = entities.get("boosters", [])
-    data["traps"] = entities.get("traps", [])
-
-    var bx = 0.0
-    var by = 0.0
+    var bx_curr = 0.0
+    var by_curr = 0.0
     if "x" in self.ball and "y" in self.ball:
-        bx = self.ball.x
-        by = self.ball.y
+        bx_curr = self.ball.x
+        by_curr = self.ball.y
+
+    var in_smoke = false
+    var smoke_hazards = []
+    if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+        for h in self.world.arena.hazards:
+            if "kind" in h and h.kind == "smokescreen":
+                smoke_hazards.append(h)
+                var hx = 0.0
+                var hy = 0.0
+                var hr = 0.0
+                if "x" in h: hx = h.x
+                if "y" in h: hy = h.y
+                if "radius" in h: hr = h.radius
+                var dist = sqrt(pow(hx - bx_curr, 2) + pow(hy - by_curr, 2))
+                if dist <= hr:
+                    in_smoke = true
+    if in_smoke:
+        perception_radius = min(perception_radius, 50.0)
+
+    var entities = self.world.get_nearby_entities(self.ball, perception_radius)
+
+    var intersects_smoke = func(ent):
+        var ex = 0.0
+        var ey = 0.0
+        if "x" in ent: ex = ent.x
+        if "y" in ent: ey = ent.y
+        for h in smoke_hazards:
+            var hx = 0.0
+            var hy = 0.0
+            var hr = 0.0
+            if "x" in h: hx = h.x
+            if "y" in h: hy = h.y
+            if "radius" in h: hr = h.radius
+            var dx = ex - bx_curr
+            var dy = ey - by_curr
+            var l2 = dx*dx + dy*dy
+            var dist = 0.0
+            if l2 == 0.0:
+                dist = sqrt(pow(hx - bx_curr, 2) + pow(hy - by_curr, 2))
+            else:
+                var t = max(0.0, min(1.0, ((hx - bx_curr) * dx + (hy - by_curr) * dy) / l2))
+                var px = bx_curr + t * dx
+                var py = by_curr + t * dy
+                dist = sqrt(pow(hx - px, 2) + pow(hy - py, 2))
+            if dist <= hr:
+                return true
+        return false
+
+    data["enemies"] = []
+    for e in entities.get("enemies", []):
+        if not intersects_smoke.call(e): data["enemies"].append(e)
+    data["allies"] = []
+    for e in entities.get("allies", []):
+        if not intersects_smoke.call(e): data["allies"].append(e)
+    data["boosters"] = []
+    for e in entities.get("boosters", []):
+        if not intersects_smoke.call(e): data["boosters"].append(e)
+    data["traps"] = []
+    for e in entities.get("traps", []):
+        if not intersects_smoke.call(e): data["traps"].append(e)
+
+    var bx = bx_curr
+    var by = by_curr
 
     var calc_dist = func(ent):
         if "x" in ent and "y" in ent:
