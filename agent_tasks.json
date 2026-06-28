@@ -3269,7 +3269,7 @@
     },
     {
       "id": "idea-186",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking King of the Hill Zone",
@@ -3843,6 +3843,142 @@
         "src/ai/effects_rainsnowwind.py",
         "src/ai/effects_rainsnowwind.gd",
         "tests/test_effects_rainsnowwind.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-220",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Map Hazards",
+      "description": "Introduce dynamic map hazards such as lava pits or rolling boulders that appear and move across the arena periodically.",
+      "allowed_paths": [
+        "src/arena/dynamic_map_hazards.py",
+        "src/arena/dynamic_map_hazards.gd",
+        "tests/test_dynamic_map_hazards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-221",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Trap",
+      "description": "A new trap variant that creates a holographic clone of the placing ball. The clone moves erratically to draw enemy aggro and explodes for minor area-of-effect damage when destroyed.",
+      "allowed_paths": [
+        "src/arena/decoy_trap.py",
+        "src/arena/decoy_trap.gd",
+        "tests/test_decoy_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-222",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Zone Modifiers",
+      "description": "Introduce zones with different modifiers (e.g. speed boost, damage boost, healing) that balls can fight over.",
+      "allowed_paths": [
+        "src/ai/zone_modifiers.py",
+        "src/ai/zone_modifiers.gd",
+        "tests/test_zone_modifiers.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-223",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Lightning Booster",
+      "description": "A rare consumable booster that temporarily imbues the ball's attacks with chain lightning. The attack jumps to up to 2 additional nearby enemies, dealing 50% damage to secondary targets.",
+      "allowed_paths": [
+        "src/ai/chain_lightning_booster.py",
+        "src/ai/chain_lightning_booster.gd",
+        "tests/test_chain_lightning_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-224",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "EMP Grenade Item",
+      "description": "An item that, when collected, disables nearby enemy drones, shields, and temporary speed boosters for a short duration.",
+      "allowed_paths": [
+        "src/ai/emp_grenade_item.py",
+        "src/ai/emp_grenade_item.gd",
+        "tests/test_emp_grenade_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-225",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Camouflage Drone Skill",
+      "description": "A variant of the drone that temporarily masks the player's presence from enemies outside a very short radius, making them drop aggro.",
+      "allowed_paths": [
+        "src/ai/camouflage_drone_skill.py",
+        "src/ai/camouflage_drone_skill.gd",
+        "tests/test_camouflage_drone_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-226",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Ball Type",
+      "description": "A ball type that periodically spawns static copies of itself to confuse enemies and escape danger.",
+      "allowed_paths": [
+        "src/ai/decoy_ball.py",
+        "src/ai/decoy_ball.gd",
+        "tests/test_decoy_ball.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-227",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Night Mode",
+      "description": "A variant mode where visibility is severely reduced, relying on a narrow cone of light or sonar-like pulses for perception.",
+      "allowed_paths": [
+        "src/ai/night.py",
+        "src/ai/night.gd",
+        "tests/test_night.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

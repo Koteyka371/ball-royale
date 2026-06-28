@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-186] Shrinking King of the Hill Zone — *2026-06-28 06:53:47 UTC*
+
+Make the King of the Hill zone gradually shrink as the game progresses, forcing players closer together and intensifying the fights for control in the center.
+
+---
+
 ## [idea-191] Trap Detector Drone — *2026-06-28 06:53:04 UTC*
 
 A drone item that floats around the ball and highlights nearby traps, including fake boosters.
