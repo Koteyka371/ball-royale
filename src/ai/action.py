@@ -1537,8 +1537,94 @@ class Action:
                     self.ball.x += math.cos(angle) * 150.0
                     self.ball.y += math.sin(angle) * 150.0
 
+            self._check_synergy(skill_name, self.ball.x, self.ball.y, 150.0)
+
             if hasattr(self.ball, "skill_cooldown"):
                 self.ball.skill_timer = self.ball.skill_cooldown
+
+
+    def _check_synergy(self, base_skill: str, x: float, y: float, radius: float) -> None:
+        import math
+        allies = self._get_allies()
+        synergy_triggered = False
+
+        for ally in allies:
+            if not getattr(ally, "alive", False) or ally.id == self.ball.id:
+                continue
+
+            dx = ally.x - x
+            dy = ally.y - y
+            dist_sq = dx*dx + dy*dy
+
+            if dist_sq <= radius * radius:
+                ally_skill = getattr(ally, "skill", getattr(ally, "SKILL", ""))
+                combo = {base_skill, ally_skill}
+
+                if combo == {"elemental_burst", "wave_attack"}:
+                    self._apply_synergy_steam_explosion(x, y)
+                    synergy_triggered = True
+                    break
+                elif combo == {"dash", "rage_burst"}:
+                    self._apply_synergy_meteor_strike(x, y)
+                    synergy_triggered = True
+                    break
+                elif combo == {"fireball", "explosion"}:
+                    self._apply_synergy_hellfire(x, y)
+                    synergy_triggered = True
+                    break
+                elif combo == {"protect_ally", "heal_ally"} or combo == {"holy_shield", "heal_ally"}:
+                    self._apply_synergy_sanctuary(x, y)
+                    synergy_triggered = True
+                    break
+
+        if synergy_triggered:
+            self.ball.team_message = {"type": "synergy_triggered", "radius": radius * 1.5}
+
+    def _apply_synergy_steam_explosion(self, x: float, y: float) -> None:
+        import math
+        enemies = self._get_enemies()
+        radius = 200.0
+        for e in enemies:
+            dx = e.x - x
+            dy = e.y - y
+            dist = math.sqrt(dx*dx + dy*dy)
+            if dist <= radius:
+                if hasattr(e, "take_damage"):
+                    e.take_damage(50.0)
+                if dist > 0.0001:
+                    e.x += (dx/dist) * 100.0
+                    e.y += (dy/dist) * 100.0
+
+    def _apply_synergy_meteor_strike(self, x: float, y: float) -> None:
+        enemies = self._get_enemies()
+        radius = 100.0
+        for e in enemies:
+            dx = e.x - x
+            dy = e.y - y
+            if dx*dx + dy*dy <= radius*radius:
+                if hasattr(e, "take_damage"):
+                    e.take_damage(80.0)
+                e.stutter_timer = getattr(e, "stutter_timer", 0.0) + 1.0
+
+    def _apply_synergy_hellfire(self, x: float, y: float) -> None:
+        enemies = self._get_enemies()
+        radius = 150.0
+        for e in enemies:
+            dx = e.x - x
+            dy = e.y - y
+            if dx*dx + dy*dy <= radius*radius:
+                e.dot_duration = max(getattr(e, "dot_duration", 0.0), 5.0)
+                e.dot_damage_per_tick = 10.0
+
+    def _apply_synergy_sanctuary(self, x: float, y: float) -> None:
+        allies = self._get_allies()
+        radius = 150.0
+        for a in allies:
+            dx = a.x - x
+            dy = a.y - y
+            if dx*dx + dy*dy <= radius*radius:
+                if hasattr(a, "hp") and hasattr(a, "max_hp"):
+                    a.hp = a.max_hp
 
     def _idle(self, delta: float) -> None:
         speed = getattr(self.ball, "speed", 2.0)

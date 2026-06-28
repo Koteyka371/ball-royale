@@ -1,0 +1,4 @@
+{
+  "title": "Weather Effects on Skills",
+  "description": "Implement global weather effects (like rain, snow, fog) that interact with ball skills. For example, rain could enhance water/lightning attacks but weaken fire attacks, encouraging players to adapt to the environment."
+}
