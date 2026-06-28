@@ -120,6 +120,15 @@ class Action:
             if self.ball.chain_lightning_timer <= 0:
                 self.ball.chain_lightning_timer = 0.0
 
+
+        # Mind control timer logic
+        if getattr(self.ball, "mind_control_timer", 0.0) > 0:
+            self.ball.mind_control_timer -= delta
+            if self.ball.mind_control_timer <= 0:
+                self.ball.is_mind_controlled = False
+                if hasattr(self.ball, "original_team"):
+                    self.ball.team = self.ball.original_team
+
         # Entanglement logic
         if getattr(self.ball, "entangle_timer", 0.0) > 0:
             self.ball.entangle_timer -= delta
@@ -2210,6 +2219,21 @@ class Action:
                         self.world.arena.rooms.append(new_room)
                     except ImportError:
                         pass
+
+            elif skill_name == "mind_control":
+                import math
+                enemies = self._get_enemies()
+                if enemies:
+                    # Find closest enemy
+                    target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                    dist = math.sqrt((target.x - self.ball.x)**2 + (target.y - self.ball.y)**2)
+                    if dist <= 200.0 and not getattr(target, "is_mind_controlled", False):
+                        target.is_mind_controlled = True
+                        target.mind_control_timer = 5.0
+                        target.original_team = getattr(target, "team", getattr(target, "ball_type", ""))
+                        # Temporarily set to our team
+                        target.team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
+                        self._spawn_particles(target.x, target.y, "mind_control")
 
             elif skill_name == "ground_pound":
                 import math
