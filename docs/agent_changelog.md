@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-205] Quantum Entanglement Modules — *2026-06-28 08:38:44 UTC*
+
+Allow balls to 'entangle' with each other or specific arena features. When one entangled entity is damaged or moves, the other experiences a proportionate effect, introducing entirely new risk/reward mechanics and team synergy opportunities.
+
+---
+
 ## [idea-211] Skin Tiers VFX — *2026-06-28 08:26:29 UTC*
 
 Add unique visual effects and particle trails based on the ball's skin tier (veteran, elite, legendary) during dashes and skill uses to make higher generation balls stand out.

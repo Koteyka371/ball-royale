@@ -3594,7 +3594,7 @@
     },
     {
       "id": "idea-205",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Entanglement Modules",
@@ -4473,6 +4473,57 @@
         "src/ai/tornado.py",
         "src/ai/tornado.gd",
         "tests/test_tornado.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-257",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sudden Death Overtime Hazards",
+      "description": "If a match reaches the time limit or zone closure, introduce extreme hazards like meteor showers or random gravity inversions instead of instantly ending the game, allowing the remaining balls to showcase their dodging mechanics.",
+      "allowed_paths": [
+        "src/arena/sudden_death_overtime_hazards.py",
+        "src/arena/sudden_death_overtime_hazards.gd",
+        "tests/test_sudden_death_overtime_hazards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-258",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Interactive Crowd System",
+      "description": "Add a virtual crowd around the arena that reacts dynamically to epic kills, comebacks, and team wipes, modifying game audio and sometimes throwing small temporary buffs (like a single-use speed pad) into the arena to help losing balls.",
+      "allowed_paths": [
+        "src/ai/interactive_crowd.py",
+        "src/ai/interactive_crowd.gd",
+        "tests/test_interactive_crowd.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-259",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Trap Hazards",
+      "description": "Add new hidden traps to arenas that trigger when a ball moves over them, applying a slow or damage over time effect.",
+      "allowed_paths": [
+        "src/arena/trap_hazards.py",
+        "src/arena/trap_hazards.gd",
+        "tests/test_trap_hazards.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
