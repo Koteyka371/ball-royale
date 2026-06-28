@@ -462,7 +462,7 @@ class KingOfTheHillMode extends GameMode:
 
     func _init() -> void:
         name = "King of the Hill"
-        description = "Stay in the center area to earn points. First to 100 points wins."
+        description = "Control three separate zones scattered across the arena. First to 100 points wins."
 
     func setup(world, balls: Array) -> void:
         for b in balls:
@@ -482,16 +482,24 @@ class KingOfTheHillMode extends GameMode:
                 if "height" in world.arena:
                     arena_height = world.arena.height
 
-            var center_x = arena_width / 2.0
-            var center_y = arena_height / 2.0
-            var zone_radius = min(arena_width, arena_height) * 0.2
+            var zones = [
+                Vector2(arena_width * 0.25, arena_height * 0.25),
+                Vector2(arena_width * 0.75, arena_height * 0.25),
+                Vector2(arena_width * 0.5, arena_height * 0.75)
+            ]
+            var zone_radius = min(arena_width, arena_height) * 0.15
 
             for b in balls:
                 if b.alive and b.ball_type != "spectator":
-                    var dx = b.x - center_x
-                    var dy = b.y - center_y
-                    var dist_sq = dx * dx + dy * dy
-                    if dist_sq <= zone_radius * zone_radius:
+                    var in_zone = false
+                    for z in zones:
+                        var dx = b.x - z.x
+                        var dy = b.y - z.y
+                        var dist_sq = dx * dx + dy * dy
+                        if dist_sq <= zone_radius * zone_radius:
+                            in_zone = true
+                            break
+                    if in_zone:
                         var s = 0
                         if b.has_meta("score"):
                             s = b.get_meta("score")
