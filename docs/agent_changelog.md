@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-177] Interactive Training Mode — *2026-06-28 08:58:02 UTC*
+
+Allow user to fight against learning networks to shape their strategy.
+
+---
+
 ## [idea-149] Global Traps Game Mode — *2026-06-28 08:40:48 UTC*
 
 Create a new game mode where the entire arena starts littered with invisible traps, testing players' memory and movement caution rather than just dodging enemy shots.

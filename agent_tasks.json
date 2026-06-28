@@ -3100,7 +3100,7 @@
     },
     {
       "id": "idea-177",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Interactive Training Mode",
@@ -4558,6 +4558,40 @@
         "src/arena/quantum_teleportation_trap.py",
         "src/arena/quantum_teleportation_trap.gd",
         "tests/test_quantum_teleportation_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-262",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Booster",
+      "description": "A new booster that spawns a temporary decoy of the ball that collected it, distracting enemies and absorbing incoming damage for a few seconds.",
+      "allowed_paths": [
+        "src/ai/decoy_booster.py",
+        "src/ai/decoy_booster.gd",
+        "tests/test_decoy_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-263",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Ricochet Arena Hazards",
+      "description": "Introduce bumpers in the arena that don't deal damage but strongly bounce balls and projectiles in random directions, adding chaos and forcing players to adapt their movement.",
+      "allowed_paths": [
+        "src/arena/ricochet_arena_hazards.py",
+        "src/arena/ricochet_arena_hazards.gd",
+        "tests/test_ricochet_arena_hazards.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
