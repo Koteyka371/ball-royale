@@ -22,6 +22,48 @@ class Action:
         self.world = world
 
     def execute(self, strategy: str, delta: float) -> None:
+        # Entanglement logic
+        if getattr(self.ball, "entangle_timer", 0.0) > 0:
+            self.ball.entangle_timer -= delta
+            if self.ball.entangle_timer <= 0:
+                self.ball.entangled_with_id = None
+
+        entangled_id = getattr(self.ball, "entangled_with_id", None)
+        if entangled_id is not None and not getattr(self.ball, "_is_entangle_syncing", False):
+            # Find the partner
+            partner = None
+            for b in getattr(self.world, "balls", []):
+                if b.id == entangled_id:
+                    partner = b
+                    break
+            if partner and getattr(partner, "alive", False):
+                prev_hp = getattr(self.ball, "prev_hp", self.ball.hp)
+                prev_x = getattr(self.ball, "prev_x", self.ball.x)
+                prev_y = getattr(self.ball, "prev_y", self.ball.y)
+
+                hp_diff = prev_hp - self.ball.hp
+                if hp_diff > 0:
+                    # Apply 50% damage to partner
+                    partner._is_entangle_syncing = True
+                    if hasattr(partner, "take_damage"):
+                        partner.take_damage(hp_diff * 0.5)
+                    else:
+                        partner.hp -= hp_diff * 0.5
+                    partner._is_entangle_syncing = False
+
+                dx = self.ball.x - prev_x
+                dy = self.ball.y - prev_y
+                if abs(dx) > 0.001 or abs(dy) > 0.001:
+                    # Apply 50% movement to partner
+                    partner._is_entangle_syncing = True
+                    partner.x += dx * 0.5
+                    partner.y += dy * 0.5
+                    partner._is_entangle_syncing = False
+
+        self.ball.prev_hp = getattr(self.ball, "hp", 0)
+        self.ball.prev_x = getattr(self.ball, "x", 0)
+        self.ball.prev_y = getattr(self.ball, "y", 0)
+
         # Apply Damage Over Time (DOT)
         if getattr(self.ball, "dot_duration", 0.0) > 0:
             dot_dmg = self.ball.dot_damage_per_tick * delta
@@ -1574,6 +1616,15 @@ class Action:
 
             if skill_name == "command":
                 self.ball.team_message = {"type": "buff_command", "radius": 200}
+            elif skill_name == "entangle":
+                enemies = self._get_enemies()
+                if enemies:
+                    import math
+                    target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                    self.ball.entangled_with_id = target.id
+                    target.entangled_with_id = self.ball.id
+                    self.ball.entangle_timer = 5.0
+                    target.entangle_timer = 5.0
             elif skill_name == "raise_dead":
                 if hasattr(self.world, "dead_balls") and hasattr(self.world, "balls"):
                     recent_dead = [b for b in self.world.dead_balls if getattr(b, "time_since_death", 0) < 5.0 and getattr(b, "team", "") != getattr(self.ball, "team", "")]

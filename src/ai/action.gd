@@ -27,6 +27,60 @@ func _init(ball_ref, world_ref):
 func execute(strategy: String, delta: float):
     var my_ball = self.ball
 
+    # Entanglement logic
+    if my_ball.has_method("has_meta") and my_ball.has_meta("entangle_timer"):
+        var et = my_ball.get_meta("entangle_timer")
+        if et > 0:
+            my_ball.set_meta("entangle_timer", et - delta)
+            if et - delta <= 0:
+                my_ball.set_meta("entangled_with_id", -1)
+
+    if my_ball.has_method("has_meta") and my_ball.has_meta("entangled_with_id"):
+        var entangled_id = my_ball.get_meta("entangled_with_id")
+        if entangled_id != -1 and not (my_ball.has_meta("_is_entangle_syncing") and my_ball.get_meta("_is_entangle_syncing")):
+            var partner = null
+            if "balls" in world:
+                for b in world.balls:
+                    if b.id == entangled_id:
+                        partner = b
+                        break
+            if partner != null and partner.get("alive") == true:
+                var prev_hp = my_ball.get("hp")
+                if my_ball.has_meta("prev_hp"):
+                    prev_hp = my_ball.get_meta("prev_hp")
+                var prev_x = my_ball.get("x")
+                if my_ball.has_meta("prev_x"):
+                    prev_x = my_ball.get_meta("prev_x")
+                var prev_y = my_ball.get("y")
+                if my_ball.has_meta("prev_y"):
+                    prev_y = my_ball.get_meta("prev_y")
+
+                var hp_diff = prev_hp - my_ball.get("hp")
+                if hp_diff > 0:
+                    if partner.has_method("set_meta"):
+                        partner.set_meta("_is_entangle_syncing", true)
+                    if partner.has_method("take_damage"):
+                        partner.take_damage(hp_diff * 0.5)
+                    elif "hp" in partner:
+                        partner.hp -= hp_diff * 0.5
+                    if partner.has_method("set_meta"):
+                        partner.set_meta("_is_entangle_syncing", false)
+
+                var dx = my_ball.get("x") - prev_x
+                var dy = my_ball.get("y") - prev_y
+                if abs(dx) > 0.001 or abs(dy) > 0.001:
+                    if partner.has_method("set_meta"):
+                        partner.set_meta("_is_entangle_syncing", true)
+                    partner.x += dx * 0.5
+                    partner.y += dy * 0.5
+                    if partner.has_method("set_meta"):
+                        partner.set_meta("_is_entangle_syncing", false)
+
+    if my_ball.has_method("set_meta"):
+        my_ball.set_meta("prev_hp", my_ball.get("hp"))
+        my_ball.set_meta("prev_x", my_ball.get("x"))
+        my_ball.set_meta("prev_y", my_ball.get("y"))
+
     # Apply Damage Over Time (DOT)
     if my_ball.has_method("has_meta") and my_ball.has_meta("dot_duration"):
         var dot_dur = my_ball.get_meta("dot_duration")
@@ -2407,6 +2461,25 @@ func _use_skill():
                 self.ball.set_meta("team_message", {"type": "buff_command", "radius": 200})
             elif "team_message" in self.ball:
                 self.ball.team_message = {"type": "buff_command", "radius": 200}
+        elif skill_name == "entangle":
+            var enemies = _get_enemies()
+            if enemies.size() > 0:
+                var target = null
+                var min_dist = 9999999.0
+                for e in enemies:
+                    var dx = e.x - self.ball.x
+                    var dy = e.y - self.ball.y
+                    var dist_sq = dx*dx + dy*dy
+                    if dist_sq < min_dist:
+                        min_dist = dist_sq
+                        target = e
+                if target != null:
+                    if self.ball.has_method("set_meta"):
+                        self.ball.set_meta("entangled_with_id", target.id)
+                        self.ball.set_meta("entangle_timer", 5.0)
+                    if target.has_method("set_meta"):
+                        target.set_meta("entangled_with_id", self.ball.id)
+                        target.set_meta("entangle_timer", 5.0)
         elif skill_name == "raise_dead":
             if "dead_balls" in self.world and "balls" in self.world:
                 var recent_dead = []
