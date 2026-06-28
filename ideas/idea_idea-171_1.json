@@ -1,0 +1,4 @@
+{
+  "title": "Weather Systems",
+  "description": "Introduce dynamic weather to arenas that affect physics and perception. For example, rain could make the terrain slippery (increasing drift) and reduce perception range for AI balls, while wind could constantly apply a slight directional force to all balls, requiring AI to adapt to the changing environment."
+}

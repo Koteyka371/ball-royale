@@ -15,9 +15,9 @@ from collections import Counter
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
-from ai.ball_brain import BallBrain
-from ai.neural_network_brain import NeuralNetworkBrain
-from arena.arena_types import get_arena
+from ai.ball_brain import BallBrain # type: ignore
+from ai.neural_network_brain import NeuralNetworkBrain # type: ignore
+from arena.arena_types import get_arena # type: ignore
 
 
 BALL_TYPES = {
@@ -502,7 +502,7 @@ class BattleSimulation:
 
         # Profile integration
         try:
-            from system.profile import ProfileManager
+            from system.profile import ProfileManager # type: ignore
             pm = ProfileManager("profile.json")
             pm.add_skill_points(10)  # Reward player 10 points for finishing a match
         except Exception:
@@ -544,8 +544,8 @@ class BattleSimulation:
                 import os
                 import sys
                 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
-                from ai.commentator import BattleCommentator
-                from ui.stats_overlay import StatsOverlay
+                from ai.commentator import BattleCommentator # type: ignore
+                from ui.stats_overlay import StatsOverlay # type: ignore
                 commentator = BattleCommentator()
                 lines = commentator.generate_commentary(self.kill_log, self.stats)
                 print(f"\n{'='*60}")
@@ -579,7 +579,7 @@ class BattleSimulation:
                 print("  UI HEATMAP OVERLAY PREVIEW")
                 print("="*60)
                 try:
-                    from ui.heatmap.heatmap import HeatmapOverlay
+                    from ui.heatmap.heatmap import HeatmapOverlay # type: ignore
                     heatmap = HeatmapOverlay()
                     heatmap.update(self.death_coordinates)
                     heatmap.render_to_console()
@@ -638,7 +638,7 @@ def test_battle_reduces_to_few():
 if __name__ == "__main__":
     import argparse
     import json
-    from video.highlight_detector import HighlightDetector
+    from video.highlight_detector import HighlightDetector # type: ignore
 
     parser = argparse.ArgumentParser(description="Run Ball Royale Battle Simulation.")
     parser.add_argument("num_balls", type=int, nargs="?", default=100, help="Number of balls.")

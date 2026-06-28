@@ -1,0 +1,4 @@
+{
+  "title": "King of the Hill Game Mode",
+  "description": "A new team-based or free-for-all mode where balls earn points by staying inside a dynamically moving circular zone on the map. The neural networks would have to be retrained to prioritize positional control and defending a stationary spot rather than pure survival or aggressive hunting."
+}
