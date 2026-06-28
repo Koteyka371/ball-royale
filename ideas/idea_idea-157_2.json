@@ -1,0 +1,4 @@
+{
+  "title": "Revenge Nemesis Mechanic",
+  "description": "If a ball eliminates the same enemy multiple times across different matches (tracked via persistent profile data), they become Nemeses. In future matches, the Nemesis enemy deals 20% bonus damage to their rival, but yields double points/charge level upon being defeated."
+}
