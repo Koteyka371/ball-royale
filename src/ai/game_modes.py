@@ -585,19 +585,31 @@ class WeatherChaosMode(GameMode):
                 b.base_speed = getattr(b, "speed", 100.0)
             if not hasattr(b, "base_damage"):
                 b.base_damage = getattr(b, "damage", 10.0)
+            if not hasattr(b, "base_visibility"):
+                b.base_visibility = getattr(b, "visibility", 100.0)
+            if not hasattr(b, "base_friction"):
+                b.base_friction = getattr(b, "friction", 1.0)
 
             if self.weather == "clear":
                 b.speed = b.base_speed
                 b.damage = b.base_damage
+                b.visibility = b.base_visibility
+                b.friction = b.base_friction
             elif self.weather == "rain":
                 b.speed = b.base_speed * 0.8
                 b.damage = b.base_damage
+                b.visibility = b.base_visibility * 0.8
+                b.friction = b.base_friction * 0.5
             elif self.weather == "fog":
                 b.speed = b.base_speed * 0.5
                 b.damage = b.base_damage * 0.8
+                b.visibility = b.base_visibility * 0.3
+                b.friction = b.base_friction * 0.9
             elif self.weather == "snow":
                 b.speed = b.base_speed * 0.6
                 b.damage = b.base_damage * 1.2
+                b.visibility = b.base_visibility * 0.6
+                b.friction = b.base_friction * 0.2
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]

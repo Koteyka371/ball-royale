@@ -1,0 +1,4 @@
+{
+  "title": "Weather Events based on Remaining Balls",
+  "description": "Dynamically adjust the weather probabilities based on the match's progression, like triggering extreme weather events (e.g. blizzards) when only a few players remain."
+}

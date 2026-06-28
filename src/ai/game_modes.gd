@@ -712,22 +712,42 @@ class WeatherChaosMode extends GameMode:
 						b.set_meta("base_damage", b.damage)
 					else:
 						b.set_meta("base_damage", 10.0)
+				if not b.has_meta("base_visibility"):
+					if "visibility" in b:
+						b.set_meta("base_visibility", b.visibility)
+					else:
+						b.set_meta("base_visibility", 100.0)
+				if not b.has_meta("base_friction"):
+					if "friction" in b:
+						b.set_meta("base_friction", b.friction)
+					else:
+						b.set_meta("base_friction", 1.0)
 
 				var base_spd = b.get_meta("base_speed")
 				var base_dmg = b.get_meta("base_damage")
+				var base_vis = b.get_meta("base_visibility")
+				var base_fric = b.get_meta("base_friction")
 
 				if weather == "clear":
 					if "speed" in b: b.speed = base_spd
 					if "damage" in b: b.damage = base_dmg
+					if "visibility" in b: b.visibility = base_vis
+					if "friction" in b: b.friction = base_fric
 				elif weather == "rain":
 					if "speed" in b: b.speed = base_spd * 0.8
 					if "damage" in b: b.damage = base_dmg
+					if "visibility" in b: b.visibility = base_vis * 0.8
+					if "friction" in b: b.friction = base_fric * 0.5
 				elif weather == "fog":
 					if "speed" in b: b.speed = base_spd * 0.5
 					if "damage" in b: b.damage = base_dmg * 0.8
+					if "visibility" in b: b.visibility = base_vis * 0.3
+					if "friction" in b: b.friction = base_fric * 0.9
 				elif weather == "snow":
 					if "speed" in b: b.speed = base_spd * 0.6
 					if "damage" in b: b.damage = base_dmg * 1.2
+					if "visibility" in b: b.visibility = base_vis * 0.6
+					if "friction" in b: b.friction = base_fric * 0.2
 
 	func check_winner(world, balls: Array):
 		var alive = []
