@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-182] Stamina Based Dashing — *2026-06-28 11:22:35 UTC*
+
+Add a stamina meter that allows balls to dash short distances to dodge attacks or gap-close, regenerating when moving slowly or standing still.
+
+---
+
 ## [idea-228] Portal Nodes Game Mode — *2026-06-28 11:07:39 UTC*
 
 Players must find and capture active portal nodes. Controlling a portal continuously drains other teams' score, but the active portal relocates randomly around the arena every 10 seconds.

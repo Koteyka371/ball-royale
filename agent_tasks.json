@@ -3201,7 +3201,7 @@
     },
     {
       "id": "idea-182",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Stamina Based Dashing",
@@ -5068,6 +5068,75 @@
         "src/ai/decoy_drone_variant.py",
         "src/ai/decoy_drone_variant.gd",
         "tests/test_decoy_drone_variant.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-292",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Meteor Strike Hazard",
+      "description": "Random meteor hazards drop into the arena causing AoE damage and leaving fire zones.",
+      "allowed_paths": [
+        "src/arena/meteor_strike.py",
+        "src/arena/meteor_strike.gd",
+        "tests/test_meteor_strike.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-293",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "New Weather Type: Earthquake",
+      "description": "Periodically shakes the screen and applies a random impulse vector to all entities, disrupting aiming and movement patterns temporarily.",
+      "allowed_paths": [
+        "src/ai/new_type_earthquake.py",
+        "src/ai/new_type_earthquake.gd",
+        "tests/test_new_type_earthquake.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-294",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Blackout Mode",
+      "description": "Periodically, the arena goes completely dark, reducing vision drastically for all balls.",
+      "allowed_paths": [
+        "src/ai/blackout.py",
+        "src/ai/blackout.gd",
+        "tests/test_blackout.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-295",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather-Specific Equipment",
+      "description": "Introduces new loadout items (e.g. 'Mud Tires', 'Thermal Goggles') that specifically counteract penalties applied by rain or fog respectively.",
+      "allowed_paths": [
+        "src/ui/specific_equipment.py",
+        "src/ui/specific_equipment.gd",
+        "src/ai/specific_equipment.py",
+        "tests/test_specific_equipment.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
