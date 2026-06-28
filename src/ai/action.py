@@ -80,6 +80,11 @@ class Action:
             current_tick = getattr(self.world, "tick", 0)
             self.world.arena.update_zone(current_tick, delta)
 
+            if hasattr(self.ball, "zone_immunity_timer") and self.ball.zone_immunity_timer > 0:
+                self.ball.zone_immunity_timer -= delta
+                if self.ball.zone_immunity_timer < 0:
+                    self.ball.zone_immunity_timer = 0.0
+
             ball_type = getattr(self.ball, "ball_type", None)
             if ball_type != "spectator":
                 cx, cy = getattr(self.world.arena, "safe_zone_center", (0, 0))
@@ -87,13 +92,15 @@ class Action:
                 import math
                 dist = math.sqrt((self.ball.x - cx)**2 + (self.ball.y - cy)**2)
                 if dist > radius:
-                    zone_damage = 10.0 * delta
-                    if hasattr(self.ball, "take_damage"):
-                        self.ball.take_damage(zone_damage)
-                    elif hasattr(self.ball, "hp"):
-                        self.ball.hp -= zone_damage
-                        if self.ball.hp <= 0:
-                            self.ball.alive = False
+                    is_immune = getattr(self.ball, "zone_immunity_timer", 0.0) > 0.0
+                    if not is_immune:
+                        zone_damage = 10.0 * delta
+                        if hasattr(self.ball, "take_damage"):
+                            self.ball.take_damage(zone_damage)
+                        elif hasattr(self.ball, "hp"):
+                            self.ball.hp -= zone_damage
+                            if self.ball.hp <= 0:
+                                self.ball.alive = False
 
             # Apply hazard damage
 
@@ -1493,6 +1500,11 @@ class Action:
             if dist <= ball_radius + 10:
                 if getattr(nearest, "kind", None) == "drone_item":
                     self.ball.has_drone = True
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                elif getattr(nearest, "kind", None) == "zone_immunity":
+                    self.ball.zone_immunity_timer = getattr(nearest, "duration", 5.0)
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)

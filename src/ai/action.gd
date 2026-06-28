@@ -131,6 +131,11 @@ func execute(strategy: String, delta: float):
         elif self.ball.has_method("get_ball_type"):
             ball_type = self.ball.get_ball_type()
 
+        if self.ball.has_meta("zone_immunity_timer"):
+            var t = self.ball.get_meta("zone_immunity_timer") - delta
+            if t < 0: t = 0
+            self.ball.set_meta("zone_immunity_timer", t)
+
         if ball_type != "spectator":
             var cx = 0.0
             var cy = 0.0
@@ -145,13 +150,18 @@ func execute(strategy: String, delta: float):
 
             var dist = sqrt((self.ball.x - cx) * (self.ball.x - cx) + (self.ball.y - cy) * (self.ball.y - cy))
             if dist > r:
-                var zone_damage = 10.0 * delta
-                if self.ball.has_method("take_damage"):
-                    self.ball.take_damage(zone_damage)
-                elif "hp" in self.ball:
-                    self.ball.hp -= zone_damage
-                    if self.ball.hp <= 0:
-                        self.ball.alive = false
+                var is_immune = false
+                if self.ball.has_meta("zone_immunity_timer") and self.ball.get_meta("zone_immunity_timer") > 0:
+                    is_immune = true
+
+                if not is_immune:
+                    var zone_damage = 10.0 * delta
+                    if self.ball.has_method("take_damage"):
+                        self.ball.take_damage(zone_damage)
+                    elif "hp" in self.ball:
+                        self.ball.hp -= zone_damage
+                        if self.ball.hp <= 0:
+                            self.ball.alive = false
 
 
         if "hazards" in self.world.arena:
@@ -2280,6 +2290,14 @@ func _collect_booster(delta: float):
         if dist <= ball_radius + 10:
             if "kind" in nearest and nearest.kind == "drone_item":
                 self.ball.has_drone = true
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "zone_immunity":
+                var dur = 5.0
+                if "duration" in nearest: dur = nearest.duration
+                self.ball.set_meta("zone_immunity_timer", dur)
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
