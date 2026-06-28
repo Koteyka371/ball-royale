@@ -13,6 +13,8 @@ class Action:
         self.world = world
 
     def execute(self, strategy: str, delta: float) -> None:
+        old_x = self.ball.x
+        old_y = self.ball.y
         if getattr(self.ball, "BALL_TYPE", "") == "mimic" and hasattr(self.ball, "process_mimicry"):
             enemies = self._get_enemies()
             self.ball.process_mimicry(enemies, delta)
@@ -238,6 +240,12 @@ class Action:
                 self._use_skill()
         else:
             self._idle(delta)
+
+        if getattr(self.world, "is_reversed", False) or getattr(self.world, "get_meta", lambda x, y: False)("is_reversed", False):
+            dx = self.ball.x - old_x
+            dy = self.ball.y - old_y
+            self.ball.x = old_x - dx
+            self.ball.y = old_y - dy
 
         bounced_col = self._resolve_collisions()
         bounced_wall = self._clamp_position()

@@ -5,13 +5,33 @@ class GameMode:
     def __init__(self):
         self.name = "Unknown"
         self.description = "Base game mode"
+        self.reverse_cooldown = 15.0
+        self.reverse_duration = 0.0
+        self.is_reversed = False
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         """Called at the start of the battle to initialize mode-specific rules/teams."""
         pass
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
-        pass
+        import random
+        if not self.is_reversed:
+            self.reverse_cooldown -= delta
+            if self.reverse_cooldown <= 0:
+                if random.random() < 0.05:
+                    self.is_reversed = True
+                    self.reverse_duration = 10.0
+                self.reverse_cooldown = 1.0
+        else:
+            self.reverse_duration -= delta
+            if self.reverse_duration <= 0:
+                self.is_reversed = False
+                self.reverse_cooldown = 30.0
+        if hasattr(world, '__dict__') or type(world) != type(None):
+            try:
+                world.is_reversed = self.is_reversed
+            except:
+                pass
 
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:

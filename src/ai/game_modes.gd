@@ -3,6 +3,9 @@ class_name GameModes
 class GameMode:
     var name: String = "Unknown"
     var description: String = "Base game mode"
+    var reverse_cooldown: float = 15.0
+    var reverse_duration: float = 0.0
+    var is_reversed: bool = false
 
     func _init() -> void:
         pass
@@ -11,7 +14,22 @@ class GameMode:
         pass
 
     func tick(world, balls: Array, delta: float = 0.016) -> void:
-        pass
+        if not is_reversed:
+            reverse_cooldown -= delta
+            if reverse_cooldown <= 0:
+                if randf() < 0.05:
+                    is_reversed = true
+                    reverse_duration = 10.0
+                reverse_cooldown = 1.0
+        else:
+            reverse_duration -= delta
+            if reverse_duration <= 0:
+                is_reversed = false
+                reverse_cooldown = 30.0
+
+        if world != null:
+            if typeof(world) == TYPE_OBJECT and world.has_method("set_meta"):
+                world.set_meta("is_reversed", is_reversed)
 
 
     func check_winner(world, balls: Array):

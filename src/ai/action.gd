@@ -10,6 +10,8 @@ func _init(ball_ref, world_ref):
 
 func execute(strategy: String, delta: float):
     var my_ball = self.ball
+    var old_x = my_ball.x
+    var old_y = my_ball.y
 
     if my_ball.get("BALL_TYPE") == "mimic" and my_ball.has_method("process_mimicry"):
         var enemies = self._get_enemies()
@@ -345,6 +347,19 @@ func execute(strategy: String, delta: float):
             _use_skill()
     else:
         _idle(delta)
+
+    var world_is_reversed = false
+    if self.world != null:
+        if "is_reversed" in self.world:
+            world_is_reversed = self.world.is_reversed
+        elif typeof(self.world) == TYPE_OBJECT and self.world.has_method("has_meta") and self.world.has_meta("is_reversed"):
+            world_is_reversed = self.world.get_meta("is_reversed")
+
+    if world_is_reversed:
+        var dx = my_ball.x - old_x
+        var dy = my_ball.y - old_y
+        my_ball.x = old_x - dx
+        my_ball.y = old_y - dy
 
     var bounced_col = _resolve_collisions()
     var bounced_wall = _clamp_position()
