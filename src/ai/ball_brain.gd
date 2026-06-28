@@ -50,7 +50,46 @@ func _init(ball_ref, world_ref):
             self.ball.speed *= stat_multiplier
         if "damage" in self.ball:
             self.ball.damage *= stat_multiplier
+    # Apply skin-based passive perks
+    var skin = "default"
+    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta"):
+        if self.ball.has_meta("skin"):
+            skin = self.ball.get_meta("skin")
+        elif "skin" in self.ball:
+            skin = self.ball.skin
+    elif "skin" in self.ball:
+        skin = self.ball.skin
+
+    if skin == "veteran":
+        var current_res = 0.0
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("status_resistance"):
+            current_res = self.ball.get_meta("status_resistance")
+        elif "status_resistance" in self.ball:
+            current_res = self.ball.status_resistance
+
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+            self.ball.set_meta("status_resistance", current_res + 0.02)
+        elif "status_resistance" in self.ball:
+            self.ball.status_resistance = current_res + 0.02
+    elif skin == "legendary":
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+            self.ball.set_meta("has_aura", true)
+        elif "has_aura" in self.ball:
+            self.ball.has_aura = true
+    elif skin == "elite":
+        var current_speed = 100.0
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("speed"):
+            current_speed = self.ball.get_meta("speed")
+        elif "speed" in self.ball:
+            current_speed = self.ball.speed
+
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+            self.ball.set_meta("speed", current_speed * 1.05)
+        elif "speed" in self.ball:
+            self.ball.speed = current_speed * 1.05
+
     self.perception_layer = Perception.new(self.ball, self.world)
+
     self.emotion_layer = EmotionLayer.new(self.ball, self.world)
     self.decision_layer = DecisionLayer.new(self.ball, self.world)
     self.action_layer = ActionLayer.new(self.ball, self.world)
