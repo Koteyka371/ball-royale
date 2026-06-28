@@ -142,9 +142,28 @@ class Action:
                     if dist < (self.ball.radius + hazard.radius):
                         if hazard.kind == "trap":
                             if ball_type != "sniper":
-                                # Slowing effect: cancel half of their movement (acts as a slow zone)
-                                self.ball.x = (self.ball.x + old_x) / 2.0
-                                self.ball.y = (self.ball.y + old_y) / 2.0
+                                trap_variant = getattr(hazard, "trap_variant", "normal")
+                                if trap_variant == "poison":
+                                    # Poison: no slow, but take DoT (e.g. 5 damage per second)
+                                    poison_damage = 5.0 * delta
+                                    if hasattr(self.ball, "take_damage"):
+                                        self.ball.take_damage(poison_damage)
+                                    elif hasattr(self.ball, "hp"):
+                                        self.ball.hp -= poison_damage
+                                        if self.ball.hp <= 0:
+                                            self.ball.alive = False
+                                elif trap_variant == "stun":
+                                    # Stun: fully halt for 1 second if not already stunned
+                                    if not getattr(self.ball, "is_stunned", False):
+                                        self.ball.is_stunned = True
+                                        self.ball.stun_timer = 1.0
+                                    # Apply stun effect
+                                    self.ball.x = old_x
+                                    self.ball.y = old_y
+                                else:
+                                    # Normal: Slowing effect
+                                    self.ball.x = (self.ball.x + old_x) / 2.0
+                                    self.ball.y = (self.ball.y + old_y) / 2.0
                             continue
 
                         hazard_damage = hazard.damage * delta
@@ -173,6 +192,14 @@ class Action:
             self.ball.team_message = {"type": "wounded_call", "x": self.ball.x, "y": self.ball.y}
         elif strategy == "defend" and personality == "tank":
             self.ball.team_message = {"type": "hold_position", "x": self.ball.x, "y": self.ball.y}
+
+        if getattr(self.ball, "is_stunned", False):
+            stun_timer = getattr(self.ball, "stun_timer", 0.0)
+            if stun_timer > 0:
+                self.ball.stun_timer -= delta
+                return  # Skip movement if stunned
+            else:
+                self.ball.is_stunned = False
 
         if strategy == "flee":
             self._flee(delta)
@@ -1408,9 +1435,13 @@ class Action:
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     trap_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
                     from arena.procedural_arena import Hazard  # type: ignore
-                    # We pass 0.0 damage, we will handle the slowing effect in the hazard logic
                     trap = Hazard(trap_id, self.ball.x, self.ball.y, 15.0, "trap", 0.0)
                     setattr(trap, 'duration', 5.0) # Trap lasts for 5 seconds
+
+                    from system.lobby import lobby
+                    trap_variant = lobby.get_trap_variant(self.ball.id)
+                    setattr(trap, 'trap_variant', trap_variant)
+
                     self.world.arena.hazards.append(trap)
 
             elif skill_name == "target_strong":
@@ -1664,6 +1695,11 @@ class Action:
                             from arena.procedural_arena import Hazard  # type: ignore
                             trap = Hazard(trap_id, self.ball.x, self.ball.y, 10.0, "trap", 0.0)
                             setattr(trap, 'duration', 3.0)
+
+                            from system.lobby import lobby
+                            trap_variant = lobby.get_trap_variant(self.ball.id)
+                            setattr(trap, 'trap_variant', trap_variant)
+
                             self.world.arena.hazards.append(trap)
                             self.ball.kite_trap_timer = 2.0  # Trap cooldown
                 elif actual_dist > ball_attack_range:
