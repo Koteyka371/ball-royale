@@ -3064,7 +3064,7 @@
     },
     {
       "id": "idea-175",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Profile Prestige System",
@@ -3397,6 +3397,40 @@
         "src/ai/map_dynamics.py",
         "src/ai/map_dynamics.gd",
         "tests/test_map_dynamics.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-194",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Portal Mechanics",
+      "description": "Add pairs of portals in the arena. If a ball enters one portal, it instantly teleports to the other portal, preserving momentum.",
+      "allowed_paths": [
+        "src/ai/portal_mechanics.py",
+        "src/ai/portal_mechanics.gd",
+        "tests/test_portal_mechanics.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-195",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Laser Traps",
+      "description": "Introduce spinning laser traps that periodically turn on and off, dealing heavy damage to any ball caught in the beam.",
+      "allowed_paths": [
+        "src/arena/laser_traps.py",
+        "src/arena/laser_traps.gd",
+        "tests/test_laser_traps.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

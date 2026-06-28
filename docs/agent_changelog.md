@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-175] Profile Prestige System — *2026-06-28 06:21:26 UTC*
+
+Once players unlock all balls and max out all passive bonuses, they can 'prestige' to reset their progress in exchange for a special cosmetic aura and a permanent 5% increase to base stats.
+
+---
+
 ## [idea-146] Black Hole Survival Mode — *2026-06-28 05:58:11 UTC*
 
 A mode where the entire arena is slowly sucked into a massive black hole.
