@@ -87,6 +87,7 @@ class Action:
                             self.ball.x += hazard.direction_vector[0] * hazard.speed_magnitude * delta
                             self.ball.y += hazard.direction_vector[1] * hazard.speed_magnitude * delta
                     elif hazard.kind == "gravity_well":
+                        # Cosmetics: gravity anomaly already implemented
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
                         dist_sq = dx * dx + dy * dy
