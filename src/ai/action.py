@@ -75,6 +75,15 @@ class Action:
                     self.ball.alive = False
             self.ball.dot_duration -= delta
 
+        # Weather friction
+        if hasattr(self.world, "arena") and hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+            if getattr(self.world.arena, "is_raining", False):
+                # Slippery: apply momentum (friction slide)
+                self.ball.x += getattr(self.ball, "vx") * delta * 0.2
+                self.ball.y += getattr(self.ball, "vy") * delta * 0.2
+            if getattr(self.world.arena, "is_foggy", False):
+                pass # Fog has no friction effect, snow has speed change
+
         # Zero gravity processing (friction)
         gm = getattr(self.world, "game_mode", None)
         if gm and getattr(gm, "name", "") == "Custom Match":

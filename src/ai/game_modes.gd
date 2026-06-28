@@ -704,6 +704,16 @@ class WeatherChaosMode extends GameMode:
 					set_meta("wind_dx", (randf() * 100.0) - 50.0)
 					set_meta("wind_dy", (randf() * 100.0) - 50.0)
 
+		if world != null and "arena" in world:
+			if weather == "fog" or weather == "snow":
+				world.arena.is_foggy = true
+			else:
+				world.arena.is_foggy = false
+			if weather == "rain":
+				world.arena.is_raining = true
+			else:
+				world.arena.is_raining = false
+
 		for b in balls:
 			if b.alive and b.ball_type != "spectator":
 				if not b.has_meta("base_speed"):
