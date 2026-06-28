@@ -1215,6 +1215,8 @@ class ThickFogArena(ProceduralArena):
     def __init__(self, arena_size: float = 2000.0, seed: int | None = None):
         super().__init__(arena_size, 5, seed)
         self.is_foggy = False
+        self.is_raining = False
+        self.is_sandstorming = False
         self.fog_timer = 0.0
         self.phase_duration = 20.0
 

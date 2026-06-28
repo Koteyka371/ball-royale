@@ -37,3 +37,12 @@ def test_weather_mode():
     mode.tick(world, balls, 0.1)
     assert abs(balls[0].speed - 110.0) < 0.01
     assert balls[0].damage == 15.0
+
+    # Tick with sandstorm
+    mode.weather = "sandstorm"
+    balls[0].hp = 100 # Reset HP
+    mode.tick(world, balls, 0.1)
+    assert abs(balls[0].speed - 70.0) < 0.01
+    assert balls[0].damage == 10.0
+    mode.tick(world, balls, 0.9)
+    assert balls[0].hp == 99.0
