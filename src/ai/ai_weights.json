@@ -63,5 +63,10 @@
         "danger_level": 80.0,
         "allies_count": 20.0,
         "bias": -50.0
+    },
+    "ricochet_attack": {
+        "enemies_count": 20.0,
+        "danger_level": -10.0,
+        "bias": 5.0
     }
 }

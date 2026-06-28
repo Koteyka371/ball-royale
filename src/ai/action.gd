@@ -442,6 +442,8 @@ func execute(strategy: String, delta: float):
 
     if strategy == "flee":
         _flee(delta)
+    elif strategy == "ricochet_attack":
+        _ricochet_attack(delta)
     elif strategy == "attack":
         _attack(delta)
     elif strategy == "kite":
@@ -3480,3 +3482,48 @@ func _hide_behind(delta: float):
 # Cosmetics: kite behavior confirmed
 
 # Cosmetic change to trigger a commit for auto-implement-kite-держит-дистанцию-атакует-при
+func _ricochet_attack(delta: float):
+	var enemies = _get_enemies()
+	if enemies.size() > 0:
+		var target = _get_target(enemies)
+		var dx = target.x - self.ball.x
+		var dy = target.y - self.ball.y
+		var dist = sqrt(dx*dx + dy*dy)
+		var width = 1000.0
+		var height = 1000.0
+		if "width" in self.world: width = self.world.width
+		if "height" in self.world: height = self.world.height
+		if "arena" in self.world and self.world.arena != null:
+			if "width" in self.world.arena: width = self.world.arena.width
+			if "height" in self.world.arena: height = self.world.arena.height
+
+		var bounce_y = 0.0
+		var bounce_x = 0.0
+		var bdx = 0.0
+		var bdy = 0.0
+		if abs(dx) > abs(dy):
+			bounce_y = 0.0 if self.ball.y < height / 2.0 else height
+			bdx = target.x - self.ball.x
+			bdy = bounce_y - self.ball.y
+		else:
+			bounce_x = 0.0 if self.ball.x < width / 2.0 else width
+			bdx = bounce_x - self.ball.x
+			bdy = target.y - self.ball.y
+
+		var b_dist = sqrt(bdx*bdx + bdy*bdy)
+		if b_dist > 0.0001:
+			var nx = bdx / b_dist
+			var ny = bdy / b_dist
+			var b_speed = 2.0
+			if "speed" in self.ball: b_speed = self.ball.speed
+			var step = b_speed * delta * 60.0
+			self.ball.x += nx * min(step, b_dist)
+			self.ball.y += ny * min(step, b_dist)
+
+		var tr = 10.0
+		var br = 10.0
+		if "radius" in target: tr = target.radius
+		if "radius" in self.ball: br = self.ball.radius
+		if dist < tr + br + 15:
+			if self.world != null and self.world.has_method("_deal_damage"):
+				self.world._deal_damage(self.ball, target)

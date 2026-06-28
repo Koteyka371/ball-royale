@@ -321,6 +321,8 @@ class Action:
 
         if strategy == "flee":
             self._flee(delta)
+        elif strategy == "ricochet_attack":
+            self._ricochet_attack(delta)
         elif strategy == "attack":
             self._attack(delta)
         elif strategy == "kite":
@@ -771,7 +773,7 @@ class Action:
             attack_timer = getattr(self.ball, "attack_timer", 0.0)
             if attack_timer <= 0 and dist <= attack_range:
                 if hasattr(self.world, "_deal_damage"):
-                    self._attempt_damage(self.ball, target)
+                    self.world._deal_damage(self.ball, target)
                     if not hasattr(self.ball, "charge_level"):
                         self.ball.charge_level = 0.0
                     if True:
@@ -928,7 +930,7 @@ class Action:
                             self.ball.damage = original_damage * 2.0
 
                     if hasattr(self.world, "_deal_damage"):
-                        self._attempt_damage(self.ball, target)
+                        self.world._deal_damage(self.ball, target)
                         if not hasattr(self.ball, "charge_level"):
                             self.ball.charge_level = 0.0
                         if True:
@@ -1038,7 +1040,7 @@ class Action:
                 if hasattr(self.world, "_deal_damage"):
                     attack_timer = getattr(self.ball, "attack_timer", 0.0)
                     if attack_timer <= 0:
-                        self._attempt_damage(self.ball, target)
+                        self.world._deal_damage(self.ball, target)
                         if not hasattr(self.ball, "charge_level"):
                             self.ball.charge_level = 0.0
                         if True:
@@ -1233,7 +1235,7 @@ class Action:
                                     self.ball.damage = original_damage * 2.0
 
                     if hasattr(self.world, "_deal_damage"):
-                        self._attempt_damage(self.ball, target)
+                        self.world._deal_damage(self.ball, target)
                         if not hasattr(self.ball, "charge_level"):
                             self.ball.charge_level = 0.0
                         if True:
@@ -2317,3 +2319,39 @@ class Action:
 # Cosmetics: kite behavior confirmed
 
 # Cosmetic change to trigger a commit for auto-implement-kite-держит-дистанцию-атакует-при
+    def _ricochet_attack(self, delta: float) -> None:
+        enemies = self._get_enemies()
+        if enemies:
+            target = self._get_target(enemies)
+            import math
+            dx = target.x - self.ball.x
+            dy = target.y - self.ball.y
+            dist = math.sqrt(dx*dx + dy*dy)
+
+            width = getattr(self.world, "width", 1000.0)
+            height = getattr(self.world, "height", 1000.0)
+            if hasattr(self.world, "arena") and self.world.arena is not None:
+                width = getattr(self.world.arena, "width", width)
+                height = getattr(self.world.arena, "height", height)
+
+            # Aim for a wall bounce instead of direct line
+            # If dx is larger, bounce off top/bottom wall
+            if abs(dx) > abs(dy):
+                bounce_y = 0.0 if self.ball.y < height / 2.0 else height
+                bdx = target.x - self.ball.x
+                bdy = bounce_y - self.ball.y
+            else:
+                bounce_x = 0.0 if self.ball.x < width / 2.0 else width
+                bdx = bounce_x - self.ball.x
+                bdy = target.y - self.ball.y
+
+            b_dist = math.sqrt(bdx*bdx + bdy*bdy)
+            if b_dist > 0.0001:
+                nx, ny = bdx / b_dist, bdy / b_dist
+                step = getattr(self.ball, "speed", 2.0) * delta * 60
+                self.ball.x += nx * min(step, b_dist)
+                self.ball.y += ny * min(step, b_dist)
+
+            if dist < getattr(self.ball, "radius", 10.0) + getattr(target, "radius", 10.0) + 15:
+                if hasattr(self.world, "_deal_damage"):
+                    self.world._deal_damage(self.ball, target)
