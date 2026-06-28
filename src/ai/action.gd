@@ -355,6 +355,8 @@ func execute(strategy: String, delta: float):
         _group_attack(delta)
     elif strategy == "defend":
         _defend(delta)
+    elif strategy == "hold_zone":
+        _hold_zone(delta)
     elif strategy == "opportunistic" or strategy == "collect booster":
         _collect_booster(delta)
     elif strategy == "use skill" or strategy == "use_skill" or strategy == "action_skill" or strategy == "Действие":
@@ -1847,6 +1849,56 @@ func _attack(delta: float):
                             self.ball.set_meta("stutter_timer", min(cooldown * 0.4, 0.4))
     else:
         _idle(delta)
+
+func _hold_zone(delta: float):
+    var arena_width = 1000.0
+    var arena_height = 1000.0
+    if self.world != null and "arena" in self.world and self.world.arena != null:
+        if "width" in self.world.arena: arena_width = float(self.world.arena.width)
+        if "height" in self.world.arena: arena_height = float(self.world.arena.height)
+
+    var target_x = arena_width / 2.0
+    var target_y = arena_height / 2.0
+    var zone_radius = min(arena_width, arena_height) * 0.2
+
+    if self.world != null and "game_mode" in self.world and self.world.game_mode != null:
+        if "zone_x" in self.world.game_mode: target_x = float(self.world.game_mode.zone_x)
+        if "zone_y" in self.world.game_mode: target_y = float(self.world.game_mode.zone_y)
+        if "zone_radius" in self.world.game_mode: zone_radius = float(self.world.game_mode.zone_radius)
+
+    var dx = target_x - self.ball.x
+    var dy = target_y - self.ball.y
+    var dist = sqrt(dx * dx + dy * dy)
+
+    # Move towards the center if we are too far
+    if dist > zone_radius * 0.5:
+        if dist > 0.0:
+            var spd = 2.0
+            if "speed" in self.ball:
+                spd = self.ball.speed
+            self.ball.x += (dx / dist) * spd * delta * 50.0
+            self.ball.y += (dy / dist) * spd * delta * 50.0
+    else:
+        var enemies = _get_enemies()
+        if enemies.size() > 0:
+            var target_enemy = enemies[0]
+            var min_d_sq = (target_enemy.x - self.ball.x) * (target_enemy.x - self.ball.x) + (target_enemy.y - self.ball.y) * (target_enemy.y - self.ball.y)
+            for i in range(1, enemies.size()):
+                var e = enemies[i]
+                var d_sq = (e.x - self.ball.x) * (e.x - self.ball.x) + (e.y - self.ball.y) * (e.y - self.ball.y)
+                if d_sq < min_d_sq:
+                    min_d_sq = d_sq
+                    target_enemy = e
+
+            var edist = sqrt(min_d_sq)
+            if edist < 150.0 and edist > 0.0:
+                var edx = target_enemy.x - self.ball.x
+                var edy = target_enemy.y - self.ball.y
+                var spd = 2.0
+                if "speed" in self.ball:
+                    spd = self.ball.speed
+                self.ball.x += (edx / edist) * spd * delta * 50.0
+                self.ball.y += (edy / edist) * spd * delta * 50.0
 
 func _defend(delta: float):
     var personality = "idle"

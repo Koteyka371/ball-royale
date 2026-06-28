@@ -764,11 +764,87 @@ class DominationMode extends GameMode:
 
         return null
 
+
+class MovingZoneMode extends GameMode:
+    var tick_timer = 0.0
+    var zone_x = 500.0
+    var zone_y = 500.0
+    var zone_radius = 150.0
+    var zone_target_x = 500.0
+    var zone_target_y = 500.0
+
+    func _init() -> void:
+        name = "Moving Zone"
+        description = "Maintain position in the moving zone to score points for your team."
+
+    func setup(world, balls: Array) -> void:
+        for b in balls:
+            if b.ball_type != "spectator":
+                b.set_meta("score", 0)
+        var arena_width = 1000.0
+        var arena_height = 1000.0
+        if world != null and "arena" in world and world.arena != null:
+            if "width" in world.arena: arena_width = float(world.arena.width)
+            if "height" in world.arena: arena_height = float(world.arena.height)
+        zone_x = arena_width / 2.0
+        zone_y = arena_height / 2.0
+        zone_target_x = zone_x
+        zone_target_y = zone_y
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        tick_timer += delta
+        var arena_width = 1000.0
+        var arena_height = 1000.0
+        if world != null and "arena" in world and world.arena != null:
+            if "width" in world.arena: arena_width = float(world.arena.width)
+            if "height" in world.arena: arena_height = float(world.arena.height)
+
+        var dx = zone_target_x - zone_x
+        var dy = zone_target_y - zone_y
+        var dist = sqrt(dx*dx + dy*dy)
+        if dist > 5.0:
+            zone_x += (dx / dist) * 20.0 * delta
+            zone_y += (dy / dist) * 20.0 * delta
+        else:
+            zone_target_x = zone_radius + randf() * (arena_width - 2.0 * zone_radius)
+            zone_target_y = zone_radius + randf() * (arena_height - 2.0 * zone_radius)
+
+        if tick_timer >= 0.5:
+            tick_timer = 0.0
+            for b in balls:
+                if b.alive and b.ball_type != "spectator":
+                    var bdx = b.x - zone_x
+                    var bdy = b.y - zone_y
+                    if bdx*bdx + bdy*bdy <= zone_radius * zone_radius:
+                        var s = 0
+                        if b.has_meta("score"): s = b.get_meta("score")
+                        b.set_meta("score", s + 1)
+
+    func check_winner(world, balls: Array):
+        var alive = []
+        for b in balls:
+            if b.alive and b.ball_type != "spectator":
+                alive.append(b)
+
+        if alive.size() == 0:
+            return "Draw"
+
+        for b in balls:
+            if b.ball_type != "spectator":
+                var score = 0
+                if b.has_meta("score"): score = b.get_meta("score")
+                if score >= 100:
+                    if "team" in b: return b.team
+                    return b.ball_type
+
+        return null
+
 var GAME_MODES = {
     "weather_chaos": WeatherChaosMode.new(),
     "domination": DominationMode.new(),
     "black_hole": BlackHoleMode.new(),
     "king_of_the_hill": KingOfTheHillMode.new(),
+    "moving_zone": MovingZoneMode.new(),
     "vampire_royale": VampireRoyaleMode.new(),
     "battle_royale": BattleRoyaleMode.new(),
     "team_deathmatch": TeamDeathmatchMode.new(),

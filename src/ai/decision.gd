@@ -267,9 +267,23 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
         if has_enemy_flag:
             scores["escort"] += 200.0
 
+
     if b_type == "assassin" or b_type == "ninja":
         if has_our_flag:
             scores["intercept"] += 200.0
+
+    # King of the Hill / Zone Mode prioritization
+    var game_mode_name = ""
+    if self.world != null and "game_mode" in self.world and self.world.game_mode != null:
+        if "name" in self.world.game_mode:
+            game_mode_name = self.world.game_mode.name.to_lower()
+
+    if "king of the hill" in game_mode_name or "zone" in game_mode_name:
+        if not scores.has("hold_zone"):
+            scores["hold_zone"] = 0.0
+        scores["hold_zone"] += 1500.0
+        scores["attack"] -= 500.0
+        scores["chase"] -= 500.0
 
     if skill_timer <= 0.0:
         if b_type == "warrior" and enemies_count >= 2.0:
@@ -360,7 +374,7 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
             else:
                 best_score = 0.0
     else:
-        var action_order = ["intercept", "escort", "flee", "defend", "collect_booster", "attack", "target_weak", "chase", "use_skill", "kite", "flank", "group_attack", "hide_behind", "idle"]
+        var action_order = ["hold_zone", "intercept", "escort", "flee", "defend", "collect_booster", "attack", "target_weak", "chase", "use_skill", "kite", "flank", "group_attack", "hide_behind", "idle"]
         var possible_actions = []
         for k in scores.keys():
             if float(scores[k]) > -500.0:

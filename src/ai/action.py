@@ -255,6 +255,8 @@ class Action:
             self._group_attack(delta)
         elif strategy == "defend":
             self._defend(delta)
+        elif strategy == "hold_zone":
+            self._hold_zone(delta)
         elif strategy in ("opportunistic", "collect_booster", "collect booster"):
             self._collect_booster(delta)
         elif strategy in ("use_skill", "use skill", "action_skill", "Действие"):
@@ -1183,6 +1185,53 @@ class Action:
                         self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
         else:
             self._idle(delta)
+
+
+
+    def _hold_zone(self, delta: float) -> None:
+        arena_width = 1000
+        arena_height = 1000
+        if hasattr(self.world, "arena") and self.world.arena:
+            arena_width = getattr(self.world.arena, "width", 1000)
+            arena_height = getattr(self.world.arena, "height", 1000)
+
+        target_x = arena_width / 2
+        target_y = arena_height / 2
+        zone_radius = min(arena_width, arena_height) * 0.2
+
+        # Read from game mode if it exists
+        game_mode = getattr(self.world, "game_mode", None)
+        if game_mode:
+            target_x = getattr(game_mode, "zone_x", target_x)
+            target_y = getattr(game_mode, "zone_y", target_y)
+            zone_radius = getattr(game_mode, "zone_radius", zone_radius)
+
+        dx = target_x - self.ball.x
+        dy = target_y - self.ball.y
+        dist = math.sqrt(dx * dx + dy * dy)
+
+        # Move towards the center if we are too far
+        if dist > zone_radius * 0.5:
+            if dist > 0:
+                self.ball.x += (dx / dist) * getattr(self.ball, "speed", 2.0) * delta * 50.0
+                self.ball.y += (dy / dist) * getattr(self.ball, "speed", 2.0) * delta * 50.0
+
+        else:
+            # We are in the center, we should attack enemies inside or just idle
+            enemies = [b for b in getattr(self.world, "balls", []) if getattr(b, "alive", False) and getattr(b, "team", getattr(self.ball, "team", "")) != getattr(self.ball, "team", "")]
+            target_enemy = None
+            if enemies:
+                target_enemy = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+
+            if target_enemy:
+                edx = target_enemy.x - self.ball.x
+                edy = target_enemy.y - self.ball.y
+                edist = math.sqrt(edx * edx + edy * edy)
+                if edist < 150.0:
+                    if edist > 0:
+                        self.ball.x += (edx / edist) * getattr(self.ball, "speed", 2.0) * delta * 50.0
+                        self.ball.y += (edy / edist) * getattr(self.ball, "speed", 2.0) * delta * 50.0
+
 
     def _defend(self, delta: float) -> None:
         personality = getattr(self.ball, "personality", "idle")

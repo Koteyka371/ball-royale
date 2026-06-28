@@ -244,9 +244,17 @@ class Decision:
             if has_enemy_flag:
                 scores["escort"] += 200.0
 
+
         if b_type == "assassin" or b_type == "ninja":
             if has_our_flag:
                 scores["intercept"] += 200.0
+
+        # King of the Hill / Zone Mode prioritization
+        game_mode_name = getattr(getattr(self.world, "game_mode", None), "name", "").lower()
+        if "king of the hill" in game_mode_name or "zone" in game_mode_name:
+            scores["hold_zone"] = scores.get("hold_zone", 0.0) + 1500.0
+            scores["attack"] -= 500.0
+            scores["chase"] -= 500.0
 
         if skill_timer <= 0:
             if b_type == "warrior" and enemies_count >= 2:
@@ -321,7 +329,7 @@ class Decision:
                 best_action = random.choice(possible) if possible else "idle"
                 best_score = scores.get(best_action, 0.0)
         else:
-            action_order = ["intercept", "escort", "flee", "defend", "collect_booster", "attack", "target_weak", "chase", "use_skill", "kite", "flank", "group_attack", "hide_behind", "idle"]
+            action_order = ["hold_zone", "intercept", "escort", "flee", "defend", "collect_booster", "attack", "target_weak", "chase", "use_skill", "kite", "flank", "group_attack", "hide_behind", "idle"]
             valid_actions = [k for k in scores.keys() if scores[k] > -500.0]
             sorted_actions = sorted(valid_actions, key=lambda k: (scores[k], -action_order.index(k) if k in action_order else 0), reverse=True)
             if not sorted_actions:
