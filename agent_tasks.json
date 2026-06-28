@@ -2778,7 +2778,7 @@
     },
     {
       "id": "idea-159",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Interactive Hazards",
@@ -4830,6 +4830,74 @@
         "src/ai/mirage_ability.py",
         "src/ai/mirage_ability.gd",
         "tests/test_mirage_ability.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-278",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reflect shield visual effect",
+      "description": "Add a visual particle effect when the reflect shield reflects damage, creating a pulse originating from the shield and traveling towards the attacker.",
+      "allowed_paths": [
+        "src/ai/reflect_shield_visual_effect.py",
+        "src/ai/reflect_shield_visual_effect.gd",
+        "tests/test_reflect_shield_visual_effect.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-279",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shield breaking mechanism",
+      "description": "Currently the reflect shield reflects the first damage and is consumed. Allow the shield to have a maximum damage capacity so it can reflect multiple small hits before breaking.",
+      "allowed_paths": [
+        "src/ai/shield_breaking_mechanism.py",
+        "src/ai/shield_breaking_mechanism.gd",
+        "tests/test_shield_breaking_mechanism.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-280",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse EMP item",
+      "description": "An item that temporarily increases the cooldowns of nearby enemies, preventing them from using skills or attacking for a short time.",
+      "allowed_paths": [
+        "src/ai/reverse_emp_item.py",
+        "src/ai/reverse_emp_item.gd",
+        "tests/test_reverse_emp_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-281",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Vampiric Drain booster",
+      "description": "A booster that links you to the nearest enemy for 5 seconds, draining their HP and giving it to you as long as you stay within range.",
+      "allowed_paths": [
+        "src/ai/vampiric_drain_booster.py",
+        "src/ai/vampiric_drain_booster.gd",
+        "tests/test_vampiric_drain_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-159] Interactive Hazards — *2026-06-28 10:35:02 UTC*
+
+Introduce dynamic hazards like explosive barrels or spike traps that balls can push into enemies or trigger manually via skills to create area denial zones.
+
+---
+
 ## [idea-224] EMP Grenade Item — *2026-06-28 10:16:41 UTC*
 
 An item that, when collected, disables nearby enemy drones, shields, and temporary speed boosters for a short duration.
