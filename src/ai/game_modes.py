@@ -1185,6 +1185,100 @@ class PortalNodeMode(GameMode):
                     if self.team_scores[t] < 0:
                         self.team_scores[t] = 0.0
 
+
+
+class SafeZoneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Safe Zone"
+        self.description = "A battle royale mode where the safe zone gradually shrinks, and balls take continuous damage outside of it."
+        self.zone_x = 500.0
+        self.zone_y = 500.0
+        self.zone_radius = 500.0
+        self.min_zone_radius = 50.0
+        self.shrink_rate = 10.0
+        self.outside_damage_per_second = 10.0
+        self.tick_timer = 0.0
+
+    def setup(self, world, balls):
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.zone_x = arena_width / 2.0
+        self.zone_y = arena_height / 2.0
+        self.zone_radius = min(arena_width, arena_height) / 2.0
+        self.min_zone_radius = 50.0
+
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        for i, b in enumerate(valid_balls):
+            if i >= 20:
+                b.ball_type = "spectator"
+                b.alive = False
+            else:
+                b.team = b.ball_type # Default behavior
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+
+        # Shrink the safe zone
+        if self.zone_radius > self.min_zone_radius:
+            self.zone_radius -= self.shrink_rate * delta
+            if self.zone_radius < self.min_zone_radius:
+                self.zone_radius = self.min_zone_radius
+
+        # Apply continuous damage outside the safe zone
+        damage_this_tick = self.outside_damage_per_second * delta
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                dx = b.x - self.zone_x
+                dy = b.y - self.zone_y
+                dist = math.sqrt(dx*dx + dy*dy)
+
+                # If outside safe zone, take damage
+                if dist > self.zone_radius:
+                    b.hp -= damage_this_tick
+                    if b.hp <= 0:
+                        b.alive = False
+                        b.hp = 0
+
+    def check_winner(self, world, balls):
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            self._award_skill_points()
+            return "Draw"
+
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
+        if len(teams_alive) == 1:
+            self._award_skill_points()
+            return list(teams_alive)[0]
+
+        if len(alive) == 1:
+            self._award_skill_points()
+            return getattr(alive[0], "team", getattr(alive[0], "ball_type", None))
+
+        return None
+
+    def _award_skill_points(self):
+        try:
+            from system.profile import ProfileManager  # type: ignore
+            pm = ProfileManager("profile.json")
+            pm.add_skill_points(10)
+        except Exception:
+            pass
+
 GAME_MODES = {
     "portal_node": PortalNodeMode(),
     "memory_traps": MemoryTrapsMode(),
@@ -1206,5 +1300,6 @@ GAME_MODES = {
     "survival": SurvivalMode(),
     "capture_the_flag": CaptureTheFlagMode(),
     "evolutionary_simulation": EvolutionarySimulationMode(),
-    "interactive_training": InteractiveTrainingMode()
+    "interactive_training": InteractiveTrainingMode(),
+    "safe_zone": SafeZoneMode()
 }
