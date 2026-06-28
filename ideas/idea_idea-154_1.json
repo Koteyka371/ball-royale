@@ -1,0 +1,4 @@
+{
+  "title": "Temperature Mechanics",
+  "description": "Introduce temperature extremes that affect ball performance based on the current dynamic weather (e.g., freezing cold slows down attack cooldowns, scorching heat slowly drains HP unless they are near a water source)."
+}

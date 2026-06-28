@@ -449,7 +449,58 @@ class BlackHoleMode(GameMode):
 
         return None
 
+class DynamicWeatherMode(BattleRoyaleMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Dynamic Weather"
+        self.description = "Weather changes periodically, affecting ball physics (e.g. wind pushing, storm dealing damage)."
+        self.weather_timer = 0.0
+        self.current_weather = "clear"
+        self.weather_types = ["clear", "wind", "storm", "rain"]
+        self.wind_dir = (1.0, 0.0)
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        import random
+        import math
+        self.weather_timer += delta
+
+        # Change weather every 5 seconds
+        if self.weather_timer >= 5.0:
+            self.weather_timer = 0.0
+            self.current_weather = random.choice(self.weather_types)
+            if self.current_weather == "wind" or self.current_weather == "storm":
+                angle = random.uniform(0, 3.14159 * 2)
+                self.wind_dir = (math.cos(angle), math.sin(angle))
+
+        # Apply physics
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                if not hasattr(b, "x"):
+                    b.x = 0.0
+                if not hasattr(b, "y"):
+                    b.y = 0.0
+
+                if self.current_weather == "wind":
+                    # Wind pushes balls
+                    wind_strength = 50.0
+                    b.x += self.wind_dir[0] * wind_strength * delta
+                    b.y += self.wind_dir[1] * wind_strength * delta
+                elif self.current_weather == "storm":
+                    # Storm pushes randomly and occasionally deals damage
+                    b.x += self.wind_dir[0] * 80.0 * delta
+                    b.y += self.wind_dir[1] * 80.0 * delta
+                    if random.random() < 0.01: # 1% chance per tick to take damage
+                        b.hp = getattr(b, "hp", 100) - 2.0
+                        if b.hp <= 0:
+                            b.alive = False
+                elif self.current_weather == "rain":
+                    # Rain makes them slide randomly slightly
+                    angle = random.uniform(0, 3.14159 * 2)
+                    b.x += math.cos(angle) * 15.0 * delta
+                    b.y += math.sin(angle) * 15.0 * delta
+
 GAME_MODES = {
+    "dynamic_weather": DynamicWeatherMode(),
     "black_hole": BlackHoleMode(),
     "king_of_the_hill": KingOfTheHillMode(),
     "vampire_royale": VampireRoyaleMode(),
