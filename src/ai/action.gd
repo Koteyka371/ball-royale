@@ -2402,6 +2402,32 @@ func _use_skill():
                     if mag > 0.0001:
                         self.ball.x += (out_x/mag) * 80.0
                         self.ball.y += (out_y/mag) * 80.0
+        elif skill_name == "explosion":
+            var enemies = _get_enemies()
+            var explosion_radius = 100.0
+            var explosion_damage = 50.0
+
+            # Deal damage
+            for e in enemies:
+                var dx = e.x - self.ball.x
+                var dy = e.y - self.ball.y
+                var dist = sqrt(dx*dx + dy*dy)
+                if dist <= explosion_radius:
+                    if e.has_method("take_damage"):
+                        e.take_damage(explosion_damage)
+
+            # Break walls/corridors
+            if world != null and world.has_method("get_arena"):
+                var arena = world.call("get_arena")
+                if arena != null and arena.get("rooms") != null:
+                    var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
+                    if ProceduralArenaScript != null:
+                        var crater_size = explosion_radius * 1.5
+                        var new_room = ProceduralArenaScript.Room.new(self.ball.x - crater_size/2, self.ball.y - crater_size/2, crater_size, crater_size)
+                        arena.rooms.append(new_room)
+                        if arena.has_method("queue_redraw"):
+                            arena.call("queue_redraw")
+
         elif skill_name == "dash":
             var enemies = _get_enemies()
             if enemies.size() > 0:

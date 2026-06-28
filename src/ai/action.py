@@ -1628,6 +1628,33 @@ class Action:
 
                     self.world.arena.hazards.append(trap)
 
+            elif skill_name == "explosion":
+                import math
+                enemies = self._get_enemies()
+                explosion_radius = 100.0
+                explosion_damage = 50.0
+
+                # Deal damage to enemies
+                if enemies:
+                    for enemy in enemies:
+                        dx = enemy.x - self.ball.x
+                        dy = enemy.y - self.ball.y
+                        dist = math.sqrt(dx*dx + dy*dy)
+                        if dist <= explosion_radius:
+                            if hasattr(enemy, "take_damage"):
+                                enemy.take_damage(explosion_damage)
+
+                # Break walls/corridors if arena supports it
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "rooms"):
+                    # Create a new room to represent the broken wall/crater
+                    try:
+                        from arena.procedural_arena import Room # type: ignore
+                        crater_size = explosion_radius * 1.5
+                        new_room = Room(self.ball.x - crater_size/2, self.ball.y - crater_size/2, crater_size, crater_size)
+                        self.world.arena.rooms.append(new_room)
+                    except ImportError:
+                        pass
+
             elif skill_name == "target_strong":
                 import random
                 import math
