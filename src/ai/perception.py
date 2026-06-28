@@ -64,13 +64,30 @@ class Perception:
 
         # Include procedural hazards within perception radius
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            import random
             for h in self.world.arena.hazards:
                 dist = calc_dist(h)
                 # Check if within perception radius and not already in traps
                 if dist <= perception_radius:
-                    # Make sure it's not already in there by id
-                    if not any(getattr(t, "id", None) == h.id for t in data["traps"]):
-                        data["traps"].append(h)
+                    if getattr(h, "kind", "") == "fake_booster":
+                        is_scout = getattr(self.ball, "ball_type", "") == "scout"
+                        perception_score = getattr(self.ball, "perception_score", 0.0)
+
+                        identified = False
+                        if is_scout:
+                            if perception_score > 50 or random.random() < 0.3:
+                                identified = True
+
+                        if identified:
+                            if not any(getattr(t, "id", None) == h.id for t in data["traps"]):
+                                data["traps"].append(h)
+                        else:
+                            if not any(getattr(b, "id", None) == h.id for b in data["boosters"]):
+                                data["boosters"].append(h)
+                    else:
+                        # Make sure it's not already in there by id
+                        if not any(getattr(t, "id", None) == h.id for t in data["traps"]):
+                            data["traps"].append(h)
 
         for enemy in data["enemies"]:
             dist = calc_dist(enemy)
