@@ -474,6 +474,69 @@ class BlackHoleMode(GameMode):
         return None
 
 
+
+class WeatherChaosMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Weather Chaos"
+        self.description = "Weather conditions change throughout the match, affecting stats."
+        self.weather = "clear"
+        self.weather_timer = 0.0
+        import random
+        self.random = random
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        for b in valid_balls:
+            b.team = b.ball_type
+            if not hasattr(b, "base_speed"):
+                b.base_speed = getattr(b, "speed", 100.0)
+            if not hasattr(b, "base_damage"):
+                b.base_damage = getattr(b, "damage", 10.0)
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        self.weather_timer += delta
+        if self.weather_timer > 10.0:
+            self.weather_timer = 0.0
+            weathers = ["clear", "rain", "fog", "snow"]
+            if hasattr(self, "random"):
+                self.weather = self.random.choice(weathers)
+            else:
+                import random
+                self.weather = random.choice(weathers)
+
+        valid_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+
+        for b in valid_balls:
+            if not hasattr(b, "base_speed"):
+                b.base_speed = getattr(b, "speed", 100.0)
+            if not hasattr(b, "base_damage"):
+                b.base_damage = getattr(b, "damage", 10.0)
+
+            if self.weather == "clear":
+                b.speed = b.base_speed
+                b.damage = b.base_damage
+            elif self.weather == "rain":
+                b.speed = b.base_speed * 0.8
+                b.damage = b.base_damage
+            elif self.weather == "fog":
+                b.speed = b.base_speed * 0.5
+                b.damage = b.base_damage * 0.8
+            elif self.weather == "snow":
+                b.speed = b.base_speed * 0.6
+                b.damage = b.base_damage * 1.2
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", "Unknown")) for b in alive)
+        if len(teams_alive) == 1:
+            return list(teams_alive)[0]
+
+        return None
+
 class DominationMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -560,6 +623,7 @@ class DominationMode(GameMode):
         return None
 
 GAME_MODES = {
+    "weather_chaos": WeatherChaosMode(),
     "domination": DominationMode(),
     "black_hole": BlackHoleMode(),
     "king_of_the_hill": KingOfTheHillMode(),
