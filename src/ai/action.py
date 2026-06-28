@@ -1678,12 +1678,41 @@ class Action:
         skill_timer = getattr(self.ball, "skill_timer", 0.0)
         if skill_timer <= 0 and hasattr(self.ball, "use_skill"):
             self.ball.use_skill()
-            if getattr(self.ball, "charge_level", 0) >= 100:
-                self.ball.charge_level = 0
-                self.ball.base_damage = getattr(self.ball, "base_damage", getattr(self.ball, "damage", 10)) * 2
-                self.ball.damage = self.ball.base_damage
 
             skill_name = getattr(self.ball, "skill", getattr(self.ball, "SKILL", ""))
+
+            # Synergy Logic
+            allies = [b for b in getattr(self.world, "balls", []) if b.id != self.ball.id and getattr(b, "team", "") == getattr(self.ball, "team", "") and getattr(b, "alive", True)]
+            synergy_multiplier = 1.0
+
+            for ally in allies:
+                ally_skill = getattr(ally, "skill", getattr(ally, "SKILL", ""))
+                # Synergy: elemental_burst (water) + lightning_strike OR fireball + smokescreen
+                if (skill_name == "elemental_burst" and ally_skill == "lightning_strike") or                    (skill_name == "lightning_strike" and ally_skill == "elemental_burst") or                    (skill_name == "fireball" and ally_skill == "smokescreen") or                    (skill_name == "smokescreen" and ally_skill == "fireball"):
+                    if (self.ball.x - ally.x)**2 + (self.ball.y - ally.y)**2 < 40000:  # Distance check (radius 200)
+                        synergy_multiplier = 1.5
+                        # Apply area paralysis/stun to enemies for elemental burst + lightning
+                        if "elemental_burst" in [skill_name, ally_skill] and "lightning_strike" in [skill_name, ally_skill]:
+                            enemies = self._get_enemies()
+                            for enemy in enemies:
+                                if (enemy.x - self.ball.x)**2 + (enemy.y - self.ball.y)**2 < 40000:
+                                    enemy.is_stunned = True
+                                    enemy.stun_timer = max(getattr(enemy, "stun_timer", 0.0), 2.0)
+                        elif "fireball" in [skill_name, ally_skill] and "smokescreen" in [skill_name, ally_skill]:
+                            enemies = self._get_enemies()
+                            for enemy in enemies:
+                                if (enemy.x - self.ball.x)**2 + (enemy.y - self.ball.y)**2 < 40000:
+                                    enemy.hp -= 5 # Bonus area damage
+                        break # Limit to one synergy activation per use
+
+            if getattr(self.ball, "charge_level", 0) >= 100:
+                self.ball.charge_level = 0
+                self.ball.base_damage = getattr(self.ball, "base_damage", getattr(self.ball, "damage", 10)) * 2 * synergy_multiplier
+            else:
+                self.ball.base_damage = getattr(self.ball, "base_damage", getattr(self.ball, "damage", 10)) * synergy_multiplier
+
+            self.ball.damage = self.ball.base_damage
+
 
             if skill_name == "command":
                 self.ball.team_message = {"type": "buff_command", "radius": 200}
