@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-227] Night Mode — *2026-06-28 10:46:30 UTC*
+
+A variant mode where visibility is severely reduced, relying on a narrow cone of light or sonar-like pulses for perception.
+
+---
+
 ## [idea-159] Interactive Hazards — *2026-06-28 10:35:02 UTC*
 
 Introduce dynamic hazards like explosive barrels or spike traps that balls can push into enemies or trigger manually via skills to create area denial zones.

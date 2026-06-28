@@ -3970,7 +3970,7 @@
     },
     {
       "id": "idea-227",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Night Mode",
@@ -4898,6 +4898,40 @@
         "src/ai/vampiric_drain_booster.py",
         "src/ai/vampiric_drain_booster.gd",
         "tests/test_vampiric_drain_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-282",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Interactive Environmental Traps",
+      "description": "Introduce switches that balls can hit or roll over to trigger environmental traps like falling boulders, swinging axes, or temporary laser walls that damage or block opponents.",
+      "allowed_paths": [
+        "src/arena/interactive_environmental_traps.py",
+        "src/arena/interactive_environmental_traps.gd",
+        "tests/test_interactive_environmental_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-283",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Magnetic Hazards",
+      "description": "Add magnetic hazards that continuously pull or push balls depending on their active polarity. Balls could change their own polarity using a specific skill to either use the hazard for a speed boost or avoid being dragged in.",
+      "allowed_paths": [
+        "src/arena/magnetic_hazards.py",
+        "src/arena/magnetic_hazards.gd",
+        "tests/test_magnetic_hazards.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
