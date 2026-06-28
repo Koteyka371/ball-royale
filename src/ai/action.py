@@ -171,6 +171,20 @@ class Action:
                         if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
                             hazard.last_updated_tick = current_tick
                             hazard.duration = getattr(hazard, "duration", 5.0) - delta
+                    elif hazard.kind == "spinning_laser":
+                        current_tick = getattr(self.world, "tick", 0)
+                        if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
+                            hazard.last_updated_tick = current_tick
+                            # Update angle
+                            hazard.angle = getattr(hazard, "angle", 0.0) + (math.pi / 2.0) * delta
+                            if hazard.angle > 2 * math.pi:
+                                hazard.angle -= 2 * math.pi
+
+                            # Toggle on/off periodically
+                            hazard.on_timer = getattr(hazard, "on_timer", 3.0) - delta
+                            if hazard.on_timer <= 0:
+                                hazard.is_on = not getattr(hazard, "is_on", True)
+                                hazard.on_timer = 3.0 if hazard.is_on else 2.0
                     elif hazard.kind == "proximity_trap":
                         # Deal damage and apply slow
                         dx = hazard.x - self.ball.x
@@ -337,6 +351,40 @@ class Action:
                                 self.ball.x += (dx/dist) * 200.0 * delta
                                 self.ball.y += (dy/dist) * 200.0 * delta
                             continue
+                        elif hazard.kind == "spinning_laser":
+                            if getattr(hazard, "is_on", True):
+                                angle = getattr(hazard, "angle", 0.0)
+                                beam_length = hazard.radius
+                                beam_width = 20.0
+
+                                dx = self.ball.x - hazard.x
+                                dy = self.ball.y - hazard.y
+                                dist = math.sqrt(dx*dx + dy*dy)
+
+                                if dist < beam_length:
+                                    # Calculate distance to line
+                                    # Line eq: y - hy = tan(angle) * (x - hx) => sin(angle)*x - cos(angle)*y - sin(angle)*hx + cos(angle)*hy = 0
+                                    # Or simpler: project (dx, dy) onto the normal of the beam
+                                    normal_x = -math.sin(angle)
+                                    normal_y = math.cos(angle)
+                                    dist_to_beam = abs(dx * normal_x + dy * normal_y)
+
+                                    # Also need to make sure we are not behind the center if it's a one-sided beam,
+                                    # but let's make it a two-sided spinning beam (like a propeller)
+
+                                    if dist_to_beam < beam_width + self.ball.radius:
+                                        hazard_damage = hazard.damage * delta
+                                        if hasattr(self.ball, "take_damage"):
+                                            self.ball.take_damage(hazard_damage)
+                                        elif hasattr(self.ball, "hp"):
+                                            self.ball.hp -= hazard_damage
+                                            if self.ball.hp <= 0:
+                                                self.ball.alive = False
+
+                                        # Push away from the beam slightly
+                                        if dist > 0.0001:
+                                            self.ball.x += (dx/dist) * 100.0 * delta
+                                            self.ball.y += (dy/dist) * 100.0 * delta
                         elif hazard.kind == "poison_cloud":
                             self.ball.dot_duration = 3.0
                             self.ball.dot_damage_per_tick = hazard.damage
