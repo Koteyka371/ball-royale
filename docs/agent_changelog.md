@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-220] Dynamic Map Hazards — *2026-06-28 09:44:57 UTC*
+
+Introduce dynamic map hazards such as lava pits or rolling boulders that appear and move across the arena periodically.
+
+---
+
 ## [idea-152] Combo Abilities System — *2026-06-28 09:21:55 UTC*
 
 Implement a synergy mechanic where combining specific skills from different ball types (e.g., water attack + lightning attack) creates enhanced combo effects like area paralysis or bonus damage, encouraging team coordination and diverse team compositions.
