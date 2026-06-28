@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-165] Weather Events System — *2026-06-28 11:07:35 UTC*
+
+Introduce dynamic weather events (rain, snow, sandstorms) that occur periodically during a match, affecting ball physics such as movement speed, vision range, and attack accuracy.
+
+---
+
 ## [idea-225] Camouflage Drone Skill — *2026-06-28 10:57:53 UTC*
 
 A variant of the drone that temporarily masks the player's presence from enemies outside a very short radius, making them drop aggro.

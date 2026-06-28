@@ -2880,7 +2880,7 @@
     },
     {
       "id": "idea-165",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather Events System",
@@ -5034,6 +5034,40 @@
         "src/ai/windstorm.py",
         "src/ai/windstorm.gd",
         "tests/test_windstorm.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-290",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Kamikaze Drone Variant",
+      "description": "An aggressive drone variant that homes in on the nearest enemy and explodes, dealing moderate AoE damage but destroying the drone.",
+      "allowed_paths": [
+        "src/ai/kamikaze_drone_variant.py",
+        "src/ai/kamikaze_drone_variant.gd",
+        "tests/test_kamikaze_drone_variant.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-291",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Drone Variant",
+      "description": "A drone variant that creates a temporary clone of the player to distract enemies, drawing aggro while the player escapes.",
+      "allowed_paths": [
+        "src/ai/decoy_drone_variant.py",
+        "src/ai/decoy_drone_variant.gd",
+        "tests/test_decoy_drone_variant.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
