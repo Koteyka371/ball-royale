@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-232] Blackout Protocol Event — *2026-06-28 11:27:48 UTC*
+
+Periodically during matches, the entire arena goes dark except for a small radius around each ball and objective. This forces close-quarters combat, increases the value of scout-type balls, and adds tension as players cannot see long-range threats.
+
+---
+
 ## [idea-182] Stamina Based Dashing — *2026-06-28 11:22:35 UTC*
 
 Add a stamina meter that allows balls to dash short distances to dodge attacks or gap-close, regenerating when moving slowly or standing still.

@@ -4055,7 +4055,7 @@
     },
     {
       "id": "idea-232",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Blackout Protocol Event",
@@ -5137,6 +5137,74 @@
         "src/ui/specific_equipment.gd",
         "src/ai/specific_equipment.py",
         "tests/test_specific_equipment.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-296",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Stamina Potions",
+      "description": "Add a new booster item that immediately replenishes a ball's stamina to 100% and grants brief infinite stamina.",
+      "allowed_paths": [
+        "src/ai/stamina_potions.py",
+        "src/ai/stamina_potions.gd",
+        "tests/test_stamina_potions.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-297",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dash Attack Skill",
+      "description": "Add a skill for certain ball types that lets them consume all stamina to dash through enemies, dealing heavy damage.",
+      "allowed_paths": [
+        "src/ai/dash_attack_skill.py",
+        "src/ai/dash_attack_skill.gd",
+        "tests/test_dash_attack_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-298",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Exhaustion Effect",
+      "description": "Balls with 0 stamina are briefly exhausted, slowing their base speed and lowering their damage until stamina regenerates to at least 20%.",
+      "allowed_paths": [
+        "src/ai/exhaustion_effect.py",
+        "src/ai/exhaustion_effect.gd",
+        "tests/test_exhaustion_effect.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-299",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Heavy Attacks",
+      "description": "Balls can consume all their stamina for a single heavy attack that deals massive damage and knocks the enemy back.",
+      "allowed_paths": [
+        "src/ai/heavy_attacks.py",
+        "src/ai/heavy_attacks.gd",
+        "tests/test_heavy_attacks.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
