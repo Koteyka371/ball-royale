@@ -357,3 +357,70 @@ def test_spectator_not_in_allies():
 
     assert len(allies) == 1
     assert allies[0] == normal_ally
+
+def test_emp_item():
+    from src.ai.action import Action
+    import math
+
+    class MockArena:
+        def __init__(self):
+            self.hazards = []
+
+    class MockWorld:
+        def __init__(self):
+            self.balls = []
+            self.boosters = []
+            self.arena = MockArena()
+
+    class MockEntity:
+        def __init__(self, x, y, kind="emp_item", ball_type="booster", team="A"):
+            self.x = x
+            self.y = y
+            self.kind = kind
+            self.ball_type = ball_type
+            self.team = team
+            self.radius = 10
+
+    class MockBall(MockEntity):
+        def __init__(self, x, y, team="A"):
+            super().__init__(x, y, kind="ball", ball_type="basic", team=team)
+            self.has_drone = True
+            self.has_shield = True
+            self.speed_booster_timer = 5.0
+            self.speed = 2.0
+
+    world = MockWorld()
+    my_ball = MockBall(100, 100, team="A")
+    my_ball.radius = 15
+    enemy_ball_close = MockBall(150, 100, team="B")
+    enemy_ball_far = MockBall(500, 100, team="B")
+    ally_ball = MockBall(120, 100, team="A")
+
+    world.balls = [my_ball, enemy_ball_close, enemy_ball_far, ally_ball]
+
+    emp = MockEntity(100, 100, kind="emp_item")
+    world.boosters = [emp]
+    world.arena.hazards = [emp]
+
+    action = Action(my_ball, world)
+
+    world.boosters = [emp]
+    action._get_boosters = lambda: [emp]
+    action._get_enemies = lambda: []
+    action.ball.x = emp.x
+    action.ball.y = emp.y
+    action.execute("collect_booster", 0.1)
+
+    assert not enemy_ball_close.has_drone
+    assert not enemy_ball_close.has_shield
+    assert enemy_ball_close.speed_booster_timer == 0.0
+
+    assert enemy_ball_far.has_drone
+    assert enemy_ball_far.has_shield
+    assert enemy_ball_far.speed_booster_timer == 5.0
+
+    assert ally_ball.has_drone
+    assert ally_ball.has_shield
+    assert ally_ball.speed_booster_timer == 5.0
+
+    assert emp not in world.arena.hazards
