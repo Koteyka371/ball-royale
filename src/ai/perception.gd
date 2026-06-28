@@ -19,6 +19,11 @@ func scan() -> Dictionary:
         else:
             perception_radius = max(perception_radius, 2000.0)
 
+
+    if self.world != null and "arena" in self.world and "is_foggy" in self.world.arena:
+        if self.world.arena.is_foggy:
+            perception_radius = min(perception_radius, 80.0)
+
     var data = {
         "enemies": [],
         "allies": [],

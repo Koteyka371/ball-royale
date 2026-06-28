@@ -400,6 +400,7 @@ class BlackHoleArena extends ProceduralArena:
 		hazards.append(h0)
 
 const ARENAS = [
+	"thick_fog",
 	"black_hole",
 	"neural_ball",
 	"flee",
@@ -468,3 +469,18 @@ class DayNightArena extends ProceduralArena:
         if day_night_timer >= phase_duration:
             day_night_timer = 0.0
             is_night = not is_night
+
+class ThickFogArena extends ProceduralArena:
+	var is_foggy = false
+	var fog_timer = 0.0
+	var phase_duration = 20.0
+
+	func _init(size: float = 2000.0, seed_val = null):
+		super(size, 5, seed_val)
+
+	func update_zone(current_tick: int, delta: float) -> void:
+		super.update_zone(current_tick, delta)
+		fog_timer += delta
+		if fog_timer >= phase_duration:
+			fog_timer = 0.0
+			is_foggy = not is_foggy

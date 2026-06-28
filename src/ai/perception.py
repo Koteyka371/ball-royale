@@ -25,6 +25,11 @@ class Perception:
             else:
                 perception_radius = max(perception_radius, 2000.0)
 
+
+        if hasattr(self.world, "arena") and getattr(self.world.arena, "is_foggy", None) is not None:
+            if self.world.arena.is_foggy:
+                perception_radius = min(perception_radius, 80.0)
+
         data: Dict[str, Any] = {
             "enemies": [],
             "allies": [],
