@@ -33,9 +33,13 @@ class BattleRoyaleMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Battle Royale"
-        self.description = "Last man standing. Everyone for themselves. Includes periodic dark phases."
+        self.description = "Last man standing. Everyone for themselves. Includes dynamic weather."
         self.dark_phase_timer = 0.0
         self.is_dark_phase = False
+        self.weather = "clear"
+        self.weather_timer = 0.0
+        import random
+        self.random = random
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         if not hasattr(world, "dead_balls"):
@@ -48,6 +52,10 @@ class BattleRoyaleMode(GameMode):
             else:
                 b.team = b.ball_type # Default behavior
                 b.base_perception_radius = getattr(b, "perception_radius", 250.0)
+                if not hasattr(b, "base_speed"):
+                    b.base_speed = getattr(b, "speed", 100.0)
+                if not hasattr(b, "base_damage"):
+                    b.base_damage = getattr(b, "damage", 10.0)
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         if not hasattr(world, "dead_balls"):
@@ -59,6 +67,51 @@ class BattleRoyaleMode(GameMode):
                     world.dead_balls.append(b)
                 else:
                     b.time_since_death += delta
+
+        # Weather logic
+        self.weather_timer += delta
+        if self.weather_timer > 15.0:
+            self.weather_timer = 0.0
+            weathers = ["clear", "rain", "fog", "snow"]
+            rnd = getattr(self, "random", __import__("random"))
+            self.weather = rnd.choice(weathers)
+
+        if hasattr(world, "arena"):
+            world.arena.is_foggy = (self.weather in ["fog", "snow"])
+            world.arena.is_raining = (self.weather == "rain")
+
+        valid_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        for b in valid_balls:
+            if not hasattr(b, "base_speed"):
+                b.base_speed = getattr(b, "speed", 100.0)
+            if not hasattr(b, "base_damage"):
+                b.base_damage = getattr(b, "damage", 10.0)
+
+            if self.weather == "clear":
+                b.speed = b.base_speed
+                b.damage = b.base_damage
+                b.dash_range_mult = 1.0
+                b.steering_mult = 1.0
+                b.attack_accuracy = 1.0
+            elif self.weather == "rain":
+                b.speed = b.base_speed * 0.9
+                b.damage = b.base_damage
+                b.dash_range_mult = 1.3
+                b.steering_mult = 0.7
+                if hasattr(b, "vx") and hasattr(b, "vy"):
+                    b.x += b.vx * delta * 0.3
+                    b.y += b.vy * delta * 0.3
+                b.attack_accuracy = 0.9
+            elif self.weather == "fog":
+                b.speed = b.base_speed * 0.8
+                b.damage = b.base_damage * 0.9
+                b.dash_range_mult = 1.0
+                b.steering_mult = 1.0
+            elif self.weather == "snow":
+                b.speed = b.base_speed * 0.7
+                b.damage = b.base_damage * 1.1
+                b.dash_range_mult = 1.0
+                b.steering_mult = 1.0
 
         self.dark_phase_timer += delta
 
