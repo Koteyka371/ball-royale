@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-179] Expanding Danger Zones — *2026-06-28 06:21:39 UTC*
+
+Danger zones not only spawn dynamically but slowly expand over time before disappearing, forcing a continuous change in safe paths and encouraging more dynamic movement.
+
+---
+
 ## [idea-161] Team Objectives — *2026-06-28 06:21:34 UTC*
 
 Add capture points or secondary objectives that reward surviving teams with global buffs, encouraging teamwork over pure deathmatch behavior.
