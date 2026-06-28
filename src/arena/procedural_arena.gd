@@ -177,6 +177,26 @@ func generate():
         var spawn_pt = get_random_spawn_point(radius)
         hazards.append(ProceduralArena.Hazard.new(i, spawn_pt[0], spawn_pt[1], radius, kind, damage))
 
+    # Generate guaranteed paired portals
+    var num_portals = max(1, num_rooms / 2)
+    for p in range(num_portals):
+        var p1_id = hazards.size() + 5000 + p*2
+        var p2_id = hazards.size() + 5000 + p*2 + 1
+
+        var p1_pt = get_random_spawn_point(30.0)
+        var p2_pt = get_random_spawn_point(30.0)
+
+        var portal1 = ProceduralArena.Hazard.new(p1_id, p1_pt[0], p1_pt[1], 30.0, "portal", 0.0)
+        portal1.set_meta("target_x", p2_pt[0])
+        portal1.set_meta("target_y", p2_pt[1])
+
+        var portal2 = ProceduralArena.Hazard.new(p2_id, p2_pt[0], p2_pt[1], 30.0, "portal", 0.0)
+        portal2.set_meta("target_x", p1_pt[0])
+        portal2.set_meta("target_y", p1_pt[1])
+
+        hazards.append(portal1)
+        hazards.append(portal2)
+
 func get_random_spawn_point(radius: float) -> Array:
     if rooms.size() == 0:
         return [rng.randf_range(radius, width - radius), rng.randf_range(radius, height - radius)]

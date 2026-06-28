@@ -149,6 +149,26 @@ class ProceduralArena:
                 new_hazard.time_scale = random.choice([0.5, 1.5, 2.0])
             self.hazards.append(new_hazard)
 
+        # Generate guaranteed paired portals
+        num_portals = max(1, self.num_rooms // 2)
+        for p in range(num_portals):
+            p1_id = len(self.hazards) + 5000 + p*2
+            p2_id = len(self.hazards) + 5000 + p*2 + 1
+
+            p1_x, p1_y = self.get_random_spawn_point(30.0)
+            p2_x, p2_y = self.get_random_spawn_point(30.0)
+
+            portal1 = Hazard(id=p1_id, x=p1_x, y=p1_y, radius=30.0, kind="portal", damage=0.0)
+            portal1.target_x = p2_x
+            portal1.target_y = p2_y
+
+            portal2 = Hazard(id=p2_id, x=p2_x, y=p2_y, radius=30.0, kind="portal", damage=0.0)
+            portal2.target_x = p1_x
+            portal2.target_y = p1_y
+
+            self.hazards.append(portal1)
+            self.hazards.append(portal2)
+
     def get_random_spawn_point(self, radius: float) -> Tuple[float, float]:
         if not self.rooms:
             return (random.uniform(radius, self.width - radius),
