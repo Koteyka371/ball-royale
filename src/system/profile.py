@@ -11,7 +11,10 @@ class ProfileManager:
     def load(self):
         try:
             with open(self.filename, 'r') as f:
-                return json.load(f)
+                data = json.load(f)
+                if "quests" not in data:
+                    data["quests"] = []
+                return data
         except (FileNotFoundError, json.JSONDecodeError):
             return {
                 "skill_points": 0,
@@ -21,8 +24,31 @@ class ProfileManager:
                     "bonus_speed": 0,
                     "bonus_damage": 0
                 },
-                "prestige_level": 0
+                "prestige_level": 0,
+                "quests": []
             }
+
+    def add_quest(self, quest_description, reward):
+        if "quests" not in self.data:
+            self.data["quests"] = []
+        self.data["quests"].append({
+            "description": quest_description,
+            "reward": reward,
+            "completed": False
+        })
+        self.save()
+
+    def get_quests(self):
+        return self.data.get("quests", [])
+
+    def complete_quest(self, quest_index):
+        if "quests" in self.data and 0 <= quest_index < len(self.data["quests"]):
+            quest = self.data["quests"][quest_index]
+            if not quest.get("completed", False):
+                quest["completed"] = True
+                self.add_skill_points(quest["reward"])
+                return True
+        return False
 
     def save(self):
         with open(self.filename, 'w') as f:
@@ -66,7 +92,8 @@ class ProfileManager:
                     "bonus_speed": 0,
                     "bonus_damage": 0
                 },
-                "prestige_level": prestige_level
+                "prestige_level": prestige_level,
+                "quests": []
             }
             self.save()
             return True
