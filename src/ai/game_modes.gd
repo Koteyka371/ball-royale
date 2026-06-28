@@ -723,21 +723,45 @@ class WeatherChaosMode extends GameMode:
 				if weather == "clear":
 					if "speed" in b: b.speed = base_spd
 					if "damage" in b: b.damage = base_dmg
+					if b.has_method("set_meta"):
+						b.set_meta("dash_range_mult", 1.0)
+						b.set_meta("steering_mult", 1.0)
 				elif weather == "rain":
 					if "speed" in b: b.speed = base_spd * 0.8
 					if "damage" in b: b.damage = base_dmg
+					if b.has_method("set_meta"):
+						b.set_meta("dash_range_mult", 1.5)
+						b.set_meta("steering_mult", 0.5)
 					if "vx" in b and "vy" in b:
 						b.x += b.vx * delta * 0.5
 						b.y += b.vy * delta * 0.5
 				elif weather == "fog":
 					if "speed" in b: b.speed = base_spd * 0.5
 					if "damage" in b: b.damage = base_dmg * 0.8
+					if b.has_method("set_meta"):
+						b.set_meta("dash_range_mult", 1.0)
+						b.set_meta("steering_mult", 1.0)
 				elif weather == "snow":
 					if "speed" in b: b.speed = base_spd * 0.5
 					if "damage" in b: b.damage = base_dmg * 1.2
+					if b.has_method("set_meta"):
+						b.set_meta("dash_range_mult", 1.0)
+						b.set_meta("steering_mult", 1.0)
+					if b.has_method("set_meta") and b.has_method("get_meta"):
+						var stacks = 0.0
+						if b.has_meta("chill_stacks"):
+							stacks = b.get_meta("chill_stacks")
+						stacks += delta
+						if stacks >= 3.0:
+							stacks = 0.0
+							b.set_meta("stutter_timer", 1.0)
+						b.set_meta("chill_stacks", stacks)
 				elif weather == "wind":
 					if "speed" in b: b.speed = base_spd
 					if "damage" in b: b.damage = base_dmg
+					if b.has_method("set_meta"):
+						b.set_meta("dash_range_mult", 1.0)
+						b.set_meta("steering_mult", 1.0)
 					var wind_dx = 0.0
 					var wind_dy = 0.0
 					if has_method("has_meta") and has_meta("wind_dx"):
@@ -749,6 +773,9 @@ class WeatherChaosMode extends GameMode:
 				elif weather == "thunderstorm":
 					if "speed" in b: b.speed = base_spd * 1.1
 					if "damage" in b: b.damage = base_dmg * 1.5
+					if b.has_method("set_meta"):
+						b.set_meta("dash_range_mult", 1.0)
+						b.set_meta("steering_mult", 1.0)
 					if randf() < 0.05 * delta:
 						if "hp" in b: b.hp -= 20
 

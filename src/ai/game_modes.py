@@ -591,9 +591,14 @@ class WeatherChaosMode(GameMode):
             if self.weather == "clear":
                 b.speed = b.base_speed
                 b.damage = b.base_damage
+                b.dash_range_mult = 1.0
+                b.steering_mult = 1.0
             elif self.weather == "rain":
                 b.speed = b.base_speed * 0.8
                 b.damage = b.base_damage
+                # rain makes surface slippery/increases dash range but reduces steering
+                b.dash_range_mult = 1.5
+                b.steering_mult = 0.5
                 # slide more
                 if hasattr(b, "vx") and hasattr(b, "vy"):
                     b.x += getattr(b, "vx") * delta * 0.5
@@ -601,12 +606,24 @@ class WeatherChaosMode(GameMode):
             elif self.weather == "fog":
                 b.speed = b.base_speed * 0.5
                 b.damage = b.base_damage * 0.8
+                b.dash_range_mult = 1.0
+                b.steering_mult = 1.0
             elif self.weather == "snow":
                 b.speed = b.base_speed * 0.5 # slowed down
                 b.damage = b.base_damage * 1.2
+                b.dash_range_mult = 1.0
+                b.steering_mult = 1.0
+                if not hasattr(b, "chill_stacks"):
+                    b.chill_stacks = 0.0
+                b.chill_stacks += delta
+                if b.chill_stacks >= 3.0: # Arbitrary threshold, let's say 3 seconds in snow
+                    b.chill_stacks = 0.0
+                    b.stutter_timer = 1.0 # Freeze for 1 second
             elif self.weather == "wind":
                 b.speed = b.base_speed
                 b.damage = b.base_damage
+                b.dash_range_mult = 1.0
+                b.steering_mult = 1.0
                 # push balls in a specific direction
                 if hasattr(self, "wind_dx") and hasattr(self, "wind_dy"):
                     b.x += self.wind_dx * delta
@@ -614,6 +631,8 @@ class WeatherChaosMode(GameMode):
             elif self.weather == "thunderstorm":
                 b.speed = b.base_speed * 1.1 # Panic speed
                 b.damage = b.base_damage * 1.5 # High damage due to electricity
+                b.dash_range_mult = 1.0
+                b.steering_mult = 1.0
                 # Random lightning strikes
                 if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
                     # Struck by lightning!
