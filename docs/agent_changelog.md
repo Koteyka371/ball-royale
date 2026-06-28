@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-158] King of the Hill Mode — *2026-06-28 06:51:48 UTC*
+
+Add a new game mode where teams score points by maintaining position within a central moving zone. Balls will need entirely new AI prioritization to value zone presence over raw damage.
+
+---
+
 ## [idea-193] Map Weather Dynamics — *2026-06-28 06:51:44 UTC*
 
 Weather conditions change throughout the match, affecting stats.
