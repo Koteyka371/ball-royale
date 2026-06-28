@@ -393,7 +393,64 @@ class KingOfTheHillMode(GameMode):
         # So we just return when score >= 100. If time runs out, game loop usually handles it and can just pick the one with max score.
         return None
 
+
+class BlackHoleMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Black Hole"
+        self.description = "The entire arena is slowly sucked into a massive black hole in the center. Avoid the center!"
+        self.black_hole_radius = 50.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        import math
+        arena_width = 1000
+        arena_height = 1000
+        if hasattr(world, "arena") and world.arena:
+            arena_width = getattr(world.arena, "width", 1000)
+            arena_height = getattr(world.arena, "height", 1000)
+
+        center_x = arena_width / 2.0
+        center_y = arena_height / 2.0
+
+        # The black hole slowly grows over time
+        self.black_hole_radius += 2.0 * delta
+
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                dx = center_x - b.x
+                dy = center_y - b.y
+                dist = math.hypot(dx, dy)
+
+                if dist < self.black_hole_radius:
+                    # Instantly die if inside the event horizon
+                    b.hp = 0
+                    b.alive = False
+                elif dist > 0:
+                    # Pull towards center
+                    # Force is stronger the closer you are to the event horizon
+                    pull_strength = 20000.0 / (dist * dist)
+                    # Cap max pull to avoid crazy speeds
+                    pull_strength = min(pull_strength, 150.0)
+
+                    b.x += (dx / dist) * pull_strength * delta
+                    b.y += (dy / dist) * pull_strength * delta
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
+        if len(teams_alive) == 1:
+            return list(teams_alive)[0]
+
+        if len(alive) == 1:
+            return alive[0].ball_type
+
+        return None
+
 GAME_MODES = {
+    "black_hole": BlackHoleMode(),
     "king_of_the_hill": KingOfTheHillMode(),
     "vampire_royale": VampireRoyaleMode(),
     "battle_royale": BattleRoyaleMode(),

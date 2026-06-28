@@ -494,7 +494,77 @@ class KingOfTheHillMode extends GameMode:
 
         return null
 
+
+class BlackHoleMode extends GameMode:
+    var black_hole_radius = 50.0
+
+    func _init() -> void:
+        name = "Black Hole"
+        description = "The entire arena is slowly sucked into a massive black hole in the center. Avoid the center!"
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        var arena_width = 1000.0
+        var arena_height = 1000.0
+        if world != null and "arena" in world and world.arena != null:
+            if "width" in world.arena:
+                arena_width = world.arena.width
+            if "height" in world.arena:
+                arena_height = world.arena.height
+
+        var center_x = arena_width / 2.0
+        var center_y = arena_height / 2.0
+
+        # The black hole slowly grows over time
+        black_hole_radius += 2.0 * delta
+
+        for b in balls:
+            if b.alive and b.ball_type != "spectator":
+                var dx = center_x - b.x
+                var dy = center_y - b.y
+                var dist = sqrt(dx * dx + dy * dy)
+
+                if dist < black_hole_radius:
+                    # Instantly die if inside the event horizon
+                    if "hp" in b:
+                        b.hp = 0
+                    b.alive = false
+                elif dist > 0:
+                    # Pull towards center
+                    var pull_strength = 20000.0 / (dist * dist)
+                    # Cap max pull to avoid crazy speeds
+                    pull_strength = min(pull_strength, 150.0)
+
+                    b.x += (dx / dist) * pull_strength * delta
+                    b.y += (dy / dist) * pull_strength * delta
+
+    func check_winner(world, balls: Array):
+        var alive = []
+        for b in balls:
+            if b.alive and b.ball_type != "spectator":
+                alive.append(b)
+
+        if alive.size() == 0:
+            return "Draw"
+
+        var teams_alive = {}
+        for b in alive:
+            if "team" in b:
+                teams_alive[b.team] = true
+            else:
+                teams_alive[b.ball_type] = true
+
+        if teams_alive.size() == 1:
+            if has_method("_award_skill_points"): _award_skill_points()
+            return teams_alive.keys()[0]
+
+        if alive.size() == 1:
+            if has_method("_award_skill_points"): _award_skill_points()
+            return alive[0].ball_type
+
+        return null
+
 var GAME_MODES = {
+    "black_hole": BlackHoleMode.new(),
     "king_of_the_hill": KingOfTheHillMode.new(),
     "vampire_royale": VampireRoyaleMode.new(),
     "battle_royale": BattleRoyaleMode.new(),

@@ -1,0 +1,4 @@
+{
+  "title": "Portal Mechanics",
+  "description": "Add pairs of portals in the arena. If a ball enters one portal, it instantly teleports to the other portal, preserving momentum."
+}
