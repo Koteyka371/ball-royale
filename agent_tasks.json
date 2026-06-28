@@ -2829,7 +2829,7 @@
     },
     {
       "id": "idea-162",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Portal Hazards",
@@ -3979,6 +3979,40 @@
         "src/ai/night.py",
         "src/ai/night.gd",
         "tests/test_night.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-228",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Portal Nodes Game Mode",
+      "description": "Players must find and capture active portal nodes. Controlling a portal continuously drains other teams' score, but the active portal relocates randomly around the arena every 10 seconds.",
+      "allowed_paths": [
+        "src/ai/portal_nodes_game.py",
+        "src/ai/portal_nodes_game.gd",
+        "tests/test_portal_nodes_game.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-229",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Arena Edge Effect",
+      "description": "To supplement shrinking zones, visually restrict the playable arena size by destroying the arena walls from the outside in, pushing all objects physically towards the center over time.",
+      "allowed_paths": [
+        "src/arena/shrinking_arena_edge_effect.py",
+        "src/arena/shrinking_arena_edge_effect.gd",
+        "tests/test_shrinking_arena_edge_effect.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

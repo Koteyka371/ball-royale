@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-162] Portal Hazards — *2026-06-28 06:58:24 UTC*
+
+Add a new hazard called Portal which instantly teleports a ball that touches it to a paired Portal location.
+
+---
+
 ## [idea-186] Shrinking King of the Hill Zone — *2026-06-28 06:53:47 UTC*
 
 Make the King of the Hill zone gradually shrink as the game progresses, forcing players closer together and intensifying the fights for control in the center.
