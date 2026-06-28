@@ -5,6 +5,11 @@ import random
 class Action:
 
     def _attempt_damage(self, attacker, target) -> None:
+        # Check attack accuracy
+        attack_accuracy = getattr(attacker, "attack_accuracy", 1.0)
+        if random.random() > attack_accuracy:
+            return
+
         has_ricochet = getattr(target, "ricochet_barrier_timer", 0.0) > 0.0
         has_reflect_shield = getattr(target, "reflect_shield_active", False)
 
