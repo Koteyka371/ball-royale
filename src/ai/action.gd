@@ -3176,6 +3176,47 @@ func _use_skill():
                     if target.has_method("set_meta"):
                         target.set_meta("entangled_with_id", self.ball.id)
                         target.set_meta("entangle_timer", 5.0)
+        elif skill_name == "summon_minions":
+            var num_minions = randi() % 3 + 2 # 2 to 4 minions
+            for i in range(num_minions):
+                var minion = null
+                # Create a weak ball manually
+                var next_id = randi() % 90000 + 10000
+                if "next_id" in self.world:
+                    next_id = self.world.next_id
+                    self.world.next_id += 1
+
+                # We need an object that mimics a ball, we can try to find an existing easy ball type
+                # or just create a dictionary (but GDScript arrays in this engine are tricky).
+                # Actually, better to duplicate the summoner but drastically nerf it, or use a known type if possible.
+                # To be safe, duplicate the summoner:
+                minion = self.ball.duplicate()
+                minion.id = next_id
+
+                # Jitter position
+                if "x" in minion: minion.x += randf_range(-15.0, 15.0)
+                if "y" in minion: minion.y += randf_range(-15.0, 15.0)
+
+                minion.hp = 20.0
+                minion.max_hp = 20.0
+                if "team" in self.ball:
+                    minion.team = self.ball.team
+                elif "ball_type" in self.ball:
+                    minion.team = self.ball.ball_type
+
+                if minion.has_method("set_meta"):
+                    minion.set_meta("is_minion", true)
+                    minion.set_meta("minion_owner", self.ball.id)
+                minion.alive = true
+
+                if "skill_timer" in minion: minion.skill_timer = 0.0
+                if "skill" in minion: minion.skill = ""
+                if minion.has_method("set_meta"): minion.set_meta("skill", "")
+                if "attack_timer" in minion: minion.attack_timer = 0.0
+                if "current_action" in minion: minion.current_action = "idle"
+
+                if "balls" in self.world:
+                    self.world.balls.append(minion)
         elif skill_name == "raise_dead":
             if "dead_balls" in self.world and "balls" in self.world:
                 var recent_dead = []
@@ -3215,6 +3256,8 @@ func _use_skill():
                     minion.alive = true
 
                     if "skill_timer" in minion: minion.skill_timer = 0.0
+                if "skill" in minion: minion.skill = ""
+                if minion.has_method("set_meta"): minion.set_meta("skill", "")
                     if "attack_timer" in minion: minion.attack_timer = 0.0
                     if "current_action" in minion: minion.current_action = "idle"
 

@@ -34,6 +34,7 @@ class Decision:
         "monk": "chase",
         "brawler": "attack",
         "necromancer": "defend",
+        "conjurer": "defend",
         "trickster": "chase",
         "elementalist": "attack",
         "vampire": "chase",
