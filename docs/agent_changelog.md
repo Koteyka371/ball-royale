@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-185] Teleportation Portals — *2026-06-28 21:22:45 UTC*
+
+Special hazards that don't deal damage but teleport the ball to another random portal on the map, allowing for surprise flanks.
+
+---
+
 ## [idea-243] Summoner Class — *2026-06-28 18:24:43 UTC*
 
 A ball type that actively summons weak but plentiful elemental minions over time rather than reanimating dead ones, creating small armies.
