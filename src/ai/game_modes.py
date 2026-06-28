@@ -822,7 +822,53 @@ class ReverseEventMode(GameMode):
                     b.y -= getattr(b, "vy", 0) * delta * 2
 
 
+
+class CustomMatchMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Custom Match"
+        self.description = "Custom match with mutator options if Prestige Level >= 5."
+        self.mutators = []
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        pm = None
+        if hasattr(world, "profile_manager"):
+            pm = world.profile_manager
+
+        mutators_unlocked = False
+        if pm and hasattr(pm, "are_mutators_unlocked"):
+            mutators_unlocked = pm.are_mutators_unlocked()
+
+        self.mutators_active = mutators_unlocked and len(self.mutators) > 0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+
+        if getattr(self, "mutators_active", False):
+            for b in balls:
+                if not getattr(b, "alive", False):
+                    continue
+                # Mutators are handled primarily in action.py and physics tick.
+                # Adding zero_gravity or explosive_collisions specific game_mode ticks here is optional.
+                pass
+                if "double_speed" in self.mutators:
+                    if hasattr(b, "base_speed") and not getattr(b, "_double_speed_applied", False):
+                        b.speed = b.base_speed * 2
+                        b._double_speed_applied = True
+
 GAME_MODES = {
+    "custom_match": CustomMatchMode(),
     "reverse_event": ReverseEventMode(),
     "weather_chaos": WeatherChaosMode(),
     "domination": DominationMode(),

@@ -998,7 +998,56 @@ class ReverseEventMode extends GameMode:
 					b.x -= vx * delta * 2 # Reverse the velocity applied in action.gd
 					b.y -= vy * delta * 2
 
+class CustomMatchMode extends GameMode:
+	var mutators = []
+	var mutators_active = false
+
+	func _init() -> void:
+		name = "Custom Match"
+		description = "Custom match with mutator options if Prestige Level >= 5."
+
+	func setup(world, balls: Array) -> void:
+		if not "dead_balls" in world:
+			world.dead_balls = []
+
+		var pm = null
+		if world != null and "profile_manager" in world:
+			pm = world.profile_manager
+
+		var mutators_unlocked = false
+		if pm != null and pm.has_method("are_mutators_unlocked"):
+			mutators_unlocked = pm.are_mutators_unlocked()
+		elif pm != null and "data" in pm:
+			if pm.data.get("prestige_level", 0) >= 5:
+				mutators_unlocked = true
+
+		mutators_active = mutators_unlocked and mutators.size() > 0
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if not "dead_balls" in world:
+			world.dead_balls = []
+		for b in balls:
+			if not b.alive:
+				if not world.dead_balls.has(b):
+					if b.has_method("set_meta"):
+						b.set_meta("time_since_death", 0.0)
+					world.dead_balls.append(b)
+				else:
+					if b.has_method("get_meta") and b.has_meta("time_since_death"):
+						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+
+		if mutators_active:
+			for b in balls:
+				if not b.alive: continue
+
+				if mutators.has("double_speed"):
+					if "base_speed" in b and not b.has_meta("_double_speed_applied"):
+						b.speed = b.base_speed * 2.0
+						b.set_meta("_double_speed_applied", true)
+
+
 var GAME_MODES = {
+	"custom_match": CustomMatchMode.new(),
 	"reverse_event": ReverseEventMode.new(),
     "weather_chaos": WeatherChaosMode.new(),
     "domination": DominationMode.new(),

@@ -1,0 +1,4 @@
+{
+  "title": "Randomizer Mutator",
+  "description": "A mutator where every 10 seconds, all balls have their stats randomly re-rolled and ball type changed."
+}

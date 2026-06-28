@@ -81,6 +81,9 @@ class ProfileManager:
             return True
         return False
 
+    def are_mutators_unlocked(self):
+        return self.data.get("prestige_level", 0) >= 5
+
     def can_prestige(self):
         unlocked_all_balls = len(self.data.get("unlocked_balls", [])) >= self.TOTAL_BALLS
         maxed_hp = self.data.get("bonuses", {}).get("bonus_hp", 0) >= self.MAX_BONUS_LEVEL
