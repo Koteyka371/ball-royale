@@ -2511,6 +2511,19 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "stealth_drone_item":
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("has_stealth_drone", true)
+                    self.ball.set_meta("stealth_drone_timer", 15.0)
+                elif "has_stealth_drone" in self.ball:
+                    self.ball.has_stealth_drone = true
+                    self.ball.stealth_drone_timer = 15.0
+                elif "stealth_drone_timer" in self.ball:
+                    self.ball.stealth_drone_timer = 15.0
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "emp_item":
                 if self.world != null and "balls" in self.world:
                     for other_ball in self.world.balls:
@@ -3280,6 +3293,25 @@ func _update_skill_timer(delta: float):
             self.ball.stutter_timer = stutter_timer - delta
         elif self.ball.has_method("set_meta"):
             self.ball.set_meta("stutter_timer", stutter_timer - delta)
+
+    var stealth_timer = 0.0
+    if "stealth_drone_timer" in self.ball:
+        stealth_timer = float(self.ball.stealth_drone_timer)
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("stealth_drone_timer"):
+        stealth_timer = self.ball.get_meta("stealth_drone_timer")
+
+    if stealth_timer > 0.0:
+        stealth_timer -= delta
+        if "stealth_drone_timer" in self.ball:
+            self.ball.stealth_drone_timer = stealth_timer
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("stealth_drone_timer", stealth_timer)
+
+        if stealth_timer <= 0.0:
+            if "has_stealth_drone" in self.ball:
+                self.ball.has_stealth_drone = false
+            elif self.ball.has_method("set_meta"):
+                self.ball.set_meta("has_stealth_drone", false)
 
 func _kite(delta: float):
     # Added Kite cosmetic comment

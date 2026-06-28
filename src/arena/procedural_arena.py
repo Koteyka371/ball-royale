@@ -232,6 +232,9 @@ class ProceduralArena:
                 if random.random() < 0.1:
                     kind = "drone_item"
                     damage = 0.0
+                elif random.random() < 0.05:
+                    kind = "stealth_drone_item"
+                    damage = 0.0
                 else:
                     kind = "gravity_well" if is_gravity_well else "trap"
                     damage = 0.0 if is_gravity_well else 100.0

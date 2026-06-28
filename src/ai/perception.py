@@ -86,7 +86,26 @@ class Perception:
                     return True
             return False
 
-        data["enemies"] = [e for e in entities.get("enemies", []) if not intersects_smoke(e)]
+
+        # Apply stealth drone logic for enemies detecting us, or us detecting enemies
+        filtered_enemies = []
+        for e in entities.get("enemies", []):
+            if intersects_smoke(e):
+                continue
+
+            # If enemy has stealth drone, we can only see them if they are very close
+            e_has_stealth = getattr(e, "has_stealth_drone", False)
+            if not e_has_stealth and hasattr(e, "has_method") and e.has_method("get_meta") and e.has_meta("has_stealth_drone"):
+                e_has_stealth = e.get_meta("has_stealth_drone")
+
+            if e_has_stealth:
+                dist = math.sqrt((getattr(e, "x", 0) - bx_curr)**2 + (getattr(e, "y", 0) - by_curr)**2)
+                # Stealth drone masks presence outside a short radius (e.g. 50.0)
+                if dist > 80.0:
+                    continue
+            filtered_enemies.append(e)
+
+        data["enemies"] = filtered_enemies
         data["allies"] = [e for e in entities.get("allies", []) if not intersects_smoke(e)]
         data["boosters"] = [e for e in entities.get("boosters", []) if not intersects_smoke(e)]
         data["traps"] = [e for e in entities.get("traps", []) if not intersects_smoke(e)]
@@ -132,7 +151,7 @@ class Perception:
                                 data["boosters"].append(h)
                     else:
                         # Make sure it's not already in there by id
-                        if getattr(h, "kind", "") == "drone_item":
+                        if getattr(h, "kind", "") == "drone_item" or getattr(h, "kind", "") == "stealth_drone_item":
                             if not any(getattr(b, "id", None) == h.id for b in data["boosters"]):
                                 data["boosters"].append(h)
                         else:
