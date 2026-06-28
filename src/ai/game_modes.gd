@@ -1174,8 +1174,58 @@ class CustomMatchMode extends GameMode:
 						b.set_meta("_double_speed_applied", true)
 
 
+
+class DynamicHazardsMode extends GameMode:
+	var spawn_timer = 0.0
+	var rng = RandomNumberGenerator.new()
+
+	func _init():
+		super()
+		name = "Dynamic Hazards"
+		description = "Watch out for moving hazards that traverse the arena!"
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if not "hazards" in world.arena:
+			world.arena.hazards = []
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+
+		spawn_timer += delta
+		if spawn_timer >= 5.0:
+			spawn_timer = 0.0
+
+			var x = 0.0 if rng.randf() < 0.5 else world.arena.width
+			var y = rng.randf_range(0.0, world.arena.height)
+			var vx = rng.randf_range(50.0, 150.0) if x == 0.0 else rng.randf_range(-150.0, -50.0)
+			var vy = rng.randf_range(-50.0, 50.0)
+
+			var ProceduralArena = load("res://src/arena/procedural_arena.gd")
+			var new_hazard = ProceduralArena.Hazard.new(world.arena.hazards.size() + rng.randi_range(1000, 9999), x, y, 40.0, "lava", 25.0)
+
+			if new_hazard.has_method("set_meta"):
+				new_hazard.set_meta("vx", vx)
+				new_hazard.set_meta("vy", vy)
+
+			world.arena.hazards.append(new_hazard)
+
+		var hazards_to_keep = []
+		for hazard in world.arena.hazards:
+			if hazard.has_method("has_meta") and hazard.has_meta("vx") and hazard.has_meta("vy"):
+				hazard.x += hazard.get_meta("vx") * delta
+				hazard.y += hazard.get_meta("vy") * delta
+
+				if not (hazard.x < -100 or hazard.x > world.arena.width + 100 or hazard.y < -100 or hazard.y > world.arena.height + 100):
+					hazards_to_keep.append(hazard)
+			else:
+				hazards_to_keep.append(hazard)
+
+		world.arena.hazards = hazards_to_keep
+
 var GAME_MODES = {
 	"memory_traps": MemoryTrapsMode.new(),
+	"dynamic_hazards": DynamicHazardsMode.new(),
 	"custom_match": CustomMatchMode.new(),
 	"reverse_event": ReverseEventMode.new(),
     "weather_chaos": WeatherChaosMode.new(),

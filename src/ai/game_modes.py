@@ -965,8 +965,53 @@ class CustomMatchMode(GameMode):
                         b._double_speed_applied = True
 
 from ai.interactive_training import InteractiveTrainingMode
+
+class DynamicHazardsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Dynamic Hazards"
+        self.description = "Watch out for moving hazards that traverse the arena!"
+        self.spawn_timer = 0.0
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        self.spawn_timer += delta
+        if self.spawn_timer >= 5.0:
+            self.spawn_timer = 0.0
+
+            import random
+            from src.arena.arena_types import Hazard
+
+            x = 0.0 if random.random() < 0.5 else world.arena.width
+            y = random.uniform(0, world.arena.height)
+            vx = random.uniform(50, 150) if x == 0.0 else random.uniform(-150, -50)
+            vy = random.uniform(-50, 50)
+
+            new_hazard = Hazard(id=len(world.arena.hazards) + random.randint(1000, 9999),
+                                x=x, y=y, radius=40.0, kind="lava", damage=25.0)
+            new_hazard.vx = vx
+            new_hazard.vy = vy
+
+            world.arena.hazards.append(new_hazard)
+
+        for hazard in list(world.arena.hazards):
+            if hasattr(hazard, 'vx') and hasattr(hazard, 'vy'):
+                hazard.x += hazard.vx * delta
+                hazard.y += hazard.vy * delta
+
+                if (hazard.x < -100 or hazard.x > world.arena.width + 100 or
+                    hazard.y < -100 or hazard.y > world.arena.height + 100):
+                    world.arena.hazards.remove(hazard)
+
 GAME_MODES = {
     "memory_traps": MemoryTrapsMode(),
+    "dynamic_hazards": DynamicHazardsMode(),
     "custom_match": CustomMatchMode(),
     "reverse_event": ReverseEventMode(),
     "weather_chaos": WeatherChaosMode(),
