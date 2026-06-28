@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-202] Weather Effects on Arena — *2026-06-28 11:50:50 UTC*
+
+Introduce dynamic weather effects like rain, snow, or fog that affect visibility, friction, and movement speed.
+
+---
+
 ## [idea-235] Destructible Hazards — *2026-06-28 11:41:35 UTC*
 
 Allow powerful skills like explosion or ground_pound to permanently destroy hazards such as spikes and fake boosters, temporarily clearing a safe path.
