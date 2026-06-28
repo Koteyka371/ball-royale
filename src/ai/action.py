@@ -181,7 +181,35 @@ class Action:
 
             if hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if hazard.kind == "trap":
+                    if hazard.kind == "explosive_barrel":
+                        current_tick = getattr(self.world, "tick", 0)
+                        if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
+                            hazard.last_updated_tick = current_tick
+                            if not hasattr(hazard, "vx"): hazard.vx = 0.0
+                            if not hasattr(hazard, "vy"): hazard.vy = 0.0
+                            hazard.x += hazard.vx * delta
+                            hazard.y += hazard.vy * delta
+                            hazard.vx *= (1.0 - 2.0 * delta)
+                            hazard.vy *= (1.0 - 2.0 * delta)
+
+                            if hazard.x < hazard.radius or hazard.x > self.world.arena.width - hazard.radius:
+                                hazard.vx *= -1
+                                hazard.x = max(hazard.radius, min(hazard.x, self.world.arena.width - hazard.radius))
+                            if hazard.y < hazard.radius or hazard.y > self.world.arena.height - hazard.radius:
+                                hazard.vy *= -1
+                                hazard.y = max(hazard.radius, min(hazard.y, self.world.arena.height - hazard.radius))
+
+                            if getattr(hazard, "is_exploded", False):
+                                hazard.duration = 0.0
+                                for b in getattr(self.world, "balls", []):
+                                    if getattr(b, "alive", False) and math.hypot(b.x - hazard.x, b.y - hazard.y) < hazard.radius * 4:
+                                        if hasattr(b, "take_damage"):
+                                            b.take_damage(hazard.damage * 2.0)
+                                        else:
+                                            b.hp -= hazard.damage * 2.0
+                                            if b.hp <= 0:
+                                                b.alive = False
+                    elif hazard.kind == "trap":
                         current_tick = getattr(self.world, "tick", 0)
                         if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
                             hazard.last_updated_tick = current_tick
@@ -325,7 +353,21 @@ class Action:
                 for hazard in self.world.arena.hazards:
                     dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
                     if dist < (self.ball.radius + hazard.radius):
-                        if hazard.kind == "trap":
+                        if hazard.kind == "explosive_barrel":
+                            if not getattr(hazard, "is_exploded", False):
+                                bvx = getattr(self.ball, "vx", 0.0)
+                                bvy = getattr(self.ball, "vy", 0.0)
+                                speed = math.hypot(bvx, bvy)
+                                hazard_speed = math.hypot(getattr(hazard, "vx", 0.0), getattr(hazard, "vy", 0.0))
+
+                                if dist > 0:
+                                    nx, ny = (self.ball.x - hazard.x) / dist, (self.ball.y - hazard.y) / dist
+                                    hazard.vx = getattr(hazard, "vx", 0.0) - nx * 300.0 * delta
+                                    hazard.vy = getattr(hazard, "vy", 0.0) - ny * 300.0 * delta
+
+                                if speed > 300.0 or hazard_speed > 300.0:
+                                    hazard.is_exploded = True
+                        elif hazard.kind == "trap":
                             if ball_type != "sniper":
                                 trap_variant = getattr(hazard, "trap_variant", "normal")
                                 if trap_variant == "poison":
@@ -1713,9 +1755,16 @@ class Action:
             self._idle(delta)
 
     def _use_skill(self) -> None:
+        import math
         skill_timer = getattr(self.ball, "skill_timer", 0.0)
         if skill_timer <= 0 and hasattr(self.ball, "use_skill"):
             self.ball.use_skill()
+
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                for hazard in self.world.arena.hazards:
+                    if hazard.kind == "explosive_barrel" and not getattr(hazard, "is_exploded", False):
+                        if math.hypot(hazard.x - self.ball.x, hazard.y - self.ball.y) < 200.0:
+                            hazard.is_exploded = True
 
             skill_name = getattr(self.ball, "skill", getattr(self.ball, "SKILL", ""))
 
