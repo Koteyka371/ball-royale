@@ -2604,7 +2604,7 @@
     },
     {
       "id": "idea-149",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Global Traps Game Mode",
@@ -4524,6 +4524,40 @@
         "src/arena/trap_hazards.py",
         "src/arena/trap_hazards.gd",
         "tests/test_trap_hazards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-260",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Energy Siphon Link",
+      "description": "An active ability that allows a support class to link their health to an ally, slowly draining their own HP to heal the ally over time, creating dynamic tethering lines in the visualizer.",
+      "allowed_paths": [
+        "src/ai/energy_siphon_link.py",
+        "src/ai/energy_siphon_link.gd",
+        "tests/test_energy_siphon_link.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-261",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Teleportation Trap",
+      "description": "A new hazard that instantly swaps the positions of any two entities that step on paired portal traps simultaneously, disrupting formations and leading to unexpected emergent encounters.",
+      "allowed_paths": [
+        "src/arena/quantum_teleportation_trap.py",
+        "src/arena/quantum_teleportation_trap.gd",
+        "tests/test_quantum_teleportation_trap.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

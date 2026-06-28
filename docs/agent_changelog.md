@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-149] Global Traps Game Mode — *2026-06-28 08:40:48 UTC*
+
+Create a new game mode where the entire arena starts littered with invisible traps, testing players' memory and movement caution rather than just dodging enemy shots.
+
+---
+
 ## [idea-205] Quantum Entanglement Modules — *2026-06-28 08:38:44 UTC*
 
 Allow balls to 'entangle' with each other or specific arena features. When one entangled entity is damaged or moves, the other experiences a proportionate effect, introducing entirely new risk/reward mechanics and team synergy opportunities.
