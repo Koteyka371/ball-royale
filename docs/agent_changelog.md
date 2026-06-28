@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-148] Trap Customization Sandbox — *2026-06-28 05:14:12 UTC*
+
+Add a pre-game lobby where Snipers can pick trap variants like poison traps that apply DoT or stun traps that fully halt enemies for 1 second instead of slowing.
+
+---
+
 ## [idea-144] Vampire Mode — *2026-06-27 21:27:29 UTC*
 
 A game mode where all balls slowly lose HP over time but regain HP when dealing damage or killing others. The last one standing wins.
