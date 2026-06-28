@@ -136,7 +136,6 @@ class BossFightMode(GameMode):
         super().__init__()
         self.name = "Boss Fight"
         self.description = "Multiple players fight one giant boss."
-
     def setup(self, world: Any, balls: List[Any]) -> None:
         if balls:
             boss = balls[0]
@@ -144,6 +143,22 @@ class BossFightMode(GameMode):
             boss.max_hp *= 10
             boss.hp = boss.max_hp
             boss.damage = getattr(boss, "damage", 10) * 2
+
+            # Position the boss in the center of the arena
+            arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+            arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+            boss.x = arena_width / 2
+            boss.y = arena_height / 2
+
+            # Make the boss bigger (radius)
+            if hasattr(boss, "radius"):
+                boss.radius *= 3
+            else:
+                boss.radius = 30
+
+            # Make the boss heavier/slower (optional, but requested boss ball)
+            if hasattr(boss, "base_speed"):
+                boss.base_speed = getattr(boss, "base_speed", 50) * 0.8
 
             for b in balls[1:]:
                 if getattr(b, "ball_type", None) != "spectator":
