@@ -103,6 +103,11 @@ class Action:
                         if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
                             hazard.last_updated_tick = current_tick
                             hazard.duration = getattr(hazard, "duration", 5.0) - delta
+                    elif hazard.kind == "flare":
+                        current_tick = getattr(self.world, "tick", 0)
+                        if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
+                            hazard.last_updated_tick = current_tick
+                            hazard.duration = getattr(hazard, "duration", 5.0) - delta
                     elif hazard.kind == "conveyor_belt":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
@@ -462,15 +467,40 @@ class Action:
             return comb_nx / comb_dist, comb_ny / comb_dist
         return nx, ny
 
+
+
     def _get_enemies(self) -> list:
         perception_radius = getattr(self.ball, "perception_radius", 250)
+        enemies = []
         if hasattr(self.world, "get_nearby_entities"):
             entities = self.world.get_nearby_entities(self.ball, perception_radius)
             if isinstance(entities, dict):
-                return [e for e in entities.get("enemies", []) if getattr(e, "ball_type", None) != "spectator"]
+                enemies = [e for e in entities.get("enemies", []) if getattr(e, "ball_type", None) != "spectator"]
             else:
-                return [e for e in entities if getattr(e, "ball_type", None) != self.ball.ball_type and getattr(e, "ball_type", None) != "spectator" and getattr(e, "alive", True)]
-        return []
+                ball_type = getattr(self.ball, "ball_type", None)
+                enemies = [e for e in entities if getattr(e, "ball_type", None) != ball_type and getattr(e, "ball_type", None) != "spectator" and getattr(e, "alive", True)]
+
+        # Draw targeting logic: if a flare is nearby, act as if it's the only/closest enemy (or append it as decoy)
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            for h in self.world.arena.hazards:
+                if getattr(h, "kind", "") == "flare" and getattr(h, "duration", 0) > 0:
+                    dist = ((h.x - self.ball.x)**2 + (h.y - self.ball.y)**2)**0.5
+                    if dist <= perception_radius:
+                        # Make the flare look like an enemy
+                        class FakeEnemy:
+                            def __init__(self, hazard):
+                                self.x = hazard.x
+                                self.y = hazard.y
+                                self.id = getattr(hazard, "id", 0)
+                                self.radius = hazard.radius
+                                self.hp = 100
+                                self.max_hp = 100
+                                self.ball_type = "flare_decoy"
+                                self.alive = True
+                                self.speed = 0
+
+                        enemies.append(FakeEnemy(h))
+        return enemies
 
     def _get_allies(self) -> list:
         perception_radius = getattr(self.ball, "perception_radius", 250)
@@ -1479,6 +1509,15 @@ class Action:
 
             if skill_name == "command":
                 self.ball.team_message = {"type": "buff_command", "radius": 200}
+            elif skill_name == "deploy_flare":
+                import random
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    flare_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
+                    from arena.procedural_arena import Hazard  # type: ignore
+                    # A flare is a hazard of kind 'flare'
+                    flare = Hazard(flare_id, self.ball.x, self.ball.y, 50.0, "flare", 0.0)
+                    setattr(flare, 'duration', 5.0)
+                    self.world.arena.hazards.append(flare)
             elif skill_name == "deploy_decoy":
                 import copy
                 if hasattr(self.world, "balls"):

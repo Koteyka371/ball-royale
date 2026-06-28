@@ -543,19 +543,7 @@ func _apply_obstacle_avoidance(nx: float, ny: float, target=null, ignore_enemies
             if entities.has("allies"):
                 for e in entities["allies"]:
                     all_entities.append(e)
-        elif typeof(entities) == TYPE_ARRAY:
-            for e in entities:
-                var is_alive = true
-                if "alive" in e: is_alive = e.alive
 
-                var is_enemy = false
-                if "ball_type" in self.ball and "ball_type" in e:
-                    is_enemy = (self.ball.ball_type != e.ball_type)
-
-                if is_alive and e != self.ball:
-                    if ignore_enemies and is_enemy:
-                        continue
-                    all_entities.append(e)
 
     var repulse_nx = 0.0
     var repulse_ny = 0.0
@@ -641,31 +629,47 @@ func _apply_obstacle_avoidance(nx: float, ny: float, target=null, ignore_enemies
         return [comb_nx / comb_dist, comb_ny / comb_dist]
     return [nx, ny]
 
+
 func _get_enemies() -> Array:
     var perception_radius = 250.0
     if "perception_radius" in self.ball:
         perception_radius = self.ball.perception_radius
 
+    var enemies = []
     if self.world != null and self.world.has_method("get_nearby_entities"):
         var entities = self.world.get_nearby_entities(self.ball, perception_radius)
         if typeof(entities) == TYPE_DICTIONARY and entities.has("enemies"):
-            var enemies = []
             for e in entities["enemies"]:
                 var e_type = e.ball_type if "ball_type" in e else (e.get_ball_type() if e.has_method("get_ball_type") else "")
                 if e_type != "spectator":
                     enemies.append(e)
-            return enemies
-        elif typeof(entities) == TYPE_ARRAY:
-            var enemies = []
+        else:
+            var b_type = self.ball.ball_type if "ball_type" in self.ball else (self.ball.get_ball_type() if self.ball.has_method("get_ball_type") else "")
             for e in entities:
-                if e.has_method("get_ball_type") or "ball_type" in e:
-                    var e_type = e.ball_type if "ball_type" in e else e.get_ball_type()
-                    var b_type = self.ball.ball_type if "ball_type" in self.ball else self.ball.get_ball_type()
-                    if e_type != b_type and e_type != "spectator":
-                        if ("alive" in e and e.alive) or (e.has_method("is_alive") and e.is_alive()):
-                            enemies.append(e)
-            return enemies
-    return []
+                var e_type = e.ball_type if "ball_type" in e else (e.get_ball_type() if e.has_method("get_ball_type") else "")
+                var e_alive = e.alive if "alive" in e else true
+                if e_type != b_type and e_type != "spectator" and e_alive:
+                    enemies.append(e)
+
+    if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+        for h in self.world.arena.hazards:
+            if h.kind == "flare" and h.has_meta("duration") and h.get_meta("duration") > 0.0:
+                var dist = sqrt(pow(h.x - self.ball.x, 2) + pow(h.y - self.ball.y, 2))
+                if dist <= perception_radius:
+                    var fake_enemy = {
+                        "x": h.x,
+                        "y": h.y,
+                        "id": h.id,
+                        "radius": h.radius,
+                        "hp": 100,
+                        "max_hp": 100,
+                        "ball_type": "flare_decoy",
+                        "alive": true,
+                        "speed": 0
+                    }
+                    enemies.append(fake_enemy)
+
+    return enemies
 
 func _get_allies() -> Array:
     var perception_radius = 250.0
@@ -2296,6 +2300,18 @@ func _use_skill():
                 self.ball.set_meta("team_message", {"type": "buff_command", "radius": 200})
             elif "team_message" in self.ball:
                 self.ball.team_message = {"type": "buff_command", "radius": 200}
+        elif skill_name == "deploy_flare":
+            if "arena" in self.world and "hazards" in self.world.arena:
+                var flare_id = self.world.arena.hazards.size() + randi() % 10000
+                var flare = ProceduralArena.Hazard.new()
+                flare.id = flare_id
+                flare.x = self.ball.x
+                flare.y = self.ball.y
+                flare.radius = 50.0
+                flare.kind = "flare"
+                flare.damage = 0.0
+                flare.set_meta("duration", 5.0)
+                self.world.arena.hazards.append(flare)
         elif skill_name == "deploy_decoy":
             if "balls" in self.world:
                 var decoy = null

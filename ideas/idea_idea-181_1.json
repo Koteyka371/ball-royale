@@ -1,0 +1,4 @@
+{
+  "title": "Chain Lightning Hazard",
+  "description": "Introduce a new 'chain_lightning' hazard that zaps the nearest ball periodically, and chains the damage to any other ball within a short radius, encouraging players to spread out."
+}
