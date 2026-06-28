@@ -5533,6 +5533,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-319",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weaponized Portals & Portal Gun Item",
+      "description": "Add an active item (Portal Gun) that allows balls to shoot two linked portals onto the map on demand. Players can use this to strategically reposition or bait enemies into falling through and getting ambushed.",
+      "allowed_paths": [
+        "src/ai/weaponized_portals_portal_gun_item.py",
+        "src/ai/weaponized_portals_portal_gun_item.gd",
+        "tests/test_weaponized_portals_portal_gun_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-320",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Hazard Trajectories & Moving Portals",
+      "description": "Introduce dynamic portal hazards that move around the map using random trajectories, making it harder for players to predict when they might get sucked in and teleported to a dangerous situation.",
+      "allowed_paths": [
+        "src/arena/trajectories_moving_portals.py",
+        "src/arena/trajectories_moving_portals.gd",
+        "tests/test_trajectories_moving_portals.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
