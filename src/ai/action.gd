@@ -876,8 +876,11 @@ func _apply_obstacle_avoidance(nx: float, ny: float, target=null, ignore_enemies
                         var force = (danger / 10.0) * (1.0 / (ddist / 100.0 + 0.1))
                         repulse_nx += (ddx / ddist) * force
                         repulse_ny += (ddy / ddist) * force
-    var comb_nx = nx + repulse_nx * 0.5
-    var comb_ny = ny + repulse_ny * 0.5
+    var steering_mult = 1.0
+    if ball.has_method("has_meta") and ball.has_meta("steering_mult"):
+        steering_mult = ball.get_meta("steering_mult")
+    var comb_nx = nx + repulse_nx * 0.5 * steering_mult
+    var comb_ny = ny + repulse_ny * 0.5 * steering_mult
 
     var comb_dist_sq = comb_nx*comb_nx + comb_ny*comb_ny
     if comb_dist_sq > 0.0001:
@@ -2704,6 +2707,11 @@ func _use_skill():
 
         elif skill_name == "dash":
             _spawn_skill_particles("dash")
+            var dash_range_mult = 1.0
+            if self.ball.has_method("has_meta") and self.ball.has_meta("dash_range_mult"):
+                dash_range_mult = self.ball.get_meta("dash_range_mult")
+            var dash_dist = 100.0 * dash_range_mult
+
             var enemies = _get_enemies()
             if enemies.size() > 0:
                 var target = null
@@ -2717,12 +2725,12 @@ func _use_skill():
                 var dy = target.y - self.ball.y
                 var dist = sqrt(min_dist_sq)
                 if dist > 0.0001:
-                    self.ball.x += (dx/dist) * 100.0
-                    self.ball.y += (dy/dist) * 100.0
+                    self.ball.x += (dx/dist) * dash_dist
+                    self.ball.y += (dy/dist) * dash_dist
             else:
                 var angle = randf() * PI * 2.0
-                self.ball.x += cos(angle) * 100.0
-                self.ball.y += sin(angle) * 100.0
+                self.ball.x += cos(angle) * dash_dist
+                self.ball.y += sin(angle) * dash_dist
 
         elif skill_name == "elemental_burst":
             var enemies = self._get_enemies()

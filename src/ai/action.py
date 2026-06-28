@@ -655,8 +655,9 @@ class Action:
                         repulse_nx += (ddx / ddist) * force
                         repulse_ny += (ddy / ddist) * force
 
-        comb_nx = nx + repulse_nx * 0.5
-        comb_ny = ny + repulse_ny * 0.5
+        steering_mult = getattr(self.ball, "steering_mult", 1.0)
+        comb_nx = nx + repulse_nx * 0.5 * steering_mult
+        comb_ny = ny + repulse_ny * 0.5 * steering_mult
 
         comb_dist_sq = comb_nx*comb_nx + comb_ny*comb_ny
         if comb_dist_sq > 0.0001:
@@ -1771,6 +1772,8 @@ class Action:
                 self._spawn_skill_particles("dash")
                 import random
                 import math
+                dash_range_mult = getattr(self.ball, "dash_range_mult", 1.0)
+                dash_dist = 100.0 * dash_range_mult
                 enemies = self._get_enemies()
                 if enemies:
                     target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
@@ -1778,12 +1781,12 @@ class Action:
                     dy = target.y - self.ball.y
                     dist = math.sqrt(dx*dx + dy*dy)
                     if dist > 0.0001:
-                        self.ball.x += (dx/dist) * 100.0
-                        self.ball.y += (dy/dist) * 100.0
+                        self.ball.x += (dx/dist) * dash_dist
+                        self.ball.y += (dy/dist) * dash_dist
                 else:
                     angle = random.uniform(0, 2 * math.pi)
-                    self.ball.x += math.cos(angle) * 100.0
-                    self.ball.y += math.sin(angle) * 100.0
+                    self.ball.x += math.cos(angle) * dash_dist
+                    self.ball.y += math.sin(angle) * dash_dist
 
             elif skill_name == "elemental_burst":
                 import math
