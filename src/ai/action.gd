@@ -189,6 +189,50 @@ func execute(strategy: String, delta: float):
                             var pull_strength = (hazard.radius * 2.0 / min_dist) * 50.0 * delta
                             self.ball.x += nx * pull_strength
                             self.ball.y += ny * pull_strength
+                elif hazard.kind == "teleporter":
+                    var current_tick = 0
+                    if "tick" in self.world:
+                        current_tick = self.world.tick
+                    var last_tp = -100
+                    if self.ball.has_meta("last_teleport_tick"):
+                        last_tp = self.ball.get_meta("last_teleport_tick")
+
+                    if current_tick - last_tp > 60:
+                        var dx = hazard.x - self.ball.x
+                        var dy = hazard.y - self.ball.y
+                        var dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            if self.ball.has_method("set_meta"):
+                                self.ball.set_meta("last_teleport_tick", current_tick)
+
+                            var other_tps = []
+                            for h in self.world.arena.hazards:
+                                if h.kind == "teleporter" and h.id != hazard.id:
+                                    other_tps.append(h)
+
+                            if other_tps.size() > 0:
+                                var target_tp = other_tps[randi() % other_tps.size()]
+                                self.ball.x = target_tp.x
+                                self.ball.y = target_tp.y
+                            else:
+                                if self.world.arena.has_method("get_random_spawn_point"):
+                                    var sp = self.world.arena.get_random_spawn_point(self.ball.radius)
+                                    self.ball.x = sp[0]
+                                    self.ball.y = sp[1]
+                                else:
+                                    var aw = 1000.0
+                                    var ah = 1000.0
+                                    if "width" in self.world.arena:
+                                        aw = self.world.arena.width
+                                    if "height" in self.world.arena:
+                                        ah = self.world.arena.height
+                                    self.ball.x = randf_range(100.0, aw - 100.0)
+                                    self.ball.y = randf_range(100.0, ah - 100.0)
+
+                            if "balls" in self.world:
+                                for ob in self.world.balls:
+                                    if "target" in ob and ob.target == self.ball:
+                                        ob.target = null
                 elif hazard.kind == "black_hole":
                     var current_tick = 0
                     if "tick" in self.world:
@@ -281,6 +325,8 @@ func execute(strategy: String, delta: float):
                             else:
                                 self.ball.x = (self.ball.x + old_x) / 2.0
                                 self.ball.y = (self.ball.y + old_y) / 2.0
+                        continue
+                    elif hazard.kind == "teleporter":
                         continue
                     elif hazard.kind == "poison_cloud":
                         if self.ball.has_method("set_meta"):

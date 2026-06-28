@@ -122,6 +122,39 @@ class Action:
                                 pull_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 50.0 * delta
                                 self.ball.x += nx * pull_strength
                                 self.ball.y += ny * pull_strength
+                    elif hazard.kind == "teleporter":
+                        current_tick = getattr(self.world, "tick", 0)
+                        # Cooldown for teleporter activation per ball
+                        last_tp = getattr(self.ball, "last_teleport_tick", -100)
+                        if current_tick - last_tp > 60:  # 1 second cooldown (assuming 60 ticks/sec)
+                            dx = hazard.x - self.ball.x
+                            dy = hazard.y - self.ball.y
+                            dist_sq = dx * dx + dy * dy
+                            if dist_sq < hazard.radius * hazard.radius:
+                                import random
+                                self.ball.last_teleport_tick = current_tick
+                                # Find other teleporters
+                                other_tps = [h for h in self.world.arena.hazards if h.kind == "teleporter" and h.id != hazard.id]
+                                if other_tps:
+                                    target_tp = random.choice(other_tps)
+                                    self.ball.x = target_tp.x
+                                    self.ball.y = target_tp.y
+                                else:
+                                    # Fallback: random safe location
+                                    # Get safe location from arena if available
+                                    if hasattr(self.world.arena, "get_random_spawn_point"):
+                                        nx, ny = self.world.arena.get_random_spawn_point(self.ball.radius)
+                                        self.ball.x = nx
+                                        self.ball.y = ny
+                                    else:
+                                        self.ball.x = random.uniform(100, getattr(self.world.arena, "width", 1000) - 100)
+                                        self.ball.y = random.uniform(100, getattr(self.world.arena, "height", 1000) - 100)
+
+                                # Break lock-on targets of other balls targeting us
+                                if hasattr(self.world, "balls"):
+                                    for ob in self.world.balls:
+                                        if getattr(ob, "target", None) == self.ball:
+                                            ob.target = None
                     elif hazard.kind == "black_hole":
                         # Only update global state once per frame using the tick counter
                         current_tick = getattr(self.world, "tick", 0)
@@ -194,6 +227,8 @@ class Action:
                                     # Normal: Slowing effect
                                     self.ball.x = (self.ball.x + old_x) / 2.0
                                     self.ball.y = (self.ball.y + old_y) / 2.0
+                            continue
+                        elif hazard.kind == "teleporter":
                             continue
                         elif hazard.kind == "poison_cloud":
                             self.ball.dot_duration = 3.0
