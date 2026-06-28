@@ -704,53 +704,17 @@ class WeatherChaosMode extends GameMode:
 					set_meta("wind_dx", (randf() * 100.0) - 50.0)
 					set_meta("wind_dy", (randf() * 100.0) - 50.0)
 
+		var effects_script = load("res://src/ai/effects.gd")
+		var wind_dx = 0.0
+		var wind_dy = 0.0
+		if has_method("has_meta") and has_meta("wind_dx"):
+			wind_dx = get_meta("wind_dx")
+		if has_method("has_meta") and has_meta("wind_dy"):
+			wind_dy = get_meta("wind_dy")
+
 		for b in balls:
 			if b.alive and b.ball_type != "spectator":
-				if not b.has_meta("base_speed"):
-					if "speed" in b:
-						b.set_meta("base_speed", b.speed)
-					else:
-						b.set_meta("base_speed", 100.0)
-				if not b.has_meta("base_damage"):
-					if "damage" in b:
-						b.set_meta("base_damage", b.damage)
-					else:
-						b.set_meta("base_damage", 10.0)
-
-				var base_spd = b.get_meta("base_speed")
-				var base_dmg = b.get_meta("base_damage")
-
-				if weather == "clear":
-					if "speed" in b: b.speed = base_spd
-					if "damage" in b: b.damage = base_dmg
-				elif weather == "rain":
-					if "speed" in b: b.speed = base_spd * 0.8
-					if "damage" in b: b.damage = base_dmg
-					if "vx" in b and "vy" in b:
-						b.x += b.vx * delta * 0.5
-						b.y += b.vy * delta * 0.5
-				elif weather == "fog":
-					if "speed" in b: b.speed = base_spd * 0.5
-					if "damage" in b: b.damage = base_dmg * 0.8
-				elif weather == "snow":
-					if "speed" in b: b.speed = base_spd * 0.5
-					if "damage" in b: b.damage = base_dmg * 1.2
-				elif weather == "wind":
-					if "speed" in b: b.speed = base_spd
-					if "damage" in b: b.damage = base_dmg
-					var wind_dx = 0.0
-					var wind_dy = 0.0
-					if has_method("has_meta") and has_meta("wind_dx"):
-						wind_dx = get_meta("wind_dx")
-					if has_method("has_meta") and has_meta("wind_dy"):
-						wind_dy = get_meta("wind_dy")
-					b.x += wind_dx * delta
-					b.y += wind_dy * delta
-				elif weather == "thunderstorm":
-					if "speed" in b: b.speed = base_spd * 1.1
-					if "damage" in b: b.damage = base_dmg * 1.5
-					if randf() < 0.05 * delta:
-						if "hp" in b: b.hp -= 20
+				effects_script.apply_weather_effects(b, weather, delta, wind_dx, wind_dy)
 
 	func check_winner(world, balls: Array):
 		var alive = []

@@ -582,43 +582,13 @@ class WeatherChaosMode(GameMode):
 
         valid_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
 
+        from ai.effects import apply_weather_effects
+        random_mod = getattr(self, "random", __import__("random"))
+        wind_dx = getattr(self, "wind_dx", 0.0)
+        wind_dy = getattr(self, "wind_dy", 0.0)
+
         for b in valid_balls:
-            if not hasattr(b, "base_speed"):
-                b.base_speed = getattr(b, "speed", 100.0)
-            if not hasattr(b, "base_damage"):
-                b.base_damage = getattr(b, "damage", 10.0)
-
-            if self.weather == "clear":
-                b.speed = b.base_speed
-                b.damage = b.base_damage
-            elif self.weather == "rain":
-                b.speed = b.base_speed * 0.8
-                b.damage = b.base_damage
-                # slide more
-                if hasattr(b, "vx") and hasattr(b, "vy"):
-                    b.x += getattr(b, "vx") * delta * 0.5
-                    b.y += getattr(b, "vy") * delta * 0.5
-            elif self.weather == "fog":
-                b.speed = b.base_speed * 0.5
-                b.damage = b.base_damage * 0.8
-            elif self.weather == "snow":
-                b.speed = b.base_speed * 0.5 # slowed down
-                b.damage = b.base_damage * 1.2
-            elif self.weather == "wind":
-                b.speed = b.base_speed
-                b.damage = b.base_damage
-                # push balls in a specific direction
-                if hasattr(self, "wind_dx") and hasattr(self, "wind_dy"):
-                    b.x += self.wind_dx * delta
-                    b.y += self.wind_dy * delta
-            elif self.weather == "thunderstorm":
-                b.speed = b.base_speed * 1.1 # Panic speed
-                b.damage = b.base_damage * 1.5 # High damage due to electricity
-                # Random lightning strikes
-                if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
-                    # Struck by lightning!
-                    b.hp = getattr(b, "hp", 100) - 20
-
+            apply_weather_effects(b, self.weather, delta, wind_dx, wind_dy, random_mod)
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
