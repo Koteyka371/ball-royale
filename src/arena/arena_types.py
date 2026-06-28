@@ -116,9 +116,19 @@ class HazardPitArena(ProceduralArena):
         self.rooms.append(Room(50, 50, w-100, h-100))
         cx, cy = w/2, h/2
         for i in range(12):
-            kind = "lava" if i % 2 == 0 else "spikes"
-            radius = 50.0
-            damage = 50.0 if kind == "lava" else 20.0
+            if i % 3 == 0:
+                kind = "lava"
+            elif i % 3 == 1:
+                kind = "spikes"
+            else:
+                kind = "explosive_barrel"
+            radius = 50.0 if kind != "explosive_barrel" else 25.0
+            if kind == "explosive_barrel":
+                damage = 100.0
+            elif kind == "lava":
+                damage = 50.0
+            else:
+                damage = 20.0
             hx = cx + (random.uniform(-1, 1) * w * 0.3)
             hy = cy + (random.uniform(-1, 1) * h * 0.3)
             self.hazards.append(Hazard(id=i, x=hx, y=hy, radius=radius, kind=kind, damage=damage))

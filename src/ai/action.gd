@@ -261,7 +261,41 @@ func execute(strategy: String, delta: float):
 
         if "hazards" in self.world.arena:
             for hazard in self.world.arena.hazards:
-                if hazard.kind == "trap":
+                if hazard.kind == "explosive_barrel":
+                    var current_tick = world.get("tick") if world.has_method("get") else 0
+                    if not hazard.has_meta("last_updated_tick") or hazard.get_meta("last_updated_tick") != current_tick:
+                        hazard.set_meta("last_updated_tick", current_tick)
+                        if not hazard.has_meta("vx"): hazard.set_meta("vx", 0.0)
+                        if not hazard.has_meta("vy"): hazard.set_meta("vy", 0.0)
+
+                        var hvx = hazard.get_meta("vx")
+                        var hvy = hazard.get_meta("vy")
+                        hazard.x += hvx * delta
+                        hazard.y += hvy * delta
+                        hazard.set_meta("vx", hvx * (1.0 - 2.0 * delta))
+                        hazard.set_meta("vy", hvy * (1.0 - 2.0 * delta))
+
+                        if hazard.x < hazard.radius or hazard.x > world.arena.width - hazard.radius:
+                            hazard.set_meta("vx", -hazard.get_meta("vx"))
+                            hazard.x = max(hazard.radius, min(hazard.x, world.arena.width - hazard.radius))
+                        if hazard.y < hazard.radius or hazard.y > world.arena.height - hazard.radius:
+                            hazard.set_meta("vy", -hazard.get_meta("vy"))
+                            hazard.y = max(hazard.radius, min(hazard.y, world.arena.height - hazard.radius))
+
+                        if hazard.has_meta("is_exploded") and hazard.get_meta("is_exploded"):
+                            hazard.duration = 0.0
+                            if "balls" in world:
+                                for b in world.balls:
+                                    if b.alive:
+                                        var bdist = sqrt((b.x - hazard.x) * (b.x - hazard.x) + (b.y - hazard.y) * (b.y - hazard.y))
+                                        if bdist < hazard.radius * 4:
+                                            if b.has_method("take_damage"):
+                                                b.take_damage(hazard.damage * 2.0)
+                                            else:
+                                                b.hp -= hazard.damage * 2.0
+                                                if b.hp <= 0:
+                                                    b.alive = false
+                elif hazard.kind == "trap":
                     var current_tick = 0
                     if "tick" in self.world:
                         current_tick = self.world.tick
@@ -444,7 +478,35 @@ func execute(strategy: String, delta: float):
             for hazard in self.world.arena.hazards:
                 var dist = sqrt((self.ball.x - hazard.x) * (self.ball.x - hazard.x) + (self.ball.y - hazard.y) * (self.ball.y - hazard.y))
                 if dist < (self.ball.radius + hazard.radius):
-                    if hazard.kind == "trap":
+                    if hazard.kind == "explosive_barrel":
+                        if not hazard.has_meta("is_exploded") or not hazard.get_meta("is_exploded"):
+                            var bvx = 0.0
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("vx"):
+                                bvx = self.ball.get_meta("vx")
+                            elif "vx" in self.ball:
+                                bvx = self.ball.vx
+                            var bvy = 0.0
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("vy"):
+                                bvy = self.ball.get_meta("vy")
+                            elif "vy" in self.ball:
+                                bvy = self.ball.vy
+
+                            var speed = sqrt(bvx * bvx + bvy * bvy)
+                            var hvx = 0.0
+                            if hazard.has_meta("vx"): hvx = hazard.get_meta("vx")
+                            var hvy = 0.0
+                            if hazard.has_meta("vy"): hvy = hazard.get_meta("vy")
+                            var hazard_speed = sqrt(hvx * hvx + hvy * hvy)
+
+                            if dist > 0:
+                                var nx = (self.ball.x - hazard.x) / dist
+                                var ny = (self.ball.y - hazard.y) / dist
+                                hazard.set_meta("vx", hvx - nx * 300.0 * delta)
+                                hazard.set_meta("vy", hvy - ny * 300.0 * delta)
+
+                            if speed > 300.0 or hazard_speed > 300.0:
+                                hazard.set_meta("is_exploded", true)
+                    elif hazard.kind == "trap":
                         if ball_type != "sniper":
                             var trap_variant = "normal"
                             if hazard.has_meta("trap_variant"):
