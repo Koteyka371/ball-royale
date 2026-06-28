@@ -586,6 +586,28 @@ class WeatherChaosMode(GameMode):
             world.arena.is_raining = (self.weather == "rain")
             world.arena.is_sandstorming = (self.weather == "sandstorm")
 
+            if hasattr(world.arena, "hazards"):
+                for hazard in world.arena.hazards:
+                    if not hasattr(hazard, "base_damage"):
+                        hazard.base_damage = getattr(hazard, "damage", 10.0)
+
+                    if self.weather == "clear":
+                        hazard.damage = hazard.base_damage
+                    elif self.weather == "rain":
+                        if getattr(hazard, "kind", "") == "lava":
+                            hazard.damage = hazard.base_damage * 0.5
+                    elif self.weather == "snow":
+                        if getattr(hazard, "kind", "") == "lava":
+                            hazard.damage = hazard.base_damage * 0.3
+                    elif self.weather == "wind":
+                        hazard.x += getattr(self, "wind_dx", 0.0) * delta * 0.2
+                        hazard.y += getattr(self, "wind_dy", 0.0) * delta * 0.2
+                    elif self.weather == "thunderstorm":
+                        hazard.damage = hazard.base_damage * 1.5
+                    elif self.weather == "sandstorm":
+                        hazard.x += getattr(self, "random", __import__("random")).uniform(-50, 50) * delta
+                        hazard.y += getattr(self, "random", __import__("random")).uniform(-50, 50) * delta
+
         valid_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
 
         for b in valid_balls:

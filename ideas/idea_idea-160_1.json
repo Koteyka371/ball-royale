@@ -1,4 +1,4 @@
 {
-  "title": "Quicksand Hazard",
-  "description": "Add a new hazard called quicksand that spawns dynamically in the arena during the game. Balls that wander into the quicksand are slowed down significantly, and taking damage from other hazards while inside quicksand amplifies the damage."
+  "title": "Weather-Specific Boosting AI",
+  "description": "Introduce AI behaviors that specifically take advantage of weather events, e.g., intentionally pushing opponents into moving sandstorm hazards or using fog to hide before an ambush."
 }

@@ -718,6 +718,41 @@ class WeatherChaosMode extends GameMode:
 			else:
 				world.arena.is_sandstorming = false
 
+			if "hazards" in world.arena:
+				for hazard in world.arena.hazards:
+					if typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_method("set_meta"):
+						if not hazard.has_meta("base_damage"):
+							if "damage" in hazard:
+								hazard.set_meta("base_damage", hazard.damage)
+							else:
+								hazard.set_meta("base_damage", 10.0)
+
+						var base_dmg = hazard.get_meta("base_damage")
+						var kind = ""
+						if "kind" in hazard:
+							kind = hazard.kind
+
+						if weather == "clear":
+							if "damage" in hazard: hazard.damage = base_dmg
+						elif weather == "rain":
+							if kind == "lava":
+								if "damage" in hazard: hazard.damage = base_dmg * 0.5
+						elif weather == "snow":
+							if kind == "lava":
+								if "damage" in hazard: hazard.damage = base_dmg * 0.3
+						elif weather == "wind":
+							var wdx = 0.0
+							var wdy = 0.0
+							if has_meta("wind_dx"): wdx = get_meta("wind_dx")
+							if has_meta("wind_dy"): wdy = get_meta("wind_dy")
+							if "x" in hazard: hazard.x += wdx * delta * 0.2
+							if "y" in hazard: hazard.y += wdy * delta * 0.2
+						elif weather == "thunderstorm":
+							if "damage" in hazard: hazard.damage = base_dmg * 1.5
+						elif weather == "sandstorm":
+							if "x" in hazard: hazard.x += (randf() * 100.0 - 50.0) * delta
+							if "y" in hazard: hazard.y += (randf() * 100.0 - 50.0) * delta
+
 		for b in balls:
 			if b.alive and b.ball_type != "spectator":
 				if not b.has_meta("base_speed"):

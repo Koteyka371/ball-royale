@@ -4,6 +4,9 @@ from ai.action import Action
 class MockArena:
     def __init__(self):
         self.hazards = []
+        self.is_foggy = False
+        self.is_raining = False
+        self.is_sandstorming = False
 
 class MockWorld:
     def __init__(self):
