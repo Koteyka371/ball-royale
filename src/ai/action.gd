@@ -1,6 +1,22 @@
 class_name ActionLayer
 extends RefCounted
 
+func _attempt_damage(attacker, target) -> void:
+	var has_ricochet = false
+	if "ricochet_barrier_timer" in target and target.ricochet_barrier_timer > 0.0:
+		has_ricochet = true
+	elif target.has_method("get_meta") and target.has_meta("ricochet_barrier_timer"):
+		if target.get_meta("ricochet_barrier_timer") > 0.0:
+			has_ricochet = true
+
+	if has_ricochet:
+		if self.world != null and self.world.has_method("_deal_damage"):
+			self.world._deal_damage(target, attacker)
+	else:
+		if self.world != null and self.world.has_method("_deal_damage"):
+			self.world._deal_damage(attacker, target)
+
+
 var ball = null
 var world = null
 
@@ -995,7 +1011,7 @@ func _group_attack(delta: float):
 
         if attack_timer <= 0.0 and dist <= attack_range:
             if self.world != null and self.world.has_method("_deal_damage"):
-                self.world._deal_damage(self.ball, target)
+                self._attempt_damage(self.ball, target)
                 if "charge_level" in self.ball:
                     self.ball.charge_level = min(100.0, float(self.ball.charge_level) + 10.0)
                 elif self.ball.has_method("set_meta"):
@@ -1256,7 +1272,7 @@ func _flank(delta: float):
                         self.ball.damage = original_damage * 2.0
 
                 if self.world != null and self.world.has_method("_deal_damage"):
-                    self.world._deal_damage(self.ball, target)
+                    self._attempt_damage(self.ball, target)
                     if "charge_level" in self.ball:
                         self.ball.charge_level = min(100.0, float(self.ball.charge_level) + 10.0)
                     elif self.ball.has_method("set_meta"):
@@ -1427,7 +1443,7 @@ func _chase(delta: float):
 
             if attack_timer <= 0:
                 if self.world != null and self.world.has_method("_deal_damage"):
-                    self.world._deal_damage(self.ball, target)
+                    self._attempt_damage(self.ball, target)
                     if "charge_level" in self.ball:
                         self.ball.charge_level = min(100.0, float(self.ball.charge_level) + 10.0)
                     elif self.ball.has_method("set_meta"):
@@ -1748,7 +1764,7 @@ func _attack(delta: float):
                                 self.ball.damage = original_damage * 2.0
 
                 if self.world != null and self.world.has_method("_deal_damage"):
-                    self.world._deal_damage(self.ball, target)
+                    self._attempt_damage(self.ball, target)
                     if "charge_level" in self.ball:
                         self.ball.charge_level = min(100.0, float(self.ball.charge_level) + 10.0)
                     elif self.ball.has_method("set_meta"):
@@ -1913,7 +1929,7 @@ func _defend(delta: float):
 
                 if attack_timer <= 0:
                     if self.world != null and self.world.has_method("_deal_damage"):
-                        self.world._deal_damage(self.ball, target)
+                        self._attempt_damage(self.ball, target)
                         if "charge_level" in self.ball:
                             self.ball.charge_level = min(100.0, float(self.ball.charge_level) + 10.0)
                         elif self.ball.has_method("set_meta"):
@@ -2295,6 +2311,12 @@ func _use_skill():
                 var trap_variant = lobby.get_trap_variant(self.ball.id)
                 trap.set_meta("trap_variant", trap_variant)
 
+                if trap_variant == "ricochet":
+                    if "ricochet_barrier_timer" in self.ball:
+                        self.ball.ricochet_barrier_timer = 3.0
+                    elif self.ball.has_method("set_meta"):
+                        self.ball.set_meta("ricochet_barrier_timer", 3.0)
+
                 self.world.arena.hazards.append(trap)
         elif skill_name == "target_strong":
             var enemies = _get_enemies()
@@ -2507,7 +2529,7 @@ func _trigger_ripple_effect():
                 var is_enemy = (my_type != other_type)
 
                 if is_enemy and self.world != null and self.world.has_method("_deal_damage"):
-                    self.world._deal_damage(self.ball, other)
+                    self._attempt_damage(self.ball, other)
                     if "charge_level" in self.ball:
                         self.ball.charge_level = min(100.0, float(self.ball.charge_level) + 10.0)
                     elif self.ball.has_method("set_meta"):
@@ -2550,6 +2572,19 @@ func _trigger_ripple_effect():
 func _update_skill_timer(delta: float):
     if "skill_timer" in self.ball and self.ball.skill_timer > 0:
         self.ball.skill_timer -= delta
+
+
+    var ricochet_barrier_timer = 0.0
+    if "ricochet_barrier_timer" in self.ball:
+        ricochet_barrier_timer = self.ball.ricochet_barrier_timer
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("ricochet_barrier_timer"):
+        ricochet_barrier_timer = self.ball.get_meta("ricochet_barrier_timer")
+
+    if ricochet_barrier_timer > 0:
+        if "ricochet_barrier_timer" in self.ball:
+            self.ball.ricochet_barrier_timer -= delta
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("ricochet_barrier_timer", ricochet_barrier_timer - delta)
 
     var kite_trap_timer = 0.0
     if "kite_trap_timer" in self.ball:
@@ -2756,6 +2791,12 @@ func _kite(delta: float):
                             var trap_variant = lobby.get_trap_variant(self.ball.id)
                             trap.set_meta("trap_variant", trap_variant)
 
+                            if trap_variant == "ricochet":
+                                if "ricochet_barrier_timer" in self.ball:
+                                    self.ball.ricochet_barrier_timer = 3.0
+                                elif self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("ricochet_barrier_timer", 3.0)
+
                             self.world.arena.hazards.append(trap)
 
                             if "kite_trap_timer" in self.ball:
@@ -2804,7 +2845,7 @@ func _kite(delta: float):
 
             if attack_timer <= 0:
                 if self.world != null and self.world.has_method("_deal_damage"):
-                    self.world._deal_damage(self.ball, optimal_target)
+                    self._attempt_damage(self.ball, optimal_target)
                     if "charge_level" in self.ball:
                         self.ball.charge_level = min(100.0, float(self.ball.charge_level) + 10.0)
                     elif self.ball.has_method("set_meta"):
@@ -2931,7 +2972,7 @@ func _escort(delta: float) -> void:
 
                     if my_dist < atk_range * atk_range:
                         if world.has_method("_deal_damage"):
-                            world._deal_damage(ball, closest_enemy)
+                            self._attempt_damage(ball, closest_enemy)
                             if "charge_level" in ball:
                                 ball.charge_level = min(100.0, float(ball.charge_level) + 10.0)
                             elif ball.has_method("set_meta"):
@@ -3032,7 +3073,7 @@ func _intercept(delta: float) -> void:
 
             if attack_timer <= 0.0:
                 if world.has_method("_deal_damage"):
-                    world._deal_damage(ball, target_enemy)
+                    self._attempt_damage(ball, target_enemy)
                     if "charge_level" in ball:
                         ball.charge_level = min(100.0, float(ball.charge_level) + 10.0)
                     elif ball.has_method("set_meta"):
