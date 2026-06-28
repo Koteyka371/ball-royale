@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-224] EMP Grenade Item — *2026-06-28 10:16:41 UTC*
+
+An item that, when collected, disables nearby enemy drones, shields, and temporary speed boosters for a short duration.
+
+---
+
 ## [idea-190] Mirror Shield — *2026-06-28 10:16:37 UTC*
 
 A temporary shield that reflects the first source of damage back to the attacker or trap.
