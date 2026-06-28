@@ -2016,6 +2016,39 @@ class Action:
                     target.entangled_with_id = self.ball.id
                     self.ball.entangle_timer = 5.0
                     target.entangle_timer = 5.0
+            elif skill_name == "summon_minions":
+                import random
+                num_minions = random.randint(2, 4)
+                for _ in range(num_minions):
+                    import copy
+
+                    minion = copy.copy(self.ball)
+                    minion.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                    # Add jitter to minion position
+                    minion.x += random.uniform(-15, 15)
+                    minion.y += random.uniform(-15, 15)
+
+                    minion.hp = 20 # Weak minion
+                    minion.max_hp = minion.hp
+                    minion.team = getattr(self.ball, "team", getattr(self.ball, "ball_type", getattr(self.ball, "BALL_TYPE", "")))
+                    minion.is_minion = True
+                    minion.minion_owner = self.ball.id
+                    minion.alive = True
+
+                    minion.skill_timer = 0
+                    minion.skill = None
+                    minion.SKILL = None
+                    if hasattr(minion, 'active_skill'):
+                        minion.active_skill = None
+                    minion.attack_timer = 0
+                    minion.current_action = "idle"
+
+                    # We might not have next_id, handle it gracefully
+                    if hasattr(self.world, "next_id"):
+                        self.world.next_id += 1
+
+                    if hasattr(self.world, "balls"):
+                        self.world.balls.append(minion)
             elif skill_name == "raise_dead":
                 if hasattr(self.world, "dead_balls") and hasattr(self.world, "balls"):
                     recent_dead = [b for b in self.world.dead_balls if getattr(b, "time_since_death", 0) < 5.0 and getattr(b, "team", "") != getattr(self.ball, "team", "")]
@@ -2029,7 +2062,7 @@ class Action:
                         minion.id = getattr(self.world, "next_id", random.randint(10000, 99999))
                         minion.hp = getattr(target_dead, "max_hp", 100) * 0.3 # Weak minion
                         minion.max_hp = minion.hp
-                        minion.team = getattr(self.ball, "team", self.ball.ball_type)
+                        minion.team = getattr(self.ball, "team", getattr(self.ball, "ball_type", getattr(self.ball, "BALL_TYPE", "")))
                         minion.is_minion = True
                         minion.minion_owner = self.ball.id
                         minion.alive = True
@@ -2037,6 +2070,10 @@ class Action:
 
                         # Reset some stats
                         minion.skill_timer = 0
+                    minion.skill = None
+                    minion.SKILL = None
+                    if hasattr(minion, 'active_skill'):
+                        minion.active_skill = None
                         minion.attack_timer = 0
                         minion.current_action = "idle"
 
