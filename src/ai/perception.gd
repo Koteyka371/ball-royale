@@ -63,13 +63,41 @@ func scan() -> Dictionary:
             var dist = calc_dist.call(h)
 
             if dist <= perception_radius:
-                var found = false
-                for t in data["traps"]:
-                    if "id" in t and "id" in h and t.id == h.id:
-                        found = true
-                        break
-                if not found:
-                    data["traps"].append(h)
+                if "kind" in h and h.kind == "fake_booster":
+                    var is_scout = ("ball_type" in self.ball and self.ball.ball_type == "scout")
+                    var p_score = 0.0
+                    if "perception_score" in self.ball:
+                        p_score = self.ball.perception_score
+
+                    var identified = false
+                    if is_scout:
+                        if p_score > 50 or randf() < 0.3:
+                            identified = true
+
+                    if identified:
+                        var found = false
+                        for t in data["traps"]:
+                            if "id" in t and "id" in h and t.id == h.id:
+                                found = true
+                                break
+                        if not found:
+                            data["traps"].append(h)
+                    else:
+                        var found = false
+                        for b in data["boosters"]:
+                            if "id" in b and "id" in h and b.id == h.id:
+                                found = true
+                                break
+                        if not found:
+                            data["boosters"].append(h)
+                else:
+                    var found = false
+                    for t in data["traps"]:
+                        if "id" in t and "id" in h and t.id == h.id:
+                            found = true
+                            break
+                    if not found:
+                        data["traps"].append(h)
 
     var my_memory = {}
     if self.ball.has_method("get_meta") and self.ball.has_meta("memory"):

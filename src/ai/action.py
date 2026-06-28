@@ -1358,8 +1358,15 @@ class Action:
 
             ball_radius = getattr(self.ball, "radius", 10.0)
             if dist <= ball_radius + 10:
-                if hasattr(self.world, "_collect_booster"):
-                    self.world._collect_booster(self.ball, nearest)
+                if getattr(nearest, "kind", None) == "fake_booster":
+                    if hasattr(self.ball, "take_damage"):
+                        self.ball.take_damage(getattr(nearest, "damage", 50.0))
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                else:
+                    if hasattr(self.world, "_collect_booster"):
+                        self.world._collect_booster(self.ball, nearest)
         else:
             self._idle(delta)
 

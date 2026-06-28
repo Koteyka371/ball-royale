@@ -140,17 +140,23 @@ func generate():
 
     var num_hazards = num_rooms * 2
     for i in range(num_hazards):
+        var r = rng.randf()
         var kind = "spikes"
-        if rng.randf() > 0.5:
+        if r < 0.33:
             kind = "lava"
+        elif r < 0.66:
+            kind = "fake_booster"
 
-        var radius = 0.0
-        var damage = 0.0
+        var radius = 15.0
+        var damage = 20.0
         if kind == "spikes":
             radius = rng.randf_range(15.0, 30.0)
             damage = 20.0
-        else:
+        elif kind == "lava":
             radius = rng.randf_range(30.0, 60.0)
+            damage = 50.0
+        else:
+            radius = 15.0
             damage = 50.0
 
         var spawn_pt = get_random_spawn_point(radius)
