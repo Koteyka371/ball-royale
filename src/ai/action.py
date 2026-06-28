@@ -1688,6 +1688,18 @@ class Action:
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
+                elif getattr(nearest, "kind", None) == "emp_item":
+                    if hasattr(self.world, "balls"):
+                        for other_ball in self.world.balls:
+                            if getattr(other_ball, "team", None) != getattr(self.ball, "team", None):
+                                dist_emp = math.sqrt((other_ball.x - self.ball.x)**2 + (other_ball.y - self.ball.y)**2)
+                                if dist_emp < 300.0:  # EMP radius
+                                    other_ball.has_drone = False
+                                    other_ball.has_shield = False
+                                    other_ball.speed_booster_timer = 0.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
                 elif getattr(nearest, "kind", None) == "fake_booster":
                     if hasattr(self.ball, "take_damage"):
                         self.ball.take_damage(getattr(nearest, "damage", 50.0))

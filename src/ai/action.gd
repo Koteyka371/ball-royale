@@ -2511,6 +2511,25 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "emp_item":
+                if self.world != null and "balls" in self.world:
+                    for other_ball in self.world.balls:
+                        var same_team = false
+                        if "team" in other_ball and "team" in self.ball and other_ball.team == self.ball.team:
+                            same_team = true
+                        if not same_team:
+                            var dist_emp = sqrt(pow(other_ball.x - self.ball.x, 2) + pow(other_ball.y - self.ball.y, 2))
+                            if dist_emp < 300.0: # EMP radius
+                                if "has_drone" in other_ball: other_ball.has_drone = false
+                                if "has_shield" in other_ball: other_ball.has_shield = false
+                                if other_ball.has_method("set_meta"):
+                                    other_ball.set_meta("speed_booster_timer", 0.0)
+                                elif "speed_booster_timer" in other_ball:
+                                    other_ball.speed_booster_timer = 0.0
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "zone_immunity":
                 var dur = 5.0
                 if "duration" in nearest: dur = nearest.duration
