@@ -3439,7 +3439,7 @@
     },
     {
       "id": "idea-196",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather Effects in the Arena",
@@ -4183,6 +4183,74 @@
         "src/ai/decoy_explosions.py",
         "src/ai/decoy_explosions.gd",
         "tests/test_decoy_explosions.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-240",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Ball Loadouts",
+      "description": "Allow players to save customized sets of pre-game selections, preferred bonuses, and trap variants to quickly jump into matches with their favorite setups.",
+      "allowed_paths": [
+        "src/ai/ball_loadouts.py",
+        "src/ai/ball_loadouts.gd",
+        "tests/test_ball_loadouts.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-241",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Corpse Explosion",
+      "description": "Instead of reanimating the dead, this skill targets a recently dead ball and causes it to explode, dealing AoE damage proportional to its max HP.",
+      "allowed_paths": [
+        "src/ai/corpse_explosion.py",
+        "src/ai/corpse_explosion.gd",
+        "tests/test_corpse_explosion.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-242",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Seasonal Tournaments",
+      "description": "Introduce monthly or seasonal tournaments where players compete for exclusive cosmetic ball skins and unique status effects.",
+      "allowed_paths": [
+        "src/ai/seasonal_tournaments.py",
+        "src/ai/seasonal_tournaments.gd",
+        "tests/test_seasonal_tournaments.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-243",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Summoner Class",
+      "description": "A ball type that actively summons weak but plentiful elemental minions over time rather than reanimating dead ones, creating small armies.",
+      "allowed_paths": [
+        "src/ai/summoner_class.py",
+        "src/ai/summoner_class.gd",
+        "tests/test_summoner_class.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

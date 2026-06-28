@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-196] Weather Effects in the Arena — *2026-06-28 07:37:04 UTC*
+
+Introduce dynamic weather effects like rain, snow, or wind that randomly occur during matches. Rain could reduce friction making balls slide more, snow could slow down movement, and strong winds could slightly alter trajectories or push balls in a specific direction. These effects would force players and AI to adapt their movement and strategies on the fly.
+
+---
+
 ## [idea-156] Necromancer ball type - raises minions — *2026-06-28 07:27:41 UTC*
 
 A new ball type that can revive recently killed enemies as temporary weak minions to fight for it. Minions slowly decay in HP over time.
