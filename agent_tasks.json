@@ -4072,7 +4072,7 @@
     },
     {
       "id": "idea-233",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Synergy",
@@ -6313,6 +6313,40 @@
         "src/ai/moving_bumpers.py",
         "src/ai/moving_bumpers.gd",
         "tests/test_moving_bumpers.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-365",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirror Match Arena",
+      "description": "Every player spawns with an exact AI clone of themselves on the opposite side of the map. Clones mimic their creator's stats and skills.",
+      "allowed_paths": [
+        "src/arena/mirror_match_arena.py",
+        "src/arena/mirror_match_arena.gd",
+        "tests/test_mirror_match_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-366",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Low Gravity Mode",
+      "description": "A GameMode where the friction and gravity are drastically reduced, causing balls to slide around the map effortlessly and collisions to produce massive knockback.",
+      "allowed_paths": [
+        "src/ai/low_gravity.py",
+        "src/ai/low_gravity.gd",
+        "tests/test_low_gravity.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

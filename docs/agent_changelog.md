@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-233] Black Hole Synergy — *2026-06-29 09:18:40 UTC*
+
+Portals could occasionally spawn linked to moving Black Hole hazards, so a ball that enters a portal could be launched out of the Black Hole, combining hazard behaviors dynamically.
+
+---
+
 ## [idea-253] Floor is Lava Mutator — *2026-06-29 09:11:46 UTC*
 
 A mutator where balls constantly take damage over time, unless they collect temporary immune boosters spawning around the map.
