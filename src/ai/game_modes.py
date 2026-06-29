@@ -208,7 +208,8 @@ class BattleRoyaleMode(GameMode):
                     if hasattr(b, "hp"):
                         b.hp -= 1.0
                 if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
-                    if hasattr(b, "hp"): b.hp -= 20.0
+                    if hasattr(b, "hp"):
+                        b.hp -= 20.0
                 b.attack_accuracy = 0.5
 
         self.dark_phase_timer += delta

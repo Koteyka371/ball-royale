@@ -1085,6 +1085,23 @@ func execute(strategy: String, delta: float):
                             self.ball.hp -= hazard_damage
                             if self.ball.hp <= 0:
                                 self.ball.alive = false
+                    elif hazard.kind == "bouncy_bumper":
+                        var dx = self.ball.x - hazard.x
+                        var dy = self.ball.y - hazard.y
+                        var dist = sqrt(dx*dx + dy*dy)
+                        var md = max(0.0001, dist)
+
+                        var overlap = hazard.radius + self.ball.radius - dist
+                        if overlap > 0:
+                            self.ball.x += (dx / md) * overlap
+                            self.ball.y += (dy / md) * overlap
+
+                            var bounce_force = 10000.0 * max(1.0, hazard.damage)
+                            if "vx" in self.ball:
+                                self.ball.vx += (dx / md) * bounce_force
+                            if "vy" in self.ball:
+                                self.ball.vy += (dy / md) * bounce_force
+                        continue
                     elif hazard.kind == "lightning_strike":
                         if not hazard.has_meta("hit_targets") or not hazard.get_meta("hit_targets"):
                             hazard.set_meta("hit_targets", true)

@@ -376,8 +376,10 @@ class Action:
                         current_tick = getattr(self.world, "tick", 0)
                         if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
                             hazard.last_updated_tick = current_tick
-                            if not hasattr(hazard, "vx"): hazard.vx = 0.0
-                            if not hasattr(hazard, "vy"): hazard.vy = 0.0
+                            if not hasattr(hazard, "vx"):
+                                hazard.vx = 0.0
+                            if not hasattr(hazard, "vy"):
+                                hazard.vy = 0.0
                             hazard.x += hazard.vx * delta
                             hazard.y += hazard.vy * delta
                             hazard.vx *= (1.0 - 2.0 * delta)
@@ -416,7 +418,8 @@ class Action:
                                 import copy
                                 holo = copy.copy(owner)
                                 holo.id = getattr(self.world, "next_id", random.randint(10000, 99999))
-                                if hasattr(self.world, "next_id"): self.world.next_id += 1
+                                if hasattr(self.world, "next_id"):
+                                    self.world.next_id += 1
                                 holo.x = hazard.x
                                 holo.y = hazard.y
                                 holo.hp = 10.0
@@ -425,7 +428,8 @@ class Action:
                                 holo.hologram_timer = 10.0
                                 holo.skill = None
                                 holo.active_skill = None
-                                if hasattr(holo, "SKILL"): holo.SKILL = None
+                                if hasattr(holo, "SKILL"):
+                                    holo.SKILL = None
                                 holo.vx = 0.0
                                 holo.vy = 0.0
                                 holo.damage = 0.0
@@ -824,6 +828,29 @@ class Action:
                                 self.ball.hp -= hazard_damage
                                 if self.ball.hp <= 0:
                                     self.ball.alive = False
+                            continue
+                        elif hazard.kind == "bouncy_bumper":
+                            dx = self.ball.x - hazard.x
+                            dy = self.ball.y - hazard.y
+                            dist = math.sqrt(dx*dx + dy*dy)
+
+                            # Ensure we don't divide by zero
+                            dist = max(0.0001, dist)
+
+                            # Push out of bumper to avoid getting stuck
+                            overlap = hazard.radius + self.ball.radius - dist
+                            if overlap > 0:
+                                self.ball.x += (dx / dist) * overlap
+                                self.ball.y += (dy / dist) * overlap
+
+                            # Pinball style reflection: add huge impulse away from center
+                                bounce_force = 10000.0 * getattr(hazard, "damage", 1.0)
+
+                            # Apply the force
+                                if hasattr(self.ball, "vx"):
+                                    self.ball.vx += (dx / dist) * bounce_force
+                                if hasattr(self.ball, "vy"):
+                                    self.ball.vy += (dy / dist) * bounce_force
                             continue
                         elif hazard.kind == "lightning_strike":
                             if not getattr(hazard, "hit_targets", False):
