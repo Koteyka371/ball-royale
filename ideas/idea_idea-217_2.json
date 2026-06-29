@@ -1,4 +1,0 @@
-{
-  "title": "Crafting System and Item Synthesis",
-  "description": "Implement a crafting system where players gather materials (like 'Iron Ore', 'Magic Dust', 'Void Shard') dropped by destroyed balls or special hazards during matches. These materials can be used between matches to craft consumable boosters, temporary stats modifiers, or rare cosmetics. Advanced recipes might require synthesizing basic items into more potent artifacts."
-}

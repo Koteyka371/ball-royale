@@ -1,4 +1,0 @@
-{
-  "title": "Orbital Strike Warning UI Element",
-  "description": "When an orbital strike hazard spawns, show a large, pulsating crosshair UI element and play a warning siren sound effect for the 3 seconds before it strikes, giving players a clearer cue to evacuate the massive area."
-}

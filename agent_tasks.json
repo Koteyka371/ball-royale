@@ -7204,6 +7204,91 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-417",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Teleporting Decoy",
+      "description": "Allow players to reactivate the decoy skill to instantly swap positions with their active decoy, providing superior mobility and evasion.",
+      "allowed_paths": [
+        "src/ai/teleporting_decoy.py",
+        "src/ai/teleporting_decoy.gd",
+        "tests/test_teleporting_decoy.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-418",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Hazards",
+      "description": "Hazards that slowly shrink the safe playable area over time, similar to a battle royale zone.",
+      "allowed_paths": [
+        "src/arena/shrinking_hazards.py",
+        "src/arena/shrinking_hazards.gd",
+        "tests/test_shrinking_hazards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-419",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Explosion Damage",
+      "description": "Make the decoy explode upon its timer expiring or when destroyed, dealing AoE damage to nearby enemies and rewarding players who strategically place them near clusters.",
+      "allowed_paths": [
+        "src/ai/decoy_explosion_damage.py",
+        "src/ai/decoy_explosion_damage.gd",
+        "tests/test_decoy_explosion_damage.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-420",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Magnetic Fields Hazard",
+      "description": "Hazards that exert continuous pushing or pulling forces on players within their area of effect.",
+      "allowed_paths": [
+        "src/arena/magnetic_fields.py",
+        "src/arena/magnetic_fields.gd",
+        "tests/test_magnetic_fields.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-421",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Spawner Hazard",
+      "description": "A new arena hazard that periodically spawns non-damaging, fast-moving decoys that mimic player movements to confuse AI targeting and waste cooldowns.",
+      "allowed_paths": [
+        "src/arena/decoy_spawner.py",
+        "src/arena/decoy_spawner.gd",
+        "tests/test_decoy_spawner.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }

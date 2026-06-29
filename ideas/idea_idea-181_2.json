@@ -1,4 +1,0 @@
-{
-  "title": "EMC Burst Hazard",
-  "description": "An Electromagnetic Pulse burst hazard that periodically spawns in the arena. When it detonates, it temporarily scrambles the AI targeting logic of any ball within its radius, causing them to randomly switch targets or wander aimlessly for a few seconds."
-}

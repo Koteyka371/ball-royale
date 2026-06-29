@@ -1,4 +1,0 @@
-{
-  "title": "Shrinking Safe Zone with Moving Center",
-  "description": "Make the safe zone center drift over time in a random direction, forcing players to constantly reposition as it shrinks rather than simply converging on a static point."
-}
