@@ -101,6 +101,18 @@ class Perception:
             if not e_has_stealth and hasattr(e, "has_method") and e.has_method("get_meta") and e.has_meta("has_stealth_drone"):
                 e_has_stealth = e.get_meta("has_stealth_drone")
 
+
+            # If enemy has camo booster active, we can only see them if they are very close
+            e_has_camo = getattr(e, "has_camo", False)
+            if not e_has_camo and hasattr(e, "has_method") and e.has_method("get_meta") and e.has_meta("has_camo"):
+                e_has_camo = e.get_meta("has_camo")
+
+            if e_has_camo:
+                dist = math.sqrt((getattr(e, "x", 0) - bx_curr)**2 + (getattr(e, "y", 0) - by_curr)**2)
+                # Camo booster drastically reduces perception radius to 40.0
+                if dist > 40.0:
+                    continue
+
             if e_has_stealth:
                 dist = math.sqrt((getattr(e, "x", 0) - bx_curr)**2 + (getattr(e, "y", 0) - by_curr)**2)
                 # Stealth drone masks presence outside a short radius (e.g. 50.0)

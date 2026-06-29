@@ -3339,6 +3339,18 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "camo_booster":
+                if nearest.has_method("has_meta"):
+                    self.ball.set_meta("has_camo", true)
+                elif "has_camo" in self.ball:
+                    self.ball.has_camo = true
+                else:
+                    self.ball.set_meta("has_camo", true)
+                self.ball.set_meta("camo_timer", 15.0)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "silence_booster":
                 if self.world != null and "balls" in self.world:
                     for other_ball in self.world.balls:
@@ -4564,6 +4576,25 @@ func _update_skill_timer(delta: float):
             self.ball.stutter_timer = stutter_timer - delta
         elif self.ball.has_method("set_meta"):
             self.ball.set_meta("stutter_timer", stutter_timer - delta)
+
+    var camo_timer = 0.0
+    if "camo_timer" in self.ball:
+        camo_timer = float(self.ball.camo_timer)
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("camo_timer"):
+        camo_timer = self.ball.get_meta("camo_timer")
+
+    if camo_timer > 0.0:
+        camo_timer -= delta
+        if "camo_timer" in self.ball:
+            self.ball.camo_timer = camo_timer
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("camo_timer", camo_timer)
+
+        if camo_timer <= 0.0:
+            if "has_camo" in self.ball:
+                self.ball.has_camo = false
+            elif self.ball.has_method("set_meta"):
+                self.ball.set_meta("has_camo", false)
 
     var stealth_timer = 0.0
     if "stealth_drone_timer" in self.ball:

@@ -2257,6 +2257,12 @@ class Action:
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
+                elif getattr(nearest, "kind", None) == "camo_booster":
+                    self.ball.has_camo = True
+                    self.ball.camo_timer = 15.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
                 elif getattr(nearest, "kind", None) == "silence_booster":
                     if hasattr(self.world, "balls"):
                         for other_ball in self.world.balls:
@@ -3017,6 +3023,10 @@ class Action:
             self.ball.kite_trap_timer -= delta
         if hasattr(self.ball, "stutter_timer") and self.ball.stutter_timer > 0:
             self.ball.stutter_timer -= delta
+        if hasattr(self.ball, "camo_timer") and self.ball.camo_timer > 0:
+            self.ball.camo_timer -= delta
+            if self.ball.camo_timer <= 0:
+                self.ball.has_camo = False
         if hasattr(self.ball, "stealth_drone_timer") and self.ball.stealth_drone_timer > 0:
             self.ball.stealth_drone_timer -= delta
             if self.ball.stealth_drone_timer <= 0:

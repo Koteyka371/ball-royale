@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Projection Ability",
+  "description": "An active ability for a new ball type (Illusionist) that spawns a holographic clone that perfectly mimics the movement of the player to confuse enemies. The clone deals no damage and has 1 HP, expiring after 5 seconds."
+}

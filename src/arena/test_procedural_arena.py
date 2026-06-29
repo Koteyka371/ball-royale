@@ -28,7 +28,7 @@ def test_hazard_generation():
     arena = ProceduralArena(arena_size=1000.0, num_rooms=3, seed=42)
     assert len(arena.hazards) >= arena.num_rooms * 2
     for hazard in arena.hazards:
-        assert hazard.kind in ["spikes", "lava", "fake_booster", "poison_cloud", "proximity_trap", "explosive_barrel", "healing_spring", "trap", "spinning_laser", "laser_wall", "meteor", "conveyor_belt", "gravity_well", "black_hole", "portal", "teleporter", "swap_portal", "placeable_trap_item", "flare", "crater", "bumper", "tornado", "hidden_trap"]
+        assert hazard.kind in ["spikes", "lava", "fake_booster", "poison_cloud", "proximity_trap", "explosive_barrel", "healing_spring", "trap", "spinning_laser", "laser_wall", "meteor", "conveyor_belt", "gravity_well", "black_hole", "portal", "teleporter", "swap_portal", "placeable_trap_item", "flare", "crater", "bumper", "tornado", "hidden_trap", "silence_booster", "camo_booster", "temporal_rift", "drone_item", "stealth_drone_item"]
         assert hazard.radius > 0
-        assert hazard.damage > 0 or hazard.kind in ["healing_spring", "placeable_trap_item", "portal", "teleporter", "swap_portal", "flare", "crater", "bumper", "temporal_rift"]
+        assert hazard.damage > 0 or hazard.kind in ["healing_spring", "placeable_trap_item", "portal", "teleporter", "swap_portal", "flare", "crater", "bumper", "temporal_rift", "silence_booster", "camo_booster", "drone_item", "stealth_drone_item"]
         assert arena.is_point_inside(hazard.x, hazard.y, 0)

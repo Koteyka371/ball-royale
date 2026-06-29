@@ -113,6 +113,17 @@ func scan() -> Dictionary:
         elif e.has_method("get_meta") and e.has_meta("has_stealth_drone") and e.get_meta("has_stealth_drone"):
             e_has_stealth = true
 
+        var e_has_camo = false
+        if "has_camo" in e and e.has_camo:
+            e_has_camo = true
+        elif e.has_method("get_meta") and e.has_meta("has_camo") and e.get_meta("has_camo"):
+            e_has_camo = true
+
+        if e_has_camo:
+            var dist = sqrt(pow((e.get("x") if e.get("x") != null else 0.0) - bx_curr, 2) + pow((e.get("y") if e.get("y") != null else 0.0) - by_curr, 2))
+            if dist > 40.0:
+                continue
+
         if e_has_stealth:
             var dist = sqrt(pow(e.x - bx_curr, 2) + pow(e.y - by_curr, 2))
             if dist > 80.0:
