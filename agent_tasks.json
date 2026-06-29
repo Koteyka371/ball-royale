@@ -4566,7 +4566,7 @@
     },
     {
       "id": "idea-262",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Booster",
@@ -6687,6 +6687,40 @@
         "src/ai/dynamic_map_flooding.py",
         "src/ai/dynamic_map_flooding.gd",
         "tests/test_dynamic_map_flooding.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-387",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Magnetic Grapple",
+      "description": "An ability that allows the player or AI ball to shoot a magnetic tether at an enemy, pulling themselves quickly towards the target to close the gap for melee attacks.",
+      "allowed_paths": [
+        "src/ai/magnetic_grapple.py",
+        "src/ai/magnetic_grapple.gd",
+        "tests/test_magnetic_grapple.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-388",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Distraction Beacon",
+      "description": "A new skill that deploys a stationary decoy beacon which draws enemy aggro and emits a continuous low-level heal to nearby allies before exploding.",
+      "allowed_paths": [
+        "src/ai/decoy_distraction_beacon.py",
+        "src/ai/decoy_distraction_beacon.gd",
+        "tests/test_decoy_distraction_beacon.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
