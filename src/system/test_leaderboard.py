@@ -31,6 +31,7 @@ class TestLeaderboard(unittest.TestCase):
         self.assertEqual(self.lm.data["current_season"], 2)
         self.assertIn("Crown of Season 1", self.pm.data.get("cosmetics", []))
         self.assertIn("Season 1 Champion", self.pm.data.get("titles", []))
+        self.assertIn("Aura of Season 1", self.pm.data.get("status_effects", []))
 
 if __name__ == '__main__':
     unittest.main()

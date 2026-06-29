@@ -21,6 +21,8 @@ class ProfileManager:
                     data["cosmetics"] = []
                 if "titles" not in data:
                     data["titles"] = []
+                if "status_effects" not in data:
+                    data["status_effects"] = []
                 return data
         except (FileNotFoundError, json.JSONDecodeError):
             return {
@@ -37,7 +39,8 @@ class ProfileManager:
                 "prestige_upgrades": {},
                 "quests": [],
                 "cosmetics": [],
-                "titles": []
+                "titles": [],
+                "status_effects": []
             }
 
     def add_quest(self, quest_description, reward):
@@ -118,7 +121,8 @@ class ProfileManager:
                 "prestige_upgrades": current_upgrades,
                 "quests": [],
                 "cosmetics": self.data.get("cosmetics", []),
-                "titles": self.data.get("titles", [])
+                "titles": self.data.get("titles", []),
+                "status_effects": self.data.get("status_effects", [])
             }
             self.save()
             lm = LeaderboardManager("leaderboard.json", profile_manager=self)
@@ -178,3 +182,10 @@ class ProfileManager:
             self.save()
             return True
         return False
+
+    def add_status_effect(self, effect_name):
+        if "status_effects" not in self.data:
+            self.data["status_effects"] = []
+        if effect_name not in self.data["status_effects"]:
+            self.data["status_effects"].append(effect_name)
+            self.save()
