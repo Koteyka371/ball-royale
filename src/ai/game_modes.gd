@@ -1566,6 +1566,75 @@ class SafeZoneMode extends GameMode:
     func _award_skill_points():
         pass
 
+
+class LevelUpMode extends GameMode:
+	func _init():
+		name = "Level Up Mode"
+		description = "Balls gain EXP and level up to get stats by dealing damage and securing kills."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		for b in balls:
+			var is_alive = true
+			if b.has_method("has_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+			elif "alive" in b: is_alive = b.alive
+			if not is_alive: continue
+
+			var b_type = ""
+			if b.has_method("has_meta") and b.has_meta("BALL_TYPE"): b_type = b.get_meta("BALL_TYPE")
+			elif "ball_type" in b: b_type = b.ball_type
+			if b_type == "spectator": continue
+
+			var level = 1
+			if b.has_method("has_meta") and b.has_meta("level"): level = b.get_meta("level")
+			elif "level" in b: level = b.level
+
+			var dmg = 0.0
+			if b.has_method("has_meta") and b.has_meta("damage_dealt"): dmg = b.get_meta("damage_dealt")
+			elif "damage_dealt" in b: dmg = b.damage_dealt
+
+			var kills = 0
+			if b.has_method("has_meta") and b.has_meta("kills"): kills = b.get_meta("kills")
+			elif "kills" in b: kills = b.kills
+
+			var exp = dmg + (float(kills) * 100.0)
+			if b.has_method("set_meta"):
+				b.set_meta("experience", exp)
+			else:
+				b.experience = exp
+
+			var threshold = float(level) * 100.0
+			if exp >= threshold:
+				var new_level = level + 1
+				if b.has_method("set_meta"):
+					b.set_meta("level", new_level)
+				else:
+					b.level = new_level
+
+				var upgrades = ["max_hp", "speed", "damage"]
+				var upgrade = upgrades[randi() % upgrades.size()]
+				if upgrade == "max_hp":
+					if b.has_method("set_meta"):
+						var old_mhp = b.get_meta("max_hp") if b.has_meta("max_hp") else b.max_hp
+						b.set_meta("max_hp", old_mhp + 20.0)
+						var old_hp = b.get_meta("hp") if b.has_meta("hp") else b.hp
+						b.set_meta("hp", old_hp + 20.0)
+					else:
+						b.max_hp += 20.0
+						b.hp += 20.0
+				elif upgrade == "speed":
+					if b.has_method("set_meta"):
+						var old_spd = b.get_meta("speed") if b.has_meta("speed") else b.speed
+						b.set_meta("speed", old_spd + 10.0)
+					else:
+						b.speed += 10.0
+				elif upgrade == "damage":
+					if b.has_method("set_meta"):
+						var old_dmg = b.get_meta("damage") if b.has_meta("damage") else b.damage
+						b.set_meta("damage", old_dmg + 2.0)
+					else:
+						b.damage += 2.0
+
 var GAME_MODES = {
     "portal_node": PortalNodeMode.new(),
 	"memory_traps": MemoryTrapsMode.new(),
@@ -1588,5 +1657,6 @@ var GAME_MODES = {
     "capture_the_flag": CaptureTheFlagMode.new(),
     "evolutionary_simulation": EvolutionarySimulationMode.new(),
     "interactive_training": load("res://src/ai/interactive_training.gd").new(),
-    "safe_zone": SafeZoneMode.new()
+    "safe_zone": SafeZoneMode.new(),
+    "level_up": LevelUpMode.new()
 }

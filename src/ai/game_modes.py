@@ -1334,6 +1334,44 @@ class SafeZoneMode(GameMode):
         except Exception:
             pass
 
+
+class LevelUpMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Level Up Mode"
+        self.description = "Balls gain EXP and level up to get stats by dealing damage and securing kills."
+        import random
+        self.random = random
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            level = getattr(b, "level", 1)
+            # Fetch stats to calculate experience
+            dmg = getattr(b, "damage_dealt", 0.0)
+            kills = getattr(b, "kills", 0)
+
+            exp = dmg + (kills * 100.0)
+            setattr(b, "experience", exp)
+
+            # Level up threshold: level * 100
+            threshold = level * 100.0
+            if exp >= threshold:
+                setattr(b, "level", level + 1)
+
+                # Pick a random stat upgrade
+                upgrade = self.random.choice(["max_hp", "speed", "damage"])
+                if upgrade == "max_hp":
+                    b.max_hp += 20.0
+                    b.hp += 20.0
+                elif upgrade == "speed":
+                    b.speed += 10.0
+                elif upgrade == "damage":
+                    b.damage += 2.0
+
 GAME_MODES = {
     "portal_node": PortalNodeMode(),
     "memory_traps": MemoryTrapsMode(),
@@ -1356,5 +1394,6 @@ GAME_MODES = {
     "capture_the_flag": CaptureTheFlagMode(),
     "evolutionary_simulation": EvolutionarySimulationMode(),
     "interactive_training": InteractiveTrainingMode(),
-    "safe_zone": SafeZoneMode()
+    "safe_zone": SafeZoneMode(),
+    "level_up": LevelUpMode()
 }
