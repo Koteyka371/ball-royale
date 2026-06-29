@@ -89,6 +89,12 @@ class Action:
         self.world = world
 
     def execute(self, strategy: str, delta: float) -> None:
+        # Decrement toxic immune timer
+        if hasattr(self.ball, "toxic_immune_timer") and self.ball.toxic_immune_timer > 0:
+            self.ball.toxic_immune_timer -= delta
+            if self.ball.toxic_immune_timer < 0:
+                self.ball.toxic_immune_timer = 0.0
+
         # Check inventory for traps to place if fleeing or defending
         if strategy in ("flee", "defend") and hasattr(self.ball, "inventory") and "placeable_trap" in self.ball.inventory:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -1993,6 +1999,10 @@ class Action:
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
+                elif getattr(nearest, "kind", None) == "immune_booster":
+                    self.ball.toxic_immune_timer = getattr(self.ball, "toxic_immune_timer", 0.0) + 10.0
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 else:
                     if hasattr(self.world, "_collect_booster"):
                         self.world._collect_booster(self.ball, nearest)

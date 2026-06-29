@@ -121,6 +121,15 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+	# Decrement toxic immune timer
+	if self.ball.has_method("get_meta") and self.ball.has_meta("toxic_immune_timer"):
+		var timer = self.ball.get_meta("toxic_immune_timer")
+		if timer > 0:
+			timer -= delta
+			if timer < 0:
+				timer = 0.0
+			self.ball.set_meta("toxic_immune_timer", timer)
+
 	if (strategy == "flee" or strategy == "defend") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
 		if inv.has("placeable_trap"):
@@ -3072,6 +3081,15 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "immune_booster":
+                var timer = 0.0
+                if self.ball.has_method("has_meta") and self.ball.has_meta("toxic_immune_timer"):
+                    timer = self.ball.get_meta("toxic_immune_timer")
+                self.ball.set_meta("toxic_immune_timer", timer + 10.0)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "chain_lightning":
                 var dur = 5.0
                 if "duration" in nearest: dur = nearest.duration

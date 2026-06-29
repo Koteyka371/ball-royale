@@ -1614,6 +1614,85 @@ class SafeZoneMode extends GameMode:
     func _award_skill_points():
         pass
 
+class ToxicSurvivalMode extends GameMode:
+    var tick_timer = 0.0
+    var booster_timer = 0.0
+
+    func _init() -> void:
+        name = "Toxic Survival"
+        description = "Balls take damage over time unless they collect immune boosters."
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        if not "dead_balls" in world:
+            world.dead_balls = []
+        for b in balls:
+            if not b.alive:
+                if not world.dead_balls.has(b):
+                    if b.has_method("set_meta"):
+                        b.set_meta("time_since_death", 0.0)
+                    world.dead_balls.append(b)
+                else:
+                    if b.has_method("get_meta") and b.has_meta("time_since_death"):
+                        b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+
+        tick_timer += delta
+        if tick_timer >= 1.0:
+            tick_timer = 0.0
+            for b in balls:
+                if b.alive:
+                    var immune_timer = 0.0
+                    if b.has_method("get_meta") and b.has_meta("toxic_immune_timer"):
+                        immune_timer = b.get_meta("toxic_immune_timer")
+
+                    if immune_timer <= 0:
+                        if b.has_method("take_damage"):
+                            b.take_damage(5.0) # 5 damage per second
+
+        booster_timer += delta
+        if booster_timer >= 5.0:
+            booster_timer = 0.0
+            _spawn_immune_booster(world)
+
+    func _spawn_immune_booster(world) -> void:
+        if not "boosters" in world:
+            world.boosters = []
+
+        var arena_w = 1000
+        var arena_h = 1000
+        if world != null and "arena" in world:
+            if "width" in world.arena: arena_w = world.arena.width
+            if "height" in world.arena: arena_h = world.arena.height
+
+        var margin = 100
+        var x = margin + randf() * (arena_w - 2 * margin)
+        var y = margin + randf() * (arena_h - 2 * margin)
+
+        var booster = {}
+        booster["x"] = x
+        booster["y"] = y
+        booster["kind"] = "immune_booster"
+        booster["active"] = true
+
+        world.boosters.append(booster)
+
+    func check_winner(world, balls: Array):
+        var alive_teams = {}
+        for b in balls:
+            if b.alive and ("ball_type" in b and b.ball_type != "spectator"):
+                var team = b.id
+                if "team" in b:
+                    team = b.team
+                if not alive_teams.has(team):
+                    alive_teams[team] = 0
+                alive_teams[team] += 1
+
+        var keys = alive_teams.keys()
+        if keys.size() == 1:
+            return str(keys[0])
+        elif keys.size() == 0:
+            return "Draw"
+        return null
+
 var GAME_MODES = {
     "portal_node": PortalNodeMode.new(),
 	"memory_traps": MemoryTrapsMode.new(),
@@ -1635,6 +1714,7 @@ var GAME_MODES = {
     "survival": SurvivalMode.new(),
     "capture_the_flag": CaptureTheFlagMode.new(),
     "evolutionary_simulation": EvolutionarySimulationMode.new(),
+    "toxic_survival": ToxicSurvivalMode.new(),
     "interactive_training": load("res://src/ai/interactive_training.gd").new(),
     "safe_zone": SafeZoneMode.new()
 }

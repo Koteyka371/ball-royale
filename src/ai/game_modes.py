@@ -1379,6 +1379,74 @@ class SafeZoneMode(GameMode):
         except Exception:
             pass
 
+class ToxicSurvivalMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Toxic Survival"
+        self.description = "Balls take damage over time unless they collect immune boosters."
+        self.tick_timer = 0.0
+        self.booster_timer = 0.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+
+        self.tick_timer += delta
+        if self.tick_timer >= 1.0:
+            self.tick_timer = 0.0
+            for b in balls:
+                if getattr(b, "alive", True):
+                    # Check immune timer
+                    if getattr(b, "toxic_immune_timer", 0.0) <= 0:
+                        if hasattr(b, "take_damage"):
+                            b.take_damage(5.0)  # 5 damage per second
+
+        self.booster_timer += delta
+        if self.booster_timer >= 5.0:
+            self.booster_timer = 0.0
+            self._spawn_immune_booster(world)
+
+    def _spawn_immune_booster(self, world: Any) -> None:
+        import random
+        if not hasattr(world, "boosters"):
+            world.boosters = []
+
+        class ImmuneBooster:
+            def __init__(self, x, y):
+                self.x = x
+                self.y = y
+                self.kind = "immune_booster"
+                self.active = True
+
+        if hasattr(world, "arena"):
+            margin = 100
+            w = getattr(world.arena, "width", 1000)
+            h = getattr(world.arena, "height", 1000)
+            x = random.uniform(margin, w - margin)
+            y = random.uniform(margin, h - margin)
+            world.boosters.append(ImmuneBooster(x, y))
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        alive_teams = {}
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                team = getattr(b, "team", getattr(b, "id", None))
+                if team is not None:
+                    alive_teams[team] = alive_teams.get(team, 0) + 1
+
+        if len(alive_teams) == 1:
+            return str(list(alive_teams.keys())[0])
+        elif len(alive_teams) == 0:
+            return "Draw"
+        return None
+
 GAME_MODES = {
     "portal_node": PortalNodeMode(),
     "memory_traps": MemoryTrapsMode(),
@@ -1400,6 +1468,7 @@ GAME_MODES = {
     "survival": SurvivalMode(),
     "capture_the_flag": CaptureTheFlagMode(),
     "evolutionary_simulation": EvolutionarySimulationMode(),
+    "toxic_survival": ToxicSurvivalMode(),
     "safe_zone": SafeZoneMode()
 }
 

@@ -1,0 +1,4 @@
+{
+  "title": "Juggernaut Target Selection",
+  "description": "A new mutator where one ball is randomly chosen as the Juggernaut, granting them massive HP and damage, but all other balls are forced to temporarily ally and attack the Juggernaut until they are defeated."
+}
