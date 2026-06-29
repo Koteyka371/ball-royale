@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-253] Floor is Lava Mutator — *2026-06-29 09:11:46 UTC*
+
+A mutator where balls constantly take damage over time, unless they collect temporary immune boosters spawning around the map.
+
+---
+
 ## [idea-263] Ricochet Arena Hazards — *2026-06-29 09:07:05 UTC*
 
 Introduce bumpers in the arena that don't deal damage but strongly bounce balls and projectiles in random directions, adding chaos and forcing players to adapt their movement.

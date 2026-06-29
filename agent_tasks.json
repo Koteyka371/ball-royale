@@ -4413,7 +4413,7 @@
     },
     {
       "id": "idea-253",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Floor is Lava Mutator",
@@ -6279,6 +6279,40 @@
         "src/ai/crafting_and_item_synthesis.py",
         "src/ai/crafting_and_item_synthesis.gd",
         "tests/test_crafting_and_item_synthesis.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-363",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bumper Upgrades",
+      "description": "Allow bumpers to be upgraded to give powerups to the ball that bounces off them, creating interesting mechanics where players might intentionally hit bumpers.",
+      "allowed_paths": [
+        "src/ai/bumper_upgrades.py",
+        "src/ai/bumper_upgrades.gd",
+        "tests/test_bumper_upgrades.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-364",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Moving Bumpers",
+      "description": "Introduce bumpers that are attached to paths or other entities, making them dynamic obstacles in the arena.",
+      "allowed_paths": [
+        "src/ai/moving_bumpers.py",
+        "src/ai/moving_bumpers.gd",
+        "tests/test_moving_bumpers.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
