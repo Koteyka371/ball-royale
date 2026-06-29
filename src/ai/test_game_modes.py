@@ -350,3 +350,35 @@ def test_random_reroll_mutator():
     # The chance of both matching exactly the original is extremely low
     if b1.ball_type == "warrior" and b1.max_hp == 100.0:
         assert False, "Stats not rerolled"
+
+
+def test_escort_mode():
+    from ai.game_modes import EscortMode
+    mode = EscortMode()
+    world = MockWorld()
+    balls = [MockBall(1, "warrior"), MockBall(2, "scout")]
+
+    mode.setup(world, balls)
+
+    assert len(balls) == 2
+    payload = mode.payload
+    assert getattr(payload, "ball_type") == "payload"
+    assert balls[0].team == "Defenders"
+    assert balls[1].team == "Attackers"
+
+    # Tick payload towards goal
+    mode.tick(world)
+    assert getattr(payload, "x") > 100.0 # Moved right
+
+    assert mode.check_winner(world, balls) is None
+
+    # Goal reached
+    payload.x = mode.goal_x
+    payload.y = mode.goal_y
+    assert mode.check_winner(world, balls) == "Defenders"
+
+    # Payload destroyed
+    payload.x = 100.0
+    payload.y = 500.0
+    payload.hp = 0
+    assert mode.check_winner(world, balls) == "Attackers"

@@ -551,6 +551,81 @@ class BossFightMode(GameMode):
 
         return None
 
+
+class EscortMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Escort Mode"
+        self.description = "One team defends a payload moving towards a goal. The other tries to destroy it."
+        self.payload = None
+        self.goal_x = 900.0
+        self.goal_y = 500.0
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        mid = len(balls) // 2
+        for i, b in enumerate(balls):
+            if getattr(b, "ball_type", None) != "spectator":
+                if i < mid:
+                    b.team = "Defenders"
+                else:
+                    b.team = "Attackers"
+
+        # Transform a defender into the payload, or just use the first defender
+        defenders = [b for b in balls if getattr(b, "team", "") == "Defenders"]
+        if defenders:
+            self.payload = defenders[0]
+            self.payload.ball_type = "payload"
+            self.payload.hp = 2000.0
+            self.payload.base_hp = 2000.0
+            self.payload.speed = 0.5
+            self.payload.damage = 0.0
+            self.payload.x = 100.0
+            self.payload.y = 500.0
+
+    def tick(self, world: Any) -> None:
+        if self.payload and getattr(self.payload, "alive", False):
+            import math
+            dx = self.goal_x - getattr(self.payload, "x", 0)
+            dy = self.goal_y - getattr(self.payload, "y", 0)
+            dist = math.hypot(dx, dy)
+            if dist > 0:
+                self.payload.x += (dx / dist) * getattr(self.payload, "speed", 0.5)
+                self.payload.y += (dy / dist) * getattr(self.payload, "speed", 0.5)
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        if not self.payload:
+            return None
+
+        import math
+        dx = self.goal_x - getattr(self.payload, "x", 0)
+        dy = self.goal_y - getattr(self.payload, "y", 0)
+
+        if getattr(self.payload, "hp", 0) <= 0 or not getattr(self.payload, "alive", True):
+            self.payload.alive = False
+            return "Attackers"
+
+        if math.hypot(dx, dy) < 10.0:
+            return "Defenders"
+
+        return None
+
+        import math
+        dx = self.goal_x - self.payload["x"]
+        dy = self.goal_y - self.payload["y"]
+
+        if getattr(self.payload, "hp", self.payload.get("hp", 0)) <= 0 or not self.payload.get("alive", True):
+            self.payload["alive"] = False
+            return "Attackers"
+
+        if math.hypot(dx, dy) < 10.0:
+            return "Defenders"
+
+        return None
+
 class VIPDefenseMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -2356,6 +2431,7 @@ GAME_MODES = {
     "windstorm": WindstormMode(),
     "modifier_zones": ModifierZonesMode(),
     "draft_royale": DraftRoyaleMode(),
+    "escort": EscortMode(),
     "tournament": TournamentMode(),
     "bumper_balls": BumperBallsMode(),
     "portal_node": PortalNodeMode(),

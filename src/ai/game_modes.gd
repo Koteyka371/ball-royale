@@ -882,6 +882,129 @@ class SurvivalMode extends GameMode:
         return null
 
 
+
+class EscortMode extends GameMode:
+    var payload
+    var goal_x: float = 900.0
+    var goal_y: float = 500.0
+
+    func _init() -> void:
+        name = "Escort Mode"
+        description = "One team defends a payload moving towards a goal. The other tries to destroy it."
+
+    func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
+        if not "dead_balls" in world:
+            world.dead_balls = []
+
+        var valid_balls = []
+        for b in balls:
+            if typeof(b) == TYPE_DICTIONARY:
+                if b.get("ball_type", "") != "spectator":
+                    valid_balls.append(b)
+            else:
+                if b.ball_type != "spectator":
+                    valid_balls.append(b)
+
+        var mid = valid_balls.size() / 2
+        var defenders = []
+        for i in range(valid_balls.size()):
+            var b = valid_balls[i]
+            if typeof(b) == TYPE_DICTIONARY:
+                b["team"] = "Defenders" if i < mid else "Attackers"
+                if i < mid: defenders.append(b)
+            else:
+                b.team = "Defenders" if i < mid else "Attackers"
+                if i < mid: defenders.append(b)
+
+        if defenders.size() > 0:
+            payload = defenders[0]
+            if typeof(payload) == TYPE_DICTIONARY:
+                payload["ball_type"] = "payload"
+                payload["hp"] = 2000.0
+                payload["base_hp"] = 2000.0
+                payload["speed"] = 0.5
+                payload["damage"] = 0.0
+                payload["x"] = 100.0
+                payload["y"] = 500.0
+            else:
+                payload.ball_type = "payload"
+                payload.hp = 2000.0
+                payload.base_hp = 2000.0
+                payload.speed = 0.5
+                payload.damage = 0.0
+                payload.x = 100.0
+                payload.y = 500.0
+
+    func tick(world) -> void:
+        if payload != null:
+            var is_alive = payload.get("alive", false) if typeof(payload) == TYPE_DICTIONARY else payload.alive
+            if is_alive:
+                var px = payload.get("x", 0) if typeof(payload) == TYPE_DICTIONARY else payload.x
+                var py = payload.get("y", 0) if typeof(payload) == TYPE_DICTIONARY else payload.y
+                var spd = payload.get("speed", 0) if typeof(payload) == TYPE_DICTIONARY else payload.speed
+                var dx = goal_x - px
+                var dy = goal_y - py
+                var dist = sqrt(dx * dx + dy * dy)
+                if dist > 0:
+                    if typeof(payload) == TYPE_DICTIONARY:
+                        payload["x"] += (dx / dist) * spd
+                        payload["y"] += (dy / dist) * spd
+                    else:
+                        payload.x += (dx / dist) * spd
+                        payload.y += (dy / dist) * spd
+
+    func check_winner(world, balls: Array):
+        if payload == null:
+            return null
+
+        var px = payload.get("x", 0) if typeof(payload) == TYPE_DICTIONARY else payload.x
+        var py = payload.get("y", 0) if typeof(payload) == TYPE_DICTIONARY else payload.y
+        var dx = goal_x - px
+        var dy = goal_y - py
+        var dist = sqrt(dx * dx + dy * dy)
+
+        var is_dead = false
+        if typeof(payload) == TYPE_DICTIONARY:
+            if payload.has("hp") and payload["hp"] <= 0:
+                is_dead = true
+            if payload.has("alive") and not payload["alive"]:
+                is_dead = true
+        else:
+            if payload.hp <= 0:
+                is_dead = true
+            if not payload.alive:
+                is_dead = true
+
+        if is_dead:
+            if typeof(payload) == TYPE_DICTIONARY: payload["alive"] = false
+            else: payload.alive = false
+            return "Attackers"
+
+        if dist < 10.0:
+            return "Defenders"
+
+        return null
+
+        var dx = goal_x - payload["x"]
+        var dy = goal_y - payload["y"]
+        var dist = sqrt(dx * dx + dy * dy)
+
+        var is_dead = false
+        if payload.has("hp") and payload["hp"] <= 0:
+            is_dead = true
+        if payload.has("alive") and not payload["alive"]:
+            is_dead = true
+
+        if is_dead:
+            payload["alive"] = false
+            return "Attackers"
+
+        if dist < 10.0:
+            return "Defenders"
+
+        return null
+
 class CaptureTheFlagMode extends GameMode:
     func _init() -> void:
         name = "Capture The Flag"
@@ -3070,6 +3193,7 @@ class BountyHuntMode extends GameMode:
 var GAME_MODES = {
 
 	"blackout": BlackoutMode.new(),
+	"escort": EscortMode.new(),
 	"windstorm": WindstormMode.new(),
 	"modifier_zones": ModifierZonesMode.new(),
     "draft_royale": DraftRoyaleMode.new(),
