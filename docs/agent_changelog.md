@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-215] Random Teleporters — *2026-06-29 07:10:40 UTC*
+
+Add random teleporter pads to the arena that instantly move a ball to another random pad.
+
+---
+
 ## [idea-185] Teleportation Portals — *2026-06-28 21:22:45 UTC*
 
 Special hazards that don't deal damage but teleport the ball to another random portal on the map, allowing for surprise flanks.
