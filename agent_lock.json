@@ -43,9 +43,9 @@
     "agent-6": {
       "name": "Jules Innovation",
       "area": "innovation",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "idea-206",
+      "status": "assigned",
+      "started_at": "2026-06-29T07:39:09.689040+00:00",
       "cycles_today": 1
     },
     "supervisor": {
@@ -179,9 +179,9 @@
     "agent-22": {
       "name": "Jules Worker 22",
       "area": "behaviors",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-253",
+      "started_at": "2026-06-29T07:39:09.689040+00:00",
       "cycles_today": 1
     },
     "agent-23": {
