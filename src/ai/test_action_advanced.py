@@ -257,3 +257,51 @@ def test_tank_target_strong_use_skill():
     # Tank should move 150.0 units towards e2 (x + 150.0, y same)
     assert abs(ball.x - 250.0) < 1.0
     assert abs(ball.y - 100.0) < 1.0
+
+def test_raise_dead_corpse_explosion():
+    ball = MockBall(x=100, y=100)
+    ball.ball_type = "necromancer"
+    ball.skill = "raise_dead"
+
+    world = MockWorld()
+
+    # Create a recently dead enemy
+    dead_enemy = MockEntity(x=150, y=150, ball_type="enemy")
+    dead_enemy.alive = False
+    dead_enemy.time_since_death = 1.0
+    dead_enemy.max_hp = 200.0
+    dead_enemy.team = "enemy"
+
+    world.dead_balls = [dead_enemy]
+
+    # Create an alive enemy near the dead one (within 80 radius)
+    alive_enemy = MockEntity(x=170, y=170, ball_type="enemy")
+    alive_enemy.hp = 150.0
+
+    def take_damage_mock(amount):
+        alive_enemy.hp -= amount
+
+    alive_enemy.take_damage = take_damage_mock
+
+    # Create an alive enemy far from the dead one
+    far_enemy = MockEntity(x=300, y=300, ball_type="enemy")
+    far_enemy.hp = 150.0
+
+    def take_damage_mock_far(amount):
+        far_enemy.hp -= amount
+
+    far_enemy.take_damage = take_damage_mock_far
+
+    world.entities = [alive_enemy, far_enemy]
+
+    action = Action(ball, world)
+    action.execute("use_skill", 0.1)
+
+    # The dead enemy should be removed from the dead_balls list
+    assert len(world.dead_balls) == 0
+
+    # The alive enemy near the explosion should take damage (0.5 * 200 = 100)
+    assert alive_enemy.hp == 50.0
+
+    # The far enemy should take no damage
+    assert far_enemy.hp == 150.0

@@ -1,0 +1,4 @@
+{
+  "title": "Necromancer Soul Siphon",
+  "description": "When the Necromancer ball hits an enemy that is under 20% HP, it has a chance to execute them instantly and restore its own HP proportional to the enemy's max HP, converting the defeated enemy into a temporary shield aura."
+}
