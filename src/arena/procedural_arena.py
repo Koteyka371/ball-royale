@@ -415,6 +415,9 @@ class ProceduralArena:
                 elif random.random() < 0.10:
                     kind = "placeable_trap_item"
                     damage = 0.0
+                elif random.random() < 0.05:
+                    kind = "exit_portal_item"
+                    damage = 0.0
                 else:
                     kind = "temporal_rift" if is_temporal_rift else ("gravity_well" if is_gravity_well else "trap")
                     damage = 0.0 if (is_gravity_well or is_temporal_rift) else 100.0

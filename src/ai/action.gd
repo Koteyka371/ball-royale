@@ -205,6 +205,29 @@ func execute(strategy: String, delta: float):
 					inv.erase("placeable_trap")
 					self.ball.set_meta("inventory", inv)
 
+	if strategy == "flee" and self.ball.has_meta("inventory"):
+		var inv = self.ball.get_meta("inventory")
+		if inv.has("exit_portal"):
+			if world != null and "arena" in world and "hazards" in world.arena:
+				var arena = world.arena
+				var portal_id = arena.hazards.size() + randi() % 90000 + 10000
+
+				var portal = null
+				if load("res://src/arena/procedural_arena.gd") != null:
+					portal = load("res://src/arena/procedural_arena.gd").Hazard.new()
+					portal.id = portal_id
+					portal.x = self.ball.x
+					portal.y = self.ball.y
+					portal.radius = 30.0
+					portal.kind = "teleporter"
+					portal.damage = 0.0
+					portal.set_meta("duration", 5.0)
+					portal.set_meta("owner_id", self.ball.id)
+
+					arena.hazards.append(portal)
+					inv.erase("exit_portal")
+					self.ball.set_meta("inventory", inv)
+
 
 	# Mind control timer logic
 	var mc_timer = 0.0
@@ -3667,6 +3690,16 @@ func _collect_booster(delta: float):
                     self.ball.set_meta("inventory", [])
                 var inv = self.ball.get_meta("inventory")
                 inv.append("placeable_trap")
+                self.ball.set_meta("inventory", inv)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "exit_portal_item":
+                if not self.ball.has_meta("inventory"):
+                    self.ball.set_meta("inventory", [])
+                var inv = self.ball.get_meta("inventory")
+                inv.append("exit_portal")
                 self.ball.set_meta("inventory", inv)
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
