@@ -4362,7 +4362,7 @@
     },
     {
       "id": "idea-250",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Season Modifiers",
@@ -5749,6 +5749,24 @@
         "src/ai/chain_lightning_enhancements.py",
         "src/ai/chain_lightning_enhancements.gd",
         "tests/test_chain_lightning_enhancements.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-332",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Prestige Token Shop",
+      "description": "A dedicated UI shop where players can spend prestige tokens not just on permanent minor stats, but also on unique run mutators, special starting artifacts, and unlocking rare AI ball archetypes (like a Time-Mage ball).",
+      "allowed_paths": [
+        "src/ui/prestige_token_shop.py",
+        "src/ui/prestige_token_shop.gd",
+        "src/ai/prestige_token_shop.py",
+        "tests/test_prestige_token_shop.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

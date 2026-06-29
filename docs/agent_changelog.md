@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-250] Season Modifiers — *2026-06-29 07:40:26 UTC*
+
+Each 30-day season introduces a unique global modifier, like 20% faster movement speed or reduced cooldowns for specific ball classes.
+
+---
+
 ## [idea-249] Prestige Tokens — *2026-06-29 07:35:44 UTC*
 
 When resetting for prestige, players also gain Prestige Tokens based on their past stats to unlock permanent minor upgrades across all balls.
