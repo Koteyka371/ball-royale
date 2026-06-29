@@ -4532,7 +4532,7 @@
     },
     {
       "id": "idea-260",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Energy Siphon Link",
@@ -7284,6 +7284,40 @@
         "src/arena/decoy_spawner.py",
         "src/arena/decoy_spawner.gd",
         "tests/test_decoy_spawner.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-422",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Escort the Payload Mode",
+      "description": "A game mode where one team must escort an invulnerable but slow-moving 'payload' ball to the enemy base, while the other team tries to delay it until the timer runs out.",
+      "allowed_paths": [
+        "src/ai/escort_the_payload.py",
+        "src/ai/escort_the_payload.gd",
+        "tests/test_escort_the_payload.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-423",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounty Hunter Classes",
+      "description": "Introduce a new ball class called 'Bounty Hunter' that deals double damage to balls marked as bounties or high-threat targets in specific game modes.",
+      "allowed_paths": [
+        "src/ai/bounty_hunter_classes.py",
+        "src/ai/bounty_hunter_classes.gd",
+        "tests/test_bounty_hunter_classes.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

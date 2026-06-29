@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-260] Energy Siphon Link — *2026-06-29 12:43:37 UTC*
+
+An active ability that allows a support class to link their health to an ally, slowly draining their own HP to heal the ally over time, creating dynamic tethering lines in the visualizer.
+
+---
+
 ## [idea-230] Bounty Hunter Mode — *2026-06-29 12:14:57 UTC*
 
 At the start of the match, one ball on each team is randomly selected as the 'Bounty'. If the Bounty is destroyed, the opposing team gains a massive global stat buff and extra skill points. Teams must balance defending their Bounty while hunting the enemy's.
