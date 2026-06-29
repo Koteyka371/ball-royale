@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-272] King of the Hill - Dynamic Safe Zone — *2026-06-29 13:05:49 UTC*
+
+A game mode where the safe zone constantly moves around the map and shrinks, forcing players into intense close-quarters combat as they try to stay inside.
+
+---
+
 ## [idea-260] Energy Siphon Link — *2026-06-29 12:43:37 UTC*
 
 An active ability that allows a support class to link their health to an ally, slowly draining their own HP to heal the ally over time, creating dynamic tethering lines in the visualizer.

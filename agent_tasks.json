@@ -4736,7 +4736,7 @@
     },
     {
       "id": "idea-272",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "King of the Hill - Dynamic Safe Zone",
@@ -7318,6 +7318,23 @@
         "src/ai/bounty_hunter_classes.py",
         "src/ai/bounty_hunter_classes.gd",
         "tests/test_bounty_hunter_classes.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-424",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Explosion",
+      "description": "A new passive for the deploy_decoy ability where the decoy violently explodes upon being destroyed or when its timer runs out, damaging nearby enemies.",
+      "allowed_paths": [
+        "src/ai/decoy_explosion.py",
+        "src/ai/decoy_explosion.gd",
+        "tests/test_decoy_explosion.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
