@@ -290,3 +290,35 @@ def test_domination_mode():
     assert balls[2].damage == 10.0
     assert balls[2].max_hp == 100.0
     assert balls[2].hp == 100.0
+
+def test_knockout_mode():
+    from ai.game_modes import KnockoutMode
+    mode = KnockoutMode()
+    world = MockWorld()
+    balls = [MockBall(i) for i in range(3)]
+    for i, b in enumerate(balls):
+        b.ball_type = "warrior"
+        b.damage = 10.0
+        b.x = 500
+        b.y = 500
+
+    # Test setup
+    mode.setup(world, balls)
+    for b in balls:
+        assert getattr(b, "knockout_mode_active", False) == True
+        assert b.damage == 0.0
+
+    # Test out of bounds
+    balls[0].x = -100
+    balls[0].y = -100
+    mode.tick(world, balls)
+
+    assert balls[0].alive == False
+    assert balls[1].alive == True
+    assert balls[2].alive == True
+
+    # Check winner
+    assert mode.check_winner(world, balls) is None
+
+    balls[1].alive = False
+    assert mode.check_winner(world, balls) == "Player_2"

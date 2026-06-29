@@ -140,7 +140,8 @@ class BattleRoyaleMode(GameMode):
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
         if not alive:
-            self._award_skill_points()
+            if hasattr(self, '_award_skill_points'):
+                self._award_skill_points()
             return "Draw"
 
         teams_alive = set(b.team for b in alive if hasattr(b, "team"))
@@ -1357,12 +1358,14 @@ class SafeZoneMode(GameMode):
     def check_winner(self, world, balls):
         alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
         if not alive:
-            self._award_skill_points()
+            if hasattr(self, '_award_skill_points'):
+                self._award_skill_points()
             return "Draw"
 
         teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
         if len(teams_alive) == 1:
-            self._award_skill_points()
+            if hasattr(self, '_award_skill_points'):
+                self._award_skill_points()
             return list(teams_alive)[0]
 
         if len(alive) == 1:
@@ -1379,7 +1382,64 @@ class SafeZoneMode(GameMode):
         except Exception:
             pass
 
+
+class KnockoutMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Knockout"
+        self.description = "Balls deal zero damage but bounce each other with much higher knockback, aiming to push opponents off the arena."
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        for i, b in enumerate(balls):
+            if getattr(b, "ball_type", None) != "spectator":
+                b.team = f"Player_{i}"
+                setattr(b, "knockout_mode_active", True)
+                b.damage = 0.0
+                b.base_damage = 0.0
+                # Make them faster or heavier?
+                if hasattr(b, "mass"):
+                    b.mass = getattr(b, "mass", 1.0) * 1.5
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        # Check out of bounds
+        width = getattr(world, "width", 1000)
+        height = getattr(world, "height", 1000)
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+            is_out = False
+            radius = getattr(b, "radius", 10.0)
+            if hasattr(world, "arena") and hasattr(world.arena, "is_point_inside"):
+                if not world.arena.is_point_inside(b.x, b.y, radius):
+                    is_out = True
+            else:
+                if b.x < 0 or b.x > width or b.y < 0 or b.y > height:
+                    is_out = True
+
+            if is_out:
+                b.alive = False
+                b.hp = 0
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            if hasattr(self, '_award_skill_points'):
+                self._award_skill_points()
+            return "Draw"
+
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
+        if len(teams_alive) == 1:
+            if hasattr(self, '_award_skill_points'):
+                self._award_skill_points()
+            return list(teams_alive)[0]
+
+        return None
+
 GAME_MODES = {
+    "knockout": KnockoutMode(),
     "portal_node": PortalNodeMode(),
     "memory_traps": MemoryTrapsMode(),
     "vision_reduced": VisionReducedMode(),

@@ -2432,6 +2432,11 @@ class Action:
         self.ball.y += ny * speed * 0.3
 
     def _clamp_position(self) -> bool:
+        gm = getattr(self.world, "game_mode", None)
+        if gm and getattr(gm, "name", "") == "Knockout":
+            # Don't clamp position in Knockout mode so they can fall off
+            return False
+
         bounced = False
         radius = getattr(self.ball, "radius", 10.0)
 
@@ -2488,8 +2493,29 @@ class Action:
                 nx = dx / dist
                 ny = dy / dist
 
-                self.ball.x += nx * overlap
-                self.ball.y += ny * overlap
+                gm = getattr(self.world, "game_mode", None)
+                if gm and getattr(gm, "name", "") == "Knockout":
+                    # Much higher knockback for Knockout Mode
+                    knockback_strength = 200.0
+                    self.ball.x += nx * overlap
+                    self.ball.y += ny * overlap
+                    if hasattr(self.ball, "vx"):
+                        self.ball.vx += nx * knockback_strength
+                        self.ball.vy += ny * knockback_strength
+                    else:
+                        self.ball.x += nx * overlap * 5.0
+                        self.ball.y += ny * overlap * 5.0
+
+                    if hasattr(other, "vx"):
+                        other.vx -= nx * knockback_strength
+                        other.vy -= ny * knockback_strength
+                    else:
+                        other.x -= nx * overlap * 5.0
+                        other.y -= ny * overlap * 5.0
+                else:
+                    self.ball.x += nx * overlap
+                    self.ball.y += ny * overlap
+
                 bounced = True
 
                 gm = getattr(self.world, "game_mode", None)

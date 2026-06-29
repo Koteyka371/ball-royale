@@ -1614,7 +1614,75 @@ class SafeZoneMode extends GameMode:
     func _award_skill_points():
         pass
 
+
+class KnockoutMode extends GameMode:
+    func _init():
+        super._init()
+        self.name = "Knockout"
+        self.description = "Balls deal zero damage but bounce each other with much higher knockback, aiming to push opponents off the arena."
+
+    func setup(world, balls):
+        super.setup(world, balls)
+        for i in range(balls.size()):
+            var b = balls[i]
+            if b.get("ball_type") != "spectator":
+                b.team = "Player_" + str(i)
+                b.set_meta("knockout_mode_active", true)
+                b.damage = 0.0
+                if "base_damage" in b:
+                    b.base_damage = 0.0
+
+    func tick(world, balls, delta = 0.016):
+        super.tick(world, balls, delta)
+        var width = 1000
+        if "width" in world: width = world.width
+        var height = 1000
+        if "height" in world: height = world.height
+
+        for b in balls:
+            if not b.get("alive", false):
+                continue
+            var is_out = false
+            var radius = 10.0
+            if "radius" in b: radius = b.radius
+
+            if "arena" in world and world.arena != null and world.arena.has_method("is_point_inside"):
+                if not world.arena.is_point_inside(b.x, b.y, radius):
+                    is_out = true
+            else:
+                if b.x < 0 or b.x > width or b.y < 0 or b.y > height:
+                    is_out = true
+
+            if is_out:
+                b.alive = false
+                b.hp = 0
+
+    func check_winner(world, balls):
+        var alive = []
+        for b in balls:
+            if b.get("alive", false) and b.get("ball_type") != "spectator":
+                alive.append(b)
+
+        if alive.size() == 0:
+            if self.has_method("_award_skill_points"):
+                self._award_skill_points()
+            return "Draw"
+
+        var teams_alive = {}
+        for b in alive:
+            var t = b.get("team")
+            if t == null: t = b.get("ball_type")
+            teams_alive[t] = true
+
+        if teams_alive.size() == 1:
+            if self.has_method("_award_skill_points"):
+                self._award_skill_points()
+            return teams_alive.keys()[0]
+
+        return null
+
 var GAME_MODES = {
+    "knockout": KnockoutMode.new(),
     "portal_node": PortalNodeMode.new(),
 	"memory_traps": MemoryTrapsMode.new(),
 	"vision_reduced": VisionReducedMode.new(),

@@ -3789,6 +3789,10 @@ func _idle(delta: float):
     self.ball.y += ny * speed * 0.3
 
 func _clamp_position() -> bool:
+    if self.world != null and "game_mode" in self.world and self.world.game_mode != null:
+        if "name" in self.world.game_mode and self.world.game_mode.name == "Knockout":
+            return false
+
     var bounced = false
     if self.world != null:
         var radius = 10.0
@@ -3852,8 +3856,33 @@ func _resolve_collisions() -> bool:
             var overlap = min_dist - dist
             var nx = dx / dist
             var ny = dy / dist
-            self.ball.x += nx * overlap
-            self.ball.y += ny * overlap
+
+            var is_knockout = false
+            if self.world != null and "game_mode" in self.world and self.world.game_mode != null:
+                if self.world.game_mode.name == "Knockout":
+                    is_knockout = true
+
+            if is_knockout:
+                var knockback_strength = 200.0
+                self.ball.x += nx * overlap
+                self.ball.y += ny * overlap
+                if "vx" in self.ball:
+                    self.ball.vx += nx * knockback_strength
+                    self.ball.vy += ny * knockback_strength
+                else:
+                    self.ball.x += nx * overlap * 5.0
+                    self.ball.y += ny * overlap * 5.0
+
+                if "vx" in other:
+                    other.vx -= nx * knockback_strength
+                    other.vy -= ny * knockback_strength
+                else:
+                    other.x -= nx * overlap * 5.0
+                    other.y -= ny * overlap * 5.0
+            else:
+                self.ball.x += nx * overlap
+                self.ball.y += ny * overlap
+
             bounced = true
 
     return bounced
