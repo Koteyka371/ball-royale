@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-281] Vampiric Drain booster — *2026-06-29 11:08:44 UTC*
+
+A booster that links you to the nearest enemy for 5 seconds, draining their HP and giving it to you as long as you stay within range.
+
+---
+
 ## [idea-284] Decoy Ball Skill — *2026-06-29 11:08:40 UTC*
 
 A new skill that creates an AI-controlled illusion of the ball that deals no damage but taunts nearby enemies into attacking it, absorbing one hit before exploding.
