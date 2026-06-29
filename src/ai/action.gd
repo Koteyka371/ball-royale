@@ -3768,8 +3768,14 @@ func _resolve_collisions() -> bool:
             var overlap = min_dist - dist
             var nx = dx / dist
             var ny = dy / dist
-            self.ball.x += nx * overlap
-            self.ball.y += ny * overlap
+
+            var knockback_multiplier = 1.0
+            if self.world != null and "game_mode" in self.world and self.world.game_mode != null:
+                if "name" in self.world.game_mode and self.world.game_mode.name == "Bumper Balls":
+                    knockback_multiplier = 5.0
+
+            self.ball.x += nx * overlap * knockback_multiplier
+            self.ball.y += ny * overlap * knockback_multiplier
             bounced = true
 
     return bounced

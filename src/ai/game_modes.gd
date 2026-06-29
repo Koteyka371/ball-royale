@@ -1566,7 +1566,36 @@ class SafeZoneMode extends GameMode:
     func _award_skill_points():
         pass
 
+
+class BumperBallsMode extends GameMode:
+    func _init() -> void:
+        name = "Bumper Balls"
+        description = "Balls deal zero damage but bounce each other with much higher knockback. Try to push opponents off the arena!"
+
+    func setup(world, balls: Array) -> void:
+        if not "dead_balls" in world:
+            world.dead_balls = []
+        for b in balls:
+            b.damage = 0.0
+
+    func check_winner(world, balls: Array):
+        var alive = []
+        for b in balls:
+            if b.alive and b.ball_type != "spectator":
+                alive.append(b)
+
+        if alive.size() == 0:
+            return "Draw"
+
+        if alive.size() == 1:
+            if "team" in alive[0]:
+                return alive[0].team
+            return alive[0].ball_type
+
+        return null
+
 var GAME_MODES = {
+    "bumper_balls": BumperBallsMode.new(),
     "portal_node": PortalNodeMode.new(),
 	"memory_traps": MemoryTrapsMode.new(),
 	"vision_reduced": VisionReducedMode.new(),

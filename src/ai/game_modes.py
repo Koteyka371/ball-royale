@@ -1334,7 +1334,34 @@ class SafeZoneMode(GameMode):
         except Exception:
             pass
 
+
+class BumperBallsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Bumper Balls"
+        self.description = "Balls deal zero damage but bounce each other with much higher knockback. Try to push opponents off the arena!"
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        for b in balls:
+            b.damage = 0.0
+            # We can use a special flag or mutator to handle the knockback in action.py
+            if not hasattr(b, "mutators"):
+                b.mutators = []
+            if "bumper_balls" not in b.mutators:
+                b.mutators.append("bumper_balls")
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+        if len(alive) == 1:
+            return getattr(alive[0], "team", getattr(alive[0], "ball_type", "Unknown"))
+        return None
+
 GAME_MODES = {
+    "bumper_balls": BumperBallsMode(),
     "portal_node": PortalNodeMode(),
     "memory_traps": MemoryTrapsMode(),
     "vision_reduced": VisionReducedMode(),

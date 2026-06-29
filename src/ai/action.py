@@ -2402,8 +2402,13 @@ class Action:
                 nx = dx / dist
                 ny = dy / dist
 
-                self.ball.x += nx * overlap
-                self.ball.y += ny * overlap
+                knockback_multiplier = 1.0
+                gm = getattr(self.world, "game_mode", None)
+                if gm and getattr(gm, "name", "") == "Bumper Balls":
+                    knockback_multiplier = 5.0
+
+                self.ball.x += nx * overlap * knockback_multiplier
+                self.ball.y += ny * overlap * knockback_multiplier
                 bounced = True
 
                 gm = getattr(self.world, "game_mode", None)
