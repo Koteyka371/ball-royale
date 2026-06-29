@@ -2540,7 +2540,50 @@ class WindstormMode extends GameMode:
         return null
 
 
+
+class BlackoutMode extends GameMode:
+	var timer: float = 0.0
+	var is_blackout: bool = false
+
+	func _init() -> void:
+		name = "Blackout"
+		description = "Periodically, the arena goes completely dark, reducing vision drastically for all balls."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		timer = 0.0
+		is_blackout = false
+		for b in balls:
+			if b.ball_type != "spectator":
+				var base_perc = 250.0
+				if "perception_radius" in b:
+					base_perc = float(b.perception_radius)
+				if b.has_method("set_meta"):
+					b.set_meta("base_perception_radius", base_perc)
+				if not "team" in b:
+					b.team = b.ball_type
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		timer += delta
+		if timer >= 5.0:
+			timer = 0.0
+			is_blackout = not is_blackout
+			if world.has_method("add_event"):
+				var msg = "The arena went dark!" if is_blackout else "Vision restored!"
+				world.add_event("weather_warning", {"type": "weather_warning", "message": msg})
+
+		for b in balls:
+			if b.alive and b.ball_type != "spectator":
+				if is_blackout:
+					b.perception_radius = 50.0
+				else:
+					var base_perc = 250.0
+					if b.has_method("get_meta") and b.has_meta("base_perception_radius"):
+						base_perc = float(b.get_meta("base_perception_radius"))
+					b.perception_radius = base_perc
+
 var GAME_MODES = {
+	"blackout": BlackoutMode.new(),
 	"windstorm": WindstormMode.new(),
 	"modifier_zones": ModifierZonesMode.new(),
     "draft_royale": DraftRoyaleMode.new(),
