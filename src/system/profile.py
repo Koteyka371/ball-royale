@@ -23,6 +23,8 @@ class ProfileManager:
                     data["titles"] = []
                 if "status_effects" not in data:
                     data["status_effects"] = []
+                if "nemeses" not in data:
+                    data["nemeses"] = {}
                 return data
         except (FileNotFoundError, json.JSONDecodeError):
             return {
@@ -40,7 +42,8 @@ class ProfileManager:
                 "quests": [],
                 "cosmetics": [],
                 "titles": [],
-                "status_effects": []
+                "status_effects": [],
+                "nemeses": {}
             }
 
     def add_quest(self, quest_description, reward):
@@ -122,7 +125,8 @@ class ProfileManager:
                 "quests": [],
                 "cosmetics": self.data.get("cosmetics", []),
                 "titles": self.data.get("titles", []),
-                "status_effects": self.data.get("status_effects", [])
+                "status_effects": self.data.get("status_effects", []),
+                "nemeses": self.data.get("nemeses", {})
             }
             self.save()
             lm = LeaderboardManager("leaderboard.json", profile_manager=self)
@@ -201,3 +205,16 @@ class ProfileManager:
         if effect_name not in self.data["status_effects"]:
             self.data["status_effects"].append(effect_name)
             self.save()
+
+    def add_kill(self, killer_type, victim_type):
+        if "nemeses" not in self.data:
+            self.data["nemeses"] = {}
+        if killer_type not in self.data["nemeses"]:
+            self.data["nemeses"][killer_type] = {}
+        self.data["nemeses"][killer_type][victim_type] = self.data["nemeses"][killer_type].get(victim_type, 0) + 1
+        self.save()
+
+    def is_nemesis(self, killer_type, victim_type):
+        if "nemeses" not in self.data:
+            return False
+        return self.data["nemeses"].get(killer_type, {}).get(victim_type, 0) >= 2

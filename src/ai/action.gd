@@ -3,12 +3,35 @@ extends RefCounted
 
 func _attempt_damage(attacker, target) -> void:
 	var attack_accuracy = 1.0
+
+	var pm = null
+	if self.world != null and "profile_manager" in self.world:
+		pm = self.world.profile_manager
+
+	var is_nemesis_active = false
+	var attacker_type = ""
+	var target_type = ""
+	if "ball_type" in attacker: attacker_type = str(attacker.ball_type)
+	if "ball_type" in target: target_type = str(target.ball_type)
+
+	if pm != null and pm.has_method("is_nemesis") and attacker_type != "" and target_type != "":
+		is_nemesis_active = pm.is_nemesis(attacker_type, target_type)
+
+	var old_hp = 0.0
+	if "hp" in target: old_hp = float(target.hp)
+	var original_damage = 10.0
+	if "damage" in attacker: original_damage = float(attacker.damage)
+
 	if "attack_accuracy" in attacker:
 		attack_accuracy = float(attacker.attack_accuracy)
 	elif attacker.has_method("get_meta") and attacker.has_meta("attack_accuracy"):
 		attack_accuracy = float(attacker.get_meta("attack_accuracy"))
 	if randf() > attack_accuracy:
 		return
+
+	if is_nemesis_active:
+		if "damage" in attacker:
+			attacker.damage = original_damage * 1.2
 
 	var has_ricochet = false
 	if "ricochet_barrier_timer" in target and target.ricochet_barrier_timer > 0.0:
@@ -39,6 +62,24 @@ func _attempt_damage(attacker, target) -> void:
 	else:
 		if self.world != null and self.world.has_method("_deal_damage"):
 			self.world._deal_damage(attacker, target)
+
+	if is_nemesis_active and "damage" in attacker:
+		attacker.damage = original_damage
+
+	var new_hp = 0.0
+	if "hp" in target: new_hp = float(target.hp)
+
+	if new_hp <= 0 and old_hp > 0 and pm != null and pm.has_method("add_kill"):
+		pm.add_kill(attacker_type, target_type)
+		if pm.is_nemesis(target_type, attacker_type):
+			if "kills" in attacker:
+				attacker.kills += 1
+			if "charge_level" in attacker:
+				attacker.charge_level = min(100.0, float(attacker.charge_level) + 10.0)
+			elif attacker.has_method("set_meta"):
+				var cl = 0.0
+				if attacker.has_meta("charge_level"): cl = float(attacker.get_meta("charge_level"))
+				attacker.set_meta("charge_level", min(100.0, cl + 10.0))
 
 	var cl_timer = 0.0
 	if "chain_lightning_timer" in attacker:
