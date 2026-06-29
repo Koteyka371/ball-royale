@@ -2008,9 +2008,9 @@ class Action:
                     target.entangle_timer = 5.0
             elif skill_name == "summon_minions":
                 import random
+                import copy
                 num_minions = random.randint(2, 4)
                 for _ in range(num_minions):
-                    import copy
 
                     minion = copy.copy(self.ball)
                     minion.id = getattr(self.world, "next_id", random.randint(10000, 99999))
@@ -2059,6 +2059,7 @@ class Action:
                                     enemy.take_damage(explosion_damage)
             elif skill_name == "deploy_decoy":
                 import copy
+                import random
                 if hasattr(self.world, "balls"):
                     decoy = copy.copy(self.ball)
                     decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
