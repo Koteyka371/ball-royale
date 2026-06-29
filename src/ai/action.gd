@@ -3687,12 +3687,24 @@ func _use_skill():
                         decoy.hp = decoy.max_hp
                     if "damage" in decoy:
                         decoy.damage = 0.0
+                    if "speed" in decoy:
+                        decoy.speed = 0.0
                     if decoy.has_method("set_meta"):
                         decoy.set_meta("is_decoy", true)
                         decoy.set_meta("decoy_timer", 5.0)
+                        decoy.set_meta("skill_timer", 9999.0)
+                        decoy.set_meta("attack_timer", 9999.0)
+                        decoy.set_meta("SKILL", null)
+                        decoy.set_meta("skill", null)
+                        decoy.set_meta("active_skill", null)
                     elif decoy is Dictionary:
                         decoy["is_decoy"] = true
                         decoy["decoy_timer"] = 5.0
+                        decoy["skill_timer"] = 9999.0
+                        decoy["attack_timer"] = 9999.0
+                        decoy["SKILL"] = null
+                        decoy["skill"] = null
+                        decoy["active_skill"] = null
                     else:
                         pass # fallback if not possible
                     self.world.balls.append(decoy)
