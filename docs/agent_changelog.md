@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-251] Decoy Ball — *2026-06-29 09:36:05 UTC*
+
+A new ball type that creates a static decoy of itself. Enemies get confused and attack the decoy, wasting their skills and cooldowns.
+
+---
+
 ## [idea-268] Weather Synergies — *2026-06-29 09:32:01 UTC*
 
 Certain ball types gain unique buffs during specific weather conditions. E.g., Fireball takes damage in rain, but Iceball moves faster in snow.

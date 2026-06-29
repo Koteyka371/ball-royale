@@ -4379,7 +4379,7 @@
     },
     {
       "id": "idea-251",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Ball",
@@ -6415,6 +6415,91 @@
         "src/ai/new_ball_magnet.py",
         "src/ai/new_ball_magnet.gd",
         "tests/test_new_ball_magnet.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-371",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Stealth Grass Patches",
+      "description": "Introduce stealth zones (like tall grass) where balls entering the zone become invisible to enemies and lose their lock-on capabilities unless an enemy enters the same stealth patch.",
+      "allowed_paths": [
+        "src/ai/stealth_grass_patches.py",
+        "src/ai/stealth_grass_patches.gd",
+        "tests/test_stealth_grass_patches.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-372",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather-dependent Cosmetics",
+      "description": "Add visual changes (cosmetics) to balls that change dynamically depending on the current weather condition, like a little umbrella when it rains or snow goggles in snow.",
+      "allowed_paths": [
+        "src/ai/dependent_cosmetics.py",
+        "src/ai/dependent_cosmetics.gd",
+        "tests/test_dependent_cosmetics.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-373",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Safe Zone Modifiers",
+      "description": "Combine the shrinking safe zone mode with the modifier zones. The modifiers spawn near the center of the safe zone to force players to clash over the buffs while trying to survive the incoming death circle.",
+      "allowed_paths": [
+        "src/ai/shrinking_safe_zone_modifiers.py",
+        "src/ai/shrinking_safe_zone_modifiers.gd",
+        "tests/test_shrinking_safe_zone_modifiers.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-374",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Hazards",
+      "description": "Introduce more weather-specific hazards, like a 'mud pit' that forms when it rains, severely slowing down movement of any ball that steps in it, and 'ice slicks' in snow.",
+      "allowed_paths": [
+        "src/arena/hazards.py",
+        "src/arena/hazards.gd",
+        "tests/test_hazards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-375",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Lightning Storm Hazard",
+      "description": "A hazard that roams the arena similar to a tornado, but instead of pulling balls in, it periodically shoots lightning strikes at nearby balls, dealing burst damage and temporarily disabling their skills.",
+      "allowed_paths": [
+        "src/arena/lightning_storm.py",
+        "src/arena/lightning_storm.gd",
+        "tests/test_lightning_storm.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
