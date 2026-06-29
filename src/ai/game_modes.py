@@ -277,6 +277,15 @@ class BattleRoyaleMode(GameMode):
                     lightning = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=30.0, kind="lightning_strike", damage=50.0)
                     setattr(lightning, 'duration', 1.0) # short duration strike
                     world.arena.hazards.append(lightning)
+                if self.weather == "thunderstorm" and getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                    # Spawn tornado
+                    x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                    y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                    tornado = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=40.0, kind="tornado", damage=20.0)
+                    setattr(tornado, 'duration', 5.0)
+                    setattr(tornado, 'vx', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
+                    setattr(tornado, 'vy', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
+                    world.arena.hazards.append(tornado)
 
         valid_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
         for b in valid_balls:
@@ -962,6 +971,15 @@ class WeatherChaosMode(GameMode):
                     lightning = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=30.0, kind="lightning_strike", damage=50.0)
                     setattr(lightning, 'duration', 1.0) # short duration strike
                     world.arena.hazards.append(lightning)
+                if self.weather == "thunderstorm" and getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                    # Spawn tornado
+                    x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                    y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                    tornado = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=40.0, kind="tornado", damage=20.0)
+                    setattr(tornado, 'duration', 5.0)
+                    setattr(tornado, 'vx', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
+                    setattr(tornado, 'vy', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
+                    world.arena.hazards.append(tornado)
 
         valid_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
 
