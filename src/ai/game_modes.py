@@ -1075,7 +1075,6 @@ class CustomMatchMode(GameMode):
                         b.speed = b.base_speed * 2
                         b._double_speed_applied = True
 
-from ai.interactive_training import InteractiveTrainingMode
 
 
 class VisionReducedMode(GameMode):
@@ -1355,6 +1354,6 @@ GAME_MODES = {
     "survival": SurvivalMode(),
     "capture_the_flag": CaptureTheFlagMode(),
     "evolutionary_simulation": EvolutionarySimulationMode(),
-    "interactive_training": InteractiveTrainingMode(),
+    "interactive_training": __import__("ai.interactive_training", fromlist=["InteractiveTrainingMode"]).InteractiveTrainingMode(),
     "safe_zone": SafeZoneMode()
 }

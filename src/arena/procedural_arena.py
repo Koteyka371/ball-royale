@@ -25,6 +25,7 @@ class Hazard:
     radius: float
     kind: str
     damage: float
+    time_scale: float = 1.0
     active: bool = True
     target_radius: float = 0.0
 

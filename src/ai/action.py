@@ -68,8 +68,8 @@ class Action:
 
                     # Spawn particles for lightning
                     if hasattr(self, "_spawn_particles"):
-                        self._spawn_particles(target.x, target.y, "lightning")
-                        self._spawn_particles(e.x, e.y, "lightning")
+                        self._spawn_skill_particles('lightning')
+                        self._spawn_skill_particles('lightning')
 
                     jump_count += 1
 
@@ -320,8 +320,10 @@ class Action:
                         current_tick = getattr(self.world, "tick", 0)
                         if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
                             hazard.last_updated_tick = current_tick
-                            if not hasattr(hazard, "vx"): hazard.vx = 0.0
-                            if not hasattr(hazard, "vy"): hazard.vy = 0.0
+                            if not hasattr(hazard, "vx"):
+                                hazard.vx = 0.0
+                            if not hasattr(hazard, "vy"):
+                                hazard.vy = 0.0
                             hazard.x += hazard.vx * delta
                             hazard.y += hazard.vy * delta
                             hazard.vx *= (1.0 - 2.0 * delta)
@@ -2118,7 +2120,7 @@ class Action:
                 if hasattr(self.ball, "hp"):
                     self.ball.hp = min(getattr(self.ball, "max_hp", 100), self.ball.hp + 30)
             elif skill_name == "dash":
-                self._spawn_skill_particles("dash")
+                self._spawn_skill_particles('dash')
                 import random
                 dash_range_mult = getattr(self.ball, "dash_range_mult", 1.0)
                 dash_dist = 100.0 * dash_range_mult
@@ -2255,7 +2257,7 @@ class Action:
                         target.original_team = getattr(target, "team", getattr(target, "ball_type", ""))
                         # Temporarily set to our team
                         target.team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
-                        self._spawn_particles(target.x, target.y, "mind_control")
+                        self._spawn_skill_particles('mind_control')
 
             elif skill_name == "ground_pound":
                 pound_radius = 120.0

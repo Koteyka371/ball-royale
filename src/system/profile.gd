@@ -28,6 +28,8 @@ func load_profile():
                 data["cosmetics"] = []
             if not data.has("titles"):
                 data["titles"] = []
+            if not data.has("status_effects"):
+                data["status_effects"] = []
             return
 
     # Default profile
@@ -43,7 +45,8 @@ func load_profile():
         "prestige_level": 0,
         "quests": [],
         "cosmetics": [],
-        "titles": []
+        "titles": [],
+        "status_effects": []
     }
 
 func add_quest(quest_description: String, reward: int):
@@ -120,7 +123,8 @@ func do_prestige() -> bool:
             "prestige_level": current_prestige + 1,
             "quests": [],
             "cosmetics": data.get("cosmetics", []),
-            "titles": data.get("titles", [])
+            "titles": data.get("titles", []),
+            "status_effects": data.get("status_effects", [])
         }
         save_profile()
         var lm = load("res://src/system/leaderboard.gd").new(self)
@@ -133,6 +137,13 @@ func add_cosmetic(cosmetic_name: String):
         data["cosmetics"] = []
     if not data["cosmetics"].has(cosmetic_name):
         data["cosmetics"].append(cosmetic_name)
+        save_profile()
+
+func add_status_effect(effect_name: String):
+    if not data.has("status_effects"):
+        data["status_effects"] = []
+    if not data["status_effects"].has(effect_name):
+        data["status_effects"].append(effect_name)
         save_profile()
 
 func add_title(title_name: String):

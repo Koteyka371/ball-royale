@@ -1,10 +1,10 @@
 import random
 from typing import Any, Dict
 
-from .perception import Perception
-from .emotion import Emotion
-from .decision import Decision
-from .action import Action
+from ai.perception import Perception
+from ai.emotion import Emotion
+from ai.decision import Decision
+from ai.action import Action
 
 
 class BallBrain:
