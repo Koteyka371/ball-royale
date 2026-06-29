@@ -1,0 +1,4 @@
+{
+  "title": "Day and Night Cycle",
+  "description": "Introduce a day and night cycle that affects visibility and ball behavior. Certain ball types (like Assassin or Phantom) gain stealth buffs or increased damage at night, while others like Paladin or Guardian are stronger during the day."
+}

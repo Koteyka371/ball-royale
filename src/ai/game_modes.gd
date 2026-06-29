@@ -202,10 +202,18 @@ class BattleRoyaleMode extends GameMode:
                     base_dmg = b.get_meta("base_damage")
                 elif "damage" in b:
                     base_dmg = b.damage
+                var t = ""
+                if "ball_type" in b: t = b.ball_type
+                var is_fire = t in ["mage", "bomber", "chaos"]
+                var is_water = t in ["elementalist", "healer", "trickster"]
+                var is_air = t in ["ninja", "scout", "phantom"]
+                var is_earth = t in ["tank", "druid", "juggernaut"]
 
                 if self.weather == "clear":
                     if "speed" in b: b.speed = base_spd
-                    if "damage" in b: b.damage = base_dmg
+                    if "damage" in b:
+                        if is_fire: b.damage = base_dmg * 1.5
+                        else: b.damage = base_dmg
                     if b.has_method("set_meta"):
                         b.set_meta("dash_range_mult", 1.0)
                         b.set_meta("steering_mult", 1.0)
@@ -220,6 +228,11 @@ class BattleRoyaleMode extends GameMode:
                     if "vx" in b and "vy" in b:
                         b.x += b.vx * delta * 0.5
                         b.y += b.vy * delta * 0.5
+                    if is_water and "hp" in b:
+                        var m = 100.0
+                        if "max_hp" in b: m = b.max_hp
+                        elif b.has_method("has_meta") and b.has_meta("max_hp"): m = b.get_meta("max_hp")
+                        b.hp = min(m, b.hp + 5.0 * delta)
                 elif self.weather == "fog":
                     if "speed" in b: b.speed = base_spd * 0.8
                     if "damage" in b: b.damage = base_dmg * 0.9
@@ -244,7 +257,9 @@ class BattleRoyaleMode extends GameMode:
                     if b.has_method("set_meta"):
                         b.set_meta("attack_accuracy", 0.9)
                 elif self.weather == "wind":
-                    if "speed" in b: b.speed = base_spd
+                    if "speed" in b:
+                        if is_air: b.speed = base_spd * 1.5
+                        else: b.speed = base_spd
                     if "damage" in b: b.damage = base_dmg
                     if b.has_method("set_meta"):
                         b.set_meta("dash_range_mult", 1.0)
@@ -276,10 +291,10 @@ class BattleRoyaleMode extends GameMode:
                         sand_timer += delta
                         if sand_timer >= 1.0:
                             sand_timer = 0.0
-                            if "hp" in b:
+                            if "hp" in b and not is_earth:
                                 b.hp -= 1.0
                         b.set_meta("sandstorm_timer", sand_timer)
-                    if randf() < 0.05 * delta:
+                    if randf() < 0.05 * delta and not is_earth:
                         if "hp" in b:
                             b.hp -= 20.0
 
@@ -1037,10 +1052,18 @@ class WeatherChaosMode extends GameMode:
 
 				var base_spd = b.get_meta("base_speed")
 				var base_dmg = b.get_meta("base_damage")
+				var t = ""
+				if "ball_type" in b: t = b.ball_type
+				var is_fire = t in ["mage", "bomber", "chaos"]
+				var is_water = t in ["elementalist", "healer", "trickster"]
+				var is_air = t in ["ninja", "scout", "phantom"]
+				var is_earth = t in ["tank", "druid", "juggernaut"]
 
 				if weather == "clear":
 					if "speed" in b: b.speed = base_spd
-					if "damage" in b: b.damage = base_dmg
+					if "damage" in b:
+						if is_fire: b.damage = base_dmg * 1.5
+						else: b.damage = base_dmg
 					if b.has_method("set_meta"):
 						b.set_meta("dash_range_mult", 1.0)
 						b.set_meta("steering_mult", 1.0)
@@ -1056,9 +1079,14 @@ class WeatherChaosMode extends GameMode:
 						b.y += b.vy * delta * 0.5
 					if b.has_method("set_meta"):
 						b.set_meta("attack_accuracy", 0.8)
+					if is_water and "hp" in b:
+						var m = 100.0
+						if "max_hp" in b: m = b.max_hp
+						elif b.has_method("has_meta") and b.has_meta("max_hp"): m = b.get_meta("max_hp")
+						b.hp = min(m, b.hp + 5.0 * delta)
 				elif weather == "fog":
-					if "speed" in b: b.speed = base_spd * 0.5
-					if "damage" in b: b.damage = base_dmg * 0.8
+					if "speed" in b: b.speed = base_spd * 0.8
+					if "damage" in b: b.damage = base_dmg * 0.9
 					if b.has_method("set_meta"):
 						b.set_meta("dash_range_mult", 1.0)
 						b.set_meta("steering_mult", 1.0)
@@ -1080,7 +1108,9 @@ class WeatherChaosMode extends GameMode:
 					if b.has_method("set_meta"):
 						b.set_meta("attack_accuracy", 0.9)
 				elif weather == "wind":
-					if "speed" in b: b.speed = base_spd
+					if "speed" in b:
+						if is_air: b.speed = base_spd * 1.5
+						else: b.speed = base_spd
 					if "damage" in b: b.damage = base_dmg
 					if b.has_method("set_meta"):
 						b.set_meta("dash_range_mult", 1.0)
@@ -1111,10 +1141,10 @@ class WeatherChaosMode extends GameMode:
 						sand_timer += delta
 						if sand_timer >= 1.0:
 							sand_timer = 0.0
-							if "hp" in b:
+							if "hp" in b and not is_earth:
 								b.hp -= 1.0
 						b.set_meta("sandstorm_timer", sand_timer)
-					if randf() < 0.05 * delta:
+					if randf() < 0.05 * delta and not is_earth:
 						if "hp" in b: b.hp -= 20
 					if b.has_method("set_meta"):
 						b.set_meta("attack_accuracy", 0.5)
