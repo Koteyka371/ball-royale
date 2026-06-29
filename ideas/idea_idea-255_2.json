@@ -1,0 +1,4 @@
+{
+    "title": "Destructible Cover System",
+    "description": "Expand the arena procedural generation to include destructible obstacles (like crystal clusters or energy barricades) that can block movement and vision but can be destroyed with enough damage."
+}
