@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Spawner Hazard",
+  "description": "A new arena hazard that periodically spawns non-damaging, fast-moving decoys that mimic player movements to confuse AI targeting and waste cooldowns."
+}

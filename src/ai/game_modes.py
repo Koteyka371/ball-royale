@@ -2042,7 +2042,42 @@ class WindstormMode(GameMode):
         return None
 
 
+
+class BlackoutMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Blackout"
+        self.description = "Periodically, the arena goes completely dark, reducing vision drastically for all balls."
+        self.timer = 0.0
+        self.is_blackout = False
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.timer = 0.0
+        self.is_blackout = False
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator":
+                b.base_perception_radius = getattr(b, "perception_radius", 250)
+                b.team = b.ball_type
+
+    def tick(self, world, balls, delta=0.016):
+        self.timer += delta
+        if self.timer >= 5.0:
+            self.timer = 0.0
+            self.is_blackout = not self.is_blackout
+            if hasattr(world, "add_event"):
+                msg = "The arena went dark!" if self.is_blackout else "Vision restored!"
+                world.add_event("weather_warning", {"type": "weather_warning", "message": msg})
+
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                if self.is_blackout:
+                    b.perception_radius = 50.0
+                else:
+                    b.perception_radius = getattr(b, "base_perception_radius", 250.0)
+
 GAME_MODES = {
+    "blackout": BlackoutMode(),
     "windstorm": WindstormMode(),
     "modifier_zones": ModifierZonesMode(),
     "draft_royale": DraftRoyaleMode(),
