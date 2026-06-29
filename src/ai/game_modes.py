@@ -104,14 +104,43 @@ class BattleRoyaleMode(GameMode):
         self.weather_timer += delta
         if self.weather_timer > 15.0:
             self.weather_timer = 0.0
-            weathers = ["clear", "rain", "fog", "snow", "thunderstorm", "sandstorm"]
+            weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm"]
             rnd = getattr(self, "random", __import__("random"))
             self.weather = rnd.choice(weathers)
+
+            if self.weather == "wind":
+                self.wind_dx = rnd.uniform(-50.0, 50.0)
+                self.wind_dy = rnd.uniform(-50.0, 50.0)
 
         if hasattr(world, "arena"):
             world.arena.is_foggy = (self.weather in ["fog", "snow"])
             world.arena.is_raining = (self.weather in ["rain", "thunderstorm"])
             world.arena.is_sandstorming = (self.weather == "sandstorm")
+            world.arena.is_snowing = (self.weather == "snow")
+
+            if not hasattr(world.arena, "hazards"):
+                world.arena.hazards = []
+
+            if self.weather == "wind":
+                if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
+                    from arena.procedural_arena import Hazard
+                    # Spawn tornado
+                    x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                    y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                    tornado = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=40.0, kind="tornado", damage=20.0)
+                    setattr(tornado, 'duration', 5.0)
+                    setattr(tornado, 'vx', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
+                    setattr(tornado, 'vy', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
+                    world.arena.hazards.append(tornado)
+            elif self.weather == "rain" or self.weather == "thunderstorm":
+                if getattr(self, "random", __import__("random")).random() < (0.2 if self.weather == "thunderstorm" else 0.05) * delta:
+                    from arena.procedural_arena import Hazard
+                    # Spawn lightning strike zone
+                    x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                    y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                    lightning = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=30.0, kind="lightning_strike", damage=50.0)
+                    setattr(lightning, 'duration', 1.0) # short duration strike
+                    world.arena.hazards.append(lightning)
 
         valid_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
         for b in valid_balls:
@@ -127,24 +156,40 @@ class BattleRoyaleMode(GameMode):
                 b.steering_mult = 1.0
                 b.attack_accuracy = 1.0
             elif self.weather == "rain":
-                b.speed = b.base_speed * 0.9
+                b.speed = b.base_speed * 0.8
                 b.damage = b.base_damage
-                b.dash_range_mult = 1.3
-                b.steering_mult = 0.7
+                b.dash_range_mult = 1.5
+                b.steering_mult = 0.5
                 if hasattr(b, "vx") and hasattr(b, "vy"):
-                    b.x += b.vx * delta * 0.3
-                    b.y += b.vy * delta * 0.3
-                b.attack_accuracy = 0.9
+                    b.x += getattr(b, "vx") * delta * 0.5
+                    b.y += getattr(b, "vy") * delta * 0.5
+                b.attack_accuracy = 0.8
             elif self.weather == "fog":
                 b.speed = b.base_speed * 0.8
                 b.damage = b.base_damage * 0.9
                 b.dash_range_mult = 1.0
                 b.steering_mult = 1.0
             elif self.weather == "snow":
-                b.speed = b.base_speed * 0.7
-                b.damage = b.base_damage * 1.1
+                b.speed = b.base_speed * 0.5
+                b.damage = b.base_damage * 1.2
                 b.dash_range_mult = 1.0
                 b.steering_mult = 1.0
+                if not hasattr(b, "chill_stacks"):
+                    b.chill_stacks = 0.0
+                b.chill_stacks += delta
+                if b.chill_stacks >= 3.0: # Arbitrary threshold, let's say 3 seconds in snow
+                    b.chill_stacks = 0.0
+                    b.stutter_timer = 1.0 # Freeze for 1 second
+                b.attack_accuracy = 0.9
+            elif self.weather == "wind":
+                b.speed = b.base_speed
+                b.damage = b.base_damage
+                b.dash_range_mult = 1.0
+                b.steering_mult = 1.0
+                # push balls in a specific direction
+                if hasattr(self, "wind_dx") and hasattr(self, "wind_dy"):
+                    b.x += self.wind_dx * delta
+                    b.y += self.wind_dy * delta
             elif self.weather == "thunderstorm":
                 b.speed = b.base_speed * 1.1
                 b.damage = b.base_damage * 1.5
