@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-221] Decoy Trap — *2026-06-29 08:06:18 UTC*
+
+A new trap variant that creates a holographic clone of the placing ball. The clone moves erratically to draw enemy aggro and explodes for minor area-of-effect damage when destroyed.
+
+---
+
 ## [idea-238] Weather effects on perception — *2026-06-29 08:03:19 UTC*
 
 Introduce dynamic weather (e.g., rain, sandstorm) that periodically changes perception rules globally during a match, such as reducing perception range or slowly damaging fast-moving entities.
