@@ -484,6 +484,123 @@ func execute(strategy: String, delta: float):
                                             elif other.has_method("set_meta"):
                                                 other.set_meta("alive", false)
 
+    var is_illusion = false
+    if "is_illusion" in my_ball:
+        is_illusion = my_ball.is_illusion
+    elif my_ball.has_method("get_meta") and my_ball.has_meta("is_illusion"):
+        is_illusion = my_ball.get_meta("is_illusion")
+
+    if is_illusion:
+        var dt = 0.0
+        if "illusion_timer" in my_ball:
+            my_ball.illusion_timer -= delta
+            dt = my_ball.illusion_timer
+        elif my_ball.has_method("get_meta") and my_ball.has_meta("illusion_timer"):
+            dt = my_ball.get_meta("illusion_timer") - delta
+            my_ball.set_meta("illusion_timer", dt)
+
+        if dt <= 0.0:
+            if "alive" in my_ball:
+                my_ball.alive = false
+            elif my_ball.has_method("set_meta"):
+                my_ball.set_meta("alive", false)
+            if "hp" in my_ball:
+                my_ball.hp = 0.0
+
+    if world != null and "balls" in world:
+        for b in world.balls:
+            var b_is_illusion = false
+            if "is_illusion" in b:
+                b_is_illusion = b.is_illusion
+            elif b.has_method("get_meta") and b.has_meta("is_illusion"):
+                b_is_illusion = b.get_meta("is_illusion")
+
+            if b_is_illusion:
+                var b_hp = 1.0
+                if "hp" in b:
+                    b_hp = b.hp
+                var b_dt = 1.0
+                if "illusion_timer" in b:
+                    b_dt = b.illusion_timer
+                elif b.has_method("get_meta") and b.has_meta("illusion_timer"):
+                    b_dt = b.get_meta("illusion_timer")
+                var b_alive = true
+                if "alive" in b:
+                    b_alive = b.alive
+                elif b.has_method("get_meta") and b.has_meta("alive"):
+                    b_alive = b.get_meta("alive")
+
+                if b_hp <= 0.0 or b_dt <= 0.0 or not b_alive:
+                    var b_exploded = false
+                    if "_illusion_exploded" in b:
+                        b_exploded = b._illusion_exploded
+                    elif b.has_method("get_meta") and b.has_meta("_illusion_exploded"):
+                        b_exploded = b.get_meta("_illusion_exploded")
+
+                    if not b_exploded:
+                        if "_illusion_exploded" in b:
+                            b._illusion_exploded = true
+                        elif b.has_method("set_meta"):
+                            b.set_meta("_illusion_exploded", true)
+
+                        if "alive" in b:
+                            b.alive = false
+                        elif b.has_method("set_meta"):
+                            b.set_meta("alive", false)
+
+                        if "hp" in b:
+                            b.hp = 0.0
+
+                        var my_b_team = ""
+                        if "team" in b: my_b_team = b.team
+                        elif b.has_method("get_meta") and b.has_meta("team"): my_b_team = b.get_meta("team")
+
+                        for other in world.balls:
+                            var other_alive = false
+                            if "alive" in other: other_alive = other.alive
+                            elif other.has_method("get_meta") and other.has_meta("alive"): other_alive = other.get_meta("alive")
+
+                            var other_team = ""
+                            if "team" in other: other_team = other.team
+                            elif other.has_method("get_meta") and other.has_meta("team"): other_team = other.get_meta("team")
+
+                            var same_id = false
+                            var other_id = null
+                            var b_id = null
+                            if "id" in other: other_id = other.id
+                            elif other.has_method("get_meta") and other.has_meta("id"): other_id = other.get_meta("id")
+                            if "id" in b: b_id = b.id
+                            elif b.has_method("get_meta") and b.has_meta("id"): b_id = b.get_meta("id")
+                            if other_id != null and b_id != null and other_id == b_id:
+                                same_id = true
+
+                            if other_alive and other_team != my_b_team and not same_id:
+                                var bpos_x = b.get("position").x if b.get("position") != null else b.get("x")
+                                var bpos_y = b.get("position").y if b.get("position") != null else b.get("y")
+                                var opos_x = other.get("position").x if other.get("position") != null else other.get("x")
+                                var opos_y = other.get("position").y if other.get("position") != null else other.get("y")
+
+                                var dx = opos_x - bpos_x
+                                var dy = opos_y - bpos_y
+                                var dist = sqrt(dx*dx + dy*dy)
+                                if dist <= 80.0:
+                                    if other.has_method("take_damage"):
+                                        other.take_damage(20.0)
+                                    else:
+                                        if "hp" in other:
+                                            other.hp -= 20.0
+                                        elif other.has_method("get_meta") and other.has_meta("hp"):
+                                            other.set_meta("hp", other.get_meta("hp") - 20.0)
+
+                                        var other_hp_check = 1.0
+                                        if "hp" in other: other_hp_check = other.hp
+                                        elif other.has_method("get_meta") and other.has_meta("hp"): other_hp_check = other.get_meta("hp")
+                                        if other_hp_check <= 0.0:
+                                            if "alive" in other:
+                                                other.alive = false
+                                            elif other.has_method("set_meta"):
+                                                other.set_meta("alive", false)
+
                                     if "stutter_timer" in other:
                                         other.stutter_timer += 2.0
                                     elif other.has_method("has_meta") and other.has_method("set_meta") and other.has_method("get_meta"):
@@ -1639,6 +1756,66 @@ func _get_enemies() -> Array:
                         if dx*dx + dy*dy <= perception_radius*perception_radius:
                             enemies.append(b)
 
+
+    if self.world != null and "balls" in self.world:
+        for b in self.world.balls:
+            var is_illusion = false
+            if b.has_method("has_meta") and b.has_meta("is_illusion") and b.get_meta("is_illusion"):
+                is_illusion = true
+            elif typeof(b) == TYPE_DICTIONARY and b.has("is_illusion") and b["is_illusion"]:
+                is_illusion = true
+
+            var is_alive = true
+            if "alive" in b:
+                is_alive = b.alive
+            elif typeof(b) == TYPE_DICTIONARY and b.has("alive"):
+                is_alive = b["alive"]
+
+            if is_illusion and is_alive:
+                var is_enemy = false
+                var b_team = ""
+                var my_team = ""
+
+                if "team" in b:
+                    b_team = b.team
+                elif typeof(b) == TYPE_DICTIONARY and b.has("team"):
+                    b_team = b["team"]
+                elif "ball_type" in b:
+                    b_team = b.ball_type
+                elif typeof(b) == TYPE_DICTIONARY and b.has("ball_type"):
+                    b_team = b["ball_type"]
+
+                if "team" in self.ball:
+                    my_team = self.ball.team
+                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"):
+                    my_team = self.ball["team"]
+                elif "ball_type" in self.ball:
+                    my_team = self.ball.ball_type
+                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"):
+                    my_team = self.ball["ball_type"]
+
+                if b_team != "" and my_team != "" and b_team != my_team:
+                    is_enemy = true
+
+                var already_in = false
+                for e in enemies:
+                    if typeof(e) == typeof(b):
+                        # Simple check by reference or dict ID
+                        if typeof(e) == TYPE_DICTIONARY and e.has("id") and typeof(b) == TYPE_DICTIONARY and b.has("id") and e["id"] == b["id"]:
+                            already_in = true
+                            break
+                        elif typeof(e) == TYPE_OBJECT and e == b:
+                            already_in = true
+                            break
+
+                if is_enemy and not already_in:
+                    var bpos_x = b.get("position").x if b.get("position") != null else b.get("x")
+                    var bpos_y = b.get("position").y if b.get("position") != null else b.get("y")
+                    var dx = bpos_x - self.ball.x
+                    var dy = bpos_y - self.ball.y
+                    if dx*dx + dy*dy <= perception_radius*perception_radius:
+                        enemies.append(b)
+
     if self.world != null and "balls" in self.world:
         for b in self.world.balls:
             var is_decoy = false
@@ -1916,6 +2093,26 @@ func _find_strongest_enemy_deterministic(enemies: Array) -> Object:
     return target
 
 func _get_target(enemies: Array) -> Object:
+    var illusions = []
+    for e in enemies:
+        if "is_illusion" in e and e.is_illusion:
+            illusions.append(e)
+        elif typeof(e) == TYPE_DICTIONARY and e.has("is_illusion") and e["is_illusion"]:
+            illusions.append(e)
+        elif typeof(e) == TYPE_OBJECT and e.has_method("has_meta") and e.has_meta("is_illusion") and e.get_meta("is_illusion"):
+            illusions.append(e)
+
+    if illusions.size() > 0:
+        var c_illusion = null
+        var min_d_sq = INF
+        for i_ent in illusions:
+            var d_sq = pow(i_ent.x - self.ball.x, 2) + pow(i_ent.y - self.ball.y, 2)
+            if d_sq < min_d_sq:
+                min_d_sq = d_sq
+                c_illusion = i_ent
+        if c_illusion != null:
+            return c_illusion
+
     var flares = []
     for e in enemies:
         if "kind" in e and e.kind == "flare":
@@ -3727,6 +3924,46 @@ func _use_skill():
                     else:
                         pass # fallback if not possible
                     self.world.balls.append(decoy)
+        elif skill_name == "deploy_illusion":
+            if "balls" in self.world:
+                var illusion = null
+                if self.ball.has_method("duplicate"):
+                    illusion = self.ball.duplicate()
+                elif self.ball is Dictionary:
+                    illusion = self.ball.duplicate()
+
+                if illusion != null:
+                    var next_id = randi() % 90000 + 10000
+                    if "next_id" in self.world:
+                        next_id = self.world.next_id
+                        self.world.next_id += 1
+
+                    if "id" in illusion:
+                        illusion.id = next_id
+                    if "hp" in illusion and "max_hp" in illusion:
+                        illusion.max_hp = 1.0
+                        illusion.hp = illusion.max_hp
+                    if "damage" in illusion:
+                        illusion.damage = 0.0
+                    if "speed" in illusion:
+                        illusion.speed = 0.0
+
+                    if "skill" in illusion: illusion.skill = ""
+                    if "SKILL" in illusion: illusion.SKILL = ""
+                    if "skill_timer" in illusion: illusion.skill_timer = 9999.0
+
+                    if illusion.has_method("set_meta"):
+                        illusion.set_meta("is_illusion", true)
+                        illusion.set_meta("illusion_timer", 5.0)
+                        illusion.set_meta("skill", "")
+                        illusion.set_meta("skill_timer", 9999.0)
+                    elif illusion is Dictionary:
+                        illusion["is_illusion"] = true
+                        illusion["illusion_timer"] = 5.0
+                        illusion["skill"] = ""
+                        illusion["skill_timer"] = 9999.0
+
+                    self.world.balls.append(illusion)
         elif skill_name == "Действие" or skill_name == "action_skill":
             if self.ball.has_method("set_meta"):
                 self.ball.set_meta("team_message", {"type": "action_skill_used", "radius": 150})
