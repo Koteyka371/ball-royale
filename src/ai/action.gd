@@ -3620,6 +3620,33 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "link_booster":
+                var enemies_link = _get_enemies()
+                if enemies_link.size() > 0:
+                    var link_target = null
+                    var min_dist_link_sq = INF
+                    for e in enemies_link:
+                        var d_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                        if d_sq < min_dist_link_sq:
+                            min_dist_link_sq = d_sq
+                            link_target = e
+                    if self.ball.has_method("set_meta"):
+                        self.ball.set_meta("link_booster_timer", 5.0)
+                        self.ball.set_meta("link_booster_target", link_target)
+                    else:
+                        self.ball.link_booster_timer = 5.0
+                        self.ball.link_booster_target = link_target
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+
             elif "kind" in nearest and nearest.kind == "chain_lightning":
                 var dur = 5.0
                 if "duration" in nearest: dur = nearest.duration
@@ -4763,6 +4790,55 @@ func _trigger_ripple_effect():
                             other.memory = mem
 
 func _update_skill_timer(delta: float):
+    var link_timer = 0.0
+    if "link_booster_timer" in self.ball:
+        link_timer = self.ball.link_booster_timer
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("link_booster_timer"):
+        link_timer = self.ball.get_meta("link_booster_timer")
+
+    if link_timer > 0:
+        link_timer -= delta
+        var target = null
+        if "link_booster_target" in self.ball:
+            target = self.ball.link_booster_target
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("link_booster_target"):
+            target = self.ball.get_meta("link_booster_target")
+
+        var alive = true
+        if target != null and "alive" in target:
+            alive = target.alive
+
+        if target != null and alive:
+            var dist_sq = pow(target.x - self.ball.x, 2) + pow(target.y - self.ball.y, 2)
+            if dist_sq <= 40000:
+                var drain = 20.0 * delta
+                var target_hp = 100.0
+                if "hp" in target: target_hp = target.hp
+
+                var actual_damage = min(target_hp, drain)
+                if "hp" in target: target.hp -= actual_damage
+
+                if "hp" in self.ball:
+                    var max_hp = 100.0
+                    if "max_hp" in self.ball: max_hp = self.ball.max_hp
+                    self.ball.hp = min(self.ball.hp + actual_damage, max_hp)
+
+                if link_timer <= 0:
+                    target = null
+            else:
+                link_timer = 0.0
+                target = null
+        else:
+            link_timer = 0.0
+            target = null
+
+        if "link_booster_timer" in self.ball:
+            self.ball.link_booster_timer = link_timer
+            self.ball.link_booster_target = target
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("link_booster_timer", link_timer)
+            self.ball.set_meta("link_booster_target", target)
+
     if "skill_timer" in self.ball and self.ball.skill_timer > 0:
         self.ball.skill_timer -= delta
 
