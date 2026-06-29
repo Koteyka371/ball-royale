@@ -1139,7 +1139,12 @@ func execute(strategy: String, delta: float):
                                 hazard.set_meta("vx", hvx - nx * 300.0 * delta)
                                 hazard.set_meta("vy", hvy - ny * 300.0 * delta)
 
-                            if speed > 300.0 or hazard_speed > 300.0:
+                            var has_skill = false
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("active_skill") and self.ball.get_meta("active_skill") != null:
+                                has_skill = true
+                            elif "active_skill" in self.ball and self.ball.active_skill != null:
+                                has_skill = true
+                            if speed > 300.0 or hazard_speed > 300.0 or has_skill:
                                 hazard.set_meta("is_exploded", true)
                     elif hazard.kind == "trap":
                         var trap_owner_id = null
@@ -1428,6 +1433,44 @@ func execute(strategy: String, delta: float):
                                 _spawn_particles(self.ball.x, self.ball.y, "lightning")
                             if self.ball.has_method("set_meta"):
                                 self.ball.set_meta("stutter_timer", 1.0)
+                        continue
+                    elif hazard.kind == "breakable_wall":
+                        var dx = self.ball.x - hazard.x
+                        var dy = self.ball.y - hazard.y
+                        var d = sqrt(dx*dx + dy*dy)
+                        var b_rad = 10.0
+                        if "radius" in self.ball:
+                            b_rad = self.ball.radius
+                        if d < (b_rad + hazard.radius) and d > 0:
+                            var nx = dx / d
+                            var ny = dy / d
+                            var overlap = (b_rad + hazard.radius) - d
+                            self.ball.x += nx * overlap
+                            self.ball.y += ny * overlap
+
+                        if hazard.has_meta("hp"):
+                            var new_hp = hazard.get_meta("hp") - 100.0 * delta
+                            hazard.set_meta("hp", new_hp)
+                            if new_hp <= 0:
+                                hazard.active = false
+                                hazard.set_meta("active", false)
+                        continue
+                    elif hazard.kind == "bounce_pad":
+                        var dx = self.ball.x - hazard.x
+                        var dy = self.ball.y - hazard.y
+                        var d = sqrt(dx*dx + dy*dy)
+                        var b_rad = 10.0
+                        if "radius" in self.ball:
+                            b_rad = self.ball.radius
+                        if d < (b_rad + hazard.radius) and d > 0.0001:
+                            var nx = dx / d
+                            var ny = dy / d
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                self.ball.set_meta("vx", nx * 1000.0)
+                                self.ball.set_meta("vy", ny * 1000.0)
+                            elif "vx" in self.ball:
+                                self.ball.vx = nx * 1000.0
+                                self.ball.vy = ny * 1000.0
                         continue
                     elif hazard.kind == "bumper":
                         var dx = self.ball.x - hazard.x
