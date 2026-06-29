@@ -1180,6 +1180,17 @@ class CustomMatchMode(GameMode):
                     b.time_since_death += delta
 
         if getattr(self, "mutators_active", False):
+            trigger_reroll = False
+            if "random_reroll" in self.mutators:
+                if not hasattr(self, "random_reroll_timer"):
+                    self.random_reroll_timer = 0.0
+                self.random_reroll_timer += delta
+                if self.random_reroll_timer >= 10.0:
+                    trigger_reroll = True
+                    self.random_reroll_timer = 0.0
+                    import random
+                    types = ['paladin', 'assassin', 'ninja', 'warrior', 'guardian', 'chaos', 'bomber', 'templar', 'necromancer', 'vampire', 'sniper', 'king', 'easy', 'phantom', 'warlock', 'mimic', 'juggernaut', 'tank', 'berserker', 'druid', 'hard', 'scout', 'brawler', 'medium', 'neural', 'ranger', 'healer', 'rogue', 'swarm', 'conjurer', 'monk', 'mage', 'elementalist', 'trickster']
+
             for b in balls:
                 if not getattr(b, "alive", False):
                     continue
@@ -1190,6 +1201,16 @@ class CustomMatchMode(GameMode):
                     if hasattr(b, "base_speed") and not getattr(b, "_double_speed_applied", False):
                         b.speed = b.base_speed * 2
                         b._double_speed_applied = True
+
+                if trigger_reroll:
+                    if getattr(b, "ball_type", None) != "spectator":
+                        b.ball_type = random.choice(types)
+                        b.max_hp = random.uniform(50.0, 200.0)
+                        b.hp = b.max_hp
+                        b.base_speed = random.uniform(50.0, 200.0)
+                        b.speed = b.base_speed
+                        b.base_damage = random.uniform(5.0, 25.0)
+                        b.damage = b.base_damage
 
 
 

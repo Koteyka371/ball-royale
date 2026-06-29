@@ -1,0 +1,4 @@
+{
+  "title": "Random Boss Mutation Event",
+  "description": "During Custom Match, when the boss mutator is active, occasionally select a random ball and boost their size, health, and damage for 15 seconds, making them a temporary 'juggernaut' boss. The other players must team up to defeat them before they rack up too many kills."
+}
