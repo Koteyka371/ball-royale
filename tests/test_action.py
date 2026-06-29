@@ -424,3 +424,50 @@ def test_emp_item():
     assert ally_ball.speed_booster_timer == 5.0
 
     assert emp not in world.arena.hazards
+
+def test_clone_skill():
+    from src.ai.action import Action
+
+    class MockWorld:
+        def __init__(self):
+            self.balls = []
+            self.arena = type('Arena', (), {'width': 1000, 'height': 1000})()
+            self.next_id = 9999
+
+    class MockBall:
+        def __init__(self):
+            self.id = 1
+            self.x = 100
+            self.y = 100
+            self.hp = 100
+            self.max_hp = 100
+            self.team = "team1"
+            self.ball_type = "ninja"
+            self.skill_timer = 0
+            self.skill = "clone"
+            self.skill_cooldown = 5.0
+            self.alive = True
+
+    ball = MockBall()
+    world = MockWorld()
+    world.balls.append(ball)
+
+    action = Action(ball, world)
+    ball.active_skill = 'clone'
+    action._use_skill()
+
+    # Check if clones were created
+    assert len(world.balls) >= 3 # Original + 2 to 4 clones
+
+    clones = [b for b in world.balls if getattr(b, "is_clone", False)]
+    assert len(clones) >= 2
+
+    for clone in clones:
+        assert clone.clone_owner == 1
+        assert clone.team == "team1"
+        assert clone.speed == 0
+        assert clone.damage == 0
+        assert clone.skill_timer >= 9999
+        assert clone.hp == 100
+
+    assert ball.skill_timer == 5.0

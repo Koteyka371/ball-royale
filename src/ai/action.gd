@@ -3176,6 +3176,41 @@ func _use_skill():
                     if target.has_method("set_meta"):
                         target.set_meta("entangled_with_id", self.ball.id)
                         target.set_meta("entangle_timer", 5.0)
+
+        elif skill_name == "clone":
+            var num_clones = randi() % 3 + 2 # 2 to 4 clones
+            for i in range(num_clones):
+                var clone = self.ball.duplicate()
+                var next_id = randi() % 90000 + 10000
+                if "next_id" in self.world:
+                    next_id = self.world.next_id
+                    self.world.next_id += 1
+                clone.id = next_id
+
+                if "x" in clone: clone.x += randf_range(-25.0, 25.0)
+                if "y" in clone: clone.y += randf_range(-25.0, 25.0)
+
+                if "hp" in self.ball: clone.hp = self.ball.hp
+                if "max_hp" in self.ball: clone.max_hp = self.ball.max_hp
+                if clone.has_method("set_meta"):
+                    clone.set_meta("is_clone", true)
+                    clone.set_meta("clone_owner", self.ball.id)
+                clone.alive = true
+                if "speed" in clone: clone.speed = 0.0
+                if "damage" in clone: clone.damage = 0.0
+
+                if "skill_timer" in clone: clone.skill_timer = 9999.0
+                if "skill" in clone: clone.skill = ""
+                if clone.has_method("set_meta"):
+                    clone.set_meta("skill", "")
+
+                if "balls" in self.world:
+                    self.world.balls.append(clone)
+
+            if "skill_cooldown" in self.ball:
+                self.ball.skill_timer = self.ball.skill_cooldown
+            else:
+                self.ball.skill_timer = 5.0
         elif skill_name == "summon_minions":
             var num_minions = randi() % 3 + 2 # 2 to 4 minions
             for i in range(num_minions):

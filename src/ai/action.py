@@ -2006,6 +2006,40 @@ class Action:
                     target.entangled_with_id = self.ball.id
                     self.ball.entangle_timer = 5.0
                     target.entangle_timer = 5.0
+
+            elif skill_name == "clone":
+                import copy
+                import random
+                num_clones = random.randint(2, 4)
+                for _ in range(num_clones):
+                    clone = copy.copy(self.ball)
+                    clone.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                    # Distribute clones slightly around
+                    clone.x += random.uniform(-25, 25)
+                    clone.y += random.uniform(-25, 25)
+
+                    # Keep hp similar to confuse enemies
+                    clone.hp = getattr(self.ball, "hp", 100)
+                    clone.max_hp = getattr(self.ball, "max_hp", 100)
+                    clone.team = getattr(self.ball, "team", getattr(self.ball, "ball_type", getattr(self.ball, "BALL_TYPE", "")))
+                    clone.is_clone = True
+                    clone.clone_owner = self.ball.id
+                    clone.alive = True
+                    clone.speed = 0 # static copy
+                    clone.damage = 0 # they do no damage
+
+                    clone.skill_timer = 9999 # no skills
+                    clone.skill = None
+                    if hasattr(clone, "SKILL"):
+                        clone.SKILL = None
+                    if hasattr(clone, "active_skill"):
+                        clone.active_skill = None
+
+                    if hasattr(self.world, "balls"):
+                        self.world.balls.append(clone)
+
+                # Add to own skill timer
+                self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
             elif skill_name == "summon_minions":
                 import random
                 num_minions = random.randint(2, 4)
