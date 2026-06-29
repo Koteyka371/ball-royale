@@ -119,7 +119,7 @@ class ProceduralArena:
         num_hazards = self.num_rooms * 2
 
         # Add portals
-        if self.num_rooms >= 2:
+        if len(self.rooms) >= 2:
             portal_count = random.randint(1, 3)
             for p in range(portal_count):
                 r1 = random.choice(self.rooms)
