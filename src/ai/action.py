@@ -284,6 +284,45 @@ class Action:
 
         if getattr(self.ball, "stutter_timer", 0.0) > 0.0:
             self.ball.speed = 0.01  # almost stopped to simulate pause
+
+        if getattr(self.ball, "is_hologram", False):
+            self.ball.hologram_timer -= delta
+            if self.ball.hologram_timer <= 0:
+                self.ball.alive = False
+                self.ball.hp = 0
+
+        # Global hologram explosion check
+        if hasattr(self.world, "balls"):
+            for b in self.world.balls:
+                if getattr(b, "is_hologram", False):
+                    if getattr(b, "hp", 1.0) <= 0 or getattr(b, "hologram_timer", 1.0) <= 0 or not getattr(b, "alive", True):
+                        if not getattr(b, "_hologram_exploded", False):
+                            b._hologram_exploded = True
+                            b.alive = False
+                            b.hp = 0
+                            for other in self.world.balls:
+                                if getattr(other, "alive", False) and getattr(other, "team", getattr(b, "team", "")) != getattr(b, "team", "") and getattr(other, "id", None) != getattr(b, "id", None):
+                                    dx = other.x - b.x
+                                    dy = other.y - b.y
+                                    dist = math.sqrt(dx*dx + dy*dy)
+                                    if dist <= 75.0:
+                                        if hasattr(other, "take_damage"):
+                                            other.take_damage(15.0)
+                                        else:
+                                            other.hp -= 15.0
+                                        if other.hp <= 0:
+                                            other.alive = False
+
+        if getattr(self.ball, "is_hologram", False):
+            # Erratic movement
+            if random.random() < 0.1:
+                self.ball.vx = random.uniform(-1, 1) * 300
+                self.ball.vy = random.uniform(-1, 1) * 300
+            self.ball.x += getattr(self.ball, "vx", 0) * delta
+            self.ball.y += getattr(self.ball, "vy", 0) * delta
+            self._clamp_position()
+            return
+
         if strategy == "target_weak":
             self._target_weak(delta)
             self._update_skill_timer(delta)
@@ -358,9 +397,40 @@ class Action:
                                                 b.alive = False
                     elif hazard.kind == "trap":
                         current_tick = getattr(self.world, "tick", 0)
+
+                        if getattr(hazard, "trap_variant", "normal") == "hologram" and not getattr(hazard, "hologram_spawned", False):
+                            hazard.hologram_spawned = True
+                            hazard.duration = 0.0
+                            owner = None
+                            if hasattr(self.world, "balls"):
+                                for b in self.world.balls:
+                                    if getattr(b, "id", None) == getattr(hazard, "owner_id", None):
+                                        owner = b
+                                        break
+                            if owner:
+                                import copy
+                                holo = copy.copy(owner)
+                                holo.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                                if hasattr(self.world, "next_id"): self.world.next_id += 1
+                                holo.x = hazard.x
+                                holo.y = hazard.y
+                                holo.hp = 10.0
+                                holo.max_hp = 10.0
+                                holo.is_hologram = True
+                                holo.hologram_timer = 10.0
+                                holo.skill = None
+                                holo.active_skill = None
+                                if hasattr(holo, "SKILL"): holo.SKILL = None
+                                holo.vx = 0.0
+                                holo.vy = 0.0
+                                holo.damage = 0.0
+                                holo.alive = True
+                                self.world.balls.append(holo)
+
                         if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
                             hazard.last_updated_tick = current_tick
-                            hazard.duration = getattr(hazard, "duration", 5.0) - delta
+                            if not getattr(hazard, "hologram_spawned", False):
+                                hazard.duration = getattr(hazard, "duration", 5.0) - delta
                     elif hazard.kind == "spinning_laser":
                         current_tick = getattr(self.world, "tick", 0)
                         if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
@@ -544,6 +614,7 @@ class Action:
 
                                 if speed > 300.0 or hazard_speed > 300.0:
                                     hazard.is_exploded = True
+
                         elif hazard.kind == "trap":
                             if getattr(hazard, "owner_id", None) == getattr(self.ball, "id", object()):
                                 continue
