@@ -143,6 +143,10 @@ class BattleRoyaleMode extends GameMode:
                     set_meta("wind_dy", (randf() * 100.0) - 50.0)
 
         if world != null and "arena" in world and world.arena != null:
+            if world.arena.has_method("remove_meta"):
+                if world.arena.has_meta("wind_dx"): world.arena.remove_meta("wind_dx")
+                if world.arena.has_meta("wind_dy"): world.arena.remove_meta("wind_dy")
+
             if self.weather == "fog" or self.weather == "snow":
                 world.arena.is_foggy = true
             else:
@@ -164,6 +168,10 @@ class BattleRoyaleMode extends GameMode:
                 world.arena.hazards = []
 
             if self.weather == "wind":
+                if has_method("has_meta") and has_meta("wind_dx") and world.get("arena") != null:
+                    if world.arena.has_method("set_meta"):
+                        world.arena.set_meta("wind_dx", get_meta("wind_dx"))
+                        world.arena.set_meta("wind_dy", get_meta("wind_dy"))
                 if randf() < 0.1 * delta:
                     var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
                     var x = randf_range(100.0, world.arena.width - 100.0)
@@ -249,14 +257,7 @@ class BattleRoyaleMode extends GameMode:
                     if b.has_method("set_meta"):
                         b.set_meta("dash_range_mult", 1.0)
                         b.set_meta("steering_mult", 1.0)
-                    var wind_dx = 0.0
-                    var wind_dy = 0.0
-                    if has_method("has_meta") and has_meta("wind_dx"):
-                        wind_dx = get_meta("wind_dx")
-                    if has_method("has_meta") and has_meta("wind_dy"):
-                        wind_dy = get_meta("wind_dy")
-                    b.x += wind_dx * delta
-                    b.y += wind_dy * delta
+
                 elif self.weather == "thunderstorm":
                     if "speed" in b: b.speed = base_spd * 1.1
                     if "damage" in b: b.damage = base_dmg * 1.5
@@ -980,6 +981,10 @@ class WeatherChaosMode extends GameMode:
 					set_meta("wind_dy", (randf() * 100.0) - 50.0)
 
 		if world != null and "arena" in world:
+			if world.arena.has_method("remove_meta"):
+				if world.arena.has_meta("wind_dx"): world.arena.remove_meta("wind_dx")
+				if world.arena.has_meta("wind_dy"): world.arena.remove_meta("wind_dy")
+
 			if weather == "fog" or weather == "snow":
 				world.arena.is_foggy = true
 			else:
@@ -1001,6 +1006,10 @@ class WeatherChaosMode extends GameMode:
 				world.arena.hazards = []
 
 			if weather == "wind":
+				if has_method("has_meta") and has_meta("wind_dx") and world.get("arena") != null:
+					if world.arena.has_method("set_meta"):
+						world.arena.set_meta("wind_dx", get_meta("wind_dx"))
+						world.arena.set_meta("wind_dy", get_meta("wind_dy"))
 				if randf() < 0.1 * delta:
 					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
 					var x = randf_range(100.0, world.arena.width - 100.0)
@@ -1085,14 +1094,7 @@ class WeatherChaosMode extends GameMode:
 					if b.has_method("set_meta"):
 						b.set_meta("dash_range_mult", 1.0)
 						b.set_meta("steering_mult", 1.0)
-					var wind_dx = 0.0
-					var wind_dy = 0.0
-					if has_method("has_meta") and has_meta("wind_dx"):
-						wind_dx = get_meta("wind_dx")
-					if has_method("has_meta") and has_meta("wind_dy"):
-						wind_dy = get_meta("wind_dy")
-					b.x += wind_dx * delta
-					b.y += wind_dy * delta
+
 				elif weather == "thunderstorm":
 					if "speed" in b: b.speed = base_spd * 1.1
 					if "damage" in b: b.damage = base_dmg * 1.5

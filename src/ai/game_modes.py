@@ -113,6 +113,8 @@ class BattleRoyaleMode(GameMode):
                 self.wind_dy = rnd.uniform(-50.0, 50.0)
 
         if hasattr(world, "arena"):
+            if hasattr(world.arena, "wind_dx"): delattr(world.arena, "wind_dx")
+            if hasattr(world.arena, "wind_dy"): delattr(world.arena, "wind_dy")
             world.arena.is_foggy = (self.weather in ["fog", "snow"])
             world.arena.is_raining = (self.weather in ["rain", "thunderstorm"])
             world.arena.is_sandstorming = (self.weather == "sandstorm")
@@ -122,6 +124,9 @@ class BattleRoyaleMode(GameMode):
                 world.arena.hazards = []
 
             if self.weather == "wind":
+                if hasattr(self, "wind_dx") and hasattr(self, "wind_dy"):
+                    setattr(world.arena, "wind_dx", self.wind_dx)
+                    setattr(world.arena, "wind_dy", self.wind_dy)
                 if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
                     from arena.procedural_arena import Hazard
                     # Spawn tornado
@@ -186,10 +191,6 @@ class BattleRoyaleMode(GameMode):
                 b.damage = b.base_damage
                 b.dash_range_mult = 1.0
                 b.steering_mult = 1.0
-                # push balls in a specific direction
-                if hasattr(self, "wind_dx") and hasattr(self, "wind_dy"):
-                    b.x += self.wind_dx * delta
-                    b.y += self.wind_dy * delta
             elif self.weather == "thunderstorm":
                 b.speed = b.base_speed * 1.1
                 b.damage = b.base_damage * 1.5
@@ -785,6 +786,8 @@ class WeatherChaosMode(GameMode):
 
         # Apply weather effects to the arena
         if hasattr(world, "arena"):
+            if hasattr(world.arena, "wind_dx"): delattr(world.arena, "wind_dx")
+            if hasattr(world.arena, "wind_dy"): delattr(world.arena, "wind_dy")
             world.arena.is_foggy = (self.weather in ["fog", "snow"])
             world.arena.is_raining = (self.weather == "rain")
             world.arena.is_sandstorming = (self.weather == "sandstorm")
@@ -794,6 +797,9 @@ class WeatherChaosMode(GameMode):
                 world.arena.hazards = []
 
             if self.weather == "wind":
+                if hasattr(self, "wind_dx") and hasattr(self, "wind_dy"):
+                    setattr(world.arena, "wind_dx", self.wind_dx)
+                    setattr(world.arena, "wind_dy", self.wind_dy)
                 if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
                     from arena.procedural_arena import Hazard
                     # Spawn tornado
@@ -861,10 +867,6 @@ class WeatherChaosMode(GameMode):
                 b.damage = b.base_damage
                 b.dash_range_mult = 1.0
                 b.steering_mult = 1.0
-                # push balls in a specific direction
-                if hasattr(self, "wind_dx") and hasattr(self, "wind_dy"):
-                    b.x += self.wind_dx * delta
-                    b.y += self.wind_dy * delta
             elif self.weather == "thunderstorm":
                 b.speed = b.base_speed * 1.1 # Panic speed
                 b.damage = b.base_damage * 1.5 # High damage due to electricity
