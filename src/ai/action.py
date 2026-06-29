@@ -573,6 +573,19 @@ class Action:
                                 # Slow down the ball using stutter_timer logic
                                 self.ball.stutter_timer = getattr(self.ball, "stutter_timer", 0.0) + 2.0
 
+                    elif hazard.kind == "switch":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < (hazard.radius + getattr(self.ball, 'radius', 10.0)) ** 2:
+                            current_tick = getattr(self.world, "tick", 0)
+                            if not hasattr(hazard, "last_triggered_tick") or current_tick - hazard.last_triggered_tick > 100:
+                                hazard.last_triggered_tick = current_tick
+                                trap_id = 9000 + len(self.world.arena.hazards)
+                                from arena.procedural_arena import Hazard
+                                wall = Hazard(trap_id, hazard.x, hazard.y, 40.0, "laser_wall", 20.0)
+                                wall.duration = 5.0
+                                self.world.arena.hazards.append(wall)
                     elif hazard.kind == "swap_portal":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
