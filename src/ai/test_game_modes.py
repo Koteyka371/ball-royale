@@ -341,3 +341,33 @@ def test_random_reroll_mutator():
     # The chance of both matching exactly the original is extremely low
     if b1.ball_type == "warrior" and b1.max_hp == 100.0:
         assert False, "Stats not rerolled"
+
+def test_moving_safe_zone_mode():
+    world = MockWorld()
+    b1 = MockBall("b1")
+    b1.x = 500.0
+    b1.y = 500.0
+    b1.ball_type = "easy"
+    b2 = MockBall("b2")
+    b2.x = 10000.0
+    b2.y = 10000.0
+    b2.ball_type = "easy"
+    world.balls = [b1, b2]
+
+    from ai.game_modes import GAME_MODES
+    mode = GAME_MODES.get("moving_safe_zone")
+    if not mode:
+        return
+    mode.setup(world, world.balls)
+
+    assert mode.zone_radius == 500.0
+
+    # tick a few times to shrink
+    for _ in range(10):
+        mode.tick(world, world.balls, delta=0.5)
+
+    assert mode.zone_radius < 500.0
+    assert mode.zone_x != 500.0 or mode.zone_y != 500.0 # moved
+
+    # 10000,10000 is definitely outside
+    assert b2.hp < 100.0
