@@ -1522,6 +1522,17 @@ class CustomMatchMode extends GameMode:
 						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
 
 		if mutators_active:
+			var trigger_reroll = false
+			var types = ['paladin', 'assassin', 'ninja', 'warrior', 'guardian', 'chaos', 'bomber', 'templar', 'necromancer', 'vampire', 'sniper', 'king', 'easy', 'phantom', 'warlock', 'mimic', 'juggernaut', 'tank', 'berserker', 'druid', 'hard', 'scout', 'brawler', 'medium', 'neural', 'ranger', 'healer', 'rogue', 'swarm', 'conjurer', 'monk', 'mage', 'elementalist', 'trickster']
+			if mutators.has("random_reroll"):
+				if not has_meta("random_reroll_timer"):
+					set_meta("random_reroll_timer", 0.0)
+				var timer = get_meta("random_reroll_timer") + delta
+				if timer >= 10.0:
+					trigger_reroll = true
+					timer = 0.0
+				set_meta("random_reroll_timer", timer)
+
 			for b in balls:
 				if not b.alive: continue
 
@@ -1529,6 +1540,17 @@ class CustomMatchMode extends GameMode:
 					if "base_speed" in b and not b.has_meta("_double_speed_applied"):
 						b.speed = b.base_speed * 2.0
 						b.set_meta("_double_speed_applied", true)
+
+				if trigger_reroll:
+					if b.get("ball_type", "") != "spectator":
+						b.ball_type = types[randi() % types.size()]
+						b.max_hp = randf_range(50.0, 200.0)
+						b.hp = b.max_hp
+						b.base_speed = randf_range(50.0, 200.0)
+						b.speed = b.base_speed
+						if "base_damage" in b:
+							b.base_damage = randf_range(5.0, 25.0)
+							b.damage = b.base_damage
 
 
 

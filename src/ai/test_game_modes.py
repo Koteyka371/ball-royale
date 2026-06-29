@@ -312,3 +312,32 @@ def test_bumper_balls_mode():
 
     balls[1].alive = False
     assert mode.check_winner(world, balls) == "warrior"
+
+def test_random_reroll_mutator():
+    from ai.game_modes import CustomMatchMode
+    mode = CustomMatchMode()
+    mode.mutators = ["random_reroll"]
+    world = MockWorld()
+    setattr(world, "profile_manager", type("MockProfile", (), {"are_mutators_unlocked": lambda self=None: True})())
+
+    b1 = MockBall("b1", "warrior")
+    b1.base_speed = 100.0
+    b1.speed = 100.0
+    b1.base_damage = 10.0
+    b1.damage = 10.0
+    balls = [b1]
+
+    mode.setup(world, balls)
+
+    # Tick for 9.9 seconds, should not trigger reroll
+    mode.tick(world, balls, delta=9.9)
+    assert b1.ball_type == "warrior"
+    assert b1.max_hp == 100.0
+
+    # Tick 0.2 more seconds, should trigger reroll
+    mode.tick(world, balls, delta=0.2)
+
+    # Now it should be rerolled
+    # The chance of both matching exactly the original is extremely low
+    if b1.ball_type == "warrior" and b1.max_hp == 100.0:
+        assert False, "Stats not rerolled"
