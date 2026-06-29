@@ -488,17 +488,21 @@ class Action:
                             last_teleport = getattr(self.ball, "last_teleport_tick", -100)
                             if current_tick - last_teleport > 10:  # Prevent immediate re-teleport
                                 if hazard.kind == "teleporter":
-                                    teleporters = [h for h in self.world.arena.hazards if h.kind == "teleporter" and h != hazard]
-                                    if teleporters:
-
-                                        target_tp = random.choice(teleporters)
-                                        self.ball.x = target_tp.x
-                                        self.ball.y = target_tp.y
+                                    if hasattr(hazard, "target_x") and hasattr(hazard, "target_y"):
+                                        self.ball.x = getattr(hazard, "target_x")
+                                        self.ball.y = getattr(hazard, "target_y")
                                     else:
-                                        # Random safe location
+                                        teleporters = [h for h in self.world.arena.hazards if h.kind == "teleporter" and h != hazard]
+                                        if teleporters:
 
-                                        self.ball.x = random.uniform(100, self.world.arena.width - 100)
-                                        self.ball.y = random.uniform(100, self.world.arena.height - 100)
+                                            target_tp = random.choice(teleporters)
+                                            self.ball.x = target_tp.x
+                                            self.ball.y = target_tp.y
+                                        else:
+                                            # Random safe location
+
+                                            self.ball.x = random.uniform(100, self.world.arena.width - 100)
+                                            self.ball.y = random.uniform(100, self.world.arena.height - 100)
                                 else:
                                     launched = False
                                     if hasattr(hazard, "target_hazard_id") and hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):

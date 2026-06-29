@@ -647,17 +647,21 @@ func execute(strategy: String, delta: float):
                             last_teleport = self.ball.get_meta("last_teleport_tick")
                         if current_tick - last_teleport > 10:
                             if hazard.kind == "teleporter":
-                                var teleporters = []
-                                for h in self.world.arena.hazards:
-                                    if h.kind == "teleporter" and h != hazard:
-                                        teleporters.append(h)
-                                if teleporters.size() > 0:
-                                    var target_tp = teleporters[randi() % teleporters.size()]
-                                    self.ball.x = target_tp.x
-                                    self.ball.y = target_tp.y
+                                if hazard.has_meta("target_x") and hazard.has_meta("target_y"):
+                                    self.ball.x = hazard.get_meta("target_x")
+                                    self.ball.y = hazard.get_meta("target_y")
                                 else:
-                                    self.ball.x = randf_range(100.0, self.world.arena.width - 100.0)
-                                    self.ball.y = randf_range(100.0, self.world.arena.height - 100.0)
+                                    var teleporters = []
+                                    for h in self.world.arena.hazards:
+                                        if h.kind == "teleporter" and h != hazard:
+                                            teleporters.append(h)
+                                    if teleporters.size() > 0:
+                                        var target_tp = teleporters[randi() % teleporters.size()]
+                                        self.ball.x = target_tp.x
+                                        self.ball.y = target_tp.y
+                                    else:
+                                        self.ball.x = randf_range(100.0, self.world.arena.width - 100.0)
+                                        self.ball.y = randf_range(100.0, self.world.arena.height - 100.0)
                             else:
                                 var launched = false
                                 if hazard.has_meta("target_hazard_id") and self.world != null and self.world.get("arena") != null and "hazards" in self.world.arena:
