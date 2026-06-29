@@ -42,3 +42,39 @@ def test_windstorm_mode():
     # Balls should have equal applied force for this tick
     assert math.isclose(balls[0].vx, balls[1].vx)
     assert math.isclose(balls[0].vy, balls[1].vy)
+
+def test_windstorm_ignores_spectator():
+    mode = GAME_MODES["windstorm"]
+    world = MockWorld()
+    balls = [MockBall(1, "spectator"), MockBall(2, "scout")]
+
+    mode.setup(world, balls)
+    mode.push_timer = 0.0
+    mode.tick(world, balls, 0.1)
+
+    assert mode.push_duration > 0.0
+
+    # Spectator should not be affected
+    assert balls[0].vx == 0.0
+    assert balls[0].vy == 0.0
+
+    # Scout should be affected
+    assert (balls[1].vx != 0.0 or balls[1].vy != 0.0)
+
+def test_windstorm_ignores_dead():
+    mode = GAME_MODES["windstorm"]
+    world = MockWorld()
+    balls = [MockBall(1, "warrior", False), MockBall(2, "scout")]
+
+    mode.setup(world, balls)
+    mode.push_timer = 0.0
+    mode.tick(world, balls, 0.1)
+
+    assert mode.push_duration > 0.0
+
+    # Dead ball should not be affected
+    assert balls[0].vx == 0.0
+    assert balls[0].vy == 0.0
+
+    # Scout should be affected
+    assert (balls[1].vx != 0.0 or balls[1].vy != 0.0)

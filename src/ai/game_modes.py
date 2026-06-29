@@ -1989,6 +1989,8 @@ class WindstormMode(GameMode):
                 # Start push
                 import math
                 angle = self.random.uniform(0, 2 * math.pi)
+                if hasattr(world, 'add_event'):
+                    world.add_event('weather_warning', {'type': 'weather_warning', 'message': 'Windstorm is pushing!'})
                 self.push_dir_x = math.cos(angle)
                 self.push_dir_y = math.sin(angle)
                 self.push_duration = self.random.uniform(1.0, 2.0)
