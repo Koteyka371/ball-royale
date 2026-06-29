@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-242] Seasonal Tournaments — *2026-06-29 08:21:29 UTC*
+
+Introduce monthly or seasonal tournaments where players compete for exclusive cosmetic ball skins and unique status effects.
+
+---
+
 ## [idea-255] Meteor Shower — *2026-06-29 08:21:25 UTC*
 
 Meteors fall randomly on the arena, destroying cover and leaving crater hazards.
