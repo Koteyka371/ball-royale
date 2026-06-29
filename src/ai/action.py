@@ -2431,12 +2431,21 @@ class Action:
                 if hasattr(self.world, "balls"):
                     decoy = copy.copy(self.ball)
                     decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                    if hasattr(self.world, "next_id"):
+                        self.world.next_id += 1
 
                     decoy.hp = getattr(self.ball, "max_hp", 100) * 0.1
                     decoy.max_hp = decoy.hp
                     decoy.damage = 0
+                    decoy.speed = 0.0
+                    decoy.skill_timer = 9999.0
+                    decoy.attack_timer = 9999.0
                     decoy.is_decoy = True
                     decoy.decoy_timer = 5.0
+                    decoy.SKILL = None
+                    decoy.skill = None
+                    decoy.active_skill = None
+
                     self.world.balls.append(decoy)
             elif skill_name in ("Действие", "action_skill"):
                 self.ball.team_message = {"type": "action_skill_used", "radius": 150}
