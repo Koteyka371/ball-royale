@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Entanglement Hazard",
+  "description": "A new hazard type that links two balls together. If one takes damage or gets a status effect, the other receives a fraction of it. It requires coordination to break the link by moving far enough apart or finding a cleanser item."
+}
