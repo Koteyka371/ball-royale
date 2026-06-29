@@ -164,6 +164,40 @@ def test_tank_target_strong_chase():
     assert ball.x > 100
 
 
+def test_collect_decoy_booster():
+    ball = MockBall(x=100, y=100)
+    world = MockWorld()
+
+    # Booster is to the right
+    booster = MockEntity(x=105, y=100, ball_type="booster")
+    booster.kind = "decoy_item"
+    world.entities = [booster]
+    world.balls = [ball]
+
+    action = Action(ball, world)
+
+    # Executing collect_booster should move ball towards it and trigger collection
+    action.execute("collect_booster", 0.1)
+
+    # There should now be an extra ball (the decoy) in world.balls
+    assert len(world.balls) == 2
+
+    decoy = world.balls[-1]
+    assert getattr(decoy, "is_decoy", False) is True
+    assert getattr(decoy, "decoy_timer", 0.0) == 5.0
+    assert getattr(decoy, "damage", None) == 0
+
+    # Ensure decoy timer decrements and kills decoy
+    decoy.hp = 10
+    decoy.alive = True
+    decoy.decoy_timer = 0.05
+    action_decoy = Action(decoy, world)
+    action_decoy.execute("idle", 0.1)
+
+    # After update, timer <= 0 so decoy should be dead
+    assert getattr(decoy, "alive", True) is False
+    assert getattr(decoy, "hp", 1.0) == 0
+
 def test_collect_booster_ignore_enemies():
     ball = MockBall(x=100, y=100)
     world = MockWorld()

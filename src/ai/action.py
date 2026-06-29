@@ -2210,6 +2210,21 @@ class Action:
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
+                elif getattr(nearest, "kind", None) == "decoy_item":
+                    import copy
+                    import random
+                    if hasattr(self.world, "balls"):
+                        decoy = copy.copy(self.ball)
+                        decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                        decoy.hp = getattr(self.ball, "max_hp", 100) * 0.1
+                        decoy.max_hp = decoy.hp
+                        decoy.damage = 0
+                        decoy.is_decoy = True
+                        decoy.decoy_timer = 5.0
+                        self.world.balls.append(decoy)
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
                 elif getattr(nearest, "kind", None) == "stealth_drone_item":
                     self.ball.has_stealth_drone = True
                     self.ball.stealth_drone_timer = 15.0  # Duration of stealth effect
