@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-245] Weather specific hazards — *2026-06-29 07:10:44 UTC*
+
+Introduce hazards that only spawn during certain weather conditions, like tornadoes during wind storms or lightning strikes during rain.
+
+---
+
 ## [idea-215] Random Teleporters — *2026-06-29 07:10:40 UTC*
 
 Add random teleporter pads to the arena that instantly move a ball to another random pad.
