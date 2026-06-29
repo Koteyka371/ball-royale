@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-252] Randomizer Mutator — *2026-06-29 08:40:21 UTC*
+
+A mutator where every 10 seconds, all balls have their stats randomly re-rolled and ball type changed.
+
+---
+
 ## [idea-219] Weather Effects (Rain/Snow/Wind) — *2026-06-29 08:40:17 UTC*
 
 Dynamic weather events that change physics (e.g. wind pushes balls, rain makes surface slippery/increases dash range but reduces steering, snow slows down balls and applies chill stacks that occasionally freeze balls for 1 second).
