@@ -2117,6 +2117,35 @@ class BumperBallsMode extends GameMode:
             world.dead_balls = []
         for b in balls:
             b.damage = 0.0
+            if not b.has_meta("mutators"):
+                b.set_meta("mutators", [])
+            var mutators = b.get_meta("mutators")
+            if not mutators.has("bumper_balls"):
+                mutators.append("bumper_balls")
+                b.set_meta("mutators", mutators)
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        var arena_width = 1000.0
+        var arena_height = 1000.0
+        if "arena" in world and world.arena != null:
+            if "width" in world.arena:
+                arena_width = world.arena.width
+            if "height" in world.arena:
+                arena_height = world.arena.height
+        elif "width" in world:
+            arena_width = world.width
+            arena_height = world.height
+
+        for b in balls:
+            if not b.get("alive", false) or b.get("ball_type", "") == "spectator":
+                continue
+
+            var radius = b.get("radius", 10.0)
+            if b.x < -radius or b.x > arena_width + radius or b.y < -radius or b.y > arena_height + radius:
+                if b.has_method("set"):
+                    b.set("alive", false)
+                else:
+                    b.alive = false
 
     func check_winner(world, balls: Array):
         var alive = []

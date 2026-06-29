@@ -1688,6 +1688,20 @@ class BumperBallsMode(GameMode):
             if "bumper_balls" not in b.mutators:
                 b.mutators.append("bumper_balls")
 
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else getattr(world, "width", 1000)
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else getattr(world, "height", 1000)
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            radius = getattr(b, "radius", 10.0)
+            bx = getattr(b, "x", arena_width / 2)
+            by = getattr(b, "y", arena_height / 2)
+            if bx < -radius or bx > arena_width + radius or by < -radius or by > arena_height + radius:
+                b.alive = False
+
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
         if not alive:
