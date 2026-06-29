@@ -396,7 +396,7 @@ class Action:
                                 # Slow down the ball using stutter_timer logic
                                 self.ball.stutter_timer = getattr(self.ball, "stutter_timer", 0.0) + 2.0
 
-                    elif hazard.kind in ("portal", "teleporter"):
+                    elif hazard.kind in ("portal", "teleporter", "teleportation_pad"):
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
                         dist_sq = dx * dx + dy * dy
@@ -417,7 +417,8 @@ class Action:
                                         import random
                                         self.ball.x = random.uniform(100, self.world.arena.width - 100)
                                         self.ball.y = random.uniform(100, self.world.arena.height - 100)
-                                else:
+                                elif hazard.kind in ("portal", "teleportation_pad"):
+                                    # Transport the ball instantly to the linked pad or portal
                                     self.ball.x = getattr(hazard, "target_x", hazard.x)
                                     self.ball.y = getattr(hazard, "target_y", hazard.y)
                                 self.ball.last_teleport_tick = current_tick

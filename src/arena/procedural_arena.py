@@ -169,6 +169,26 @@ class ProceduralArena:
             self.hazards.append(portal1)
             self.hazards.append(portal2)
 
+        # Generate guaranteed paired teleportation pads
+        num_teleportation_pads = max(1, self.num_rooms // 2)
+        for p in range(num_teleportation_pads):
+            t1_id = len(self.hazards) + 6000 + p*2
+            t2_id = len(self.hazards) + 6000 + p*2 + 1
+
+            t1_x, t1_y = self.get_random_spawn_point(25.0)
+            t2_x, t2_y = self.get_random_spawn_point(25.0)
+
+            pad1 = Hazard(id=t1_id, x=t1_x, y=t1_y, radius=25.0, kind="teleportation_pad", damage=0.0)
+            pad1.target_x = t2_x
+            pad1.target_y = t2_y
+
+            pad2 = Hazard(id=t2_id, x=t2_x, y=t2_y, radius=25.0, kind="teleportation_pad", damage=0.0)
+            pad2.target_x = t1_x
+            pad2.target_y = t1_y
+
+            self.hazards.append(pad1)
+            self.hazards.append(pad2)
+
     def get_random_spawn_point(self, radius: float) -> Tuple[float, float]:
         if not self.rooms:
             return (random.uniform(radius, self.width - radius),

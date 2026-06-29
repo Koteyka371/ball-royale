@@ -634,7 +634,7 @@ func execute(strategy: String, delta: float):
                                 self.ball.stutter_timer = current_stutter + 2.0
                             elif self.ball.has_method("set_meta"):
                                 self.ball.set_meta("stutter_timer", current_stutter + 2.0)
-                elif hazard.kind == "portal" or hazard.kind == "teleporter":
+                elif hazard.kind == "portal" or hazard.kind == "teleporter" or hazard.kind == "teleportation_pad":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
                     var dist_sq = dx * dx + dy * dy
@@ -658,8 +658,12 @@ func execute(strategy: String, delta: float):
                                 else:
                                     self.ball.x = randf_range(100.0, self.world.arena.width - 100.0)
                                     self.ball.y = randf_range(100.0, self.world.arena.height - 100.0)
-                            else:
-                                if hazard.get("target_x") != null:
+                            elif hazard.kind == "portal" or hazard.kind == "teleportation_pad":
+                                # Transport the ball instantly to the linked pad or portal
+                                if hazard.has_meta("target_x"):
+                                    self.ball.x = hazard.get_meta("target_x")
+                                    self.ball.y = hazard.get_meta("target_y")
+                                elif hazard.get("target_x") != null:
                                     self.ball.x = hazard.target_x
                                     self.ball.y = hazard.target_y
                             self.ball.set_meta("last_teleport_tick", current_tick)
