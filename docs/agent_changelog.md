@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-267] Wind Gust Weather Event — *2026-06-29 10:40:24 UTC*
+
+Periodically pushes all balls in a random direction, forcing them to constantly adjust movement to stay on target.
+
+---
+
 ## [idea-280] Reverse EMP item — *2026-06-29 10:40:20 UTC*
 
 An item that temporarily increases the cooldowns of nearby enemies, preventing them from using skills or attacking for a short time.
