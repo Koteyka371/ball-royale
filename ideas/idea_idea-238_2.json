@@ -1,0 +1,4 @@
+{
+  "title": "Dynamic Map Hazards Based on Weather",
+  "description": "Modify the procedural arena to trigger environmental events during extreme weather, such as tornadoes pulling entities during 'wind' or lightning strikes hitting random locations during 'thunderstorm'."
+}

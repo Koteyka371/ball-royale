@@ -72,13 +72,18 @@ class BattleRoyaleMode(GameMode):
         self.weather_timer += delta
         if self.weather_timer > 15.0:
             self.weather_timer = 0.0
-            weathers = ["clear", "rain", "fog", "snow"]
+            weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm"]
             rnd = getattr(self, "random", __import__("random"))
             self.weather = rnd.choice(weathers)
+            if self.weather == "wind":
+                self.wind_dx = rnd.uniform(-50.0, 50.0)
+                self.wind_dy = rnd.uniform(-50.0, 50.0)
 
         if hasattr(world, "arena"):
             world.arena.is_foggy = (self.weather in ["fog", "snow"])
             world.arena.is_raining = (self.weather == "rain")
+            world.arena.is_sandstorming = (self.weather == "sandstorm")
+            world.arena.is_snowing = (self.weather == "snow")
 
         valid_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
         for b in valid_balls:
@@ -86,6 +91,8 @@ class BattleRoyaleMode(GameMode):
                 b.base_speed = getattr(b, "speed", 100.0)
             if not hasattr(b, "base_damage"):
                 b.base_damage = getattr(b, "damage", 10.0)
+            if not hasattr(b, "base_perception_radius"):
+                b.base_perception_radius = getattr(b, "perception_radius", 250.0)
 
             if self.weather == "clear":
                 b.speed = b.base_speed
@@ -93,25 +100,59 @@ class BattleRoyaleMode(GameMode):
                 b.dash_range_mult = 1.0
                 b.steering_mult = 1.0
                 b.attack_accuracy = 1.0
+                b.perception_radius = b.base_perception_radius
             elif self.weather == "rain":
                 b.speed = b.base_speed * 0.9
                 b.damage = b.base_damage
                 b.dash_range_mult = 1.3
                 b.steering_mult = 0.7
                 if hasattr(b, "vx") and hasattr(b, "vy"):
-                    b.x += b.vx * delta * 0.3
-                    b.y += b.vy * delta * 0.3
+                    b.x += getattr(b, "vx") * delta * 0.3
+                    b.y += getattr(b, "vy") * delta * 0.3
                 b.attack_accuracy = 0.9
+                b.perception_radius = b.base_perception_radius * 0.8
             elif self.weather == "fog":
                 b.speed = b.base_speed * 0.8
                 b.damage = b.base_damage * 0.9
                 b.dash_range_mult = 1.0
                 b.steering_mult = 1.0
+                b.attack_accuracy = 1.0
+                b.perception_radius = min(b.base_perception_radius, 80.0)
             elif self.weather == "snow":
                 b.speed = b.base_speed * 0.7
                 b.damage = b.base_damage * 1.1
                 b.dash_range_mult = 1.0
                 b.steering_mult = 1.0
+                b.attack_accuracy = 1.0
+                b.perception_radius = b.base_perception_radius * 0.6
+            elif self.weather == "wind":
+                b.speed = b.base_speed
+                b.damage = b.base_damage
+                b.dash_range_mult = 1.0
+                b.steering_mult = 1.0
+                b.attack_accuracy = 1.0
+                b.perception_radius = b.base_perception_radius
+                b.x += getattr(self, "wind_dx", 0.0) * delta
+                b.y += getattr(self, "wind_dy", 0.0) * delta
+            elif self.weather == "thunderstorm":
+                b.speed = b.base_speed * 1.1
+                b.damage = b.base_damage * 1.5
+                b.dash_range_mult = 1.0
+                b.steering_mult = 1.0
+                b.attack_accuracy = 1.0
+                b.perception_radius = b.base_perception_radius
+                rnd = getattr(self, "random", __import__("random"))
+                if rnd.random() < 0.01:
+                    b.hp = max(0, getattr(b, "hp", 100) - 5)
+            elif self.weather == "sandstorm":
+                b.speed = b.base_speed * 0.7
+                b.damage = b.base_damage
+                b.dash_range_mult = 0.8
+                b.steering_mult = 1.0
+                b.attack_accuracy = 1.0
+                b.perception_radius = b.base_perception_radius * 0.3
+                if b.base_speed > 80.0:
+                    b.hp = max(0, getattr(b, "hp", 100) - 1.0 * delta)
 
         self.dark_phase_timer += delta
 
