@@ -104,13 +104,14 @@ class BattleRoyaleMode(GameMode):
         self.weather_timer += delta
         if self.weather_timer > 15.0:
             self.weather_timer = 0.0
-            weathers = ["clear", "rain", "fog", "snow"]
+            weathers = ["clear", "rain", "fog", "snow", "thunderstorm", "sandstorm"]
             rnd = getattr(self, "random", __import__("random"))
             self.weather = rnd.choice(weathers)
 
         if hasattr(world, "arena"):
             world.arena.is_foggy = (self.weather in ["fog", "snow"])
-            world.arena.is_raining = (self.weather == "rain")
+            world.arena.is_raining = (self.weather in ["rain", "thunderstorm"])
+            world.arena.is_sandstorming = (self.weather == "sandstorm")
 
         valid_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
         for b in valid_balls:
@@ -144,6 +145,26 @@ class BattleRoyaleMode(GameMode):
                 b.damage = b.base_damage * 1.1
                 b.dash_range_mult = 1.0
                 b.steering_mult = 1.0
+            elif self.weather == "thunderstorm":
+                b.speed = b.base_speed * 1.1
+                b.damage = b.base_damage * 1.5
+                b.dash_range_mult = 1.0
+                b.steering_mult = 1.0
+            elif self.weather == "sandstorm":
+                b.speed = b.base_speed * 0.7
+                b.damage = b.base_damage
+                b.dash_range_mult = 0.5
+                b.steering_mult = 0.5
+                if not hasattr(b, "sandstorm_timer"):
+                    b.sandstorm_timer = 0.0
+                b.sandstorm_timer += delta
+                if b.sandstorm_timer >= 1.0:
+                    b.sandstorm_timer = 0.0
+                    if hasattr(b, "hp"):
+                        b.hp -= 1.0
+                if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                    if hasattr(b, "hp"): b.hp -= 20.0
+                b.attack_accuracy = 0.5
 
         self.dark_phase_timer += delta
 

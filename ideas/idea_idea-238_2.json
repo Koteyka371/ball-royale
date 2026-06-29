@@ -1,0 +1,4 @@
+{
+  "title": "Seasonal Weather Affixes",
+  "description": "Make weather more dynamic by assigning unique 'Affixes' to each weather type based on the in-game season. For example, during a 'Winter Season' leaderboard period, Snow weather could additionally spawn randomly moving ice patches that cause severe sliding, while Rain could spawn healing puddles instead of lightning."
+}
