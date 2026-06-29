@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Ball Hazard",
+  "description": "Spawn a fake 'Decoy' ball hazard that mimics the appearance of a real player but explodes or triggers a stun trap when attacked or collided with by a real player."
+}
