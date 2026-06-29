@@ -339,3 +339,51 @@ def test_raise_dead_corpse_explosion():
 
     # The far enemy should take no damage
     assert far_enemy.hp == 150.0
+
+def test_reflect_shield_capacity():
+    ball = MockBall(x=100, y=100)
+    world = MockWorld()
+    action = Action(ball, world)
+
+    # We will simulate `_attempt_damage` behavior since it directly modifies state
+    # Wait, `_attempt_damage` takes `attacker` and `target`
+    attacker = MockEntity(x=150, y=100, ball_type="enemy")
+    attacker.damage = 20.0
+
+    target = MockEntity(x=100, y=100, ball_type="ally")
+    target.hp = 100.0
+    target.reflect_shield_active = True
+    target.reflect_shield_capacity = 50.0
+
+
+    # Keep track of dealt damage
+    damage_dealt_to_attacker = []
+    def mock_deal_damage(dmg_target, dmg_attacker):
+        if dmg_target == target and dmg_attacker == attacker:
+            # this means attacker is taking damage from target (reflection)
+            damage_dealt_to_attacker.append(True)
+    world._deal_damage = mock_deal_damage
+
+
+    # 1st hit: 20 damage
+    action._attempt_damage(attacker, target)
+    assert target.reflect_shield_active is True
+    assert target.reflect_shield_capacity == 30.0
+    assert len(damage_dealt_to_attacker) == 1
+
+    # 2nd hit: 20 damage
+    action._attempt_damage(attacker, target)
+    assert target.reflect_shield_active is True
+    assert target.reflect_shield_capacity == 10.0
+    assert len(damage_dealt_to_attacker) == 2
+
+    # 3rd hit: 20 damage
+    action._attempt_damage(attacker, target)
+    assert target.reflect_shield_active is False
+    assert target.reflect_shield_capacity == 0.0
+    assert len(damage_dealt_to_attacker) == 3
+
+    # 4th hit: 20 damage (shield is down)
+    action._attempt_damage(attacker, target)
+    assert target.reflect_shield_active is False
+    assert len(damage_dealt_to_attacker) == 3  # The target does not reflect

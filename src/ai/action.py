@@ -32,7 +32,14 @@ class Action:
                 self.world._deal_damage(target, attacker)
         elif has_reflect_shield:
             # Shield consumes on use and reflects damage
-            target.reflect_shield_active = False
+            capacity = getattr(target, "reflect_shield_capacity", 50.0)
+            capacity -= original_damage
+
+            if capacity <= 0:
+                target.reflect_shield_active = False
+                target.reflect_shield_capacity = 0.0
+            else:
+                target.reflect_shield_capacity = capacity
 
             # Spawn a pulse particle effect towards the attacker
             if hasattr(self, "_spawn_directed_particles"):
@@ -89,7 +96,14 @@ class Action:
                         if hasattr(self.world, "_deal_damage"):
                             self.world._deal_damage(e, attacker)
                     elif e_reflect:
-                        e.reflect_shield_active = False
+                        capacity = getattr(e, "reflect_shield_capacity", 50.0)
+                        capacity -= (getattr(attacker, 'damage', original_damage * 0.5))
+                        if capacity <= 0:
+                            e.reflect_shield_active = False
+                            e.reflect_shield_capacity = 0.0
+                        else:
+                            e.reflect_shield_capacity = capacity
+
                         if hasattr(self, "_spawn_directed_particles"):
                             self._spawn_directed_particles(e, attacker, "reflect_pulse")
                         if hasattr(self.world, "_deal_damage"):
@@ -552,7 +566,14 @@ class Action:
 
                                 # Take damage
                                 if getattr(self.ball, "reflect_shield_active", False):
-                                    self.ball.reflect_shield_active = False
+                                    capacity = getattr(self.ball, "reflect_shield_capacity", 50.0)
+                                    capacity -= hazard.damage
+                                    if capacity <= 0:
+                                        self.ball.reflect_shield_active = False
+                                        self.ball.reflect_shield_capacity = 0.0
+                                    else:
+                                        self.ball.reflect_shield_capacity = capacity
+
                                     if hasattr(hazard, "owner_id") and hasattr(self.world, "balls"):
                                         # Try to find owner and deal damage to them
                                         for b in self.world.balls:
@@ -2685,6 +2706,7 @@ class Action:
                 # Activate reflect shield
                 self.ball.reflect_shield_active = True
                 self.ball.reflect_shield_timer = 5.0
+                self.ball.reflect_shield_capacity = 50.0
             elif skill_name == "heal":
                 if hasattr(self.ball, "hp"):
                     self.ball.hp = min(getattr(self.ball, "max_hp", 100), self.ball.hp + 30)

@@ -51,10 +51,30 @@ func _attempt_damage(attacker, target) -> void:
 		if self.world != null and self.world.has_method("_deal_damage"):
 			self.world._deal_damage(target, attacker)
 	elif has_reflect:
-		if "reflect_shield_active" in target:
-			target.reflect_shield_active = false
-		elif target.has_method("set_meta"):
-			target.set_meta("reflect_shield_active", false)
+		var capacity = 50.0
+		if "reflect_shield_capacity" in target:
+			capacity = target.reflect_shield_capacity
+		elif target.has_method("get_meta") and target.has_meta("reflect_shield_capacity"):
+			capacity = target.get_meta("reflect_shield_capacity")
+
+		capacity -= original_damage
+
+		if capacity <= 0:
+			if "reflect_shield_active" in target:
+				target.reflect_shield_active = false
+			elif target.has_method("set_meta"):
+				target.set_meta("reflect_shield_active", false)
+
+			if "reflect_shield_capacity" in target:
+				target.reflect_shield_capacity = 0.0
+			elif target.has_method("set_meta"):
+				target.set_meta("reflect_shield_capacity", 0.0)
+		else:
+			if "reflect_shield_capacity" in target:
+				target.reflect_shield_capacity = capacity
+			elif target.has_method("set_meta"):
+				target.set_meta("reflect_shield_capacity", capacity)
+
 		if self.has_method("_spawn_directed_particles"):
 			self._spawn_directed_particles(target, attacker, "reflect_pulse")
 		if self.world != null and self.world.has_method("_deal_damage"):
@@ -133,10 +153,33 @@ func _attempt_damage(attacker, target) -> void:
 					if self.world != null and self.world.has_method("_deal_damage"):
 						self.world._deal_damage(e, attacker)
 				elif e_reflect:
-					if "reflect_shield_active" in e:
-						e.reflect_shield_active = false
-					elif e.has_method("set_meta"):
-						e.set_meta("reflect_shield_active", false)
+					var capacity = 50.0
+					if "reflect_shield_capacity" in e:
+						capacity = e.reflect_shield_capacity
+					elif e.has_method("get_meta") and e.has_meta("reflect_shield_capacity"):
+						capacity = e.get_meta("reflect_shield_capacity")
+
+					var dmg_to_deal = original_damage * 0.5
+					if "damage" in attacker:
+						dmg_to_deal = attacker.damage
+					capacity -= dmg_to_deal
+
+					if capacity <= 0:
+						if "reflect_shield_active" in e:
+							e.reflect_shield_active = false
+						elif e.has_method("set_meta"):
+							e.set_meta("reflect_shield_active", false)
+
+						if "reflect_shield_capacity" in e:
+							e.reflect_shield_capacity = 0.0
+						elif e.has_method("set_meta"):
+							e.set_meta("reflect_shield_capacity", 0.0)
+					else:
+						if "reflect_shield_capacity" in e:
+							e.reflect_shield_capacity = capacity
+						elif e.has_method("set_meta"):
+							e.set_meta("reflect_shield_capacity", capacity)
+
 					if self.has_method("_spawn_directed_particles"):
 						self._spawn_directed_particles(e, attacker, "reflect_pulse")
 					if self.world != null and self.world.has_method("_deal_damage"):
