@@ -13,6 +13,8 @@ class ProfileManager:
         try:
             with open(self.filename, 'r') as f:
                 data = json.load(f)
+                if "loadouts" not in data:
+                    data["loadouts"] = {}
                 if "quests" not in data:
                     data["quests"] = []
                 if "cosmetics" not in data:
@@ -29,6 +31,7 @@ class ProfileManager:
                     "bonus_speed": 0,
                     "bonus_damage": 0
                 },
+                "loadouts": {},
                 "prestige_level": 0,
                 "quests": [],
                 "cosmetics": [],
@@ -102,6 +105,7 @@ class ProfileManager:
                     "bonus_speed": 0,
                     "bonus_damage": 0
                 },
+                "loadouts": self.data.get("loadouts", {}),
                 "prestige_level": prestige_level,
                 "quests": [],
                 "cosmetics": self.data.get("cosmetics", []),
@@ -126,3 +130,28 @@ class ProfileManager:
         if title_name not in self.data["titles"]:
             self.data["titles"].append(title_name)
             self.save()
+
+    def save_loadout(self, loadout_name, ball_type, trap_variant, preferred_bonuses=None):
+        if "loadouts" not in self.data:
+            self.data["loadouts"] = {}
+        if preferred_bonuses is None:
+            preferred_bonuses = {}
+        self.data["loadouts"][loadout_name] = {
+            "ball_type": ball_type,
+            "trap_variant": trap_variant,
+            "preferred_bonuses": preferred_bonuses
+        }
+        self.save()
+
+    def get_loadout(self, loadout_name):
+        return self.data.get("loadouts", {}).get(loadout_name)
+
+    def get_all_loadouts(self):
+        return self.data.get("loadouts", {})
+
+    def delete_loadout(self, loadout_name):
+        if "loadouts" in self.data and loadout_name in self.data["loadouts"]:
+            del self.data["loadouts"][loadout_name]
+            self.save()
+            return True
+        return False

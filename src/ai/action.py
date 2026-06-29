@@ -1,7 +1,6 @@
 import math
 import random
 from typing import Any
-import random
 
 class Action:
 
@@ -2697,6 +2696,8 @@ class Action:
                     self.ball.stutter_timer = min(new_cooldown * 0.4, 0.4)
 
     def _escort(self, delta: float) -> None:
+        old_x = getattr(self.ball, "x", 0)
+        old_y = getattr(self.ball, "y", 0)
         allies = self._get_allies()
         if not allies:
             self._idle(delta)

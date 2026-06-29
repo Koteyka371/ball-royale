@@ -1,4 +1,3 @@
-import pytest
 from arena.arena_types import ThickFogArena
 from ai.perception import Perception
 

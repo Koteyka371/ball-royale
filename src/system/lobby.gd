@@ -33,6 +33,19 @@ func get_trap_variant(ball_id: int) -> String:
         return selections[ball_id]
     return "normal"
 
+
+func apply_loadout_to_ball(ball_id: int, profile: ProfileManager, loadout_name: String) -> bool:
+    var loadout = profile.get_loadout(loadout_name)
+    if not loadout.is_empty():
+        var trap = loadout.get("trap_variant", "normal")
+        select_trap_variant(ball_id, trap)
+        if loadout.has("ball_type"):
+            selections[str(ball_id) + "_ball_type"] = loadout["ball_type"]
+        if loadout.has("preferred_bonuses"):
+            selections[str(ball_id) + "_preferred_bonuses"] = loadout["preferred_bonuses"]
+        return true
+    return false
+
 # Static global instance
 static var instance: PreGameLobby
 

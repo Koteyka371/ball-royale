@@ -8,7 +8,6 @@ from ai.ball_types_warrior import Warrior
 from ai.ball_types_scout import Scout
 from ai.ball_types_tank import Tank
 from ai.ball_types_healer import Healer
-from ai.ball_types_conjurer import Conjurer
 
 class MockWorld:
     pass
