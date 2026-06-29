@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-222] Zone Modifiers — *2026-06-29 09:31:56 UTC*
+
+Introduce zones with different modifiers (e.g. speed boost, damage boost, healing) that balls can fight over.
+
+---
+
 ## [idea-256] Tornado Weather — *2026-06-29 09:31:51 UTC*
 
 A tornado moves across the arena, pulling balls in and applying damage over time.
