@@ -1473,7 +1473,26 @@ class BumperBallsMode(GameMode):
             return getattr(alive[0], "team", getattr(alive[0], "ball_type", "Unknown"))
         return None
 
+
+class TournamentMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Tournament"
+        self.description = "Monthly or seasonal tournament where players compete for exclusive cosmetic ball skins and unique status effects."
+        self.tick_timer = 0.0
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+
+        if len(alive) == 1:
+            return getattr(alive[0], "team", getattr(alive[0], "ball_type", None))
+
+        return None
+
 GAME_MODES = {
+    "tournament": TournamentMode(),
     "bumper_balls": BumperBallsMode(),
     "portal_node": PortalNodeMode(),
     "memory_traps": MemoryTrapsMode(),

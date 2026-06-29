@@ -1808,7 +1808,32 @@ class BumperBallsMode extends GameMode:
 
         return null
 
+
+class TournamentMode extends GameMode:
+    var tick_timer: float = 0.0
+
+    func _init() -> void:
+        name = "Tournament"
+        description = "Monthly or seasonal tournament where players compete for exclusive cosmetic ball skins and unique status effects."
+
+    func check_winner(world, balls: Array):
+        var alive = []
+        for b in balls:
+            if b.alive and b.ball_type != "spectator":
+                alive.append(b)
+
+        if alive.size() == 0:
+            return "Draw"
+
+        if alive.size() == 1:
+            if "team" in alive[0]:
+                return alive[0].team
+            return alive[0].ball_type
+
+        return null
+
 var GAME_MODES = {
+    "tournament": TournamentMode.new(),
     "bumper_balls": BumperBallsMode.new(),
     "portal_node": PortalNodeMode.new(),
 	"memory_traps": MemoryTrapsMode.new(),

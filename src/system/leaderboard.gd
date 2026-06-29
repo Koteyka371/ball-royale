@@ -74,6 +74,8 @@ func end_season():
                 profile_manager.call("add_cosmetic", "Crown of Season " + str(season_num))
             if profile_manager.has_method("add_title"):
                 profile_manager.call("add_title", "Season " + str(season_num) + " Champion")
+            if profile_manager.has_method("add_status_effect"):
+                profile_manager.call("add_status_effect", "Aura of Season " + str(season_num))
 
     data["season_start_time"] = Time.get_unix_time_from_system()
     data["current_season"] = season_num + 1

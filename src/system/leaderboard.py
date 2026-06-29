@@ -53,6 +53,7 @@ class LeaderboardManager:
             if "local_player" in top_players and self.profile_manager:
                 self.profile_manager.add_cosmetic(f"Crown of Season {season_num}")
                 self.profile_manager.add_title(f"Season {season_num} Champion")
+                self.profile_manager.add_status_effect(f"Aura of Season {season_num}")
 
         # Reset for next season
         self.data["season_start_time"] = time.time()
