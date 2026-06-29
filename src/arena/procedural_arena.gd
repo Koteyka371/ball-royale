@@ -146,6 +146,30 @@ func generate():
         unconnected.remove_at(best_idx)
 
     var num_hazards = num_rooms * 2
+
+    if rooms.size() >= 2:
+        var portal_count = (rng.randi() % 3) + 1
+        for p in range(portal_count):
+            var r1 = rooms[rng.randi() % rooms.size()]
+            var r2 = rooms[rng.randi() % rooms.size()]
+            while r1 == r2:
+                r2 = rooms[rng.randi() % rooms.size()]
+
+            var hx1 = rng.randf_range(r1.x + 30.0, r1.x + r1.width - 30.0)
+            var hy1 = rng.randf_range(r1.y + 30.0, r1.y + r1.height - 30.0)
+            var hx2 = rng.randf_range(r2.x + 30.0, r2.x + r2.width - 30.0)
+            var hy2 = rng.randf_range(r2.y + 30.0, r2.y + r2.height - 30.0)
+
+            var h1 = ProceduralArena.Hazard.new(hazards.size() + 10000 + p*2, hx1, hy1, 25.0, "portal", 0.0)
+            h1.target_x = hx2
+            h1.target_y = hy2
+            hazards.append(h1)
+
+            var h2 = ProceduralArena.Hazard.new(hazards.size() + 10000 + p*2 + 1, hx2, hy2, 25.0, "portal", 0.0)
+            h2.target_x = hx1
+            h2.target_y = hy1
+            hazards.append(h2)
+
     for i in range(num_hazards):
         var r = rng.randf()
         var kind = "spikes"

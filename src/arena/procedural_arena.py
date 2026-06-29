@@ -124,8 +124,9 @@ class ProceduralArena:
             for p in range(portal_count):
                 r1 = random.choice(self.rooms)
                 r2 = random.choice(self.rooms)
-                while r1 == r2:
-                    r2 = random.choice(self.rooms)
+                if len(self.rooms) >= 2:
+                    while r1 == r2:
+                        r2 = random.choice(self.rooms)
 
                 hx1 = random.uniform(r1.x + 30, r1.x + r1.width - 30)
                 hy1 = random.uniform(r1.y + 30, r1.y + r1.height - 30)
