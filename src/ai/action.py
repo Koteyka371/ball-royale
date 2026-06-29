@@ -1,3 +1,4 @@
+import copy
 import random
 import math
 
@@ -592,7 +593,6 @@ class Action:
                                     self.ball.y = old_y
                                 elif trap_variant == "hologram":
                                     # Hologram: Spawn a clone of the owner and destroy trap
-                                    import copy
 
                                     # Find the owner ball
                                     owner = None
@@ -2124,7 +2124,6 @@ class Action:
                     target.entangle_timer = 5.0
 
             elif skill_name == "clone":
-                import copy
                 num_clones = random.randint(2, 4)
                 for _ in range(num_clones):
                     clone = copy.copy(self.ball)
@@ -2159,7 +2158,6 @@ class Action:
 
                 num_minions = random.randint(2, 4)
                 for _ in range(num_minions):
-                    import copy
 
                     minion = copy.copy(self.ball)
                     minion.id = getattr(self.world, "next_id", random.randint(10000, 99999))
@@ -2193,7 +2191,6 @@ class Action:
                     recent_dead = [b for b in self.world.dead_balls if getattr(b, "time_since_death", 0) < 5.0 and getattr(b, "team", "") != getattr(self.ball, "team", "")]
                     if recent_dead:
                         # Revive the most recently dead enemy as a weak minion
-                        import copy
                         target_dead = recent_dead[-1]
                         self.world.dead_balls.remove(target_dead)
 
@@ -2218,7 +2215,6 @@ class Action:
 
                         self.world.balls.append(minion)
             elif skill_name == "deploy_decoy":
-                import copy
                 if hasattr(self.world, "balls"):
                     decoy = copy.copy(self.ball)
                     decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
