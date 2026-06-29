@@ -278,12 +278,24 @@ func execute(strategy: String, delta: float):
     if world != null and "arena" in world:
         if world.arena.get("is_raining") == true:
             if "vx" in my_ball and "vy" in my_ball:
-                my_ball.x += my_ball.vx * delta * 0.2
-                my_ball.y += my_ball.vy * delta * 0.2
+                my_ball.x += my_ball.vx * delta * 0.5
+                my_ball.y += my_ball.vy * delta * 0.5
         if world.arena.get("is_snowing") == true:
             if "vx" in my_ball and "vy" in my_ball:
                 my_ball.x += my_ball.vx * delta * 0.4
                 my_ball.y += my_ball.vy * delta * 0.4
+        if world.arena.get("is_windy") == true:
+            var wind_dx = 0.0
+            var wind_dy = 0.0
+            if "wind_dx" in world.arena: wind_dx = world.arena.wind_dx
+            if "wind_dy" in world.arena: wind_dy = world.arena.wind_dy
+            my_ball.x += wind_dx * delta
+            my_ball.y += wind_dy * delta
+        if world.arena.get("is_earthquake") == true:
+            var shake_x = (randf() * 200.0) - 100.0
+            var shake_y = (randf() * 200.0) - 100.0
+            my_ball.x += shake_x * delta
+            my_ball.y += shake_y * delta
 
     var gm = null
     if world != null and "game_mode" in world:

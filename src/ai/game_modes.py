@@ -72,13 +72,24 @@ class BattleRoyaleMode(GameMode):
         self.weather_timer += delta
         if self.weather_timer > 15.0:
             self.weather_timer = 0.0
-            weathers = ["clear", "rain", "fog", "snow"]
+            weathers = ["clear", "rain", "fog", "snow", "wind", "earthquake"]
             rnd = getattr(self, "random", __import__("random"))
             self.weather = rnd.choice(weathers)
+            if self.weather == "wind":
+                self.wind_dx = rnd.uniform(-50.0, 50.0)
+                self.wind_dy = rnd.uniform(-50.0, 50.0)
 
         if hasattr(world, "arena"):
             world.arena.is_foggy = (self.weather in ["fog", "snow"])
             world.arena.is_raining = (self.weather == "rain")
+            world.arena.is_windy = (self.weather == "wind")
+            world.arena.is_earthquake = (self.weather == "earthquake")
+            if hasattr(self, "wind_dx"):
+                world.arena.wind_dx = getattr(self, "wind_dx", 0.0)
+                world.arena.wind_dy = getattr(self, "wind_dy", 0.0)
+            else:
+                world.arena.wind_dx = 0.0
+                world.arena.wind_dy = 0.0
 
         valid_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
         for b in valid_balls:
@@ -98,9 +109,7 @@ class BattleRoyaleMode(GameMode):
                 b.damage = b.base_damage
                 b.dash_range_mult = 1.3
                 b.steering_mult = 0.7
-                if hasattr(b, "vx") and hasattr(b, "vy"):
-                    b.x += b.vx * delta * 0.3
-                    b.y += b.vy * delta * 0.3
+                pass # Physics moved to action.py
                 b.attack_accuracy = 0.9
             elif self.weather == "fog":
                 b.speed = b.base_speed * 0.8
@@ -662,21 +671,30 @@ class WeatherChaosMode(GameMode):
         self.weather_timer += delta
         if self.weather_timer > 10.0:
             self.weather_timer = 0.0
-            weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm"]
+            weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "earthquake"]
             import random
             rnd = getattr(self, "random", random)
             self.weather = rnd.choice(weathers)
 
             if self.weather == "wind":
-                self.wind_dx = rnd.uniform(-50.0, 50.0)
-                self.wind_dy = rnd.uniform(-50.0, 50.0)
+                _rnd = getattr(self, "random", __import__("random"))
+                self.wind_dx = _rnd.uniform(-50.0, 50.0)
+                self.wind_dy = _rnd.uniform(-50.0, 50.0)
 
         # Apply weather effects to the arena
         if hasattr(world, "arena"):
             world.arena.is_foggy = (self.weather in ["fog", "snow"])
             world.arena.is_raining = (self.weather == "rain")
+            world.arena.is_windy = (self.weather == "wind")
+            world.arena.is_earthquake = (self.weather == "earthquake")
             world.arena.is_sandstorming = (self.weather == "sandstorm")
             world.arena.is_snowing = (self.weather == "snow")
+            if hasattr(self, "wind_dx"):
+                world.arena.wind_dx = self.wind_dx
+                world.arena.wind_dy = self.wind_dy
+            else:
+                world.arena.wind_dx = 0.0
+                world.arena.wind_dy = 0.0
 
         valid_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
 
@@ -699,9 +717,7 @@ class WeatherChaosMode(GameMode):
                 b.dash_range_mult = 1.5
                 b.steering_mult = 0.5
                 # slide more
-                if hasattr(b, "vx") and hasattr(b, "vy"):
-                    b.x += getattr(b, "vx") * delta * 0.5
-                    b.y += getattr(b, "vy") * delta * 0.5
+                pass # Physics moved to action.py
                 b.attack_accuracy = 0.8
             elif self.weather == "fog":
                 b.speed = b.base_speed * 0.5
@@ -726,9 +742,7 @@ class WeatherChaosMode(GameMode):
                 b.dash_range_mult = 1.0
                 b.steering_mult = 1.0
                 # push balls in a specific direction
-                if hasattr(self, "wind_dx") and hasattr(self, "wind_dy"):
-                    b.x += self.wind_dx * delta
-                    b.y += self.wind_dy * delta
+                pass # Physics moved to action.py
             elif self.weather == "thunderstorm":
                 b.speed = b.base_speed * 1.1 # Panic speed
                 b.damage = b.base_damage * 1.5 # High damage due to electricity

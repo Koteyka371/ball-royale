@@ -181,18 +181,34 @@ class Action:
                     self.ball.alive = False
             self.ball.dot_duration -= delta
 
-        # Weather friction
+        # Weather physics & friction
         if hasattr(self.world, "arena") and hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
             if getattr(self.world.arena, "is_raining", False):
                 # Slippery: apply momentum (friction slide)
-                self.ball.x += getattr(self.ball, "vx") * delta * 0.2
-                self.ball.y += getattr(self.ball, "vy") * delta * 0.2
+                self.ball.x += getattr(self.ball, "vx") * delta * 0.5
+                self.ball.y += getattr(self.ball, "vy") * delta * 0.5
             if getattr(self.world.arena, "is_snowing", False):
                 # Extra slippery: apply even more momentum
                 self.ball.x += getattr(self.ball, "vx") * delta * 0.4
                 self.ball.y += getattr(self.ball, "vy") * delta * 0.4
             if getattr(self.world.arena, "is_foggy", False):
-                pass # Fog has no friction effect, snow has speed change
+                pass # Fog has no friction effect
+
+            # Centralized Wind
+            if getattr(self.world.arena, "is_windy", False):
+                wind_dx = getattr(self.world.arena, "wind_dx", 0.0)
+                wind_dy = getattr(self.world.arena, "wind_dy", 0.0)
+                self.ball.x += wind_dx * delta
+                self.ball.y += wind_dy * delta
+
+            # Centralized Earthquake
+            if getattr(self.world.arena, "is_earthquake", False):
+                import random
+                # Random violent shake
+                shake_x = random.uniform(-100.0, 100.0)
+                shake_y = random.uniform(-100.0, 100.0)
+                self.ball.x += shake_x * delta
+                self.ball.y += shake_y * delta
 
         # Zero gravity processing (friction)
         gm = getattr(self.world, "game_mode", None)

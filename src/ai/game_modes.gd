@@ -750,7 +750,7 @@ class WeatherChaosMode extends GameMode:
 		weather_timer += delta
 		if weather_timer > 10.0:
 			weather_timer = 0.0
-			var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm"]
+			var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "earthquake"]
 			weather = weathers[randi() % weathers.size()]
 			if weather == "wind":
 				if has_method("set_meta"):
@@ -774,6 +774,20 @@ class WeatherChaosMode extends GameMode:
 				world.arena.is_snowing = true
 			else:
 				world.arena.is_snowing = false
+			if weather == "wind":
+				world.arena.is_windy = true
+				if has_meta("wind_dx"):
+					world.arena.wind_dx = get_meta("wind_dx")
+					world.arena.wind_dy = get_meta("wind_dy")
+				else:
+					world.arena.wind_dx = 0.0
+					world.arena.wind_dy = 0.0
+			else:
+				world.arena.is_windy = false
+			if weather == "earthquake":
+				world.arena.is_earthquake = true
+			else:
+				world.arena.is_earthquake = false
 
 		for b in balls:
 			if b.alive and b.ball_type != "spectator":
