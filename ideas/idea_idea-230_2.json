@@ -1,0 +1,4 @@
+{
+  "title": "Payload Escort Mode",
+  "description": "A neutral, indestructible 'Payload' ball spawns in the center of the arena. Teams must push it towards the enemy's base by bumping it. The payload moves faster when more allies are near it and stops if enemies contest the area. The first team to push the payload into the enemy's goal zone wins."
+}

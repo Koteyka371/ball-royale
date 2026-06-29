@@ -1,0 +1,4 @@
+{
+  "title": "Juggernaut Mode",
+  "description": "One randomly selected player becomes the Juggernaut at the start, with massively increased stats, size, and HP, but no abilities. All other players form a team to take down the Juggernaut. If the Juggernaut survives for 3 minutes, they win. If they are destroyed, the player who landed the final blow becomes the new Juggernaut for the next round."
+}

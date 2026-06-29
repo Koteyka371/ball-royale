@@ -38,7 +38,7 @@ class GameMode:
                     b.damage = getattr(b, "damage", 10) * mod["value"]
                 elif mod["type"] == "global_hp":
                     b.max_hp = getattr(b, "max_hp", 100) * mod["value"]
-                    b.hp = getattr(b, "hp", getattr(b, "max_hp", 100))
+                    b.hp = b.max_hp
                 elif mod["type"] == "global_cooldown":
                     b.cooldown_multiplier = getattr(b, "cooldown_multiplier", 1.0) * mod["value"]
 
@@ -1777,6 +1777,84 @@ class ToxicEnvironmentMode(GameMode):
         return None
 
 
+
+class BountyMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Bounty"
+        self.description = "Protect your team's Bounty. If they die, the enemy gets a massive buff and skill points."
+        import random
+        self.random = random
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        mid = len(balls) // 2
+        for i, b in enumerate(balls):
+            if getattr(b, "ball_type", None) != "spectator":
+                if i < mid:
+                    b.team = "Red"
+                else:
+                    b.team = "Blue"
+
+        reds = [b for b in balls if getattr(b, "team", "") == "Red"]
+        blues = [b for b in balls if getattr(b, "team", "") == "Blue"]
+
+        if reds:
+            bounty_red = self.random.choice(reds)
+            bounty_red.is_bounty = True
+        if blues:
+            bounty_blue = self.random.choice(blues)
+            bounty_blue.is_bounty = True
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        bounty_died_team = None
+        for b in balls:
+            if getattr(b, "is_bounty", False) and not getattr(b, "alive", False):
+                bounty_died_team = getattr(b, "team", None)
+                # clear the bounty flag so we only trigger this once
+                b.is_bounty = False
+                break
+
+        if bounty_died_team:
+            # Grant buff to opposing team
+            opposing_team = "Blue" if bounty_died_team == "Red" else "Red"
+            for b in balls:
+                if getattr(b, "team", "") == opposing_team and getattr(b, "alive", False):
+                    b.max_hp = getattr(b, "max_hp", 100) * 2.0
+                    b.hp = b.max_hp
+                    b.base_speed = getattr(b, "base_speed", getattr(b, "speed", 100)) * 1.5
+                    b.speed = b.base_speed
+                    b.base_damage = getattr(b, "base_damage", getattr(b, "damage", 10)) * 1.5
+                    b.damage = b.base_damage
+
+            if hasattr(self, '_award_skill_points'):
+                self._award_skill_points()
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
+        if len(teams_alive) == 1:
+            if hasattr(self, '_award_skill_points'):
+                self._award_skill_points()
+            return list(teams_alive)[0]
+        return None
+
+    def _award_skill_points(self):
+        try:
+            from system.profile import ProfileManager
+            pm = ProfileManager()
+            pm.add_skill_points(10)
+        except Exception:
+            pass
+
 GAME_MODES = {
     "draft_royale": DraftRoyaleMode(),
     "tournament": TournamentMode(),
@@ -1802,7 +1880,8 @@ GAME_MODES = {
     "toxic_environment": ToxicEnvironmentMode(),
     "capture_the_flag": CaptureTheFlagMode(),
     "evolutionary_simulation": EvolutionarySimulationMode(),
-    "safe_zone": SafeZoneMode()
+    "safe_zone": SafeZoneMode(),
+    "bounty": BountyMode()
 }
 
 try:

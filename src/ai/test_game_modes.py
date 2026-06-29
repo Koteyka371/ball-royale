@@ -11,8 +11,8 @@ class MockBall:
         self.id = id
         self.ball_type = ball_type
         self.alive = alive
-        self.max_hp = 100
-        self.hp = 100
+        self.max_hp = 100.0
+        self.hp = 100.0
         self.damage = 10
 
 class MockWorld:
@@ -205,7 +205,7 @@ def test_vampire_royale_mode():
         def __init__(self, id, hp, btype):
             self.id = id
             self.hp = hp
-            self.max_hp = 100
+            self.max_hp = 100.0
             self.ball_type = btype
             self.alive = True
             self.team = btype
@@ -341,3 +341,66 @@ def test_random_reroll_mutator():
     # The chance of both matching exactly the original is extremely low
     if b1.ball_type == "warrior" and b1.max_hp == 100.0:
         assert False, "Stats not rerolled"
+
+
+def test_bounty_mode():
+    from ai.game_modes import BountyMode
+    mode = BountyMode()
+    world = MockWorld()
+    balls = [MockBall(1), MockBall(2), MockBall(3), MockBall(4)]
+
+    # Fix hp for MockBall in this test
+    for b in balls:
+        b.hp = 100.0
+        b.max_hp = 100.0
+        b.speed = 100.0
+        b.damage = 10.0
+
+    # Setup should split teams and assign bounty
+    mode.setup(world, balls)
+
+    # Check teams
+    assert balls[0].team == "Red"
+    assert balls[1].team == "Red"
+    assert balls[2].team == "Blue"
+    assert balls[3].team == "Blue"
+
+    # Check bounties
+    red_bounties = [b for b in balls[:2] if getattr(b, 'is_bounty', False)]
+    blue_bounties = [b for b in balls[2:] if getattr(b, 'is_bounty', False)]
+
+    assert len(red_bounties) == 1
+    assert len(blue_bounties) == 1
+
+    bounty_red = red_bounties[0]
+
+    # Simulate tick without death
+    mode.tick(world, balls, 0.016)
+    assert balls[2].max_hp == 100.0  # Blue should not be buffed
+
+    # Kill red bounty
+    bounty_red.alive = False
+
+    # Tick again
+    mode.tick(world, balls, 0.016)
+
+    # Blue team should be buffed
+    assert balls[2].max_hp == 200.0
+    assert balls[2].hp == 200.0
+    assert balls[2].speed == balls[2].base_speed
+    assert balls[2].damage == balls[2].base_damage
+
+    assert balls[3].max_hp == 200.0
+    assert balls[3].hp == 200.0
+    assert balls[3].speed == balls[3].base_speed
+    assert balls[3].damage == balls[3].base_damage
+
+    # Red team (non-bounty) should not be buffed
+    non_bounty_red = [b for b in balls[:2] if b != bounty_red][0]
+    assert non_bounty_red.max_hp == 100.0
+
+    # Only blue alive -> winner
+    bounty_red.alive = False
+    non_bounty_red.alive = False
+
+    assert mode.check_winner(world, balls) == "Blue"

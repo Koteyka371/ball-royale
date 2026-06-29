@@ -2237,6 +2237,122 @@ class ToxicEnvironmentMode extends GameMode:
         return null
 
 
+
+class BountyMode extends GameMode:
+	func _init() -> void:
+		name = "Bounty"
+		description = "Protect your team's Bounty. If they die, the enemy gets a massive buff and skill points."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if not "dead_balls" in world:
+			world.dead_balls = []
+
+		var mid = balls.size() / 2
+		for i in range(balls.size()):
+			var b = balls[i]
+			if b.ball_type != "spectator":
+				if i < mid:
+					if b.has_method("set"): b.set("team", "Red")
+					else: b.team = "Red"
+				else:
+					if b.has_method("set"): b.set("team", "Blue")
+					else: b.team = "Blue"
+
+		var reds = []
+		var blues = []
+		for b in balls:
+			var t = b.get("team") if b.has_method("get") else (b.team if "team" in b else null)
+			if t == "Red": reds.append(b)
+			elif t == "Blue": blues.append(b)
+
+		if reds.size() > 0:
+			var idx = randi() % reds.size()
+			if reds[idx].has_method("set_meta"): reds[idx].set_meta("is_bounty", true)
+			elif reds[idx].has_method("set"): reds[idx].set("is_bounty", true)
+			else: reds[idx].is_bounty = true
+		if blues.size() > 0:
+			var idx = randi() % blues.size()
+			if blues[idx].has_method("set_meta"): blues[idx].set_meta("is_bounty", true)
+			elif blues[idx].has_method("set"): blues[idx].set("is_bounty", true)
+			else: blues[idx].is_bounty = true
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		var bounty_died_team = null
+		for b in balls:
+			var is_bounty = b.get_meta("is_bounty") if b.has_method("get_meta") and b.has_meta("is_bounty") else (b.get("is_bounty") if b.has_method("get") else (b.is_bounty if "is_bounty" in b else false))
+			var alive = b.get("alive") if b.has_method("get") else (b.alive if "alive" in b else false)
+
+			if is_bounty and not alive:
+				bounty_died_team = b.get("team") if b.has_method("get") else (b.team if "team" in b else null)
+				if b.has_method("remove_meta") and b.has_meta("is_bounty"): b.remove_meta("is_bounty")
+				elif b.has_method("set"): b.set("is_bounty", false)
+				else: b.is_bounty = false
+				break
+
+		if bounty_died_team != null:
+			var opposing_team = "Blue" if bounty_died_team == "Red" else "Red"
+			for b in balls:
+				var team = b.get("team") if b.has_method("get") else (b.team if "team" in b else null)
+				var alive = b.get("alive") if b.has_method("get") else (b.alive if "alive" in b else false)
+				if team == opposing_team and alive:
+					var current_max_hp = b.get("max_hp") if b.has_method("get") else (b.max_hp if "max_hp" in b else 100.0)
+					var new_max_hp = current_max_hp * 2.0
+					if b.has_method("set"):
+						b.set("max_hp", new_max_hp)
+						b.set("hp", new_max_hp)
+						var current_base_speed = b.get("base_speed") if b.has_method("get") else (b.base_speed if "base_speed" in b else (b.speed if "speed" in b else 100.0))
+						b.set("base_speed", current_base_speed * 1.5)
+						b.set("speed", current_base_speed * 1.5)
+						var current_base_damage = b.get("base_damage") if b.has_method("get") else (b.base_damage if "base_damage" in b else (b.damage if "damage" in b else 10.0))
+						b.set("base_damage", current_base_damage * 1.5)
+						b.set("damage", current_base_damage * 1.5)
+					else:
+						b.max_hp = new_max_hp
+						b.hp = new_max_hp
+						var current_base_speed = b.base_speed if "base_speed" in b else (b.speed if "speed" in b else 100.0)
+						b.base_speed = current_base_speed * 1.5
+						b.speed = current_base_speed * 1.5
+						var current_base_damage = b.base_damage if "base_damage" in b else (b.damage if "damage" in b else 10.0)
+						b.base_damage = current_base_damage * 1.5
+						b.damage = current_base_damage * 1.5
+
+			if has_method("_award_skill_points"): call("_award_skill_points")
+
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			var is_alive = b.get("alive") if b.has_method("get") else (b.alive if "alive" in b else false)
+			var b_type = b.get("ball_type") if b.has_method("get") else (b.ball_type if "ball_type" in b else null)
+			if is_alive and b_type != "spectator":
+				alive.append(b)
+
+		if alive.size() == 0:
+			if has_method("_award_skill_points"): call("_award_skill_points")
+			return "Draw"
+
+		var teams_alive = {}
+		for b in alive:
+			var t = b.get("team") if b.has_method("get") else (b.team if "team" in b else null)
+			if t == null:
+				t = b.get("ball_type") if b.has_method("get") else (b.ball_type if "ball_type" in b else null)
+			teams_alive[t] = true
+
+		if teams_alive.size() == 1:
+			if has_method("_award_skill_points"): call("_award_skill_points")
+			return teams_alive.keys()[0]
+
+		return null
+
+	func _award_skill_points() -> void:
+		var ProfileManager = load("res://src/system/profile.gd")
+		if ProfileManager:
+			var pm = ProfileManager.new()
+			if pm.has_method("add_skill_points"):
+				pm.add_skill_points(10)
+
 var GAME_MODES = {
     "draft_royale": DraftRoyaleMode.new(),
     "tournament": TournamentMode.new(),
@@ -2263,5 +2379,6 @@ var GAME_MODES = {
     "capture_the_flag": CaptureTheFlagMode.new(),
     "evolutionary_simulation": EvolutionarySimulationMode.new(),
     "interactive_training": load("res://src/ai/interactive_training.gd").new(),
-    "safe_zone": SafeZoneMode.new()
+    "safe_zone": SafeZoneMode.new(),
+    "bounty": BountyMode.new()
 }
