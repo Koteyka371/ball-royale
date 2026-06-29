@@ -1005,6 +1005,24 @@ func execute(strategy: String, delta: float):
                     if dist_sq < hazard.radius * hazard.radius:
                         self.ball.x += hazard.direction_vector[0] * hazard.speed_magnitude * delta
                         self.ball.y += hazard.direction_vector[1] * hazard.speed_magnitude * delta
+                elif hazard.kind == "magnet":
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    var effective_radius = hazard.radius * 3.0
+                    if dist_sq < effective_radius * effective_radius:
+                        if dist_sq > 0.0001:
+                            var dist = sqrt(dist_sq)
+                            var nx = dx / dist
+                            var ny = dy / dist
+                            var min_dist = 10.0
+                            if dist > min_dist:
+                                min_dist = dist
+                            var pull_strength = (effective_radius / min_dist) * 50.0 * delta
+                            if pull_strength > dist * 0.5:
+                                pull_strength = dist * 0.5
+                            self.ball.x += nx * pull_strength
+                            self.ball.y += ny * pull_strength
                 elif hazard.kind == "gravity_well":
                     # Cosmetics: gravity anomaly already implemented
                     var dx = hazard.x - self.ball.x

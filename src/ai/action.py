@@ -704,6 +704,20 @@ class Action:
                         if dist_sq < hazard.radius * hazard.radius:
                             self.ball.x += hazard.direction_vector[0] * hazard.speed_magnitude * delta
                             self.ball.y += hazard.direction_vector[1] * hazard.speed_magnitude * delta
+                    elif hazard.kind == "magnet":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        # Magnetic pull effective up to 3x radius
+                        if dist_sq < (hazard.radius * 3.0) ** 2:
+                            if dist_sq > 0.0001:
+                                dist = math.sqrt(dist_sq)
+                                nx, ny = dx / dist, dy / dist
+                                # Strength is inversely proportional to distance, similar to gravity well but broader
+                                pull_strength = (hazard.radius * 3.0 / max(10.0, dist)) * 50.0 * delta
+                                pull_strength = min(pull_strength, dist * 0.5) # Prevent overshooting the center
+                                self.ball.x += nx * pull_strength
+                                self.ball.y += ny * pull_strength
                     elif hazard.kind == "gravity_well":
                         # Cosmetics: gravity anomaly already implemented
                         dx = hazard.x - self.ball.x
