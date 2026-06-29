@@ -1566,7 +1566,212 @@ class SafeZoneMode extends GameMode:
     func _award_skill_points():
         pass
 
+class EscortMode extends GameMode:
+    var payload_id = null
+    var goal_x = 900.0
+    var goal_y = 500.0
+    var payload = null
+
+    func _init() -> void:
+        name = "Escort"
+        description = "Defend the payload as it travels to the goal. If it dies, attackers win."
+
+    func setup(world, balls: Array) -> void:
+        if not "dead_balls" in world:
+            world.dead_balls = []
+
+        var valid_balls = []
+        for b in balls:
+            if b.ball_type != "spectator":
+                valid_balls.append(b)
+
+        var mid = valid_balls.size() / 2
+        for i in range(valid_balls.size()):
+            var b = valid_balls[i]
+            if i < mid:
+                if b.has_method("set"):
+                    b.team = "Defenders"
+                elif typeof(b) == TYPE_DICTIONARY:
+                    b.team = "Defenders"
+            else:
+                if b.has_method("set"):
+                    b.team = "Attackers"
+                elif typeof(b) == TYPE_DICTIONARY:
+                    b.team = "Attackers"
+
+        var defenders = []
+        for b in valid_balls:
+            var team = ""
+            if typeof(b) == TYPE_DICTIONARY:
+                if "team" in b:
+                    team = b.team
+            elif "team" in b:
+                team = b.team
+            if team == "Defenders":
+                defenders.append(b)
+
+        if defenders.size() > 0:
+            payload = defenders[0]
+            if typeof(payload) == TYPE_DICTIONARY:
+                payload.team = "Payload"
+                payload.ball_type = "payload"
+                if "max_hp" in payload:
+                    payload.max_hp *= 10
+                else:
+                    payload.max_hp = 1000
+                payload.hp = payload.max_hp
+                payload.base_speed = 20.0
+                if "position" in payload:
+                    payload.position.x = 100.0
+                    payload.position.y = 500.0
+                else:
+                    payload.x = 100.0
+                    payload.y = 500.0
+            else:
+                payload.team = "Payload"
+                payload.ball_type = "payload"
+                if "max_hp" in payload:
+                    payload.max_hp *= 10
+                else:
+                    payload.max_hp = 1000
+                payload.hp = payload.max_hp
+                if "base_speed" in payload:
+                    payload.base_speed = 20.0
+                else:
+                    payload.set("base_speed", 20.0)
+                if "position" in payload:
+                    payload.position.x = 100.0
+                    payload.position.y = 500.0
+                else:
+                    payload.x = 100.0
+                    payload.y = 500.0
+            if typeof(payload) == TYPE_DICTIONARY:
+                if "id" in payload:
+                    payload_id = payload.id
+            else:
+                if "id" in payload:
+                    payload_id = payload.id
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        super.tick(world, balls, delta)
+
+        if payload != null:
+            var p_alive = false
+            if typeof(payload) == TYPE_DICTIONARY:
+                if "alive" in payload:
+                    p_alive = payload.alive
+            else:
+                p_alive = payload.alive
+
+            if p_alive:
+                var p_x = 0.0
+                var p_y = 0.0
+                if typeof(payload) == TYPE_DICTIONARY:
+                    if "position" in payload:
+                        p_x = payload.position.x
+                        p_y = payload.position.y
+                    else:
+                        p_x = payload.x
+                        p_y = payload.y
+                else:
+                    if "position" in payload:
+                        p_x = payload.position.x
+                        p_y = payload.position.y
+                    else:
+                        p_x = payload.x
+                        p_y = payload.y
+
+                var dx = goal_x - p_x
+                var dy = goal_y - p_y
+                var dist = sqrt(dx*dx + dy*dy)
+
+                if dist > 5.0:
+                    var speed = 20.0
+                    var mx = (dx / dist) * speed * delta
+                    var my = (dy / dist) * speed * delta
+
+                    if typeof(payload) == TYPE_DICTIONARY:
+                        if "position" in payload:
+                            payload.position.x += mx
+                            payload.position.y += my
+                        else:
+                            payload.x += mx
+                            payload.y += my
+                    else:
+                        if "position" in payload:
+                            payload.position.x += mx
+                            payload.position.y += my
+                        else:
+                            payload.x += mx
+                            payload.y += my
+
+    func check_winner(world, balls: Array):
+        var payload_alive = false
+        var payload_reached_goal = false
+
+        if payload != null:
+            if typeof(payload) == TYPE_DICTIONARY:
+                if "alive" in payload and payload.alive:
+                    payload_alive = true
+            else:
+                if payload.alive:
+                    payload_alive = true
+
+            if payload_alive:
+                var p_x = 0.0
+                var p_y = 0.0
+                if typeof(payload) == TYPE_DICTIONARY:
+                    if "position" in payload:
+                        p_x = payload.position.x
+                        p_y = payload.position.y
+                    else:
+                        p_x = payload.x
+                        p_y = payload.y
+                else:
+                    if "position" in payload:
+                        p_x = payload.position.x
+                        p_y = payload.position.y
+                    else:
+                        p_x = payload.x
+                        p_y = payload.y
+                var dist = sqrt(pow(goal_x - p_x, 2) + pow(goal_y - p_y, 2))
+                if dist <= 10.0:
+                    payload_reached_goal = true
+
+        if payload == null:
+            return "Attackers"
+
+        if not payload_alive:
+            return "Attackers"
+
+        if payload_reached_goal:
+            return "Defenders"
+
+        var alive = []
+        for b in balls:
+            if b.alive and b.ball_type != "spectator":
+                alive.append(b)
+
+        var attackers_alive = false
+        for b in alive:
+            var team = ""
+            if typeof(b) == TYPE_DICTIONARY:
+                if "team" in b:
+                    team = b.team
+            elif "team" in b:
+                team = b.team
+            if team == "Attackers":
+                attackers_alive = true
+                break
+
+        if not attackers_alive:
+            return "Defenders"
+
+        return null
+
+
 var GAME_MODES = {
+
     "portal_node": PortalNodeMode.new(),
 	"memory_traps": MemoryTrapsMode.new(),
 	"vision_reduced": VisionReducedMode.new(),
@@ -1588,5 +1793,6 @@ var GAME_MODES = {
     "capture_the_flag": CaptureTheFlagMode.new(),
     "evolutionary_simulation": EvolutionarySimulationMode.new(),
     "interactive_training": load("res://src/ai/interactive_training.gd").new(),
-    "safe_zone": SafeZoneMode.new()
+    "safe_zone": SafeZoneMode.new(),
+    "escort": EscortMode.new()
 }

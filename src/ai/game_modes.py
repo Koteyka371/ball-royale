@@ -1334,7 +1334,99 @@ class SafeZoneMode(GameMode):
         except Exception:
             pass
 
+class EscortMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Escort"
+        self.description = "Defend the payload as it travels to the goal. If it dies, attackers win."
+        self.payload_id = None
+        self.goal_x = 900.0
+        self.goal_y = 500.0
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        mid = len(balls) // 2
+        for i, b in enumerate(balls):
+            if getattr(b, "ball_type", None) != "spectator":
+                if i < mid:
+                    b.team = "Defenders"
+                else:
+                    b.team = "Attackers"
+
+        defenders = [b for b in balls if getattr(b, "team", "") == "Defenders"]
+        if defenders:
+            payload = defenders[0]
+            payload.team = "Payload"
+            payload.ball_type = "payload"
+            payload.max_hp = getattr(payload, "max_hp", 100) * 10
+            payload.hp = payload.max_hp
+            payload.base_speed = 20.0
+
+            # Start position
+            payload.x = 100.0
+            payload.y = 500.0
+
+            self.payload_id = getattr(payload, "id", id(payload))
+            # Set the payload
+            setattr(self, "payload", payload)
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+
+        # Move payload
+        if hasattr(self, "payload") and getattr(self.payload, "alive", False):
+            import math
+            dx = self.goal_x - self.payload.x
+            dy = self.goal_y - self.payload.y
+            dist = math.hypot(dx, dy)
+            if dist > 5.0:
+                speed = 20.0
+                self.payload.x += (dx / dist) * speed * delta
+                self.payload.y += (dy / dist) * speed * delta
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        # If payload dies, Attackers win
+        payload_alive = False
+        payload_reached_goal = False
+
+        if hasattr(self, "payload"):
+            if getattr(self.payload, "alive", False):
+                payload_alive = True
+                import math
+                dist = math.hypot(self.goal_x - self.payload.x, self.goal_y - self.payload.y)
+                if dist <= 10.0: # Close enough to goal
+                    payload_reached_goal = True
+
+        if not hasattr(self, "payload"):
+            return "Attackers"
+
+        if not payload_alive:
+            return "Attackers"
+
+        if payload_reached_goal:
+            return "Defenders"
+
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        attackers_alive = any(getattr(b, "team", "") == "Attackers" for b in alive)
+
+        if not attackers_alive:
+            return "Defenders"
+
+        return None
+
+
 GAME_MODES = {
+
     "portal_node": PortalNodeMode(),
     "memory_traps": MemoryTrapsMode(),
     "vision_reduced": VisionReducedMode(),
@@ -1356,5 +1448,6 @@ GAME_MODES = {
     "capture_the_flag": CaptureTheFlagMode(),
     "evolutionary_simulation": EvolutionarySimulationMode(),
     "interactive_training": InteractiveTrainingMode(),
-    "safe_zone": SafeZoneMode()
+    "safe_zone": SafeZoneMode(),
+    "escort": EscortMode()
 }
