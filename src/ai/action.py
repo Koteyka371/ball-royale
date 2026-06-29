@@ -772,6 +772,26 @@ class Action:
                                     self.ball.y = (self.ball.y + old_y) / 2.0
                             continue
 
+                        elif hazard.kind == "orbital_strike_active":
+                            hazard_damage = hazard.damage * delta
+                            if hasattr(self.ball, "take_damage"):
+                                self.ball.take_damage(hazard_damage)
+                            elif hasattr(self.ball, "hp"):
+                                self.ball.hp -= hazard_damage
+                                if self.ball.hp <= 0:
+                                    self.ball.alive = False
+
+                            dx = self.ball.x - hazard.x
+                            dy = self.ball.y - hazard.y
+                            # Need math
+                            dist = math.hypot(dx, dy)
+                            if dist > 0.0001:
+                                nx = dx / dist
+                                ny = dy / dist
+                                knockback_force = 1000.0 * delta
+                                self.ball.x += nx * knockback_force
+                                self.ball.y += ny * knockback_force
+                            continue
                         elif hazard.kind == "meteor":
                             hazard_damage = hazard.damage * delta
                             if hasattr(self.ball, "take_damage"):

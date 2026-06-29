@@ -1016,6 +1016,25 @@ func execute(strategy: String, delta: float):
                                 self.ball.y = (self.ball.y + old_y) / 2.0
                         continue
 
+                    elif hazard.kind == "orbital_strike_active":
+                        var hd = hazard.damage * delta
+                        if self.ball.has_method("take_damage"):
+                            self.ball.take_damage(hd)
+                        elif "hp" in self.ball:
+                            self.ball.hp -= hd
+                            if self.ball.hp <= 0:
+                                self.ball.alive = false
+
+                        var dx = self.ball.x - hazard.x
+                        var dy = self.ball.y - hazard.y
+                        var dist = sqrt(dx*dx + dy*dy)
+                        if dist > 0.0001:
+                            var nx = dx / dist
+                            var ny = dy / dist
+                            var knockback_force = 1000.0 * delta
+                            self.ball.x += nx * knockback_force
+                            self.ball.y += ny * knockback_force
+                        continue
                     elif hazard.kind == "meteor":
                         var hd = hazard.damage * delta
                         if self.ball.has_method("take_damage"):
