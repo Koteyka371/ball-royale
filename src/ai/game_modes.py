@@ -1379,7 +1379,98 @@ class SafeZoneMode(GameMode):
         except Exception:
             pass
 
+
+class ToxicBoostersMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Toxic Boosters"
+        self.description = "Balls take constant damage over time. Collect immune boosters to stay alive!"
+        self.spawn_timer = 0.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if not hasattr(world, "boosters"):
+            world.boosters = []
+        self.spawn_timer = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import random
+        import math
+
+        if not hasattr(world, "boosters"):
+            world.boosters = []
+
+        self.spawn_timer += delta
+        if self.spawn_timer >= 3.0:
+            self.spawn_timer = 0.0
+            arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+            arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+            bx = random.uniform(100, arena_w - 100)
+            by = random.uniform(100, arena_h - 100)
+            bid = f"immune_{random.randint(10000, 99999)}"
+            new_booster = {
+                "id": bid,
+                "x": bx,
+                "y": by,
+                "ball_type": "booster",
+                "kind": "immune_booster",
+                "radius": 15.0
+            }
+            world.boosters.append(new_booster)
+
+        # Apply damage and check booster collisions
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                # Decrement immune timer
+                immune_timer = getattr(b, "immune_timer", 0.0)
+                if immune_timer > 0.0:
+                    b.immune_timer = immune_timer - delta
+                else:
+                    b.hp = getattr(b, "hp", 100) - 5.0 * delta
+                    if b.hp <= 0:
+                        b.hp = 0
+                        b.alive = False
+
+                # Check collision with immune boosters
+                ball_radius = getattr(b, "radius", 10.0)
+                boosters_to_remove = []
+                for booster in world.boosters:
+                    booster_kind = booster.get("kind") if isinstance(booster, dict) else getattr(booster, "kind", None)
+                    if booster_kind == "immune_booster":
+                        booster_radius = booster.get("radius", 15.0) if isinstance(booster, dict) else getattr(booster, "radius", 15.0)
+                        bx_pos = booster.get("x", 0.0) if isinstance(booster, dict) else booster.x
+                        by_pos = booster.get("y", 0.0) if isinstance(booster, dict) else booster.y
+                        dist_sq = (b.x - bx_pos)**2 + (b.y - by_pos)**2
+                        if dist_sq < (ball_radius + booster_radius)**2:
+                            b.immune_timer = 5.0
+                            boosters_to_remove.append(booster)
+                for booster in boosters_to_remove:
+                    if booster in world.boosters:
+                        world.boosters.remove(booster)
+
+    def check_winner(self, world, balls):
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            if hasattr(self, '_award_skill_points'):
+                self._award_skill_points()
+            return "Draw"
+
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
+        if len(teams_alive) == 1:
+            if hasattr(self, '_award_skill_points'):
+                self._award_skill_points()
+            return list(teams_alive)[0]
+
+        if len(alive) == 1:
+            if hasattr(self, '_award_skill_points'):
+                self._award_skill_points()
+            return getattr(alive[0], "team", getattr(alive[0], "ball_type", None))
+
+        return None
+
 GAME_MODES = {
+
     "portal_node": PortalNodeMode(),
     "memory_traps": MemoryTrapsMode(),
     "vision_reduced": VisionReducedMode(),
@@ -1400,7 +1491,8 @@ GAME_MODES = {
     "survival": SurvivalMode(),
     "capture_the_flag": CaptureTheFlagMode(),
     "evolutionary_simulation": EvolutionarySimulationMode(),
-    "safe_zone": SafeZoneMode()
+    "safe_zone": SafeZoneMode(),
+    "toxic_boosters": ToxicBoostersMode()
 }
 
 try:

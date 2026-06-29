@@ -1,0 +1,4 @@
+{
+  "title": "Chain Lightning Hazard",
+  "description": "A moving hazard that periodically shoots chain lightning at nearby balls, doing less damage per jump but stunning them briefly."
+}

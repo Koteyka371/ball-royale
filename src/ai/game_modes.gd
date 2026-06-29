@@ -1614,7 +1614,126 @@ class SafeZoneMode extends GameMode:
     func _award_skill_points():
         pass
 
+
+class ToxicBoostersMode extends GameMode:
+    var spawn_timer: float = 0.0
+
+    func _init() -> void:
+        name = "Toxic Boosters"
+        description = "Balls take constant damage over time. Collect immune boosters to stay alive!"
+
+    func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
+        if not "boosters" in world:
+            world.boosters = []
+        spawn_timer = 0.0
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        super.tick(world, balls, delta)
+
+        if not "boosters" in world:
+            world.boosters = []
+
+        spawn_timer += delta
+        if spawn_timer >= 3.0:
+            spawn_timer = 0.0
+            var arena_w = 1000.0
+            var arena_h = 1000.0
+            if "arena" in world and world.arena != null:
+                if "width" in world.arena:
+                    arena_w = float(world.arena.width)
+                if "height" in world.arena:
+                    arena_h = float(world.arena.height)
+            var bx = randf_range(100.0, max(100.0, arena_w - 100.0))
+            var by = randf_range(100.0, max(100.0, arena_h - 100.0))
+            var bid = "immune_" + str(randi() % 90000 + 10000)
+
+            var new_booster = {
+                "id": bid,
+                "x": bx,
+                "y": by,
+                "ball_type": "booster",
+                "kind": "immune_booster",
+                "radius": 15.0
+            }
+            world.boosters.append(new_booster)
+
+        # Apply damage and check booster collisions
+        for b in balls:
+            if b.alive and b.ball_type != "spectator":
+                # Decrement immune timer
+                var immune_timer = 0.0
+                if "immune_timer" in b:
+                    immune_timer = b.immune_timer
+                elif b.has_method("get_meta") and b.has_meta("immune_timer"):
+                    immune_timer = b.get_meta("immune_timer")
+
+                if immune_timer > 0.0:
+                    var new_timer = immune_timer - delta
+                    if "immune_timer" in b:
+                        b.immune_timer = new_timer
+                    elif b.has_method("set_meta"):
+                        b.set_meta("immune_timer", new_timer)
+                else:
+                    b.hp -= 5.0 * delta
+                    if b.hp <= 0:
+                        b.hp = 0
+                        b.alive = false
+
+                # Check collision with immune boosters
+                var ball_radius = 10.0
+                if "radius" in b:
+                    ball_radius = b.radius
+
+                var boosters_to_remove = []
+                for booster in world.boosters:
+                    if typeof(booster) == TYPE_DICTIONARY and booster.has("kind") and booster.kind == "immune_booster":
+                        var booster_radius = 15.0
+                        if booster.has("radius"):
+                            booster_radius = booster.radius
+
+                        var dist_sq = (b.x - booster.x)*(b.x - booster.x) + (b.y - booster.y)*(b.y - booster.y)
+                        if dist_sq < (ball_radius + booster_radius)*(ball_radius + booster_radius):
+                            if "immune_timer" in b:
+                                b.immune_timer = 5.0
+                            elif b.has_method("set_meta"):
+                                b.set_meta("immune_timer", 5.0)
+                            boosters_to_remove.append(booster)
+
+                for booster in boosters_to_remove:
+                    var idx = world.boosters.find(booster)
+                    if idx != -1:
+                        world.boosters.remove_at(idx)
+
+    func check_winner(world, balls: Array):
+        var alive = []
+        for b in balls:
+            if b.alive and b.ball_type != "spectator":
+                alive.append(b)
+
+        if alive.size() == 0:
+            if has_method("_award_skill_points"): call("_award_skill_points")
+            return "Draw"
+
+        var teams_alive = {}
+        for b in alive:
+            var team = b.ball_type
+            if b.has_method("get") or "team" in b:
+                team = b.team
+            teams_alive[team] = true
+
+        if teams_alive.size() == 1:
+            if has_method("_award_skill_points"): call("_award_skill_points")
+            return teams_alive.keys()[0]
+
+        if alive.size() == 1:
+            if has_method("_award_skill_points"): call("_award_skill_points")
+            return alive[0].ball_type
+
+        return null
+
 var GAME_MODES = {
+
     "portal_node": PortalNodeMode.new(),
 	"memory_traps": MemoryTrapsMode.new(),
 	"vision_reduced": VisionReducedMode.new(),
@@ -1636,5 +1755,6 @@ var GAME_MODES = {
     "capture_the_flag": CaptureTheFlagMode.new(),
     "evolutionary_simulation": EvolutionarySimulationMode.new(),
     "interactive_training": load("res://src/ai/interactive_training.gd").new(),
-    "safe_zone": SafeZoneMode.new()
+    "safe_zone": SafeZoneMode.new(),
+    "toxic_boosters": ToxicBoostersMode.new()
 }
