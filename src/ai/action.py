@@ -821,6 +821,12 @@ class Action:
                             self.ball.dot_damage_per_tick = hazard.damage
                             # Immediate application
                             hazard_damage = hazard.damage * delta
+                        elif hazard.kind == "hidden_trap":
+                            # Applies slow and low DoT when triggered
+                            self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.5
+                            self.ball.dot_duration = 2.0
+                            self.ball.dot_damage_per_tick = hazard.damage
+                            hazard_damage = hazard.damage * delta
                             if hasattr(self.ball, "take_damage"):
                                 self.ball.take_damage(hazard_damage)
                             elif hasattr(self.ball, "hp"):
