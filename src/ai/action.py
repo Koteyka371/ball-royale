@@ -205,6 +205,11 @@ class Action:
                 self.ball.y += getattr(self.ball, "vy") * delta * 0.4
             if getattr(self.world.arena, "is_foggy", False):
                 pass # Fog has no friction effect, snow has speed change
+            wind_dx = getattr(self.world.arena, "wind_dx", 0.0)
+            wind_dy = getattr(self.world.arena, "wind_dy", 0.0)
+            if wind_dx != 0.0 or wind_dy != 0.0:
+                self.ball.x += wind_dx * delta
+                self.ball.y += wind_dy * delta
 
         # Zero gravity processing (friction)
         gm = getattr(self.world, "game_mode", None)

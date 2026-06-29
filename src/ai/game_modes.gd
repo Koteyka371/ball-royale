@@ -1011,6 +1011,18 @@ class WeatherChaosMode extends GameMode:
 				world.arena.is_snowing = true
 			else:
 				world.arena.is_snowing = false
+			if weather == "wind":
+				var wx = 0.0
+				var wy = 0.0
+				if has_method("has_meta") and has_meta("wind_dx"):
+					wx = get_meta("wind_dx")
+				if has_method("has_meta") and has_meta("wind_dy"):
+					wy = get_meta("wind_dy")
+				world.arena.wind_dx = wx
+				world.arena.wind_dy = wy
+			else:
+				world.arena.wind_dx = 0.0
+				world.arena.wind_dy = 0.0
 
 			if not "hazards" in world.arena:
 				world.arena.hazards = []
@@ -1115,14 +1127,6 @@ class WeatherChaosMode extends GameMode:
 					if b.has_method("set_meta"):
 						b.set_meta("dash_range_mult", 1.0)
 						b.set_meta("steering_mult", 1.0)
-					var wind_dx = 0.0
-					var wind_dy = 0.0
-					if has_method("has_meta") and has_meta("wind_dx"):
-						wind_dx = get_meta("wind_dx")
-					if has_method("has_meta") and has_meta("wind_dy"):
-						wind_dy = get_meta("wind_dy")
-					b.x += wind_dx * delta
-					b.y += wind_dy * delta
 				elif weather == "thunderstorm":
 					if "speed" in b: b.speed = base_spd * 1.1
 					if "damage" in b: b.damage = base_dmg * 1.5
