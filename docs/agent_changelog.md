@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-226] Decoy Ball Type — *2026-06-29 07:10:56 UTC*
+
+A ball type that periodically spawns static copies of itself to confuse enemies and escape danger.
+
+---
+
 ## [idea-236] Gravity Mine Trap — *2026-06-29 07:10:52 UTC*
 
 A new trap type that, when triggered, creates a small black hole that pulls nearby balls towards it for a short duration.
