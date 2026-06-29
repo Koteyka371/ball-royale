@@ -3577,7 +3577,7 @@
     },
     {
       "id": "idea-204",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Interactive Arena Elements",
@@ -7505,6 +7505,40 @@
         "src/ai/reverse_escort.py",
         "src/ai/reverse_escort.gd",
         "tests/test_reverse_escort.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-435",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Hazard Interaction Combos",
+      "description": "Allow specific hazards to interact with each other for combo effects. For example, if a 'magnet' hazard pulls an 'explosive_barrel' or a 'flare', it creates a massive clustered explosion or area-of-effect zone. This introduces a strategic depth where players can trick enemies into pulling explosives towards them.",
+      "allowed_paths": [
+        "src/arena/interaction_combos.py",
+        "src/arena/interaction_combos.gd",
+        "tests/test_interaction_combos.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-436",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Repulsion Field Hazard",
+      "description": "Introduce a 'repulsion_field' hazard that dynamically pushes players away. Unlike the gravity_well or magnet which attract balls, the repulsion field pushes entities outward. This can create fun zone-control dynamics where players can use the field as a barrier or get unexpectedly launched out of a safe zone.",
+      "allowed_paths": [
+        "src/arena/repulsion_field.py",
+        "src/arena/repulsion_field.gd",
+        "tests/test_repulsion_field.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

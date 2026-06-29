@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-204] Interactive Arena Elements — *2026-06-29 18:49:17 UTC*
+
+Add interactive objects scattered throughout the arena, such as breakable walls, explosive barrels, or bounce pads. Breakable walls could provide temporary cover that deteriorates under attack, explosive barrels could deal area-of-effect damage if detonated, and bounce pads could launch balls across the map for quick escapes or surprise attacks, adding a layer of tactical environmental usage.
+
+---
+
 ## [idea-288] Gravity well — *2026-06-29 18:28:29 UTC*
 
 A hazard that pulls players towards it
