@@ -659,7 +659,25 @@ func execute(strategy: String, delta: float):
                                     self.ball.x = randf_range(100.0, self.world.arena.width - 100.0)
                                     self.ball.y = randf_range(100.0, self.world.arena.height - 100.0)
                             else:
-                                if hazard.get("target_x") != null:
+                                var launched = false
+                                if hazard.has_meta("target_hazard_id") and self.world != null and self.world.get("arena") != null and "hazards" in self.world.arena:
+                                    var target_hazard_id = hazard.get_meta("target_hazard_id")
+                                    for h in self.world.arena.hazards:
+                                        if h.id == target_hazard_id and h.kind == "black_hole":
+                                            var angle = randf_range(0, 2 * PI)
+                                            var launch_distance = h.radius + 30.0
+                                            self.ball.x = h.x + cos(angle) * launch_distance
+                                            self.ball.y = h.y + sin(angle) * launch_distance
+                                            if self.ball.has_method("set_meta"):
+                                                var current_imm = 0.0
+                                                if self.ball.has_meta("zone_immunity_timer"):
+                                                    current_imm = self.ball.get_meta("zone_immunity_timer")
+                                                self.ball.set_meta("zone_immunity_timer", current_imm + 1.5)
+                                            elif "zone_immunity_timer" in self.ball:
+                                                self.ball.zone_immunity_timer += 1.5
+                                            launched = true
+                                            break
+                                if not launched and hazard.get("target_x") != null:
                                     self.ball.x = hazard.target_x
                                     self.ball.y = hazard.target_y
                             self.ball.set_meta("last_teleport_tick", current_tick)

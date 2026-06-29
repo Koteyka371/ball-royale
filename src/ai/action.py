@@ -419,8 +419,22 @@ class Action:
                                         self.ball.x = random.uniform(100, self.world.arena.width - 100)
                                         self.ball.y = random.uniform(100, self.world.arena.height - 100)
                                 else:
-                                    self.ball.x = getattr(hazard, "target_x", hazard.x)
-                                    self.ball.y = getattr(hazard, "target_y", hazard.y)
+                                    launched = False
+                                    if hasattr(hazard, "target_hazard_id") and hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                                        for h in self.world.arena.hazards:
+                                            if h.id == hazard.target_hazard_id and h.kind == "black_hole":
+                                                import math as _math
+                                                import random as _random
+                                                angle = _random.uniform(0, 2 * _math.pi)
+                                                launch_distance = getattr(h, "radius", 50.0) + 30.0
+                                                self.ball.x = h.x + _math.cos(angle) * launch_distance
+                                                self.ball.y = h.y + _math.sin(angle) * launch_distance
+                                                self.ball.zone_immunity_timer = getattr(self.ball, "zone_immunity_timer", 0.0) + 1.5
+                                                launched = True
+                                                break
+                                    if not launched:
+                                        self.ball.x = getattr(hazard, "target_x", hazard.x)
+                                        self.ball.y = getattr(hazard, "target_y", hazard.y)
                                 self.ball.last_teleport_tick = current_tick
                     elif hazard.kind == "conveyor_belt":
                         dx = hazard.x - self.ball.x
@@ -2093,7 +2107,7 @@ class Action:
                 # Add to own skill timer
                 self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
             elif skill_name == "summon_minions":
-
+                import random
                 num_minions = random.randint(2, 4)
                 for _ in range(num_minions):
                     import copy
