@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-291] Decoy Drone Variant — *2026-06-29 11:39:04 UTC*
+
+A drone variant that creates a temporary clone of the player to distract enemies, drawing aggro while the player escapes.
+
+---
+
 ## [idea-231] Portal Modifier items — *2026-06-29 11:22:51 UTC*
 
 Items or boosters that allow players to throw a temporary exit portal anywhere on the arena, acting as a tactical escape hatch for a short duration.

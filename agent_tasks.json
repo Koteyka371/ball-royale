@@ -5059,7 +5059,7 @@
     },
     {
       "id": "idea-291",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Drone Variant",
@@ -7165,6 +7165,40 @@
         "src/ui/orbital_strike_warning_ui_element.gd",
         "src/ai/orbital_strike_warning_ui_element.py",
         "tests/test_orbital_strike_warning_ui_element.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-415",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Grappling Hook Mode",
+      "description": "Balls can shoot a grappling hook to latch onto walls or other balls to swing around.",
+      "allowed_paths": [
+        "src/ai/grappling_hook.py",
+        "src/ai/grappling_hook.gd",
+        "tests/test_grappling_hook.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-416",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirror Dimension",
+      "description": "An arena event where all projectiles are reflected infinitely across mirror walls.",
+      "allowed_paths": [
+        "src/ai/mirror_dimension.py",
+        "src/ai/mirror_dimension.gd",
+        "tests/test_mirror_dimension.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
