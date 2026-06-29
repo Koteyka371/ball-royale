@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-154] Weather Effects — *2026-06-29 08:58:13 UTC*
+
+Add dynamic weather that impacts ball physics.
+
+---
+
 ## [idea-244] Weather specific buffs — *2026-06-29 08:58:09 UTC*
 
 Balls gain specific buffs during certain weather conditions, such as 'Fire' balls dealing more damage in clear weather or 'Water' balls healing slightly in the rain.
