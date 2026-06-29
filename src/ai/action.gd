@@ -32,6 +32,8 @@ func _attempt_damage(attacker, target) -> void:
 			target.reflect_shield_active = false
 		elif target.has_method("set_meta"):
 			target.set_meta("reflect_shield_active", false)
+		if self.has_method("_spawn_directed_particles"):
+			self._spawn_directed_particles(target, attacker, "reflect_pulse")
 		if self.world != null and self.world.has_method("_deal_damage"):
 			self.world._deal_damage(target, attacker)
 	else:
@@ -94,6 +96,8 @@ func _attempt_damage(attacker, target) -> void:
 						e.reflect_shield_active = false
 					elif e.has_method("set_meta"):
 						e.set_meta("reflect_shield_active", false)
+					if self.has_method("_spawn_directed_particles"):
+						self._spawn_directed_particles(e, attacker, "reflect_pulse")
 					if self.world != null and self.world.has_method("_deal_damage"):
 						self.world._deal_damage(e, attacker)
 				else:
@@ -3906,6 +3910,53 @@ func _use_skill():
 
         if "skill_cooldown" in self.ball:
             self.ball.skill_timer = self.ball.skill_cooldown
+
+func _spawn_directed_particles(source, target, effect_type: String = ""):
+    if typeof(source) == TYPE_OBJECT and source.has_method("add_child"):
+        var particles = CPUParticles2D.new()
+        particles.emitting = true
+        particles.one_shot = true
+
+        if effect_type == "reflect_pulse":
+            particles.amount = 20
+            particles.lifetime = 0.4
+            particles.explosiveness = 0.9
+            particles.spread = 15.0
+            particles.initial_velocity_min = 200.0
+            particles.initial_velocity_max = 300.0
+            particles.color = Color(0.8, 0.4, 1.0, 0.9) # Purple reflect
+            particles.gravity = Vector2.ZERO
+
+            if typeof(target) == TYPE_OBJECT and typeof(source) == TYPE_OBJECT:
+                var tx = target.get("position").x if target.get("position") != null else target.get("x")
+                var ty = target.get("position").y if target.get("position") != null else target.get("y")
+                var sx = source.get("position").x if source.get("position") != null else source.get("x")
+                var sy = source.get("position").y if source.get("position") != null else source.get("y")
+
+                if tx == null and target.has_method("get_meta") and target.has_meta("x"):
+                    tx = target.get_meta("x")
+                    ty = target.get_meta("y")
+
+                if sx == null and source.has_method("get_meta") and source.has_meta("x"):
+                    sx = source.get_meta("x")
+                    sy = source.get_meta("y")
+
+                if tx != null and ty != null and sx != null and sy != null:
+                    var dx = tx - sx
+                    var dy = ty - sy
+                    particles.rotation = atan2(dy, dx)
+
+        else:
+            # Generic
+            particles.amount = 10
+            particles.lifetime = 0.3
+            particles.initial_velocity_min = 100.0
+            particles.initial_velocity_max = 150.0
+            particles.color = Color(1.0, 1.0, 1.0, 0.8)
+
+        source.add_child(particles)
+        if particles.has_signal("finished"):
+            particles.finished.connect(particles.queue_free)
 
 func _spawn_skill_particles(skill_name: String = ""):
     if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("add_child"):
