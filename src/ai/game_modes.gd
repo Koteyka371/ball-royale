@@ -1256,6 +1256,39 @@ class MemoryTrapsMode extends GameMode:
 
 		return null
 
+
+class RandomRerollMode extends GameMode:
+	var reroll_timer: float = 0.0
+
+	func _init() -> void:
+		name = "Random Reroll"
+		description = "Every 10 seconds, all balls have their stats randomly re-rolled and ball type changed."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		reroll_timer += delta
+		if reroll_timer >= 10.0:
+			reroll_timer = 0.0
+
+			var ball_types = ["paladin", "assassin", "ninja", "warrior", "guardian", "chaos", "bomber", "templar", "necromancer", "vampire", "sniper", "king", "easy", "phantom", "warlock", "mimic", "juggernaut", "tank", "spectator", "berserker", "druid", "hard", "scout", "brawler", "medium", "neural", "ranger", "healer", "rogue", "swarm", "conjurer", "monk", "mage", "elementalist", "trickster"]
+
+			for b in balls:
+				if not b.alive or b.ball_type == "spectator":
+					continue
+
+				b.ball_type = ball_types[randi() % ball_types.size()]
+
+				var new_hp = randf_range(50.0, 200.0)
+				b.hp = new_hp
+				b.max_hp = new_hp
+				b.speed = randf_range(1.0, 5.0)
+				b.damage = randf_range(5.0, 30.0)
+
+				if "team" in b and b.team != "Solo":
+					b.team = b.ball_type
+
+
 class CustomMatchMode extends GameMode:
 
 	var mutators = []
@@ -1619,6 +1652,7 @@ var GAME_MODES = {
 	"memory_traps": MemoryTrapsMode.new(),
 	"vision_reduced": VisionReducedMode.new(),
 	"dynamic_hazards": DynamicHazardsMode.new(),
+	"random_reroll": RandomRerollMode.new(),
 	"custom_match": CustomMatchMode.new(),
 	"reverse_event": ReverseEventMode.new(),
     "weather_chaos": WeatherChaosMode.new(),

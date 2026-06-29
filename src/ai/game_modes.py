@@ -1075,6 +1075,39 @@ class MemoryTrapsMode(GameMode):
 
         return None
 
+
+class RandomRerollMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Random Reroll"
+        self.description = "Every 10 seconds, all balls have their stats randomly re-rolled and ball type changed."
+        self.reroll_timer = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        self.reroll_timer += delta
+        if self.reroll_timer >= 10.0:
+            self.reroll_timer = 0.0
+            import random
+
+            ball_types = ['paladin', 'assassin', 'ninja', 'warrior', 'guardian', 'chaos', 'bomber', 'templar', 'necromancer', 'vampire', 'sniper', 'king', 'easy', 'phantom', 'warlock', 'mimic', 'juggernaut', 'tank', 'spectator', 'berserker', 'druid', 'hard', 'scout', 'brawler', 'medium', 'neural', 'ranger', 'healer', 'rogue', 'swarm', 'conjurer', 'monk', 'mage', 'elementalist', 'trickster']
+
+            for b in balls:
+                if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                    continue
+
+                b.ball_type = random.choice(ball_types)
+                b.hp = random.uniform(50, 200)
+                b.max_hp = b.hp
+                b.speed = random.uniform(1.0, 5.0)
+                b.damage = random.uniform(5.0, 30.0)
+
+                # Reroll team to match ball_type if teams are type-based
+                if hasattr(b, 'team') and b.team != 'Solo':
+                    b.team = b.ball_type
+
+
 class CustomMatchMode(GameMode):
 
     def __init__(self):
@@ -1384,6 +1417,7 @@ GAME_MODES = {
     "memory_traps": MemoryTrapsMode(),
     "vision_reduced": VisionReducedMode(),
     "dynamic_hazards": DynamicHazardsMode(),
+    "random_reroll": RandomRerollMode(),
     "custom_match": CustomMatchMode(),
     "reverse_event": ReverseEventMode(),
     "weather_chaos": WeatherChaosMode(),
