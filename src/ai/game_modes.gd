@@ -135,8 +135,12 @@ class BattleRoyaleMode extends GameMode:
         self.weather_timer += delta
         if self.weather_timer > 15.0:
             self.weather_timer = 0.0
-            var weathers = ["clear", "rain", "fog", "snow", "thunderstorm", "sandstorm"]
+            var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm"]
             self.weather = weathers[randi() % weathers.size()]
+            if self.weather == "wind":
+                if has_method("set_meta"):
+                    set_meta("wind_dx", (randf() * 100.0) - 50.0)
+                    set_meta("wind_dy", (randf() * 100.0) - 50.0)
 
         if world != null and "arena" in world and world.arena != null:
             if self.weather == "fog" or self.weather == "snow":
@@ -151,6 +155,35 @@ class BattleRoyaleMode extends GameMode:
                 world.arena.is_sandstorming = true
             else:
                 world.arena.is_sandstorming = false
+            if self.weather == "snow":
+                world.arena.is_snowing = true
+            else:
+                world.arena.is_snowing = false
+
+            if not "hazards" in world.arena:
+                world.arena.hazards = []
+
+            if self.weather == "wind":
+                if randf() < 0.1 * delta:
+                    var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
+                    var x = randf_range(100.0, world.arena.width - 100.0)
+                    var y = randf_range(100.0, world.arena.height - 100.0)
+                    var tornado = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 40.0, "tornado", 20.0)
+                    tornado.set_meta("duration", 5.0)
+                    tornado.set_meta("vx", randf_range(-100.0, 100.0))
+                    tornado.set_meta("vy", randf_range(-100.0, 100.0))
+                    world.arena.hazards.append(tornado)
+            elif self.weather == "rain" or self.weather == "thunderstorm":
+                var chance = 0.05
+                if self.weather == "thunderstorm":
+                    chance = 0.2
+                if randf() < chance * delta:
+                    var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
+                    var x = randf_range(100.0, world.arena.width - 100.0)
+                    var y = randf_range(100.0, world.arena.height - 100.0)
+                    var lightning = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 30.0, "lightning_strike", 50.0)
+                    lightning.set_meta("duration", 1.0)
+                    world.arena.hazards.append(lightning)
 
         for b in balls:
             if b.alive and b.ball_type != "spectator":
@@ -178,15 +211,15 @@ class BattleRoyaleMode extends GameMode:
                         b.set_meta("steering_mult", 1.0)
                         b.set_meta("attack_accuracy", 1.0)
                 elif self.weather == "rain":
-                    if "speed" in b: b.speed = base_spd * 0.9
+                    if "speed" in b: b.speed = base_spd * 0.8
                     if "damage" in b: b.damage = base_dmg
                     if b.has_method("set_meta"):
-                        b.set_meta("dash_range_mult", 1.3)
-                        b.set_meta("steering_mult", 0.7)
-                        b.set_meta("attack_accuracy", 0.9)
+                        b.set_meta("dash_range_mult", 1.5)
+                        b.set_meta("steering_mult", 0.5)
+                        b.set_meta("attack_accuracy", 0.8)
                     if "vx" in b and "vy" in b:
-                        b.x += b.vx * delta * 0.3
-                        b.y += b.vy * delta * 0.3
+                        b.x += b.vx * delta * 0.5
+                        b.y += b.vy * delta * 0.5
                 elif self.weather == "fog":
                     if "speed" in b: b.speed = base_spd * 0.8
                     if "damage" in b: b.damage = base_dmg * 0.9
@@ -194,11 +227,36 @@ class BattleRoyaleMode extends GameMode:
                         b.set_meta("dash_range_mult", 1.0)
                         b.set_meta("steering_mult", 1.0)
                 elif self.weather == "snow":
-                    if "speed" in b: b.speed = base_spd * 0.7
-                    if "damage" in b: b.damage = base_dmg * 1.1
+                    if "speed" in b: b.speed = base_spd * 0.5
+                    if "damage" in b: b.damage = base_dmg * 1.2
                     if b.has_method("set_meta"):
                         b.set_meta("dash_range_mult", 1.0)
                         b.set_meta("steering_mult", 1.0)
+                    if b.has_method("set_meta") and b.has_method("get_meta"):
+                        var stacks = 0.0
+                        if b.has_meta("chill_stacks"):
+                            stacks = b.get_meta("chill_stacks")
+                        stacks += delta
+                        if stacks >= 3.0:
+                            stacks = 0.0
+                            b.set_meta("stutter_timer", 1.0)
+                        b.set_meta("chill_stacks", stacks)
+                    if b.has_method("set_meta"):
+                        b.set_meta("attack_accuracy", 0.9)
+                elif self.weather == "wind":
+                    if "speed" in b: b.speed = base_spd
+                    if "damage" in b: b.damage = base_dmg
+                    if b.has_method("set_meta"):
+                        b.set_meta("dash_range_mult", 1.0)
+                        b.set_meta("steering_mult", 1.0)
+                    var wind_dx = 0.0
+                    var wind_dy = 0.0
+                    if has_method("has_meta") and has_meta("wind_dx"):
+                        wind_dx = get_meta("wind_dx")
+                    if has_method("has_meta") and has_meta("wind_dy"):
+                        wind_dy = get_meta("wind_dy")
+                    b.x += wind_dx * delta
+                    b.y += wind_dy * delta
                 elif self.weather == "thunderstorm":
                     if "speed" in b: b.speed = base_spd * 1.1
                     if "damage" in b: b.damage = base_dmg * 1.5
