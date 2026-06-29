@@ -1639,6 +1639,121 @@ class PortalNodeMode(GameMode):
 
 
 
+
+class MovingSafeZoneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Moving Safe Zone"
+        self.description = "A dynamic battle royale where the safe zone not only shrinks but also moves around the map, forcing intense combat."
+        self.zone_x = 500.0
+        self.zone_y = 500.0
+        self.zone_radius = 500.0
+        self.min_zone_radius = 50.0
+        self.shrink_rate = 10.0
+        self.outside_damage_per_second = 15.0
+        self.zone_target_x = 500.0
+        self.zone_target_y = 500.0
+        self.move_speed = 30.0
+        self.tick_timer = 0.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.zone_x = arena_width / 2.0
+        self.zone_y = arena_height / 2.0
+        self.zone_target_x = self.zone_x
+        self.zone_target_y = self.zone_y
+        self.zone_radius = min(arena_width, arena_height) / 2.0
+        self.min_zone_radius = 50.0
+
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        for i, b in enumerate(valid_balls):
+            if i >= 20:
+                b.ball_type = "spectator"
+                b.alive = False
+            else:
+                b.team = b.ball_type # Default behavior: solo
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        import random
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        # Move safe zone
+        dx = self.zone_target_x - self.zone_x
+        dy = self.zone_target_y - self.zone_y
+        dist = math.sqrt(dx*dx + dy*dy)
+        if dist > 5.0:
+            self.zone_x += (dx / dist) * self.move_speed * delta
+            self.zone_y += (dy / dist) * self.move_speed * delta
+        else:
+            # Pick a new target that is within the arena bounds minus radius buffer
+            buffer = max(100.0, self.zone_radius * 0.5)
+            self.zone_target_x = random.uniform(buffer, arena_width - buffer)
+            self.zone_target_y = random.uniform(buffer, arena_height - buffer)
+
+        # Shrink safe zone
+        if self.zone_radius > self.min_zone_radius:
+            self.zone_radius -= self.shrink_rate * delta
+            if self.zone_radius < self.min_zone_radius:
+                self.zone_radius = self.min_zone_radius
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
+                continue
+
+            # Check if outside safe zone
+            bdx = b.position.x - self.zone_x if hasattr(b, "position") else getattr(b, "x", 0.0) - self.zone_x
+            bdy = b.position.y - self.zone_y if hasattr(b, "position") else getattr(b, "y", 0.0) - self.zone_y
+            bdist = math.sqrt(bdx*bdx + bdy*bdy)
+
+            if bdist > self.zone_radius:
+                if hasattr(b, "hp"):
+                    damage = self.outside_damage_per_second * delta
+                    b.hp -= damage
+
+                    if not hasattr(b, "danger_effect_timer"):
+                        b.danger_effect_timer = 0.0
+                    b.danger_effect_timer += delta
+                    if b.danger_effect_timer > 0.5:
+                        b.danger_effect_timer = 0.0
+                        world.add_event("danger_zone_damage", {
+                            "x": b.position.x if hasattr(b, "position") else getattr(b, "x", 0.0),
+                            "y": b.position.y if hasattr(b, "position") else getattr(b, "y", 0.0)
+                        })
+
+                    if b.hp <= 0:
+                        b.alive = False
+                        b.killer = "Danger Zone"
+                        team = getattr(b, "team", "Unknown")
+                        world.add_event("danger_zone_death", {"message": f"{b.ball_type.capitalize()} succumbed to the danger zone!"})
+
+    def check_winner(self, world, balls):
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
+        if len(teams_alive) == 1:
+            return list(teams_alive)[0]
+
+        return None
+
+
 class SafeZoneMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -2182,6 +2297,7 @@ GAME_MODES = {
     "capture_the_flag": CaptureTheFlagMode(),
     "evolutionary_simulation": EvolutionarySimulationMode(),
     "safe_zone": SafeZoneMode(),
+    "moving_safe_zone": MovingSafeZoneMode(),
     "bounty_hunt": BountyHuntMode()
 }
 
