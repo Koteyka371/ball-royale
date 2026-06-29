@@ -203,17 +203,17 @@
     "agent-25": {
       "name": "Jules Worker 25",
       "area": "meta",
-      "status": "working",
-      "task_id": "idea-287",
-      "started_at": "2026-06-29T10:42:58.715768+00:00",
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
       "cycles_today": 5
     },
     "agent-26": {
       "name": "Jules Worker 26",
       "area": "innovation",
-      "status": "working",
-      "task_id": "idea-284",
-      "started_at": "2026-06-29T10:34:11.791648+00:00",
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
       "cycles_today": 5
     },
     "agent-27": {
@@ -243,9 +243,9 @@
     "agent-30": {
       "name": "Jules Worker 30",
       "area": "meta",
-      "status": "working",
-      "task_id": "idea-281",
-      "started_at": "2026-06-29T10:40:45.303958+00:00",
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
       "cycles_today": 4
     }
   },
