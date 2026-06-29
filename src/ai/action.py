@@ -2271,6 +2271,21 @@ class Action:
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
+                elif getattr(nearest, "kind", None) == "link_booster":
+                    enemies = self._get_enemies()
+                    if enemies:
+                        link_target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                        self.ball.link_booster_timer = 5.0
+                        self.ball.link_booster_target = link_target
+
+                    # Remove the booster from hazards if it's there
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+
+                    # If it's stored in world.boosters, _collect_booster handles it, but just in case
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 else:
                     if hasattr(self.world, "_collect_booster"):
                         self.world._collect_booster(self.ball, nearest)
@@ -2870,6 +2885,36 @@ class Action:
                             other.memory = o_mem
 
     def _update_skill_timer(self, delta: float) -> None:
+        if hasattr(self.ball, "link_booster_timer") and self.ball.link_booster_timer > 0:
+            self.ball.link_booster_timer -= delta
+            target = getattr(self.ball, "link_booster_target", None)
+            if target and getattr(target, "alive", True):
+                dist_sq = (target.x - self.ball.x)**2 + (target.y - self.ball.y)**2
+                if dist_sq <= 40000: # 200 range
+                    drain_amount = 20.0 * delta
+
+                    if hasattr(self.world, "_deal_damage"):
+                        actual_damage = min(getattr(target, "hp", 100.0), drain_amount)
+                        target.hp -= actual_damage
+                        self.ball.hp = min(getattr(self.ball, "hp", 100.0) + actual_damage, getattr(self.ball, "max_hp", 100.0))
+                    else:
+                        actual_damage = min(target.hp, drain_amount) if hasattr(target, "hp") else drain_amount
+                        if hasattr(target, "hp"):
+                            target.hp -= actual_damage
+                        if hasattr(self.ball, "hp"):
+                            self.ball.hp = min(getattr(self.ball, "max_hp", 100.0), getattr(self.ball, "hp", 100.0) + actual_damage)
+
+                    # Stop if timer runs out
+                    if self.ball.link_booster_timer <= 0:
+                        self.ball.link_booster_target = None
+                else:
+                    # Break link if out of range
+                    self.ball.link_booster_timer = 0
+                    self.ball.link_booster_target = None
+            else:
+                self.ball.link_booster_timer = 0
+                self.ball.link_booster_target = None
+
         if hasattr(self.ball, "skill_timer") and self.ball.skill_timer > 0:
             self.ball.skill_timer -= delta
         if hasattr(self.ball, "attack_timer") and self.ball.attack_timer > 0:

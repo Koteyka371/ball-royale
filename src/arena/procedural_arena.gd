@@ -177,6 +177,9 @@ func generate():
         elif kind == "silence_booster":
             radius = 15.0
             damage = 0.0
+        elif kind == "link_booster":
+            radius = 15.0
+            damage = 0.0
         elif kind == "tornado":
             radius = rng.randf_range(30.0, 60.0)
             damage = 15.0
