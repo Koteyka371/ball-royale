@@ -169,3 +169,45 @@ def test_skin_perks():
     ball = MockBall(hp=100, max_hp=100, skin="elite")
     brain = BallBrain(ball, world)
     assert getattr(ball, "speed", 100.0) == 10.5
+
+
+def test_prestige_upgrades():
+    class MockProfileManager:
+        def __init__(self, filename):
+            self.data = {
+                "bonuses": {},
+                "prestige_level": 1,
+                "prestige_tokens": 0,
+                "prestige_upgrades": {
+                    "permanent_hp": 2,
+                    "permanent_speed": 1,
+                    "permanent_damage": 3
+                }
+            }
+
+    import sys
+    sys.modules['system.profile'] = type('ProfileModule', (object,), {'ProfileManager': MockProfileManager})
+
+    ball = MockBall(1, "warrior")
+    ball.hp = 100
+    ball.max_hp = 100
+    ball.speed = 10
+    ball.damage = 10
+
+    from ai.ball_brain import BallBrain
+    brain = BallBrain(ball, MockWorld())
+
+    # max_hp += 2 * 10 = 20 -> 120
+    # prestige_level stat multiplier = 1.05
+    # max_hp *= 1.05 -> 126
+    assert ball.max_hp == 126.0
+
+    # speed += 1 * 5 = 15
+    # speed *= 1.05 -> 15.75
+    assert ball.speed == 15.75
+
+    # damage += 3 * 2 = 16
+    # damage *= 1.05 -> 16.8
+    assert ball.damage == 16.8
+
+    del sys.modules['system.profile']

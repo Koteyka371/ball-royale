@@ -30,6 +30,23 @@ class BallBrain:
             if "bonus_damage" in pm.data.get("bonuses", {}):
                 self.ball.damage += pm.data["bonuses"]["bonus_damage"] * 2
 
+
+            # Apply prestige upgrades (from prestige tokens)
+            prestige_upgrades = pm.data.get("prestige_upgrades", {})
+            if "permanent_hp" in prestige_upgrades:
+                bonus = prestige_upgrades["permanent_hp"] * 10
+                hp_percent = self.ball.hp / self.ball.max_hp if getattr(self.ball, 'max_hp', 0) > 0 else 1.0
+                if hasattr(self.ball, 'max_hp'):
+                    self.ball.max_hp += bonus
+                if hasattr(self.ball, 'hp'):
+                    self.ball.hp = self.ball.max_hp * hp_percent
+            if "permanent_speed" in prestige_upgrades:
+                if hasattr(self.ball, 'speed'):
+                    self.ball.speed += prestige_upgrades["permanent_speed"] * 5
+            if "permanent_damage" in prestige_upgrades:
+                if hasattr(self.ball, 'damage'):
+                    self.ball.damage += prestige_upgrades["permanent_damage"] * 2
+
             # Apply prestige aura and permanent stat increase
             prestige_level = pm.data.get("prestige_level", 0)
             if prestige_level > 0:

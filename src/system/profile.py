@@ -33,6 +33,8 @@ class ProfileManager:
                 },
                 "loadouts": {},
                 "prestige_level": 0,
+                "prestige_tokens": 0,
+                "prestige_upgrades": {},
                 "quests": [],
                 "cosmetics": [],
                 "titles": []
@@ -97,6 +99,11 @@ class ProfileManager:
     def do_prestige(self):
         if self.can_prestige():
             prestige_level = self.data.get("prestige_level", 0) + 1
+            # Calculate prestige tokens based on past stats (skill points, current prestige, maxed bonuses)
+            tokens_earned = 5 + prestige_level + (self.data.get("skill_points", 0) // 100)
+            current_tokens = self.data.get("prestige_tokens", 0)
+            current_upgrades = self.data.get("prestige_upgrades", {})
+
             self.data = {
                 "skill_points": 0,
                 "unlocked_balls": ["basic"],
@@ -107,6 +114,8 @@ class ProfileManager:
                 },
                 "loadouts": self.data.get("loadouts", {}),
                 "prestige_level": prestige_level,
+                "prestige_tokens": current_tokens + tokens_earned,
+                "prestige_upgrades": current_upgrades,
                 "quests": [],
                 "cosmetics": self.data.get("cosmetics", []),
                 "titles": self.data.get("titles", [])
@@ -117,6 +126,20 @@ class ProfileManager:
             lm.check_season()
             return True
         return False
+
+
+    def buy_prestige_upgrade(self, upgrade_name, cost):
+        current_tokens = self.data.get("prestige_tokens", 0)
+        upgrades = self.data.get("prestige_upgrades", {})
+
+        if current_tokens >= cost:
+            self.data["prestige_tokens"] = current_tokens - cost
+            upgrades[upgrade_name] = upgrades.get(upgrade_name, 0) + 1
+            self.data["prestige_upgrades"] = upgrades
+            self.save()
+            return True
+        return False
+
     def add_cosmetic(self, cosmetic_name):
         if "cosmetics" not in self.data:
             self.data["cosmetics"] = []

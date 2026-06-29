@@ -33,6 +33,24 @@ func _init(ball_ref, world_ref):
         if "damage" in self.ball:
             self.ball.damage += pm.data["bonuses"]["bonus_damage"] * 2
 
+
+    # Apply prestige upgrades (from prestige tokens)
+    var prestige_upgrades = pm.data.get("prestige_upgrades", {})
+    if "permanent_hp" in prestige_upgrades:
+        var bonus = prestige_upgrades["permanent_hp"] * 10
+        if "max_hp" in self.ball:
+            var hp_percent = 1.0
+            if self.ball.max_hp > 0:
+                hp_percent = float(self.ball.hp) / float(self.ball.max_hp)
+            self.ball.max_hp += bonus
+            self.ball.hp = self.ball.max_hp * hp_percent
+    if "permanent_speed" in prestige_upgrades:
+        if "speed" in self.ball:
+            self.ball.speed += prestige_upgrades["permanent_speed"] * 5
+    if "permanent_damage" in prestige_upgrades:
+        if "damage" in self.ball:
+            self.ball.damage += prestige_upgrades["permanent_damage"] * 2
+
     var prestige_level = pm.data.get("prestige_level", 0)
     if prestige_level > 0:
         if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):

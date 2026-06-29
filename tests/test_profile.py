@@ -43,5 +43,36 @@ def test_profile():
 
     print("All tests passed.")
 
+
+def test_prestige_tokens():
+    if os.path.exists("test_profile_tokens.json"):
+        os.remove("test_profile_tokens.json")
+
+    pm = ProfileManager("test_profile_tokens.json")
+    # Setup for prestige
+    pm.data["unlocked_balls"] = ["ball" + str(i) for i in range(34)]
+    pm.data["bonuses"] = {"bonus_hp": 10, "bonus_speed": 10, "bonus_damage": 10}
+    pm.data["skill_points"] = 500
+    pm.save()
+
+    assert pm.can_prestige()
+    assert pm.do_prestige()
+
+    # 5 + 1 + 500 // 100 = 11 tokens
+    assert pm.data["prestige_tokens"] == 11
+    assert pm.data["prestige_level"] == 1
+
+    # Buy an upgrade
+    assert pm.buy_prestige_upgrade("permanent_hp", 5)
+    assert pm.data["prestige_tokens"] == 6
+    assert pm.data["prestige_upgrades"]["permanent_hp"] == 1
+
+    # Can't afford
+    assert not pm.buy_prestige_upgrade("permanent_speed", 10)
+
+    if os.path.exists("test_profile_tokens.json"):
+        os.remove("test_profile_tokens.json")
+
 if __name__ == "__main__":
     test_profile()
+    test_prestige_tokens()
