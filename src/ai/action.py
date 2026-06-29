@@ -1,4 +1,6 @@
 import random
+import copy
+
 import math
 
 from typing import Any
@@ -2060,8 +2062,8 @@ class Action:
                     target.entangle_timer = 5.0
 
             elif skill_name == "clone":
-                import copy
-                import random
+
+
                 num_clones = random.randint(2, 4)
                 for _ in range(num_clones):
                     clone = copy.copy(self.ball)
@@ -2096,7 +2098,7 @@ class Action:
 
                 num_minions = random.randint(2, 4)
                 for _ in range(num_minions):
-                    import copy
+
 
                     minion = copy.copy(self.ball)
                     minion.id = getattr(self.world, "next_id", random.randint(10000, 99999))
@@ -2130,7 +2132,7 @@ class Action:
                     recent_dead = [b for b in self.world.dead_balls if getattr(b, "time_since_death", 0) < 5.0 and getattr(b, "team", "") != getattr(self.ball, "team", "")]
                     if recent_dead:
                         # Revive the most recently dead enemy as a weak minion
-                        import copy
+
                         target_dead = recent_dead[-1]
                         self.world.dead_balls.remove(target_dead)
 
@@ -2154,8 +2156,22 @@ class Action:
                         minion.current_action = "idle"
 
                         self.world.balls.append(minion)
+            elif skill_name == "illusion":
+
+                if hasattr(self.world, "balls"):
+                    decoy = copy.copy(self.ball)
+                    decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                    decoy.hp = getattr(self.ball, "max_hp", 100) * 0.1
+                    decoy.max_hp = decoy.hp
+                    decoy.damage = 0
+                    decoy.speed = 0.0
+                    decoy.is_decoy = True
+                    decoy.decoy_timer = 5.0
+                    if hasattr(decoy, "current_action"):
+                        decoy.current_action = "idle"
+                    self.world.balls.append(decoy)
             elif skill_name == "deploy_decoy":
-                import copy
+
                 if hasattr(self.world, "balls"):
                     decoy = copy.copy(self.ball)
                     decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))

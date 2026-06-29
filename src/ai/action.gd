@@ -3347,6 +3347,32 @@ func _use_skill():
 
                     self.world.balls.append(minion)
 
+        elif skill_name == "illusion":
+            if "balls" in self.world:
+                var decoy = null
+                if self.ball.has_method("duplicate"):
+                    decoy = self.ball.duplicate()
+                elif self.ball is Dictionary:
+                    decoy = self.ball.duplicate()
+                if decoy != null:
+                    if "id" in decoy:
+                        decoy.id = randi() % 90000 + 10000
+                    if "hp" in decoy and "max_hp" in decoy:
+                        decoy.max_hp = float(self.ball.max_hp) * 0.1
+                        decoy.hp = decoy.max_hp
+                    if "damage" in decoy:
+                        decoy.damage = 0.0
+                    if "speed" in decoy:
+                        decoy.speed = 0.0
+                    if "current_action" in decoy:
+                        decoy.current_action = "idle"
+                    if decoy.has_method("set_meta"):
+                        decoy.set_meta("is_decoy", true)
+                        decoy.set_meta("decoy_timer", 5.0)
+                    elif decoy is Dictionary:
+                        decoy["is_decoy"] = true
+                        decoy["decoy_timer"] = 5.0
+                    self.world.balls.append(decoy)
         elif skill_name == "deploy_decoy":
             if "balls" in self.world:
                 var decoy = null
