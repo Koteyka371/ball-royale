@@ -254,6 +254,7 @@ class ProceduralArena:
         return nearest_x, nearest_y, True
 
 
+
     def update_zone(self, current_tick: int, delta: float):
         if current_tick != self.last_tick:
             self.last_tick = current_tick
@@ -261,15 +262,22 @@ class ProceduralArena:
             if self.safe_zone_radius < 50.0:
                 self.safe_zone_radius = 50.0
 
-            # Slowly expand dynamic hazards
+            # Slowly expand dynamic hazards and decay others like flares
             for h in self.hazards:
-                if h.id >= 1000 and hasattr(h, "target_radius"):
+                if getattr(h, "kind", "") == "flare":
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0:
+                            h.active = False
+                elif h.id >= 1000 and hasattr(h, "target_radius"):
                     if h.radius < h.target_radius:
                         # Grow proportionally to reach target in roughly 600 ticks
                         h.radius += (h.target_radius / 600.0) * delta * 60.0 # Assuming 60 ticks per second
                         if h.radius > h.target_radius:
                             h.radius = h.target_radius
 
+            # Remove inactive flares
+            self.hazards = [h for h in self.hazards if getattr(h, "active", True)]
 
         if current_tick % 600 == 0:
             import random

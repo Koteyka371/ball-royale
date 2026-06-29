@@ -89,6 +89,17 @@ class Action:
         self.world = world
 
     def execute(self, strategy: str, delta: float) -> None:
+
+        if strategy in ("flee", "defend") and hasattr(self.ball, "inventory") and "deployable_flare" in self.ball.inventory:
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                from arena.procedural_arena import Hazard
+                flare_id = len(self.world.arena.hazards) + random.randint(10000, 99999)
+                flare = Hazard(flare_id, self.ball.x, self.ball.y, 10.0, "flare", 0.0)
+                setattr(flare, 'duration', 5.0)
+                setattr(flare, 'owner_id', getattr(self.ball, 'id', None))
+                self.world.arena.hazards.append(flare)
+                self.ball.inventory.remove("deployable_flare")
+
         # Check inventory for traps to place if fleeing or defending
         if strategy in ("flee", "defend") and hasattr(self.ball, "inventory") and "placeable_trap" in self.ball.inventory:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -981,15 +992,33 @@ class Action:
             return comb_nx / comb_dist, comb_ny / comb_dist
         return nx, ny
 
+
+
     def _get_enemies(self) -> list:
         perception_radius = getattr(self.ball, "perception_radius", 250)
+        enemies = []
         if hasattr(self.world, "get_nearby_entities"):
             entities = self.world.get_nearby_entities(self.ball, perception_radius)
             if isinstance(entities, dict):
-                return [e for e in entities.get("enemies", []) if getattr(e, "ball_type", None) != "spectator"]
+                enemies = [e for e in entities.get("enemies", []) if getattr(e, "ball_type", None) != "spectator"]
             else:
-                return [e for e in entities if getattr(e, "ball_type", None) != self.ball.ball_type and getattr(e, "ball_type", None) != "spectator" and getattr(e, "alive", True)]
-        return []
+                enemies = [e for e in entities if getattr(e, "ball_type", None) != self.ball.ball_type and getattr(e, "ball_type", None) != "spectator" and getattr(e, "alive", True)]
+
+        # Include flares as high-priority enemies if they are within perception radius
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            for h in self.world.arena.hazards:
+                if getattr(h, "kind", "") == "flare" and getattr(h, "active", True):
+                    owner_id = getattr(h, "owner_id", None)
+                    my_id = getattr(self.ball, "id", None)
+                    # Don't target our own flare
+                    if owner_id is not None and my_id is not None and owner_id == my_id:
+                        continue
+                    dx = getattr(h, "x", 0) - self.ball.x
+                    dy = getattr(h, "y", 0) - self.ball.y
+                    if dx*dx + dy*dy <= perception_radius*perception_radius:
+                        enemies.append(h)
+
+        return enemies
 
     def _get_allies(self) -> list:
         perception_radius = getattr(self.ball, "perception_radius", 250)
@@ -1103,6 +1132,11 @@ class Action:
         return max(enemies, key=self._evaluate_target_strength_deterministic)
 
     def _get_target(self, enemies: list[Any]) -> Any:
+        # Check for flares first (they draw AI targeting logic)
+        flares = [e for e in enemies if getattr(e, "kind", "") == "flare"]
+        if flares:
+            return min(flares, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+
         # Ball Relationships - Balls remember each other
         # Rivalry skill: attacked me before -> attack on sight
         memory_state = getattr(self.ball, "memory", {})

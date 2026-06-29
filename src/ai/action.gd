@@ -1434,26 +1434,53 @@ func _get_enemies() -> Array:
     if "perception_radius" in self.ball:
         perception_radius = self.ball.perception_radius
 
+    var enemies = []
     if self.world != null and self.world.has_method("get_nearby_entities"):
         var entities = self.world.get_nearby_entities(self.ball, perception_radius)
         if typeof(entities) == TYPE_DICTIONARY and entities.has("enemies"):
-            var enemies = []
             for e in entities["enemies"]:
                 var e_type = e.ball_type if "ball_type" in e else (e.get_ball_type() if e.has_method("get_ball_type") else "")
                 if e_type != "spectator":
                     enemies.append(e)
-            return enemies
         elif typeof(entities) == TYPE_ARRAY:
-            var enemies = []
             for e in entities:
                 if e.has_method("get_ball_type") or "ball_type" in e:
                     var e_type = e.ball_type if "ball_type" in e else e.get_ball_type()
                     var b_type = self.ball.ball_type if "ball_type" in self.ball else self.ball.get_ball_type()
                     if e_type != b_type and e_type != "spectator":
-                        if ("alive" in e and e.alive) or (e.has_method("is_alive") and e.is_alive()):
-                            enemies.append(e)
-            return enemies
-    return []
+                        enemies.append(e)
+
+    if self.world != null and "arena" in self.world and self.world.arena != null:
+        var arena = self.world.arena
+        if arena != null and "hazards" in arena:
+            for h in arena.hazards:
+                if "kind" in h and h.kind == "flare":
+                    var is_active = true
+                    if "active" in h:
+                        is_active = h.active
+                    elif h.has_method("has_meta") and h.has_meta("active"):
+                        is_active = h.get_meta("active")
+
+                    if is_active:
+                        var owner_id = null
+                        if "owner_id" in h:
+                            owner_id = h.owner_id
+                        elif h.has_method("has_meta") and h.has_meta("owner_id"):
+                            owner_id = h.get_meta("owner_id")
+
+                        var my_id = null
+                        if "id" in self.ball:
+                            my_id = self.ball.id
+
+                        if owner_id != null and my_id != null and owner_id == my_id:
+                            continue
+
+                        var dx = h.x - self.ball.x
+                        var dy = h.y - self.ball.y
+                        if dx*dx + dy*dy <= perception_radius*perception_radius:
+                            enemies.append(h)
+
+    return enemies
 
 func _get_allies() -> Array:
     var perception_radius = 250.0
@@ -1648,6 +1675,22 @@ func _find_strongest_enemy_deterministic(enemies: Array) -> Object:
     return target
 
 func _get_target(enemies: Array) -> Object:
+    var flares = []
+    for e in enemies:
+        if "kind" in e and e.kind == "flare":
+            flares.append(e)
+
+    if flares.size() > 0:
+        var c_flare = null
+        var min_d_sq = INF
+        for f_ent in flares:
+            var d_sq = pow(f_ent.x - self.ball.x, 2) + pow(f_ent.y - self.ball.y, 2)
+            if d_sq < min_d_sq:
+                min_d_sq = d_sq
+                c_flare = f_ent
+        if c_flare != null:
+            return c_flare
+
     var ball_memory = {}
     if self.ball.has_method("get_meta") and self.ball.has_meta("memory"):
         ball_memory = self.ball.get_meta("memory")
@@ -1671,7 +1714,8 @@ func _get_target(enemies: Array) -> Object:
             if d_sq < min_d_sq:
                 min_d_sq = d_sq
                 c_rival = r_ent
-        return c_rival
+        if c_rival != null:
+            return c_rival
 
     var target_msg = null
     var allies = _get_allies()
