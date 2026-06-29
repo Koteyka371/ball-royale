@@ -4038,7 +4038,7 @@
     },
     {
       "id": "idea-231",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Portal Modifier items",
@@ -6959,6 +6959,212 @@
         "src/ai/nemesis.py",
         "src/ai/nemesis.gd",
         "tests/test_nemesis.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-403",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Clone Decoy Booster",
+      "description": "A booster that when collected creates a temporary AI clone of the player that taunts enemies but deals no damage.",
+      "allowed_paths": [
+        "src/ai/clone_decoy_booster.py",
+        "src/ai/clone_decoy_booster.gd",
+        "tests/test_clone_decoy_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-404",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "New Hazard: Time Dilation Field",
+      "description": "A new procedural arena hazard that drastically slows down the movement speed and action timers of all balls caught within its radius, creating tactical chokepoints.",
+      "allowed_paths": [
+        "src/arena/new_time_dilation_field.py",
+        "src/arena/new_time_dilation_field.gd",
+        "tests/test_new_time_dilation_field.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-405",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "New Skill: Reflector Shield",
+      "description": "A skill that creates a temporary shield around the ball that reflects all incoming projectiles or physical damage back to the attacker for 3 seconds.",
+      "allowed_paths": [
+        "src/ai/new_skill_reflector_shield.py",
+        "src/ai/new_skill_reflector_shield.gd",
+        "tests/test_new_skill_reflector_shield.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-406",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tornado Warning Siren",
+      "description": "Add an audio/visual siren 3 seconds before a tornado spawns in thunderstorm weather so players have a brief warning to move out of the area.",
+      "allowed_paths": [
+        "src/ai/tornado_warning_siren.py",
+        "src/ai/tornado_warning_siren.gd",
+        "tests/test_tornado_warning_siren.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-407",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Mine Booster",
+      "description": "A booster that deploys a small trap which pulls nearby enemies in and deals continuous damage when triggered.",
+      "allowed_paths": [
+        "src/ai/gravity_mine_booster.py",
+        "src/ai/gravity_mine_booster.gd",
+        "tests/test_gravity_mine_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-408",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Orbital Shield Utility Skill",
+      "description": "Add a new utility skill 'Orbital Shield' that creates a localized 300-radius dome that significantly reduces incoming damage from area effects like meteors and orbital strikes, providing an anchor point for teams during chaotic events.",
+      "allowed_paths": [
+        "src/ai/orbital_shield_utility_skill.py",
+        "src/ai/orbital_shield_utility_skill.gd",
+        "tests/test_orbital_shield_utility_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-409",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Nemesis Tracking UI",
+      "description": "Add a UI screen to view current nemeses and their kill counts.",
+      "allowed_paths": [
+        "src/ui/nemesis_tracking_ui.py",
+        "src/ui/nemesis_tracking_ui.gd",
+        "src/ai/nemesis_tracking_ui.py",
+        "tests/test_nemesis_tracking_ui.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-410",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Lightning Rod Ball Type",
+      "description": "A new ball type that can absorb lightning strikes for health/speed boosts instead of taking damage, and attracts lightning away from allies.",
+      "allowed_paths": [
+        "src/ai/lightning_rod_ball.py",
+        "src/ai/lightning_rod_ball.gd",
+        "tests/test_lightning_rod_ball.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-411",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Nemesis Hunter Booster",
+      "description": "A booster that specifically increases movement speed towards your nemesis.",
+      "allowed_paths": [
+        "src/ai/nemesis_hunter_booster.py",
+        "src/ai/nemesis_hunter_booster.gd",
+        "tests/test_nemesis_hunter_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-412",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Health Hazard",
+      "description": "A hazard that slowly shrinks the maximum health of nearby players over time.",
+      "allowed_paths": [
+        "src/arena/shrinking_health.py",
+        "src/arena/shrinking_health.gd",
+        "tests/test_shrinking_health.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-413",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Gravity Booster",
+      "description": "A booster that reverses the gravity for a short time for players that touch it.",
+      "allowed_paths": [
+        "src/ai/reverse_gravity_booster.py",
+        "src/ai/reverse_gravity_booster.gd",
+        "tests/test_reverse_gravity_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-414",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Orbital Strike Warning UI Element",
+      "description": "When an orbital strike hazard spawns, show a large, pulsating crosshair UI element and play a warning siren sound effect for the 3 seconds before it strikes, giving players a clearer cue to evacuate the massive area.",
+      "allowed_paths": [
+        "src/ui/orbital_strike_warning_ui_element.py",
+        "src/ui/orbital_strike_warning_ui_element.gd",
+        "src/ai/orbital_strike_warning_ui_element.py",
+        "tests/test_orbital_strike_warning_ui_element.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

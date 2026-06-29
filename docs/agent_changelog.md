@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-231] Portal Modifier items — *2026-06-29 11:22:51 UTC*
+
+Items or boosters that allow players to throw a temporary exit portal anywhere on the arena, acting as a tactical escape hatch for a short duration.
+
+---
+
 ## [idea-281] Vampiric Drain booster — *2026-06-29 11:08:44 UTC*
 
 A booster that links you to the nearest enemy for 5 seconds, draining their HP and giving it to you as long as you stay within range.
