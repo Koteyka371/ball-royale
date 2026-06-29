@@ -300,6 +300,35 @@ class Action:
                                         if other.hp <= 0:
                                             other.alive = False
 
+        if getattr(self.ball, "is_illusion", False):
+            self.ball.illusion_timer -= delta
+            if self.ball.illusion_timer <= 0:
+                self.ball.alive = False
+                self.ball.hp = 0
+
+        # Global illusion explosion check
+        if hasattr(self.world, "balls"):
+            for b in self.world.balls:
+                if getattr(b, "is_illusion", False):
+                    # Absorbs 1 hit or timer runs out
+                    if getattr(b, "hp", 1.0) <= 0 or getattr(b, "illusion_timer", 1.0) <= 0 or not getattr(b, "alive", True):
+                        if not getattr(b, "_illusion_exploded", False):
+                            b._illusion_exploded = True
+                            b.alive = False
+                            b.hp = 0
+                            for other in self.world.balls:
+                                if getattr(other, "alive", False) and getattr(other, "team", getattr(b, "team", "")) != getattr(b, "team", "") and getattr(other, "id", None) != getattr(b, "id", None):
+                                    dx = other.x - b.x
+                                    dy = other.y - b.y
+                                    dist = math.sqrt(dx*dx + dy*dy)
+                                    if dist <= 80.0:
+                                        if hasattr(other, "take_damage"):
+                                            other.take_damage(20.0)
+                                        else:
+                                            other.hp -= 20.0
+                                            if other.hp <= 0:
+                                                other.alive = False
+
         if getattr(self.ball, "stutter_timer", 0.0) > 0.0:
             self.ball.speed = 0.01  # almost stopped to simulate pause
 
@@ -1191,8 +1220,26 @@ class Action:
 
         if hasattr(self.world, "balls"):
             for b in self.world.balls:
+                if getattr(b, "is_illusion", False) and getattr(b, "alive", True) and b not in enemies:
+                    if getattr(b, "team", getattr(b, "ball_type", "")) != getattr(self.ball, "team", getattr(self.ball, "ball_type", "")):
+                        dx = getattr(b, "x", 0) - self.ball.x
+                        dy = getattr(b, "y", 0) - self.ball.y
+                        if dx*dx + dy*dy <= perception_radius*perception_radius:
+                            enemies.append(b)
+
+        if hasattr(self.world, "balls"):
+            for b in self.world.balls:
                 if getattr(b, "is_decoy", False) and getattr(b, "alive", True) and b not in enemies:
                     if getattr(b, "ball_type", None) != self.ball.ball_type:
+                        dx = getattr(b, "x", 0) - self.ball.x
+                        dy = getattr(b, "y", 0) - self.ball.y
+                        if dx*dx + dy*dy <= perception_radius*perception_radius:
+                            enemies.append(b)
+
+        if hasattr(self.world, "balls"):
+            for b in self.world.balls:
+                if getattr(b, "is_illusion", False) and getattr(b, "alive", True) and b not in enemies:
+                    if getattr(b, "team", getattr(b, "ball_type", "")) != getattr(self.ball, "team", getattr(self.ball, "ball_type", "")):
                         dx = getattr(b, "x", 0) - self.ball.x
                         dy = getattr(b, "y", 0) - self.ball.y
                         if dx*dx + dy*dy <= perception_radius*perception_radius:
@@ -1330,7 +1377,12 @@ class Action:
         return max(enemies, key=self._evaluate_target_strength_deterministic)
 
     def _get_target(self, enemies: list[Any]) -> Any:
-        # Check for flares first (they draw AI targeting logic)
+        # Check for illusions first (they taunt AI)
+        illusions = [e for e in enemies if getattr(e, "is_illusion", False)]
+        if illusions:
+            return min(illusions, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+
+        # Check for flares next
         flares = [e for e in enemies if getattr(e, "kind", "") == "flare"]
         if flares:
             return min(flares, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
@@ -2426,6 +2478,31 @@ class Action:
                     decoy.is_decoy = True
                     decoy.decoy_timer = 5.0
                     self.world.balls.append(decoy)
+
+            elif skill_name == "deploy_illusion":
+                import copy
+                import random
+                if hasattr(self.world, "balls"):
+                    illusion = copy.copy(self.ball)
+                    illusion.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                    if hasattr(self.world, "next_id"):
+                        self.world.next_id += 1
+
+                    illusion.hp = 1.0  # Absorbs one hit
+                    illusion.max_hp = illusion.hp
+                    illusion.damage = 0
+                    illusion.is_illusion = True
+                    illusion.illusion_timer = 5.0
+                    illusion.speed = 0  # illusions are stationary
+
+                    # Clear skills to prevent recursive casting fork bomb
+                    illusion.skill = None
+                    illusion.SKILL = None
+                    if hasattr(illusion, "active_skill"):
+                        illusion.active_skill = None
+                    illusion.skill_timer = 9999.0
+
+                    self.world.balls.append(illusion)
             elif skill_name in ("Действие", "action_skill"):
                 self.ball.team_message = {"type": "action_skill_used", "radius": 150}
             elif skill_name == "numpy":
