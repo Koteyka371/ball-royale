@@ -619,6 +619,27 @@ class Action:
                                 pull_strength = min(pull_strength, dist * 0.5) # Prevent overshooting
                                 self.ball.x += nx * pull_strength
                                 self.ball.y += ny * pull_strength
+
+                    elif hazard.kind == "magnetic_field":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            if dist_sq > 0.0001:
+                                dist = math.sqrt(dist_sq)
+                                nx, ny = dx / dist, dy / dist
+                                ball_polarity = getattr(self.ball, "polarity", 1)
+                                hazard_polarity = getattr(hazard, "polarity", 1)
+
+                                pull_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 50.0 * delta
+                                if ball_polarity != hazard_polarity:
+                                    # Pull
+                                    self.ball.x += nx * pull_strength
+                                    self.ball.y += ny * pull_strength
+                                else:
+                                    # Push
+                                    self.ball.x -= nx * pull_strength
+                                    self.ball.y -= ny * pull_strength
                     elif hazard.kind == "black_hole" or hazard.kind == "tornado":
                         # Only update global state once per frame using the tick counter
                         current_tick = getattr(self.world, "tick", 0)
@@ -2764,6 +2785,11 @@ class Action:
                         target.team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
                         self._spawn_skill_particles("mind_control")
 
+            elif skill_name == "switch_polarity":
+                current_polarity = getattr(self.ball, "polarity", 1)
+                self.ball.polarity = -current_polarity
+                if hasattr(self, "_spawn_skill_particles"):
+                    self._spawn_skill_particles("polarity_shift")
             elif skill_name == "ground_pound":
                 pound_radius = 120.0
                 pound_damage = 40.0

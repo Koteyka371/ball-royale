@@ -774,6 +774,38 @@ func execute(strategy: String, delta: float):
                             var pull_strength = (hazard.radius * 2.0 / min_dist) * 50.0 * delta
                             self.ball.x += nx * pull_strength
                             self.ball.y += ny * pull_strength
+                elif hazard.kind == "magnetic_field":
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    if dist_sq < hazard.radius * hazard.radius:
+                        if dist_sq > 0.0001:
+                            var dist = sqrt(dist_sq)
+                            var nx = dx / dist
+                            var ny = dy / dist
+                            var min_dist = 10.0
+                            if dist > min_dist:
+                                min_dist = dist
+
+                            var ball_polarity = 1
+                            if "polarity" in self.ball:
+                                ball_polarity = self.ball.polarity
+                            elif self.ball.has_method("get_meta") and self.ball.has_meta("polarity"):
+                                ball_polarity = self.ball.get_meta("polarity")
+
+                            var hazard_polarity = 1
+                            if "polarity" in hazard:
+                                hazard_polarity = hazard.polarity
+                            elif hazard.has_method("get_meta") and hazard.has_meta("polarity"):
+                                hazard_polarity = hazard.get_meta("polarity")
+
+                            var pull_strength = (hazard.radius * 2.0 / min_dist) * 50.0 * delta
+                            if ball_polarity != hazard_polarity:
+                                self.ball.x += nx * pull_strength
+                                self.ball.y += ny * pull_strength
+                            else:
+                                self.ball.x -= nx * pull_strength
+                                self.ball.y -= ny * pull_strength
                 elif hazard.kind == "black_hole" or hazard.kind == "tornado":
                     var current_tick = 0
                     if "tick" in self.world:

@@ -119,7 +119,7 @@ class ProceduralArena:
         # Generate hazards
         num_hazards = self.num_rooms * 2
         for i in range(num_hazards):
-            kind = random.choice(["spikes", "lava", "fake_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "hidden_trap", "silence_booster"])
+            kind = random.choice(["spikes", "lava", "fake_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "hidden_trap", "silence_booster", "magnetic_field"])
             if kind == "spikes":
                 radius = random.uniform(15.0, 30.0)
                 damage = 20.0
@@ -158,9 +158,16 @@ class ProceduralArena:
                 damage = 50.0
 
             hx, hy = self.get_random_spawn_point(radius)
-            new_hazard = Hazard(id=i, x=hx, y=hy, radius=radius, kind=kind, damage=damage)
+
+            if kind == "magnetic_field":
+                polarity = random.choice([-1, 1])
+                new_hazard = Hazard(id=i, x=hx, y=hy, radius=radius, kind=kind, damage=0.0)
+                new_hazard.polarity = polarity
+            else:
+                new_hazard = Hazard(id=i, x=hx, y=hy, radius=radius, kind=kind, damage=damage)
             if kind == "temporal_rift":
                 new_hazard.time_scale = random.choice([0.5, 1.5, 2.0])
+
             self.hazards.append(new_hazard)
 
         # Generate guaranteed paired portals

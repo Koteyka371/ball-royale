@@ -39,6 +39,13 @@ class PortalArena extends ProceduralArena:
 		hazards.append(ArenaTypes.Portal.new(2, w-150.0, 150.0, 30.0, 150.0, h-150.0))
 		hazards.append(ArenaTypes.Portal.new(3, 150.0, h-150.0, 30.0, w-150.0, 150.0))
 
+class MagneticField extends ProceduralArena.Hazard:
+    var polarity: int
+
+    func _init(_id: int, _x: float, _y: float, _radius: float, _polarity: int):
+        super(_id, _x, _y, _radius, "magnetic_field", 0.0)
+        set_meta("polarity", _polarity)
+
 class ConveyorBelt extends ProceduralArena.Hazard:
     var direction_vector: Array
     var speed_magnitude: float

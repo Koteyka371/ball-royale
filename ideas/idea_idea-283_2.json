@@ -1,0 +1,4 @@
+{
+  "title": "Arena Gravity Modifiers",
+  "description": "Dynamic hazards that modify the physics inside their radius. Instead of dealing damage or pulling/pushing on a flat plane, they alter movement speed, jump height, or projectile arcs, requiring players to adapt their tactics based on the local gravitational field."
+}
