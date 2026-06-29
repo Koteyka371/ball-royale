@@ -2042,8 +2042,58 @@ class WindstormMode(GameMode):
         return None
 
 
+
+class EarthquakeMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Earthquake"
+        self.description = "Periodically shakes the screen and applies a random impulse vector to all entities, disrupting aiming and movement patterns temporarily."
+        self.earthquake_timer = 5.0
+        self.earthquake_duration = 0.0
+        self.impulse_strength = 500.0
+        import random
+        self.random = random
+
+    def setup(self, world, balls) -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "dead_balls"): world.dead_balls = []
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator":
+                b.team = getattr(b, "team", b.ball_type)
+
+    def tick(self, world, balls, delta: float = 0.016) -> None:
+        if not hasattr(world, "dead_balls"): world.dead_balls = []
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+        self.earthquake_timer -= delta
+        if self.earthquake_timer <= 0:
+            if self.earthquake_duration <= 0:
+                if hasattr(world, 'add_event'):
+                    world.add_event('screen_shake', {'type': 'screen_shake', 'duration': 1.0, 'intensity': 10.0})
+                self.earthquake_duration = 1.0
+            else:
+                self.earthquake_duration -= delta
+                if self.earthquake_duration <= 0:
+                    self.earthquake_timer = self.random.uniform(4.0, 8.0)
+
+        if self.earthquake_duration > 0:
+            import math
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                    if not hasattr(b, "vx"): b.vx = 0.0
+                    if not hasattr(b, "vy"): b.vy = 0.0
+                    angle = self.random.uniform(0, 2 * math.pi)
+                    b.vx += math.cos(angle) * self.impulse_strength * delta
+                    b.vy += math.sin(angle) * self.impulse_strength * delta
+
 GAME_MODES = {
     "windstorm": WindstormMode(),
+    "earthquake": EarthquakeMode(),
     "modifier_zones": ModifierZonesMode(),
     "draft_royale": DraftRoyaleMode(),
     "tournament": TournamentMode(),

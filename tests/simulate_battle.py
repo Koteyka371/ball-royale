@@ -472,6 +472,13 @@ class BattleSimulation:
                 "type": "weather_change",
                 "weather": data.get("weather", "clear")
             })
+        elif event_type == "screen_shake":
+            self.kill_log.append({
+                "tick": self.tick,
+                "type": "screen_shake",
+                "duration": data.get("duration", 1.0),
+                "intensity": data.get("intensity", 10.0)
+            })
         elif event_type == "spawn_booster":
             rx, ry = self.arena.get_random_spawn_point(10)
             x = data.get("x", rx)

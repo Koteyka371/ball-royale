@@ -2540,8 +2540,59 @@ class WindstormMode extends GameMode:
         return null
 
 
+
+class EarthquakeMode extends GameMode:
+    var earthquake_timer = 5.0
+    var earthquake_duration = 0.0
+    var impulse_strength = 500.0
+
+    func _init() -> void:
+        name = "Earthquake"
+        description = "Periodically shakes the screen and applies a random impulse vector to all entities, disrupting aiming and movement patterns temporarily."
+
+    func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
+        if not "dead_balls" in world:
+            world.dead_balls = []
+        for b in balls:
+            if b.ball_type != "spectator":
+                if not "team" in b:
+                    b.team = b.ball_type
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        if not "dead_balls" in world: world.dead_balls = []
+        for b in balls:
+            if not b.alive:
+                if not world.dead_balls.has(b):
+                    if b.has_method("set_meta"):
+                        b.set_meta("time_since_death", 0.0)
+                    world.dead_balls.append(b)
+                else:
+                    if b.has_method("get_meta") and b.has_meta("time_since_death"):
+                        b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+        earthquake_timer -= delta
+        if earthquake_timer <= 0:
+            if earthquake_duration <= 0:
+                if world != null and world.has_method("add_event"):
+                    world.add_event("screen_shake", {"type": "screen_shake", "duration": 1.0, "intensity": 10.0})
+                earthquake_duration = 1.0
+            else:
+                earthquake_duration -= delta
+                if earthquake_duration <= 0:
+                    earthquake_timer = randf_range(4.0, 8.0)
+
+        if earthquake_duration > 0:
+            for b in balls:
+                if b.alive and b.ball_type != "spectator":
+                    if not "vx" in b: b.vx = 0.0
+                    if not "vy" in b: b.vy = 0.0
+                    var angle = randf_range(0, 2 * PI)
+                    b.vx += cos(angle) * impulse_strength * delta
+                    b.vy += sin(angle) * impulse_strength * delta
+
 var GAME_MODES = {
 	"windstorm": WindstormMode.new(),
+	"earthquake": EarthquakeMode.new(),
 	"modifier_zones": ModifierZonesMode.new(),
     "draft_royale": DraftRoyaleMode.new(),
     "tournament": TournamentMode.new(),
