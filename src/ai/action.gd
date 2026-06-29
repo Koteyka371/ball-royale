@@ -1099,6 +1099,23 @@ func execute(strategy: String, delta: float):
                             if self.ball.has_method("set_meta"):
                                 self.ball.set_meta("stutter_timer", 1.0)
                         continue
+                    elif hazard.kind == "bumper":
+                        var dx = self.ball.x - hazard.x
+                        var dy = self.ball.y - hazard.y
+                        var d = sqrt(dx*dx + dy*dy)
+                        if d < 0.0001: d = 0.0001
+
+                        var nx = dx / d
+                        var ny = dy / d
+
+                        var angle = atan2(ny, nx) + randf_range(-0.5, 0.5)
+                        nx = cos(angle)
+                        ny = sin(angle)
+
+                        var bounce_strength = 600.0 * delta
+                        self.ball.x += nx * bounce_strength
+                        self.ball.y += ny * bounce_strength
+                        continue
                     elif hazard.kind == "healing_spring":
                         var heal_amount = abs(hazard.damage) * delta
                         if "hp" in self.ball and "max_hp" in self.ball:

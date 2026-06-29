@@ -376,8 +376,10 @@ class Action:
                         current_tick = getattr(self.world, "tick", 0)
                         if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
                             hazard.last_updated_tick = current_tick
-                            if not hasattr(hazard, "vx"): hazard.vx = 0.0
-                            if not hasattr(hazard, "vy"): hazard.vy = 0.0
+                            if not hasattr(hazard, "vx"):
+                                hazard.vx = 0.0
+                            if not hasattr(hazard, "vy"):
+                                hazard.vy = 0.0
                             hazard.x += hazard.vx * delta
                             hazard.y += hazard.vy * delta
                             hazard.vx *= (1.0 - 2.0 * delta)
@@ -416,7 +418,8 @@ class Action:
                                 import copy
                                 holo = copy.copy(owner)
                                 holo.id = getattr(self.world, "next_id", random.randint(10000, 99999))
-                                if hasattr(self.world, "next_id"): self.world.next_id += 1
+                                if hasattr(self.world, "next_id"):
+                                                        self.world.next_id += 1
                                 holo.x = hazard.x
                                 holo.y = hazard.y
                                 holo.hp = 10.0
@@ -425,7 +428,8 @@ class Action:
                                 holo.hologram_timer = 10.0
                                 holo.skill = None
                                 holo.active_skill = None
-                                if hasattr(holo, "SKILL"): holo.SKILL = None
+                                if hasattr(holo, "SKILL"):
+                                                holo.SKILL = None
                                 holo.vx = 0.0
                                 holo.vy = 0.0
                                 holo.damage = 0.0
@@ -845,6 +849,25 @@ class Action:
                                 if hasattr(self, "_spawn_skill_particles"):
                                     self._spawn_skill_particles("lightning")
                                 self.ball.stutter_timer = 1.0 # Stun
+                            continue
+                        elif hazard.kind == "bumper":
+                            dx = self.ball.x - hazard.x
+                            dy = self.ball.y - hazard.y
+                            dist2 = dx*dx + dy*dy
+                            dist = math.sqrt(dist2) if dist2 > 0 else 0.0001
+
+                            # Normalize direction
+                            nx = dx / dist
+                            ny = dy / dist
+
+                            # Add random chaos to direction (small angle variation)
+                            angle = math.atan2(ny, nx) + random.uniform(-0.5, 0.5)
+                            nx = math.cos(angle)
+                            ny = math.sin(angle)
+
+                            bounce_strength = 600.0 * delta
+                            self.ball.x += nx * bounce_strength
+                            self.ball.y += ny * bounce_strength
                             continue
                         elif hazard.kind == "healing_spring":
                             # Regenerate HP over time
@@ -2303,7 +2326,7 @@ class Action:
 
                     # We might not have next_id, handle it gracefully
                     if hasattr(self.world, "next_id"):
-                        self.world.next_id += 1
+                                                        self.world.next_id += 1
 
                     if hasattr(self.world, "balls"):
                         self.world.balls.append(minion)
