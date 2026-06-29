@@ -1,0 +1,4 @@
+{
+  "title": "Repulsion Field Hazard",
+  "description": "Introduce a 'repulsion_field' hazard that dynamically pushes players away. Unlike the gravity_well or magnet which attract balls, the repulsion field pushes entities outward. This can create fun zone-control dynamics where players can use the field as a barrier or get unexpectedly launched out of a safe zone."
+}
