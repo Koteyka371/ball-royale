@@ -1,0 +1,4 @@
+{
+    "title": "Wormhole Trap",
+    "description": "A new hazard type that links two specific points in the arena. If a ball gets too close, it gets instantly teleported to the other wormhole node, carrying its current momentum. This would create chaotic repositioning."
+}

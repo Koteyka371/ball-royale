@@ -538,6 +538,7 @@ class Action:
                                 dist = math.sqrt(dist_sq)
                                 nx, ny = dx / dist, dy / dist
                                 pull_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 50.0 * delta
+                                pull_strength = min(pull_strength, dist * 0.5) # Prevent overshooting
                                 self.ball.x += nx * pull_strength
                                 self.ball.y += ny * pull_strength
                     elif hazard.kind == "black_hole" or hazard.kind == "tornado":
@@ -549,6 +550,9 @@ class Action:
 
                                 hazard.vx = random.uniform(-100.0, 100.0) if hazard.kind == "tornado" else random.uniform(-10.0, 10.0)
                                 hazard.vy = random.uniform(-100.0, 100.0) if hazard.kind == "tornado" else random.uniform(-10.0, 10.0)
+                            if not hasattr(hazard, "lifetime"):
+                                hazard.lifetime = 0.0
+                            hazard.lifetime += delta
                             hazard.x += hazard.vx * delta
                             hazard.y += hazard.vy * delta
                             if hasattr(self.world.arena, "width") and hasattr(self.world.arena, "height"):
@@ -563,11 +567,12 @@ class Action:
                                     bdx = hazard.x - b.x
                                     bdy = hazard.y - b.y
                                     bdist_sq = bdx * bdx + bdy * bdy
-                                    if bdist_sq < hazard.radius * hazard.radius * 4: # Effective pull range
+                                    lifetime_mult = 1.0 + (getattr(hazard, "lifetime", 0.0) / 10.0) if hazard.kind == "black_hole" else 1.0
+                                    if bdist_sq < hazard.radius * hazard.radius * 4 * lifetime_mult: # Effective pull range
                                         if bdist_sq > 0.0001:
                                             bdist = math.sqrt(bdist_sq)
                                             bnx, bny = bdx / bdist, bdy / bdist
-                                            pull_strength = (hazard.radius * 2.0 / max(10.0, bdist)) * 80.0 * delta
+                                            pull_strength = (hazard.radius * 2.0 / max(10.0, bdist)) * 80.0 * delta * lifetime_mult
                                             b.x += bnx * pull_strength
                                             b.y += bny * pull_strength
 
@@ -578,9 +583,10 @@ class Action:
                                     bdy = hazard.y - b.y
                                     bdist_sq = bdx * bdx + bdy * bdy
                                     if bdist_sq > 0.0001:
+                                        lifetime_mult = 1.0 + (getattr(hazard, "lifetime", 0.0) / 10.0) if hazard.kind == "black_hole" else 1.0
                                         bdist = math.sqrt(bdist_sq)
                                         bnx, bny = bdx / bdist, bdy / bdist
-                                        bpull_strength = (hazard.radius * 2.0 / max(10.0, bdist)) * 50.0 * delta
+                                        bpull_strength = (hazard.radius * 2.0 / max(10.0, bdist)) * 50.0 * delta * lifetime_mult
                                         b.x += bnx * bpull_strength
                                         b.y += bny * bpull_strength
 
@@ -589,9 +595,10 @@ class Action:
                         dy = hazard.y - self.ball.y
                         dist_sq = dx * dx + dy * dy
                         if dist_sq > 0.0001:
+                            lifetime_mult = 1.0 + (getattr(hazard, "lifetime", 0.0) / 10.0) if hazard.kind == "black_hole" else 1.0
                             dist = math.sqrt(dist_sq)
                             nx, ny = dx / dist, dy / dist
-                            pull_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 50.0 * delta
+                            pull_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 50.0 * delta * lifetime_mult
                             self.ball.x += nx * pull_strength
                             self.ball.y += ny * pull_strength
 
