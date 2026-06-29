@@ -686,15 +686,19 @@ func execute(strategy: String, delta: float):
                             var pull_strength = (hazard.radius * 2.0 / min_dist) * 50.0 * delta
                             self.ball.x += nx * pull_strength
                             self.ball.y += ny * pull_strength
-                elif hazard.kind == "black_hole":
+                elif hazard.kind == "black_hole" or hazard.kind == "tornado":
                     var current_tick = 0
                     if "tick" in self.world:
                         current_tick = self.world.tick
                     if not hazard.has_meta("last_updated_tick") or hazard.get_meta("last_updated_tick") != current_tick:
                         hazard.set_meta("last_updated_tick", current_tick)
                         if not hazard.has_meta("vx"):
-                            hazard.set_meta("vx", 10.0)
-                            hazard.set_meta("vy", 10.0)
+                            if hazard.kind == "tornado":
+                                hazard.set_meta("vx", randf_range(-100.0, 100.0))
+                                hazard.set_meta("vy", randf_range(-100.0, 100.0))
+                            else:
+                                hazard.set_meta("vx", 10.0)
+                                hazard.set_meta("vy", 10.0)
                         var hvx = hazard.get_meta("vx")
                         var hvy = hazard.get_meta("vy")
                         hazard.x += hvx * delta
@@ -967,6 +971,33 @@ func execute(strategy: String, delta: float):
                             self.ball.hp -= hd
                             if self.ball.hp <= 0:
                                 self.ball.alive = false
+                    elif hazard.kind == "tornado":
+                        var dx = hazard.x - self.ball.x
+                        var dy = hazard.y - self.ball.y
+                        var md = max(0.1, dist)
+                        var pull_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 200.0 * delta
+                        self.ball.x += (dx / md) * pull_strength
+                        self.ball.y += (dy / md) * pull_strength
+                        var hazard_damage = hazard.damage * delta
+                        if self.ball.has_method("take_damage"):
+                            self.ball.take_damage(hazard_damage)
+                        elif "hp" in self.ball:
+                            self.ball.hp -= hazard_damage
+                            if self.ball.hp <= 0:
+                                self.ball.alive = false
+                    elif hazard.kind == "lightning_strike":
+                        if not hazard.has_meta("hit_targets") or not hazard.get_meta("hit_targets"):
+                            hazard.set_meta("hit_targets", true)
+                            if self.ball.has_method("take_damage"):
+                                self.ball.take_damage(hazard.damage)
+                            elif "hp" in self.ball:
+                                self.ball.hp -= hazard.damage
+                                if self.ball.hp <= 0:
+                                    self.ball.alive = false
+                            if has_method("_spawn_particles"):
+                                _spawn_particles(self.ball.x, self.ball.y, "lightning")
+                            if self.ball.has_method("set_meta"):
+                                self.ball.set_meta("stutter_timer", 1.0)
                         continue
                     elif hazard.kind == "healing_spring":
                         var heal_amount = abs(hazard.damage) * delta

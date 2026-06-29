@@ -678,6 +678,30 @@ class WeatherChaosMode(GameMode):
             world.arena.is_sandstorming = (self.weather == "sandstorm")
             world.arena.is_snowing = (self.weather == "snow")
 
+            if not hasattr(world.arena, "hazards"):
+                world.arena.hazards = []
+
+            if self.weather == "wind":
+                if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
+                    from arena.procedural_arena import Hazard
+                    # Spawn tornado
+                    x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                    y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                    tornado = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=40.0, kind="tornado", damage=20.0)
+                    setattr(tornado, 'duration', 5.0)
+                    setattr(tornado, 'vx', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
+                    setattr(tornado, 'vy', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
+                    world.arena.hazards.append(tornado)
+            elif self.weather == "rain" or self.weather == "thunderstorm":
+                if getattr(self, "random", __import__("random")).random() < (0.2 if self.weather == "thunderstorm" else 0.05) * delta:
+                    from arena.procedural_arena import Hazard
+                    # Spawn lightning strike zone
+                    x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                    y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                    lightning = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=30.0, kind="lightning_strike", damage=50.0)
+                    setattr(lightning, 'duration', 1.0) # short duration strike
+                    world.arena.hazards.append(lightning)
+
         valid_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
 
         for b in valid_balls:
@@ -1075,7 +1099,7 @@ class CustomMatchMode(GameMode):
                         b.speed = b.base_speed * 2
                         b._double_speed_applied = True
 
-from ai.interactive_training import InteractiveTrainingMode
+
 
 
 class VisionReducedMode(GameMode):
@@ -1355,6 +1379,11 @@ GAME_MODES = {
     "survival": SurvivalMode(),
     "capture_the_flag": CaptureTheFlagMode(),
     "evolutionary_simulation": EvolutionarySimulationMode(),
-    "interactive_training": InteractiveTrainingMode(),
     "safe_zone": SafeZoneMode()
 }
+
+try:
+    from ai.interactive_training import InteractiveTrainingMode
+    GAME_MODES["interactive_training"] = InteractiveTrainingMode()
+except ImportError:
+    pass
