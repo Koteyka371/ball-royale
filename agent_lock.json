@@ -179,9 +179,9 @@
     "agent-22": {
       "name": "Jules Worker 22",
       "area": "behaviors",
-      "status": "assigned",
+      "status": "working",
       "task_id": "idea-264",
-      "started_at": "2026-06-29T10:04:24.014785+00:00",
+      "started_at": "2026-06-29T10:11:04.727832+00:00",
       "cycles_today": 3
     },
     "agent-23": {
