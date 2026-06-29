@@ -2204,6 +2204,105 @@ class MovingSafeZoneMode extends GameMode:
         return null
 
 
+
+class ShrinkingDangerZoneMode extends GameMode:
+    var zone_x: float = 500.0
+    var zone_y: float = 500.0
+    var zone_radius: float = 500.0
+    var min_zone_radius: float = 50.0
+    var shrink_rate: float = 15.0
+    var outside_damage_per_second: float = 20.0
+
+    func _init() -> void:
+        name = "Shrinking Danger Zone"
+        description = "A shrinking danger zone mode where the safe area slowly decreases, forcing players into close-quarters combat."
+
+    func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
+        var arena_width = 1000.0
+        var arena_height = 1000.0
+        if "arena" in world and world.arena:
+            if "width" in world.arena:
+                arena_width = float(world.arena.width)
+            if "height" in world.arena:
+                arena_height = float(world.arena.height)
+
+        zone_x = arena_width / 2.0
+        zone_y = arena_height / 2.0
+        zone_radius = min(arena_width, arena_height) / 2.0
+        min_zone_radius = 50.0
+
+        var valid_balls = []
+        for b in balls:
+            if b.ball_type != "spectator":
+                valid_balls.append(b)
+
+        for i in range(valid_balls.size()):
+            var b = valid_balls[i]
+            if i >= 20:
+                b.ball_type = "spectator"
+                b.alive = false
+            else:
+                b.team = b.ball_type
+
+        if not "dead_balls" in world:
+            world.dead_balls = []
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        if not "dead_balls" in world:
+            world.dead_balls = []
+
+        for b in balls:
+            if not b.alive:
+                if not world.dead_balls.has(b):
+                    if b.has_method("set_meta"):
+                        b.set_meta("time_since_death", 0.0)
+                    world.dead_balls.append(b)
+                else:
+                    if b.has_method("get_meta") and b.has_meta("time_since_death"):
+                        b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+
+        # Shrink the safe zone
+        if zone_radius > min_zone_radius:
+            zone_radius -= shrink_rate * delta
+            if zone_radius < min_zone_radius:
+                zone_radius = min_zone_radius
+
+        # Apply continuous damage outside the safe zone
+        var damage_this_tick = outside_damage_per_second * delta
+        for b in balls:
+            if b.alive and b.ball_type != "spectator":
+                var dx = b.x - zone_x
+                var dy = b.y - zone_y
+                var dist = sqrt(dx*dx + dy*dy)
+
+                if dist > zone_radius:
+                    b.hp -= damage_this_tick
+                    if b.hp <= 0:
+                        b.alive = false
+                        b.hp = 0
+
+    func check_winner(world, balls: Array):
+        var alive = []
+        for b in balls:
+            if b.get("alive", false) and b.get("ball_type", "") != "spectator":
+                alive.append(b)
+        if alive.is_empty():
+            return "Draw"
+
+        var teams_alive = {}
+        for b in alive:
+            var team = b.get("team") if b.get("team") != null else b.get("ball_type")
+            teams_alive[team] = true
+
+        if teams_alive.size() == 1:
+            return teams_alive.keys()[0]
+
+        if alive.size() == 1:
+            return alive[0].get("team", alive[0].get("ball_type"))
+
+        return null
+
 class SafeZoneMode extends GameMode:
     var zone_x: float = 500.0
     var zone_y: float = 500.0
@@ -2854,6 +2953,7 @@ var GAME_MODES = {
     "capture_the_flag": CaptureTheFlagMode.new(),
     "evolutionary_simulation": EvolutionarySimulationMode.new(),
     "interactive_training": load("res://src/ai/interactive_training.gd").new(),
+    "shrinking_danger_zone": ShrinkingDangerZoneMode.new(),
     "safe_zone": SafeZoneMode.new(),
     "moving_safe_zone": MovingSafeZoneMode.new(),
     "bounty_hunt": BountyHuntMode.new()
