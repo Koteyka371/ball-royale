@@ -3834,7 +3834,7 @@
     },
     {
       "id": "idea-219",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather Effects (Rain/Snow/Wind)",
@@ -6005,6 +6005,109 @@
         "src/ai/one_way_teleporters.py",
         "src/ai/one_way_teleporters.gd",
         "tests/test_one_way_teleporters.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-347",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Supply Drops",
+      "description": "Periodically spawn supply drops in the arena that contain powerful but temporary boosters, such as invincibility, super speed, or explosive rounds, to create focal points for combat.",
+      "allowed_paths": [
+        "src/ai/supply_drops.py",
+        "src/ai/supply_drops.gd",
+        "tests/test_supply_drops.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-348",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Daily Login Rewards",
+      "description": "A streak-based daily login system granting prestige tokens, skill points, and exclusive cosmetics after consecutive logins.",
+      "allowed_paths": [
+        "src/ai/daily_login_rewards.py",
+        "src/ai/daily_login_rewards.gd",
+        "tests/test_daily_login_rewards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-349",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild System",
+      "description": "Players can form or join guilds, pooling resources to unlock shared guild buffs and participating in guild-vs-guild wars.",
+      "allowed_paths": [
+        "src/ui/guild.py",
+        "src/ui/guild.gd",
+        "src/ai/guild.py",
+        "tests/test_guild.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-350",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Supernova Mode",
+      "description": "An intense variation of Black Hole where instead of instantly dying, balls take rapidly scaling heat damage over time as they approach the center. Eventually, the supernova explodes, knocking all surviving balls to the edges of the arena.",
+      "allowed_paths": [
+        "src/ai/supernova.py",
+        "src/ai/supernova.gd",
+        "tests/test_supernova.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-351",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Destructible Cover System",
+      "description": "Expand the arena procedural generation to include destructible obstacles (like crystal clusters or energy barricades) that can block movement and vision but can be destroyed with enough damage.",
+      "allowed_paths": [
+        "src/ai/destructible_cover.py",
+        "src/ai/destructible_cover.gd",
+        "tests/test_destructible_cover.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-352",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Wormhole Trap",
+      "description": "A new hazard type that links two specific points in the arena. If a ball gets too close, it gets instantly teleported to the other wormhole node, carrying its current momentum. This would create chaotic repositioning.",
+      "allowed_paths": [
+        "src/arena/wormhole_trap.py",
+        "src/arena/wormhole_trap.gd",
+        "tests/test_wormhole_trap.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

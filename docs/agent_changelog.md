@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-219] Weather Effects (Rain/Snow/Wind) — *2026-06-29 08:40:17 UTC*
+
+Dynamic weather events that change physics (e.g. wind pushes balls, rain makes surface slippery/increases dash range but reduces steering, snow slows down balls and applies chill stacks that occasionally freeze balls for 1 second).
+
+---
+
 ## [idea-254] Black Hole Gravity Scaling — *2026-06-29 08:21:35 UTC*
 
 Increase the gravity pull strength of the black hole hazard over time, until it pulls all balls in the arena, creating an intense end-game mechanic.
