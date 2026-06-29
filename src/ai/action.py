@@ -599,6 +599,19 @@ class Action:
                                         # Important: After a teleport, we must prevent the rest of the tick from adding `speed * delta` based on random boid rules
                                         return
                                 self.ball.last_teleport_tick = current_tick
+                    elif hazard.kind == "magnet":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            if dist_sq > 0.0001:
+                                dist = math.sqrt(dist_sq)
+                                nx, ny = dx / dist, dy / dist
+                                pull_strength = 200.0 * delta
+                                # Do not overshoot the center
+                                pull_strength = min(pull_strength, dist)
+                                self.ball.x += nx * pull_strength
+                                self.ball.y += ny * pull_strength
                     elif hazard.kind == "conveyor_belt":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y

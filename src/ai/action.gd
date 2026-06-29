@@ -751,6 +751,20 @@ func execute(strategy: String, delta: float):
                                     self.ball.x = hazard.target_x
                                     self.ball.y = hazard.target_y
                             self.ball.set_meta("last_teleport_tick", current_tick)
+                elif hazard.kind == "magnet":
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    if dist_sq < hazard.radius * hazard.radius:
+                        if dist_sq > 0.0001:
+                            var dist = sqrt(dist_sq)
+                            var nx = dx / dist
+                            var ny = dy / dist
+                            var pull_strength = 200.0 * delta
+                            if pull_strength > dist:
+                                pull_strength = dist
+                            self.ball.x += nx * pull_strength
+                            self.ball.y += ny * pull_strength
                 elif hazard.kind == "conveyor_belt":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
