@@ -2300,7 +2300,7 @@ func _group_attack(delta: float):
         if "personality" in self.ball:
             personality = self.ball.personality
 
-        if personality in ["warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "swarm", "aggressive", "cunning", "curious"]:
+        if personality in ["warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "drone", "swarm", "aggressive", "cunning", "curious"]:
             var has_msg = false
             if self.ball.has_method("has_meta") and self.ball.has_meta("team_message"):
                 has_msg = self.ball.get_meta("team_message") != null
@@ -2567,7 +2567,7 @@ func _flank(delta: float):
         if "personality" in self.ball:
             personality = self.ball.personality
 
-        if personality in ["warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "swarm", "aggressive", "cunning", "curious"]:
+        if personality in ["warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "drone", "swarm", "aggressive", "cunning", "curious"]:
             var has_msg = false
             if self.ball.has_method("has_meta") and self.ball.has_meta("team_message"):
                 has_msg = self.ball.get_meta("team_message") != null
@@ -2786,7 +2786,7 @@ func _chase(delta: float):
     var personality = "idle"
     if "personality" in self.ball:
         personality = self.ball.personality
-    if personality in ["warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "swarm", "aggressive"]:
+    if personality in ["warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "drone", "swarm", "aggressive"]:
         var has_msg = false
         if self.ball.has_method("has_meta") and self.ball.has_meta("team_message"):
             has_msg = self.ball.get_meta("team_message") != null
@@ -2962,7 +2962,7 @@ func _attack(delta: float):
         if "personality" in self.ball:
             personality = self.ball.personality
 
-        if personality in ["warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "swarm", "aggressive"]:
+        if personality in ["warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "drone", "swarm", "aggressive"]:
             var has_msg = false
             if self.ball.has_method("has_meta") and self.ball.has_meta("team_message"):
                 has_msg = self.ball.get_meta("team_message") != null
@@ -3194,7 +3194,7 @@ func _attack(delta: float):
                     self.ball.damage = original_damage
 
                 var cooldown = 0.5
-                if b_type in ["scout", "assassin", "phantom", "swarm", "rogue", "ninja"]:
+                if b_type in ["scout", "assassin", "phantom", "swarm", "rogue", "drone", "ninja"]:
                     cooldown = 0.3
                 elif b_type in ["tank", "juggernaut", "guardian"]:
                     cooldown = 1.5
