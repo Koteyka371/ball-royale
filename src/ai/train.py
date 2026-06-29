@@ -7,8 +7,8 @@ from ai.neural_trainer import NeuralTrainer # type: ignore
 from tests.simulate_battle import BattleSimulation # type: ignore
 
 def train_networks(generations=10, population_size=20, ticks=500, arena_type='procedural', arena_size=1000, custom_scenario=None):
-    input_size = 7 # hp_percent, danger_level, opportunity_score, threat_level
-    output_size = 9 # flee, defend, collect_booster, attack, chase, use_skill, kite, flank, group_attack
+    input_size = 8 # hp_percent, danger_level, opportunity_score, threat_level, distance_to_zone
+    output_size = 11 # flee, defend, collect_booster, attack, chase, use_skill, kite, flank, group_attack, hide_behind, hold_zone
     trainer = NeuralTrainer(population_size=population_size, input_size=input_size, output_size=output_size)
 
     weights_path = os.path.join(os.path.dirname(__file__), "nn_weights.json")
@@ -84,18 +84,24 @@ def train_networks(generations=10, population_size=20, ticks=500, arena_type='pr
             for ball in neural_balls:
                 score = ball.kills * 100.0
 
-                # Active engagement rewards
-                score += getattr(ball, "damage_dealt", 0.0) * 0.5
-                score += getattr(ball, "distance_traveled", 0.0) * 0.05
+                # Check if in Moving Zone mode
+                if getattr(getattr(sim, "game_mode", None), "name", "") == "Moving Zone":
+                    score += getattr(ball, "score", 0) * 10.0
+                    # Prioritize position over damage
+                    score += getattr(ball, "damage_dealt", 0.0) * 0.1
+                else:
+                    # Active engagement rewards
+                    score += getattr(ball, "damage_dealt", 0.0) * 0.5
+                    score += getattr(ball, "distance_traveled", 0.0) * 0.05
 
-                # Survival rewards
-                if ball.alive:
-                    score += 50.0
-                    score += ball.get_hp_percent() * 50.0
+                    # Survival rewards
+                    if ball.alive:
+                        score += 50.0
+                        score += ball.get_hp_percent() * 50.0
 
-                # Penalize passive survival (high survival time but low engagement)
-                if ball.alive and getattr(ball, "damage_dealt", 0.0) == 0 and getattr(ball, "distance_traveled", 0.0) < 500:
-                    score -= 50.0  # Camping penalty
+                    # Penalize passive survival
+                    if ball.alive and getattr(ball, "damage_dealt", 0.0) == 0 and getattr(ball, "distance_traveled", 0.0) < 500:
+                        score -= 50.0
 
                 total_fitness += score
 

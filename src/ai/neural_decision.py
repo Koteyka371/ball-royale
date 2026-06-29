@@ -26,7 +26,7 @@ class NeuralDecision:
     def choose_action(self, perception_data: Dict[str, Any], emotion_state: str) -> str:
         # 1. Extract inputs
         inputs = []
-        for input_name in getattr(self, "configured_inputs", ["hp_percent", "danger_level", "opportunity_score", "threat_level"]):
+        for input_name in getattr(self, "configured_inputs", ["hp_percent", "danger_level", "opportunity_score", "threat_level", "distance_to_zone"]):
             if input_name == "hp_percent":
                 val = 1.0
                 if hasattr(self.ball, "get_hp_percent"):
@@ -45,6 +45,16 @@ class NeuralDecision:
                 val = 1000.0
                 if enemies and hasattr(self.ball, "x") and hasattr(self.ball, "y"):
                     val = min((((e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)**0.5 for e in enemies if hasattr(e, "x") and hasattr(e, "y")), default=1000.0)
+                inputs.append(val)
+            elif input_name == "distance_to_zone":
+                # Compute distance to moving zone center if in MovingZone mode, else default
+                val = 1000.0
+                game_mode = getattr(self.world, "game_mode", None)
+                if game_mode and getattr(game_mode, "name", "") == "Moving Zone":
+                    zone_x = getattr(game_mode, "zone_x", 500)
+                    zone_y = getattr(game_mode, "zone_y", 500)
+                    if hasattr(self.ball, "x") and hasattr(self.ball, "y"):
+                        val = ((self.ball.x - zone_x)**2 + (self.ball.y - zone_y)**2)**0.5
                 inputs.append(val)
             elif input_name == "number_of_allies":
                 inputs.append(float(len(perception_data.get("allies", []))))
@@ -94,7 +104,7 @@ class NeuralDecision:
             return "idle"
 
         # 3. Predict
-        actions = ["flee", "defend", "collect_booster", "attack", "chase", "use_skill", "kite", "flank", "group_attack", "hide_behind"]
+        actions = ["flee", "defend", "collect_booster", "attack", "chase", "use_skill", "kite", "flank", "group_attack", "hide_behind", "hold_zone"]
         best_score = -9999.0
         best_action = "idle"
 
