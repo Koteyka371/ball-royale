@@ -442,6 +442,16 @@ func update_zone(current_tick: int, delta: float) -> void:
                 if randf() < 0.1:
                     h.kind = "drone_item"
                     h.damage = 0.0
+                elif randf() < 0.1:
+                    h.kind = "breakable_wall"
+                    h.damage = 0.0
+                    h.set_meta("hp", 100.0)
+                elif randf() < 0.1:
+                    h.kind = "bounce_pad"
+                    h.damage = 0.0
+                elif randf() < 0.1:
+                    h.kind = "explosive_barrel"
+                    h.damage = 0.0
                 elif randf() < 0.05:
                     h.kind = "stealth_drone_item"
                     h.damage = 0.0

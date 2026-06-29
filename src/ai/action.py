@@ -799,7 +799,7 @@ class Action:
                                     hazard.vx = getattr(hazard, "vx", 0.0) - nx * 300.0 * delta
                                     hazard.vy = getattr(hazard, "vy", 0.0) - ny * 300.0 * delta
 
-                                if speed > 300.0 or hazard_speed > 300.0:
+                                if speed > 300.0 or hazard_speed > 300.0 or getattr(self.ball, "active_skill", None) is not None:
                                     hazard.is_exploded = True
 
                         elif hazard.kind == "trap":
@@ -1012,6 +1012,31 @@ class Action:
                                 if hasattr(self, "_spawn_skill_particles"):
                                     self._spawn_skill_particles("lightning")
                                 self.ball.stutter_timer = 1.0 # Stun
+                            continue
+                        elif hazard.kind == "breakable_wall":
+                            # Clamp position manually
+                            dx = self.ball.x - hazard.x
+                            dy = self.ball.y - hazard.y
+                            dist = math.hypot(dx, dy)
+                            if dist < (self.ball.radius + hazard.radius) and dist > 0:
+                                nx, ny = dx / dist, dy / dist
+                                overlap = (self.ball.radius + hazard.radius) - dist
+                                self.ball.x += nx * overlap
+                                self.ball.y += ny * overlap
+
+                            if hasattr(hazard, "hp"):
+                                hazard.hp -= 100.0 * delta # damage it on bump
+                                if hazard.hp <= 0:
+                                    hazard.active = False
+                            continue
+                        elif hazard.kind == "bounce_pad":
+                            dx = self.ball.x - hazard.x
+                            dy = self.ball.y - hazard.y
+                            dist = math.hypot(dx, dy)
+                            if dist < (self.ball.radius + hazard.radius) and dist > 0.0001:
+                                nx, ny = dx / dist, dy / dist
+                                self.ball.vx = nx * 1000.0
+                                self.ball.vy = ny * 1000.0
                             continue
                         elif hazard.kind == "bumper":
                             dx = self.ball.x - hazard.x
