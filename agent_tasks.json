@@ -4259,7 +4259,7 @@
     },
     {
       "id": "idea-244",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather specific buffs",
@@ -6142,6 +6142,23 @@
         "src/ai/random_boss_mutation.py",
         "src/ai/random_boss_mutation.gd",
         "tests/test_random_boss_mutation.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-355",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Trap Hazard",
+      "description": "A hazard that spawns a fake player dummy. If another player attacks it, the decoy explodes in a poison cloud, punishing impulsive actions.",
+      "allowed_paths": [
+        "src/arena/decoy_trap.py",
+        "src/arena/decoy_trap.gd",
+        "tests/test_decoy_trap.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

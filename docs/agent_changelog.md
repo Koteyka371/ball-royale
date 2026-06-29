@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-244] Weather specific buffs — *2026-06-29 08:58:09 UTC*
+
+Balls gain specific buffs during certain weather conditions, such as 'Fire' balls dealing more damage in clear weather or 'Water' balls healing slightly in the rain.
+
+---
+
 ## [idea-261] Quantum Teleportation Trap — *2026-06-29 08:56:00 UTC*
 
 A new hazard that instantly swaps the positions of any two entities that step on paired portal traps simultaneously, disrupting formations and leading to unexpected emergent encounters.
