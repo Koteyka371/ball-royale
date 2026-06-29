@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-261] Quantum Teleportation Trap — *2026-06-29 08:56:00 UTC*
+
+A new hazard that instantly swaps the positions of any two entities that step on paired portal traps simultaneously, disrupting formations and leading to unexpected emergent encounters.
+
+---
+
 ## [idea-252] Randomizer Mutator — *2026-06-29 08:40:21 UTC*
 
 A mutator where every 10 seconds, all balls have their stats randomly re-rolled and ball type changed.

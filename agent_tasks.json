@@ -4549,7 +4549,7 @@
     },
     {
       "id": "idea-261",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Teleportation Trap",
@@ -6108,6 +6108,40 @@
         "src/arena/wormhole_trap.py",
         "src/arena/wormhole_trap.gd",
         "tests/test_wormhole_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-353",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Environmental Hazard - Sinkholes",
+      "description": "In procedural arenas, sinkholes can randomly appear. Balls caught in a sinkhole have their speed reduced drastically and slowly take damage over time until they manage to dash or kite their way out.",
+      "allowed_paths": [
+        "src/arena/environmental_sinkholes.py",
+        "src/arena/environmental_sinkholes.gd",
+        "tests/test_environmental_sinkholes.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-354",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Random Boss Mutation Event",
+      "description": "During Custom Match, when the boss mutator is active, occasionally select a random ball and boost their size, health, and damage for 15 seconds, making them a temporary 'juggernaut' boss. The other players must team up to defeat them before they rack up too many kills.",
+      "allowed_paths": [
+        "src/ai/random_boss_mutation.py",
+        "src/ai/random_boss_mutation.gd",
+        "tests/test_random_boss_mutation.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
