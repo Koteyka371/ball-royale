@@ -2093,7 +2093,7 @@ class Action:
                 # Add to own skill timer
                 self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
             elif skill_name == "summon_minions":
-
+                import random
                 num_minions = random.randint(2, 4)
                 for _ in range(num_minions):
                     import copy

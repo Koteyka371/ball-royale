@@ -22,6 +22,10 @@ func load_profile():
                 data["loadouts"] = {}
             if not data.has("prestige_level"):
                 data["prestige_level"] = 0
+            if not data.has("prestige_tokens"):
+                data["prestige_tokens"] = 0
+            if not data.has("prestige_upgrades"):
+                data["prestige_upgrades"] = {}
             if not data.has("quests"):
                 data["quests"] = []
             if not data.has("cosmetics"):
@@ -41,6 +45,8 @@ func load_profile():
         },
         "loadouts": {},
         "prestige_level": 0,
+            "prestige_tokens": 0,
+            "prestige_upgrades": {},
         "quests": [],
         "cosmetics": [],
         "titles": []
@@ -108,6 +114,10 @@ func can_prestige() -> bool:
 func do_prestige() -> bool:
     if can_prestige():
         var current_prestige = data.get("prestige_level", 0)
+        var tokens_earned = 5 + current_prestige + (data.get("skill_points", 0) / 100)
+        var current_tokens = data.get("prestige_tokens", 0)
+        var current_upgrades = data.get("prestige_upgrades", {})
+
         data = {
             "skill_points": 0,
             "unlocked_balls": ["basic"],
@@ -118,6 +128,8 @@ func do_prestige() -> bool:
             },
             "loadouts": data.get("loadouts", {}),
             "prestige_level": current_prestige + 1,
+            "prestige_tokens": current_tokens + tokens_earned,
+            "prestige_upgrades": current_upgrades,
             "quests": [],
             "cosmetics": data.get("cosmetics", []),
             "titles": data.get("titles", [])
@@ -128,6 +140,19 @@ func do_prestige() -> bool:
         lm.check_season()
         return true
     return false
+
+func buy_prestige_upgrade(upgrade_name: String, cost: int) -> bool:
+    var current_tokens = data.get("prestige_tokens", 0)
+    var upgrades = data.get("prestige_upgrades", {})
+
+    if current_tokens >= cost:
+        data["prestige_tokens"] = current_tokens - cost
+        upgrades[upgrade_name] = upgrades.get(upgrade_name, 0) + 1
+        data["prestige_upgrades"] = upgrades
+        save_profile()
+        return true
+    return false
+
 func add_cosmetic(cosmetic_name: String):
     if not data.has("cosmetics"):
         data["cosmetics"] = []
