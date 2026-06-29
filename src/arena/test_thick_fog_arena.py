@@ -14,13 +14,13 @@ class DummyBall:
 
 def test_thick_fog_toggles_and_reduces_perception():
     arena = ThickFogArena()
-    assert arena.is_foggy == False
+    assert not arena.is_foggy
 
     arena.update_zone(0, 10.0)
-    assert arena.is_foggy == False
+    assert not arena.is_foggy
 
     arena.update_zone(0, 11.0) # > 20
-    assert arena.is_foggy == True
+    assert arena.is_foggy
 
     ball = DummyBall()
     world = DummyWorld(arena)
