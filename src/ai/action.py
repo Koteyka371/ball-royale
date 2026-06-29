@@ -137,6 +137,17 @@ class Action:
                 self.world.arena.hazards.append(trap)
                 self.ball.inventory.remove("placeable_trap")
 
+        # Check inventory for exit_portal to use as an escape hatch
+        if strategy == "flee" and hasattr(self.ball, "inventory") and "exit_portal" in self.ball.inventory:
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                from arena.procedural_arena import Hazard
+                portal_id = len(self.world.arena.hazards) + random.randint(10000, 99999)
+                portal = Hazard(portal_id, self.ball.x, self.ball.y, 30.0, "teleporter", 0.0)
+                setattr(portal, 'duration', 5.0)
+                setattr(portal, 'owner_id', getattr(self.ball, 'id', None))
+                self.world.arena.hazards.append(portal)
+                self.ball.inventory.remove("exit_portal")
+
         # Temporal rift logic to modify local delta
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for hazard in self.world.arena.hazards:
@@ -2274,6 +2285,13 @@ class Action:
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
+                elif getattr(nearest, "kind", None) == "exit_portal_item":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("exit_portal")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
                 elif getattr(nearest, "kind", None) == "fake_booster":
                     if hasattr(self.ball, "take_damage"):
                         self.ball.take_damage(getattr(nearest, "damage", 50.0))
@@ -2541,7 +2559,6 @@ class Action:
 
                         chain_damage = getattr(self.ball, "damage", 24.0) * 0.5
                         jumps = 0
-                        current_source = target
                         for _, next_target in nearby_enemies:
                             if jumps >= 3:
                                 break
