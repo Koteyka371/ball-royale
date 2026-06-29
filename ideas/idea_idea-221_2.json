@@ -1,0 +1,4 @@
+{
+    "title": "Gravity Well Trap",
+    "description": "A trap variant that, instead of freezing or damaging immediately, creates a high-pull black hole effect that constantly drags nearby entities (including hazards and other players) towards its center for 5 seconds, dealing crushing damage if they reach the core."
+}

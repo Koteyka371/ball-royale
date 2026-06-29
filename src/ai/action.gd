@@ -121,6 +121,70 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+	if world != null and "balls" in world:
+		for b in world.balls:
+			var is_hologram = false
+			if b.has_method("get_meta") and b.has_meta("hologram_trap"):
+				is_hologram = b.get_meta("hologram_trap")
+			var is_alive = true
+			if "alive" in b:
+				is_alive = b.alive
+			var has_exploded = false
+			if b.has_method("get_meta") and b.has_meta("hologram_exploded"):
+				has_exploded = b.get_meta("hologram_exploded")
+
+			if is_hologram and not is_alive and not has_exploded:
+				if b.has_method("set_meta"):
+					b.set_meta("hologram_exploded", true)
+
+				var b_team = null
+				if "team" in b:
+					b_team = b.team
+				elif "ball_type" in b:
+					b_team = b.ball_type
+
+				for target in world.balls:
+					var target_alive = false
+					if "alive" in target:
+						target_alive = target.alive
+
+					var t_id = null
+					if "id" in target:
+						t_id = target.id
+
+					var b_id = null
+					if "id" in b:
+						b_id = b.id
+
+					if target_alive and t_id != null and b_id != null and t_id != b_id:
+						var target_team = null
+						if "team" in target:
+							target_team = target.team
+						elif "ball_type" in target:
+							target_team = target.ball_type
+
+						if target_team != b_team or target_team == null:
+							var b_x = 0.0
+							var b_y = 0.0
+							if "x" in b: b_x = b.x
+							if "y" in b: b_y = b.y
+							var t_x = 0.0
+							var t_y = 0.0
+							if "x" in target: t_x = target.x
+							if "y" in target: t_y = target.y
+
+							var dx = t_x - b_x
+							var dy = t_y - b_y
+							var dist = sqrt(dx * dx + dy * dy)
+
+							if dist < 60.0:
+								if target.has_method("take_damage"):
+									target.take_damage(20.0)
+								elif "hp" in target:
+									target.hp -= 20.0
+									if target.hp <= 0:
+										target.alive = false
+
 	if (strategy == "flee" or strategy == "defend") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
 		if inv.has("placeable_trap"):
@@ -140,8 +204,13 @@ func execute(strategy: String, delta: float):
 					trap.set_meta("duration", 10.0)
 
 					var trap_type = "mine"
-					if randf() > 0.5:
+					var rand_val = randf()
+					if rand_val > 0.75:
+						trap_type = "hologram"
+					elif rand_val > 0.5:
 						trap_type = "freeze"
+					elif rand_val > 0.25:
+						trap_type = "black_hole"
 					trap.set_meta("trap_variant", trap_type)
 					trap.set_meta("owner_id", self.ball.id)
 
@@ -896,6 +965,61 @@ func execute(strategy: String, delta: float):
                                         self.ball.set_meta("stun_timer", 1.0)
                                 self.ball.x = old_x
                                 self.ball.y = old_y
+                            elif trap_variant == "hologram":
+                                var owner = null
+                                var trap_owner_id_val = null
+                                if hazard.has_method("get_meta") and hazard.has_meta("owner_id"):
+                                    trap_owner_id_val = hazard.get_meta("owner_id")
+                                elif "owner_id" in hazard:
+                                    trap_owner_id_val = hazard.owner_id
+
+                                if trap_owner_id_val != null and world != null and "balls" in world:
+                                    for b in world.balls:
+                                        if "id" in b and b.id == trap_owner_id_val:
+                                            owner = b
+                                            break
+
+                                if owner != null:
+                                    var clone = owner.duplicate()
+                                    var next_id = randi() % 89999 + 10000
+                                    if world != null and "next_id" in world:
+                                        next_id = world.next_id
+                                        world.next_id += 1
+
+                                    clone.id = next_id
+                                    if "x" in clone: clone.x = hazard.x
+                                    if "y" in clone: clone.y = hazard.y
+
+                                    if "hp" in owner: clone.hp = owner.hp
+                                    if "max_hp" in owner: clone.max_hp = owner.max_hp
+                                    if clone.has_method("set_meta"):
+                                        clone.set_meta("is_clone", true)
+                                        clone.set_meta("clone_owner", owner.id)
+                                        clone.set_meta("hologram_trap", true)
+                                        clone.set_meta("hologram_exploded", false)
+                                    clone.alive = true
+
+                                    var base_speed = 100.0
+                                    if "base_speed" in owner:
+                                        base_speed = owner.base_speed
+                                    elif owner.has_method("get_meta") and owner.has_meta("base_speed"):
+                                        base_speed = owner.get_meta("base_speed")
+
+                                    if "speed" in clone: clone.speed = base_speed * 1.5
+                                    if "damage" in clone: clone.damage = 0.0
+
+                                    if "skill_timer" in clone: clone.skill_timer = 9999.0
+                                    if "skill" in clone: clone.skill = ""
+                                    if clone.has_method("set_meta"):
+                                        clone.set_meta("skill", "")
+
+                                    if world != null and "balls" in world:
+                                        world.balls.append(clone)
+
+                                if hazard.has_method("set_meta"):
+                                    hazard.set_meta("duration", 0.0)
+                                elif "duration" in hazard:
+                                    hazard.duration = 0.0
                             elif trap_variant == "black_hole":
                                 if world != null and world.has_method("get_arena") and world.get_arena() != null and "hazards" in world.get_arena():
                                     var bh = null

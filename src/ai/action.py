@@ -89,6 +89,24 @@ class Action:
         self.world = world
 
     def execute(self, strategy: str, delta: float) -> None:
+        # Check for exploded holograms from previous ticks (we do this globally so it triggers even if the hologram itself doesn't execute)
+        if hasattr(self.world, "balls"):
+            for b in self.world.balls:
+                if getattr(b, "hologram_trap", False) and not getattr(b, "alive", True) and not getattr(b, "hologram_exploded", False):
+                    b.hologram_exploded = True
+                    # Explosion for minor AOE damage
+                    for target in self.world.balls:
+                        if getattr(target, "alive", False) and getattr(target, "id", None) != b.id:
+                            if getattr(target, "team", None) != getattr(b, "team", None) or getattr(target, "team", None) is None:
+                                dist = ((target.x - b.x)**2 + (target.y - b.y)**2)**0.5
+                                if dist < 60.0:
+                                    if hasattr(target, "take_damage"):
+                                        target.take_damage(20.0)
+                                    else:
+                                        target.hp -= 20.0
+                                        if target.hp <= 0:
+                                            target.alive = False
+
         # Check inventory for traps to place if fleeing or defending
         if strategy in ("flee", "defend") and hasattr(self.ball, "inventory") and "placeable_trap" in self.ball.inventory:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -97,7 +115,7 @@ class Action:
                 trap_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
                 trap = Hazard(trap_id, self.ball.x, self.ball.y, 20.0, "trap", 0.0)
 
-                trap_type = random.choice(["mine", "freeze", "black_hole"])
+                trap_type = random.choice(["mine", "freeze", "black_hole", "hologram"])
                 setattr(trap, 'duration', 10.0)
                 setattr(trap, 'trap_variant', trap_type)
                 setattr(trap, 'owner_id', getattr(self.ball, 'id', None))
@@ -572,6 +590,52 @@ class Action:
                                     # Apply stun effect
                                     self.ball.x = old_x
                                     self.ball.y = old_y
+                                elif trap_variant == "hologram":
+                                    # Hologram: Spawn a clone of the owner and destroy trap
+                                    import copy
+
+                                    # Find the owner ball
+                                    owner = None
+                                    for b in getattr(self.world, "balls", []):
+                                        if getattr(b, "id", None) == hazard.owner_id:
+                                            owner = b
+                                            break
+
+                                    if owner:
+                                        clone = copy.copy(owner)
+                                        if hasattr(self.world, "next_id"):
+                                            clone.id = self.world.next_id
+                                            self.world.next_id += 1
+                                        else:
+                                            clone.id = random.randint(10000, 99999)
+                                        clone.x = hazard.x
+                                        clone.y = hazard.y
+
+                                        # Setup clone stats and flags
+                                        clone.hp = getattr(owner, "hp", 100)
+                                        clone.max_hp = getattr(owner, "max_hp", 100)
+                                        clone.team = getattr(owner, "team", getattr(owner, "ball_type", getattr(owner, "BALL_TYPE", "")))
+                                        clone.is_clone = True
+                                        clone.clone_owner = owner.id
+                                        clone.alive = True
+                                        clone.speed = getattr(owner, "base_speed", 100.0) * 1.5 # Erratic movement (faster)
+                                        clone.damage = 0
+
+                                        # Clones don't have skills
+                                        clone.skill_timer = 9999
+                                        clone.skill = None
+                                        if hasattr(clone, "SKILL"):
+                                            clone.SKILL = None
+                                        if hasattr(clone, "active_skill"):
+                                            clone.active_skill = None
+
+                                        # Mark for death explosion logic
+                                        clone.hologram_trap = True
+
+                                        if hasattr(self.world, "balls"):
+                                            self.world.balls.append(clone)
+
+                                    hazard.duration = 0.0 # Destroy trap
                                 elif trap_variant == "black_hole":
                                     # Create a black hole hazard where the trap is
                                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -2061,7 +2125,6 @@ class Action:
 
             elif skill_name == "clone":
                 import copy
-                import random
                 num_clones = random.randint(2, 4)
                 for _ in range(num_clones):
                     clone = copy.copy(self.ball)
