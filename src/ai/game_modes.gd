@@ -775,6 +775,31 @@ class WeatherChaosMode extends GameMode:
 			else:
 				world.arena.is_snowing = false
 
+			if not "hazards" in world.arena:
+				world.arena.hazards = []
+
+			if weather == "wind":
+				if randf() < 0.1 * delta:
+					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
+					var x = randf_range(100.0, world.arena.width - 100.0)
+					var y = randf_range(100.0, world.arena.height - 100.0)
+					var tornado = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 40.0, "tornado", 20.0)
+					tornado.set_meta("duration", 5.0)
+					tornado.set_meta("vx", randf_range(-100.0, 100.0))
+					tornado.set_meta("vy", randf_range(-100.0, 100.0))
+					world.arena.hazards.append(tornado)
+			elif weather == "rain" or weather == "thunderstorm":
+				var chance = 0.05
+				if weather == "thunderstorm":
+					chance = 0.2
+				if randf() < chance * delta:
+					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
+					var x = randf_range(100.0, world.arena.width - 100.0)
+					var y = randf_range(100.0, world.arena.height - 100.0)
+					var lightning = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 30.0, "lightning_strike", 50.0)
+					lightning.set_meta("duration", 1.0)
+					world.arena.hazards.append(lightning)
+
 		for b in balls:
 			if b.alive and b.ball_type != "spectator":
 				if not b.has_meta("base_speed"):
