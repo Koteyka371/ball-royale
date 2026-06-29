@@ -2271,7 +2271,7 @@ class Action:
         if getattr(self.ball, "silence_timer", 0.0) > 0:
             return
         skill_timer = getattr(self.ball, "skill_timer", 0.0)
-        if skill_timer <= 0 and (hasattr(self.ball, "use_skill") or getattr(self.ball, "active_skill", None) is not None):
+        if skill_timer <= 0:
             if hasattr(self.ball, "use_skill"):
                 self.ball.use_skill()
 
@@ -2483,6 +2483,130 @@ class Action:
                     self.ball.x += math.cos(angle) * dash_dist
                     self.ball.y += math.sin(angle) * dash_dist
 
+
+            elif skill_name == "lightning_strike":
+                enemies = self._get_enemies()
+                if enemies:
+                    # Find closest enemy
+                    target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                    dist = math.sqrt((target.x - self.ball.x)**2 + (target.y - self.ball.y)**2)
+                    if dist <= 200.0:
+                        # Initial strike
+                        if hasattr(target, "take_damage"):
+                            target.take_damage(getattr(self.ball, "damage", 24.0))
+                        elif hasattr(target, "hp"):
+                            target.hp -= getattr(self.ball, "damage", 24.0)
+                        if hasattr(self, "_spawn_skill_particles"):
+                            self._spawn_skill_particles("lightning")
+
+                        # Find nearby enemies to chain to
+                        nearby_enemies = []
+                        for e in enemies:
+                            if e != target:
+                                d_sq = (e.x - target.x)**2 + (e.y - target.y)**2
+                                if d_sq <= 150.0**2:
+                                    nearby_enemies.append((d_sq, e))
+
+                        nearby_enemies.sort(key=lambda x: x[0])
+
+                        chain_damage = getattr(self.ball, "damage", 24.0) * 0.5
+                        jumps = 0
+                        current_source = target
+                        for _, next_target in nearby_enemies:
+                            if jumps >= 3:
+                                break
+
+                            if hasattr(next_target, "take_damage"):
+                                next_target.take_damage(chain_damage)
+                            elif hasattr(next_target, "hp"):
+                                next_target.hp -= chain_damage
+                            if hasattr(self, "_spawn_skill_particles"):
+                                self._spawn_skill_particles("lightning")
+
+                            chain_damage *= 0.5
+                            jumps += 1
+
+            elif skill_name == "lightning_strike":
+                enemies = self._get_enemies()
+                if enemies:
+                    # Find closest enemy
+                    target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                    dist = math.sqrt((target.x - self.ball.x)**2 + (target.y - self.ball.y)**2)
+                    if dist <= 200.0:
+                        # Initial strike
+                        if hasattr(target, "take_damage"):
+                            target.take_damage(getattr(self.ball, "damage", 24.0))
+                        elif hasattr(target, "hp"):
+                            target.hp -= getattr(self.ball, "damage", 24.0)
+                        if hasattr(self, "_spawn_skill_particles"):
+                            self._spawn_skill_particles("lightning")
+
+                        # Find nearby enemies to chain to
+                        nearby_enemies = []
+                        for e in enemies:
+                            if e != target:
+                                d_sq = (e.x - target.x)**2 + (e.y - target.y)**2
+                                if d_sq <= 150.0**2:
+                                    nearby_enemies.append((d_sq, e))
+
+                        nearby_enemies.sort(key=lambda x: x[0])
+
+                        chain_damage = getattr(self.ball, "damage", 24.0) * 0.5
+                        jumps = 0
+                        for _, next_target in nearby_enemies:
+                            if jumps >= 3:
+                                break
+
+                            if hasattr(next_target, "take_damage"):
+                                next_target.take_damage(chain_damage)
+                            elif hasattr(next_target, "hp"):
+                                next_target.hp -= chain_damage
+                            if hasattr(self, "_spawn_skill_particles"):
+                                self._spawn_skill_particles("lightning")
+
+                            chain_damage *= 0.5
+                            jumps += 1
+
+            elif skill_name == "lightning_strike":
+                enemies = self._get_enemies()
+                if enemies:
+                    # Find closest enemy
+                    target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                    dist = math.sqrt((target.x - self.ball.x)**2 + (target.y - self.ball.y)**2)
+                    if dist <= 200.0:
+                        # Initial strike
+                        if hasattr(target, "take_damage"):
+                            target.take_damage(getattr(self.ball, "damage", 24.0))
+                        elif hasattr(target, "hp"):
+                            target.hp -= getattr(self.ball, "damage", 24.0)
+                        if hasattr(self, "_spawn_skill_particles"):
+                            self._spawn_skill_particles("lightning")
+
+                        # Find nearby enemies to chain to
+                        nearby_enemies = []
+                        for e in enemies:
+                            if e != target:
+                                d_sq = (e.x - target.x)**2 + (e.y - target.y)**2
+                                if d_sq <= 150.0**2:
+                                    nearby_enemies.append((d_sq, e))
+
+                        nearby_enemies.sort(key=lambda x: x[0])
+
+                        chain_damage = getattr(self.ball, "damage", 24.0) * 0.5
+                        jumps = 0
+                        for _, next_target in nearby_enemies:
+                            if jumps >= 3:
+                                break
+
+                            if hasattr(next_target, "take_damage"):
+                                next_target.take_damage(chain_damage)
+                            elif hasattr(next_target, "hp"):
+                                next_target.hp -= chain_damage
+                            if hasattr(self, "_spawn_skill_particles"):
+                                self._spawn_skill_particles("lightning")
+
+                            chain_damage *= 0.5
+                            jumps += 1
             elif skill_name == "elemental_burst":
                 enemies = self._get_enemies()
 
@@ -2622,7 +2746,10 @@ class Action:
                         dy = getattr(enemy, "y", 0) - self.ball.y
                         dist = math.sqrt(dx*dx + dy*dy)
                         if dist <= pound_radius + getattr(enemy, "radius", 0):
-                            enemy.take_damage(pound_damage)
+                            if hasattr(enemy, "take_damage"):
+                                enemy.take_damage(pound_damage)
+                            elif hasattr(enemy, "hp"):
+                                enemy.hp -= pound_damage
                             # Stun effect or knockback could be added here
 
                 # Destroy hazards
