@@ -4157,7 +4157,7 @@
     },
     {
       "id": "idea-238",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather effects on perception",
@@ -5869,6 +5869,40 @@
         "src/ai/pinball_bumpers.py",
         "src/ai/pinball_bumpers.gd",
         "tests/test_pinball_bumpers.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-339",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Projection Skill",
+      "description": "A new skill that creates an illusionary clone of the ball. The clone deals no damage but mimics the player's movement, confusing enemies and drawing their attacks. The clone vanishes after absorbing a set amount of damage or after a duration expires.",
+      "allowed_paths": [
+        "src/ai/decoy_projection_skill.py",
+        "src/ai/decoy_projection_skill.gd",
+        "tests/test_decoy_projection_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-340",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "EMC Burst Hazard",
+      "description": "An Electromagnetic Pulse burst hazard that periodically spawns in the arena. When it detonates, it temporarily scrambles the AI targeting logic of any ball within its radius, causing them to randomly switch targets or wander aimlessly for a few seconds.",
+      "allowed_paths": [
+        "src/arena/emc_burst.py",
+        "src/arena/emc_burst.gd",
+        "tests/test_emc_burst.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

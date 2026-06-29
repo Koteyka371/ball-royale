@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-238] Weather effects on perception — *2026-06-29 08:03:19 UTC*
+
+Introduce dynamic weather (e.g., rain, sandstorm) that periodically changes perception rules globally during a match, such as reducing perception range or slowly damaging fast-moving entities.
+
+---
+
 ## [idea-181] Decoy Flare Mechanism — *2026-06-29 07:52:10 UTC*
 
 Introduce a deployable flare hazard that draws AI targeting logic, causing balls to attack the decoy instead of actual opponents for a short duration.
