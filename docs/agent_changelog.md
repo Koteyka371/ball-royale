@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-249] Prestige Tokens — *2026-06-29 07:35:44 UTC*
+
+When resetting for prestige, players also gain Prestige Tokens based on their past stats to unlock permanent minor upgrades across all balls.
+
+---
+
 ## [idea-226] Decoy Ball Type — *2026-06-29 07:10:56 UTC*
 
 A ball type that periodically spawns static copies of itself to confuse enemies and escape danger.

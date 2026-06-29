@@ -4344,7 +4344,7 @@
     },
     {
       "id": "idea-249",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Prestige Tokens",
@@ -5596,6 +5596,159 @@
         "src/ai/random_loadout_option.py",
         "src/ai/random_loadout_option.gd",
         "tests/test_random_loadout_option.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-323",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bait Traps",
+      "description": "Allow stealth-based or trap-focused balls to place fake booster items that explode or stun enemies when collected, adding a psychological layer to item collection.",
+      "allowed_paths": [
+        "src/arena/bait_traps.py",
+        "src/arena/bait_traps.gd",
+        "tests/test_bait_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-324",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Vampiric Drain Zone",
+      "description": "An arena hazard that deals small damage over time to any ball inside it, and uses the total damage dealt to heal the ball with the lowest HP on the map.",
+      "allowed_paths": [
+        "src/ai/vampiric_drain_zone.py",
+        "src/ai/vampiric_drain_zone.gd",
+        "tests/test_vampiric_drain_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-325",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Safe Zone with Moving Center",
+      "description": "Make the safe zone center drift over time in a random direction, forcing players to constantly reposition as it shrinks rather than simply converging on a static point.",
+      "allowed_paths": [
+        "src/ai/shrinking_safe_zone_with_moving_center.py",
+        "src/ai/shrinking_safe_zone_with_moving_center.gd",
+        "tests/test_shrinking_safe_zone_with_moving_center.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-326",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Entanglement Skill",
+      "description": "A new skill that allows a ball to randomly link to another ball. Any damage taken by one is shared equally between both, but buffs are also shared. Perfect for strategic chaos.",
+      "allowed_paths": [
+        "src/ai/quantum_entanglement_skill.py",
+        "src/ai/quantum_entanglement_skill.gd",
+        "tests/test_quantum_entanglement_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-327",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Clone Wars Game Mode",
+      "description": "A new game mode where every ball starts with the 'clone' skill. The map gets filled with clones rapidly, making it a chaotic battle of finding the real enemy amidst a sea of static copies.",
+      "allowed_paths": [
+        "src/ai/clone_wars_game.py",
+        "src/ai/clone_wars_game.gd",
+        "tests/test_clone_wars_game.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-328",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Ball Hazard",
+      "description": "Spawn a fake 'Decoy' ball hazard that mimics the appearance of a real player but explodes or triggers a stun trap when attacked or collided with by a real player.",
+      "allowed_paths": [
+        "src/arena/decoy_ball.py",
+        "src/arena/decoy_ball.gd",
+        "tests/test_decoy_ball.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-329",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Synergy Combos",
+      "description": "Combine weather hazards with ball skills, e.g. elemental burst during rain to freeze everything.",
+      "allowed_paths": [
+        "src/ai/synergy_combos.py",
+        "src/ai/synergy_combos.gd",
+        "tests/test_synergy_combos.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-330",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Exploding Clones Skill Upgrade",
+      "description": "An evolution for the clone skill where clones act as proximity mines. If an enemy touches a static clone, it explodes dealing area of effect damage.",
+      "allowed_paths": [
+        "src/ai/exploding_clones_skill_upgrade.py",
+        "src/ai/exploding_clones_skill_upgrade.gd",
+        "tests/test_exploding_clones_skill_upgrade.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-331",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Lightning Enhancements",
+      "description": "Improve chain lightning to bounce off walls or objects and increase damage with each jump.",
+      "allowed_paths": [
+        "src/ai/chain_lightning_enhancements.py",
+        "src/ai/chain_lightning_enhancements.gd",
+        "tests/test_chain_lightning_enhancements.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
