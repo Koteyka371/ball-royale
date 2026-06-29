@@ -19,7 +19,7 @@ class PreGameLobby:
             profile.add_quest(quest["description"], quest["reward"])
 
     def select_trap_variant(self, ball_id, variant):
-        if variant in ["normal", "poison", "stun", "ricochet", "emp"]:
+        if variant in ["normal", "poison", "stun", "ricochet", "emp", "hologram"]:
             self.selections[ball_id] = variant
 
     def get_trap_variant(self, ball_id):

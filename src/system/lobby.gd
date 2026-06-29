@@ -25,7 +25,7 @@ func assign_daily_quests_to_profile(profile) -> void:
         profile.add_quest(quest["description"], quest["reward"])
 
 func select_trap_variant(ball_id: int, variant: String) -> void:
-    if variant in ["normal", "poison", "stun", "ricochet", "emp"]:
+    if variant in ["normal", "poison", "stun", "ricochet", "emp", "hologram"]:
         selections[ball_id] = variant
 
 func get_trap_variant(ball_id: int) -> String:
