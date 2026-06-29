@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-268] Weather Synergies — *2026-06-29 09:32:01 UTC*
+
+Certain ball types gain unique buffs during specific weather conditions. E.g., Fireball takes damage in rain, but Iceball moves faster in snow.
+
+---
+
 ## [idea-222] Zone Modifiers — *2026-06-29 09:31:56 UTC*
 
 Introduce zones with different modifiers (e.g. speed boost, damage boost, healing) that balls can fight over.
