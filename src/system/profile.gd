@@ -162,9 +162,39 @@ func get_all_loadouts() -> Dictionary:
         return data["loadouts"]
     return {}
 
+
+func set_default_loadout(loadout_name: String) -> bool:
+    if data.has("loadouts") and data["loadouts"].has(loadout_name):
+        data["default_loadout"] = loadout_name
+        save_profile()
+        return true
+    return false
+
+func get_default_loadout_name() -> String:
+    return data.get("default_loadout", "")
+
+func get_default_loadout() -> Dictionary:
+    var name = get_default_loadout_name()
+    if name != "":
+        return get_loadout(name)
+    return {}
+
+func rename_loadout(old_name: String, new_name: String) -> bool:
+    if data.has("loadouts") and data["loadouts"].has(old_name):
+        if not data["loadouts"].has(new_name):
+            data["loadouts"][new_name] = data["loadouts"][old_name]
+            data["loadouts"].erase(old_name)
+            if data.get("default_loadout") == old_name:
+                data["default_loadout"] = new_name
+            save_profile()
+            return true
+    return false
+
 func delete_loadout(loadout_name: String) -> bool:
     if data.has("loadouts") and data["loadouts"].has(loadout_name):
         data["loadouts"].erase(loadout_name)
+        if data.get("default_loadout") == loadout_name:
+            data.erase("default_loadout")
         save_profile()
         return true
     return false

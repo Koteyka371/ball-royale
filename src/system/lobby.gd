@@ -46,6 +46,12 @@ func apply_loadout_to_ball(ball_id: int, profile: ProfileManager, loadout_name: 
         return true
     return false
 
+func apply_default_loadout(ball_id: int, profile: ProfileManager) -> bool:
+    var default_name = profile.get_default_loadout_name()
+    if default_name != "":
+        return apply_loadout_to_ball(ball_id, profile, default_name)
+    return false
+
 # Static global instance
 static var instance: PreGameLobby
 

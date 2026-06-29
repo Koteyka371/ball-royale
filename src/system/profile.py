@@ -149,9 +149,38 @@ class ProfileManager:
     def get_all_loadouts(self):
         return self.data.get("loadouts", {})
 
+
+    def set_default_loadout(self, loadout_name):
+        if "loadouts" in self.data and loadout_name in self.data["loadouts"]:
+            self.data["default_loadout"] = loadout_name
+            self.save()
+            return True
+        return False
+
+    def get_default_loadout_name(self):
+        return self.data.get("default_loadout")
+
+    def get_default_loadout(self):
+        name = self.get_default_loadout_name()
+        if name:
+            return self.get_loadout(name)
+        return None
+
+    def rename_loadout(self, old_name, new_name):
+        if "loadouts" in self.data and old_name in self.data["loadouts"]:
+            if new_name not in self.data["loadouts"]:
+                self.data["loadouts"][new_name] = self.data["loadouts"].pop(old_name)
+                if self.data.get("default_loadout") == old_name:
+                    self.data["default_loadout"] = new_name
+                self.save()
+                return True
+        return False
+
     def delete_loadout(self, loadout_name):
         if "loadouts" in self.data and loadout_name in self.data["loadouts"]:
             del self.data["loadouts"][loadout_name]
+            if self.data.get("default_loadout") == loadout_name:
+                del self.data["default_loadout"]
             self.save()
             return True
         return False

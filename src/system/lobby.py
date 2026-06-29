@@ -39,4 +39,10 @@ class PreGameLobby:
             return True
         return False
 
+    def apply_default_loadout(self, ball_id, profile):
+        default_name = profile.get_default_loadout_name()
+        if default_name:
+            return self.apply_loadout_to_ball(ball_id, profile, default_name)
+        return False
+
 lobby = PreGameLobby()
