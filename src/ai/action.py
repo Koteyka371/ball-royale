@@ -851,19 +851,36 @@ class Action:
                                     self.ball.alive = False
                             continue
                         elif hazard.kind == "tornado":
-                            # Pull effect and damage
+                            # Pull effect, launch, and damage
                             dx = hazard.x - self.ball.x
                             dy = hazard.y - self.ball.y
                             pull_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 200.0 * delta
                             self.ball.x += (dx / max(0.1, dist)) * pull_strength
                             self.ball.y += (dy / max(0.1, dist)) * pull_strength
-                            hazard_damage = hazard.damage * delta
-                            if hasattr(self.ball, "take_damage"):
-                                self.ball.take_damage(hazard_damage)
-                            elif hasattr(self.ball, "hp"):
-                                self.ball.hp -= hazard_damage
-                                if self.ball.hp <= 0:
-                                    self.ball.alive = False
+
+                            # If close enough, launch them randomly, deal damage and reset movement
+                            if dist < hazard.radius * 0.5:
+                                # Reset movement
+                                if hasattr(self.ball, "vx"): self.ball.vx = 0
+                                if hasattr(self.ball, "vy"): self.ball.vy = 0
+                                # Launch randomly (deterministic pseudo-random based on id and tick)
+                                import math as _math
+                                current_tick = getattr(self.world, "tick", 0)
+                                pseudo_rand = (getattr(self.ball, "id", 0) * 17 + getattr(hazard, "id", 0) * 31 + current_tick * 13) % 1000 / 1000.0
+                                angle = pseudo_rand * 2 * _math.pi
+                                pseudo_rand2 = (getattr(self.ball, "id", 0) * 23 + getattr(hazard, "id", 0) * 7 + current_tick * 19) % 1000 / 1000.0
+                                launch_dist = 50.0 + pseudo_rand2 * 100.0
+                                self.ball.x += _math.cos(angle) * launch_dist
+                                self.ball.y += _math.sin(angle) * launch_dist
+                                # Deal damage upon landing
+                                hazard_damage = hazard.damage
+                                if hasattr(self.ball, "take_damage"):
+                                    self.ball.take_damage(hazard_damage)
+                                elif hasattr(self.ball, "hp"):
+                                    self.ball.hp -= hazard_damage
+                                    if self.ball.hp <= 0:
+                                        self.ball.alive = False
+
                             continue
                         elif hazard.kind == "lightning_strike":
                             if not getattr(hazard, "hit_targets", False):

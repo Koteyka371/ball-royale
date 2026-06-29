@@ -1104,13 +1104,33 @@ func execute(strategy: String, delta: float):
                         var pull_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 200.0 * delta
                         self.ball.x += (dx / md) * pull_strength
                         self.ball.y += (dy / md) * pull_strength
-                        var hazard_damage = hazard.damage * delta
-                        if self.ball.has_method("take_damage"):
-                            self.ball.take_damage(hazard_damage)
-                        elif "hp" in self.ball:
-                            self.ball.hp -= hazard_damage
-                            if self.ball.hp <= 0:
-                                self.ball.alive = false
+
+                        if dist < hazard.radius * 0.5:
+                            if "vx" in self.ball: self.ball.vx = 0
+                            if "vy" in self.ball: self.ball.vy = 0
+
+                            var current_tick = 0
+                            if "tick" in self.world: current_tick = self.world.tick
+                            var b_id = 0
+                            if "id" in self.ball: b_id = self.ball.id
+                            var h_id = 0
+                            if "id" in hazard: h_id = hazard.id
+
+                            var prand = (b_id * 17 + h_id * 31 + current_tick * 13) % 1000 / 1000.0
+                            var angle = prand * 2.0 * PI
+                            var prand2 = (b_id * 23 + h_id * 7 + current_tick * 19) % 1000 / 1000.0
+                            var launch_dist = 50.0 + prand2 * 100.0
+
+                            self.ball.x += cos(angle) * launch_dist
+                            self.ball.y += sin(angle) * launch_dist
+
+                            var hazard_damage = hazard.damage
+                            if self.ball.has_method("take_damage"):
+                                self.ball.take_damage(hazard_damage)
+                            elif "hp" in self.ball:
+                                self.ball.hp -= hazard_damage
+                                if self.ball.hp <= 0:
+                                    self.ball.alive = false
                     elif hazard.kind == "lightning_strike":
                         if not hazard.has_meta("hit_targets") or not hazard.get_meta("hit_targets"):
                             hazard.set_meta("hit_targets", true)
