@@ -646,8 +646,13 @@ class BlackHoleMode(GameMode):
                     # Pull towards center
                     # Force is stronger the closer you are to the event horizon
                     pull_strength = 20000.0 / (dist * dist)
-                    # Cap max pull to avoid crazy speeds
-                    pull_strength = min(pull_strength, 150.0)
+
+                    # Increase max pull and overall strength as the black hole grows
+                    radius_multiplier = self.black_hole_radius / 50.0
+                    pull_strength *= radius_multiplier
+
+                    # Cap max pull to avoid crazy speeds, but scale the cap too
+                    pull_strength = min(pull_strength, 150.0 * radius_multiplier)
 
                     b.x += (dx / dist) * pull_strength * delta
                     b.y += (dy / dist) * pull_strength * delta
@@ -774,7 +779,7 @@ class WeatherChaosMode(GameMode):
                 b.dash_range_mult = 1.0
                 b.steering_mult = 1.0
             elif self.weather == "snow":
-                b.speed = b.base_speed * 0.5 # slowed down
+                b.speed = b.base_speed * 0.5
                 b.damage = b.base_damage * 1.2
                 b.dash_range_mult = 1.0
                 b.steering_mult = 1.0

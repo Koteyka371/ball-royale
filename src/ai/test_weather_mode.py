@@ -24,25 +24,25 @@ def test_weather_mode():
     # Tick with clear
     mode.weather = "clear"
     mode.tick(world, balls, 0.1)
-    assert balls[0].speed == 100.0
+    assert balls[0].speed == balls[0].base_speed
 
     # Tick with snow
     mode.weather = "snow"
     mode.tick(world, balls, 0.1)
-    assert balls[0].speed == 50.0
-    assert balls[0].damage == 12.0
+    assert balls[0].speed == balls[0].base_speed * 0.5
+    assert balls[0].damage == balls[0].base_damage * 1.2
 
     # Tick with thunderstorm
     mode.weather = "thunderstorm"
     mode.tick(world, balls, 0.1)
-    assert abs(balls[0].speed - 110.0) < 0.01
-    assert balls[0].damage == 15.0
+    assert abs(balls[0].speed - (balls[0].base_speed * 1.1)) < 0.01
+    assert balls[0].damage == balls[0].base_damage * 1.5
 
     # Tick with sandstorm
     mode.weather = "sandstorm"
     balls[0].hp = 100 # Reset HP
     mode.tick(world, balls, 0.1)
-    assert abs(balls[0].speed - 70.0) < 0.01
-    assert balls[0].damage == 10.0
+    assert abs(balls[0].speed - (balls[0].base_speed * 0.7)) < 0.01
+    assert balls[0].damage == balls[0].base_damage
     mode.tick(world, balls, 0.9)
     assert balls[0].hp == 99.0

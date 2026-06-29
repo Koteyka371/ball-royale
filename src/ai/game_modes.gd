@@ -749,8 +749,12 @@ class BlackHoleMode extends GameMode:
                 elif dist > 0:
                     # Pull towards center
                     var pull_strength = 20000.0 / (dist * dist)
+
+                    var radius_multiplier = black_hole_radius / 50.0
+                    pull_strength *= radius_multiplier
+
                     # Cap max pull to avoid crazy speeds
-                    pull_strength = min(pull_strength, 150.0)
+                    pull_strength = min(pull_strength, 150.0 * radius_multiplier)
 
                     b.x += (dx / dist) * pull_strength * delta
                     b.y += (dy / dist) * pull_strength * delta
