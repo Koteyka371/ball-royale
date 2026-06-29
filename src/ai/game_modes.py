@@ -886,7 +886,8 @@ class MovingZoneMode(GameMode):
         self.zone_target_y = self.zone_y
 
     def tick(self, world, balls, delta=0.016):
-        import random, math
+        import random
+        import math
         self.tick_timer += delta
 
         arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
@@ -1206,7 +1207,8 @@ class PortalNodeMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
-        import math, random
+        import math
+        import random
 
         self.portal_timer += delta
         if self.portal_timer >= 10.0:

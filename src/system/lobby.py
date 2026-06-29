@@ -25,4 +25,18 @@ class PreGameLobby:
     def get_trap_variant(self, ball_id):
         return self.selections.get(ball_id, "normal")
 
+
+    def apply_loadout_to_ball(self, ball_id, profile, loadout_name):
+        loadout = profile.get_loadout(loadout_name)
+        if loadout:
+            trap = loadout.get("trap_variant", "normal")
+            self.select_trap_variant(ball_id, trap)
+            # Store ball_type and preferred_bonuses in selections if needed by the system
+            if "ball_type" in loadout:
+                self.selections[f"{ball_id}_ball_type"] = loadout["ball_type"]
+            if "preferred_bonuses" in loadout:
+                self.selections[f"{ball_id}_preferred_bonuses"] = loadout["preferred_bonuses"]
+            return True
+        return False
+
 lobby = PreGameLobby()
