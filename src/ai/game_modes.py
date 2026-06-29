@@ -586,7 +586,7 @@ class EscortMode(GameMode):
             self.payload.x = 100.0
             self.payload.y = 500.0
 
-    def tick(self, world: Any) -> None:
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         if self.payload and getattr(self.payload, "alive", False):
             import math
             dx = self.goal_x - getattr(self.payload, "x", 0)
