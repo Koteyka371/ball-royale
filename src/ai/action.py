@@ -95,6 +95,15 @@ class Action:
         self.ball = ball
         self.world = world
 
+    def _get_perception_radius(self) -> float:
+        pr = float(getattr(self.ball, "perception_radius", 250.0))
+        if hasattr(self.world, "arena") and getattr(self.world.arena, "is_raining", False):
+            pr *= 0.6  # Reduced perception in rain
+        if hasattr(self.world, "arena") and getattr(self.world.arena, "is_foggy", False):
+            pr *= 0.4  # Further reduced perception in fog
+        return pr
+
+
     def execute(self, strategy: str, delta: float) -> None:
 
         if getattr(self.ball, "silence_timer", 0.0) > 0:
@@ -209,8 +218,8 @@ class Action:
         if hasattr(self.world, "arena") and hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
             if getattr(self.world.arena, "is_raining", False):
                 # Slippery: apply momentum (friction slide)
-                self.ball.x += getattr(self.ball, "vx") * delta * 0.2
-                self.ball.y += getattr(self.ball, "vy") * delta * 0.2
+                self.ball.x += getattr(self.ball, "vx", 0.0) * delta * 0.5
+                self.ball.y += getattr(self.ball, "vy", 0.0) * delta * 0.5
             if getattr(self.world.arena, "is_snowing", False):
                 # Extra slippery: apply even more momentum
                 self.ball.x += getattr(self.ball, "vx") * delta * 0.4
@@ -1018,7 +1027,7 @@ class Action:
         sep_nx, sep_ny = 0.0, 0.0
 
         count = 0
-        perception_radius = getattr(self.ball, "perception_radius", 250)
+        perception_radius = self._get_perception_radius()
 
         for ally in allies:
             dx = self.ball.x - ally.x
@@ -1077,7 +1086,7 @@ class Action:
     def _apply_obstacle_avoidance(self, nx: float, ny: float, target: Any = None, ignore_enemies: bool = False) -> tuple[float, float]:
         """Applies a repulsive force from nearby entities to avoid collisions."""
         all_entities = []
-        perception_radius = getattr(self.ball, "perception_radius", 250)
+        perception_radius = self._get_perception_radius()
 
         if hasattr(self.world, "get_nearby_entities"):
             entities = self.world.get_nearby_entities(self.ball, perception_radius)
@@ -1171,7 +1180,7 @@ class Action:
 
 
     def _get_enemies(self) -> list:
-        perception_radius = getattr(self.ball, "perception_radius", 250)
+        perception_radius = self._get_perception_radius()
         enemies = []
         if hasattr(self.world, "get_nearby_entities"):
             entities = self.world.get_nearby_entities(self.ball, perception_radius)
@@ -1216,7 +1225,7 @@ class Action:
         return enemies
 
     def _get_allies(self) -> list:
-        perception_radius = getattr(self.ball, "perception_radius", 250)
+        perception_radius = self._get_perception_radius()
         if hasattr(self.world, "get_nearby_entities"):
             entities = self.world.get_nearby_entities(self.ball, perception_radius)
             if isinstance(entities, dict):
@@ -1226,7 +1235,7 @@ class Action:
         return []
 
     def _get_boosters(self) -> list:
-        perception_radius = getattr(self.ball, "perception_radius", 250)
+        perception_radius = self._get_perception_radius()
         if hasattr(self.world, "get_nearby_entities"):
             entities = self.world.get_nearby_entities(self.ball, perception_radius)
             if isinstance(entities, dict):
@@ -1256,7 +1265,7 @@ class Action:
         dist_sq = dx * dx + dy * dy
         dist = math.sqrt(dist_sq) if dist_sq > 0.0001 else 0.01
 
-        perception_radius = getattr(self.ball, "perception_radius", 250)
+        perception_radius = self._get_perception_radius()
         if dist > perception_radius * 0.8:
             self._idle(delta)
             return

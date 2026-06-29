@@ -1,4 +1,3 @@
-import pytest # type: ignore
 import sys
 import os
 
@@ -69,11 +68,11 @@ def test_modifier_zones_tick():
 
     # speed ball should have 150 speed
     assert ball_speed.speed == ball_speed.base_speed * 1.5
-    assert getattr(ball_speed, "zone_modifier_speed", False) == True
+    assert getattr(ball_speed, "zone_modifier_speed", False)
 
     # damage ball should have 15 damage
     assert ball_damage.damage == ball_damage.base_damage * 1.5
-    assert getattr(ball_damage, "zone_modifier_damage", False) == True
+    assert getattr(ball_damage, "zone_modifier_damage", False)
 
     # heal ball should heal 20 hp
     assert ball_heal.hp == 70.0
@@ -89,4 +88,4 @@ def test_modifier_zones_tick():
     mode.tick(world, [ball_speed], delta=1.0)
 
     assert ball_speed.speed == ball_speed.base_speed
-    assert getattr(ball_speed, "zone_modifier_speed", False) == False
+    assert not getattr(ball_speed, "zone_modifier_speed", False)
