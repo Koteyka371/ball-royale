@@ -2480,6 +2480,8 @@ class WindstormMode extends GameMode:
         if push_timer <= 0:
             if push_duration <= 0:
                 var angle = randf_range(0.0, 2.0 * PI)
+                if world != null and world.has_method("add_event"):
+                    world.add_event("weather_warning", {"type": "weather_warning", "message": "Windstorm is pushing!"})
                 push_dir_x = cos(angle)
                 push_dir_y = sin(angle)
                 push_duration = randf_range(1.0, 2.0)
