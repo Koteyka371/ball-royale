@@ -25,7 +25,7 @@ class BallGenetics:
         ]
 
         self.skills = [
-            "wave_attack", "shield", "dash", "heal_ally", "precision_shot",
+            "wave_attack", "shield", "dash", "health_link", "precision_shot",
             "explosion", "rage_burst", "ground_pound", "phase_through",
             "steal_boost", "clone", "protect_ally", "command", "stealth", "summon_minions"
         ]

@@ -32,7 +32,7 @@ BALL_TYPES = {
                  "skill": "dash", "skill_cooldown": 3.0},
     "healer": {"hp": 120, "speed": 2.2, "damage": 5, "radius": 10,
                "perception_radius": 350, "aggression": 0.2, "color": "green",
-               "skill": "heal_ally", "skill_cooldown": 2.5},
+               "skill": "health_link", "skill_cooldown": 2.5},
     "sniper": {"hp": 60, "speed": 1.5, "damage": 35, "radius": 9,
                "perception_radius": 500, "aggression": 0.6, "color": "blue",
                "skill": "precision_shot", "skill_cooldown": 6.0},

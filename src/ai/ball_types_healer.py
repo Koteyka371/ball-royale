@@ -18,7 +18,7 @@ class Healer:
     PERCEPTION_RADIUS = 350
     AGGRESSION = 0.2
     COLOR = "green"
-    SKILL = "heal_ally"
+    SKILL = "health_link"
     SKILL_COOLDOWN = 2.5
 
     def __init__(self, ball_id: int, x: float = 0.0, y: float = 0.0):
@@ -60,54 +60,6 @@ class Healer:
         self.hp -= amount
         if self.hp <= 0:
             self.alive = False
-
-    def heal_ally(self, delta: float, target_ally=None) -> None:
-        """Heal an ally"""
-        if hasattr(self, "attack_timer"):
-            self.attack_timer -= delta
-        if hasattr(self, "skill_timer"):
-            self.skill_timer -= delta
-        self.current_action = "defend"
-        if target_ally is None:
-            return
-
-        import math
-
-        # Calculate distance to ally
-        dx = target_ally.x - self.x
-        dy = target_ally.y - self.y
-        dist_sq = dx * dx + dy * dy
-        dist = math.sqrt(dist_sq) if dist_sq > 0.0001 else 0.0
-
-        # Movement towards ally
-        target_radius = getattr(target_ally, "radius", 10.0)
-        attack_range = self.RADIUS + target_radius + 5.0
-
-        if dist > attack_range:
-            nx = dx / dist if dist > 0 else 0
-            ny = dy / dist if dist > 0 else 0
-            step = self.SPEED * delta * 60.0
-            self.x += nx * min(step, dist - attack_range * 0.8)
-            self.y += ny * min(step, dist - attack_range * 0.8)
-
-        # Recalculate distance after moving
-        new_dx = target_ally.x - self.x
-        new_dy = target_ally.y - self.y
-        new_dist_sq = new_dx * new_dx + new_dy * new_dy
-        new_dist = math.sqrt(new_dist_sq) if new_dist_sq > 0.0001 else 0.0
-
-        # Healing logic
-        if new_dist <= attack_range:
-            if getattr(self, "attack_timer", 0.0) <= 0.0:
-                if hasattr(target_ally, "hp") and hasattr(target_ally, "max_hp"):
-                    target_ally.hp = min(target_ally.max_hp, target_ally.hp + (self.DAMAGE * 3.0))
-
-                if self.skill_timer <= 0:
-                    self.use_skill()
-
-                speed = getattr(self, "speed", self.SPEED)
-                cooldown = max(0.2, 2.0 / speed if speed > 0 else 1.0)
-                self.attack_timer = cooldown
 
     def use_skill(self) -> bool:
         if self.skill_timer <= 0:

@@ -2669,6 +2669,16 @@ class Action:
                         if mag > 0.0001:
                             self.ball.x += (out_x/mag) * 80.0
                             self.ball.y += (out_y/mag) * 80.0
+            elif skill_name == "health_link":
+                allies = self._get_allies()
+                if allies:
+                    # Find lowest HP ally
+                    target = min(allies, key=lambda a: getattr(a, "hp", getattr(a, "max_hp", 100)) / getattr(a, "max_hp", 100))
+                    self.ball.health_link_target = target
+                    self.ball.health_link_timer = 5.0
+
+                    if hasattr(self, "_spawn_directed_particles"):
+                        self._spawn_directed_particles(self.ball, target, "health_link")
             elif skill_name == "shield":
                 if hasattr(self.ball, "hp"):
                     self.ball.hp = min(getattr(self.ball, "max_hp", 100), self.ball.hp + 20)
@@ -3232,6 +3242,40 @@ class Action:
             self.ball.skill_timer -= delta
         if hasattr(self.ball, "attack_timer") and self.ball.attack_timer > 0:
             self.ball.attack_timer -= delta
+
+        if hasattr(self.ball, "health_link_timer") and self.ball.health_link_timer > 0:
+            self.ball.health_link_timer -= delta
+            target = getattr(self.ball, "health_link_target", None)
+            if target and getattr(target, "alive", True):
+                dist_sq = (target.x - self.ball.x)**2 + (target.y - self.ball.y)**2
+                if dist_sq <= 40000: # 200 range
+                    drain_amount = 20.0 * delta # 20 hp per second
+
+                    if hasattr(self.world, "_deal_damage"):
+                        actual_damage = min(getattr(self.ball, "hp", 100.0), drain_amount)
+                        self.ball.hp -= actual_damage
+                        if hasattr(target, "hp"):
+                            target.hp = min(getattr(target, "hp", 100.0) + actual_damage * 1.5, getattr(target, "max_hp", 100.0))
+                    else:
+                        actual_damage = min(self.ball.hp, drain_amount) if hasattr(self.ball, "hp") else drain_amount
+                        if hasattr(self.ball, "hp"):
+                            self.ball.hp -= actual_damage
+                        if hasattr(target, "hp"):
+                            target.hp = min(getattr(target, "max_hp", 100.0), getattr(target, "hp", 100.0) + actual_damage * 1.5)
+
+
+
+                    # Stop if timer runs out or HP gets too low
+                    if self.ball.health_link_timer <= 0 or getattr(self.ball, "hp", 100.0) <= 10.0:
+                        self.ball.health_link_target = None
+                        self.ball.health_link_timer = 0
+                else:
+                    # Break link if out of range
+                    self.ball.health_link_timer = 0
+                    self.ball.health_link_target = None
+            else:
+                self.ball.health_link_timer = 0
+                self.ball.health_link_target = None
 
         if hasattr(self.ball, "ricochet_barrier_timer") and self.ball.ricochet_barrier_timer > 0:
             self.ball.ricochet_barrier_timer -= delta
