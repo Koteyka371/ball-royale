@@ -1,0 +1,158 @@
+extends RefCounted
+
+var world
+var excitement_level = 0.0
+var max_excitement = 100.0
+var team_alive_counts = {}
+var last_kill_tick = 0
+var kill_streak = {}
+
+func _init(p_world):
+    world = p_world
+
+func tick(balls: Array, kill_log: Array, current_tick: int):
+    _update_excitement(current_tick)
+    _check_events(balls, kill_log, current_tick)
+    _throw_buffs_if_needed(balls, current_tick)
+
+func _update_excitement(current_tick: int):
+    if excitement_level > 0:
+        excitement_level -= 0.05
+    excitement_level = max(0.0, min(excitement_level, max_excitement))
+
+func _check_events(balls: Array, kill_log: Array, current_tick: int):
+    if kill_log.is_empty():
+        return
+
+    var latest_kill = kill_log[kill_log.size() - 1]
+    if typeof(latest_kill) == TYPE_DICTIONARY and latest_kill.has("tick") and latest_kill["tick"] > last_kill_tick:
+        last_kill_tick = latest_kill["tick"]
+        _handle_kill(latest_kill, current_tick, balls)
+
+func _handle_kill(kill_info: Dictionary, current_tick: int, balls: Array):
+    if not kill_info.has("killer_id"):
+        return
+
+    var killer_id = kill_info["killer_id"]
+
+    if not kill_streak.has(killer_id):
+        kill_streak[killer_id] = 1
+    else:
+        kill_streak[killer_id] += 1
+
+    var streak = kill_streak[killer_id]
+
+    if streak >= 3:
+        excitement_level += 20.0
+        if world != null and world.has_method("add_event"):
+            world.add_event("crowd_cheer", {"message": "The crowd goes wild for Ball %s's %d-kill streak!" % [str(killer_id), streak], "volume": 1.0 + (streak * 0.1)})
+            world.add_event("audio_event", {"sound": "epic_crowd_roar", "volume": 1.0})
+
+    var alive_teams = {}
+    for b in balls:
+        if typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("alive"):
+            if b.get("ball_type") != "spectator":
+                var team = b.get("team")
+                if team == null or team == "":
+                    team = b.get("ball_type")
+                if alive_teams.has(team):
+                    alive_teams[team] += 1
+                else:
+                    alive_teams[team] = 1
+        elif typeof(b) == TYPE_DICTIONARY and b.has("alive") and b["alive"]:
+            if b.get("ball_type") != "spectator":
+                var team = b.get("team")
+                if team == null or team == "":
+                    team = b.get("ball_type")
+                if alive_teams.has(team):
+                    alive_teams[team] += 1
+                else:
+                    alive_teams[team] = 1
+
+    var killer = null
+    for b in balls:
+        var b_id = -1
+        if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+            b_id = b.get("id")
+        elif typeof(b) == TYPE_DICTIONARY and b.has("id"):
+            b_id = b["id"]
+
+        if str(b_id) == str(killer_id):
+            killer = b
+            break
+
+    if killer != null:
+        var killer_team = ""
+        if typeof(killer) == TYPE_OBJECT and killer.has_method("get"):
+            killer_team = killer.get("team")
+            if killer_team == null or killer_team == "":
+                killer_team = killer.get("ball_type")
+        elif typeof(killer) == TYPE_DICTIONARY:
+            killer_team = killer.get("team", killer.get("ball_type", ""))
+
+        var killer_team_count = 0
+        if alive_teams.has(killer_team):
+            killer_team_count = alive_teams[killer_team]
+
+        var total_enemies = 0
+        for t in alive_teams.keys():
+            if t != killer_team:
+                total_enemies += alive_teams[t]
+
+        if killer_team_count > 0 and total_enemies >= killer_team_count * 3:
+            excitement_level += 30.0
+            if world != null and world.has_method("add_event"):
+                world.add_event("crowd_cheer", {"message": "The crowd roars for an incredible comeback attempt!", "volume": 1.2})
+                world.add_event("audio_event", {"sound": "comeback_cheer", "volume": 1.0})
+
+func _throw_buffs_if_needed(balls: Array, current_tick: int):
+    if excitement_level < 50.0:
+        return
+
+    if randf() < 0.01:
+        var alive_balls = []
+        for b in balls:
+            if typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("alive") and b.get("ball_type") != "spectator":
+                alive_balls.append(b)
+            elif typeof(b) == TYPE_DICTIONARY and b.has("alive") and b["alive"] and b.get("ball_type") != "spectator":
+                alive_balls.append(b)
+
+        if alive_balls.is_empty():
+            return
+
+        var losing_ball = alive_balls[0]
+        var lowest_hp_pct = 1.0
+
+        for b in alive_balls:
+            var hp = 0.0
+            var max_hp = 100.0
+            if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+                hp = float(b.get("hp")) if b.get("hp") != null else 0.0
+                max_hp = float(b.get("max_hp")) if b.get("max_hp") != null else 100.0
+            elif typeof(b) == TYPE_DICTIONARY:
+                hp = float(b.get("hp", 0.0))
+                max_hp = float(b.get("max_hp", 100.0))
+
+            var hp_pct = hp / max(1.0, max_hp)
+            if hp_pct < lowest_hp_pct:
+                lowest_hp_pct = hp_pct
+                losing_ball = b
+
+        if world != null and world.has_method("add_event"):
+            var b_x = 0.0
+            var b_y = 0.0
+            if typeof(losing_ball) == TYPE_OBJECT and losing_ball.has_method("get"):
+                b_x = float(losing_ball.get("x")) if losing_ball.get("x") != null else 0.0
+                b_y = float(losing_ball.get("y")) if losing_ball.get("y") != null else 0.0
+            elif typeof(losing_ball) == TYPE_DICTIONARY:
+                b_x = float(losing_ball.get("x", 0.0))
+                b_y = float(losing_ball.get("y", 0.0))
+
+            world.add_event("spawn_booster", {
+                "x": b_x,
+                "y": b_y,
+                "kind": "speed",
+                "value": 30.0
+            })
+            world.add_event("crowd_throw", {"message": "The crowd throws a speed pad to help a struggling player!"})
+            excitement_level -= 10.0

@@ -22,6 +22,14 @@ class BattleCommentator:
                 weather = event.get("weather", "clear")
                 lines.append(f"[WEATHER] The weather has shifted to {weather.upper()}! Adapt or perish!")
                 continue
+            elif event.get("type") == "crowd_cheer":
+                lines.append(f"[CROWD] {event.get('message')}")
+                continue
+            elif event.get("type") == "crowd_throw":
+                lines.append(f"[CROWD] {event.get('message')}")
+                continue
+            elif event.get("type") in ["audio_event", "weather_warning", "spawn_booster"]:
+                continue
 
             tick = event.get("tick", 0)
             killer_id = event.get("killer_id", 0)

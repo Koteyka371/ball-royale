@@ -62,7 +62,19 @@ class GameMode:
                     elif b.has_method("set_meta"):
                         b.set_meta("cooldown_multiplier", mod["value"])
 
+
     func tick(world, balls: Array, delta: float = 0.016) -> void:
+        # Evaluate crowd system
+        if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
+            var crowd = world.get_node("CrowdSystem")
+            var kill_log = []
+            if "kill_log" in world:
+                kill_log = world.kill_log
+            var current_tick = 0
+            if "tick" in world:
+                current_tick = world.tick
+            crowd.tick(balls, kill_log, current_tick)
+
         if not "dead_balls" in world:
             world.dead_balls = []
         for b in balls:
@@ -282,7 +294,19 @@ class BattleRoyaleMode extends GameMode:
                 if b.has_method("set_meta"):
                     b.set_meta("base_perception_radius", base_perc)
 
+
     func tick(world, balls: Array, delta: float = 0.016) -> void:
+        # Evaluate crowd system
+        if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
+            var crowd = world.get_node("CrowdSystem")
+            var kill_log = []
+            if "kill_log" in world:
+                kill_log = world.kill_log
+            var current_tick = 0
+            if "tick" in world:
+                current_tick = world.tick
+            crowd.tick(balls, kill_log, current_tick)
+
         if not "dead_balls" in world:
             world.dead_balls = []
         for b in balls:
@@ -620,7 +644,19 @@ class ZombieInfectionMode extends GameMode:
                 else:
                     b.team = "Survivor"
 
+
     func tick(world, balls: Array, delta: float = 0.016) -> void:
+        # Evaluate crowd system
+        if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
+            var crowd = world.get_node("CrowdSystem")
+            var kill_log = []
+            if "kill_log" in world:
+                kill_log = world.kill_log
+            var current_tick = 0
+            if "tick" in world:
+                current_tick = world.tick
+            crowd.tick(balls, kill_log, current_tick)
+
         if not "dead_balls" in world:
             world.dead_balls = []
         for b in balls:
@@ -941,7 +977,19 @@ class VampireRoyaleMode extends GameMode:
         name = "Vampire Royale"
         description = "All balls slowly lose HP over time but regain HP when dealing damage. Last one standing wins."
 
+
     func tick(world, balls: Array, delta: float = 0.016) -> void:
+        # Evaluate crowd system
+        if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
+            var crowd = world.get_node("CrowdSystem")
+            var kill_log = []
+            if "kill_log" in world:
+                kill_log = world.kill_log
+            var current_tick = 0
+            if "tick" in world:
+                current_tick = world.tick
+            crowd.tick(balls, kill_log, current_tick)
+
         if not "dead_balls" in world:
             world.dead_balls = []
         for b in balls:
@@ -1007,7 +1055,19 @@ class KingOfTheHillMode extends GameMode:
             if b.ball_type != "spectator":
                 b.set_meta("score", 0)
 
+
     func tick(world, balls: Array, delta: float = 0.016) -> void:
+        # Evaluate crowd system
+        if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
+            var crowd = world.get_node("CrowdSystem")
+            var kill_log = []
+            if "kill_log" in world:
+                kill_log = world.kill_log
+            var current_tick = 0
+            if "tick" in world:
+                current_tick = world.tick
+            crowd.tick(balls, kill_log, current_tick)
+
         if not "dead_balls" in world:
             world.dead_balls = []
         for b in balls:
@@ -1080,7 +1140,19 @@ class BlackHoleMode extends GameMode:
         name = "Black Hole"
         description = "The entire arena is slowly sucked into a massive black hole in the center. Avoid the center!"
 
+
     func tick(world, balls: Array, delta: float = 0.016) -> void:
+        # Evaluate crowd system
+        if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
+            var crowd = world.get_node("CrowdSystem")
+            var kill_log = []
+            if "kill_log" in world:
+                kill_log = world.kill_log
+            var current_tick = 0
+            if "tick" in world:
+                current_tick = world.tick
+            crowd.tick(balls, kill_log, current_tick)
+
         if not "dead_balls" in world:
             world.dead_balls = []
         for b in balls:
@@ -1468,7 +1540,19 @@ class DominationMode extends GameMode:
         points.append({"id": "B", "x": 500, "y": 500, "radius": 150.0, "capture_progress": 0.0, "owner": null, "held_time": 0.0, "is_danger_zone": false})
         points.append({"id": "C", "x": 700, "y": 500, "radius": 150.0, "capture_progress": 0.0, "owner": null, "held_time": 0.0, "is_danger_zone": false})
 
+
     func tick(world, balls: Array, delta: float = 0.016) -> void:
+        # Evaluate crowd system
+        if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
+            var crowd = world.get_node("CrowdSystem")
+            var kill_log = []
+            if "kill_log" in world:
+                kill_log = world.kill_log
+            var current_tick = 0
+            if "tick" in world:
+                current_tick = world.tick
+            crowd.tick(balls, kill_log, current_tick)
+
         if not "dead_balls" in world:
             world.dead_balls = []
         for b in balls:
@@ -1596,7 +1680,19 @@ class MovingZoneMode extends GameMode:
         zone_target_x = zone_x
         zone_target_y = zone_y
 
+
     func tick(world, balls: Array, delta: float = 0.016) -> void:
+        # Evaluate crowd system
+        if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
+            var crowd = world.get_node("CrowdSystem")
+            var kill_log = []
+            if "kill_log" in world:
+                kill_log = world.kill_log
+            var current_tick = 0
+            if "tick" in world:
+                current_tick = world.tick
+            crowd.tick(balls, kill_log, current_tick)
+
         if not "dead_balls" in world:
             world.dead_balls = []
         for b in balls:
@@ -2111,7 +2207,19 @@ class MovingSafeZoneMode extends GameMode:
         if not "dead_balls" in world:
             world.dead_balls = []
 
+
     func tick(world, balls: Array, delta: float = 0.016) -> void:
+        # Evaluate crowd system
+        if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
+            var crowd = world.get_node("CrowdSystem")
+            var kill_log = []
+            if "kill_log" in world:
+                kill_log = world.kill_log
+            var current_tick = 0
+            if "tick" in world:
+                current_tick = world.tick
+            crowd.tick(balls, kill_log, current_tick)
+
         if not "dead_balls" in world:
             world.dead_balls = []
 
@@ -2346,7 +2454,19 @@ class SafeZoneMode extends GameMode:
         if not "dead_balls" in world:
             world.dead_balls = []
 
+
     func tick(world, balls: Array, delta: float = 0.016) -> void:
+        # Evaluate crowd system
+        if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
+            var crowd = world.get_node("CrowdSystem")
+            var kill_log = []
+            if "kill_log" in world:
+                kill_log = world.kill_log
+            var current_tick = 0
+            if "tick" in world:
+                current_tick = world.tick
+            crowd.tick(balls, kill_log, current_tick)
+
         if not "dead_balls" in world:
             world.dead_balls = []
 
@@ -2502,7 +2622,19 @@ class ToxicEnvironmentMode extends GameMode:
         if not "dead_balls" in world:
             world.dead_balls = []
 
+
     func tick(world, balls: Array, delta: float = 0.016) -> void:
+        # Evaluate crowd system
+        if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
+            var crowd = world.get_node("CrowdSystem")
+            var kill_log = []
+            if "kill_log" in world:
+                kill_log = world.kill_log
+            var current_tick = 0
+            if "tick" in world:
+                current_tick = world.tick
+            crowd.tick(balls, kill_log, current_tick)
+
         if not "dead_balls" in world:
             world.dead_balls = []
         if not "boosters" in world:
@@ -2723,7 +2855,19 @@ class WindstormMode extends GameMode:
                 if not "base_damage" in b:
                     b.base_damage = b.get("damage", 10.0)
 
+
     func tick(world, balls: Array, delta: float = 0.016) -> void:
+        # Evaluate crowd system
+        if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
+            var crowd = world.get_node("CrowdSystem")
+            var kill_log = []
+            if "kill_log" in world:
+                kill_log = world.kill_log
+            var current_tick = 0
+            if "tick" in world:
+                current_tick = world.tick
+            crowd.tick(balls, kill_log, current_tick)
+
         if not "dead_balls" in world:
             world.dead_balls = []
         for b in balls:

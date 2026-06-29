@@ -16,6 +16,15 @@ func update_feed(kill_log: Array):
                 var message = "Tick %d: Weather changed to %s!" % [tick, weather.to_upper()]
                 _add_message(message)
                 _processed_events[event_hash] = true
+        elif log.has("type") and log.get("type") in ["crowd_cheer", "crowd_throw"]:
+            var msg = log.get("message", "")
+            var event_hash = str(tick) + "_" + log.get("type") + "_" + msg
+            if not _processed_events.has(event_hash):
+                var message = "Tick %d: %s" % [tick, msg]
+                _add_message(message)
+                _processed_events[event_hash] = true
+        elif log.has("type") and log.get("type") in ["audio_event", "weather_warning", "spawn_booster"]:
+            pass
         else:
             var killer_id = str(log.get("killer_id", "?"))
             var victim_id = str(log.get("victim_id", "?"))
