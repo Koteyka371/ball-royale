@@ -1987,6 +1987,7 @@ class Action:
                                     enemy.hp -= 5 # Bonus area damage
                         break # Limit to one synergy activation per use
 
+            import random
             if getattr(self.ball, "charge_level", 0) >= 100:
                 self.ball.charge_level = 0
                 self.ball.base_damage = getattr(self.ball, "base_damage", getattr(self.ball, "damage", 10)) * 2 * synergy_multiplier
@@ -2007,7 +2008,6 @@ class Action:
                     self.ball.entangle_timer = 5.0
                     target.entangle_timer = 5.0
             elif skill_name == "summon_minions":
-                import random
                 num_minions = random.randint(2, 4)
                 for _ in range(num_minions):
                     import copy
