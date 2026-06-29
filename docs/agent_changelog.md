@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-230] Bounty Hunter Mode — *2026-06-29 12:14:57 UTC*
+
+At the start of the match, one ball on each team is randomly selected as the 'Bounty'. If the Bounty is destroyed, the opposing team gains a massive global stat buff and extra skill points. Teams must balance defending their Bounty while hunting the enemy's.
+
+---
+
 ## [idea-294] Blackout Mode — *2026-06-29 11:39:08 UTC*
 
 Periodically, the arena goes completely dark, reducing vision drastically for all balls.
