@@ -60,6 +60,138 @@ class GameMode:
         """Called every tick to check if there is a winner. Returns winner name or None."""
         return None
 
+
+class DraftRoyaleMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Draft Royale"
+        self.description = "Before the match, teams take turns picking and banning ball types to create synergies and counter opponents."
+        self.phase = "drafting"
+        self.draft_state = "ban"
+        self.turn_index = 0
+        self.banned_types = []
+        self.available_types = [
+            "assassin", "berserker", "bomber", "brawler", "chaos", "conjurer", "druid",
+            "elementalist", "guardian", "healer", "juggernaut", "king", "mage", "mimic",
+            "monk", "necromancer", "ninja", "paladin", "phantom", "ranger", "rogue",
+            "scout", "sniper", "swarm", "tank", "templar", "trickster", "vampire",
+            "warlock", "warrior"
+        ]
+        self.team_rosters = {}
+        self.teams = ["Team A", "Team B"]
+        self.max_bans = 2
+        self.picks_per_team = 5
+        self.timer = 0.0
+        import random
+        self.random = random
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        self.teams = ["Team A", "Team B"]
+        self.team_rosters = {"Team A": [], "Team B": []}
+        self.banned_types = []
+        self.draft_state = "ban"
+        self.turn_index = 0
+        self.phase = "drafting"
+        self.timer = 0.0
+
+        # Initialize balls as spectators during draft
+        for b in balls:
+            b.original_type = getattr(b, "ball_type", "tank")
+            b.ball_type = "spectator"
+            b.team = "spectator"
+            if not hasattr(b, "base_speed"):
+                b.base_speed = getattr(b, "speed", 100.0)
+            if not hasattr(b, "base_damage"):
+                b.base_damage = getattr(b, "damage", 10.0)
+            b.speed = 0.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if self.phase == "drafting":
+            self.timer += delta
+            if self.timer > 0.5:
+                self.timer = 0.0
+                current_team = self.teams[self.turn_index % len(self.teams)]
+
+                if self.draft_state == "ban":
+                    if len(self.banned_types) < self.max_bans * len(self.teams):
+                        choices = [t for t in self.available_types if t not in self.banned_types]
+                        if choices:
+                            ban = self.random.choice(choices)
+                            self.banned_types.append(ban)
+                        self.turn_index += 1
+
+                        if len(self.banned_types) >= self.max_bans * len(self.teams):
+                            self.draft_state = "pick"
+                            self.turn_index = 0
+
+                elif self.draft_state == "pick":
+                    team_a_picks = len(self.team_rosters["Team A"])
+                    team_b_picks = len(self.team_rosters["Team B"])
+
+                    if team_a_picks < self.picks_per_team or team_b_picks < self.picks_per_team:
+                        if len(self.team_rosters[current_team]) < self.picks_per_team:
+                            picked_by_a = self.team_rosters["Team A"]
+                            picked_by_b = self.team_rosters["Team B"]
+                            choices = [t for t in self.available_types if t not in self.banned_types and t not in picked_by_a and t not in picked_by_b]
+                            if not choices:
+                                choices = [t for t in self.available_types if t not in self.banned_types]
+                            if choices:
+                                pick = self.random.choice(choices)
+                                self.team_rosters[current_team].append(pick)
+                        self.turn_index += 1
+                    else:
+                        self.phase = "combat"
+                        self.start_combat(world, balls)
+        else:
+            # Combat phase
+            for b in balls:
+                if not getattr(b, "alive", False):
+                    continue
+                # Implement any combat specific ticks here if needed
+
+    def start_combat(self, world: Any, balls: List[Any]) -> None:
+        team_a_balls = [b for b in balls if getattr(b, "original_type", "") != "spectator"][:self.picks_per_team]
+        team_b_balls = [b for b in balls if getattr(b, "original_type", "") != "spectator"][self.picks_per_team:self.picks_per_team*2]
+
+        for i, b in enumerate(team_a_balls):
+            if i < len(self.team_rosters["Team A"]):
+                b.ball_type = self.team_rosters["Team A"][i]
+                b.team = "Team A"
+                b.speed = b.base_speed
+                b.damage = b.base_damage
+                b.alive = True
+
+        for i, b in enumerate(team_b_balls):
+            if i < len(self.team_rosters["Team B"]):
+                b.ball_type = self.team_rosters["Team B"][i]
+                b.team = "Team B"
+                b.speed = b.base_speed
+                b.damage = b.base_damage
+                b.alive = True
+
+        # Make remaining balls spectators
+        for b in balls:
+            if getattr(b, "team", "spectator") == "spectator":
+                b.ball_type = "spectator"
+                b.alive = False
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        if self.phase == "drafting":
+            return None
+
+        alive_a = sum(1 for b in balls if getattr(b, "alive", False) and getattr(b, "team", None) == "Team A")
+        alive_b = sum(1 for b in balls if getattr(b, "alive", False) and getattr(b, "team", None) == "Team B")
+
+        if alive_a > 0 and alive_b == 0:
+            return "Team A"
+        elif alive_b > 0 and alive_a == 0:
+            return "Team B"
+        elif alive_a == 0 and alive_b == 0:
+            return "Draw"
+
+        return None
+
 class BattleRoyaleMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -1563,6 +1695,7 @@ class TournamentMode(GameMode):
         return None
 
 GAME_MODES = {
+    "draft_royale": DraftRoyaleMode(),
     "tournament": TournamentMode(),
     "bumper_balls": BumperBallsMode(),
     "portal_node": PortalNodeMode(),

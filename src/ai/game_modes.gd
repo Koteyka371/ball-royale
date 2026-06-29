@@ -80,6 +80,176 @@ class GameMode:
     func check_winner(world, balls: Array):
         return null
 
+
+class DraftRoyaleMode extends GameMode:
+    var phase: String = "drafting"
+    var draft_state: String = "ban"
+    var turn_index: int = 0
+    var banned_types: Array = []
+    var available_types: Array = [
+        "assassin", "berserker", "bomber", "brawler", "chaos", "conjurer", "druid",
+        "elementalist", "guardian", "healer", "juggernaut", "king", "mage", "mimic",
+        "monk", "necromancer", "ninja", "paladin", "phantom", "ranger", "rogue",
+        "scout", "sniper", "swarm", "tank", "templar", "trickster", "vampire",
+        "warlock", "warrior"
+    ]
+    var team_rosters: Dictionary = {"Team A": [], "Team B": []}
+    var teams: Array = ["Team A", "Team B"]
+    var max_bans: int = 2
+    var picks_per_team: int = 5
+    var timer: float = 0.0
+
+    func _init() -> void:
+        name = "Draft Royale"
+        description = "Before the match, teams take turns picking and banning ball types to create synergies and counter opponents."
+
+    func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
+        phase = "drafting"
+        draft_state = "ban"
+        turn_index = 0
+        banned_types = []
+        team_rosters = {"Team A": [], "Team B": []}
+        timer = 0.0
+
+        for b in balls:
+            if b.has_method("set_meta"):
+                var orig_type = "tank"
+                if "ball_type" in b:
+                    orig_type = b.ball_type
+                b.set_meta("original_type", orig_type)
+
+                var base_spd = 100.0
+                if "speed" in b:
+                    base_spd = float(b.speed)
+                b.set_meta("base_speed", base_spd)
+
+                var base_dmg = 10.0
+                if "damage" in b:
+                    base_dmg = float(b.damage)
+                b.set_meta("base_damage", base_dmg)
+
+            b.ball_type = "spectator"
+            b.team = "spectator"
+            if "speed" in b:
+                b.speed = 0.0
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        if phase == "drafting":
+            timer += delta
+            if timer > 0.5:
+                timer = 0.0
+                var current_team = teams[turn_index % teams.size()]
+
+                if draft_state == "ban":
+                    if banned_types.size() < max_bans * teams.size():
+                        var choices = []
+                        for t in available_types:
+                            if not banned_types.has(t):
+                                choices.append(t)
+                        if choices.size() > 0:
+                            var ban = choices[randi() % choices.size()]
+                            banned_types.append(ban)
+                        turn_index += 1
+
+                        if banned_types.size() >= max_bans * teams.size():
+                            draft_state = "pick"
+                            turn_index = 0
+
+                elif draft_state == "pick":
+                    var team_a_picks = team_rosters["Team A"].size()
+                    var team_b_picks = team_rosters["Team B"].size()
+
+                    if team_a_picks < picks_per_team or team_b_picks < picks_per_team:
+                        if team_rosters[current_team].size() < picks_per_team:
+                            var picked_by_a = team_rosters["Team A"]
+                            var picked_by_b = team_rosters["Team B"]
+                            var choices = []
+                            for t in available_types:
+                                if not banned_types.has(t) and not picked_by_a.has(t) and not picked_by_b.has(t):
+                                    choices.append(t)
+                            if choices.size() == 0:
+                                for t in available_types:
+                                    if not banned_types.has(t):
+                                        choices.append(t)
+                            if choices.size() > 0:
+                                var pick = choices[randi() % choices.size()]
+                                team_rosters[current_team].append(pick)
+                        turn_index += 1
+                    else:
+                        phase = "combat"
+                        start_combat(world, balls)
+
+    func start_combat(world, balls: Array) -> void:
+        var team_a_balls = []
+        var team_b_balls = []
+
+        for b in balls:
+            var is_orig_spec = false
+            if b.has_method("get_meta") and b.has_meta("original_type"):
+                if b.get_meta("original_type") == "spectator":
+                    is_orig_spec = true
+            elif b.ball_type == "spectator":
+                pass # can't check original type easily without meta
+
+            if not is_orig_spec:
+                if team_a_balls.size() < picks_per_team:
+                    team_a_balls.append(b)
+                elif team_b_balls.size() < picks_per_team:
+                    team_b_balls.append(b)
+
+        for i in range(team_a_balls.size()):
+            var b = team_a_balls[i]
+            if i < team_rosters["Team A"].size():
+                b.ball_type = team_rosters["Team A"][i]
+                b.team = "Team A"
+                b.alive = true
+                if b.has_method("get_meta"):
+                    if b.has_meta("base_speed") and "speed" in b:
+                        b.speed = b.get_meta("base_speed")
+                    if b.has_meta("base_damage") and "damage" in b:
+                        b.damage = b.get_meta("base_damage")
+
+        for i in range(team_b_balls.size()):
+            var b = team_b_balls[i]
+            if i < team_rosters["Team B"].size():
+                b.ball_type = team_rosters["Team B"][i]
+                b.team = "Team B"
+                b.alive = true
+                if b.has_method("get_meta"):
+                    if b.has_meta("base_speed") and "speed" in b:
+                        b.speed = b.get_meta("base_speed")
+                    if b.has_meta("base_damage") and "damage" in b:
+                        b.damage = b.get_meta("base_damage")
+
+        for b in balls:
+            if b.team == "spectator" or b.ball_type == "spectator":
+                b.ball_type = "spectator"
+                b.alive = false
+
+    func check_winner(world, balls: Array):
+        if phase == "drafting":
+            return null
+
+        var alive_a = 0
+        var alive_b = 0
+
+        for b in balls:
+            if b.alive:
+                if b.team == "Team A":
+                    alive_a += 1
+                elif b.team == "Team B":
+                    alive_b += 1
+
+        if alive_a > 0 and alive_b == 0:
+            return "Team A"
+        elif alive_b > 0 and alive_a == 0:
+            return "Team B"
+        elif alive_a == 0 and alive_b == 0:
+            return "Draw"
+
+        return null
+
 class BattleRoyaleMode extends GameMode:
     var dark_phase_timer: float = 0.0
     var is_dark_phase: bool = false
@@ -1917,6 +2087,7 @@ class TournamentMode extends GameMode:
         return null
 
 var GAME_MODES = {
+    "draft_royale": DraftRoyaleMode.new(),
     "tournament": TournamentMode.new(),
     "bumper_balls": BumperBallsMode.new(),
     "portal_node": PortalNodeMode.new(),
