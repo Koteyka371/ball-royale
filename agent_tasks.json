@@ -4838,7 +4838,7 @@
     },
     {
       "id": "idea-278",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Reflect shield visual effect",
@@ -6585,6 +6585,108 @@
         "src/ai/weekly_mutators.py",
         "src/ai/weekly_mutators.gd",
         "tests/test_weekly_mutators.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-381",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Poison Nova Skill",
+      "description": "A skill that emits an expanding ring of poison, applying a severe Damage Over Time effect to all enemies caught in it.",
+      "allowed_paths": [
+        "src/ai/poison_nova_skill.py",
+        "src/ai/poison_nova_skill.gd",
+        "tests/test_poison_nova_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-382",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Effects Mode",
+      "description": "Add dynamic weather hazards like lightning strikes, snowstorms (slowing down movement), or rain (reducing vision range).",
+      "allowed_paths": [
+        "src/ai/effects.py",
+        "src/ai/effects.gd",
+        "tests/test_effects.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-383",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather-Specific Minions",
+      "description": "Add new entity types or minions that only spawn during specific weather conditions, providing dynamic environmental challenges.",
+      "allowed_paths": [
+        "src/ai/specific_minions.py",
+        "src/ai/specific_minions.gd",
+        "tests/test_specific_minions.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-384",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Meteor Shower Skill",
+      "description": "A skill that rains down meteors on random enemy locations, creating a chaotic hazard zone.",
+      "allowed_paths": [
+        "src/ai/meteor_shower_skill.py",
+        "src/ai/meteor_shower_skill.gd",
+        "tests/test_meteor_shower_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-385",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncy Bumpers Mode",
+      "description": "Add a new game mode with lots of bouncy bumpers and physics-based knockback logic to push balls around the arena.",
+      "allowed_paths": [
+        "src/ai/bouncy_bumpers.py",
+        "src/ai/bouncy_bumpers.gd",
+        "tests/test_bouncy_bumpers.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-386",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Map Flooding",
+      "description": "During prolonged 'rain' weather events, low areas of the arena could slowly flood, creating water hazards that drastically slow non-aquatic or non-floating entities.",
+      "allowed_paths": [
+        "src/ai/dynamic_map_flooding.py",
+        "src/ai/dynamic_map_flooding.gd",
+        "tests/test_dynamic_map_flooding.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

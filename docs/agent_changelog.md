@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-278] Reflect shield visual effect — *2026-06-29 10:04:45 UTC*
+
+Add a visual particle effect when the reflect shield reflects damage, creating a pulse originating from the shield and traveling towards the attacker.
+
+---
+
 ## [idea-269] Global Weather Announcements — *2026-06-29 09:51:25 UTC*
 
 Add UI notifications or commentary when weather changes, giving players time to adapt.
