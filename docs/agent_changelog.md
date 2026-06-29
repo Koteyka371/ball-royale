@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-194] Portal Mechanics — *2026-06-29 09:05:38 UTC*
+
+Add pairs of portals in the arena. If a ball enters one portal, it instantly teleports to the other portal, preserving momentum.
+
+---
+
 ## [idea-217] Draft Mode (Pick and Ban Phase) — *2026-06-29 09:05:33 UTC*
 
 Before the start of a Royale match, teams take turns picking ball types and banning ball types, creating strategic synergies and denying counter-comps to the opponent teams.
