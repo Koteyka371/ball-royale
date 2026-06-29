@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-284] Decoy Ball Skill — *2026-06-29 11:08:40 UTC*
+
+A new skill that creates an AI-controlled illusion of the ball that deals no damage but taunts nearby enemies into attacking it, absorbing one hit before exploding.
+
+---
+
 ## [idea-287] Orbital Laser Strike Hazard — *2026-06-29 11:08:36 UTC*
 
 A new procedural arena hazard that paints a large target area on the ground for 3 seconds before dealing massive localized damage and applying a strong outward knockback.
