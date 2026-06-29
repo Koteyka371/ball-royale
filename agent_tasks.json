@@ -3800,7 +3800,7 @@
     },
     {
       "id": "idea-217",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Draft Mode (Pick and Ban Phase)",
@@ -6159,6 +6159,57 @@
         "src/arena/decoy_trap.py",
         "src/arena/decoy_trap.gd",
         "tests/test_decoy_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-356",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Day and Night Cycle",
+      "description": "Introduce a day and night cycle that affects visibility and ball behavior. Certain ball types (like Assassin or Phantom) gain stealth buffs or increased damage at night, while others like Paladin or Guardian are stronger during the day.",
+      "allowed_paths": [
+        "src/ai/day_and_night_cycle.py",
+        "src/ai/day_and_night_cycle.gd",
+        "tests/test_day_and_night_cycle.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-357",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Interactive Environmental Hazards",
+      "description": "Add interactive environmental elements that balls can trigger or push into each other, such as explosive barrels or bouncing pads. This would add an extra layer of strategy for positioning.",
+      "allowed_paths": [
+        "src/arena/interactive_environmental_hazards.py",
+        "src/arena/interactive_environmental_hazards.gd",
+        "tests/test_interactive_environmental_hazards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-358",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tornado Skill",
+      "description": "A new skill that creates a local tornado hazard that pulls nearby balls towards it and applies wind physics.",
+      "allowed_paths": [
+        "src/ai/tornado_skill.py",
+        "src/ai/tornado_skill.gd",
+        "tests/test_tornado_skill.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
