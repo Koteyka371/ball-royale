@@ -1,4 +1,4 @@
 {
-  "title": "Shrinking Labyrinth Mode",
-  "description": "A new game mode where the arena starts as a complex maze that slowly shifts and shrinks. Walls deal damage, forcing balls to navigate carefully while fighting for survival in an ever-tightening space."
+  "title": "Gravity Inversion Zone",
+  "description": "A new arena hazard that periodically reverses gravity within its radius, causing balls to be repelled from each other instead of behaving normally, which can be used to break up enemy groupings."
 }

@@ -176,6 +176,7 @@ class ProceduralArena:
                 target_bh = random.choice(bh_hazards)
                 # Link portal1 to the black hole ID, so it dynamically tracks the moving hazard
                 portal1.target_hazard_id = target_bh.id
+                portal2.target_hazard_id = target_bh.id
 
             self.hazards.append(portal1)
             self.hazards.append(portal2)

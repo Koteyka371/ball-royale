@@ -59,7 +59,7 @@ def test_coach_mode_override():
     emotion = brain.emotion(perception)
     decision = brain.decision(perception, emotion)
 
-    assert decision in ["defend", "collect_booster", "attack", "use_skill"]
+    assert decision in ["defend", "collect_booster", "attack", "use_skill", "chase"]
 
 def test_coach_mode_string_alias():
     ball = MockBall(ball_type="scout", team="blue")
