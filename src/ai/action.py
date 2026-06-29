@@ -90,6 +90,11 @@ class Action:
 
     def execute(self, strategy: str, delta: float) -> None:
 
+        if getattr(self.ball, "silence_timer", 0.0) > 0:
+            self.ball.silence_timer -= delta
+            if self.ball.silence_timer < 0:
+                self.ball.silence_timer = 0.0
+
         if strategy in ("flee", "defend") and hasattr(self.ball, "inventory") and "deployable_flare" in self.ball.inventory:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 from arena.procedural_arena import Hazard
@@ -241,8 +246,9 @@ class Action:
 
         self.ball.is_dashing = False
         if strategy in ["chase", "flee", "attack"] and getattr(self.ball, "stamina", 0) >= 30.0:
-            self.ball.is_dashing = True
-            self.ball.speed = self.ball.base_speed * 2.0
+            if getattr(self.ball, "silence_timer", 0.0) <= 0:
+                self.ball.is_dashing = True
+                self.ball.speed = self.ball.base_speed * 2.0
 
         if hasattr(self.world, "arena") and getattr(self.world.arena, "is_night", None) is not None:
             if self.world.arena.is_night:
@@ -2215,6 +2221,8 @@ class Action:
             self._idle(delta)
 
     def _use_skill(self) -> None:
+        if getattr(self.ball, "silence_timer", 0.0) > 0:
+            return
         skill_timer = getattr(self.ball, "skill_timer", 0.0)
         if skill_timer <= 0 and (hasattr(self.ball, "use_skill") or getattr(self.ball, "active_skill", None) is not None):
             if hasattr(self.ball, "use_skill"):
@@ -2461,6 +2469,12 @@ class Action:
                         if dist <= burst_radius:
                             if hasattr(enemy, "take_damage"):
                                 enemy.take_damage(base_burst_dmg)
+            elif skill_name == "silence_aura":
+                enemies = self._get_enemies()
+                if enemies:
+                    for enemy in enemies:
+                        if math.hypot(enemy.x - self.ball.x, enemy.y - self.ball.y) < 150.0:
+                            enemy.silence_timer = 5.0
             elif skill_name == "smokescreen":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
 

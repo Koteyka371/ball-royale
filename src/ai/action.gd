@@ -121,6 +121,17 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+
+	if self.ball.has_method("has_meta") and self.ball.has_meta("silence_timer"):
+		var st = self.ball.get_meta("silence_timer")
+		if st > 0.0:
+			st -= delta
+			self.ball.set_meta("silence_timer", max(0.0, st))
+	elif "silence_timer" in self.ball:
+		var st = self.ball.silence_timer
+		if st > 0.0:
+			st -= delta
+			self.ball.silence_timer = max(0.0, st)
 	if (strategy == "flee" or strategy == "defend") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
 		if inv.has("placeable_trap"):
@@ -1263,6 +1274,17 @@ func execute(strategy: String, delta: float):
 
         var is_dash = false
         if my_ball.has_meta("is_dashing"): is_dash = my_ball.get_meta("is_dashing")
+
+        var _is_silenced = false
+        if my_ball.has_method("has_meta") and my_ball.has_meta("silence_timer") and my_ball.get_meta("silence_timer") > 0.0:
+            _is_silenced = true
+        elif "silence_timer" in my_ball and my_ball.silence_timer > 0.0:
+            _is_silenced = true
+
+        if _is_silenced:
+            is_dash = false
+            if my_ball.has_method("set_meta"):
+                my_ball.set_meta("is_dashing", false)
 
         if is_dash:
             my_ball.set_meta("stamina", max(0.0, act_stamina - 50.0 * delta))
@@ -3233,6 +3255,11 @@ func _collect_booster(delta: float):
         _idle(delta)
 
 func _use_skill():
+
+    var _silence_timer = 0.0
+    if "silence_timer" in self.ball: _silence_timer = self.ball.silence_timer
+    elif self.ball.has_method("has_meta") and self.ball.has_meta("silence_timer"): _silence_timer = self.ball.get_meta("silence_timer")
+    if _silence_timer > 0.0: return
     var skill_timer = 0.0
     if "skill_timer" in self.ball:
         skill_timer = self.ball.skill_timer
@@ -3685,6 +3712,32 @@ func _use_skill():
                 if sqrt(dx*dx + dy*dy) <= burst_radius:
                     if enemy.has_method("take_damage"):
                         enemy.take_damage(base_burst_dmg)
+        elif skill_name == "silence_aura":
+            var enemies = _get_enemies() if has_method("_get_enemies") else []
+            if enemies.size() == 0 and "balls" in self.world:
+                var my_team = self.ball.team if "team" in self.ball else (self.ball.get_meta("team") if self.ball.has_method("has_meta") and self.ball.has_meta("team") else "")
+                var my_id = self.ball.id if "id" in self.ball else (self.ball.get_meta("id") if self.ball.has_method("has_meta") and self.ball.has_meta("id") else -1)
+                for b in self.world.balls:
+                    var is_alive = b.alive if "alive" in b else (b.get_meta("alive") if b.has_method("has_meta") and b.has_meta("alive") else true)
+                    var b_id = b.id if "id" in b else (b.get_meta("id") if b.has_method("has_meta") and b.has_meta("id") else -1)
+                    var b_team = b.team if "team" in b else (b.get_meta("team") if b.has_method("has_meta") and b.has_meta("team") else "")
+                    if is_alive and b_id != my_id and b_team != my_team:
+                        enemies.append(b)
+
+            for enemy in enemies:
+                var ex = enemy.x if "x" in enemy else (enemy.get_meta("x") if enemy.has_method("has_meta") and enemy.has_meta("x") else 0.0)
+                var ey = enemy.y if "y" in enemy else (enemy.get_meta("y") if enemy.has_method("has_meta") and enemy.has_meta("y") else 0.0)
+                var bx = self.ball.x if "x" in self.ball else (self.ball.get_meta("x") if self.ball.has_method("has_meta") and self.ball.has_meta("x") else 0.0)
+                var by = self.ball.y if "y" in self.ball else (self.ball.get_meta("y") if self.ball.has_method("has_meta") and self.ball.has_meta("y") else 0.0)
+
+                var dx = ex - bx
+                var dy = ey - by
+                var dist = sqrt(dx*dx + dy*dy)
+                if dist < 150.0:
+                    if "silence_timer" in enemy:
+                        enemy.silence_timer = 5.0
+                    elif enemy.has_method("set_meta"):
+                        enemy.set_meta("silence_timer", 5.0)
         elif skill_name == "smokescreen":
             if "arena" in self.world and "hazards" in self.world.arena:
                 var trap_id = self.world.arena.hazards.size() + randi() % 10000
