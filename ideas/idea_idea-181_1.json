@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Projection Skill",
+  "description": "A new skill that creates an illusionary clone of the ball. The clone deals no damage but mimics the player's movement, confusing enemies and drawing their attacks. The clone vanishes after absorbing a set amount of damage or after a duration expires."
+}

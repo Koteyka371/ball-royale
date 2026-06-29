@@ -277,11 +277,30 @@ func update_zone(current_tick: int, delta: float) -> void:
             safe_zone_radius = 50.0
 
         for h in hazards:
-            if h.id >= 1000 and h.radius < h.target_radius:
+            if "kind" in h and h.kind == "flare":
+                if h.has_meta("duration"):
+                    var dur = h.get_meta("duration") - delta
+                    h.set_meta("duration", dur)
+                    if dur <= 0:
+                        h.set_meta("active", false)
+                        if "active" in h:
+                            h.active = false
+            elif h.id >= 1000 and h.radius < h.target_radius:
                 h.radius += (h.target_radius / 600.0) * delta * 60.0
                 if h.radius > h.target_radius:
                     h.radius = h.target_radius
 
+        var active_hazards = []
+        for h in hazards:
+            var is_active = true
+            if "active" in h:
+                is_active = h.active
+            elif h.has_method("has_meta") and h.has_meta("active"):
+                is_active = h.get_meta("active")
+
+            if is_active:
+                active_hazards.append(h)
+        hazards = active_hazards
 
         if current_tick % 600 == 0:
             var new_hazards = []
