@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-206] Teleportation Pads — *2026-06-29 08:14:49 UTC*
+
+Place teleportation pads in procedural arenas that instantly transport balls to another linked pad.
+
+---
+
 ## [idea-221] Decoy Trap — *2026-06-29 08:06:18 UTC*
 
 A new trap variant that creates a holographic clone of the placing ball. The clone moves erratically to draw enemy aggro and explodes for minor area-of-effect damage when destroyed.

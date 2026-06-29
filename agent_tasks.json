@@ -3611,7 +3611,7 @@
     },
     {
       "id": "idea-206",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Teleportation Pads",
@@ -5937,6 +5937,40 @@
         "src/ai/manipulation_buff.py",
         "src/ai/manipulation_buff.gd",
         "tests/test_manipulation_buff.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-343",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Ring of Fire Hazard",
+      "description": "A hazard that spawns a large ring of fire which slowly shrinks over 10 seconds. Balls caught on the ring take continuous burn damage until they escape or the ring vanishes.",
+      "allowed_paths": [
+        "src/arena/shrinking_ring_of_fire.py",
+        "src/arena/shrinking_ring_of_fire.gd",
+        "tests/test_shrinking_ring_of_fire.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-344",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Swap Item",
+      "description": "A consumable item that allows the ball to instantly swap positions with a targeted enemy or ally, throwing off opponent positioning and escaping corner traps.",
+      "allowed_paths": [
+        "src/ai/quantum_swap_item.py",
+        "src/ai/quantum_swap_item.gd",
+        "tests/test_quantum_swap_item.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
