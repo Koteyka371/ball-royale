@@ -367,7 +367,7 @@ def test_escort_mode():
     assert balls[1].team == "Attackers"
 
     # Tick payload towards goal
-    mode.tick(world)
+    mode.tick(world, balls)
     assert getattr(payload, "x") > 100.0 # Moved right
 
     assert mode.check_winner(world, balls) is None

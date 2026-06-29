@@ -936,7 +936,7 @@ class EscortMode extends GameMode:
                 payload.x = 100.0
                 payload.y = 500.0
 
-    func tick(world) -> void:
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
         if payload != null:
             var is_alive = payload.get("alive", false) if typeof(payload) == TYPE_DICTIONARY else payload.alive
             if is_alive:
