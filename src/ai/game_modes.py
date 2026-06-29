@@ -2076,7 +2076,84 @@ class BlackoutMode(GameMode):
                 else:
                     b.perception_radius = getattr(b, "base_perception_radius", 250.0)
 
+
+class BountyHuntMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Bounty Hunt"
+        self.description = "One ball on each team is the Bounty. Destroying the enemy Bounty grants a massive buff and extra skill points."
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        red_team = []
+        blue_team = []
+
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        mid = len(valid_balls) // 2
+        for i, b in enumerate(valid_balls):
+            if i < mid:
+                b.team = "Red"
+                red_team.append(b)
+            else:
+                b.team = "Blue"
+                blue_team.append(b)
+
+        self.bounties = {}
+        import random
+        if red_team:
+            red_bounty = random.choice(red_team)
+            red_bounty.is_bounty = True
+            red_bounty.bounty_timer = 0
+            self.bounties["Red"] = red_bounty
+        if blue_team:
+            blue_bounty = random.choice(blue_team)
+            blue_bounty.is_bounty = True
+            blue_bounty.bounty_timer = 0
+            self.bounties["Blue"] = blue_bounty
+
+        self.buffed_teams: set[str] = set()
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.0) -> None:
+        super().tick(world, balls, delta)
+
+        for team, bounty in list(self.bounties.items()):
+            if not getattr(bounty, "alive", False) and team not in self.buffed_teams:
+                self.buffed_teams.add(team)
+                enemy_team = "Blue" if team == "Red" else "Red"
+
+                # Global stat buff
+                for b in balls:
+                    if getattr(b, "alive", False) and getattr(b, "team", "") == enemy_team:
+                        b.base_damage = getattr(b, "base_damage", 10.0) * 2.0
+                        b.base_speed = getattr(b, "base_speed", 100.0) * 1.5
+                        b.max_hp = getattr(b, "max_hp", 100.0) * 1.5
+                        b.hp = getattr(b, "max_hp", 100.0)
+                        b.skill_uses = getattr(b, "skill_uses", 0) + 3
+
+                # Extra skill points for the player
+                if hasattr(self, '_award_skill_points'):
+                    self._award_skill_points()
+                    self._award_skill_points()
+                    self._award_skill_points()
+
+                if hasattr(world, "add_event"):
+                    world.add_event("bounty_destroyed", {"message": f"{team} Bounty destroyed! {enemy_team} gets massive buff!"})
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", "")) for b in alive)
+        if len(teams_alive) == 1:
+            return list(teams_alive)[0]
+        return None
+
 GAME_MODES = {
+
     "blackout": BlackoutMode(),
     "windstorm": WindstormMode(),
     "modifier_zones": ModifierZonesMode(),
@@ -2104,7 +2181,8 @@ GAME_MODES = {
     "toxic_environment": ToxicEnvironmentMode(),
     "capture_the_flag": CaptureTheFlagMode(),
     "evolutionary_simulation": EvolutionarySimulationMode(),
-    "safe_zone": SafeZoneMode()
+    "safe_zone": SafeZoneMode(),
+    "bounty_hunt": BountyHuntMode()
 }
 
 try:
