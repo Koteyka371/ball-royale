@@ -1777,7 +1777,99 @@ class ToxicEnvironmentMode(GameMode):
         return None
 
 
+
+class ModifierZonesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Modifier Zones"
+        self.description = "Fight over zones that provide different temporary buffs."
+        self.zones = []
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        self.zones = [
+            {"id": "zone_speed", "x": arena_width * 0.25, "y": arena_height * 0.25, "radius": 150.0, "type": "speed"},
+            {"id": "zone_damage", "x": arena_width * 0.75, "y": arena_height * 0.25, "radius": 150.0, "type": "damage"},
+            {"id": "zone_heal", "x": arena_width * 0.5, "y": arena_height * 0.75, "radius": 150.0, "type": "heal"}
+        ]
+
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator":
+                b.team = getattr(b, "team", b.ball_type)
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import math
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            if not hasattr(b, "base_speed"):
+                b.base_speed = getattr(b, "speed", 100.0)
+            if not hasattr(b, "base_damage"):
+                b.base_damage = getattr(b, "damage", 10.0)
+
+            in_speed_zone = False
+            in_damage_zone = False
+            in_heal_zone = False
+
+            for zone in self.zones:
+                dx = b.x - zone["x"]
+                dy = b.y - zone["y"]
+                dist = math.sqrt(dx*dx + dy*dy)
+
+                if dist <= zone["radius"]:
+                    if zone["type"] == "speed":
+                        in_speed_zone = True
+                    elif zone["type"] == "damage":
+                        in_damage_zone = True
+                    elif zone["type"] == "heal":
+                        in_heal_zone = True
+
+            if in_speed_zone:
+                b.speed = b.base_speed * 1.5
+                b.zone_modifier_speed = True
+            else:
+                if getattr(b, "zone_modifier_speed", False):
+                    b.speed = b.base_speed
+                    delattr(b, "zone_modifier_speed")
+
+            if in_damage_zone:
+                b.damage = b.base_damage * 1.5
+                b.zone_modifier_damage = True
+            else:
+                if getattr(b, "zone_modifier_damage", False):
+                    b.damage = b.base_damage
+                    delattr(b, "zone_modifier_damage")
+
+            if in_heal_zone:
+                if hasattr(b, "hp") and hasattr(b, "max_hp"):
+                    b.hp = min(getattr(b, "max_hp", 100.0), b.hp + 20.0 * delta)
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
+        if len(teams_alive) == 1:
+            return list(teams_alive)[0]
+
+        if len(alive) == 1:
+            return getattr(alive[0], "team", getattr(alive[0], "ball_type", None))
+
+        return None
+
+
 GAME_MODES = {
+    "modifier_zones": ModifierZonesMode(),
     "draft_royale": DraftRoyaleMode(),
     "tournament": TournamentMode(),
     "bumper_balls": BumperBallsMode(),
