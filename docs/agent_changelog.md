@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-259] Trap Hazards — *2026-06-29 09:51:22 UTC*
+
+Add new hidden traps to arenas that trigger when a ball moves over them, applying a slow or damage over time effect.
+
+---
+
 ## [idea-270]  EMP Grenades — *2026-06-29 09:51:18 UTC*
 
 A new ball skill that disables the skills and dash abilities of all nearby balls for a short duration, forcing pure movement and attack battles.
