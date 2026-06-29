@@ -284,6 +284,15 @@ func execute(strategy: String, delta: float):
             if "vx" in my_ball and "vy" in my_ball:
                 my_ball.x += my_ball.vx * delta * 0.4
                 my_ball.y += my_ball.vy * delta * 0.4
+        var wind_dx = 0.0
+        if world.arena.get("wind_dx") != null:
+            wind_dx = world.arena.get("wind_dx")
+        var wind_dy = 0.0
+        if world.arena.get("wind_dy") != null:
+            wind_dy = world.arena.get("wind_dy")
+        if wind_dx != 0.0 or wind_dy != 0.0:
+            my_ball.x += wind_dx * delta
+            my_ball.y += wind_dy * delta
 
     var gm = null
     if world != null and "game_mode" in world:

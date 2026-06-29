@@ -744,6 +744,8 @@ class WeatherChaosMode(GameMode):
             world.arena.is_raining = (self.weather == "rain")
             world.arena.is_sandstorming = (self.weather == "sandstorm")
             world.arena.is_snowing = (self.weather == "snow")
+            world.arena.wind_dx = getattr(self, "wind_dx", 0.0) if self.weather == "wind" else 0.0
+            world.arena.wind_dy = getattr(self, "wind_dy", 0.0) if self.weather == "wind" else 0.0
 
             if not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
@@ -817,9 +819,6 @@ class WeatherChaosMode(GameMode):
                 b.dash_range_mult = 1.0
                 b.steering_mult = 1.0
                 # push balls in a specific direction
-                if hasattr(self, "wind_dx") and hasattr(self, "wind_dy"):
-                    b.x += self.wind_dx * delta
-                    b.y += self.wind_dy * delta
             elif self.weather == "thunderstorm":
                 b.speed = b.base_speed * 1.1 # Panic speed
                 b.damage = b.base_damage * 1.5 # High damage due to electricity

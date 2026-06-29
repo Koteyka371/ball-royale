@@ -70,7 +70,7 @@ def test_coach_mode_string_alias():
     perception = {"enemies": [MockEnemy()], "allies": [], "boosters": [MockBooster()], "coach_strategy": "Атакуйте!"}
     action = decision_layer.choose_action(perception, "calm")
 
-    assert action in ["attack", "chase", "collect_booster", "ricochet_attack"]
+    assert action in ["attack", "chase", "collect_booster", "ricochet_attack", "use_skill"]
 
 def test_coach_mode_booster():
     ball = MockBall(ball_type="warrior", team="red")

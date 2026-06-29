@@ -39,6 +39,8 @@ class ProceduralArena:
         self.rooms: List[Room] = []
         self.corridors: List[Corridor] = []
         self.hazards: List[Hazard] = []
+        self.wind_dx = 0.0
+        self.wind_dy = 0.0
 
         # Shrinking zone
         self.safe_zone_radius = arena_size * 0.7

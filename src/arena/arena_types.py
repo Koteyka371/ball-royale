@@ -1228,6 +1228,8 @@ class ThickFogArena(ProceduralArena):
         self.is_raining = False
         self.is_sandstorming = False
         self.is_snowing = False
+        self.wind_dx = 0.0
+        self.wind_dy = 0.0
         self.fog_timer = 0.0
         self.phase_duration = 20.0
 
