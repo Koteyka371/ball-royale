@@ -292,6 +292,9 @@ class BattleRoyaleMode(GameMode):
                 b.damage = b.base_damage
                 b.dash_range_mult = 1.5
                 b.steering_mult = 0.5
+                if getattr(b, "SKILL", "") == "fireball":
+                    if hasattr(b, "hp"):
+                        b.hp -= 2.0 * delta
                 if hasattr(b, "vx") and hasattr(b, "vy"):
                     b.x += getattr(b, "vx") * delta * 0.5
                     b.y += getattr(b, "vy") * delta * 0.5
@@ -304,6 +307,9 @@ class BattleRoyaleMode(GameMode):
             elif self.weather == "snow":
                 b.speed = b.base_speed * 0.5
                 b.damage = b.base_damage * 1.2
+                if getattr(b, "SKILL", "") == "iceball" or getattr(b, "SKILL", "") == "elemental_burst":
+                    b.speed = b.base_speed * 1.2
+                    b.damage = b.base_damage * 1.5
                 b.dash_range_mult = 1.0
                 b.steering_mult = 1.0
                 if not hasattr(b, "chill_stacks"):
@@ -969,6 +975,9 @@ class WeatherChaosMode(GameMode):
                 # rain makes surface slippery/increases dash range but reduces steering
                 b.dash_range_mult = 1.5
                 b.steering_mult = 0.5
+                if getattr(b, "SKILL", "") == "fireball":
+                    if hasattr(b, "hp"):
+                        b.hp -= 2.0 * delta
                 # slide more
                 if hasattr(b, "vx") and hasattr(b, "vy"):
                     b.x += getattr(b, "vx") * delta * 0.5
@@ -982,6 +991,9 @@ class WeatherChaosMode(GameMode):
             elif self.weather == "snow":
                 b.speed = b.base_speed * 0.5
                 b.damage = b.base_damage * 1.2
+                if getattr(b, "SKILL", "") == "iceball" or getattr(b, "SKILL", "") == "elemental_burst":
+                    b.speed = b.base_speed * 1.2
+                    b.damage = b.base_damage * 1.5
                 b.dash_range_mult = 1.0
                 b.steering_mult = 1.0
                 if not hasattr(b, "chill_stacks"):
