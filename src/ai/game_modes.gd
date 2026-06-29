@@ -940,9 +940,9 @@ class DominationMode extends GameMode:
                     b.team = "Blue"
 
         points = []
-        points.append({"id": "A", "x": 300, "y": 500, "radius": 150.0, "capture_progress": 0.0, "owner": null})
-        points.append({"id": "B", "x": 500, "y": 500, "radius": 150.0, "capture_progress": 0.0, "owner": null})
-        points.append({"id": "C", "x": 700, "y": 500, "radius": 150.0, "capture_progress": 0.0, "owner": null})
+        points.append({"id": "A", "x": 300, "y": 500, "radius": 150.0, "capture_progress": 0.0, "owner": null, "held_time": 0.0, "is_danger_zone": false})
+        points.append({"id": "B", "x": 500, "y": 500, "radius": 150.0, "capture_progress": 0.0, "owner": null, "held_time": 0.0, "is_danger_zone": false})
+        points.append({"id": "C", "x": 700, "y": 500, "radius": 150.0, "capture_progress": 0.0, "owner": null, "held_time": 0.0, "is_danger_zone": false})
 
     func tick(world, balls: Array, delta: float = 0.016) -> void:
         if not "dead_balls" in world:
@@ -983,6 +983,10 @@ class DominationMode extends GameMode:
 
             if new_owner != null and new_owner != pt.owner:
                 pt.owner = new_owner
+                if pt.has("held_time"):
+                    pt.held_time = 0.0
+                if pt.has("is_danger_zone"):
+                    pt.is_danger_zone = false
                 # Apply global buff
                 for b in balls:
                     if b.alive and b.get("team") == new_owner:
@@ -992,6 +996,25 @@ class DominationMode extends GameMode:
                         if b.get("max_hp") != null:
                             b.max_hp += 20.0
                             b.hp += 20.0
+
+            if pt.get("owner") != null:
+                if pt.has("held_time"):
+                    pt.held_time += delta
+                    if pt.held_time >= 15.0:
+                        pt.is_danger_zone = true
+
+                if pt.get("is_danger_zone", false):
+                    for b in balls:
+                        if b.alive and b.ball_type != "spectator":
+                            var dist_sq = (b.x - pt.x)*(b.x - pt.x) + (b.y - pt.y)*(b.y - pt.y)
+                            if dist_sq <= pt.radius * pt.radius:
+                                if b.get("hp") != null:
+                                    b.hp -= 20.0 * delta
+                                    if b.hp <= 0:
+                                        b.alive = false
+                                        if b.has_method("set"):
+                                            b.killer = "Danger Zone"
+
 
     func check_winner(world, balls: Array):
         var alive = []

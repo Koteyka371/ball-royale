@@ -815,6 +815,8 @@ class DominationMode(GameMode):
                 self.radius = 150.0
                 self.capture_progress = 0.0 # -100 to 100. -100 is Blue, 100 is Red.
                 self.owner = None
+                self.held_time = 0.0
+                self.is_danger_zone = False
 
         self.points = [
             ControlPoint("A", 300, 500),
@@ -864,6 +866,8 @@ class DominationMode(GameMode):
 
             if new_owner and new_owner != pt.owner:
                 pt.owner = new_owner
+                pt.held_time = 0.0
+                pt.is_danger_zone = False
                 # Apply global buff
                 for b in balls:
                     if getattr(b, "alive", False) and getattr(b, "team", "") == new_owner:
@@ -873,6 +877,23 @@ class DominationMode(GameMode):
                         if hasattr(b, "max_hp"):
                             b.max_hp += 20.0
                             b.hp += 20.0
+
+            if pt.owner:
+                pt.held_time += delta
+                if pt.held_time >= 15.0:
+                    pt.is_danger_zone = True
+
+                if pt.is_danger_zone:
+                    for b in balls:
+                        if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                            dist_sq = (b.x - pt.x)**2 + (b.y - pt.y)**2
+                            if dist_sq <= pt.radius**2:
+                                if hasattr(b, "hp"):
+                                    b.hp -= 20.0 * delta
+                                    if b.hp <= 0:
+                                        b.alive = False
+                                        b.killer = "Danger Zone"
+
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
