@@ -5008,7 +5008,7 @@
     },
     {
       "id": "idea-288",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gravity well",
@@ -7471,6 +7471,40 @@
         "src/ai/reverse_controls.py",
         "src/ai/reverse_controls.gd",
         "tests/test_reverse_controls.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-433",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Payload Mutator",
+      "description": "A game mode where the payload periodically pulses out healing to defenders and damage to attackers.",
+      "allowed_paths": [
+        "src/ai/payload_mutator.py",
+        "src/ai/payload_mutator.gd",
+        "tests/test_payload_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-434",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Escort",
+      "description": "Two payloads move towards the center, the team that destroys the enemy payload first wins.",
+      "allowed_paths": [
+        "src/ai/reverse_escort.py",
+        "src/ai/reverse_escort.gd",
+        "tests/test_reverse_escort.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

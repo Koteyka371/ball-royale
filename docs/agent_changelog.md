@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-288] Gravity well — *2026-06-29 18:28:29 UTC*
+
+A hazard that pulls players towards it
+
+---
+
 ## [idea-247] Shrinking Danger Zones — *2026-06-29 14:23:19 UTC*
 
 Introduce a shrinking danger zone mode where the safe area slowly decreases, forcing players into close-quarters combat.
