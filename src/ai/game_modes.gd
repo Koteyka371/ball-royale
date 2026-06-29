@@ -389,8 +389,16 @@ class BattleRoyaleMode extends GameMode:
                         b.set_meta("steering_mult", 1.0)
                         b.set_meta("attack_accuracy", 1.0)
                 elif self.weather == "rain":
-                    if "speed" in b: b.speed = base_spd * 0.8
-                    if "damage" in b: b.damage = base_dmg
+			if "speed" in b: b.speed = base_spd * 0.8
+			if "damage" in b: b.damage = base_dmg
+			var sk_r = ""
+			if "SKILL" in b:
+				sk_r = b.SKILL
+			elif b.has_method("has_meta") and b.has_meta("SKILL"):
+				sk_r = b.get_meta("SKILL")
+			if sk_r == "fireball":
+				if "hp" in b:
+					b.hp -= 2.0 * delta
                     if b.has_method("set_meta"):
                         b.set_meta("dash_range_mult", 1.5)
                         b.set_meta("steering_mult", 0.5)
@@ -410,8 +418,16 @@ class BattleRoyaleMode extends GameMode:
                         b.set_meta("dash_range_mult", 1.0)
                         b.set_meta("steering_mult", 1.0)
                 elif self.weather == "snow":
-                    if "speed" in b: b.speed = base_spd * 0.5
-                    if "damage" in b: b.damage = base_dmg * 1.2
+			if "speed" in b: b.speed = base_spd * 0.5
+			if "damage" in b: b.damage = base_dmg * 1.2
+			var sk_s = ""
+			if "SKILL" in b:
+				sk_s = b.SKILL
+			elif b.has_method("has_meta") and b.has_meta("SKILL"):
+				sk_s = b.get_meta("SKILL")
+			if sk_s == "iceball" or sk_s == "elemental_burst":
+				if "speed" in b: b.speed = base_spd * 1.2
+				if "damage" in b: b.damage = base_dmg * 1.5
                     if b.has_method("set_meta"):
                         b.set_meta("dash_range_mult", 1.0)
                         b.set_meta("steering_mult", 1.0)
@@ -1253,6 +1269,14 @@ class WeatherChaosMode extends GameMode:
 				elif weather == "rain":
 					if "speed" in b: b.speed = base_spd * 0.8
 					if "damage" in b: b.damage = base_dmg
+					var sk_r = ""
+					if "SKILL" in b:
+						sk_r = b.SKILL
+					elif b.has_method("has_meta") and b.has_meta("SKILL"):
+						sk_r = b.get_meta("SKILL")
+					if sk_r == "fireball":
+						if "hp" in b:
+							b.hp -= 2.0 * delta
 					if b.has_method("set_meta"):
 						b.set_meta("dash_range_mult", 1.5)
 						b.set_meta("steering_mult", 0.5)
@@ -1275,6 +1299,14 @@ class WeatherChaosMode extends GameMode:
 				elif weather == "snow":
 					if "speed" in b: b.speed = base_spd * 0.5
 					if "damage" in b: b.damage = base_dmg * 1.2
+					var sk_s = ""
+					if "SKILL" in b:
+						sk_s = b.SKILL
+					elif b.has_method("has_meta") and b.has_meta("SKILL"):
+						sk_s = b.get_meta("SKILL")
+					if sk_s == "iceball" or sk_s == "elemental_burst":
+						if "speed" in b: b.speed = base_spd * 1.2
+						if "damage" in b: b.damage = base_dmg * 1.5
 					if b.has_method("set_meta"):
 						b.set_meta("dash_range_mult", 1.0)
 						b.set_meta("steering_mult", 1.0)
