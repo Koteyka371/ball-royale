@@ -4310,7 +4310,7 @@
     },
     {
       "id": "idea-247",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Danger Zones",
@@ -7335,6 +7335,40 @@
         "src/ai/decoy_explosion.py",
         "src/ai/decoy_explosion.gd",
         "tests/test_decoy_explosion.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-425",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Randomized Safe Zone Shrink Shapes",
+      "description": "Instead of a simple circular shrinking zone, the safe zone can shrink into varied geometric shapes (like a rectangle or a triangle) or even split into two smaller temporary safe zones before merging back. This disrupts camping strategies and keeps players constantly repositioning.",
+      "allowed_paths": [
+        "src/ai/randomized_safe_zone_shrink_shapes.py",
+        "src/ai/randomized_safe_zone_shrink_shapes.gd",
+        "tests/test_randomized_safe_zone_shrink_shapes.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-426",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Supply Drops in Moving Safe Zone",
+      "description": "Periodically spawn high-value supply drops (boosters, healing springs, strong weapons) slightly outside or on the edge of the moving safe zone, forcing players to risk taking damage for a chance at powerful gear to dominate late game.",
+      "allowed_paths": [
+        "src/ai/supply_drops_in_moving_safe_zone.py",
+        "src/ai/supply_drops_in_moving_safe_zone.gd",
+        "tests/test_supply_drops_in_moving_safe_zone.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
