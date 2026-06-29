@@ -2040,34 +2040,23 @@ class Action:
                     if hasattr(self.world, "balls"):
                         self.world.balls.append(minion)
             elif skill_name == "raise_dead":
-                if hasattr(self.world, "dead_balls") and hasattr(self.world, "balls"):
+                if hasattr(self.world, "dead_balls"):
                     recent_dead = [b for b in self.world.dead_balls if getattr(b, "time_since_death", 0) < 5.0 and getattr(b, "team", "") != getattr(self.ball, "team", "")]
                     if recent_dead:
-                        # Revive the most recently dead enemy as a weak minion
-                        import copy
+                        # Explode the most recently dead enemy
                         target_dead = recent_dead[-1]
                         self.world.dead_balls.remove(target_dead)
 
-                        minion = copy.copy(target_dead)
-                        minion.id = getattr(self.world, "next_id", random.randint(10000, 99999))
-                        minion.hp = getattr(target_dead, "max_hp", 100) * 0.3 # Weak minion
-                        minion.max_hp = minion.hp
-                        minion.team = getattr(self.ball, "team", getattr(self.ball, "ball_type", getattr(self.ball, "BALL_TYPE", "")))
-                        minion.is_minion = True
-                        minion.minion_owner = self.ball.id
-                        minion.alive = True
-                        # Minion decays over time, handled in action.py execute loop
+                        explosion_radius = 150.0
+                        explosion_damage = getattr(target_dead, "max_hp", 100.0) * 0.5
 
-                        # Reset some stats
-                        minion.skill_timer = 0
-                    minion.skill = None
-                    minion.SKILL = None
-                    if hasattr(minion, 'active_skill'):
-                        minion.active_skill = None
-                        minion.attack_timer = 0
-                        minion.current_action = "idle"
-
-                        self.world.balls.append(minion)
+                        enemies = self._get_enemies()
+                        for enemy in enemies:
+                            dx = enemy.x - target_dead.x
+                            dy = enemy.y - target_dead.y
+                            if dx*dx + dy*dy <= explosion_radius**2:
+                                if hasattr(enemy, "take_damage"):
+                                    enemy.take_damage(explosion_damage)
             elif skill_name == "deploy_decoy":
                 import copy
                 if hasattr(self.world, "balls"):

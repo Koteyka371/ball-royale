@@ -1,0 +1,4 @@
+{
+    "title": "Chain Reaction Explosions",
+    "description": "If an explosion from raise_dead kills another ball, that ball immediately explodes with half the radius and damage, potentially creating a cascade of explosions in clustered team fights."
+}
