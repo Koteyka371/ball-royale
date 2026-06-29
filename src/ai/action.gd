@@ -515,6 +515,36 @@ func execute(strategy: String, delta: float):
         elif self.ball.has_method("get_ball_type"):
             ball_type = self.ball.get_ball_type()
 
+        var magnet_timer = 0.0
+        if self.ball.has_meta("magnet_timer"):
+            magnet_timer = self.ball.get_meta("magnet_timer")
+        elif "magnet_timer" in self.ball:
+            magnet_timer = self.ball.magnet_timer
+
+        if magnet_timer > 0:
+            magnet_timer -= delta
+            if magnet_timer < 0:
+                magnet_timer = 0.0
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("magnet_timer", magnet_timer)
+            elif "magnet_timer" in self.ball:
+                self.ball.magnet_timer = magnet_timer
+
+            if magnet_timer > 0 and self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                for hz in self.world.arena.hazards:
+                    var hz_damage = 10.0
+                    var hz_radius = 50.0
+                    if "damage" in hz: hz_damage = hz.damage
+                    if "radius" in hz: hz_radius = hz.radius
+                    if hz_damage == 0.0 or hz_radius <= 30.0:
+                        var dist = sqrt(pow(hz.x - self.ball.x, 2) + pow(hz.y - self.ball.y, 2))
+                        if dist < 300.0 and dist > 10.0:
+                            var speed = 200.0 * delta
+                            var dir_x = (self.ball.x - hz.x) / dist
+                            var dir_y = (self.ball.y - hz.y) / dist
+                            hz.x += dir_x * speed
+                            hz.y += dir_y * speed
+
         if self.ball.has_meta("zone_immunity_timer"):
             var t = self.ball.get_meta("zone_immunity_timer") - delta
             if t < 0: t = 0
@@ -3347,6 +3377,17 @@ func _collect_booster(delta: float):
                     self.ball.stealth_drone_timer = 15.0
                 elif "stealth_drone_timer" in self.ball:
                     self.ball.stealth_drone_timer = 15.0
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "magnet_powerup":
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("has_magnet", true)
+                    self.ball.set_meta("magnet_timer", 15.0)
+                elif "magnet_timer" in self.ball:
+                    self.ball.has_magnet = true
+                    self.ball.magnet_timer = 15.0
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:

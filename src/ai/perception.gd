@@ -178,7 +178,7 @@ func scan() -> Dictionary:
                                 break
                         if not found:
                             data["boosters"].append(h)
-                elif "kind" in h and (h.kind == "drone_item" or h.kind == "stealth_drone_item"):
+                elif "kind" in h and (h.kind == "drone_item" or h.kind == "stealth_drone_item" or h.kind == "magnet_powerup"):
                     var found = false
                     for b in data["boosters"]:
                         if "id" in b and "id" in h and b.id == h.id:

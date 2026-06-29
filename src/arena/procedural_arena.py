@@ -391,6 +391,9 @@ class ProceduralArena:
                 elif random.random() < 0.05:
                     kind = "stealth_drone_item"
                     damage = 0.0
+                elif random.random() < 0.05:
+                    kind = "magnet_powerup"
+                    damage = 0.0
                 elif random.random() < 0.10:
                     kind = "placeable_trap_item"
                     damage = 0.0

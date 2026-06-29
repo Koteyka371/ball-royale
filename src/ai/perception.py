@@ -154,7 +154,7 @@ class Perception:
                                 data["boosters"].append(h)
                     else:
                         # Make sure it's not already in there by id
-                        if getattr(h, "kind", "") == "drone_item" or getattr(h, "kind", "") == "stealth_drone_item":
+                        if getattr(h, "kind", "") == "drone_item" or getattr(h, "kind", "") == "stealth_drone_item" or getattr(h, "kind", "") == "magnet_powerup":
                             if not any(getattr(b, "id", None) == h.id for b in data["boosters"]):
                                 data["boosters"].append(h)
                         else:

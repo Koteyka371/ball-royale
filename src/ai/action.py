@@ -358,6 +358,25 @@ class Action:
             current_tick = getattr(self.world, "tick", 0)
             self.world.arena.update_zone(current_tick, delta)
 
+            # Magnet logic
+            if getattr(self.ball, "magnet_timer", 0.0) > 0:
+                self.ball.magnet_timer -= delta
+                if self.ball.magnet_timer < 0:
+                    self.ball.magnet_timer = 0.0
+                if self.ball.magnet_timer > 0 and hasattr(self.world.arena, "hazards"):
+                    for hz in self.world.arena.hazards:
+                        hz_damage = getattr(hz, "damage", 10.0)
+                        hz_radius = getattr(hz, "radius", 50.0)
+                        # Pull small or harmless items
+                        if hz_damage == 0.0 or hz_radius <= 30.0:
+                            dist = math.sqrt((hz.x - self.ball.x)**2 + (hz.y - self.ball.y)**2)
+                            if dist < 300.0 and dist > 10.0:
+                                speed = 200.0 * delta
+                                dir_x = (self.ball.x - hz.x) / dist
+                                dir_y = (self.ball.y - hz.y) / dist
+                                hz.x += dir_x * speed
+                                hz.y += dir_y * speed
+
             if hasattr(self.ball, "zone_immunity_timer") and self.ball.zone_immunity_timer > 0:
                 self.ball.zone_immunity_timer -= delta
                 if self.ball.zone_immunity_timer < 0:
@@ -2228,6 +2247,12 @@ class Action:
                 elif getattr(nearest, "kind", None) == "stealth_drone_item":
                     self.ball.has_stealth_drone = True
                     self.ball.stealth_drone_timer = 15.0  # Duration of stealth effect
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                elif getattr(nearest, "kind", None) == "magnet_powerup":
+                    self.ball.has_magnet = True
+                    self.ball.magnet_timer = 15.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)

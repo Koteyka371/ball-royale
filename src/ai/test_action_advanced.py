@@ -339,3 +339,62 @@ def test_raise_dead_corpse_explosion():
 
     # The far enemy should take no damage
     assert far_enemy.hp == 150.0
+
+def test_magnet_powerup_pulls_hazards():
+    import math
+    ball = MockBall(x=0.0, y=0.0, speed=100.0)
+    # Mocking necessary flags to prevent AttributeError in execute
+    ball.team = 1
+    ball.damage = 10.0
+    ball.is_dashing = False
+    ball.alive = True
+    ball.hp = 100
+    ball.stutter_timer = 0.0
+    ball.zone_immunity_timer = 0.0
+    ball.magnet_timer = 5.0
+
+    class MockHazardLocal:
+        def __init__(self, id, x, y, radius, damage, kind):
+            self.id = id
+            self.x = x
+            self.y = y
+            self.radius = radius
+            self.damage = damage
+            self.kind = kind
+
+    class MockArenaLocal:
+        def __init__(self, hazards):
+            self.hazards = hazards
+            self.safe_zone_center = (0, 0)
+            self.safe_zone_radius = 1000.0
+        def update_zone(self, tick, delta):
+            pass
+
+    # A small hazard (should be pulled)
+    h_small = MockHazardLocal(id=1, x=50.0, y=0.0, radius=20.0, damage=0.0, kind="drone_item")
+    # A large hazard (should not be pulled)
+    h_large = MockHazardLocal(id=2, x=0.0, y=50.0, radius=100.0, damage=50.0, kind="lava")
+    # A distant small hazard (should not be pulled)
+    h_dist = MockHazardLocal(id=3, x=400.0, y=0.0, radius=20.0, damage=0.0, kind="drone_item")
+
+    world = MockWorld()
+    world.balls = [ball]
+    world.arena = MockArenaLocal(hazards=[h_small, h_large, h_dist])
+
+    action = Action(ball, world)
+    action.current_action = {"type": "idle"}
+    action.execute("idle", 1.0) # delta = 1.0
+
+    # Timer should decrease
+    assert ball.magnet_timer == 4.0
+
+    # h_small should move towards ball (x=0).
+    # speed = 200.0 * 1.0 = 200.0, but capped by distance math in standard movement,
+    # well it just adds dir_x * speed, so it might overshoot, but x will be smaller than 50.0
+    assert h_small.x < 50.0
+
+    # h_large should not move (radius > 30 and damage > 0)
+    assert h_large.y == 50.0
+
+    # h_dist should not move (dist > 300)
+    assert h_dist.x == 400.0
