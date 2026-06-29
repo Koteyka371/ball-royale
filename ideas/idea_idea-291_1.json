@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Explosion Damage",
+  "description": "Make the decoy explode upon its timer expiring or when destroyed, dealing AoE damage to nearby enemies and rewarding players who strategically place them near clusters."
+}

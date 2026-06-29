@@ -19,6 +19,7 @@ class Decision:
         "berserker": "attack",
         "juggernaut": "defend",
         "rogue": "chase",
+        "drone": "chase",
         "guardian": "defend",
         "phantom": "chase",
         "swarm": "group_attack",
