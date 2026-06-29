@@ -2,7 +2,6 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath('src'))
 from ai.action import Action
-import math
 
 class MockEntity:
     def __init__(self, id, x, y, kind=None):

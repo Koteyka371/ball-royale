@@ -318,10 +318,22 @@ class ProceduralArena:
             if self.safe_zone_radius < 50.0:
                 self.safe_zone_radius = 50.0
 
-            new_craters = []
+            new_craters: list[Hazard] = []
             # Slowly expand dynamic hazards and decay others like flares
             for h in self.hazards:
                 if getattr(h, "kind", "") == "flare":
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0:
+                            h.active = False
+                elif getattr(h, "kind", "") == "orbital_strike":
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0:
+                            h.kind = "orbital_strike_active"
+                            h.duration = 0.5
+                            h.damage = 1000.0
+                elif getattr(h, "kind", "") == "orbital_strike_active":
                     if hasattr(h, "duration"):
                         h.duration -= delta
                         if h.duration <= 0:
@@ -373,7 +385,7 @@ class ProceduralArena:
             self.hazards = [h for h in self.hazards if h.id < 1000]
 
             # Periodically trigger random arena-wide events
-            event_type = random.choice(["meteor_shower", "gravity_shift", "moving_walls", "none"])
+            event_type = random.choice(["meteor_shower", "gravity_shift", "moving_walls", "orbital_strike", "none"])
             if event_type != "none":
                 self._trigger_event(event_type, current_tick)
 
@@ -405,7 +417,7 @@ class ProceduralArena:
                     damage = 0.0 if (is_gravity_well or is_temporal_rift) else 100.0
                 new_hazard = Hazard(id=h_id, x=x, y=y, radius=10.0, kind=kind, damage=damage)
                 if kind == "temporal_rift":
-                    new_hazard.time_scale = random.choice([0.5, 1.5, 2.0])
+                    setattr(new_hazard, "time_scale", random.choice([0.5, 1.5, 2.0]))
                 new_hazard.target_radius = target_radius
                 self.hazards.append(new_hazard)
 
@@ -415,7 +427,13 @@ class ProceduralArena:
 
     def _trigger_event(self, event_type: str, current_tick: int):
         import random
-        if event_type == "meteor_shower":
+        if event_type == "orbital_strike":
+            h_id = 5000 + len(self.hazards)
+            strike = Hazard(id=h_id, x=self.width/2, y=self.height/2, radius=400.0, kind="orbital_strike", damage=0.0)
+            strike.target_radius = 400.0
+            setattr(strike, "duration", 3.0)
+            self.hazards.append(strike)
+        elif event_type == "meteor_shower":
             # Spawn multiple small, high-damage hazards quickly
             num_meteors = random.randint(5, 15)
             for _ in range(num_meteors):

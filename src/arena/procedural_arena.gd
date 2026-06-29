@@ -346,6 +346,23 @@ func update_zone(current_tick: int, delta: float) -> void:
                         h.set_meta("active", false)
                         if "active" in h:
                             h.active = false
+            elif "kind" in h and h.kind == "orbital_strike":
+                if h.has_meta("duration"):
+                    var dur = h.get_meta("duration") - delta
+                    h.set_meta("duration", dur)
+                    if dur <= 0:
+                        h.kind = "orbital_strike_active"
+                        h.set_meta("duration", 0.5)
+                        h.damage = 1000.0
+            elif "kind" in h and h.kind == "orbital_strike_active":
+                if h.has_meta("duration"):
+                    var dur = h.get_meta("duration") - delta
+                    h.set_meta("duration", dur)
+                    if dur <= 0:
+                        if h.has_method("set_meta"):
+                            h.set_meta("active", false)
+                        if "active" in h:
+                            h.active = false
             elif "kind" in h and h.kind == "meteor":
                 if h.has_meta("duration"):
                     var dur = h.get_meta("duration") - delta
@@ -401,7 +418,7 @@ func update_zone(current_tick: int, delta: float) -> void:
                     new_hazards.append(h)
             hazards = new_hazards
 
-            var event_types = ["meteor_shower", "gravity_shift", "moving_walls", "none"]
+            var event_types = ["meteor_shower", "gravity_shift", "moving_walls", "orbital_strike", "none"]
             var event_type = event_types[randi() % event_types.size()]
             if event_type != "none":
                 _trigger_event(event_type, current_tick)
@@ -810,7 +827,13 @@ class AmbushArena extends ProceduralArena:
 
 
 func _trigger_event(event_type: String, current_tick: int) -> void:
-    if event_type == "meteor_shower":
+    if event_type == "orbital_strike":
+        var h_id = 5000 + hazards.size()
+        var strike = ProceduralArena.Hazard.new(h_id, width/2, height/2, 400.0, "orbital_strike", 0.0)
+        strike.target_radius = 400.0
+        strike.set_meta("duration", 3.0)
+        hazards.append(strike)
+    elif event_type == "meteor_shower":
         var num_meteors = (randi() % 11) + 5
         for i in range(num_meteors):
             var x = randf_range(50, width - 50)

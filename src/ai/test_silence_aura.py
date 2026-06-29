@@ -3,7 +3,6 @@ import os
 sys.path.insert(0, os.path.abspath('src'))
 
 from ai.action import Action
-import math
 
 class MockBall:
     def __init__(self, id, x, y, team, ball_type="silencer"):
@@ -67,7 +66,7 @@ def test_silence_blocks_skills():
     action._use_skill()
 
     # use_skill should not be called because silence_timer > 0
-    assert ball.used_skill == False
+    assert not ball.used_skill
 
 def test_silence_timer_decrements():
     ball = MockBall(1, 0, 0, "team1")
@@ -90,5 +89,5 @@ def test_silence_blocks_dash():
 
     action.execute("chase", 1.0)
 
-    assert ball.is_dashing == False
+    assert not ball.is_dashing
     assert ball.speed == ball.base_speed
