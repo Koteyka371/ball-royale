@@ -1,4 +1,3 @@
-import pytest
 from src.ai.game_modes import ReverseEventMode
 
 class MockBall:

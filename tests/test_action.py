@@ -360,7 +360,6 @@ def test_spectator_not_in_allies():
 
 def test_emp_item():
     from src.ai.action import Action
-    import math
 
     class MockArena:
         def __init__(self):

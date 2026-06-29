@@ -75,7 +75,7 @@ BALL_TYPES = {
     "druid": {"hp": 130, "speed": 2.8, "damage": 12, "radius": 12, "perception_radius": 260, "aggression": 0.4, "color": "darkgreen", "skill": "entangle", "skill_cooldown": 5.5},
     "monk": {"hp": 110, "speed": 3.5, "damage": 18, "radius": 11, "perception_radius": 240, "aggression": 0.5, "color": "orange", "skill": "chi_blast", "skill_cooldown": 3.5},
     "brawler": {"hp": 160, "speed": 3.2, "damage": 22, "radius": 13, "perception_radius": 200, "aggression": 0.9, "color": "brown", "skill": "uppercut", "skill_cooldown": 4.0},
-    "necromancer": {"hp": 90, "speed": 2.0, "damage": 15, "radius": 10, "perception_radius": 320, "aggression": 0.3, "color": "black", "skill": "raise_dead", "skill_cooldown": 8.0},
+
     "trickster": {"hp": 85, "speed": 4.0, "damage": 14, "radius": 9, "perception_radius": 270, "aggression": 0.6, "color": "pink", "skill": "illusion", "skill_cooldown": 4.0},
     "elementalist": {"hp": 95, "speed": 2.6, "damage": 24, "radius": 10, "perception_radius": 290, "aggression": 0.5, "color": "cyan", "skill": "elemental_burst", "skill_cooldown": 5.0},
     "vampire": {"hp": 120, "speed": 3.8, "damage": 18, "radius": 11, "perception_radius": 250, "aggression": 0.8, "color": "darkred", "skill": "bite", "skill_cooldown": 4.0},

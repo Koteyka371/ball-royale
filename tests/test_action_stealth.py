@@ -1,4 +1,3 @@
-import pytest
 from src.ai.action import Action
 
 class MockBall:

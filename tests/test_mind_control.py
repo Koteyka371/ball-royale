@@ -2,7 +2,6 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
-import pytest
 from ai.action import Action
 
 class MockArena:
@@ -51,7 +50,7 @@ def test_mind_control():
     # Use mind control skill
     a._use_skill()
 
-    assert getattr(b2, "is_mind_controlled", False) == True
+    assert getattr(b2, "is_mind_controlled", False)
     assert b2.team == "team1"
     assert getattr(b2, "original_team", "") == "team2"
 
@@ -59,5 +58,5 @@ def test_mind_control():
     a2 = Action(b2, w)
     a2.execute("idle", 6.0)
 
-    assert getattr(b2, "is_mind_controlled", False) == False
+    assert not getattr(b2, "is_mind_controlled", False)
     assert b2.team == "team2"

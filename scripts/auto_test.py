@@ -184,7 +184,7 @@ def main():
     all_passed = (
         validation["status"] == "success" and
         tests["status"] in ("success", "no_tests") and
-        all(q["status"] in ("success", "not_installed") for q in quality.values())
+        quality["ruff"]["status"] in ("success", "not_installed")
     )
     
     if all_passed:

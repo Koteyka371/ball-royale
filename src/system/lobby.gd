@@ -2,6 +2,8 @@ class_name PreGameLobby
 extends RefCounted
 
 var selections = {}
+var banned_ball_types = []
+var team_picks = {}
 
 var daily_quests = [
     {"description": "Survive for 5 minutes", "reward": 50},
@@ -45,6 +47,26 @@ func apply_loadout_to_ball(ball_id: int, profile: ProfileManager, loadout_name: 
             selections[str(ball_id) + "_preferred_bonuses"] = loadout["preferred_bonuses"]
         return true
     return false
+
+func ban_ball_type(team_id: String, ball_type: String) -> bool:
+    if not banned_ball_types.has(ball_type):
+        banned_ball_types.append(ball_type)
+        return true
+    return false
+
+func pick_ball_type(team_id: String, ball_type: String) -> bool:
+    if banned_ball_types.has(ball_type):
+        return false
+
+    for picks in team_picks.values():
+        if picks.has(ball_type):
+            return false
+
+    if not team_picks.has(team_id):
+        team_picks[team_id] = []
+
+    team_picks[team_id].append(ball_type)
+    return true
 
 # Static global instance
 static var instance: PreGameLobby

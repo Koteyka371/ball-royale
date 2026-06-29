@@ -68,8 +68,8 @@ class Action:
 
                     # Spawn particles for lightning
                     if hasattr(self, "_spawn_particles"):
-                        self._spawn_particles(target.x, target.y, "lightning")
-                        self._spawn_particles(e.x, e.y, "lightning")
+                        self._spawn_skill_particles(target.x, target.y, "lightning")
+                        self._spawn_skill_particles(e.x, e.y, "lightning")
 
                     jump_count += 1
 
@@ -320,8 +320,10 @@ class Action:
                         current_tick = getattr(self.world, "tick", 0)
                         if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
                             hazard.last_updated_tick = current_tick
-                            if not hasattr(hazard, "vx"): hazard.vx = 0.0
-                            if not hasattr(hazard, "vy"): hazard.vy = 0.0
+                            if not hasattr(hazard, "vx"):
+                                hazard.vx = 0.0
+                            if not hasattr(hazard, "vy"):
+                                hazard.vy = 0.0
                             hazard.x += hazard.vx * delta
                             hazard.y += hazard.vy * delta
                             hazard.vx *= (1.0 - 2.0 * delta)

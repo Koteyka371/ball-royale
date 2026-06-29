@@ -1,6 +1,8 @@
 class PreGameLobby:
     def __init__(self):
         self.selections = {}
+        self.banned_ball_types = []
+        self.team_picks = {}
         self.daily_quests = [
             {"description": "Survive for 5 minutes", "reward": 50},
             {"description": "Defeat 10 enemies with sniper ball", "reward": 100},
@@ -38,5 +40,25 @@ class PreGameLobby:
                 self.selections[f"{ball_id}_preferred_bonuses"] = loadout["preferred_bonuses"]
             return True
         return False
+
+    def ban_ball_type(self, team_id: str, ball_type: str) -> bool:
+        if ball_type not in self.banned_ball_types:
+            self.banned_ball_types.append(ball_type)
+            return True
+        return False
+
+    def pick_ball_type(self, team_id: str, ball_type: str) -> bool:
+        if ball_type in self.banned_ball_types:
+            return False
+
+        for picks in self.team_picks.values():
+            if ball_type in picks:
+                return False
+
+        if team_id not in self.team_picks:
+            self.team_picks[team_id] = []
+
+        self.team_picks[team_id].append(ball_type)
+        return True
 
 lobby = PreGameLobby()

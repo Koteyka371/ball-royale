@@ -1075,7 +1075,7 @@ class CustomMatchMode(GameMode):
                         b.speed = b.base_speed * 2
                         b._double_speed_applied = True
 
-from ai.interactive_training import InteractiveTrainingMode
+from ai.interactive_training import InteractiveTrainingMode  # noqa: E402
 
 
 class VisionReducedMode(GameMode):

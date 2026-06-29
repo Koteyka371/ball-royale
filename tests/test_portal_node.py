@@ -1,9 +1,7 @@
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
-import pytest
 from ai.game_modes import GAME_MODES
-import math
 
 class MockVector2:
     def __init__(self, x, y):

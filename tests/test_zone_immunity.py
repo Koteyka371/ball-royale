@@ -1,4 +1,3 @@
-import math
 from src.ai.action import Action
 
 class MockBall:

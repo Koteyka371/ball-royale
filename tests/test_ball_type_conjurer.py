@@ -1,10 +1,8 @@
-import pytest
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 from ai.ball_types_conjurer import Conjurer
 from ai.action import Action
-import random
 
 def test_conjurer_initialization():
     conjurer = Conjurer(1, 10.0, 20.0)
