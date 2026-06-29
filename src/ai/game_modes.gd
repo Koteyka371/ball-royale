@@ -306,7 +306,10 @@ class BattleRoyaleMode extends GameMode:
         if self.weather_timer > 15.0:
             self.weather_timer = 0.0
             var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm"]
+            var old_weather = self.weather
             self.weather = weathers[randi() % weathers.size()]
+            if old_weather != self.weather and world != null and world.has_method("add_event"):
+                world.add_event("weather_change", {"weather": self.weather})
             if self.weather == "wind":
                 if has_method("set_meta"):
                     set_meta("wind_dx", (randf() * 100.0) - 50.0)
@@ -1174,7 +1177,10 @@ class WeatherChaosMode extends GameMode:
 		if weather_timer > 10.0:
 			weather_timer = 0.0
 			var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm"]
+			var old_weather = weather
 			weather = weathers[randi() % weathers.size()]
+			if old_weather != weather and world != null and world.has_method("add_event"):
+				world.add_event("weather_change", {"weather": weather})
 			if weather == "wind":
 				if has_method("set_meta"):
 					set_meta("wind_dx", (randf() * 100.0) - 50.0)

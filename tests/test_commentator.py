@@ -53,3 +53,12 @@ def test_commentator_draw():
     lines = commentator.generate_commentary(kill_log, stats)
 
     assert any("[DRAW] Nobody survived the carnage!" in line for line in lines)
+
+def test_commentator_weather_change():
+    kill_log = [
+        {"tick": 10, "type": "weather_change", "weather": "rain"}
+    ]
+    stats = {"winner": None, "longest_killstreak": 0}
+    commentator = BattleCommentator()
+    lines = commentator.generate_commentary(kill_log, stats)
+    assert any("[WEATHER] The weather has shifted to RAIN! Adapt or perish!" in line for line in lines)

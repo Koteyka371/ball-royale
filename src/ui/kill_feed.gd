@@ -9,18 +9,23 @@ func _ready():
 func update_feed(kill_log: Array):
     for log in kill_log:
         var tick = log.get("tick", 0)
-        var killer_id = str(log.get("killer_id", "?"))
-        var victim_id = str(log.get("victim_id", "?"))
-
-        var event_hash = str(tick) + "_" + killer_id + "_" + victim_id
-
-        if not _processed_events.has(event_hash):
-            var killer_type = str(log.get("killer_type", "unknown")).to_upper()
-            var victim_type = str(log.get("victim_type", "unknown")).to_upper()
-
-            var message = "Tick %d: %s-%s killed %s-%s" % [tick, killer_type, killer_id, victim_type, victim_id]
-            _add_message(message)
-            _processed_events[event_hash] = true
+        if log.has("type") and log.get("type") == "weather_change":
+            var weather = log.get("weather", "clear")
+            var event_hash = str(tick) + "_weather_" + weather
+            if not _processed_events.has(event_hash):
+                var message = "Tick %d: Weather changed to %s!" % [tick, weather.to_upper()]
+                _add_message(message)
+                _processed_events[event_hash] = true
+        else:
+            var killer_id = str(log.get("killer_id", "?"))
+            var victim_id = str(log.get("victim_id", "?"))
+            var event_hash = str(tick) + "_" + killer_id + "_" + victim_id
+            if not _processed_events.has(event_hash):
+                var killer_type = str(log.get("killer_type", "unknown")).to_upper()
+                var victim_type = str(log.get("victim_type", "unknown")).to_upper()
+                var message = "Tick %d: %s-%s killed %s-%s" % [tick, killer_type, killer_id, victim_type, victim_id]
+                _add_message(message)
+                _processed_events[event_hash] = true
 
 func _add_message(message: String):
     var label = Label.new()

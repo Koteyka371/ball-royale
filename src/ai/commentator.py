@@ -18,6 +18,11 @@ class BattleCommentator:
         streaks: Dict[int, int] = {}
 
         for i, event in enumerate(kill_log):
+            if event.get("type") == "weather_change":
+                weather = event.get("weather", "clear")
+                lines.append(f"[WEATHER] The weather has shifted to {weather.upper()}! Adapt or perish!")
+                continue
+
             tick = event.get("tick", 0)
             killer_id = event.get("killer_id", 0)
             killer_type = event.get("killer_type", "unknown")

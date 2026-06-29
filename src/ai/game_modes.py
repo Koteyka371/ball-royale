@@ -238,7 +238,11 @@ class BattleRoyaleMode(GameMode):
             self.weather_timer = 0.0
             weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm"]
             rnd = getattr(self, "random", __import__("random"))
+            old_weather = self.weather
             self.weather = rnd.choice(weathers)
+
+            if old_weather != self.weather and hasattr(world, "add_event"):
+                world.add_event("weather_change", {"weather": self.weather})
 
             if self.weather == "wind":
                 self.wind_dx = rnd.uniform(-50.0, 50.0)
@@ -916,7 +920,11 @@ class WeatherChaosMode(GameMode):
             weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm"]
             import random
             rnd = getattr(self, "random", random)
+            old_weather = self.weather
             self.weather = rnd.choice(weathers)
+
+            if old_weather != self.weather and hasattr(world, "add_event"):
+                world.add_event("weather_change", {"weather": self.weather})
 
             if self.weather == "wind":
                 self.wind_dx = rnd.uniform(-50.0, 50.0)
