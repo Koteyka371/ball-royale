@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-277] Mirage Ability — *2026-06-29 10:40:15 UTC*
+
+Introduce a new Mirage ability for some ball types that allows them to create false copies of themselves when weather conditions are foggy or sandstorming. This will confuse the enemies by giving them fake targets to attack.
+
+---
+
 ## [idea-246] Bumper Balls — *2026-06-29 10:19:32 UTC*
 
 A new mode where balls deal zero damage but bounce each other with much higher knockback, aiming to push opponents off the arena.
