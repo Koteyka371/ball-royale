@@ -646,7 +646,13 @@ func execute(strategy: String, delta: float):
                         if self.ball.has_meta("last_teleport_tick"):
                             last_teleport = self.ball.get_meta("last_teleport_tick")
                         if current_tick - last_teleport > 10:
-                            if hazard.kind == "teleporter":
+                            if hazard.get("target_x") != null:
+                                self.ball.x = hazard.target_x
+                                self.ball.y = hazard.target_y
+                            elif hazard.has_meta("target_x"):
+                                self.ball.x = hazard.get_meta("target_x")
+                                self.ball.y = hazard.get_meta("target_y")
+                            elif hazard.kind == "teleporter":
                                 var teleporters = []
                                 for h in self.world.arena.hazards:
                                     if h.kind == "teleporter" and h != hazard:
@@ -658,10 +664,6 @@ func execute(strategy: String, delta: float):
                                 else:
                                     self.ball.x = randf_range(100.0, self.world.arena.width - 100.0)
                                     self.ball.y = randf_range(100.0, self.world.arena.height - 100.0)
-                            else:
-                                if hazard.get("target_x") != null:
-                                    self.ball.x = hazard.target_x
-                                    self.ball.y = hazard.target_y
                             self.ball.set_meta("last_teleport_tick", current_tick)
                 elif hazard.kind == "conveyor_belt":
                     var dx = hazard.x - self.ball.x

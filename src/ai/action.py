@@ -406,7 +406,10 @@ class Action:
                             current_tick = getattr(self.world, "tick", 0)
                             last_teleport = getattr(self.ball, "last_teleport_tick", -100)
                             if current_tick - last_teleport > 10:  # Prevent immediate re-teleport
-                                if hazard.kind == "teleporter":
+                                if hasattr(hazard, "target_x"):
+                                    self.ball.x = getattr(hazard, "target_x", hazard.x)
+                                    self.ball.y = getattr(hazard, "target_y", hazard.y)
+                                elif hazard.kind == "teleporter":
                                     teleporters = [h for h in self.world.arena.hazards if h.kind == "teleporter" and h != hazard]
                                     if teleporters:
 
@@ -418,9 +421,6 @@ class Action:
 
                                         self.ball.x = random.uniform(100, self.world.arena.width - 100)
                                         self.ball.y = random.uniform(100, self.world.arena.height - 100)
-                                else:
-                                    self.ball.x = getattr(hazard, "target_x", hazard.x)
-                                    self.ball.y = getattr(hazard, "target_y", hazard.y)
                                 self.ball.last_teleport_tick = current_tick
                     elif hazard.kind == "conveyor_belt":
                         dx = hazard.x - self.ball.x

@@ -197,13 +197,25 @@ func generate():
         hazards.append(portal1)
         hazards.append(portal2)
 
-    # Generate random teleporter pads
-    var num_teleporters = max(2, num_rooms)
+    # Generate random paired teleporter pads
+    var num_teleporters = max(1, num_rooms / 2)
     for t in range(num_teleporters):
-        var t_id = hazards.size() + 6000 + t
-        var t_pt = get_random_spawn_point(25.0)
-        var teleporter = ProceduralArena.Hazard.new(t_id, t_pt[0], t_pt[1], 25.0, "teleporter", 0.0)
-        hazards.append(teleporter)
+        var t1_id = hazards.size() + 6000 + t * 2
+        var t2_id = hazards.size() + 6000 + t * 2 + 1
+
+        var t1_pt = get_random_spawn_point(25.0)
+        var t2_pt = get_random_spawn_point(25.0)
+
+        var teleporter1 = ProceduralArena.Hazard.new(t1_id, t1_pt[0], t1_pt[1], 25.0, "teleporter", 0.0)
+        teleporter1.set_meta("target_x", t2_pt[0])
+        teleporter1.set_meta("target_y", t2_pt[1])
+
+        var teleporter2 = ProceduralArena.Hazard.new(t2_id, t2_pt[0], t2_pt[1], 25.0, "teleporter", 0.0)
+        teleporter2.set_meta("target_x", t1_pt[0])
+        teleporter2.set_meta("target_y", t1_pt[1])
+
+        hazards.append(teleporter1)
+        hazards.append(teleporter2)
 
 func get_random_spawn_point(radius: float) -> Array:
     if rooms.size() == 0:

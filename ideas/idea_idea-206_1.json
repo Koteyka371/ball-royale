@@ -1,0 +1,4 @@
+{
+  "title": "Teleporter Jammer Device",
+  "description": "Add a deployable item that scrambles the destination of all teleporter pads in a certain radius. Anyone stepping on a jammed teleporter gets randomly ejected into the map's safe zone instead of the paired destination, disrupting mapped escape routes."
+}
