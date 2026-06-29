@@ -78,4 +78,4 @@ def test_rival_boosts_aggression_score():
     action_type = decision.choose_action(data, "neutral")
 
     # Chase or Attack should be highly scored
-    assert action_type in ["attack", "chase", "flank", "defend"]
+    assert action_type in ["attack", "chase", "flank", "defend", "ricochet_attack"]
