@@ -4293,7 +4293,7 @@
     },
     {
       "id": "idea-246",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bumper Balls",
@@ -6721,6 +6721,40 @@
         "src/ai/decoy_distraction_beacon.py",
         "src/ai/decoy_distraction_beacon.gd",
         "tests/test_decoy_distraction_beacon.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-389",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Portal Gun Skill",
+      "description": "A new skill for a Trickster ball that shoots two linked portals onto the arena ground, allowing the ball or its allies to instantly teleport across the map and ambush enemies.",
+      "allowed_paths": [
+        "src/ai/portal_gun_skill.py",
+        "src/ai/portal_gun_skill.gd",
+        "tests/test_portal_gun_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-390",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Time Stop Booster",
+      "description": "A booster that temporarily freezes all enemies and hazards in the arena for 3 seconds, allowing the collector to easily reposition or escape.",
+      "allowed_paths": [
+        "src/ai/time_stop_booster.py",
+        "src/ai/time_stop_booster.gd",
+        "tests/test_time_stop_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

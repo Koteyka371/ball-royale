@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-246] Bumper Balls — *2026-06-29 10:19:32 UTC*
+
+A new mode where balls deal zero damage but bounce each other with much higher knockback, aiming to push opponents off the arena.
+
+---
+
 ## [idea-262] Decoy Booster — *2026-06-29 10:14:06 UTC*
 
 A new booster that spawns a temporary decoy of the ball that collected it, distracting enemies and absorbing incoming damage for a few seconds.
