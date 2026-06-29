@@ -176,19 +176,19 @@ class Perception:
                         data["rival_spotted"] = True
 
             # Threat increases if enemy is closer. Max threat from one enemy = 1.0 (at dist 0)
-            threat += max(0.0, 1.0 - (dist / perception_radius)) * 1.5
+            threat += max(0.0, 1.0 - (dist / perception_radius)) * 1.5 if perception_radius > 0 else 0.0
 
         for trap in data["traps"]:
             dist = calc_dist(trap)
             if hasattr(trap, "id"):
                 data["distances"][trap.id] = dist
-            threat += max(0.0, 1.0 - (dist / perception_radius)) * 2.0
+            threat += max(0.0, 1.0 - (dist / perception_radius)) * 2.0 if perception_radius > 0 else 0.0
 
         for booster in data["boosters"]:
             dist = calc_dist(booster)
             if hasattr(booster, "id"):
                 data["distances"][booster.id] = dist
-            opp += max(0.0, 1.0 - (dist / perception_radius)) * 1.0
+            opp += max(0.0, 1.0 - (dist / perception_radius)) * 1.0 if perception_radius > 0 else 0.0
 
         team_messages = []
 
@@ -196,7 +196,7 @@ class Perception:
             dist = calc_dist(ally)
             if hasattr(ally, "id"):
                 data["distances"][ally.id] = dist
-            opp += max(0.0, 1.0 - (dist / perception_radius)) * 0.5
+            opp += max(0.0, 1.0 - (dist / perception_radius)) * 0.5 if perception_radius > 0 else 0.0
             if hasattr(ally, "team_message") and ally.team_message:
                 team_messages.append(ally.team_message)
 
