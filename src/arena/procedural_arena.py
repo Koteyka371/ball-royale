@@ -27,6 +27,9 @@ class Hazard:
     damage: float
     active: bool = True
     target_radius: float = 0.0
+    vx: float = 0.0
+    vy: float = 0.0
+    time_scale: float = 1.0
 
 
 class ProceduralArena:

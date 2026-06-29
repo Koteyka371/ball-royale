@@ -1089,7 +1089,6 @@ class CustomMatchMode(GameMode):
                         b.speed = b.base_speed * 2
                         b._double_speed_applied = True
 
-from ai.interactive_training import InteractiveTrainingMode
 
 
 class VisionReducedMode(GameMode):
@@ -1169,7 +1168,7 @@ class DynamicHazardsMode(GameMode):
             self.spawn_timer = 0.0
 
             import random
-            from src.arena.arena_types import Hazard
+            from arena.arena_types import Hazard
 
             x = 0.0 if random.random() < 0.5 else world.arena.width
             y = random.uniform(0, world.arena.height)
@@ -1348,6 +1347,7 @@ class SafeZoneMode(GameMode):
         except Exception:
             pass
 
+from ai.interactive_training import InteractiveTrainingMode  # noqa: E402
 GAME_MODES = {
     "portal_node": PortalNodeMode(),
     "memory_traps": MemoryTrapsMode(),

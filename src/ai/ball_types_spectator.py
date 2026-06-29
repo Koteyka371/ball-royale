@@ -1,3 +1,4 @@
+from typing import Any
 """
 Auto-generated ball type: Spectator
 Spectator mode, invisible to other balls, observes the battle.
@@ -30,7 +31,7 @@ class Spectator:
         self.personality = "spectator"
         try:
             from ui.heatmap.danger_grid_overlay import DangerGridOverlay  # type: ignore
-            self.danger_overlay = DangerGridOverlay()
+            self.danger_overlay: Any = DangerGridOverlay()
         except ImportError:
             self.danger_overlay = None
 

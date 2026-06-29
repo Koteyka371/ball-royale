@@ -91,7 +91,6 @@ class Action:
         # Check inventory for traps to place if fleeing or defending
         if strategy in ("flee", "defend") and hasattr(self.ball, "inventory") and "placeable_trap" in self.ball.inventory:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
-                import random
                 from arena.procedural_arena import Hazard
                 trap_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
                 trap = Hazard(trap_id, self.ball.x, self.ball.y, 20.0, "trap", 0.0)
@@ -203,7 +202,6 @@ class Action:
 
             # Centralized Earthquake
             if getattr(self.world.arena, "is_earthquake", False):
-                import random
                 # Random violent shake
                 shake_x = random.uniform(-100.0, 100.0)
                 shake_y = random.uniform(-100.0, 100.0)
@@ -336,8 +334,10 @@ class Action:
                         current_tick = getattr(self.world, "tick", 0)
                         if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
                             hazard.last_updated_tick = current_tick
-                            if not hasattr(hazard, "vx"): hazard.vx = 0.0
-                            if not hasattr(hazard, "vy"): hazard.vy = 0.0
+                            if not hasattr(hazard, "vx"):
+                                hazard.vx = 0.0
+                            if not hasattr(hazard, "vy"):
+                                hazard.vy = 0.0
                             hazard.x += hazard.vx * delta
                             hazard.y += hazard.vy * delta
                             hazard.vx *= (1.0 - 2.0 * delta)
@@ -424,13 +424,11 @@ class Action:
                                 if hazard.kind == "teleporter":
                                     teleporters = [h for h in self.world.arena.hazards if h.kind == "teleporter" and h != hazard]
                                     if teleporters:
-                                        import random
                                         target_tp = random.choice(teleporters)
                                         self.ball.x = target_tp.x
                                         self.ball.y = target_tp.y
                                     else:
                                         # Random safe location
-                                        import random
                                         self.ball.x = random.uniform(100, self.world.arena.width - 100)
                                         self.ball.y = random.uniform(100, self.world.arena.height - 100)
                                 else:
@@ -462,7 +460,6 @@ class Action:
                         if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
                             hazard.last_updated_tick = current_tick
                             if not hasattr(hazard, "vx"):
-                                import random
                                 hazard.vx = random.uniform(-10.0, 10.0)
                                 hazard.vy = random.uniform(-10.0, 10.0)
                             hazard.x += hazard.vx * delta
@@ -2023,7 +2020,6 @@ class Action:
                     self.ball.entangle_timer = 5.0
                     target.entangle_timer = 5.0
             elif skill_name == "summon_minions":
-                import random
                 num_minions = random.randint(2, 4)
                 for _ in range(num_minions):
                     import copy
@@ -2135,7 +2131,6 @@ class Action:
                     self.ball.hp = min(getattr(self.ball, "max_hp", 100), self.ball.hp + 30)
             elif skill_name == "dash":
                 self._spawn_skill_particles("dash")
-                import random
                 dash_range_mult = getattr(self.ball, "dash_range_mult", 1.0)
                 dash_dist = 100.0 * dash_range_mult
                 enemies = self._get_enemies()
@@ -2178,7 +2173,6 @@ class Action:
                                 enemy.take_damage(base_burst_dmg)
             elif skill_name == "smokescreen":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
-                    import random
                     trap_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
                     from arena.procedural_arena import Hazard  # type: ignore
                     smoke = Hazard(trap_id, self.ball.x, self.ball.y, 80.0, "smokescreen", 0.0)
@@ -2186,7 +2180,6 @@ class Action:
                     self.world.arena.hazards.append(smoke)
             elif skill_name == "snipe":
                 # Drop a temporary trap hazard
-                import random
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     trap_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
                     from arena.procedural_arena import Hazard  # type: ignore
@@ -2271,7 +2264,7 @@ class Action:
                         target.original_team = getattr(target, "team", getattr(target, "ball_type", ""))
                         # Temporarily set to our team
                         target.team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
-                        self._spawn_particles(target.x, target.y, "mind_control")
+                        self._spawn_skill_particles("mind_control")
 
             elif skill_name == "ground_pound":
                 pound_radius = 120.0
@@ -2304,7 +2297,6 @@ class Action:
                             self.world.arena.hazards.remove(h)
 
             elif skill_name == "target_strong":
-                import random
                 enemies = self._get_enemies()
                 if enemies:
                     target = self._find_strongest_enemy_deterministic(enemies)
@@ -2637,7 +2629,6 @@ class Action:
                     # Drop a trap when retreating
                     trap_timer = getattr(self.ball, "kite_trap_timer", 0.0)
                     if trap_timer <= 0.0:
-                        import random
                         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                             trap_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
                             from arena.procedural_arena import Hazard  # type: ignore

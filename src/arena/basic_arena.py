@@ -1,3 +1,4 @@
+from typing import Any
 import random
 from arena.procedural_arena import Hazard
 from typing import Tuple
@@ -13,7 +14,7 @@ class BasicArena:
         self.safe_zone_center = (arena_size / 2, arena_size / 2)
         self.last_tick = -1
         self.danger_grid: dict[tuple[int, int], float] = {}
-        self.hazards = []
+        self.hazards: list[Any] = []
 
     def get_random_spawn_point(self, radius: float) -> Tuple[float, float]:
         return (self.rng.uniform(radius, self.width - radius),
