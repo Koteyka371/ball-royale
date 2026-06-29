@@ -745,6 +745,11 @@ class WeatherChaosMode extends GameMode:
 						b.set_meta("base_damage", b.damage)
 					else:
 						b.set_meta("base_damage", 10.0)
+				if not b.has_meta("base_perception_radius"):
+					if "perception_radius" in b:
+						b.set_meta("base_perception_radius", float(b.perception_radius))
+					else:
+						b.set_meta("base_perception_radius", 250.0)
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 		weather_timer += delta
@@ -787,6 +792,11 @@ class WeatherChaosMode extends GameMode:
 						b.set_meta("base_damage", b.damage)
 					else:
 						b.set_meta("base_damage", 10.0)
+				if not b.has_meta("base_perception_radius"):
+					if "perception_radius" in b:
+						b.set_meta("base_perception_radius", float(b.perception_radius))
+					else:
+						b.set_meta("base_perception_radius", 250.0)
 
 				var base_spd = b.get_meta("base_speed")
 				var base_dmg = b.get_meta("base_damage")
@@ -798,6 +808,8 @@ class WeatherChaosMode extends GameMode:
 						b.set_meta("dash_range_mult", 1.0)
 						b.set_meta("steering_mult", 1.0)
 						b.set_meta("attack_accuracy", 1.0)
+					if b.has_meta("base_perception_radius") and "perception_radius" in b:
+						b.perception_radius = b.get_meta("base_perception_radius")
 				elif weather == "rain":
 					if "speed" in b: b.speed = base_spd * 0.8
 					if "damage" in b: b.damage = base_dmg
@@ -867,6 +879,8 @@ class WeatherChaosMode extends GameMode:
 							if "hp" in b:
 								b.hp -= 1.0
 						b.set_meta("sandstorm_timer", sand_timer)
+					if b.has_meta("base_perception_radius") and "perception_radius" in b:
+						b.perception_radius = b.get_meta("base_perception_radius") * 0.3
 					if randf() < 0.05 * delta:
 						if "hp" in b: b.hp -= 20
 					if b.has_method("set_meta"):
