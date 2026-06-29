@@ -21,6 +21,11 @@ class Action:
         elif has_reflect_shield:
             # Shield consumes on use and reflects damage
             target.reflect_shield_active = False
+
+            # Spawn a pulse particle effect towards the attacker
+            if hasattr(self, "_spawn_directed_particles"):
+                self._spawn_directed_particles(target, attacker, "reflect_pulse")
+
             if hasattr(self.world, "_deal_damage"):
                 self.world._deal_damage(target, attacker)
         else:
@@ -61,6 +66,8 @@ class Action:
                             self.world._deal_damage(e, attacker)
                     elif e_reflect:
                         e.reflect_shield_active = False
+                        if hasattr(self, "_spawn_directed_particles"):
+                            self._spawn_directed_particles(e, attacker, "reflect_pulse")
                         if hasattr(self.world, "_deal_damage"):
                             self.world._deal_damage(e, attacker)
                     else:
@@ -2636,6 +2643,18 @@ class Action:
 
             if hasattr(self.ball, "skill_cooldown"):
                 self.ball.skill_timer = self.ball.skill_cooldown
+
+    def _spawn_directed_particles(self, source, target, effect_type: str = "") -> None:
+        '''
+        Python mocked visual effects for directed particles.
+        Actual visual implementation is in action.gd.
+        '''
+        if not hasattr(source, "emitted_particles"):
+            source.emitted_particles = []
+        source.emitted_particles.append({
+            "type": effect_type,
+            "target_id": getattr(target, "id", None)
+        })
 
     def _spawn_skill_particles(self, skill_name: str = "") -> None:
         '''
