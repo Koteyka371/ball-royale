@@ -290,3 +290,25 @@ def test_domination_mode():
     assert balls[2].damage == 10.0
     assert balls[2].max_hp == 100.0
     assert balls[2].hp == 100.0
+
+
+def test_bumper_balls_mode():
+    from ai.game_modes import BumperBallsMode
+    mode = BumperBallsMode()
+    world = MockWorld()
+    balls = [MockBall(1, "warrior"), MockBall(2, "scout")]
+
+    # Give them some initial damage
+    balls[0].damage = 10.0
+    balls[1].damage = 10.0
+
+    mode.setup(world, balls)
+
+    # Should deal 0 damage
+    assert balls[0].damage == 0.0
+    assert balls[1].damage == 0.0
+
+    assert mode.check_winner(world, balls) is None
+
+    balls[1].alive = False
+    assert mode.check_winner(world, balls) == "warrior"
