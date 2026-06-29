@@ -93,6 +93,8 @@ class BattleRoyaleMode(GameMode):
                 b.dash_range_mult = 1.0
                 b.steering_mult = 1.0
                 b.attack_accuracy = 1.0
+                if getattr(b, "ball_type", "") == "fire":
+                    b.damage *= 1.5
             elif self.weather == "rain":
                 b.speed = b.base_speed * 0.9
                 b.damage = b.base_damage
@@ -102,6 +104,9 @@ class BattleRoyaleMode(GameMode):
                     b.x += b.vx * delta * 0.3
                     b.y += b.vy * delta * 0.3
                 b.attack_accuracy = 0.9
+                if getattr(b, "ball_type", "") == "water":
+                    if hasattr(b, "hp") and hasattr(b, "max_hp"):
+                        b.hp = min(getattr(b, "max_hp", 100), getattr(b, "hp", 100) + 5.0 * delta)
             elif self.weather == "fog":
                 b.speed = b.base_speed * 0.8
                 b.damage = b.base_damage * 0.9
@@ -692,6 +697,8 @@ class WeatherChaosMode(GameMode):
                 b.dash_range_mult = 1.0
                 b.steering_mult = 1.0
                 b.attack_accuracy = 1.0
+                if getattr(b, "ball_type", "") == "fire":
+                    b.damage *= 1.5
             elif self.weather == "rain":
                 b.speed = b.base_speed * 0.8
                 b.damage = b.base_damage
@@ -703,6 +710,9 @@ class WeatherChaosMode(GameMode):
                     b.x += getattr(b, "vx") * delta * 0.5
                     b.y += getattr(b, "vy") * delta * 0.5
                 b.attack_accuracy = 0.8
+                if getattr(b, "ball_type", "") == "water":
+                    if hasattr(b, "hp") and hasattr(b, "max_hp"):
+                        b.hp = min(getattr(b, "max_hp", 100), getattr(b, "hp", 100) + 5.0 * delta)
             elif self.weather == "fog":
                 b.speed = b.base_speed * 0.5
                 b.damage = b.base_damage * 0.8

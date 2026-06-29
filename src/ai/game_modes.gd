@@ -798,6 +798,8 @@ class WeatherChaosMode extends GameMode:
 						b.set_meta("dash_range_mult", 1.0)
 						b.set_meta("steering_mult", 1.0)
 						b.set_meta("attack_accuracy", 1.0)
+					if "ball_type" in b and b.ball_type == "fire":
+						if "damage" in b: b.damage *= 1.5
 				elif weather == "rain":
 					if "speed" in b: b.speed = base_spd * 0.8
 					if "damage" in b: b.damage = base_dmg
@@ -809,6 +811,9 @@ class WeatherChaosMode extends GameMode:
 						b.y += b.vy * delta * 0.5
 					if b.has_method("set_meta"):
 						b.set_meta("attack_accuracy", 0.8)
+					if "ball_type" in b and b.ball_type == "water":
+						if "hp" in b and "max_hp" in b:
+							b.hp = min(b.max_hp, b.hp + 5.0 * delta)
 				elif weather == "fog":
 					if "speed" in b: b.speed = base_spd * 0.5
 					if "damage" in b: b.damage = base_dmg * 0.8
