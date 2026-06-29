@@ -341,3 +341,30 @@ def test_random_reroll_mutator():
     # The chance of both matching exactly the original is extremely low
     if b1.ball_type == "warrior" and b1.max_hp == 100.0:
         assert False, "Stats not rerolled"
+
+def test_random_push_mode():
+    from ai.game_modes import GAME_MODES
+    mode = GAME_MODES["random_push"]
+    world = MockWorld()
+    ball1 = MockBall("brawler")
+    ball1.vx = 0.0
+    ball1.vy = 0.0
+    ball2 = MockBall("sniper")
+    ball2.vx = 0.0
+    ball2.vy = 0.0
+    balls = [ball1, ball2]
+
+    mode.setup(world, balls)
+    mode.tick(world, balls, 2.0)
+    assert ball1.vx == 0.0
+    assert ball2.vy == 0.0
+
+    mode.tick(world, balls, 1.1)  # Timer should trigger
+    assert ball1.vx != 0.0 or ball1.vy != 0.0
+    assert ball2.vx != 0.0 or ball2.vy != 0.0
+
+    # Ensure timer resets
+    ball1.vx = 0.0
+    ball1.vy = 0.0
+    mode.tick(world, balls, 1.0)
+    assert ball1.vx == 0.0

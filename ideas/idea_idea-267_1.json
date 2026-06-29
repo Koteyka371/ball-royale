@@ -1,0 +1,4 @@
+{
+  "title": "Reverse Controls Hazard",
+  "description": "Add a new hazard called 'confusion_gas' that randomly reverses the controls/velocity calculations for any ball that enters it for a short duration."
+}

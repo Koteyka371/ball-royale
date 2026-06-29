@@ -1694,7 +1694,50 @@ class TournamentMode(GameMode):
 
         return None
 
+
+class RandomPushMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Random Push"
+        self.description = "Periodically pushes all balls in a random direction, forcing them to constantly adjust movement to stay on target."
+        self.push_timer = 0.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        self.push_timer += delta
+        if self.push_timer >= 3.0:
+            self.push_timer = 0.0
+            import random
+            import math
+
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                    angle = random.uniform(0, 2 * math.pi)
+                    push_strength = random.uniform(500, 1000)
+                    if hasattr(b, "vx") and hasattr(b, "vy"):
+                        b.vx += math.cos(angle) * push_strength
+                        b.vy += math.sin(angle) * push_strength
+                    else:
+                        # Fallback if no velocity, directly shift position
+                        b.x += math.cos(angle) * push_strength * delta * 5
+                        b.y += math.sin(angle) * push_strength * delta * 5
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
+        if len(teams_alive) == 1:
+            return list(teams_alive)[0]
+
+        if len(alive) == 1:
+            return alive[0].ball_type
+
+        return None
+
 GAME_MODES = {
+    "random_push": RandomPushMode(),
     "draft_royale": DraftRoyaleMode(),
     "tournament": TournamentMode(),
     "bumper_balls": BumperBallsMode(),

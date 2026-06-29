@@ -2120,7 +2120,55 @@ class TournamentMode extends GameMode:
 
         return null
 
+class RandomPushMode extends GameMode:
+    var push_timer: float = 0.0
+
+    func _init():
+        name = "Random Push"
+        description = "Periodically pushes all balls in a random direction, forcing them to constantly adjust movement to stay on target."
+
+    func tick(world: Node, balls: Array, delta: float) -> void:
+        super.tick(world, balls, delta)
+        push_timer += delta
+        if push_timer >= 3.0:
+            push_timer = 0.0
+            for b in balls:
+                if b.get("alive") != null and b.alive and b.get("ball_type") != "spectator":
+                    var angle = randf_range(0, 2 * PI)
+                    var push_strength = randf_range(500, 1000)
+                    if b.get("vx") != null and b.get("vy") != null:
+                        b.vx += cos(angle) * push_strength
+                        b.vy += sin(angle) * push_strength
+                    else:
+                        b.x += cos(angle) * push_strength * delta * 5
+                        b.y += sin(angle) * push_strength * delta * 5
+
+    func check_winner(world: Node, balls: Array) -> String:
+        var alive = []
+        for b in balls:
+            if b.get("alive") != null and b.alive and b.get("ball_type") != "spectator":
+                alive.append(b)
+
+        if alive.size() == 0:
+            return "Draw"
+
+        var teams_alive = {}
+        for b in alive:
+            var team = b.get("team")
+            if team == null:
+                team = b.get("ball_type")
+            teams_alive[team] = true
+
+        if teams_alive.size() == 1:
+            return teams_alive.keys()[0]
+
+        if alive.size() == 1:
+            return alive[0].get("ball_type", "Unknown")
+
+        return ""
+
 var GAME_MODES = {
+    "random_push": RandomPushMode.new(),
     "draft_royale": DraftRoyaleMode.new(),
     "tournament": TournamentMode.new(),
     "bumper_balls": BumperBallsMode.new(),
