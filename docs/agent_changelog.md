@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-209] Weather Systems — *2026-06-29 10:48:16 UTC*
+
+Introduce dynamic weather to arenas that affect physics and perception. For example, rain could make the terrain slippery (increasing drift) and reduce perception range for AI balls, while wind could constantly apply a slight directional force to all balls, requiring AI to adapt to the changing environment.
+
+---
+
 ## [idea-267] Wind Gust Weather Event — *2026-06-29 10:40:24 UTC*
 
 Periodically pushes all balls in a random direction, forcing them to constantly adjust movement to stay on target.

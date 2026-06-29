@@ -3662,7 +3662,7 @@
     },
     {
       "id": "idea-209",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather Systems",
@@ -6789,6 +6789,91 @@
         "src/ai/bouncy_borders.py",
         "src/ai/bouncy_borders.gd",
         "tests/test_bouncy_borders.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-393",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Pinball Mechanics Mode",
+      "description": "Introduces pinball flippers and bumpers around the arena that randomly activate or can be triggered, drastically changing the trajectory and momentum of balls.",
+      "allowed_paths": [
+        "src/ai/pinball_mechanics.py",
+        "src/ai/pinball_mechanics.gd",
+        "tests/test_pinball_mechanics.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-394",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Blackout Game Mode",
+      "description": "A new game mode where the entire arena is shrouded in complete darkness except for a small ring of light around each ball. Players must navigate and fight using echolocation cues or occasional lightning flashes that reveal the whole map for a split second.",
+      "allowed_paths": [
+        "src/ai/blackout_game.py",
+        "src/ai/blackout_game.gd",
+        "tests/test_blackout_game.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-395",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Controls Trap",
+      "description": "A booster or hazard that randomly spawns and, if stepped on, temporarily inverts the movement controls of all balls on the opposing team, creating a chaotic environment and allowing for clutch offensive plays.",
+      "allowed_paths": [
+        "src/arena/reverse_controls_trap.py",
+        "src/arena/reverse_controls_trap.gd",
+        "tests/test_reverse_controls_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-396",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Lightning Combo",
+      "description": "Introduce a chained lightning attack that bounces between nearby targets. During 'thunderstorm' weather, the chain range and damage are significantly increased.",
+      "allowed_paths": [
+        "src/ai/chain_lightning_combo.py",
+        "src/ai/chain_lightning_combo.gd",
+        "tests/test_chain_lightning_combo.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-397",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Windstorm Glide",
+      "description": "Allow specific lightweight ball types, like the scout, to consume stamina and ride the wind drafts during 'wind' weather, traveling significantly faster and ignoring ground friction.",
+      "allowed_paths": [
+        "src/ai/windstorm_glide.py",
+        "src/ai/windstorm_glide.gd",
+        "tests/test_windstorm_glide.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
