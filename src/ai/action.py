@@ -1197,9 +1197,12 @@ class Action:
         boosters = []
         if hasattr(self.world, "boosters"):
             for b in self.world.boosters:
-                if getattr(b, "active", False):
-                    dx = b.x - self.ball.x
-                    dy = b.y - self.ball.y
+                is_active = b.get("active", False) if isinstance(b, dict) else getattr(b, "active", False)
+                if is_active:
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    dx = bx - self.ball.x
+                    dy = by - self.ball.y
                     if math.sqrt(dx*dx + dy*dy) <= perception_radius:
                         boosters.append(b)
         return boosters
@@ -2137,8 +2140,15 @@ class Action:
                         self._flee(delta)
                         return
 
-            nearest = min(boosters, key=lambda b: (b.x - self.ball.x) ** 2 + (b.y - self.ball.y) ** 2)
-            dx, dy = nearest.x - self.ball.x, nearest.y - self.ball.y
+            def get_bx(b_obj):
+                return b_obj.get("x", 0) if isinstance(b_obj, dict) else getattr(b_obj, "x", 0)
+            def get_by(b_obj):
+                return b_obj.get("y", 0) if isinstance(b_obj, dict) else getattr(b_obj, "y", 0)
+
+            nearest = min(boosters, key=lambda b: (get_bx(b) - self.ball.x) ** 2 + (get_by(b) - self.ball.y) ** 2)
+            nx_target = get_bx(nearest)
+            ny_target = get_by(nearest)
+            dx, dy = nx_target - self.ball.x, ny_target - self.ball.y
             dist_sq = dx * dx + dy * dy
             if dist_sq > 0.0001:
                 dist = math.sqrt(dist_sq)
@@ -2151,7 +2161,7 @@ class Action:
                 self.ball.y += ny * min(step, dist)
 
             # Recalculate distance after movement
-            dx, dy = nearest.x - self.ball.x, nearest.y - self.ball.y
+            dx, dy = get_bx(nearest) - self.ball.x, get_by(nearest) - self.ball.y
             dist_sq = dx * dx + dy * dy
             dist = math.sqrt(dist_sq) if dist_sq > 0.0001 else 0.0
 

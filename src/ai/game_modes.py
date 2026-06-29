@@ -1694,6 +1694,89 @@ class TournamentMode(GameMode):
 
         return None
 
+class ToxicEnvironmentMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Toxic Environment"
+        self.description = "Balls take constant damage over time. Collect temporary immune boosters to survive."
+        self.tick_timer = 0.0
+        self.spawn_timer = 0.0
+
+    def setup(self, world, balls) -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "boosters"):
+            world.boosters = []
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+    def tick(self, world, balls, delta: float = 0.016) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        if not hasattr(world, "boosters"):
+            world.boosters = []
+
+        import random
+        self.spawn_timer += delta
+        if self.spawn_timer >= 1.0:
+            self.spawn_timer = 0.0
+            immune_boosters = [b for b in world.boosters if isinstance(b, dict) and b.get("is_immunity") and b.get("active")]
+            if len(immune_boosters) < 5:
+                x = random.uniform(100, 900)
+                y = random.uniform(100, 900)
+                b_id = getattr(world, "next_id", random.randint(10000, 99999))
+                if hasattr(world, "next_id"):
+                    world.next_id += 1
+                world.boosters.append({
+                    "id": b_id,
+                    "x": x,
+                    "y": y,
+                    "ball_type": "booster",
+                    "active": True,
+                    "is_immunity": True,
+                    "radius": 15.0
+                })
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+                continue
+
+            imm_timer = getattr(b, "immunity_timer", 0.0)
+            if imm_timer > 0:
+                b.immunity_timer = imm_timer - delta
+            else:
+                b.immunity_timer = 0.0
+                damage = 5.0 * delta
+                if hasattr(b, "take_damage"):
+                    b.take_damage(damage)
+
+            to_remove = []
+            for booster in world.boosters:
+                if isinstance(booster, dict) and booster.get("is_immunity") and booster.get("active"):
+                    bx, by = booster.get("x", 0), booster.get("y", 0)
+                    dist = ((b.x - bx)**2 + (b.y - by)**2)**0.5
+                    if dist < getattr(b, "radius", 10.0) + booster.get("radius", 15.0):
+                        b.immunity_timer = 5.0
+                        booster["active"] = False
+                        to_remove.append(booster)
+
+            for booster in to_remove:
+                if booster in world.boosters:
+                    world.boosters.remove(booster)
+
+    def check_winner(self, world, balls) -> str:
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+        if len(alive) == 1:
+            return getattr(alive[0], "team", getattr(alive[0], "ball_type", "Unknown"))
+        return None
+
+
 GAME_MODES = {
     "draft_royale": DraftRoyaleMode(),
     "tournament": TournamentMode(),
@@ -1716,6 +1799,7 @@ GAME_MODES = {
     "boss_fight": BossFightMode(),
     "vip_defense": VIPDefenseMode(),
     "survival": SurvivalMode(),
+    "toxic_environment": ToxicEnvironmentMode(),
     "capture_the_flag": CaptureTheFlagMode(),
     "evolutionary_simulation": EvolutionarySimulationMode(),
     "safe_zone": SafeZoneMode()

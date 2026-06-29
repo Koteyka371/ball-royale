@@ -2120,6 +2120,123 @@ class TournamentMode extends GameMode:
 
         return null
 
+class ToxicEnvironmentMode extends GameMode:
+    var spawn_timer = 0.0
+
+    func _init() -> void:
+        name = "Toxic Environment"
+        description = "Balls take constant damage over time. Collect temporary immune boosters to survive."
+
+    func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
+        if not "boosters" in world:
+            world.boosters = []
+        if not "dead_balls" in world:
+            world.dead_balls = []
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        if not "dead_balls" in world:
+            world.dead_balls = []
+        if not "boosters" in world:
+            world.boosters = []
+
+        spawn_timer += delta
+        if spawn_timer >= 1.0:
+            spawn_timer = 0.0
+            var immune_boosters = 0
+            for b in world.boosters:
+                if typeof(b) == TYPE_DICTIONARY and b.has("is_immunity") and b.get("is_immunity") == true and b.has("active") and b.get("active") == true:
+                    immune_boosters += 1
+            if immune_boosters < 5:
+                var x = randf_range(100.0, 900.0)
+                var y = randf_range(100.0, 900.0)
+                var b_id = randi() % 90000 + 10000
+                if "next_id" in world:
+                    b_id = world.next_id
+                    world.next_id += 1
+                world.boosters.append({
+                    "id": b_id,
+                    "x": x,
+                    "y": y,
+                    "ball_type": "booster",
+                    "active": true,
+                    "is_immunity": true,
+                    "radius": 15.0
+                })
+
+        for b in balls:
+            if not b.alive:
+                if not world.dead_balls.has(b):
+                    if b.has_method("set_meta"):
+                        b.set_meta("time_since_death", 0.0)
+                    world.dead_balls.append(b)
+                else:
+                    if b.has_method("get_meta") and b.has_meta("time_since_death"):
+                        b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+                continue
+
+            var imm_timer = 0.0
+            if b.has_method("get_meta") and b.has_meta("immunity_timer"):
+                imm_timer = b.get_meta("immunity_timer")
+            elif "immunity_timer" in b:
+                imm_timer = b.immunity_timer
+
+            if imm_timer > 0:
+                if b.has_method("set_meta"):
+                    b.set_meta("immunity_timer", imm_timer - delta)
+                elif "immunity_timer" in b:
+                    b.immunity_timer = imm_timer - delta
+            else:
+                if b.has_method("set_meta"):
+                    b.set_meta("immunity_timer", 0.0)
+                elif "immunity_timer" in b:
+                    b.immunity_timer = 0.0
+                if b.has_method("take_damage"):
+                    b.take_damage(5.0 * delta)
+
+            var to_remove = []
+            for booster in world.boosters:
+                if typeof(booster) == TYPE_DICTIONARY and booster.has("is_immunity") and booster.get("is_immunity") == true and booster.has("active") and booster.get("active") == true:
+                    var bx = booster.get("x")
+                    var by = booster.get("y")
+                    var dist = sqrt(pow(b.x - bx, 2) + pow(b.y - by, 2))
+                    var b_rad = 10.0
+                    if "radius" in b:
+                        b_rad = b.radius
+                    elif b.has_method("get_meta") and b.has_meta("radius"):
+                        b_rad = b.get_meta("radius")
+                    var booster_rad = 15.0
+                    if booster.has("radius"):
+                        booster_rad = booster.get("radius")
+
+                    if dist < b_rad + booster_rad:
+                        if b.has_method("set_meta"):
+                            b.set_meta("immunity_timer", 5.0)
+                        elif "immunity_timer" in b:
+                            b.immunity_timer = 5.0
+                        booster["active"] = false
+                        to_remove.append(booster)
+
+            for booster in to_remove:
+                world.boosters.erase(booster)
+
+    func check_winner(world, balls: Array):
+        var alive = []
+        for b in balls:
+            if b.alive and b.ball_type != "spectator":
+                alive.append(b)
+
+        if alive.size() == 0:
+            return "Draw"
+
+        if alive.size() == 1:
+            if "team" in alive[0]:
+                return alive[0].team
+            return alive[0].ball_type
+
+        return null
+
+
 var GAME_MODES = {
     "draft_royale": DraftRoyaleMode.new(),
     "tournament": TournamentMode.new(),
@@ -2142,6 +2259,7 @@ var GAME_MODES = {
     "boss_fight": BossFightMode.new(),
     "vip_defense": VIPDefenseMode.new(),
     "survival": SurvivalMode.new(),
+    "toxic_environment": ToxicEnvironmentMode.new(),
     "capture_the_flag": CaptureTheFlagMode.new(),
     "evolutionary_simulation": EvolutionarySimulationMode.new(),
     "interactive_training": load("res://src/ai/interactive_training.gd").new(),
