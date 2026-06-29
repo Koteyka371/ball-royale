@@ -36,7 +36,17 @@ class PreGameLobby:
                 self.selections[f"{ball_id}_ball_type"] = loadout["ball_type"]
             if "preferred_bonuses" in loadout:
                 self.selections[f"{ball_id}_preferred_bonuses"] = loadout["preferred_bonuses"]
+            if loadout.get("cosmetic"):
+                self.selections[f"{ball_id}_cosmetic"] = loadout["cosmetic"]
+            if loadout.get("title"):
+                self.selections[f"{ball_id}_title"] = loadout["title"]
             return True
+        return False
+
+    def apply_default_loadout(self, ball_id, profile):
+        default_loadout = profile.get_default_loadout()
+        if default_loadout:
+            return self.apply_loadout_to_ball(ball_id, profile, default_loadout)
         return False
 
 lobby = PreGameLobby()

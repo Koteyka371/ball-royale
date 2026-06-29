@@ -43,7 +43,17 @@ func apply_loadout_to_ball(ball_id: int, profile: ProfileManager, loadout_name: 
             selections[str(ball_id) + "_ball_type"] = loadout["ball_type"]
         if loadout.has("preferred_bonuses"):
             selections[str(ball_id) + "_preferred_bonuses"] = loadout["preferred_bonuses"]
+        if loadout.has("cosmetic") and loadout["cosmetic"] != "":
+            selections[str(ball_id) + "_cosmetic"] = loadout["cosmetic"]
+        if loadout.has("title") and loadout["title"] != "":
+            selections[str(ball_id) + "_title"] = loadout["title"]
         return true
+    return false
+
+func apply_default_loadout(ball_id: int, profile: ProfileManager) -> bool:
+    var default_loadout = profile.get_default_loadout()
+    if default_loadout != "":
+        return apply_loadout_to_ball(ball_id, profile, default_loadout)
     return false
 
 # Static global instance
