@@ -13,6 +13,15 @@ class KillFeed:
                     message = f"Tick {log.get('tick', 0)}: Weather changed to {weather.upper()}!"
                     self.messages.append(message)
                     self._processed_ticks.add(event_hash)
+            elif log.get("type") in ["crowd_cheer", "crowd_throw"]:
+                event_hash = f"{log.get('tick', 0)}_{log.get('type')}_{log.get('message', '')}"
+                if event_hash not in self._processed_ticks:
+                    message = f"Tick {log.get('tick', 0)}: {log.get('message', '')}"
+                    self.messages.append(message)
+                    self._processed_ticks.add(event_hash)
+            elif log.get("type") in ["audio_event", "weather_warning", "spawn_booster"]:
+                # Ignore these in kill feed
+                pass
             else:
                 event_hash = f"{log.get('tick', 0)}_{log.get('killer_id', '?')}_{log.get('victim_id', '?')}"
                 if event_hash not in self._processed_ticks:

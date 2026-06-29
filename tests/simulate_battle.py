@@ -11,6 +11,7 @@ import sys
 import os
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Tuple, Any
+from system.crowd_system import CrowdSystem
 from collections import Counter
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
@@ -296,6 +297,7 @@ class BattleSimulation:
         self.grid = SpatialGrid(arena_size, arena_size)
         self.brains: Dict[int, Any] = {}  # ball_id -> BallBrain, created once per ball
         self.tick = 0
+        self.crowd_system = CrowdSystem(self)
         self.use_neural = use_neural
         self.kill_log: List[Dict[str, Any]] = []
         self.death_coordinates: List[Dict[str, float]] = []
@@ -388,6 +390,7 @@ class BattleSimulation:
 
     def _tick(self):
         self.tick += 1
+        self.crowd_system.tick(self.balls, self.kill_log, self.tick)
         self._rebuild_grid()
 
         for ball in self.balls:
@@ -472,6 +475,20 @@ class BattleSimulation:
                 "type": "weather_change",
                 "weather": data.get("weather", "clear")
             })
+
+        elif event_type in ["crowd_cheer", "crowd_throw"]:
+            self.kill_log.append({
+                "tick": self.tick,
+                "type": event_type,
+                "message": data.get("message", "Crowd event!")
+            })
+        elif event_type == "audio_event":
+            self.kill_log.append({
+                "tick": self.tick,
+                "type": "audio_event",
+                "sound": data.get("sound", "unknown_sound"),
+                "volume": data.get("volume", 1.0)
+            })
         elif event_type == "spawn_booster":
             rx, ry = self.arena.get_random_spawn_point(10)
             x = data.get("x", rx)
@@ -545,14 +562,15 @@ class BattleSimulation:
 
         if self.kill_log:
             streak = 1
-            cur = self.kill_log[0]["killer_id"]
+            cur = self.kill_log[0].get("killer_id", None)
             for e in self.kill_log[1:]:
-                if e["killer_id"] == cur:
+                k_id = e.get("killer_id", None)
+                if k_id is not None and k_id == cur:
                     streak += 1
                     self.stats["longest_killstreak"] = max(self.stats["longest_killstreak"], streak)
                 else:
                     streak = 1
-                    cur = e["killer_id"]
+                    cur = k_id
 
         return self.stats
 
