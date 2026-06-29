@@ -1704,6 +1704,27 @@ func _get_target(enemies: Array) -> Object:
         if c_flare != null:
             return c_flare
 
+    var decoys = []
+    for e in enemies:
+        var e_is_decoy = false
+        if "is_decoy" in e:
+            e_is_decoy = e.is_decoy
+        elif e.has_method("get_meta") and e.has_meta("is_decoy"):
+            e_is_decoy = e.get_meta("is_decoy")
+        if e_is_decoy:
+            decoys.append(e)
+
+    if decoys.size() > 0:
+        var c_decoy = null
+        var min_d_sq = INF
+        for f_ent in decoys:
+            var d_sq = pow(f_ent.x - self.ball.x, 2) + pow(f_ent.y - self.ball.y, 2)
+            if d_sq < min_d_sq:
+                min_d_sq = d_sq
+                c_decoy = f_ent
+        if c_decoy != null:
+            return c_decoy
+
     var ball_memory = {}
     if self.ball.has_method("get_meta") and self.ball.has_meta("memory"):
         ball_memory = self.ball.get_meta("memory")
@@ -3438,6 +3459,12 @@ func _use_skill():
                         decoy.hp = decoy.max_hp
                     if "damage" in decoy:
                         decoy.damage = 0.0
+                    if "speed" in decoy:
+                        decoy.speed = 0.0
+                    if "skill_timer" in decoy:
+                        decoy.skill_timer = 9999.0
+                    if "attack_timer" in decoy:
+                        decoy.attack_timer = 9999.0
                     if decoy.has_method("set_meta"):
                         decoy.set_meta("is_decoy", true)
                         decoy.set_meta("decoy_timer", 5.0)

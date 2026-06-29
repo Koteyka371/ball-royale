@@ -1219,6 +1219,11 @@ class Action:
         if flares:
             return min(flares, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
 
+        # Check for decoys first (they distract enemies)
+        decoys = [e for e in enemies if getattr(e, "is_decoy", False)]
+        if decoys:
+            return min(decoys, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+
         # Ball Relationships - Balls remember each other
         # Rivalry skill: attacked me before -> attack on sight
         memory_state = getattr(self.ball, "memory", {})
@@ -2286,12 +2291,16 @@ class Action:
                         self.world.balls.append(minion)
             elif skill_name == "deploy_decoy":
                 import copy
+                import random
                 if hasattr(self.world, "balls"):
                     decoy = copy.copy(self.ball)
                     decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
                     decoy.hp = getattr(self.ball, "max_hp", 100) * 0.1
                     decoy.max_hp = decoy.hp
                     decoy.damage = 0
+                    decoy.speed = 0
+                    decoy.skill_timer = 9999
+                    decoy.attack_timer = 9999
                     decoy.is_decoy = True
                     decoy.decoy_timer = 5.0
                     self.world.balls.append(decoy)
