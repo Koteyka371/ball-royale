@@ -1,6 +1,13 @@
 class_name ArenaTypes
 extends RefCounted
 
+class SwapPortal extends ProceduralArena.Hazard:
+    func _init(_id: int, _x: float, _y: float, _radius: float, _target_x: float, _target_y: float, _pair_id: int):
+        super(_id, _x, _y, _radius, "swap_portal", 0.0)
+        set_meta("target_x", _target_x)
+        set_meta("target_y", _target_y)
+        set_meta("pair_id", _pair_id)
+
 class Portal extends ProceduralArena.Hazard:
     var target_x: float
     var target_y: float

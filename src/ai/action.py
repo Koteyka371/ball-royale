@@ -478,6 +478,45 @@ class Action:
                                 # Slow down the ball using stutter_timer logic
                                 self.ball.stutter_timer = getattr(self.ball, "stutter_timer", 0.0) + 2.0
 
+                    elif hazard.kind == "swap_portal":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            current_tick = getattr(self.world, "tick", 0)
+                            last_teleport = getattr(self.ball, "last_teleport_tick", -100)
+                            if current_tick - last_teleport > 10:
+                                # Find if there is another entity on the paired portal
+                                pair_id = getattr(hazard, "pair_id", None)
+                                paired_hazard = None
+                                for h in self.world.arena.hazards:
+                                    if h.id == pair_id:
+                                        paired_hazard = h
+                                        break
+
+                                if paired_hazard:
+                                    # Find entity on paired_hazard
+                                    entity_to_swap = None
+                                    for b in self.world.balls:
+                                        if b != self.ball and getattr(b, "alive", True):
+                                            b_dx = paired_hazard.x - getattr(b, "x", 0)
+                                            b_dy = paired_hazard.y - getattr(b, "y", 0)
+                                            if b_dx * b_dx + b_dy * b_dy < paired_hazard.radius * paired_hazard.radius:
+                                                entity_to_swap = b
+                                                break
+
+                                    if entity_to_swap:
+                                        # Swap positions
+                                        temp_x = self.ball.x
+                                        temp_y = self.ball.y
+                                        self.ball.x = entity_to_swap.x
+                                        self.ball.y = entity_to_swap.y
+                                        entity_to_swap.x = temp_x
+                                        entity_to_swap.y = temp_y
+
+                                        self.ball.last_teleport_tick = current_tick
+                                        entity_to_swap.last_teleport_tick = current_tick
+
                     elif hazard.kind in ("portal", "teleporter"):
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y

@@ -175,6 +175,29 @@ class ProceduralArena:
             self.hazards.append(portal1)
             self.hazards.append(portal2)
 
+
+        # Generate guaranteed paired swap portals
+        num_swap_portals = max(1, self.num_rooms // 2)
+        for p in range(num_swap_portals):
+            p1_id = len(self.hazards) + 8000 + p*2
+            p2_id = len(self.hazards) + 8000 + p*2 + 1
+
+            p1_x, p1_y = self.get_random_spawn_point(30.0)
+            p2_x, p2_y = self.get_random_spawn_point(30.0)
+
+            sp1 = Hazard(id=p1_id, x=p1_x, y=p1_y, radius=30.0, kind="swap_portal", damage=0.0)
+            sp1.target_x = p2_x
+            sp1.target_y = p2_y
+            sp1.pair_id = p2_id
+
+            sp2 = Hazard(id=p2_id, x=p2_x, y=p2_y, radius=30.0, kind="swap_portal", damage=0.0)
+            sp2.target_x = p1_x
+            sp2.target_y = p1_y
+            sp2.pair_id = p1_id
+
+            self.hazards.append(sp1)
+            self.hazards.append(sp2)
+
         # Generate random teleporter pads
         num_teleporters = max(2, self.num_rooms)
 

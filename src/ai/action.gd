@@ -634,6 +634,48 @@ func execute(strategy: String, delta: float):
                                 self.ball.stutter_timer = current_stutter + 2.0
                             elif self.ball.has_method("set_meta"):
                                 self.ball.set_meta("stutter_timer", current_stutter + 2.0)
+                elif hazard.kind == "swap_portal":
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    if dist_sq < hazard.radius * hazard.radius:
+                        var current_tick = 0
+                        if self.world.get("tick") != null:
+                            current_tick = self.world.tick
+                        var last_teleport = -100
+                        if self.ball.has_meta("last_teleport_tick"):
+                            last_teleport = self.ball.get_meta("last_teleport_tick")
+                        if current_tick - last_teleport > 10:
+                            if hazard.has_meta("pair_id"):
+                                var pair_id = hazard.get_meta("pair_id")
+                                var paired_hazard = null
+                                for h in self.world.arena.hazards:
+                                    if h.id == pair_id:
+                                        paired_hazard = h
+                                        break
+
+                                if paired_hazard != null:
+                                    var entity_to_swap = null
+                                    for b in self.world.balls:
+                                        if b != self.ball and b.get("alive") == true:
+                                            var b_dx = paired_hazard.x - b.x
+                                            var b_dy = paired_hazard.y - b.y
+                                            if b_dx * b_dx + b_dy * b_dy < paired_hazard.radius * paired_hazard.radius:
+                                                entity_to_swap = b
+                                                break
+
+                                    if entity_to_swap != null:
+                                        var temp_x = self.ball.x
+                                        var temp_y = self.ball.y
+                                        self.ball.x = entity_to_swap.x
+                                        self.ball.y = entity_to_swap.y
+                                        entity_to_swap.x = temp_x
+                                        entity_to_swap.y = temp_y
+
+                                        if self.ball.has_method("set_meta"):
+                                            self.ball.set_meta("last_teleport_tick", current_tick)
+                                        if entity_to_swap.has_method("set_meta"):
+                                            entity_to_swap.set_meta("last_teleport_tick", current_tick)
                 elif hazard.kind == "portal" or hazard.kind == "teleporter":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
