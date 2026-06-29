@@ -2398,6 +2398,128 @@ class ModifierZonesMode extends GameMode:
 		return null
 
 
+
+class MovingSafeZoneMode extends GameMode:
+    var zone_x = 500.0
+    var zone_y = 500.0
+    var zone_target_x = 500.0
+    var zone_target_y = 500.0
+    var zone_radius = 500.0
+    var min_zone_radius = 50.0
+    var shrink_rate = 10.0
+    var outside_damage_per_second = 10.0
+    var tick_timer = 0.0
+
+    func _init() -> void:
+        name = "Moving Safe Zone"
+        description = "A battle royale mode where the safe zone constantly moves and shrinks. Stay inside to survive."
+
+    func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
+        var arena_width = 1000.0
+        var arena_height = 1000.0
+        if world != null and "arena" in world and world.arena != null:
+            if "width" in world.arena: arena_width = float(world.arena.width)
+            if "height" in world.arena: arena_height = float(world.arena.height)
+        zone_x = arena_width / 2.0
+        zone_y = arena_height / 2.0
+        zone_target_x = zone_x
+        zone_target_y = zone_y
+        zone_radius = min(arena_width, arena_height) / 2.0
+        min_zone_radius = 50.0
+
+        var valid_balls = []
+        for b in balls:
+            if b.ball_type != "spectator":
+                valid_balls.append(b)
+
+        for i in range(valid_balls.size()):
+            var b = valid_balls[i]
+            if i >= 20:
+                if b.has_method("set"):
+                    b.set("ball_type", "spectator")
+                    b.set("alive", false)
+                else:
+                    b.ball_type = "spectator"
+                    b.alive = false
+            else:
+                if b.has_method("set"):
+                    b.set("team", b.ball_type)
+                else:
+                    b.team = b.ball_type
+
+        if not "dead_balls" in world:
+            world.dead_balls = []
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        if not "dead_balls" in world:
+            world.dead_balls = []
+
+        var arena_width = 1000.0
+        var arena_height = 1000.0
+        if world != null and "arena" in world and world.arena != null:
+            if "width" in world.arena: arena_width = float(world.arena.width)
+            if "height" in world.arena: arena_height = float(world.arena.height)
+
+        for b in balls:
+            if not b.alive:
+                if not world.dead_balls.has(b):
+                    if b.has_method("set_meta"):
+                        b.set_meta("time_since_death", 0.0)
+                    world.dead_balls.append(b)
+                else:
+                    if b.has_method("get_meta") and b.has_meta("time_since_death"):
+                        b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+
+        if zone_radius > min_zone_radius:
+            zone_radius -= shrink_rate * delta
+            if zone_radius < min_zone_radius:
+                zone_radius = min_zone_radius
+
+        var dx = zone_target_x - zone_x
+        var dy = zone_target_y - zone_y
+        var dist = sqrt(dx*dx + dy*dy)
+        if dist > 5.0:
+            zone_x += (dx / dist) * 20.0 * delta
+            zone_y += (dy / dist) * 20.0 * delta
+        else:
+            zone_target_x = zone_radius + randf() * (arena_width - 2.0 * zone_radius)
+            zone_target_y = zone_radius + randf() * (arena_height - 2.0 * zone_radius)
+
+        var damage_this_tick = outside_damage_per_second * delta
+        for b in balls:
+            if b.alive and b.ball_type != "spectator":
+                var bdx = b.x - zone_x
+                var bdy = b.y - zone_y
+                var bdist = sqrt(bdx*bdx + bdy*bdy)
+
+                if bdist > zone_radius:
+                    b.hp -= damage_this_tick
+                    if b.hp <= 0:
+                        if b.has_method("set"):
+                            b.set("alive", false)
+                            b.set("hp", 0)
+                        else:
+                            b.alive = false
+                            b.hp = 0
+
+    func check_winner(world, balls: Array):
+        var alive = []
+        for b in balls:
+            if b.alive and b.ball_type != "spectator":
+                alive.append(b)
+
+        if alive.size() == 0:
+            return "Draw"
+
+        if alive.size() == 1:
+            if "team" in alive[0]:
+                return alive[0].team
+            return alive[0].ball_type
+
+        return null
+
+
 var GAME_MODES = {
 	"modifier_zones": ModifierZonesMode.new(),
     "draft_royale": DraftRoyaleMode.new(),
@@ -2425,5 +2547,6 @@ var GAME_MODES = {
     "capture_the_flag": CaptureTheFlagMode.new(),
     "evolutionary_simulation": EvolutionarySimulationMode.new(),
     "interactive_training": load("res://src/ai/interactive_training.gd").new(),
-    "safe_zone": SafeZoneMode.new()
+    "safe_zone": SafeZoneMode.new(),
+    "moving_safe_zone": MovingSafeZoneMode.new()
 }

@@ -1,3 +1,5 @@
+import math
+import random
 from typing import List, Optional, Any
 
 class GameMode:
@@ -82,7 +84,7 @@ class DraftRoyaleMode(GameMode):
         self.max_bans = 2
         self.picks_per_team = 5
         self.timer = 0.0
-        import random
+
         self.random = random
 
     def setup(self, world: Any, balls: List[Any]) -> None:
@@ -201,7 +203,7 @@ class BattleRoyaleMode(GameMode):
         self.is_dark_phase = False
         self.weather = "clear"
         self.weather_timer = 0.0
-        import random
+
         self.random = random
 
     def setup(self, world: Any, balls: List[Any]) -> None:
@@ -444,7 +446,7 @@ class ZombieInfectionMode(GameMode):
         super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
-        import random
+
         # Pick 1 random zombie
         if balls:
             zombie = random.choice([b for b in balls if getattr(b, "ball_type", None) != "spectator"])
@@ -828,7 +830,7 @@ class BlackHoleMode(GameMode):
                     world.dead_balls.append(b)
                 else:
                     b.time_since_death += delta
-        import math
+
         arena_width = 1000
         arena_height = 1000
         if hasattr(world, "arena") and world.arena:
@@ -889,7 +891,7 @@ class WeatherChaosMode(GameMode):
         self.description = "Weather conditions change throughout the match, affecting stats."
         self.weather = "clear"
         self.weather_timer = 0.0
-        import random
+
         self.random = random
 
     def setup(self, world: Any, balls: List[Any]) -> None:
@@ -918,7 +920,7 @@ class WeatherChaosMode(GameMode):
         if self.weather_timer > 10.0:
             self.weather_timer = 0.0
             weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm"]
-            import random
+
             rnd = getattr(self, "random", random)
             old_weather = self.weather
             self.weather = rnd.choice(weathers)
@@ -1197,8 +1199,8 @@ class MovingZoneMode(GameMode):
         self.zone_target_y = self.zone_y
 
     def tick(self, world, balls, delta=0.016):
-        import random
-        import math
+
+
         self.tick_timer += delta
 
         arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
@@ -1253,7 +1255,7 @@ class ReverseEventMode(GameMode):
             self.event_timer += delta
 
         if not self.event_active and self.event_timer > 20.0:
-            import random
+
             if random.random() < 0.1:  # 10% chance every 20 seconds to trigger
                 self.event_active = True
                 self.event_duration = 10.0
@@ -1293,7 +1295,7 @@ class MemoryTrapsMode(GameMode):
         arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
         arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
 
-        import random
+
         self.traps = []
         for i in range(50):
             x = random.uniform(50, arena_width - 50)
@@ -1385,7 +1387,7 @@ class CustomMatchMode(GameMode):
                 if self.random_reroll_timer >= 10.0:
                     trigger_reroll = True
                     self.random_reroll_timer = 0.0
-                    import random
+
                     types = ['paladin', 'assassin', 'ninja', 'warrior', 'guardian', 'chaos', 'bomber', 'templar', 'necromancer', 'vampire', 'sniper', 'king', 'easy', 'phantom', 'warlock', 'mimic', 'juggernaut', 'tank', 'berserker', 'druid', 'hard', 'scout', 'brawler', 'medium', 'neural', 'ranger', 'healer', 'rogue', 'swarm', 'conjurer', 'monk', 'mage', 'elementalist', 'trickster']
 
             for b in balls:
@@ -1489,7 +1491,7 @@ class DynamicHazardsMode(GameMode):
         if self.spawn_timer >= 5.0:
             self.spawn_timer = 0.0
 
-            import random
+
             from arena.arena_types import Hazard
 
             x = 0.0 if random.random() < 0.5 else world.arena.width
@@ -1542,8 +1544,8 @@ class PortalNodeMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
-        import math
-        import random
+
+
 
         self.portal_timer += delta
         if self.portal_timer >= 10.0:
@@ -1611,7 +1613,7 @@ class SafeZoneMode(GameMode):
             world.dead_balls = []
 
     def tick(self, world, balls, delta=0.016):
-        import math
+
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
@@ -1749,7 +1751,7 @@ class ToxicEnvironmentMode(GameMode):
         if not hasattr(world, "boosters"):
             world.boosters = []
 
-        import random
+
         self.spawn_timer += delta
         if self.spawn_timer >= 1.0:
             self.spawn_timer = 0.0
@@ -1839,7 +1841,7 @@ class ModifierZonesMode(GameMode):
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
-        import math
+
 
         for b in balls:
             if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
@@ -1902,6 +1904,99 @@ class ModifierZonesMode(GameMode):
         return None
 
 
+
+class MovingSafeZoneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Moving Safe Zone"
+        self.description = "A battle royale mode where the safe zone constantly moves and shrinks. Stay inside to survive."
+        self.zone_x = 500.0
+        self.zone_y = 500.0
+        self.zone_target_x = 500.0
+        self.zone_target_y = 500.0
+        self.zone_radius = 500.0
+        self.min_zone_radius = 50.0
+        self.shrink_rate = 10.0
+        self.outside_damage_per_second = 10.0
+        self.tick_timer = 0.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.zone_x = arena_width / 2.0
+        self.zone_y = arena_height / 2.0
+        self.zone_target_x = self.zone_x
+        self.zone_target_y = self.zone_y
+        self.zone_radius = min(arena_width, arena_height) / 2.0
+        self.min_zone_radius = 50.0
+
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        for i, b in enumerate(valid_balls):
+            if i >= 20:
+                b.ball_type = "spectator"
+                b.alive = False
+            else:
+                b.team = b.ball_type
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+    def tick(self, world, balls, delta=0.016):
+
+
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+
+        if self.zone_radius > self.min_zone_radius:
+            self.zone_radius -= self.shrink_rate * delta
+            if self.zone_radius < self.min_zone_radius:
+                self.zone_radius = self.min_zone_radius
+
+        dx = self.zone_target_x - self.zone_x
+        dy = self.zone_target_y - self.zone_y
+        dist = math.sqrt(dx*dx + dy*dy)
+        if dist > 5.0:
+            self.zone_x += (dx / dist) * 20.0 * delta
+            self.zone_y += (dy / dist) * 20.0 * delta
+        else:
+            self.zone_target_x = random.uniform(self.zone_radius, arena_width - self.zone_radius)
+            self.zone_target_y = random.uniform(self.zone_radius, arena_height - self.zone_radius)
+
+        damage_this_tick = self.outside_damage_per_second * delta
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                bdx = b.x - self.zone_x
+                bdy = b.y - self.zone_y
+                bdist = math.sqrt(bdx*bdx + bdy*bdy)
+
+                if bdist > self.zone_radius:
+                    b.hp -= damage_this_tick
+                    if b.hp <= 0:
+                        b.alive = False
+                        b.hp = 0
+
+    def check_winner(self, world, balls):
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+        if len(alive) == 1:
+            return getattr(alive[0], "team", getattr(alive[0], "ball_type", "Unknown"))
+        return None
+
+
 GAME_MODES = {
     "modifier_zones": ModifierZonesMode(),
     "draft_royale": DraftRoyaleMode(),
@@ -1928,7 +2023,8 @@ GAME_MODES = {
     "toxic_environment": ToxicEnvironmentMode(),
     "capture_the_flag": CaptureTheFlagMode(),
     "evolutionary_simulation": EvolutionarySimulationMode(),
-    "safe_zone": SafeZoneMode()
+    "safe_zone": SafeZoneMode(),
+    "moving_safe_zone": MovingSafeZoneMode()
 }
 
 try:
