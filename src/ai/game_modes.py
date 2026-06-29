@@ -1473,8 +1473,83 @@ class BumperBallsMode(GameMode):
             return getattr(alive[0], "team", getattr(alive[0], "ball_type", "Unknown"))
         return None
 
+
+class ModifierZonesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Modifier Zones"
+        self.description = "Fight over zones that grant speed, damage, or healing modifiers."
+        self.zones = []
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        import random
+        self.zones = []
+        zone_types = ["speed_boost", "damage_boost", "healing"]
+
+        for i in range(3):
+            self.zones.append({
+                "id": f"mod_zone_{i}",
+                "x": random.uniform(200, arena_width - 200),
+                "y": random.uniform(200, arena_height - 200),
+                "radius": 150.0,
+                "type": zone_types[i % len(zone_types)]
+            })
+
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator":
+                if not hasattr(b, "base_speed"):
+                    b.base_speed = getattr(b, "speed", 2.0)
+                if not hasattr(b, "base_damage"):
+                    b.base_damage = getattr(b, "damage", 10.0)
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+
+        for b in balls:
+            if getattr(b, "ball_type", None) == "spectator" or not getattr(b, "alive", False):
+                continue
+
+            if not hasattr(b, "base_speed"):
+                b.base_speed = getattr(b, "speed", 2.0)
+            if not hasattr(b, "base_damage"):
+                b.base_damage = getattr(b, "damage", 10.0)
+
+            in_speed_zone = False
+            in_damage_zone = False
+
+            for zone in self.zones:
+                dx = b.x - zone["x"]
+                dy = b.y - zone["y"]
+                dist = math.sqrt(dx*dx + dy*dy)
+
+                if dist <= zone["radius"]:
+                    if zone["type"] == "healing":
+                        if hasattr(b, "hp") and hasattr(b, "max_hp"):
+                            b.hp = min(b.hp + 20.0 * delta, b.max_hp)
+                    elif zone["type"] == "speed_boost":
+                        in_speed_zone = True
+                    elif zone["type"] == "damage_boost":
+                        in_damage_zone = True
+
+            base_speed = getattr(b, "base_speed", getattr(b, "speed", 2.0))
+            if in_speed_zone:
+                b.speed = base_speed * 1.5
+            else:
+                b.speed = base_speed
+
+            base_damage = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+            if in_damage_zone:
+                b.damage = base_damage * 1.5
+            else:
+                b.damage = base_damage
+
 GAME_MODES = {
     "bumper_balls": BumperBallsMode(),
+    "modifier_zones": ModifierZonesMode(),
     "portal_node": PortalNodeMode(),
     "memory_traps": MemoryTrapsMode(),
     "vision_reduced": VisionReducedMode(),

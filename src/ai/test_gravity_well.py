@@ -27,7 +27,7 @@ def test_gravity_well_pull():
     initial_dist = ((ball.x - 1000.0)**2 + (ball.y - 1000.0)**2)**0.5
     print(f"Initial: x={ball.x}, y={ball.y}, dist={initial_dist}")
 
-    action.execute("idle", 0.1)
+    action.execute("idle", 0.01)
 
     final_dist = ((ball.x - 1000.0)**2 + (ball.y - 1000.0)**2)**0.5
     print(f"Final: x={ball.x}, y={ball.y}, dist={final_dist}")

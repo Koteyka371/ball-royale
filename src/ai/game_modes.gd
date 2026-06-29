@@ -1808,8 +1808,90 @@ class BumperBallsMode extends GameMode:
 
         return null
 
+class ModifierZonesMode extends GameMode:
+    var zones = []
+
+    func _init() -> void:
+        name = "Modifier Zones"
+        description = "Fight over zones that grant speed, damage, or healing modifiers."
+
+    func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
+        var arena_width = 1000.0
+        var arena_height = 1000.0
+        if world != null and "arena" in world and world.arena != null:
+            if "width" in world.arena: arena_width = float(world.arena.width)
+            if "height" in world.arena: arena_height = float(world.arena.height)
+
+        zones.clear()
+        var zone_types = ["speed_boost", "damage_boost", "healing"]
+
+        for i in range(3):
+            var zone = {}
+            zone["id"] = "mod_zone_" + str(i)
+            zone["x"] = randf_range(200.0, arena_width - 200.0)
+            zone["y"] = randf_range(200.0, arena_height - 200.0)
+            zone["radius"] = 150.0
+            zone["type"] = zone_types[i % zone_types.size()]
+            zones.append(zone)
+
+        for b in balls:
+            if b.ball_type != "spectator":
+                if not b.has_meta("base_speed") and "speed" in b:
+                    b.set_meta("base_speed", b.speed)
+                if not b.has_meta("base_damage") and "damage" in b:
+                    b.set_meta("base_damage", b.damage)
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        for b in balls:
+            if b.ball_type == "spectator" or not b.alive:
+                continue
+
+            if not b.has_meta("base_speed") and "speed" in b:
+                b.set_meta("base_speed", b.speed)
+            if not b.has_meta("base_damage") and "damage" in b:
+                b.set_meta("base_damage", b.damage)
+
+            var in_speed_zone = false
+            var in_damage_zone = false
+
+            for zone in zones:
+                var dx = b.x - zone["x"]
+                var dy = b.y - zone["y"]
+                var dist = sqrt(dx*dx + dy*dy)
+
+                if dist <= zone["radius"]:
+                    if zone["type"] == "healing":
+                        if "hp" in b and "max_hp" in b:
+                            b.hp = min(b.hp + 20.0 * delta, b.max_hp)
+                    elif zone["type"] == "speed_boost":
+                        in_speed_zone = true
+                    elif zone["type"] == "damage_boost":
+                        in_damage_zone = true
+
+            var base_speed = b.speed
+            if b.has_meta("base_speed"):
+                base_speed = b.get_meta("base_speed")
+
+            if in_speed_zone:
+                b.speed = base_speed * 1.5
+            else:
+                b.speed = base_speed
+
+            var base_damage = 10.0
+            if "damage" in b:
+                base_damage = b.damage
+            if b.has_meta("base_damage"):
+                base_damage = b.get_meta("base_damage")
+
+            if in_damage_zone:
+                b.damage = base_damage * 1.5
+            else:
+                b.damage = base_damage
+
 var GAME_MODES = {
     "bumper_balls": BumperBallsMode.new(),
+    "modifier_zones": ModifierZonesMode.new(),
     "portal_node": PortalNodeMode.new(),
 	"memory_traps": MemoryTrapsMode.new(),
 	"vision_reduced": VisionReducedMode.new(),
