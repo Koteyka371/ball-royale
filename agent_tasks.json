@@ -7374,6 +7374,108 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-427",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirror Match Game Mode",
+      "description": "A new game mode where every ball starts with a reflect shield and no standard attacks work. Players must push map hazards or environmental objects into each other to deal damage, rewarding positional play and strategic bounces.",
+      "allowed_paths": [
+        "src/ai/mirror_match_game.py",
+        "src/ai/mirror_match_game.gd",
+        "tests/test_mirror_match_game.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-428",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Interactive Crowd Hazards",
+      "description": "Expand the crowd system so that if the crowd's excitement drops too low (boring match), they start throwing hazards into the arena, such as temporary walls, slow fields, or mini-bombs, forcing players to engage and play more aggressively to appease the crowd.",
+      "allowed_paths": [
+        "src/arena/interactive_crowd_hazards.py",
+        "src/arena/interactive_crowd_hazards.gd",
+        "tests/test_interactive_crowd_hazards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-429",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Healing Rain Weather",
+      "description": "A new weather event where gentle rain gradually restores HP to all balls.",
+      "allowed_paths": [
+        "src/ai/healing_rain.py",
+        "src/ai/healing_rain.gd",
+        "tests/test_healing_rain.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-430",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sponsor System",
+      "description": "Players can pick a 'Sponsor' before a match begins. Depending on the sponsor chosen, they receive different types of buffs (e.g., speed, health, damage) at specific intervals or under certain conditions (e.g., when they get a double kill). Sponsors could also have drawbacks, such as reduced max HP for increased damage, adding strategic depth.",
+      "allowed_paths": [
+        "src/ai/sponsor.py",
+        "src/ai/sponsor.gd",
+        "tests/test_sponsor.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-431",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shield Overload Explosion",
+      "description": "If a reflect shield takes damage exceeding its maximum capacity in a single hit, the remaining damage causes an overload explosion that deals AoE damage to everyone nearby, including the shield owner.",
+      "allowed_paths": [
+        "src/ai/shield_overload_explosion.py",
+        "src/ai/shield_overload_explosion.gd",
+        "tests/test_shield_overload_explosion.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-432",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Controls Event",
+      "description": "Periodically swap player controls to add confusion.",
+      "allowed_paths": [
+        "src/ai/reverse_controls.py",
+        "src/ai/reverse_controls.gd",
+        "tests/test_reverse_controls.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }

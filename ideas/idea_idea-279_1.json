@@ -1,4 +1,0 @@
-{
-  "title": "Shield Overload Explosion",
-  "description": "If a reflect shield takes damage exceeding its maximum capacity in a single hit, the remaining damage causes an overload explosion that deals AoE damage to everyone nearby, including the shield owner."
-}

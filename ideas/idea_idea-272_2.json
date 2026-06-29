@@ -1,4 +1,0 @@
-{
-  "title": "Randomized Safe Zone Shrink Shapes",
-  "description": "Instead of a simple circular shrinking zone, the safe zone can shrink into varied geometric shapes (like a rectangle or a triangle) or even split into two smaller temporary safe zones before merging back. This disrupts camping strategies and keeps players constantly repositioning."
-}
