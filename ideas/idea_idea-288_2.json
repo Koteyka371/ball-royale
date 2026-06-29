@@ -1,4 +1,0 @@
-{
-  "title": "Hazard Interaction Combos",
-  "description": "Allow specific hazards to interact with each other for combo effects. For example, if a 'magnet' hazard pulls an 'explosive_barrel' or a 'flare', it creates a massive clustered explosion or area-of-effect zone. This introduces a strategic depth where players can trick enemies into pulling explosives towards them."
-}

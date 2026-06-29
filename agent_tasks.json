@@ -7544,6 +7544,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-437",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Grappling Hook",
+      "description": "Add a new ability to allow balls to grapple and pull themselves towards walls.",
+      "allowed_paths": [
+        "src/ai/grappling_hook.py",
+        "src/ai/grappling_hook.gd",
+        "tests/test_grappling_hook.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-438",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Minefield Event",
+      "description": "A random event where multiple invisible or visible mines appear, detonating on contact.",
+      "allowed_paths": [
+        "src/ai/minefield.py",
+        "src/ai/minefield.gd",
+        "tests/test_minefield.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
