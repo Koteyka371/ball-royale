@@ -3679,7 +3679,7 @@
     },
     {
       "id": "idea-210",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "King of the Hill Game Mode",
@@ -6347,6 +6347,40 @@
         "src/ai/low_gravity.py",
         "src/ai/low_gravity.gd",
         "tests/test_low_gravity.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-367",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Inversion Zone",
+      "description": "A new arena hazard that periodically reverses gravity within its radius, causing balls to be repelled from each other instead of behaving normally, which can be used to break up enemy groupings.",
+      "allowed_paths": [
+        "src/ai/gravity_inversion_zone.py",
+        "src/ai/gravity_inversion_zone.gd",
+        "tests/test_gravity_inversion_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-368",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Entanglement",
+      "description": "Two balls can become quantum entangled, meaning they share damage taken but also share healing, creating new tactical trade-offs during chaotic team fights.",
+      "allowed_paths": [
+        "src/ai/quantum_entanglement.py",
+        "src/ai/quantum_entanglement.gd",
+        "tests/test_quantum_entanglement.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
