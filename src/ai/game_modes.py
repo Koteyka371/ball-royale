@@ -1888,7 +1888,84 @@ class ModifierZonesMode(GameMode):
         return None
 
 
+
+class WindstormMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Windstorm"
+        self.description = "Periodically pushes all balls in a random direction, forcing them to constantly adjust movement to stay on target."
+        self.push_timer = 3.0
+        self.push_duration = 0.0
+        self.push_dir_x = 0.0
+        self.push_dir_y = 0.0
+        self.push_strength = 600.0
+        import random
+        self.random = random
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        for b in valid_balls:
+            b.team = b.ball_type
+            if not hasattr(b, "base_speed"):
+                b.base_speed = getattr(b, "speed", 100.0)
+            if not hasattr(b, "base_damage"):
+                b.base_damage = getattr(b, "damage", 10.0)
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+
+        self.push_timer -= delta
+        if self.push_timer <= 0:
+            if self.push_duration <= 0:
+                # Start push
+                import math
+                angle = self.random.uniform(0, 2 * math.pi)
+                self.push_dir_x = math.cos(angle)
+                self.push_dir_y = math.sin(angle)
+                self.push_duration = self.random.uniform(1.0, 2.0)
+            else:
+                self.push_duration -= delta
+                if self.push_duration <= 0:
+                    self.push_timer = self.random.uniform(2.0, 4.0)
+
+        if self.push_duration > 0:
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                    if not hasattr(b, "vx"):
+                        b.vx = 0.0
+                    if not hasattr(b, "vy"):
+                        b.vy = 0.0
+                    b.vx += self.push_dir_x * self.push_strength * delta
+                    b.vy += self.push_dir_y * self.push_strength * delta
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
+        if len(teams_alive) == 1:
+            return list(teams_alive)[0]
+
+        if len(alive) == 1:
+            return getattr(alive[0], "team", getattr(alive[0], "ball_type", None))
+
+        return None
+
+
 GAME_MODES = {
+    "windstorm": WindstormMode(),
     "modifier_zones": ModifierZonesMode(),
     "draft_royale": DraftRoyaleMode(),
     "tournament": TournamentMode(),

@@ -2369,7 +2369,89 @@ class ModifierZonesMode extends GameMode:
 		return null
 
 
+
+class WindstormMode extends GameMode:
+    var push_timer = 3.0
+    var push_duration = 0.0
+    var push_dir_x = 0.0
+    var push_dir_y = 0.0
+    var push_strength = 600.0
+
+    func _init() -> void:
+        name = "Windstorm"
+        description = "Periodically pushes all balls in a random direction, forcing them to constantly adjust movement to stay on target."
+
+    func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
+        if not "dead_balls" in world:
+            world.dead_balls = []
+        for b in balls:
+            if b.ball_type != "spectator":
+                b.team = b.ball_type
+                if not "base_speed" in b:
+                    b.base_speed = b.get("speed", 100.0)
+                if not "base_damage" in b:
+                    b.base_damage = b.get("damage", 10.0)
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        if not "dead_balls" in world:
+            world.dead_balls = []
+        for b in balls:
+            if not b.alive:
+                if not world.dead_balls.has(b):
+                    if b.has_method("set_meta"):
+                        b.set_meta("time_since_death", 0.0)
+                    world.dead_balls.append(b)
+                else:
+                    if b.has_method("get_meta") and b.has_meta("time_since_death"):
+                        b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+
+        push_timer -= delta
+        if push_timer <= 0:
+            if push_duration <= 0:
+                var angle = randf_range(0.0, 2.0 * PI)
+                push_dir_x = cos(angle)
+                push_dir_y = sin(angle)
+                push_duration = randf_range(1.0, 2.0)
+            else:
+                push_duration -= delta
+                if push_duration <= 0:
+                    push_timer = randf_range(2.0, 4.0)
+
+        if push_duration > 0:
+            for b in balls:
+                if b.alive and b.ball_type != "spectator":
+                    if not "vx" in b:
+                        b.vx = 0.0
+                    if not "vy" in b:
+                        b.vy = 0.0
+                    b.vx += push_dir_x * push_strength * delta
+                    b.vy += push_dir_y * push_strength * delta
+
+    func check_winner(world, balls: Array):
+        var alive = []
+        for b in balls:
+            if b.get("alive", false) and b.get("ball_type", "") != "spectator":
+                alive.append(b)
+        if alive.is_empty():
+            return "Draw"
+
+        var teams_alive = {}
+        for b in alive:
+            var team = b.get("team") if b.get("team") != null else b.get("ball_type")
+            teams_alive[team] = true
+
+        if teams_alive.size() == 1:
+            return teams_alive.keys()[0]
+
+        if alive.size() == 1:
+            return alive[0].get("team", alive[0].get("ball_type"))
+
+        return null
+
+
 var GAME_MODES = {
+	"windstorm": WindstormMode.new(),
 	"modifier_zones": ModifierZonesMode.new(),
     "draft_royale": DraftRoyaleMode.new(),
     "tournament": TournamentMode.new(),
