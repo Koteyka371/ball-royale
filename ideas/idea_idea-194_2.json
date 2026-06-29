@@ -1,0 +1,4 @@
+{
+  "title": "One-way portals",
+  "description": "Portals that only allow travel in one direction, creating strategic choke points in the arena. They can be created by giving only one of the paired portals target coordinates."
+}

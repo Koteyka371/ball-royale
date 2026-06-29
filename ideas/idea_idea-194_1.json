@@ -1,0 +1,4 @@
+{
+  "title": "Portal momentum scaling",
+  "description": "Increase or decrease the ball's momentum upon exiting a portal depending on its speed. Can be implemented by scaling `vx` and `vy` when `hazard.kind == 'portal'`."
+}
