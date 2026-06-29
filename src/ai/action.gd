@@ -839,6 +839,29 @@ func execute(strategy: String, delta: float):
                                 self.ball.stutter_timer = current_stutter + 2.0
                             elif self.ball.has_method("set_meta"):
                                 self.ball.set_meta("stutter_timer", current_stutter + 2.0)
+                elif hazard.kind == "switch":
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    var ball_radius = 10.0
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        ball_radius = self.ball.get("radius", 10.0)
+                    else:
+                        ball_radius = self.ball.radius
+                    if dist_sq < pow(hazard.radius + ball_radius, 2):
+                        var current_tick = 0
+                        if self.world.get("tick") != null:
+                            current_tick = self.world.tick
+                        var last_triggered = -100
+                        if hazard.has_meta("last_triggered_tick"):
+                            last_triggered = hazard.get_meta("last_triggered_tick")
+                        if current_tick - last_triggered > 100:
+                            hazard.set_meta("last_triggered_tick", current_tick)
+                            var trap_id = 9000 + self.world.arena.hazards.size()
+                            var HazardClass = load("res://src/arena/procedural_arena.gd").Hazard
+                            var wall = HazardClass.new(trap_id, hazard.x, hazard.y, 40.0, "laser_wall", 20.0)
+                            wall.set_meta("duration", 5.0)
+                            self.world.arena.hazards.append(wall)
                 elif hazard.kind == "swap_portal":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y

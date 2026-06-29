@@ -159,6 +159,8 @@ func generate():
             kind = "spinning_laser"
         elif r < 0.95:
             kind = "hidden_trap"
+        else:
+            kind = "switch"
 
         var radius = 15.0
         var damage = 20.0
@@ -174,6 +176,9 @@ func generate():
         elif kind == "hidden_trap":
             radius = rng.randf_range(20.0, 35.0)
             damage = 15.0
+        elif kind == "switch":
+            radius = 20.0
+            damage = 0.0
         elif kind == "silence_booster":
             radius = 15.0
             damage = 0.0
