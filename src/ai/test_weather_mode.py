@@ -77,3 +77,29 @@ def test_weather_mode_special_balls():
     mode.tick(world, balls, 0.1)
     assert ice_ball.speed == ice_ball.base_speed * 1.2
     assert ice_ball.damage == ice_ball.base_damage * 1.5
+
+def test_weather_mode_mirage():
+    import ai.game_modes as gm
+    mode = gm.GAME_MODES["weather_chaos"]
+    world = MockWorld()
+    world.leaderboard_manager = type("Mock", (), {"data": {"current_season": 4}})()
+    world.balls = []
+
+    trickster_ball = MockBall(1, "trickster")
+    trickster_ball.SKILL = "deploy_decoy"
+
+    phantom_ball = MockBall(2, "phantom")
+    phantom_ball.SKILL = "phase_through"
+
+    balls = [trickster_ball, phantom_ball]
+    world.balls = balls
+    mode.setup(world, balls)
+
+    # Test mirage in fog
+    mode.weather = "fog"
+    mode.tick(world, balls, 5.5)
+
+    assert len(world.balls) > 2
+    decoys = [b for b in world.balls if getattr(b, "is_decoy", False)]
+    assert len(decoys) > 0
+    assert decoys[0].speed == 0.0

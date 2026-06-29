@@ -2417,9 +2417,11 @@ class Action:
                                         enemy.take_damage(explosion_damage)
             elif skill_name == "deploy_decoy":
                 import copy
+                import random
                 if hasattr(self.world, "balls"):
                     decoy = copy.copy(self.ball)
                     decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+
                     decoy.hp = getattr(self.ball, "max_hp", 100) * 0.1
                     decoy.max_hp = decoy.hp
                     decoy.damage = 0

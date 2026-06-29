@@ -1302,6 +1302,47 @@ class WeatherChaosMode extends GameMode:
 					if b.has_method("set_meta"):
 						b.set_meta("dash_range_mult", 1.0)
 						b.set_meta("steering_mult", 1.0)
+					var bt = ""
+					if "ball_type" in b: bt = b.ball_type
+					elif b.has_method("has_meta") and b.has_meta("ball_type"): bt = b.get_meta("ball_type")
+					if bt in ["trickster", "phantom", "mimic"]:
+						var mt = 0.0
+						if b.has_method("has_meta") and b.has_meta("mirage_timer"): mt = b.get_meta("mirage_timer")
+						elif "mirage_timer" in b: mt = b.mirage_timer
+						else: mt = randf() * 5.0
+						mt += delta
+						if mt >= 5.0:
+							mt = 0.0
+							if "balls" in world:
+								var decoy = null
+								if b.has_method("duplicate"): decoy = b.duplicate()
+								elif b is Dictionary: decoy = b.duplicate()
+								if decoy != null:
+									if "id" in decoy: decoy.id = randi() % 90000 + 10000
+									var mhp = 100.0
+									if "max_hp" in b: mhp = b.max_hp
+									elif b.has_method("has_meta") and b.has_meta("max_hp"): mhp = b.get_meta("max_hp")
+									if "max_hp" in decoy: decoy.max_hp = mhp * 0.1
+									if "hp" in decoy: decoy.hp = mhp * 0.1
+									if "damage" in decoy: decoy.damage = 0.0
+									if "speed" in decoy: decoy.speed = 0.0
+									if decoy.has_method("set_meta"):
+										decoy.set_meta("is_decoy", true)
+										decoy.set_meta("decoy_timer", 3.0)
+										decoy.set_meta("skill_timer", 9999.0)
+										decoy.set_meta("attack_timer", 9999.0)
+										decoy.set_meta("SKILL", null)
+										decoy.set_meta("active_skill", null)
+									elif decoy is Dictionary:
+										decoy["is_decoy"] = true
+										decoy["decoy_timer"] = 3.0
+										decoy["skill_timer"] = 9999.0
+										decoy["attack_timer"] = 9999.0
+										decoy["SKILL"] = null
+										decoy["active_skill"] = null
+									world.balls.append(decoy)
+						if b.has_method("set_meta"): b.set_meta("mirage_timer", mt)
+						elif "mirage_timer" in b: b.mirage_timer = mt
 				elif weather == "snow":
 					if "speed" in b: b.speed = base_spd * 0.5
 					if "damage" in b: b.damage = base_dmg * 1.2

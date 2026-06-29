@@ -996,6 +996,28 @@ class WeatherChaosMode(GameMode):
                 b.damage = b.base_damage * 0.8
                 b.dash_range_mult = 1.0
                 b.steering_mult = 1.0
+                if getattr(b, "ball_type", "") in ["trickster", "phantom", "mimic"]:
+                    if not hasattr(b, "mirage_timer"):
+                        b.mirage_timer = getattr(self, "random", __import__("random")).uniform(0.0, 5.0)
+                    b.mirage_timer += delta
+                    if b.mirage_timer >= 5.0:
+                        b.mirage_timer = 0.0
+                        if hasattr(world, "balls"):
+                            import copy
+                            decoy = copy.copy(b)
+                            decoy.id = getattr(world, "next_id", getattr(self, "random", __import__("random")).randint(10000, 99999))
+                            decoy.hp = getattr(b, "max_hp", 100) * 0.1
+                            decoy.max_hp = decoy.hp
+                            decoy.damage = 0
+                            decoy.speed = 0.0
+                            decoy.skill_timer = 9999.0
+                            decoy.attack_timer = 9999.0
+                            decoy.is_decoy = True
+                            decoy.decoy_timer = 3.0
+                            if hasattr(b, "SKILL") or getattr(b, "active_skill", None) is not None:
+                                decoy.SKILL = None
+                                decoy.active_skill = None
+                            world.balls.append(decoy)
             elif self.weather == "snow":
                 b.speed = b.base_speed * 0.5
                 b.damage = b.base_damage * 1.2
@@ -1027,6 +1049,28 @@ class WeatherChaosMode(GameMode):
                 b.damage = b.base_damage
                 b.dash_range_mult = 0.5
                 b.steering_mult = 0.5
+                if getattr(b, "ball_type", "") in ["trickster", "phantom", "mimic"]:
+                    if not hasattr(b, "mirage_timer"):
+                        b.mirage_timer = getattr(self, "random", __import__("random")).uniform(0.0, 5.0)
+                    b.mirage_timer += delta
+                    if b.mirage_timer >= 5.0:
+                        b.mirage_timer = 0.0
+                        if hasattr(world, "balls"):
+                            import copy
+                            decoy = copy.copy(b)
+                            decoy.id = getattr(world, "next_id", getattr(self, "random", __import__("random")).randint(10000, 99999))
+                            decoy.hp = getattr(b, "max_hp", 100) * 0.1
+                            decoy.max_hp = decoy.hp
+                            decoy.damage = 0
+                            decoy.speed = 0.0
+                            decoy.skill_timer = 9999.0
+                            decoy.attack_timer = 9999.0
+                            decoy.is_decoy = True
+                            decoy.decoy_timer = 3.0
+                            if hasattr(b, "SKILL") or getattr(b, "active_skill", None) is not None:
+                                decoy.SKILL = None
+                                decoy.active_skill = None
+                            world.balls.append(decoy)
                 # dot damage
                 if not hasattr(b, "sandstorm_timer"):
                     b.sandstorm_timer = 0.0
