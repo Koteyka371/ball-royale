@@ -1,5 +1,4 @@
-import pytest
-from src.ai.game_modes import WeatherChaosMode
+from ai.game_modes import WeatherChaosMode
 
 class MockArena:
     def __init__(self):

@@ -1,5 +1,4 @@
-import math
-from src.ai.action import Action
+from ai.action import Action
 
 class MockBall:
     def __init__(self, x, y):

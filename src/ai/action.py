@@ -323,8 +323,10 @@ class Action:
                         current_tick = getattr(self.world, "tick", 0)
                         if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
                             hazard.last_updated_tick = current_tick
-                            if not hasattr(hazard, "vx"): hazard.vx = 0.0
-                            if not hasattr(hazard, "vy"): hazard.vy = 0.0
+                            if not hasattr(hazard, "vx"):
+                                hazard.vx = 0.0
+                            if not hasattr(hazard, "vy"):
+                                hazard.vy = 0.0
                             hazard.x += hazard.vx * delta
                             hazard.y += hazard.vy * delta
                             hazard.vx *= (1.0 - 2.0 * delta)
@@ -500,7 +502,7 @@ class Action:
 
             if hasattr(self.world.arena, "hazards"):
                 # Cleanup dead traps before checking collisions
-                self.world.arena.hazards = [h for h in self.world.arena.hazards if getattr(h, "duration", 1.0) > 0]
+                self.world.arena.hazards = [h for h in self.world.arena.hazards if getattr(h, "duration", 1.0) > 0 or not hasattr(h, "duration") or h.kind == "healing_spring"]
             if hasattr(self.world.arena, "hazards") and ball_type != "spectator":
                 for hazard in self.world.arena.hazards:
                     dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)

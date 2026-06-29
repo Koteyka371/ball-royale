@@ -1,4 +1,3 @@
-import pytest
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
@@ -47,7 +46,7 @@ def test_stamina_dash():
 
     # Stamina should be initialized
     assert hasattr(ball, "stamina")
-    assert getattr(ball, "is_dashing", False) == True
+    assert getattr(ball, "is_dashing", False)
 
     # Tick 2: Stop dashing, regenerate stamina
     # Wait, chase will move the ball and consume stamina. Let's check stamina drain.

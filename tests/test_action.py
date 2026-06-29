@@ -359,8 +359,7 @@ def test_spectator_not_in_allies():
     assert allies[0] == normal_ally
 
 def test_emp_item():
-    from src.ai.action import Action
-    import math
+    from ai.action import Action
 
     class MockArena:
         def __init__(self):
@@ -426,7 +425,7 @@ def test_emp_item():
     assert emp not in world.arena.hazards
 
 def test_clone_skill():
-    from src.ai.action import Action
+    from ai.action import Action
 
     class MockWorld:
         def __init__(self):

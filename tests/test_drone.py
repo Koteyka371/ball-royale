@@ -1,6 +1,4 @@
-import pytest
-from src.arena.procedural_arena import ProceduralArena
-from src.ai.perception import Perception
+from ai.perception import Perception
 
 class MockBall:
     def __init__(self, x, y, team=1):

@@ -28,11 +28,13 @@ class Spectator:
         self.current_action = "idle"
         self.skill_timer = 0.0
         self.personality = "spectator"
+        from typing import Any
+        self.danger_overlay: Any = None
         try:
             from ui.heatmap.danger_grid_overlay import DangerGridOverlay  # type: ignore
             self.danger_overlay = DangerGridOverlay()
         except ImportError:
-            self.danger_overlay = None
+            pass
 
     def get_hp_percent(self) -> float:
         return self.hp / self.max_hp if self.max_hp > 0 else 0.0

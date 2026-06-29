@@ -1,5 +1,4 @@
-import pytest
-from src.ai.action import Action
+from ai.action import Action
 
 class MockArena:
     def __init__(self):
@@ -47,8 +46,8 @@ def test_decoy_explosion():
     decoy.decoy_timer = 0.0
     action.execute("idle", 0.1)
 
-    assert decoy.alive == False
-    assert getattr(decoy, "_decoy_exploded", False) == True
+    assert not decoy.alive
+    assert getattr(decoy, "_decoy_exploded", False)
 
     # Enemy close enough, should take damage and stutter
     assert enemy.hp == 70.0 # 100 - 30

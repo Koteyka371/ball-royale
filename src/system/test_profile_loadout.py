@@ -1,4 +1,4 @@
-import pytest
+import pytest  # type: ignore
 import os
 import sys
 sys.path.insert(0, os.path.abspath('src'))

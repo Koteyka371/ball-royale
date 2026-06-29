@@ -1,5 +1,4 @@
-import pytest
-from src.ai.interactive_training import InteractiveTrainingMode
+from ai.interactive_training import InteractiveTrainingMode
 
 class MockBall:
     def __init__(self, id_val, x=500.0, y=500.0):

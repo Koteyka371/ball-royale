@@ -159,13 +159,13 @@ def test_full_process():
 def test_skin_perks():
     ball = MockBall(hp=100, max_hp=100, skin="veteran")
     world = MockWorld()
-    brain = BallBrain(ball, world)
+    BallBrain(ball, world)
     assert getattr(ball, "status_resistance", 0.0) == 0.02
 
     ball = MockBall(hp=100, max_hp=100, skin="legendary")
-    brain = BallBrain(ball, world)
-    assert getattr(ball, "has_aura", False) == True
+    BallBrain(ball, world)
+    assert getattr(ball, "has_aura", False)
 
     ball = MockBall(hp=100, max_hp=100, skin="elite")
-    brain = BallBrain(ball, world)
+    BallBrain(ball, world)
     assert getattr(ball, "speed", 100.0) == 10.5

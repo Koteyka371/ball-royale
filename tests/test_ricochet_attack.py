@@ -1,4 +1,3 @@
-import pytest
 
 class MockBall:
     def __init__(self, x, y, hp=100, team=1):

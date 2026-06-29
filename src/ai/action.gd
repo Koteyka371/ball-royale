@@ -741,7 +741,7 @@ func execute(strategy: String, delta: float):
         if "hazards" in self.world.arena:
             var alive_hazards = []
             for h in self.world.arena.hazards:
-                if h.kind != "trap" or (h.has_meta("duration") and h.get_meta("duration") > 0.0):
+                if h.kind != "trap" or (h.has_meta("duration") and h.get_meta("duration") > 0.0) or h.kind == "healing_spring":
                     alive_hazards.append(h)
             self.world.arena.hazards = alive_hazards
 
