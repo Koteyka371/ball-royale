@@ -201,6 +201,7 @@ func generate():
         if bh_hazards.size() > 0 and randf() < 0.3:
             var target_bh = bh_hazards[randi() % bh_hazards.size()]
             portal1.set_meta("target_hazard_id", target_bh.id)
+            portal2.set_meta("target_hazard_id", target_bh.id)
 
         hazards.append(portal1)
         hazards.append(portal2)
