@@ -205,6 +205,28 @@ func generate():
         hazards.append(portal1)
         hazards.append(portal2)
 
+        # Generate guaranteed paired swap portals
+        var num_swap_portals = max(1, num_rooms / 2)
+        for p in range(num_swap_portals):
+            var sp1_id = hazards.size() + 8000 + p*2
+            var sp2_id = hazards.size() + 8000 + p*2 + 1
+
+            var sp1_pt = get_random_spawn_point(30.0)
+            var sp2_pt = get_random_spawn_point(30.0)
+
+            var sp1 = ProceduralArena.Hazard.new(sp1_id, sp1_pt[0], sp1_pt[1], 30.0, "swap_portal", 0.0)
+            sp1.set_meta("target_x", sp2_pt[0])
+            sp1.set_meta("target_y", sp2_pt[1])
+            sp1.set_meta("pair_id", sp2_id)
+
+            var sp2 = ProceduralArena.Hazard.new(sp2_id, sp2_pt[0], sp2_pt[1], 30.0, "swap_portal", 0.0)
+            sp2.set_meta("target_x", sp1_pt[0])
+            sp2.set_meta("target_y", sp1_pt[1])
+            sp2.set_meta("pair_id", sp1_id)
+
+            hazards.append(sp1)
+            hazards.append(sp2)
+
     # Generate random teleporter pads
     var num_teleporters = max(2, num_rooms)
     if num_teleporters % 2 != 0:

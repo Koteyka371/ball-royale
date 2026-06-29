@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Trap Hazard",
+  "description": "A hazard that spawns a fake player dummy. If another player attacks it, the decoy explodes in a poison cloud, punishing impulsive actions."
+}

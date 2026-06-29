@@ -2,6 +2,13 @@ import random
 
 from arena.procedural_arena import ProceduralArena, Room, Hazard, Corridor
 
+class SwapPortal(Hazard):
+    def __init__(self, id: int, x: float, y: float, radius: float, target_x: float, target_y: float, pair_id: int):
+        super().__init__(id, x, y, radius, "swap_portal", 0.0)
+        self.target_x = target_x
+        self.target_y = target_y
+        self.pair_id = pair_id
+
 class Portal(Hazard):
     def __init__(self, id: int, x: float, y: float, radius: float, target_x: float, target_y: float):
         super().__init__(id, x, y, radius, "portal", 0.0)
