@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-236] Gravity Mine Trap — *2026-06-29 07:10:52 UTC*
+
+A new trap type that, when triggered, creates a small black hole that pulls nearby balls towards it for a short duration.
+
+---
+
 ## [idea-248] Zone Control Points — *2026-06-29 07:10:49 UTC*
 
 Add control points that occasionally become danger zones if held by the same team for too long.
