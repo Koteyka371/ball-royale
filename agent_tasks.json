@@ -4991,7 +4991,7 @@
     },
     {
       "id": "idea-287",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Orbital Laser Strike Hazard",
@@ -6925,6 +6925,40 @@
         "src/arena/lightning_rod_trap.py",
         "src/arena/lightning_rod_trap.gd",
         "tests/test_lightning_rod_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-401",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirror Image Powerup",
+      "description": "A booster that creates 3 temporary decoys of the ball, all mimicking its movement but dealing no damage, to confuse enemies.",
+      "allowed_paths": [
+        "src/ai/mirror_image_powerup.py",
+        "src/ai/mirror_image_powerup.gd",
+        "tests/test_mirror_image_powerup.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-402",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Nemesis Mode",
+      "description": "A new game mode where one overpowered boss ball faces off against a team of weaker AI balls.",
+      "allowed_paths": [
+        "src/ai/nemesis.py",
+        "src/ai/nemesis.gd",
+        "tests/test_nemesis.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

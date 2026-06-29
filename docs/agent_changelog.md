@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-287] Orbital Laser Strike Hazard — *2026-06-29 11:08:36 UTC*
+
+A new procedural arena hazard that paints a large target area on the ground for 3 seconds before dealing massive localized damage and applying a strong outward knockback.
+
+---
+
 ## [idea-271] Hologram Decoy Skill — *2026-06-29 10:54:35 UTC*
 
 A skill that leaves behind a fake copy of the ball that absorbs one hit or confuses enemy AI.
