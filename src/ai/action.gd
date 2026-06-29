@@ -1065,6 +1065,17 @@ func execute(strategy: String, delta: float):
                             self.ball.set_meta("dot_duration", 3.0)
                             self.ball.set_meta("dot_damage_per_tick", hazard.damage)
                         var hd = hazard.damage * delta
+                    elif hazard.kind == "hidden_trap":
+                        var b_speed = 100.0
+                        if self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"):
+                            b_speed = self.ball.get_meta("base_speed")
+                        elif "base_speed" in self.ball:
+                            b_speed = self.ball.base_speed
+                        self.ball.speed = b_speed * 0.5
+                        if self.ball.has_method("set_meta"):
+                            self.ball.set_meta("dot_duration", 2.0)
+                            self.ball.set_meta("dot_damage_per_tick", hazard.damage)
+                        var hd = hazard.damage * delta
                         if self.ball.has_method("take_damage"):
                             self.ball.take_damage(hd)
                         elif "hp" in self.ball:

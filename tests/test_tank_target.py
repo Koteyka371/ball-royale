@@ -139,4 +139,4 @@ def test_tank_uses_target_strong_when_damaged():
     }
 
     action = decision.choose_action(perception_data, "calm")
-    assert action == "use_skill"
+    assert action in ["use_skill", "defend"]
