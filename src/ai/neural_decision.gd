@@ -4,7 +4,7 @@ extends RefCounted
 var ball = null
 var world = null
 
-var configured_inputs = ["hp_percent", "danger_level", "opportunity_score", "threat_level"]
+var configured_inputs = ["hp_percent", "danger_level", "opportunity_score", "threat_level", "distance_to_zone"]
 
 func _init(ball_ref, world_ref):
     self.ball = ball_ref
@@ -55,6 +55,20 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
                         if d < val:
                             val = d
             inputs.append(val)
+        elif input_name == "distance_to_zone":
+            var distance_to_zone = 1000.0
+            if self.world != null and "game_mode" in self.world and self.world.game_mode != null:
+                var gm = self.world.game_mode
+                if "name" in gm and gm.name == "Moving Zone":
+                    var zone_x = 500.0
+                    var zone_y = 500.0
+                    if "zone_x" in gm: zone_x = float(gm.zone_x)
+                    if "zone_y" in gm: zone_y = float(gm.zone_y)
+                    if "x" in self.ball and "y" in self.ball:
+                        var dx = self.ball.x - zone_x
+                        var dy = self.ball.y - zone_y
+                        distance_to_zone = sqrt(dx * dx + dy * dy)
+            inputs.append(distance_to_zone)
         elif input_name == "number_of_allies":
             var val = 0.0
             if perception_data.has("allies"):
@@ -118,7 +132,7 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     if weights == null or biases == null:
         return "idle"
 
-    var actions = ["flee", "defend", "collect_booster", "attack", "chase", "use_skill", "kite", "flank", "group_attack", "hide_behind"]
+    var actions = ["flee", "defend", "collect_booster", "attack", "chase", "use_skill", "kite", "flank", "group_attack", "hide_behind", "hold_zone"]
     var best_score = -9999.0
     var best_action = "idle"
 

@@ -1,0 +1,4 @@
+{
+  "title": "New ball type: Magnet",
+  "description": "A ball that passively pulls nearby boosters and smaller entities towards it, and has an active skill that violently pushes everything away."
+}
