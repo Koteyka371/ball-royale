@@ -313,6 +313,15 @@ def test_bumper_balls_mode():
     balls[1].alive = False
     assert mode.check_winner(world, balls) == "warrior"
 
+    # Test tick eliminates balls outside arena
+    balls[0].x, balls[0].y = 500, 500 # Inside
+    mode.tick(world, [balls[0]])
+    assert balls[0].alive is True
+
+    balls[0].x, balls[0].y = 1500, 1500 # Outside
+    mode.tick(world, [balls[0]])
+    assert balls[0].alive is False
+
 def test_random_reroll_mutator():
     from ai.game_modes import CustomMatchMode
     mode = CustomMatchMode()

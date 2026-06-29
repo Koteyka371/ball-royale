@@ -4184,6 +4184,10 @@ func _clamp_position() -> bool:
         var radius = 10.0
         if "radius" in self.ball: radius = self.ball.radius
 
+        if "game_mode" in self.world and self.world.game_mode != null:
+            if "name" in self.world.game_mode and self.world.game_mode.name == "Bumper Balls":
+                return false
+
         if is_nan(self.ball.x) or is_inf(self.ball.x):
             if "width" in self.world:
                 self.ball.x = self.world.width / 2.0

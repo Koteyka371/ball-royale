@@ -12,6 +12,8 @@ class MockBall:
         self.ball_type = ball_type
         self.alive = alive
         self.perception_radius = 250.0
+        self.x = 500.0
+        self.y = 500.0
 
 def test_vision_reduced_mode_setup():
     mode = VisionReducedMode()
