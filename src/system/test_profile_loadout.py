@@ -1,4 +1,4 @@
-import pytest
+import pytest  # type: ignore
 import os
 import sys
 sys.path.insert(0, os.path.abspath('src'))
@@ -12,13 +12,30 @@ def temp_profile_file(tmp_path):
 
 def test_save_and_get_loadout(temp_profile_file):
     pm = ProfileManager(temp_profile_file)
-    pm.save_loadout("stealth", "ninja", "poison", {"bonus_speed": 5})
+    pm.save_loadout("stealth", "ninja", "poison", {"bonus_speed": 5}, cosmetic="shadow", title="The Silent")
 
     loadout = pm.get_loadout("stealth")
     assert loadout is not None
     assert loadout["ball_type"] == "ninja"
     assert loadout["trap_variant"] == "poison"
     assert loadout["preferred_bonuses"]["bonus_speed"] == 5
+    assert loadout["cosmetic"] == "shadow"
+    assert loadout["title"] == "The Silent"
+
+def test_default_loadout(temp_profile_file):
+    pm = ProfileManager(temp_profile_file)
+    pm.save_loadout("loadout1", "tank", "emp")
+    pm.save_loadout("loadout2", "sniper", "stun")
+
+    # Set and get default loadout
+    assert pm.set_default_loadout("loadout2") is True
+    assert pm.get_default_loadout() == "loadout2"
+
+    lobby = PreGameLobby()
+    # Apply default loadout
+    assert lobby.apply_default_loadout(1, pm) is True
+    assert lobby.get_trap_variant(1) == "stun"
+    assert lobby.selections["1_ball_type"] == "sniper"
 
 def test_get_all_loadouts(temp_profile_file):
     pm = ProfileManager(temp_profile_file)

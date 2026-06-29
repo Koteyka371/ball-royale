@@ -171,15 +171,27 @@ func add_title(title_name: String):
         data["titles"].append(title_name)
         save_profile()
 
-func save_loadout(loadout_name: String, ball_type: String, trap_variant: String, preferred_bonuses: Dictionary = {}):
+func save_loadout(loadout_name: String, ball_type: String, trap_variant: String, preferred_bonuses: Dictionary = {}, cosmetic: String = "", title: String = ""):
     if not data.has("loadouts"):
         data["loadouts"] = {}
     data["loadouts"][loadout_name] = {
         "ball_type": ball_type,
         "trap_variant": trap_variant,
-        "preferred_bonuses": preferred_bonuses
+        "preferred_bonuses": preferred_bonuses,
+        "cosmetic": cosmetic,
+        "title": title
     }
     save_profile()
+
+func set_default_loadout(loadout_name: String) -> bool:
+    if data.has("loadouts") and data["loadouts"].has(loadout_name):
+        data["default_loadout"] = loadout_name
+        save_profile()
+        return true
+    return false
+
+func get_default_loadout() -> String:
+    return data.get("default_loadout", "")
 
 func get_loadout(loadout_name: String) -> Dictionary:
     if data.has("loadouts") and data["loadouts"].has(loadout_name):

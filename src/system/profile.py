@@ -158,7 +158,7 @@ class ProfileManager:
             self.data["titles"].append(title_name)
             self.save()
 
-    def save_loadout(self, loadout_name, ball_type, trap_variant, preferred_bonuses=None):
+    def save_loadout(self, loadout_name, ball_type, trap_variant, preferred_bonuses=None, cosmetic=None, title=None):
         if "loadouts" not in self.data:
             self.data["loadouts"] = {}
         if preferred_bonuses is None:
@@ -166,9 +166,21 @@ class ProfileManager:
         self.data["loadouts"][loadout_name] = {
             "ball_type": ball_type,
             "trap_variant": trap_variant,
-            "preferred_bonuses": preferred_bonuses
+            "preferred_bonuses": preferred_bonuses,
+            "cosmetic": cosmetic,
+            "title": title
         }
         self.save()
+
+    def set_default_loadout(self, loadout_name):
+        if "loadouts" in self.data and loadout_name in self.data["loadouts"]:
+            self.data["default_loadout"] = loadout_name
+            self.save()
+            return True
+        return False
+
+    def get_default_loadout(self):
+        return self.data.get("default_loadout")
 
     def get_loadout(self, loadout_name):
         return self.data.get("loadouts", {}).get(loadout_name)
