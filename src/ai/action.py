@@ -238,6 +238,18 @@ class Action:
         else:
             self.ball.speed = self.ball.base_speed
 
+        if getattr(self.ball, "speed_zone_timer", 0) > 0:
+            self.ball.speed_zone_timer -= delta
+            self.ball.speed *= 1.5
+
+        if getattr(self.ball, "damage_zone_timer", 0) > 0:
+            self.ball.damage_zone_timer -= delta
+            if hasattr(self.ball, "base_damage"):
+                self.ball.damage = self.ball.base_damage * 1.5
+        else:
+            if hasattr(self.ball, "base_damage"):
+                self.ball.damage = self.ball.base_damage
+
 # Handle minion decay
         if getattr(self.ball, "is_minion", False):
             self.ball.hp -= 2.0 * delta  # Decay 2 HP per second
@@ -703,6 +715,19 @@ class Action:
                             continue
                         elif hazard.kind == "healing_spring":
                             # Regenerate HP over time
+                            heal_amount = abs(hazard.damage) * delta
+                            if hasattr(self.ball, "hp") and hasattr(self.ball, "max_hp"):
+                                self.ball.hp += heal_amount
+                                if self.ball.hp > self.ball.max_hp:
+                                    self.ball.hp = self.ball.max_hp
+                            continue
+                        elif hazard.kind == "speed_zone":
+                            self.ball.speed_zone_timer = 0.1
+                            continue
+                        elif hazard.kind == "damage_zone":
+                            self.ball.damage_zone_timer = 0.1
+                            continue
+                        elif hazard.kind == "healing_zone":
                             heal_amount = abs(hazard.damage) * delta
                             if hasattr(self.ball, "hp") and hasattr(self.ball, "max_hp"):
                                 self.ball.hp += heal_amount

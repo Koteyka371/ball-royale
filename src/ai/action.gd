@@ -334,6 +334,24 @@ func execute(strategy: String, delta: float):
             if "speed" in my_ball:
                 my_ball.speed = my_ball.get_meta("base_speed")
 
+    if my_ball.has_method("has_meta"):
+        if my_ball.has_meta("speed_zone_timer"):
+            var szt = my_ball.get_meta("speed_zone_timer")
+            if szt > 0.0:
+                my_ball.set_meta("speed_zone_timer", szt - delta)
+                if "speed" in my_ball:
+                    my_ball.speed *= 1.5
+        if my_ball.has_meta("damage_zone_timer"):
+            var dzt = my_ball.get_meta("damage_zone_timer")
+            if dzt > 0.0:
+                my_ball.set_meta("damage_zone_timer", dzt - delta)
+                if "damage" in my_ball:
+                    if my_ball.has_meta("base_damage"):
+                        my_ball.damage = my_ball.get_meta("base_damage") * 1.5
+            else:
+                if "damage" in my_ball and my_ball.has_meta("base_damage"):
+                    my_ball.damage = my_ball.get_meta("base_damage")
+
         var st_timer = 0.0
         if "stutter_timer" in my_ball:
             st_timer = float(my_ball.stutter_timer)
@@ -1036,6 +1054,21 @@ func execute(strategy: String, delta: float):
                                 self.ball.set_meta("stutter_timer", 1.0)
                         continue
                     elif hazard.kind == "healing_spring":
+                        var heal_amount = abs(hazard.damage) * delta
+                        if "hp" in self.ball and "max_hp" in self.ball:
+                            self.ball.hp += heal_amount
+                            if self.ball.hp > self.ball.max_hp:
+                                self.ball.hp = self.ball.max_hp
+                        continue
+                    elif hazard.kind == "speed_zone":
+                        if self.ball.has_method("set_meta"):
+                            self.ball.set_meta("speed_zone_timer", 0.1)
+                        continue
+                    elif hazard.kind == "damage_zone":
+                        if self.ball.has_method("set_meta"):
+                            self.ball.set_meta("damage_zone_timer", 0.1)
+                        continue
+                    elif hazard.kind == "healing_zone":
                         var heal_amount = abs(hazard.damage) * delta
                         if "hp" in self.ball and "max_hp" in self.ball:
                             self.ball.hp += heal_amount
