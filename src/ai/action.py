@@ -97,7 +97,7 @@ class Action:
                 trap_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
                 trap = Hazard(trap_id, self.ball.x, self.ball.y, 20.0, "trap", 0.0)
 
-                trap_type = random.choice(["mine", "freeze"])
+                trap_type = random.choice(["mine", "freeze", "black_hole"])
                 setattr(trap, 'duration', 10.0)
                 setattr(trap, 'trap_variant', trap_type)
                 setattr(trap, 'owner_id', getattr(self.ball, 'id', None))
@@ -458,6 +458,20 @@ class Action:
                                 if hazard.y < 100 or hazard.y > self.world.arena.height - 100:
                                     hazard.vy *= -1
 
+                            # Pull balls once per frame
+                            for b in getattr(self.world, "balls", []):
+                                if getattr(b, "alive", False):
+                                    bdx = hazard.x - b.x
+                                    bdy = hazard.y - b.y
+                                    bdist_sq = bdx * bdx + bdy * bdy
+                                    if bdist_sq < hazard.radius * hazard.radius * 4: # Effective pull range
+                                        if bdist_sq > 0.0001:
+                                            bdist = math.sqrt(bdist_sq)
+                                            bnx, bny = bdx / bdist, bdy / bdist
+                                            pull_strength = (hazard.radius * 2.0 / max(10.0, bdist)) * 80.0 * delta
+                                            b.x += bnx * pull_strength
+                                            b.y += bny * pull_strength
+
                             # Pull boosters once per frame
                             if hasattr(self.world, "boosters"):
                                 for b in self.world.boosters:
@@ -558,6 +572,15 @@ class Action:
                                     # Apply stun effect
                                     self.ball.x = old_x
                                     self.ball.y = old_y
+                                elif trap_variant == "black_hole":
+                                    # Create a black hole hazard where the trap is
+                                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                                        from arena.procedural_arena import Hazard
+                                        bh_id = len(self.world.arena.hazards) + 8000
+                                        bh = Hazard(bh_id, hazard.x, hazard.y, 100.0, "black_hole", 0.0)
+                                        bh.duration = 3.0 # Short duration
+                                        self.world.arena.hazards.append(bh)
+                                    hazard.duration = 0.0 # Destroy trap
                                 else:
                                     # Normal: Slowing effect
                                     self.ball.x = (self.ball.x + old_x) / 2.0
