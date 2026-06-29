@@ -1902,8 +1902,122 @@ class ModifierZonesMode(GameMode):
         return None
 
 
+
+
+class BountyMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Bounty"
+        self.description = "At the start of the match, one ball on each team is randomly selected as the 'Bounty'. If the Bounty is destroyed, the opposing team gains a massive global stat buff and extra skill points. Teams must balance defending their Bounty while hunting the enemy's."
+        self.bounty_claimed = {"Red": False, "Blue": False}
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+
+        mid = len(valid_balls) // 2
+        red_team = []
+        blue_team = []
+
+        for i, b in enumerate(valid_balls):
+            b.is_bounty = False
+            if not hasattr(b, "base_speed"):
+                b.base_speed = getattr(b, "speed", 100.0)
+            if not hasattr(b, "base_damage"):
+                b.base_damage = getattr(b, "damage", 10.0)
+            if not hasattr(b, "max_hp"):
+                b.max_hp = getattr(b, "hp", 100.0)
+
+            if i < mid:
+                b.team = "Red"
+                red_team.append(b)
+            else:
+                b.team = "Blue"
+                blue_team.append(b)
+
+        import random
+        if red_team:
+            red_bounty = random.choice(red_team)
+            red_bounty.is_bounty = True
+
+        if blue_team:
+            blue_bounty = random.choice(blue_team)
+            blue_bounty.is_bounty = True
+
+        self.bounty_claimed = {"Red": False, "Blue": False}
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+
+        # Check bounties
+        red_bounty_alive = False
+        blue_bounty_alive = False
+
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator" and getattr(b, "is_bounty", False):
+                if b.team == "Red" and getattr(b, "alive", False):
+                    red_bounty_alive = True
+                elif b.team == "Blue" and getattr(b, "alive", False):
+                    blue_bounty_alive = True
+
+        # If Red's bounty is dead and Blue hasn't claimed it yet, Blue gets buff
+        if not red_bounty_alive and not self.bounty_claimed.get("Blue", False):
+            self.bounty_claimed["Blue"] = True
+            self._apply_buff("Blue", balls)
+            self._award_skill_points()
+
+        # If Blue's bounty is dead and Red hasn't claimed it yet, Red gets buff
+        if not blue_bounty_alive and not self.bounty_claimed.get("Red", False):
+            self.bounty_claimed["Red"] = True
+            self._apply_buff("Red", balls)
+            self._award_skill_points()
+
+    def _apply_buff(self, team: str, balls: List[Any]):
+        for b in balls:
+            if getattr(b, "team", None) == team and getattr(b, "alive", False):
+                if hasattr(b, "damage"):
+                    b.damage *= 2.0
+                if hasattr(b, "speed"):
+                    b.speed *= 1.5
+                if hasattr(b, "max_hp"):
+                    b.max_hp *= 2.0
+                    if hasattr(b, "hp"):
+                        b.hp = b.max_hp
+                if hasattr(b, "radius"):
+                    b.radius *= 1.25
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
+        if len(teams_alive) == 1:
+            return list(teams_alive)[0]
+
+        return None
+
+    def _award_skill_points(self):
+        try:
+            from system.profile import ProfileManager  # type: ignore
+            pm = ProfileManager("profile.json")
+            pm.add_skill_points(10)
+        except Exception:
+            pass
+
 GAME_MODES = {
     "modifier_zones": ModifierZonesMode(),
+    "bounty": BountyMode(),
     "draft_royale": DraftRoyaleMode(),
     "tournament": TournamentMode(),
     "bumper_balls": BumperBallsMode(),

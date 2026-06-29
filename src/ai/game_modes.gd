@@ -2398,8 +2398,141 @@ class ModifierZonesMode extends GameMode:
 		return null
 
 
+
+
+class BountyMode extends GameMode:
+    var bounty_claimed = {"Red": false, "Blue": false}
+
+    func _init() -> void:
+        name = "Bounty"
+        description = "At the start of the match, one ball on each team is randomly selected as the 'Bounty'. If the Bounty is destroyed, the opposing team gains a massive global stat buff and extra skill points. Teams must balance defending their Bounty while hunting the enemy's."
+
+    func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
+        if not "dead_balls" in world:
+            world.dead_balls = []
+
+        var valid_balls = []
+        for b in balls:
+            if b.ball_type != "spectator":
+                valid_balls.append(b)
+
+        var mid = valid_balls.size() / 2
+        var red_team = []
+        var blue_team = []
+
+        for i in range(valid_balls.size()):
+            var b = valid_balls[i]
+            if b.has_method("set_meta"):
+                b.set_meta("is_bounty", false)
+            if not b.has_meta("base_speed"):
+                if "speed" in b: b.set_meta("base_speed", b.speed)
+                else: b.set_meta("base_speed", 100.0)
+            if not b.has_meta("base_damage"):
+                if "damage" in b: b.set_meta("base_damage", b.damage)
+                else: b.set_meta("base_damage", 10.0)
+            if not b.has_meta("max_hp"):
+                if "hp" in b: b.set_meta("max_hp", b.hp)
+                else: b.set_meta("max_hp", 100.0)
+
+            if i < mid:
+                b.team = "Red"
+                red_team.append(b)
+            else:
+                b.team = "Blue"
+                blue_team.append(b)
+
+        if red_team.size() > 0:
+            var b = red_team[randi() % red_team.size()]
+            if b.has_method("set_meta"):
+                b.set_meta("is_bounty", true)
+
+        if blue_team.size() > 0:
+            var b = blue_team[randi() % blue_team.size()]
+            if b.has_method("set_meta"):
+                b.set_meta("is_bounty", true)
+
+        bounty_claimed = {"Red": false, "Blue": false}
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        if not "dead_balls" in world:
+            world.dead_balls = []
+        for b in balls:
+            if not b.alive:
+                if not world.dead_balls.has(b):
+                    if b.has_method("set_meta"):
+                        b.set_meta("time_since_death", 0.0)
+                    world.dead_balls.append(b)
+                else:
+                    if b.has_method("get_meta") and b.has_meta("time_since_death"):
+                        b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+
+        var red_bounty_alive = false
+        var blue_bounty_alive = false
+
+        for b in balls:
+            if b.ball_type != "spectator":
+                var is_bounty = false
+                if b.has_method("get_meta") and b.has_meta("is_bounty"):
+                    is_bounty = b.get_meta("is_bounty")
+                if is_bounty and b.alive:
+                    if b.get("team") == "Red":
+                        red_bounty_alive = true
+                    elif b.get("team") == "Blue":
+                        blue_bounty_alive = true
+
+        if not red_bounty_alive and not bounty_claimed["Blue"]:
+            bounty_claimed["Blue"] = true
+            _apply_buff("Blue", balls)
+            if has_method("_award_skill_points"): call("_award_skill_points")
+
+        if not blue_bounty_alive and not bounty_claimed["Red"]:
+            bounty_claimed["Red"] = true
+            _apply_buff("Red", balls)
+            if has_method("_award_skill_points"): call("_award_skill_points")
+
+    func _apply_buff(team: String, balls: Array) -> void:
+        for b in balls:
+            if b.alive and b.get("team") == team:
+                if "damage" in b:
+                    b.damage *= 2.0
+                if "speed" in b:
+                    b.speed *= 1.5
+                if "max_hp" in b:
+                    b.max_hp *= 2.0
+                    if "hp" in b:
+                        b.hp = b.max_hp
+                if "radius" in b:
+                    b.radius *= 1.25
+                elif b.has_method("get_meta") and b.has_meta("radius"):
+                    b.set_meta("radius", b.get_meta("radius") * 1.25)
+
+    func check_winner(world, balls: Array):
+        var alive = []
+        for b in balls:
+            if b.alive and b.ball_type != "spectator":
+                alive.append(b)
+
+        if alive.size() == 0:
+            return "Draw"
+
+        var teams_alive = {}
+        for b in alive:
+            var t = b.get("team")
+            if t == null: t = b.ball_type
+            teams_alive[t] = true
+
+        if teams_alive.size() == 1:
+            return teams_alive.keys()[0]
+
+        return null
+
+    func _award_skill_points():
+        pass
+
 var GAME_MODES = {
 	"modifier_zones": ModifierZonesMode.new(),
+    "bounty": BountyMode.new(),
     "draft_royale": DraftRoyaleMode.new(),
     "tournament": TournamentMode.new(),
     "bumper_balls": BumperBallsMode.new(),
