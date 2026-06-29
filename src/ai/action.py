@@ -2233,6 +2233,16 @@ class Action:
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
+                elif getattr(nearest, "kind", None) == "silence_booster":
+                    if hasattr(self.world, "balls"):
+                        for other_ball in self.world.balls:
+                            if getattr(other_ball, "team", None) != getattr(self.ball, "team", None):
+                                dist_silence = math.sqrt((other_ball.x - self.ball.x)**2 + (other_ball.y - self.ball.y)**2)
+                                if dist_silence < 150.0:  # Same radius as silence_aura
+                                    other_ball.silence_timer = getattr(nearest, "duration", 5.0)
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
                 elif getattr(nearest, "kind", None) == "placeable_trap_item":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
