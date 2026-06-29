@@ -83,6 +83,8 @@ class GameMode:
 class BattleRoyaleMode extends GameMode:
     var dark_phase_timer: float = 0.0
     var is_dark_phase: bool = false
+    var weather_timer: float = 0.0
+    var weather: String = "clear"
 
     func _init() -> void:
         name = "Battle Royale"
@@ -124,6 +126,104 @@ class BattleRoyaleMode extends GameMode:
                         b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
 
         dark_phase_timer += delta
+
+        # Weather logic
+        if not "weather_timer" in self:
+            self.weather_timer = 0.0
+            self.weather = "clear"
+
+        self.weather_timer += delta
+        if self.weather_timer > 15.0:
+            self.weather_timer = 0.0
+            var weathers = ["clear", "rain", "fog", "snow", "thunderstorm", "sandstorm"]
+            self.weather = weathers[randi() % weathers.size()]
+
+        if world != null and "arena" in world and world.arena != null:
+            if self.weather == "fog" or self.weather == "snow":
+                world.arena.is_foggy = true
+            else:
+                world.arena.is_foggy = false
+            if self.weather == "rain" or self.weather == "thunderstorm":
+                world.arena.is_raining = true
+            else:
+                world.arena.is_raining = false
+            if self.weather == "sandstorm":
+                world.arena.is_sandstorming = true
+            else:
+                world.arena.is_sandstorming = false
+
+        for b in balls:
+            if b.alive and b.ball_type != "spectator":
+                var base_spd = 100.0
+                if "base_speed" in b:
+                    base_spd = b.base_speed
+                elif b.has_method("has_meta") and b.has_meta("base_speed"):
+                    base_spd = b.get_meta("base_speed")
+                elif "speed" in b:
+                    base_spd = b.speed
+
+                var base_dmg = 10.0
+                if "base_damage" in b:
+                    base_dmg = b.base_damage
+                elif b.has_method("has_meta") and b.has_meta("base_damage"):
+                    base_dmg = b.get_meta("base_damage")
+                elif "damage" in b:
+                    base_dmg = b.damage
+
+                if self.weather == "clear":
+                    if "speed" in b: b.speed = base_spd
+                    if "damage" in b: b.damage = base_dmg
+                    if b.has_method("set_meta"):
+                        b.set_meta("dash_range_mult", 1.0)
+                        b.set_meta("steering_mult", 1.0)
+                        b.set_meta("attack_accuracy", 1.0)
+                elif self.weather == "rain":
+                    if "speed" in b: b.speed = base_spd * 0.9
+                    if "damage" in b: b.damage = base_dmg
+                    if b.has_method("set_meta"):
+                        b.set_meta("dash_range_mult", 1.3)
+                        b.set_meta("steering_mult", 0.7)
+                        b.set_meta("attack_accuracy", 0.9)
+                    if "vx" in b and "vy" in b:
+                        b.x += b.vx * delta * 0.3
+                        b.y += b.vy * delta * 0.3
+                elif self.weather == "fog":
+                    if "speed" in b: b.speed = base_spd * 0.8
+                    if "damage" in b: b.damage = base_dmg * 0.9
+                    if b.has_method("set_meta"):
+                        b.set_meta("dash_range_mult", 1.0)
+                        b.set_meta("steering_mult", 1.0)
+                elif self.weather == "snow":
+                    if "speed" in b: b.speed = base_spd * 0.7
+                    if "damage" in b: b.damage = base_dmg * 1.1
+                    if b.has_method("set_meta"):
+                        b.set_meta("dash_range_mult", 1.0)
+                        b.set_meta("steering_mult", 1.0)
+                elif self.weather == "thunderstorm":
+                    if "speed" in b: b.speed = base_spd * 1.1
+                    if "damage" in b: b.damage = base_dmg * 1.5
+                    if b.has_method("set_meta"):
+                        b.set_meta("dash_range_mult", 1.0)
+                        b.set_meta("steering_mult", 1.0)
+                elif self.weather == "sandstorm":
+                    if "speed" in b: b.speed = base_spd * 0.7
+                    if "damage" in b: b.damage = base_dmg
+                    if b.has_method("set_meta"):
+                        b.set_meta("dash_range_mult", 0.5)
+                        b.set_meta("steering_mult", 0.5)
+                        b.set_meta("attack_accuracy", 0.5)
+                        var sand_timer = 0.0
+                        if b.has_meta("sandstorm_timer"):
+                            sand_timer = b.get_meta("sandstorm_timer")
+                        sand_timer += delta
+                        if sand_timer >= 1.0:
+                            sand_timer = 0.0
+                            if "hp" in b:
+                                b.hp -= 1.0
+                        b.set_meta("sandstorm_timer", sand_timer)
+                    if randf() < 0.05 * delta:
+                        if "hp" in b:
+                            b.hp -= 20.0
 
         # Dark phase cycle: 20s normal, 10s dark
         if not is_dark_phase and dark_phase_timer >= 20.0:

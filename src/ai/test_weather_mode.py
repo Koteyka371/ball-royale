@@ -15,7 +15,12 @@ class MockWorld:
 
 def test_weather_mode():
     mode = GAME_MODES["weather_chaos"]
+    import sys
+    sys.modules["system.profile"] = type("Mock", (), {"ProfileManager": type("Mock", (), {"add_skill_points": lambda x: None})})
+    import ai.game_modes as gm
+    gm.ProfileManager = sys.modules["system.profile"].ProfileManager
     world = MockWorld()
+    world.leaderboard_manager = type("Mock", (), {"data": {"current_season": 4}})()
     balls = [MockBall(1), MockBall(2, "scout")]
 
     mode.setup(world, balls)
