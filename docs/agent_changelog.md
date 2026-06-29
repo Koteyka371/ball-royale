@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-294] Blackout Mode — *2026-06-29 11:39:08 UTC*
+
+Periodically, the arena goes completely dark, reducing vision drastically for all balls.
+
+---
+
 ## [idea-291] Decoy Drone Variant — *2026-06-29 11:39:04 UTC*
 
 A drone variant that creates a temporary clone of the player to distract enemies, drawing aggro while the player escapes.
