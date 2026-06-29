@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-270]  EMP Grenades — *2026-06-29 09:51:18 UTC*
+
+A new ball skill that disables the skills and dash abilities of all nearby balls for a short duration, forcing pure movement and attack battles.
+
+---
+
 ## [idea-240] Ball Loadouts — *2026-06-29 09:43:23 UTC*
 
 Allow players to save customized sets of pre-game selections, preferred bonuses, and trap variants to quickly jump into matches with their favorite setups.
