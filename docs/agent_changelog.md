@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-248] Zone Control Points — *2026-06-29 07:10:49 UTC*
+
+Add control points that occasionally become danger zones if held by the same team for too long.
+
+---
+
 ## [idea-245] Weather specific hazards — *2026-06-29 07:10:44 UTC*
 
 Introduce hazards that only spawn during certain weather conditions, like tornadoes during wind storms or lightning strikes during rain.
