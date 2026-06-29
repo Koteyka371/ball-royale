@@ -34,6 +34,8 @@ func load_profile():
                 data["titles"] = []
             if not data.has("status_effects"):
                 data["status_effects"] = []
+            if not data.has("nemeses"):
+                data["nemeses"] = {}
             return
 
     # Default profile
@@ -52,7 +54,8 @@ func load_profile():
         "quests": [],
         "cosmetics": [],
         "titles": [],
-        "status_effects": []
+        "status_effects": [],
+        "nemeses": {}
     }
 
 func add_quest(quest_description: String, reward: int):
@@ -136,7 +139,8 @@ func do_prestige() -> bool:
             "quests": [],
             "cosmetics": data.get("cosmetics", []),
             "titles": data.get("titles", []),
-            "status_effects": data.get("status_effects", [])
+            "status_effects": data.get("status_effects", []),
+            "nemeses": data.get("nemeses", {})
         }
         save_profile()
         var lm = load("res://src/system/leaderboard.gd").new(self)
@@ -216,3 +220,20 @@ func add_status_effect(effect_name: String):
     if not data["status_effects"].has(effect_name):
         data["status_effects"].append(effect_name)
         save_profile()
+
+func add_kill(killer_type: String, victim_type: String) -> void:
+    if not data.has("nemeses"):
+        data["nemeses"] = {}
+    if not data["nemeses"].has(killer_type):
+        data["nemeses"][killer_type] = {}
+    if not data["nemeses"][killer_type].has(victim_type):
+        data["nemeses"][killer_type][victim_type] = 0
+    data["nemeses"][killer_type][victim_type] += 1
+    save_profile()
+
+func is_nemesis(killer_type: String, victim_type: String) -> bool:
+    if not data.has("nemeses"):
+        return false
+    if data["nemeses"].has(killer_type) and data["nemeses"][killer_type].has(victim_type):
+        return data["nemeses"][killer_type][victim_type] >= 2
+    return false

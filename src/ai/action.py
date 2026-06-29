@@ -8,8 +8,20 @@ class Action:
     def _attempt_damage(self, attacker, target) -> None:
         # Check attack accuracy
         attack_accuracy = getattr(attacker, "attack_accuracy", 1.0)
+
+        pm = getattr(self.world, "profile_manager", None)
+        is_nemesis_active = False
+        if pm and hasattr(pm, "is_nemesis") and getattr(attacker, "ball_type", None) and getattr(target, "ball_type", None):
+            is_nemesis_active = pm.is_nemesis(attacker.ball_type, target.ball_type)
+
+        old_hp = getattr(target, "hp", 0.0)
+        original_damage = getattr(attacker, "damage", 10.0)
+
         if random.random() > attack_accuracy:
             return
+
+        if is_nemesis_active:
+            attacker.damage = original_damage * 1.2
 
         has_ricochet = getattr(target, "ricochet_barrier_timer", 0.0) > 0.0
         has_reflect_shield = getattr(target, "reflect_shield_active", False)
@@ -31,6 +43,18 @@ class Action:
         else:
             if hasattr(self.world, "_deal_damage"):
                 self.world._deal_damage(attacker, target)
+
+        if is_nemesis_active:
+            attacker.damage = original_damage
+
+        new_hp = getattr(target, "hp", 0.0)
+        if new_hp <= 0 and old_hp > 0 and pm and hasattr(pm, "add_kill"):
+            pm.add_kill(attacker.ball_type, target.ball_type)
+            if pm.is_nemesis(target.ball_type, attacker.ball_type):
+                if hasattr(attacker, "kills"):
+                    attacker.kills += 1
+                if hasattr(attacker, "charge_level"):
+                    attacker.charge_level = min(100.0, getattr(attacker, "charge_level", 0.0) + 10.0)
 
         # Chain lightning effect
         if getattr(attacker, "chain_lightning_timer", 0.0) > 0:
