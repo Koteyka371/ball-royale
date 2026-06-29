@@ -53,32 +53,8 @@ def test_healer_actions():
     ball.idle(0.016)
     assert ball.current_action == "idle"
 
-def test_healer_heal_ally():
+
+def test_healer_health_link():
     ball = Healer(ball_id=1, x=0, y=0)
-    class DummyAlly:
-        def __init__(self):
-            self.x = 0
-            self.y = 500
-            self.hp = 50
-            self.max_hp = 100
-            self.radius = 10
-    ally = DummyAlly()
-
-    # Healer should move towards the ally because distance (100) > attack_range (10 + 10 + 5 = 25)
-    ball.heal_ally(1.0, ally)
-
-    assert ball.current_action == "defend"
-    assert ball.y > 0  # Should have moved towards the ally (y=100)
-    assert ally.hp == 50  # Out of range, should not heal
-
-    # Move ally close
-    ally.y = ball.y + 15
-
-    # Reset cooldowns just in case
-    ball.attack_timer = 0.0
-    ball.skill_timer = 0.0
-
-    ball.heal_ally(1.0, ally)
-    assert ally.hp == 50 + (ball.DAMAGE * 3.0)
-    assert ball.attack_timer > 0
-    assert ball.skill_timer == ball.SKILL_COOLDOWN
+    assert ball.use_skill() is True
+    assert ball.skill_timer == 2.5

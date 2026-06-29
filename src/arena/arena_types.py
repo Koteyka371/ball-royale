@@ -1270,7 +1270,7 @@ ARENAS = {
     "kite": KiteArena,
     "buff_ally": BuffAllyArena,
     "retreat_to_ally": RetreatToAllyArena,
-    "heal_ally": HealAllyArena,
+    "health_link": HealAllyArena,
     "procedural": ProceduralArena,
     "cross": CrossArena,
     "ring": RingArena,

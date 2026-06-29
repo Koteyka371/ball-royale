@@ -4580,6 +4580,38 @@ func _spawn_directed_particles(source, target, effect_type: String = ""):
         particles.emitting = true
         particles.one_shot = true
 
+        if effect_type == "health_link":
+            particles.amount = 30
+            particles.lifetime = 0.2
+            particles.explosiveness = 0.0
+            particles.spread = 5.0
+            particles.initial_velocity_min = 100.0
+            particles.initial_velocity_max = 200.0
+            particles.color = Color(0.2, 0.9, 0.3, 0.8) # Green line
+            particles.gravity = Vector2.ZERO
+
+            if typeof(target) == TYPE_OBJECT and typeof(source) == TYPE_OBJECT:
+                var tx = target.get("position").x if target.get("position") != null else target.get("x")
+                var ty = target.get("position").y if target.get("position") != null else target.get("y")
+                var sx = source.get("position").x if source.get("position") != null else source.get("x")
+                var sy = source.get("position").y if source.get("position") != null else source.get("y")
+
+                if tx == null and target.has_method("get_meta") and target.has_meta("x"):
+                    tx = target.get_meta("x")
+                    ty = target.get_meta("y")
+
+                if sx == null and source.has_method("get_meta") and source.has_meta("x"):
+                    sx = source.get_meta("x")
+                    sy = source.get_meta("y")
+
+                if tx != null and ty != null and sx != null and sy != null:
+                    var dx = tx - sx
+                    var dy = ty - sy
+                    var dist = sqrt(dx*dx + dy*dy)
+                    particles.rotation = atan2(dy, dx)
+                    particles.initial_velocity_min = dist / particles.lifetime
+                    particles.initial_velocity_max = dist / particles.lifetime
+
         if effect_type == "reflect_pulse":
             particles.amount = 20
             particles.lifetime = 0.4
@@ -4681,7 +4713,54 @@ func _spawn_skill_particles(skill_name: String = ""):
             particles.lifetime = 0.3 * (1.0 + (tier_multiplier - 1.0) * 0.2)
             particles.explosiveness = 0.5
             # Could orient opposite to velocity if we had it, but spread and low life is fine
-        elif skill_name == "shield" or skill_name == "protect_ally":
+        elif skill_name == "health_link":
+            var allies_hl = []
+            if self.world.has("balls"):
+                for b in self.world.balls:
+                    var is_alive = true
+                    if "alive" in b: is_alive = b.alive
+                    elif b.has_method("has_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+
+                    var team = ""
+                    if "team" in b: team = b.team
+                    elif b.has_method("has_meta") and b.has_meta("team"): team = b.get_meta("team")
+
+                    var my_team = ""
+                    if "team" in self.ball: my_team = self.ball.team
+                    elif self.ball.has_method("has_meta") and self.ball.has_meta("team"): my_team = self.ball.get_meta("team")
+
+                    var b_id = -1
+                    if "id" in b: b_id = b.id
+                    elif b.has_method("has_meta") and b.has_meta("id"): b_id = b.get_meta("id")
+
+                    var my_id = -2
+                    if "id" in self.ball: my_id = self.ball.id
+                    elif self.ball.has_method("has_meta") and self.ball.has_meta("id"): my_id = self.ball.get_meta("id")
+
+                    if b_id != my_id and team == my_team and is_alive:
+                        allies_hl.append(b)
+            if allies_hl.size() > 0:
+                var min_hp_ratio = INF
+                var target_hl = null
+                for a in allies_hl:
+                    var a_hp = 100.0
+                    if "hp" in a: a_hp = a.hp
+                    var a_mhp = 100.0
+                    if "max_hp" in a: a_mhp = a.max_hp
+                    var ratio = a_hp / max(a_mhp, 1.0)
+                    if ratio < min_hp_ratio:
+                        min_hp_ratio = ratio
+                        target_hl = a
+                if target_hl != null:
+                    if self.ball.has_method("set_meta"):
+                        self.ball.set_meta("health_link_target", target_hl)
+                        self.ball.set_meta("health_link_timer", 5.0)
+                    else:
+                        self.ball.health_link_target = target_hl
+                        self.ball.health_link_timer = 5.0
+
+                    if self.has_method("_spawn_directed_particles"):
+                        self._spawn_directed_particles(self.ball, target_hl, "health_link")      elif skill_name == "shield" or skill_name == "protect_ally":
             particles.amount = int(40 * tier_multiplier)
             particles.spread = 360.0
             particles.initial_velocity_min = 20.0 * (1.0 + (tier_multiplier - 1.0) * 0.2)
@@ -4955,6 +5034,63 @@ func _update_skill_timer(delta: float):
         elif self.ball.has_method("set_meta"):
             self.ball.set_meta("link_booster_timer", link_timer)
             self.ball.set_meta("link_booster_target", target)
+
+
+    var hl_timer = 0.0
+    if "health_link_timer" in self.ball:
+        hl_timer = self.ball.health_link_timer
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("health_link_timer"):
+        hl_timer = self.ball.get_meta("health_link_timer")
+
+    if hl_timer > 0:
+        hl_timer -= delta
+        var target = null
+        if "health_link_target" in self.ball:
+            target = self.ball.health_link_target
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("health_link_target"):
+            target = self.ball.get_meta("health_link_target")
+
+        var alive = true
+        if target != null and "alive" in target:
+            alive = target.alive
+
+        var ball_hp = 100.0
+        if "hp" in self.ball: ball_hp = self.ball.hp
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("hp"): ball_hp = self.ball.get_meta("hp")
+
+        if target != null and alive and ball_hp > 10.0:
+            var dist_sq = pow(target.x - self.ball.x, 2) + pow(target.y - self.ball.y, 2)
+            if dist_sq <= 40000:
+                var drain = 20.0 * delta
+                var target_hp = 100.0
+                if "hp" in target: target_hp = target.hp
+                var target_mhp = 100.0
+                if "max_hp" in target: target_mhp = target.max_hp
+
+                var actual_damage = min(ball_hp, drain)
+
+                if "hp" in self.ball: self.ball.hp -= actual_damage
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("hp", ball_hp - actual_damage)
+
+                if "hp" in target: target.hp = min(target_hp + actual_damage * 1.5, target_mhp)
+
+
+
+                if hl_timer <= 0:
+                    target = null
+            else:
+                hl_timer = 0.0
+                target = null
+        else:
+            hl_timer = 0.0
+            target = null
+
+        if "health_link_timer" in self.ball:
+            self.ball.health_link_timer = hl_timer
+            self.ball.health_link_target = target
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("health_link_timer", hl_timer)
+            self.ball.set_meta("health_link_target", target)
 
     if "skill_timer" in self.ball and self.ball.skill_timer > 0:
         self.ball.skill_timer -= delta

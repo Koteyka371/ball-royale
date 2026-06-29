@@ -470,7 +470,7 @@ const ARENAS = [
     "choke_point",
     "use_shield",
     "retreat_to_ally",
-    "heal_ally",
+    "health_link",
     "buff_ally",
     "aggressive_chase",
     "comebacks",
