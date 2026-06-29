@@ -5601,6 +5601,484 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "balance-buff-necromancer",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'necromancer'",
+      "description": "The 'necromancer' class is winning only 0.0% of the time (expected ~3.2%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_necromancer.py",
+        "src/ai/balance_buff_underpowered_necromancer.gd",
+        "tests/test_balance_buff_underpowered_necromancer.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-warrior",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'warrior'",
+      "description": "The 'warrior' class is winning only 0.0% of the time (expected ~3.2%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_warrior.py",
+        "src/ai/balance_buff_underpowered_warrior.gd",
+        "tests/test_balance_buff_underpowered_warrior.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-tank",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'tank'",
+      "description": "The 'tank' class is winning only 0.0% of the time (expected ~3.2%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_tank.py",
+        "src/ai/balance_buff_underpowered_tank.gd",
+        "tests/test_balance_buff_underpowered_tank.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-nerf-sniper",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Nerf overpowered 'sniper'",
+      "description": "The 'sniper' class is winning 10.0% of the time (expected ~3.2%). It is overpowered. Please reduce its HP, damage, speed, or increase skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_nerf_overpowered_sniper.py",
+        "src/ai/balance_nerf_overpowered_sniper.gd",
+        "tests/test_balance_nerf_overpowered_sniper.py"
+      ],
+      "acceptance": [
+        "Win rate reduced in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-bomber",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'bomber'",
+      "description": "The 'bomber' class is winning only 0.0% of the time (expected ~3.2%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_bomber.py",
+        "src/ai/balance_buff_underpowered_bomber.gd",
+        "tests/test_balance_buff_underpowered_bomber.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-berserker",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'berserker'",
+      "description": "The 'berserker' class is winning only 0.0% of the time (expected ~3.2%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_berserker.py",
+        "src/ai/balance_buff_underpowered_berserker.gd",
+        "tests/test_balance_buff_underpowered_berserker.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-nerf-juggernaut",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Nerf overpowered 'juggernaut'",
+      "description": "The 'juggernaut' class is winning 10.0% of the time (expected ~3.2%). It is overpowered. Please reduce its HP, damage, speed, or increase skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_nerf_overpowered_juggernaut.py",
+        "src/ai/balance_nerf_overpowered_juggernaut.gd",
+        "tests/test_balance_nerf_overpowered_juggernaut.py"
+      ],
+      "acceptance": [
+        "Win rate reduced in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-phantom",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'phantom'",
+      "description": "The 'phantom' class is winning only 0.0% of the time (expected ~3.2%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_phantom.py",
+        "src/ai/balance_buff_underpowered_phantom.gd",
+        "tests/test_balance_buff_underpowered_phantom.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-nerf-guardian",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Nerf overpowered 'guardian'",
+      "description": "The 'guardian' class is winning 20.0% of the time (expected ~3.2%). It is overpowered. Please reduce its HP, damage, speed, or increase skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_nerf_overpowered_guardian.py",
+        "src/ai/balance_nerf_overpowered_guardian.gd",
+        "tests/test_balance_nerf_overpowered_guardian.py"
+      ],
+      "acceptance": [
+        "Win rate reduced in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-scout",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'scout'",
+      "description": "The 'scout' class is winning only 0.0% of the time (expected ~3.2%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_scout.py",
+        "src/ai/balance_buff_underpowered_scout.gd",
+        "tests/test_balance_buff_underpowered_scout.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-king",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'king'",
+      "description": "The 'king' class is winning only 0.0% of the time (expected ~3.2%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_king.py",
+        "src/ai/balance_buff_underpowered_king.gd",
+        "tests/test_balance_buff_underpowered_king.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-ninja",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'ninja'",
+      "description": "The 'ninja' class is winning only 0.0% of the time (expected ~3.2%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_ninja.py",
+        "src/ai/balance_buff_underpowered_ninja.gd",
+        "tests/test_balance_buff_underpowered_ninja.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-paladin",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'paladin'",
+      "description": "The 'paladin' class is winning only 0.0% of the time (expected ~3.2%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_paladin.py",
+        "src/ai/balance_buff_underpowered_paladin.gd",
+        "tests/test_balance_buff_underpowered_paladin.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-mage",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'mage'",
+      "description": "The 'mage' class is winning only 0.0% of the time (expected ~3.2%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_mage.py",
+        "src/ai/balance_buff_underpowered_mage.gd",
+        "tests/test_balance_buff_underpowered_mage.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-warlock",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'warlock'",
+      "description": "The 'warlock' class is winning only 0.0% of the time (expected ~3.2%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_warlock.py",
+        "src/ai/balance_buff_underpowered_warlock.gd",
+        "tests/test_balance_buff_underpowered_warlock.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-nerf-druid",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Nerf overpowered 'druid'",
+      "description": "The 'druid' class is winning 10.0% of the time (expected ~3.2%). It is overpowered. Please reduce its HP, damage, speed, or increase skill cooldown.",
+      "allowed_paths": [
+        "src/ui/balance_nerf_overpowered_druid.py",
+        "src/ui/balance_nerf_overpowered_druid.gd",
+        "src/ai/balance_nerf_overpowered_druid.py",
+        "tests/test_balance_nerf_overpowered_druid.py"
+      ],
+      "acceptance": [
+        "Win rate reduced in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-monk",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'monk'",
+      "description": "The 'monk' class is winning only 0.0% of the time (expected ~3.2%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_monk.py",
+        "src/ai/balance_buff_underpowered_monk.gd",
+        "tests/test_balance_buff_underpowered_monk.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-brawler",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'brawler'",
+      "description": "The 'brawler' class is winning only 0.0% of the time (expected ~3.2%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_brawler.py",
+        "src/ai/balance_buff_underpowered_brawler.gd",
+        "tests/test_balance_buff_underpowered_brawler.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-trickster",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'trickster'",
+      "description": "The 'trickster' class is winning only 0.0% of the time (expected ~3.2%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_trickster.py",
+        "src/ai/balance_buff_underpowered_trickster.gd",
+        "tests/test_balance_buff_underpowered_trickster.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-elementalist",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'elementalist'",
+      "description": "The 'elementalist' class is winning only 0.0% of the time (expected ~3.2%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_elementalist.py",
+        "src/ai/balance_buff_underpowered_elementalist.gd",
+        "tests/test_balance_buff_underpowered_elementalist.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-vampire",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'vampire'",
+      "description": "The 'vampire' class is winning only 0.0% of the time (expected ~3.2%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_vampire.py",
+        "src/ai/balance_buff_underpowered_vampire.gd",
+        "tests/test_balance_buff_underpowered_vampire.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-templar",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'templar'",
+      "description": "The 'templar' class is winning only 0.0% of the time (expected ~3.2%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_templar.py",
+        "src/ai/balance_buff_underpowered_templar.gd",
+        "tests/test_balance_buff_underpowered_templar.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-nerf-ranger",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Nerf overpowered 'ranger'",
+      "description": "The 'ranger' class is winning 10.0% of the time (expected ~3.2%). It is overpowered. Please reduce its HP, damage, speed, or increase skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_nerf_overpowered_ranger.py",
+        "src/ai/balance_nerf_overpowered_ranger.gd",
+        "tests/test_balance_nerf_overpowered_ranger.py"
+      ],
+      "acceptance": [
+        "Win rate reduced in simulations"
+      ]
+    },
+    {
+      "id": "balance-nerf-spectator",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Nerf overpowered 'spectator'",
+      "description": "The 'spectator' class is winning 30.0% of the time (expected ~3.2%). It is overpowered. Please reduce its HP, damage, speed, or increase skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_nerf_overpowered_spectator.py",
+        "src/ai/balance_nerf_overpowered_spectator.gd",
+        "tests/test_balance_nerf_overpowered_spectator.py"
+      ],
+      "acceptance": [
+        "Win rate reduced in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-mimic",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'mimic'",
+      "description": "The 'mimic' class is winning only 0.0% of the time (expected ~3.2%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_mimic.py",
+        "src/ai/balance_buff_underpowered_mimic.gd",
+        "tests/test_balance_buff_underpowered_mimic.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-nerf-chaos",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Nerf overpowered 'chaos'",
+      "description": "The 'chaos' class is winning 10.0% of the time (expected ~3.2%). It is overpowered. Please reduce its HP, damage, speed, or increase skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_nerf_overpowered_chaos.py",
+        "src/ai/balance_nerf_overpowered_chaos.gd",
+        "tests/test_balance_nerf_overpowered_chaos.py"
+      ],
+      "acceptance": [
+        "Win rate reduced in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-hard",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'hard'",
+      "description": "The 'hard' class is winning only 0.0% of the time (expected ~3.2%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_hard.py",
+        "src/ai/balance_buff_underpowered_hard.gd",
+        "tests/test_balance_buff_underpowered_hard.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "perf-optimize-run",
+      "status": "todo",
+      "area": "meta",
+      "risk": "high",
+      "title": "Performance: Optimize 'run' in simulate_battle.py",
+      "description": "The function 'run' in simulate_battle.py is causing a performance bottleneck. During a 100-tick stress test, it was called 1 times and took 59.90 seconds total. Please optimize this function to reduce its execution time (e.g., use better data structures, caching, or spatial hashing).",
+      "allowed_paths": [
+        "simulate_battle.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "perf-optimize--tick",
+      "status": "todo",
+      "area": "meta",
+      "risk": "high",
+      "title": "Performance: Optimize '_tick' in simulate_battle.py",
+      "description": "The function '_tick' in simulate_battle.py is causing a performance bottleneck. During a 100-tick stress test, it was called 100 times and took 59.89 seconds total. Please optimize this function to reduce its execution time (e.g., use better data structures, caching, or spatial hashing).",
+      "allowed_paths": [
+        "simulate_battle.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "perf-optimize-process",
+      "status": "todo",
+      "area": "meta",
+      "risk": "high",
+      "title": "Performance: Optimize 'process' in ball_brain.py",
+      "description": "The function 'process' in ball_brain.py is causing a performance bottleneck. During a 100-tick stress test, it was called 24846 times and took 17.50 seconds total. Please optimize this function to reduce its execution time (e.g., use better data structures, caching, or spatial hashing).",
+      "allowed_paths": [
+        "ball_brain.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
