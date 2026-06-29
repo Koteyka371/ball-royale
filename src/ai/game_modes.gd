@@ -2061,6 +2061,149 @@ class PortalNodeMode extends GameMode:
 
 
 
+
+class MovingSafeZoneMode extends GameMode:
+    var zone_x: float = 500.0
+    var zone_y: float = 500.0
+    var zone_radius: float = 500.0
+    var min_zone_radius: float = 50.0
+    var shrink_rate: float = 10.0
+    var outside_damage_per_second: float = 15.0
+    var zone_target_x: float = 500.0
+    var zone_target_y: float = 500.0
+    var move_speed: float = 30.0
+    var tick_timer: float = 0.0
+
+    func _init() -> void:
+        name = "Moving Safe Zone"
+        description = "A dynamic battle royale where the safe zone not only shrinks but also moves around the map, forcing intense combat."
+
+    func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
+        var arena_width = 1000.0
+        var arena_height = 1000.0
+        if "arena" in world and world.arena:
+            if "width" in world.arena:
+                arena_width = float(world.arena.width)
+            if "height" in world.arena:
+                arena_height = float(world.arena.height)
+
+        zone_x = arena_width / 2.0
+        zone_y = arena_height / 2.0
+        zone_target_x = zone_x
+        zone_target_y = zone_y
+        zone_radius = min(arena_width, arena_height) / 2.0
+        min_zone_radius = 50.0
+
+        var valid_balls = []
+        for b in balls:
+            if b.ball_type != "spectator":
+                valid_balls.append(b)
+
+        for i in range(valid_balls.size()):
+            var b = valid_balls[i]
+            if i >= 20:
+                b.ball_type = "spectator"
+                b.alive = false
+            else:
+                b.team = b.ball_type
+
+        if not "dead_balls" in world:
+            world.dead_balls = []
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        if not "dead_balls" in world:
+            world.dead_balls = []
+
+        var arena_width = 1000.0
+        var arena_height = 1000.0
+        if "arena" in world and world.arena:
+            if "width" in world.arena:
+                arena_width = float(world.arena.width)
+            if "height" in world.arena:
+                arena_height = float(world.arena.height)
+
+        # Move safe zone
+        var dx = zone_target_x - zone_x
+        var dy = zone_target_y - zone_y
+        var dist = sqrt(dx*dx + dy*dy)
+        if dist > 5.0:
+            zone_x += (dx / dist) * move_speed * delta
+            zone_y += (dy / dist) * move_speed * delta
+        else:
+            # Pick a new target
+            var buffer = max(100.0, zone_radius * 0.5)
+            var rng = RandomNumberGenerator.new()
+            rng.randomize()
+            zone_target_x = rng.randf_range(buffer, arena_width - buffer)
+            zone_target_y = rng.randf_range(buffer, arena_height - buffer)
+
+        # Shrink safe zone
+        if zone_radius > min_zone_radius:
+            zone_radius -= shrink_rate * delta
+            if zone_radius < min_zone_radius:
+                zone_radius = min_zone_radius
+
+        for b in balls:
+            if not b.alive:
+                if not world.dead_balls.has(b):
+                    if b.has_method("set_meta"):
+                        b.set_meta("time_since_death", 0.0)
+                    world.dead_balls.append(b)
+                else:
+                    if b.has_method("get_meta") and b.has_meta("time_since_death"):
+                        b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+                continue
+
+            var bx = b.position.x if "position" in b else b.x
+            var by = b.position.y if "position" in b else b.y
+            var bdx = bx - zone_x
+            var bdy = by - zone_y
+            var bdist = sqrt(bdx*bdx + bdy*bdy)
+
+            if bdist > zone_radius:
+                if "hp" in b:
+                    var damage = outside_damage_per_second * delta
+                    b.hp -= damage
+
+                    var effect_timer = 0.0
+                    if b.has_method("get_meta") and b.has_meta("danger_effect_timer"):
+                        effect_timer = b.get_meta("danger_effect_timer")
+                    effect_timer += delta
+                    if effect_timer > 0.5:
+                        effect_timer = 0.0
+                        world.add_event("danger_zone_damage", {
+                            "x": bx,
+                            "y": by
+                        })
+                    if b.has_method("set_meta"):
+                        b.set_meta("danger_effect_timer", effect_timer)
+
+                    if b.hp <= 0:
+                        b.alive = false
+                        b.killer = "Danger Zone"
+                        world.add_event("danger_zone_death", {"message": b.ball_type.capitalize() + " succumbed to the danger zone!"})
+
+    func check_winner(world, balls: Array):
+        var alive = []
+        for b in balls:
+            if b.alive and b.ball_type != "spectator":
+                alive.append(b)
+
+        if alive.size() == 0:
+            return "Draw"
+
+        var teams_alive = {}
+        for b in alive:
+            var t = b.team if "team" in b else b.ball_type
+            teams_alive[t] = true
+
+        if teams_alive.size() == 1:
+            return teams_alive.keys()[0]
+
+        return null
+
+
 class SafeZoneMode extends GameMode:
     var zone_x: float = 500.0
     var zone_y: float = 500.0
@@ -2712,5 +2855,6 @@ var GAME_MODES = {
     "evolutionary_simulation": EvolutionarySimulationMode.new(),
     "interactive_training": load("res://src/ai/interactive_training.gd").new(),
     "safe_zone": SafeZoneMode.new(),
+    "moving_safe_zone": MovingSafeZoneMode.new(),
     "bounty_hunt": BountyHuntMode.new()
 }
