@@ -2582,7 +2582,107 @@ class BlackoutMode extends GameMode:
 						base_perc = float(b.get_meta("base_perception_radius"))
 					b.perception_radius = base_perc
 
+
+class BountyHuntMode extends GameMode:
+    var bounties = {}
+    var buffed_teams = {}
+
+    func _init() -> void:
+        name = "Bounty Hunt"
+        description = "One ball on each team is the Bounty. Destroying the enemy Bounty grants a massive buff and extra skill points."
+
+    func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
+        if not "dead_balls" in world:
+            world.dead_balls = []
+
+        var red_team = []
+        var blue_team = []
+
+        var valid_balls = []
+        for b in balls:
+            if b.ball_type != "spectator":
+                valid_balls.append(b)
+
+        var mid = valid_balls.size() / 2
+        for i in range(valid_balls.size()):
+            var b = valid_balls[i]
+            if i < mid:
+                b.team = "Red"
+                red_team.append(b)
+            else:
+                b.team = "Blue"
+                blue_team.append(b)
+
+        bounties.clear()
+        buffed_teams.clear()
+
+        if red_team.size() > 0:
+            var red_bounty = red_team[randi() % red_team.size()]
+            red_bounty.set_meta("is_bounty", true)
+            red_bounty.set_meta("bounty_timer", 0)
+            bounties["Red"] = red_bounty
+
+        if blue_team.size() > 0:
+            var blue_bounty = blue_team[randi() % blue_team.size()]
+            blue_bounty.set_meta("is_bounty", true)
+            blue_bounty.set_meta("bounty_timer", 0)
+            bounties["Blue"] = blue_bounty
+
+    func tick(world, balls: Array, delta: float) -> void:
+        super.tick(world, balls, delta)
+
+        for team in bounties.keys():
+            var bounty = bounties[team]
+            if not bounty.alive and not buffed_teams.has(team):
+                buffed_teams[team] = true
+                var enemy_team = "Blue" if team == "Red" else "Red"
+
+                for b in balls:
+                    if b.alive and b.get("team") == enemy_team:
+                        var bd = b.get("base_damage")
+                        if bd != null: b.base_damage = bd * 2.0
+                        var bs = b.get("base_speed")
+                        if bs != null: b.base_speed = bs * 1.5
+                        var mhp = b.get("max_hp")
+                        if mhp != null:
+                            b.max_hp = mhp * 1.5
+                            b.hp = b.max_hp
+                        var su = b.get("skill_uses")
+                        if su != null:
+                            b.skill_uses = su + 3
+                        else:
+                            b.set_meta("skill_uses", 3)
+
+                if has_method("_award_skill_points"):
+                    call("_award_skill_points")
+                    call("_award_skill_points")
+                    call("_award_skill_points")
+
+                if world.has_method("add_event"):
+                    world.add_event("bounty_destroyed", {"message": team + " Bounty destroyed! " + enemy_team + " gets massive buff!"})
+
+    func check_winner(world, balls: Array):
+        var alive = []
+        for b in balls:
+            if b.alive and b.ball_type != "spectator":
+                alive.append(b)
+
+        if alive.size() == 0:
+            return "Draw"
+
+        var teams_alive = {}
+        for b in alive:
+            var t = b.get("team")
+            if t == null: t = b.ball_type
+            teams_alive[t] = true
+
+        if teams_alive.size() == 1:
+            return teams_alive.keys()[0]
+        return null
+
 var GAME_MODES = {
+
 	"blackout": BlackoutMode.new(),
 	"windstorm": WindstormMode.new(),
 	"modifier_zones": ModifierZonesMode.new(),
@@ -2611,5 +2711,6 @@ var GAME_MODES = {
     "capture_the_flag": CaptureTheFlagMode.new(),
     "evolutionary_simulation": EvolutionarySimulationMode.new(),
     "interactive_training": load("res://src/ai/interactive_training.gd").new(),
-    "safe_zone": SafeZoneMode.new()
+    "safe_zone": SafeZoneMode.new(),
+    "bounty_hunt": BountyHuntMode.new()
 }
