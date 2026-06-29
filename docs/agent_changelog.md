@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-256] Tornado Weather — *2026-06-29 09:31:51 UTC*
+
+A tornado moves across the arena, pulling balls in and applying damage over time.
+
+---
+
 ## [idea-210] King of the Hill Game Mode — *2026-06-29 09:22:22 UTC*
 
 A new team-based or free-for-all mode where balls earn points by staying inside a dynamically moving circular zone on the map. The neural networks would have to be retrained to prioritize positional control and defending a stationary spot rather than pure survival or aggressive hunting.

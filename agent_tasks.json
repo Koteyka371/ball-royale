@@ -4464,7 +4464,7 @@
     },
     {
       "id": "idea-256",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Tornado Weather",
@@ -6381,6 +6381,40 @@
         "src/ai/quantum_entanglement.py",
         "src/ai/quantum_entanglement.gd",
         "tests/test_quantum_entanglement.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-369",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "New hazard: Black Hole Trap",
+      "description": "A rare procedural trap that slowly pulls players in, instantly killing them if they reach the center, but can be disabled by destroying its tether points.",
+      "allowed_paths": [
+        "src/arena/new_black_hole_trap.py",
+        "src/arena/new_black_hole_trap.gd",
+        "tests/test_new_black_hole_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-370",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "New ball type: Magnet",
+      "description": "A ball that passively pulls nearby boosters and smaller entities towards it, and has an active skill that violently pushes everything away.",
+      "allowed_paths": [
+        "src/ai/new_ball_magnet.py",
+        "src/ai/new_ball_magnet.gd",
+        "tests/test_new_ball_magnet.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
