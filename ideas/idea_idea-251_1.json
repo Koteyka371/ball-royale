@@ -1,0 +1,4 @@
+{
+  "title": "Time Traveler Ball",
+  "description": "A new ball type that records its position every 0.1 seconds. Upon using its skill, it instantly rewinds its position and HP back to where it was 3 seconds ago, confusing enemies and dodging deadly attacks."
+}

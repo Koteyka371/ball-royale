@@ -2336,6 +2336,27 @@ class Action:
                         minion.current_action = "idle"
 
                         self.world.balls.append(minion)
+            elif skill_name == "deploy_static_decoy":
+                import copy
+                import random
+                if hasattr(self.world, "balls"):
+                    decoy = copy.copy(self.ball)
+                    decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                    if hasattr(self.world, "next_id"):
+                        self.world.next_id += 1
+                    decoy.hp = getattr(self.ball, "max_hp", 100) * 0.1
+                    decoy.max_hp = decoy.hp
+                    decoy.damage = 0
+                    decoy.is_decoy = True
+                    decoy.speed = 0.01  # Keep it almost static but valid for physics
+                    decoy.SPEED = 0.0
+                    decoy.base_speed = 0.0
+                    decoy.base_damage = 0.0
+                    decoy.SKILL = None
+                    decoy.active_skill = None
+                    decoy.current_action = "idle"
+                    decoy.decoy_timer = 5.0
+                    self.world.balls.append(decoy)
             elif skill_name == "deploy_decoy":
                 import copy
                 if hasattr(self.world, "balls"):

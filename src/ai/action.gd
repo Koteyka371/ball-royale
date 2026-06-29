@@ -3473,6 +3473,36 @@ func _use_skill():
 
                     self.world.balls.append(minion)
 
+        elif skill_name == "deploy_static_decoy":
+            if self.world.get("balls") != null:
+                var decoy_script = load("res://src/ai/ball_types_illusionist.gd")
+                var decoy = decoy_script.new(self.ball.id if "id" in self.ball else 0, self.ball.x, self.ball.y)
+                decoy.set("id", randi() % 90000 + 10000)
+                if "next_id" in self.world:
+                    decoy.set("id", self.world.next_id)
+                    self.world.next_id += 1
+                var max_hp = 100.0
+                if "max_hp" in self.ball:
+                    max_hp = self.ball.max_hp
+                decoy.set("hp", max_hp * 0.1)
+                decoy.set("max_hp", max_hp * 0.1)
+                if "base_damage" in decoy:
+                    decoy.set("base_damage", 0.0)
+                if "damage" in decoy:
+                    decoy.set("damage", 0)
+                if "base_speed" in decoy:
+                    decoy.set("base_speed", 0.0)
+                if "speed" in decoy:
+                    decoy.set("speed", 0.01)
+                if "current_action" in decoy:
+                    decoy.set("current_action", "idle")
+                if decoy.has_method("set_meta"):
+                    decoy.set_meta("is_decoy", true)
+                    decoy.set_meta("decoy_timer", 5.0)
+                else:
+                    decoy["is_decoy"] = true
+                    decoy["decoy_timer"] = 5.0
+                self.world.balls.append(decoy)
         elif skill_name == "deploy_decoy":
             if "balls" in self.world:
                 var decoy = null

@@ -36,6 +36,7 @@ class Decision:
         "necromancer": "defend",
         "conjurer": "defend",
         "trickster": "chase",
+        "illusionist": "flee",
         "elementalist": "attack",
         "vampire": "chase",
         "templar": "defend",
