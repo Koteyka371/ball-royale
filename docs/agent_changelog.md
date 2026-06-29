@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-255] Meteor Shower — *2026-06-29 08:21:25 UTC*
+
+Meteors fall randomly on the arena, destroying cover and leaving crater hazards.
+
+---
+
 ## [idea-206] Teleportation Pads — *2026-06-29 08:14:49 UTC*
 
 Place teleportation pads in procedural arenas that instantly transport balls to another linked pad.

@@ -4447,7 +4447,7 @@
     },
     {
       "id": "idea-255",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Meteor Shower",
@@ -5971,6 +5971,40 @@
         "src/ai/quantum_swap_item.py",
         "src/ai/quantum_swap_item.gd",
         "tests/test_quantum_swap_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-345",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weaponized Teleporters",
+      "description": "Allow some specific classes or items to 'weaponize' teleporters by placing a temporary trap on the destination pad, dealing damage or applying status effects to the next entity that teleports through.",
+      "allowed_paths": [
+        "src/ai/weaponized_teleporters.py",
+        "src/ai/weaponized_teleporters.gd",
+        "tests/test_weaponized_teleporters.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-346",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "One-Way Teleporters",
+      "description": "Introduce a variation of teleporters that are strictly one-way. They randomly spawn and change destinations periodically, offering risky escape routes but potentially trapping balls in difficult areas.",
+      "allowed_paths": [
+        "src/ai/one_way_teleporters.py",
+        "src/ai/one_way_teleporters.gd",
+        "tests/test_one_way_teleporters.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
