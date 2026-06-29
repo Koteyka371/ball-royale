@@ -79,3 +79,11 @@ def test_kill_feed_weather_change():
     messages = feed.get_messages()
     assert len(messages) == 1
     assert "Weather changed to SNOW!" in messages[0]
+
+def test_kill_feed_weather_warning():
+    feed = KillFeed()
+    log = [{"tick": 15, "type": "weather_warning", "weather": "rain"}]
+    feed.update(log)
+    messages = feed.get_messages()
+    assert len(messages) == 1
+    assert "WARNING! RAIN approaching!" in messages[0]

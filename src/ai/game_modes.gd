@@ -255,6 +255,8 @@ class BattleRoyaleMode extends GameMode:
     var is_dark_phase: bool = false
     var weather_timer: float = 0.0
     var weather: String = "clear"
+    var next_weather: String = "clear"
+    var weather_warning_sent: bool = false
 
     func _init() -> void:
         name = "Battle Royale"
@@ -303,11 +305,22 @@ class BattleRoyaleMode extends GameMode:
             self.weather = "clear"
 
         self.weather_timer += delta
+        var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm"]
+
+        if self.next_weather == "clear" and self.weather == "clear" and self.weather_timer < 1.0:
+            self.next_weather = weathers[randi() % weathers.size()]
+
+        if self.weather_timer > 12.0 and not self.weather_warning_sent:
+            if self.next_weather != self.weather and world != null and world.has_method("add_event"):
+                world.add_event("weather_warning", {"weather": self.next_weather})
+            self.weather_warning_sent = true
+
         if self.weather_timer > 15.0:
             self.weather_timer = 0.0
-            var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm"]
+            self.weather_warning_sent = false
             var old_weather = self.weather
-            self.weather = weathers[randi() % weathers.size()]
+            self.weather = self.next_weather
+            self.next_weather = weathers[randi() % weathers.size()]
             if old_weather != self.weather and world != null and world.has_method("add_event"):
                 world.add_event("weather_change", {"weather": self.weather})
             if self.weather == "wind":
@@ -1150,6 +1163,8 @@ class BlackHoleMode extends GameMode:
 
 class WeatherChaosMode extends GameMode:
 	var weather: String = "clear"
+	var next_weather: String = "clear"
+	var weather_warning_sent: bool = false
 	var weather_timer: float = 0.0
 
 	func _init() -> void:
@@ -1174,11 +1189,22 @@ class WeatherChaosMode extends GameMode:
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 		weather_timer += delta
+		var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm"]
+
+		if next_weather == "clear" and weather == "clear" and weather_timer < 1.0:
+			next_weather = weathers[randi() % weathers.size()]
+
+		if weather_timer > 7.0 and not weather_warning_sent:
+			if next_weather != weather and world != null and world.has_method("add_event"):
+				world.add_event("weather_warning", {"weather": next_weather})
+			weather_warning_sent = true
+
 		if weather_timer > 10.0:
 			weather_timer = 0.0
-			var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm"]
+			weather_warning_sent = false
 			var old_weather = weather
-			weather = weathers[randi() % weathers.size()]
+			weather = next_weather
+			next_weather = weathers[randi() % weathers.size()]
 			if old_weather != weather and world != null and world.has_method("add_event"):
 				world.add_event("weather_change", {"weather": weather})
 			if weather == "wind":

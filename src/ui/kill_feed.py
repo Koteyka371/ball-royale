@@ -6,7 +6,14 @@ class KillFeed:
 
     def update(self, kill_log):
         for log in kill_log:
-            if log.get("type") == "weather_change":
+            if log.get("type") == "weather_warning":
+                weather = log.get("weather", "clear")
+                event_hash = f"{log.get('tick', 0)}_weather_warning_{weather}"
+                if event_hash not in self._processed_ticks:
+                    message = f"Tick {log.get('tick', 0)}: WARNING! {weather.upper()} approaching!"
+                    self.messages.append(message)
+                    self._processed_ticks.add(event_hash)
+            elif log.get("type") == "weather_change":
                 weather = log.get("weather", "clear")
                 event_hash = f"{log.get('tick', 0)}_weather_{weather}"
                 if event_hash not in self._processed_ticks:

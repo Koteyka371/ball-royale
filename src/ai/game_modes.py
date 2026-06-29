@@ -201,6 +201,8 @@ class BattleRoyaleMode(GameMode):
         self.is_dark_phase = False
         self.weather = "clear"
         self.weather_timer = 0.0
+        self.weather_warning_sent = False
+        self.next_weather = "clear"
         import random
         self.random = random
 
@@ -234,13 +236,20 @@ class BattleRoyaleMode(GameMode):
 
         # Weather logic
         self.weather_timer += delta
+        weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm"]
+        rnd = getattr(self, "random", __import__("random"))
+        if getattr(self, "next_weather", "clear") == "clear" and self.weather == "clear" and getattr(self, "weather_timer", 0.0) < 1.0:
+            self.next_weather = rnd.choice(weathers)
+        if self.weather_timer > 12.0 and not getattr(self, "weather_warning_sent", False):
+            if getattr(self, "next_weather", "clear") != self.weather and hasattr(world, "add_event"):
+                world.add_event("weather_warning", {"weather": getattr(self, "next_weather", "clear")})
+            self.weather_warning_sent = True
         if self.weather_timer > 15.0:
             self.weather_timer = 0.0
-            weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm"]
-            rnd = getattr(self, "random", __import__("random"))
+            self.weather_warning_sent = False
             old_weather = self.weather
-            self.weather = rnd.choice(weathers)
-
+            self.weather = getattr(self, "next_weather", "clear")
+            self.next_weather = rnd.choice(weathers)
             if old_weather != self.weather and hasattr(world, "add_event"):
                 world.add_event("weather_change", {"weather": self.weather})
 
@@ -889,6 +898,8 @@ class WeatherChaosMode(GameMode):
         self.description = "Weather conditions change throughout the match, affecting stats."
         self.weather = "clear"
         self.weather_timer = 0.0
+        self.weather_warning_sent = False
+        self.next_weather = "clear"
         import random
         self.random = random
 
@@ -915,14 +926,21 @@ class WeatherChaosMode(GameMode):
                 else:
                     b.time_since_death += delta
         self.weather_timer += delta
+        weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm"]
+        import random
+        rnd = getattr(self, "random", random)
+        if getattr(self, "next_weather", "clear") == "clear" and self.weather == "clear" and getattr(self, "weather_timer", 0.0) < 1.0:
+            self.next_weather = rnd.choice(weathers)
+        if self.weather_timer > 7.0 and not getattr(self, "weather_warning_sent", False):
+            if getattr(self, "next_weather", "clear") != self.weather and hasattr(world, "add_event"):
+                world.add_event("weather_warning", {"weather": getattr(self, "next_weather", "clear")})
+            self.weather_warning_sent = True
         if self.weather_timer > 10.0:
             self.weather_timer = 0.0
-            weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm"]
-            import random
-            rnd = getattr(self, "random", random)
+            self.weather_warning_sent = False
             old_weather = self.weather
-            self.weather = rnd.choice(weathers)
-
+            self.weather = getattr(self, "next_weather", "clear")
+            self.next_weather = rnd.choice(weathers)
             if old_weather != self.weather and hasattr(world, "add_event"):
                 world.add_event("weather_change", {"weather": self.weather})
 

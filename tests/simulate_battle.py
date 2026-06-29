@@ -456,7 +456,13 @@ class BattleSimulation:
         booster.active = False
 
     def add_event(self, event_type: str, data: dict):
-        if event_type == "weather_change":
+        if event_type == "weather_warning":
+            self.kill_log.append({
+                "tick": self.tick,
+                "type": "weather_warning",
+                "weather": data.get("weather", "clear")
+            })
+        elif event_type == "weather_change":
             self.kill_log.append({
                 "tick": self.tick,
                 "type": "weather_change",
