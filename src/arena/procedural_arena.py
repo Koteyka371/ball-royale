@@ -169,6 +169,14 @@ class ProceduralArena:
             self.hazards.append(portal1)
             self.hazards.append(portal2)
 
+        # Generate random teleporter pads
+        num_teleporters = max(2, self.num_rooms)
+        for t in range(num_teleporters):
+            t_id = len(self.hazards) + 6000 + t
+            tx, ty = self.get_random_spawn_point(25.0)
+            teleporter = Hazard(id=t_id, x=tx, y=ty, radius=25.0, kind="teleporter", damage=0.0)
+            self.hazards.append(teleporter)
+
     def get_random_spawn_point(self, radius: float) -> Tuple[float, float]:
         if not self.rooms:
             return (random.uniform(radius, self.width - radius),
