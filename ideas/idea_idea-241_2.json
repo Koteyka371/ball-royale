@@ -1,0 +1,4 @@
+{
+  "title": "Chain Reaction Explosions",
+  "description": "If a corpse explosion kills another enemy ball, that newly killed enemy also explodes immediately, creating a chain reaction of explosions. Each subsequent explosion could have a slightly reduced radius and damage to balance it."
+}

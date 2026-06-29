@@ -3561,7 +3561,7 @@ func _use_skill():
                 if "balls" in self.world:
                     self.world.balls.append(minion)
         elif skill_name == "raise_dead":
-            if "dead_balls" in self.world and "balls" in self.world:
+            if "dead_balls" in self.world:
                 var recent_dead = []
                 for b in self.world.dead_balls:
                     var time_since = 0.0
@@ -3578,33 +3578,20 @@ func _use_skill():
                     var target_dead = recent_dead[recent_dead.size() - 1]
                     self.world.dead_balls.erase(target_dead)
 
-                    var minion = target_dead.duplicate()
-                    var next_id = randi() % 90000 + 10000
-                    if "next_id" in self.world:
-                        next_id = self.world.next_id
-                    minion.id = next_id
+                    var explosion_radius = 80.0
+                    var max_hp = 100.0
+                    if "max_hp" in target_dead:
+                        max_hp = float(target_dead.max_hp)
+                    var explosion_damage = max_hp * 0.5
 
-                    var base_hp = 100.0
-                    if "max_hp" in target_dead: base_hp = float(target_dead.max_hp)
-                    minion.hp = base_hp * 0.3
-                    minion.max_hp = minion.hp
-
-                    if "team" in self.ball:
-                        minion.team = self.ball.team
-                    elif "ball_type" in self.ball:
-                        minion.team = self.ball.ball_type
-
-                    minion.set_meta("is_minion", true)
-                    minion.set_meta("minion_owner", self.ball.id)
-                    minion.alive = true
-
-                    if "skill_timer" in minion: minion.skill_timer = 0.0
-                if "skill" in minion: minion.skill = ""
-                if minion.has_method("set_meta"): minion.set_meta("skill", "")
-                    if "attack_timer" in minion: minion.attack_timer = 0.0
-                    if "current_action" in minion: minion.current_action = "idle"
-
-                    self.world.balls.append(minion)
+                    var enemies = _get_enemies()
+                    for e in enemies:
+                        var dx = e.x - target_dead.x
+                        var dy = e.y - target_dead.y
+                        var dist = sqrt(dx*dx + dy*dy)
+                        if dist <= explosion_radius:
+                            if e.has_method("take_damage"):
+                                e.take_damage(explosion_damage)
 
         elif skill_name == "deploy_decoy":
             if "balls" in self.world:
