@@ -10,7 +10,38 @@ class GameMode:
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         """Called at the start of the battle to initialize mode-specific rules/teams."""
-        pass
+
+        # Apply global season modifier
+        season_num = 1
+        if hasattr(world, "leaderboard_manager"):
+            season_num = world.leaderboard_manager.data.get("current_season", 1)
+        elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
+            season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
+
+        modifiers = {
+            1: {"type": "global_speed", "value": 1.2},
+            2: {"type": "global_damage", "value": 0.9},
+            3: {"type": "global_hp", "value": 1.15},
+            4: {"type": "global_cooldown", "value": 0.8},
+        }
+
+        mod_index = ((season_num - 1) % 4) + 1
+        mod = modifiers[mod_index]
+
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator":
+                if mod["type"] == "global_speed":
+                    b.base_speed = getattr(b, "base_speed", getattr(b, "speed", 100)) * mod["value"]
+                    b.speed = getattr(b, "speed", 100) * mod["value"]
+                elif mod["type"] == "global_damage":
+                    b.base_damage = getattr(b, "base_damage", getattr(b, "damage", 10)) * mod["value"]
+                    b.damage = getattr(b, "damage", 10) * mod["value"]
+                elif mod["type"] == "global_hp":
+                    b.max_hp = getattr(b, "max_hp", 100) * mod["value"]
+                    b.hp = getattr(b, "hp", getattr(b, "max_hp", 100))
+                elif mod["type"] == "global_cooldown":
+                    b.cooldown_multiplier = getattr(b, "cooldown_multiplier", 1.0) * mod["value"]
+
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         if not hasattr(world, "dead_balls"):
@@ -42,6 +73,7 @@ class BattleRoyaleMode(GameMode):
         self.random = random
 
     def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
@@ -174,6 +206,7 @@ class TeamDeathmatchMode(GameMode):
         self.description = "Two teams fight until one is eliminated."
 
     def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         # Split into two teams
@@ -199,6 +232,7 @@ class ZombieInfectionMode(GameMode):
         self.description = "One zombie infects others. Survivors win if time runs out."
 
     def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         import random
@@ -254,6 +288,7 @@ class BossFightMode(GameMode):
         self.name = "Boss Fight"
         self.description = "Multiple players fight one giant boss."
     def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         if balls:
@@ -305,6 +340,7 @@ class VIPDefenseMode(GameMode):
         self.description = "Protect the VIP. If the VIP dies, the attackers win."
 
     def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         mid = len(balls) // 2
@@ -341,6 +377,7 @@ class SurvivalMode(GameMode):
         self.description = "Players team up to survive against waves of enemies (simulated by having many enemies)."
 
     def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         players_count = min(4, len(balls))
@@ -374,6 +411,7 @@ class CaptureTheFlagMode(GameMode):
         self.description = "Teams try to steal the enemy's flag (a special booster) and return it to their base."
 
     def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         mid = len(balls) // 2
@@ -426,6 +464,7 @@ class EvolutionarySimulationMode(GameMode):
         self.description = "Only Neural Balls compete. After the match, a genetic algorithm breeds top performers."
 
     def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         # Convert everyone to Neural
@@ -499,6 +538,7 @@ class KingOfTheHillMode(GameMode):
         self.game_time = 0.0
 
     def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         self.game_time = 0.0
@@ -639,6 +679,7 @@ class WeatherChaosMode(GameMode):
         self.random = random
 
     def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
@@ -797,6 +838,7 @@ class DominationMode(GameMode):
         self.points = []
 
     def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         mid = len(balls) // 2
@@ -920,6 +962,7 @@ class MovingZoneMode(GameMode):
         self.zone_target_y = 500.0
 
     def setup(self, world, balls):
+        super().setup(world, balls)
         for b in balls:
             if getattr(b, "ball_type", None) != "spectator":
                 b.score = 0
@@ -1020,6 +1063,7 @@ class MemoryTrapsMode(GameMode):
         self.traps = []
 
     def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
 
@@ -1084,6 +1128,7 @@ class CustomMatchMode(GameMode):
         self.mutators = []
 
     def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
 
@@ -1131,6 +1176,7 @@ class VisionReducedMode(GameMode):
         self.pulse_timer = 0.0
 
     def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
@@ -1301,6 +1347,7 @@ class SafeZoneMode(GameMode):
         self.tick_timer = 0.0
 
     def setup(self, world, balls):
+        super().setup(world, balls)
         arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
         arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
         self.zone_x = arena_width / 2.0

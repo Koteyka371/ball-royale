@@ -10,7 +10,57 @@ class GameMode:
     func setup(world, balls: Array) -> void:
         if not "dead_balls" in world:
             world.dead_balls = []
-        pass
+
+        var season_num = 1
+        if "leaderboard_manager" in world and world.leaderboard_manager != null:
+            season_num = world.leaderboard_manager.data.get("current_season", 1)
+        elif "profile_manager" in world and world.profile_manager != null:
+            if "leaderboard_manager" in world.profile_manager and world.profile_manager.leaderboard_manager != null:
+                season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
+
+        var modifiers = {
+            1: {"type": "global_speed", "value": 1.2},
+            2: {"type": "global_damage", "value": 0.9},
+            3: {"type": "global_hp", "value": 1.15},
+            4: {"type": "global_cooldown", "value": 0.8}
+        }
+
+        var mod_index = ((season_num - 1) % 4) + 1
+        var mod = modifiers[mod_index]
+
+        for b in balls:
+            if b.ball_type != "spectator":
+                if mod["type"] == "global_speed":
+                    if "base_speed" in b:
+                        b.base_speed = b.base_speed * mod["value"]
+                    elif b.has_method("get_meta") and b.has_meta("base_speed"):
+                        b.set_meta("base_speed", b.get_meta("base_speed") * mod["value"])
+                    if "speed" in b:
+                        b.speed = b.speed * mod["value"]
+                elif mod["type"] == "global_damage":
+                    if "base_damage" in b:
+                        b.base_damage = b.base_damage * mod["value"]
+                    elif b.has_method("get_meta") and b.has_meta("base_damage"):
+                        b.set_meta("base_damage", b.get_meta("base_damage") * mod["value"])
+                    if "damage" in b:
+                        b.damage = b.damage * mod["value"]
+                elif mod["type"] == "global_hp":
+                    if "max_hp" in b:
+                        b.max_hp = b.max_hp * mod["value"]
+                    elif b.has_method("get_meta") and b.has_meta("max_hp"):
+                        b.set_meta("max_hp", b.get_meta("max_hp") * mod["value"])
+                    if "hp" in b:
+                        if "max_hp" in b:
+                            b.hp = b.max_hp
+                        elif b.has_method("get_meta") and b.has_meta("max_hp"):
+                            b.hp = b.get_meta("max_hp")
+                elif mod["type"] == "global_cooldown":
+                    if "cooldown_multiplier" in b:
+                        b.cooldown_multiplier = b.cooldown_multiplier * mod["value"]
+                    elif b.has_method("get_meta") and b.has_meta("cooldown_multiplier"):
+                        b.set_meta("cooldown_multiplier", b.get_meta("cooldown_multiplier") * mod["value"])
+                    elif b.has_method("set_meta"):
+                        b.set_meta("cooldown_multiplier", mod["value"])
 
     func tick(world, balls: Array, delta: float = 0.016) -> void:
         if not "dead_balls" in world:
@@ -39,6 +89,7 @@ class BattleRoyaleMode extends GameMode:
         description = "Last man standing. Everyone for themselves. Includes periodic dark phases."
 
     func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
         if not "dead_balls" in world:
             world.dead_balls = []
         var valid_balls = []
@@ -141,6 +192,7 @@ class TeamDeathmatchMode extends GameMode:
         description = "Two teams fight until one is eliminated."
 
     func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
         if not "dead_balls" in world:
             world.dead_balls = []
         var valid_balls = []
@@ -180,6 +232,7 @@ class ZombieInfectionMode extends GameMode:
         description = "One zombie infects others. Survivors win if time runs out."
 
     func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
         if not "dead_balls" in world:
             world.dead_balls = []
         var valid_balls = []
@@ -252,6 +305,7 @@ class BossFightMode extends GameMode:
         name = "Boss Fight"
         description = "Multiple players fight one giant boss."
     func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
         if not "dead_balls" in world:
             world.dead_balls = []
         var valid_balls = []
@@ -327,6 +381,7 @@ class VIPDefenseMode extends GameMode:
         description = "Protect the VIP. If the VIP dies, the attackers win."
 
     func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
         if not "dead_balls" in world:
             world.dead_balls = []
         var valid_balls = []
@@ -377,6 +432,7 @@ class SurvivalMode extends GameMode:
         description = "Players team up to survive against waves of enemies."
 
     func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
         if not "dead_balls" in world:
             world.dead_balls = []
         var valid_balls = []
@@ -425,6 +481,7 @@ class CaptureTheFlagMode extends GameMode:
         description = "Teams try to steal the enemy's flag and return it to their base."
 
     func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
         if not "dead_balls" in world:
             world.dead_balls = []
         var valid_balls = []
@@ -480,6 +537,7 @@ class EvolutionarySimulationMode extends GameMode:
         description = "Only Neural Balls compete. After the match, a genetic algorithm breeds top performers."
 
     func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
         if not "dead_balls" in world:
             world.dead_balls = []
         for i in range(balls.size()):
@@ -570,6 +628,7 @@ class KingOfTheHillMode extends GameMode:
         description = "Control a central shrinking zone. First to 100 points wins."
 
     func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
         if not "dead_balls" in world:
             world.dead_balls = []
         game_time = 0.0
@@ -732,6 +791,7 @@ class WeatherChaosMode extends GameMode:
 		description = "Weather conditions change throughout the match, affecting stats."
 
 	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
 		for b in balls:
 			if b.ball_type != "spectator":
 				b.team = b.ball_type
@@ -928,6 +988,7 @@ class DominationMode extends GameMode:
         description = "Capture points to gain global buffs for your team."
 
     func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
         if not "dead_balls" in world:
             world.dead_balls = []
         var mid = balls.size() / 2
@@ -1056,6 +1117,7 @@ class MovingZoneMode extends GameMode:
         description = "Maintain position in the moving zone to score points for your team."
 
     func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
         if not "dead_balls" in world:
             world.dead_balls = []
         for b in balls:
@@ -1180,6 +1242,7 @@ class MemoryTrapsMode extends GameMode:
 		description = "The arena is littered with invisible traps. Memorize their locations!"
 
 	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
 		if not "dead_balls" in world:
 			world.dead_balls = []
 
@@ -1266,6 +1329,7 @@ class CustomMatchMode extends GameMode:
 		description = "Custom match with mutator options if Prestige Level >= 5."
 
 	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
 		if not "dead_balls" in world:
 			world.dead_balls = []
 
@@ -1315,6 +1379,7 @@ class VisionReducedMode extends GameMode:
 		description = "Visibility is severely reduced. AI relies on narrow cones of light or sonar-like pulses."
 
 	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
 		if not "dead_balls" in world:
 			world.dead_balls = []
 		for b in balls:
@@ -1524,6 +1589,7 @@ class SafeZoneMode extends GameMode:
         description = "A battle royale mode where the safe zone gradually shrinks, and balls take continuous damage outside of it."
 
     func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
         var arena_width = 1000.0
         var arena_height = 1000.0
         if "arena" in world and world.arena:
