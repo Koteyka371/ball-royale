@@ -4719,7 +4719,7 @@
     },
     {
       "id": "idea-271",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Hologram Decoy Skill",
@@ -6874,6 +6874,57 @@
         "src/ai/windstorm_glide.py",
         "src/ai/windstorm_glide.gd",
         "tests/test_windstorm_glide.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-398",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Lightning Strikes",
+      "description": "During thunderstorms, lightning strikes random locations in the arena periodically, dealing massive AoE damage to any ball caught in the blast radius.",
+      "allowed_paths": [
+        "src/ai/lightning_strikes.py",
+        "src/ai/lightning_strikes.gd",
+        "tests/test_lightning_strikes.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-399",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Stormcaller Trait",
+      "description": "A new passive trait for balls that empowers their elemental attacks based on the current weather. During rain or thunderstorms, 'lightning_strike' and 'elemental_burst' deal 50% more damage and chain to one additional target. During fog, the skills have a larger AOE radius.",
+      "allowed_paths": [
+        "src/ai/stormcaller_trait.py",
+        "src/ai/stormcaller_trait.gd",
+        "tests/test_stormcaller_trait.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-400",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Lightning Rod Trap",
+      "description": "A deployable hazard trap that attracts all chain lightning strikes and electrical skills within its radius, safely absorbing the damage while charging up. Once fully charged, it unleashes an EMP burst that silences and slows all nearby enemies.",
+      "allowed_paths": [
+        "src/arena/lightning_rod_trap.py",
+        "src/arena/lightning_rod_trap.gd",
+        "tests/test_lightning_rod_trap.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

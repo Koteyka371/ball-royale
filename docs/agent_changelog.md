@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-271] Hologram Decoy Skill — *2026-06-29 10:54:35 UTC*
+
+A skill that leaves behind a fake copy of the ball that absorbs one hit or confuses enemy AI.
+
+---
+
 ## [idea-237] Chain Lightning Skill — *2026-06-29 10:48:20 UTC*
 
 A new skill that strikes an enemy with lightning which then arcs to up to 3 nearby enemies, dealing reduced damage on each bounce.
