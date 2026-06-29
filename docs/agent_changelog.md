@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-280] Reverse EMP item — *2026-06-29 10:40:20 UTC*
+
+An item that temporarily increases the cooldowns of nearby enemies, preventing them from using skills or attacking for a short time.
+
+---
+
 ## [idea-277] Mirage Ability — *2026-06-29 10:40:15 UTC*
 
 Introduce a new Mirage ability for some ball types that allows them to create false copies of themselves when weather conditions are foggy or sandstorming. This will confuse the enemies by giving them fake targets to attack.
