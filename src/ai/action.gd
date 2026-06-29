@@ -3305,6 +3305,35 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "decoy_item":
+                var decoy = null
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    decoy = self.ball.duplicate()
+                elif self.ball.has_method("duplicate"):
+                    decoy = self.ball.duplicate()
+
+                if decoy != null:
+                    if "id" in decoy:
+                        decoy.id = randi() % 90000 + 10000
+                    if "hp" in decoy and "max_hp" in decoy:
+                        decoy.max_hp = float(self.ball.max_hp) * 0.1
+                        decoy.hp = decoy.max_hp
+                    if "damage" in decoy:
+                        decoy.damage = 0.0
+                    if decoy.has_method("set_meta"):
+                        decoy.set_meta("is_decoy", true)
+                        decoy.set_meta("decoy_timer", 5.0)
+                    elif typeof(decoy) == TYPE_DICTIONARY:
+                        decoy["is_decoy"] = true
+                        decoy["decoy_timer"] = 5.0
+
+                    if self.world != null and "balls" in self.world:
+                        self.world.balls.append(decoy)
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "stealth_drone_item":
                 if self.ball.has_method("set_meta"):
                     self.ball.set_meta("has_stealth_drone", true)
