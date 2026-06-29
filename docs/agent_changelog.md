@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-254] Black Hole Gravity Scaling — *2026-06-29 08:21:35 UTC*
+
+Increase the gravity pull strength of the black hole hazard over time, until it pulls all balls in the arena, creating an intense end-game mechanic.
+
+---
+
 ## [idea-242] Seasonal Tournaments — *2026-06-29 08:21:29 UTC*
 
 Introduce monthly or seasonal tournaments where players compete for exclusive cosmetic ball skins and unique status effects.
