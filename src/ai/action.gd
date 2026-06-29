@@ -3351,6 +3351,25 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "silence_booster":
+                if self.world != null and "balls" in self.world:
+                    for other_ball in self.world.balls:
+                        var same_team = false
+                        if "team" in other_ball and "team" in self.ball and other_ball.team == self.ball.team:
+                            same_team = true
+                        if not same_team:
+                            var dist_silence = sqrt(pow(other_ball.x - self.ball.x, 2) + pow(other_ball.y - self.ball.y, 2))
+                            if dist_silence < 150.0:
+                                var duration = 5.0
+                                if "duration" in nearest: duration = nearest.duration
+                                if other_ball.has_method("set_meta"):
+                                    other_ball.set_meta("silence_timer", duration)
+                                elif "silence_timer" in other_ball:
+                                    other_ball.silence_timer = duration
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "emp_item":
                 if self.world != null and "balls" in self.world:
                     for other_ball in self.world.balls:
