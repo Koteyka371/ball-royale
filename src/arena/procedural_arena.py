@@ -280,6 +280,7 @@ class ProceduralArena:
             if self.safe_zone_radius < 50.0:
                 self.safe_zone_radius = 50.0
 
+            new_craters = []
             # Slowly expand dynamic hazards and decay others like flares
             for h in self.hazards:
                 if getattr(h, "kind", "") == "flare":
@@ -287,6 +288,24 @@ class ProceduralArena:
                         h.duration -= delta
                         if h.duration <= 0:
                             h.active = False
+                elif getattr(h, "kind", "") == "meteor":
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0:
+                            h.active = False
+                            import random
+                            crater_id = 6000 + len(self.hazards) + len(new_craters) + random.randint(0, 1000)
+                            crater = Hazard(id=crater_id, x=h.x, y=h.y, radius=h.radius * 1.5, kind="crater", damage=10.0)
+                            new_craters.append(crater)
+
+                            # Destroy cover
+                            try:
+                                from arena.procedural_arena import Room # type: ignore
+                                crater_size = h.radius * 3.0
+                                new_room = Room(h.x - crater_size/2, h.y - crater_size/2, crater_size, crater_size)
+                                self.rooms.append(new_room)
+                            except ImportError:
+                                pass
                 elif h.id >= 1000 and hasattr(h, "target_radius"):
                     if h.radius < h.target_radius:
                         # Grow proportionally to reach target in roughly 600 ticks
@@ -294,8 +313,20 @@ class ProceduralArena:
                         if h.radius > h.target_radius:
                             h.radius = h.target_radius
 
-            # Remove inactive flares
+            # Remove inactive flares and meteors
             self.hazards = [h for h in self.hazards if getattr(h, "active", True)]
+            self.hazards.extend(new_craters)
+
+        if current_tick % 60 == 0:
+            import random
+            if random.random() < 0.1:
+                x = random.uniform(50, self.width - 50)
+                y = random.uniform(50, self.height - 50)
+                h_id = 2500 + len(self.hazards) + random.randint(0, 1000)
+                meteor = Hazard(id=h_id, x=x, y=y, radius=30.0, kind="meteor", damage=200.0)
+                meteor.target_radius = 30.0
+                setattr(meteor, "duration", 5.0)
+                self.hazards.append(meteor)
 
         if current_tick % 600 == 0:
             import random

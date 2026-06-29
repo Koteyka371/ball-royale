@@ -300,6 +300,7 @@ func update_zone(current_tick: int, delta: float) -> void:
         if safe_zone_radius < 50.0:
             safe_zone_radius = 50.0
 
+        var new_craters = []
         for h in hazards:
             if "kind" in h and h.kind == "flare":
                 if h.has_meta("duration"):
@@ -309,6 +310,24 @@ func update_zone(current_tick: int, delta: float) -> void:
                         h.set_meta("active", false)
                         if "active" in h:
                             h.active = false
+            elif "kind" in h and h.kind == "meteor":
+                if h.has_meta("duration"):
+                    var dur = h.get_meta("duration") - delta
+                    h.set_meta("duration", dur)
+                    if dur <= 0:
+                        h.set_meta("active", false)
+                        if "active" in h:
+                            h.active = false
+                        var crater_id = 6000 + hazards.size() + new_craters.size() + (randi() % 1000)
+                        var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
+                        var crater = ProceduralArenaScript.Hazard.new(crater_id, h.x, h.y, h.radius * 1.5, "crater", 10.0)
+                        new_craters.append(crater)
+
+                        var crater_size = h.radius * 3.0
+                        var new_room = ProceduralArenaScript.Room.new(h.x - crater_size/2, h.y - crater_size/2, crater_size, crater_size)
+                        rooms.append(new_room)
+                        if has_method("queue_redraw"):
+                            call("queue_redraw")
             elif h.id >= 1000 and h.radius < h.target_radius:
                 h.radius += (h.target_radius / 600.0) * delta * 60.0
                 if h.radius > h.target_radius:
@@ -324,7 +343,20 @@ func update_zone(current_tick: int, delta: float) -> void:
 
             if is_active:
                 active_hazards.append(h)
+        for c in new_craters:
+            active_hazards.append(c)
         hazards = active_hazards
+
+        if current_tick % 60 == 0:
+            if randf() < 0.1:
+                var x = randf_range(50, width - 50)
+                var y = randf_range(50, height - 50)
+                var h_id = 2500 + hazards.size() + (randi() % 1000)
+                var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
+                var meteor = ProceduralArenaScript.Hazard.new(h_id, x, y, 30.0, "meteor", 200.0)
+                meteor.target_radius = 30.0
+                meteor.set_meta("duration", 5.0)
+                hazards.append(meteor)
 
         if current_tick % 600 == 0:
             var new_hazards = []
