@@ -9,6 +9,10 @@ class MockBall:
         self.hp = 100
         self.damage = 10.0
         self.speed = 100.0
+        self.x = 0.0
+        self.y = 0.0
+        self.perception_radius = 250.0
+        self.attack_accuracy = 1.0
 
 class MockWorld:
     pass
@@ -51,3 +55,21 @@ def test_weather_mode():
     assert balls[0].damage == balls[0].base_damage
     mode.tick(world, balls, 0.9)
     assert balls[0].hp in [99.0, 79.0]
+
+
+    # Tick with wind
+    mode.weather = "wind"
+    mode.wind_dx = 100.0
+    mode.wind_dy = -50.0
+    balls[0].x = 0.0
+    balls[0].y = 0.0
+    mode.tick(world, balls, 0.1)
+    assert abs(balls[0].x - 10.0) < 0.01
+    assert abs(balls[0].y - (-5.0)) < 0.01
+
+    # Tick with rain
+    mode.weather = "rain"
+    mode.tick(world, balls, 0.1)
+    assert abs(balls[0].speed - (balls[0].base_speed * 0.8)) < 0.01
+    assert hasattr(balls[0], "perception_radius") and balls[0].perception_radius == 125.0
+    assert balls[0].attack_accuracy == 0.8

@@ -1,0 +1,4 @@
+{
+  "title": "Tornado Hazard During Wind Weather",
+  "description": "Enhance the 'wind' weather by occasionally spawning a large tornado hazard that slowly traverses the map. The tornado should pull nearby balls and items towards its center and launch them randomly upon collision, creating an unpredictable and chaotic battlefield element."
+}
