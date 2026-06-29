@@ -1754,6 +1754,89 @@ class MovingSafeZoneMode(GameMode):
         return None
 
 
+
+class ShrinkingDangerZoneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Shrinking Danger Zone"
+        self.description = "A shrinking danger zone mode where the safe area slowly decreases, forcing players into close-quarters combat."
+        self.zone_x = 500.0
+        self.zone_y = 500.0
+        self.zone_radius = 500.0
+        self.min_zone_radius = 50.0
+        self.shrink_rate = 15.0
+        self.outside_damage_per_second = 20.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.zone_x = arena_width / 2.0
+        self.zone_y = arena_height / 2.0
+        self.zone_radius = min(arena_width, arena_height) / 2.0
+        self.min_zone_radius = 50.0
+
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        for i, b in enumerate(valid_balls):
+            if i >= 20:
+                b.ball_type = "spectator"
+                b.alive = False
+            else:
+                b.team = b.ball_type # Default behavior
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+
+        # Shrink the safe zone
+        if self.zone_radius > self.min_zone_radius:
+            self.zone_radius -= self.shrink_rate * delta
+            if self.zone_radius < self.min_zone_radius:
+                self.zone_radius = self.min_zone_radius
+
+        # Apply continuous damage outside the safe zone
+        damage_this_tick = self.outside_damage_per_second * delta
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                dx = b.x - self.zone_x
+                dy = b.y - self.zone_y
+                dist = math.sqrt(dx*dx + dy*dy)
+
+                # If outside safe zone, take damage
+                if dist > self.zone_radius:
+                    b.hp -= damage_this_tick
+                    if b.hp <= 0:
+                        b.alive = False
+                        b.hp = 0
+                        b.killer = "Danger Zone"
+
+    def check_winner(self, world, balls):
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
+        if len(teams_alive) == 1:
+            return list(teams_alive)[0]
+
+        if len(alive) == 1:
+            return getattr(alive[0], "team", getattr(alive[0], "ball_type", None))
+
+        return None
+
 class SafeZoneMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -2296,6 +2379,7 @@ GAME_MODES = {
     "toxic_environment": ToxicEnvironmentMode(),
     "capture_the_flag": CaptureTheFlagMode(),
     "evolutionary_simulation": EvolutionarySimulationMode(),
+    "shrinking_danger_zone": ShrinkingDangerZoneMode(),
     "safe_zone": SafeZoneMode(),
     "moving_safe_zone": MovingSafeZoneMode(),
     "bounty_hunt": BountyHuntMode()
