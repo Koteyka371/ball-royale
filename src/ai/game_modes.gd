@@ -2237,7 +2237,102 @@ class ToxicEnvironmentMode extends GameMode:
         return null
 
 
+
+class ModifierZonesMode extends GameMode:
+	var zones: Array = []
+
+	func _init():
+		name = "Modifier Zones"
+		description = "Fight over zones that provide different temporary buffs."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world.get("arena") != null:
+			arena_width = world.arena.get("width", 1000.0)
+			arena_height = world.arena.get("height", 1000.0)
+
+		zones = [
+			{"id": "zone_speed", "x": arena_width * 0.25, "y": arena_height * 0.25, "radius": 150.0, "type": "speed"},
+			{"id": "zone_damage", "x": arena_width * 0.75, "y": arena_height * 0.25, "radius": 150.0, "type": "damage"},
+			{"id": "zone_heal", "x": arena_width * 0.5, "y": arena_height * 0.75, "radius": 150.0, "type": "heal"}
+		]
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		for b in balls:
+			if not b.get("alive", false) or b.get("ball_type", "") == "spectator":
+				continue
+
+			if not b.has_meta("base_speed"):
+				b.set_meta("base_speed", b.get("speed", 100.0))
+			if not b.has_meta("base_damage"):
+				b.set_meta("base_damage", b.get("damage", 10.0))
+
+			var in_speed_zone = false
+			var in_damage_zone = false
+			var in_heal_zone = false
+
+			for zone in zones:
+				var dx = b.x - zone["x"]
+				var dy = b.y - zone["y"]
+				var dist = sqrt(dx*dx + dy*dy)
+
+				if dist <= zone["radius"]:
+					if zone["type"] == "speed":
+						in_speed_zone = true
+					elif zone["type"] == "damage":
+						in_damage_zone = true
+					elif zone["type"] == "heal":
+						in_heal_zone = true
+
+			if in_speed_zone:
+				b.speed = b.get_meta("base_speed") * 1.5
+				b.set_meta("zone_modifier_speed", true)
+			else:
+				if b.has_meta("zone_modifier_speed"):
+					b.speed = b.get_meta("base_speed")
+					b.remove_meta("zone_modifier_speed")
+
+			if in_damage_zone:
+				b.damage = b.get_meta("base_damage") * 1.5
+				b.set_meta("zone_modifier_damage", true)
+			else:
+				if b.has_meta("zone_modifier_damage"):
+					b.damage = b.get_meta("base_damage")
+					b.remove_meta("zone_modifier_damage")
+
+			if in_heal_zone:
+				var max_hp = b.get("max_hp", 100.0)
+				b.hp = min(max_hp, b.hp + 20.0 * delta)
+
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.get("alive", false) and b.get("ball_type", "") != "spectator":
+				alive.append(b)
+		if alive.is_empty():
+			return "Draw"
+
+		var teams_alive = {}
+		for b in alive:
+			var team = b.get("team") if b.get("team") != null else b.get("ball_type")
+			teams_alive[team] = true
+
+		if teams_alive.size() == 1:
+			return teams_alive.keys()[0]
+
+		if alive.size() == 1:
+			return alive[0].get("team", alive[0].get("ball_type"))
+
+		return null
+
+
 var GAME_MODES = {
+	"modifier_zones": ModifierZonesMode.new(),
     "draft_royale": DraftRoyaleMode.new(),
     "tournament": TournamentMode.new(),
     "bumper_balls": BumperBallsMode.new(),
