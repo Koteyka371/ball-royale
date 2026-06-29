@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-269] Global Weather Announcements — *2026-06-29 09:51:25 UTC*
+
+Add UI notifications or commentary when weather changes, giving players time to adapt.
+
+---
+
 ## [idea-259] Trap Hazards — *2026-06-29 09:51:22 UTC*
 
 Add new hidden traps to arenas that trigger when a ball moves over them, applying a slow or damage over time effect.
