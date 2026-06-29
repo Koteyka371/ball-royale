@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-263] Ricochet Arena Hazards — *2026-06-29 09:07:05 UTC*
+
+Introduce bumpers in the arena that don't deal damage but strongly bounce balls and projectiles in random directions, adding chaos and forcing players to adapt their movement.
+
+---
+
 ## [idea-194] Portal Mechanics — *2026-06-29 09:05:38 UTC*
 
 Add pairs of portals in the arena. If a ball enters one portal, it instantly teleports to the other portal, preserving momentum.

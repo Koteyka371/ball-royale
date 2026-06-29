@@ -4583,7 +4583,7 @@
     },
     {
       "id": "idea-263",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Ricochet Arena Hazards",
@@ -6210,6 +6210,75 @@
         "src/ai/tornado_skill.py",
         "src/ai/tornado_skill.gd",
         "tests/test_tornado_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-359",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "One-way portals",
+      "description": "Portals that only allow travel in one direction, creating strategic choke points in the arena. They can be created by giving only one of the paired portals target coordinates.",
+      "allowed_paths": [
+        "src/ai/one_way_portals.py",
+        "src/ai/one_way_portals.gd",
+        "tests/test_one_way_portals.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-360",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Portal momentum scaling",
+      "description": "Increase or decrease the ball's momentum upon exiting a portal depending on its speed. Can be implemented by scaling `vx` and `vy` when `hazard.kind == 'portal'`.",
+      "allowed_paths": [
+        "src/ai/portal_momentum_scaling.py",
+        "src/ai/portal_momentum_scaling.gd",
+        "tests/test_portal_momentum_scaling.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-361",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guilds & Alliances",
+      "description": "Introduce a Guilds system where players can create or join alliances. Guilds have dedicated chat channels, leaderboards, and a shared vault. In special Guild vs Guild (GvG) game modes, players represent their guild in multi-stage battles, capturing territory on a persistent world map. Winning territories yields passive resources for all guild members.",
+      "allowed_paths": [
+        "src/ui/guilds_alliances.py",
+        "src/ui/guilds_alliances.gd",
+        "src/ai/guilds_alliances.py",
+        "tests/test_guilds_alliances.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-362",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Crafting System and Item Synthesis",
+      "description": "Implement a crafting system where players gather materials (like 'Iron Ore', 'Magic Dust', 'Void Shard') dropped by destroyed balls or special hazards during matches. These materials can be used between matches to craft consumable boosters, temporary stats modifiers, or rare cosmetics. Advanced recipes might require synthesizing basic items into more potent artifacts.",
+      "allowed_paths": [
+        "src/ai/crafting_and_item_synthesis.py",
+        "src/ai/crafting_and_item_synthesis.gd",
+        "tests/test_crafting_and_item_synthesis.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
