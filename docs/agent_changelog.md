@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-241] Corpse Explosion — *2026-06-29 09:36:09 UTC*
+
+Instead of reanimating the dead, this skill targets a recently dead ball and causes it to explode, dealing AoE damage proportional to its max HP.
+
+---
+
 ## [idea-251] Decoy Ball — *2026-06-29 09:36:05 UTC*
 
 A new ball type that creates a static decoy of itself. Enemies get confused and attack the decoy, wasting their skills and cooldowns.
