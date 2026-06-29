@@ -123,6 +123,59 @@ func _init(ball_ref, world_ref):
 func execute(strategy: String, delta: float):
 	if (strategy == "flee" or strategy == "defend") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
+		if inv.has("escape_portal"):
+			if world != null and "arena" in world and "hazards" in world.arena:
+				var arena = world.arena
+				if load("res://src/arena/procedural_arena.gd") != null:
+					var p1_id = arena.hazards.size() + randi() % 10000 + 10000
+					var p2_id = arena.hazards.size() + randi() % 10000 + 20000
+					var p1 = load("res://src/arena/procedural_arena.gd").Hazard.new()
+					p1.id = p1_id
+					p1.x = self.ball.x
+					p1.y = self.ball.y
+					p1.radius = 30.0
+					p1.kind = "portal"
+					p1.damage = 0.0
+					p1.set_meta("duration", 10.0)
+					if self.ball.has_meta("id"):
+						p1.set_meta("owner_id", self.ball.get_meta("id"))
+
+					var safe_x = self.ball.x + randf_range(-200, 200)
+					var safe_y = self.ball.y + randf_range(-200, 200)
+					if arena.has_method("get_random_spawn_point"):
+						var pt = arena.get_random_spawn_point(30.0)
+						safe_x = pt[0]
+						safe_y = pt[1]
+
+					var p2 = load("res://src/arena/procedural_arena.gd").Hazard.new()
+					p2.id = p2_id
+					p2.x = safe_x
+					p2.y = safe_y
+					p2.radius = 30.0
+					p2.kind = "portal"
+					p2.damage = 0.0
+					p2.set_meta("duration", 10.0)
+					if self.ball.has_meta("id"):
+						p2.set_meta("owner_id", self.ball.get_meta("id"))
+
+					p1.set_meta("target_x", p2.x)
+					p1.set_meta("target_y", p2.y)
+					p2.set_meta("target_x", p1.x)
+					p2.set_meta("target_y", p1.y)
+
+					arena.hazards.append(p1)
+					arena.hazards.append(p2)
+					var new_inv = []
+					var removed = false
+					for item in inv:
+						if item == "escape_portal" and not removed:
+							removed = true
+						else:
+							new_inv.append(item)
+					self.ball.set_meta("inventory", new_inv)
+
+	if (strategy == "flee" or strategy == "defend") and self.ball.has_meta("inventory"):
+		var inv = self.ball.get_meta("inventory")
 		if inv.has("placeable_trap"):
 			if world != null and "arena" in world and "hazards" in world.arena:
 				var arena = world.arena
@@ -3000,6 +3053,16 @@ func _collect_booster(delta: float):
                 var dur = 5.0
                 if "duration" in nearest: dur = nearest.duration
                 self.ball.set_meta("zone_immunity_timer", dur)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "escape_portal_item":
+                if not self.ball.has_meta("inventory"):
+                    self.ball.set_meta("inventory", [])
+                var inv = self.ball.get_meta("inventory")
+                inv.append("escape_portal")
+                self.ball.set_meta("inventory", inv)
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:

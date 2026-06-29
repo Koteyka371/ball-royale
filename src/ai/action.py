@@ -88,11 +88,39 @@ class Action:
         self.world = world
 
     def execute(self, strategy: str, delta: float) -> None:
+        if strategy in ("flee", "defend") and hasattr(self.ball, "inventory") and "escape_portal" in self.ball.inventory:
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                import random
+                from src.arena.procedural_arena import Hazard
+                p1_id = len(self.world.arena.hazards) + random.randint(10000, 19999)
+                p2_id = len(self.world.arena.hazards) + random.randint(20000, 29999)
+
+                # Portal 1 at current location
+                p1 = Hazard(p1_id, self.ball.x, self.ball.y, 30.0, "portal", 0.0)
+                setattr(p1, 'duration', 10.0)
+                setattr(p1, 'owner_id', getattr(self.ball, 'id', None))
+
+                # Portal 2 at a random location within arena bounds
+                safe_x, safe_y = self.world.arena.get_random_spawn_point(30.0) if hasattr(self.world.arena, "get_random_spawn_point") else (self.ball.x + random.uniform(-200, 200), self.ball.y + random.uniform(-200, 200))
+
+                p2 = Hazard(p2_id, safe_x, safe_y, 30.0, "portal", 0.0)
+                setattr(p2, 'duration', 10.0)
+                setattr(p2, 'owner_id', getattr(self.ball, 'id', None))
+
+                p1.target_x = p2.x
+                p1.target_y = p2.y
+                p2.target_x = p1.x
+                p2.target_y = p1.y
+
+                self.world.arena.hazards.append(p1)
+                self.world.arena.hazards.append(p2)
+                self.ball.inventory.remove("escape_portal")
+
         # Check inventory for traps to place if fleeing or defending
         if strategy in ("flee", "defend") and hasattr(self.ball, "inventory") and "placeable_trap" in self.ball.inventory:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 import random
-                from arena.procedural_arena import Hazard
+                from src.arena.procedural_arena import Hazard
                 trap_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
                 trap = Hazard(trap_id, self.ball.x, self.ball.y, 20.0, "trap", 0.0)
 
@@ -1928,6 +1956,13 @@ class Action:
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
+                elif getattr(nearest, "kind", None) == "escape_portal_item":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("escape_portal")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
                 elif getattr(nearest, "kind", None) == "placeable_trap_item":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
@@ -2164,7 +2199,7 @@ class Action:
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     import random
                     trap_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
-                    from arena.procedural_arena import Hazard  # type: ignore
+                    from src.arena.procedural_arena import Hazard  # type: ignore
                     smoke = Hazard(trap_id, self.ball.x, self.ball.y, 80.0, "smokescreen", 0.0)
                     setattr(smoke, 'duration', 5.0)
                     self.world.arena.hazards.append(smoke)
@@ -2173,7 +2208,7 @@ class Action:
                 import random
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     trap_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
-                    from arena.procedural_arena import Hazard  # type: ignore
+                    from src.arena.procedural_arena import Hazard  # type: ignore
                     trap = Hazard(trap_id, self.ball.x, self.ball.y, 15.0, "trap", 0.0)
                     setattr(trap, 'duration', 5.0) # Trap lasts for 5 seconds
 
@@ -2624,7 +2659,7 @@ class Action:
                         import random
                         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                             trap_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
-                            from arena.procedural_arena import Hazard  # type: ignore
+                            from src.arena.procedural_arena import Hazard  # type: ignore
                             trap = Hazard(trap_id, self.ball.x, self.ball.y, 10.0, "trap", 0.0)
                             setattr(trap, 'duration', 3.0)
 

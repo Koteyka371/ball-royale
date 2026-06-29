@@ -301,6 +301,9 @@ func update_zone(current_tick: int, delta: float) -> void:
                 elif randf() < 0.05:
                     h.kind = "stealth_drone_item"
                     h.damage = 0.0
+                elif randf() < 0.05:
+                    h.kind = "escape_portal_item"
+                    h.damage = 0.0
                 elif randf() < 0.10:
                     h.kind = "placeable_trap_item"
                     h.damage = 0.0
