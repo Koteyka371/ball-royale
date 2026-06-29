@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-240] Ball Loadouts — *2026-06-29 09:43:23 UTC*
+
+Allow players to save customized sets of pre-game selections, preferred bonuses, and trap variants to quickly jump into matches with their favorite setups.
+
+---
+
 ## [idea-241] Corpse Explosion — *2026-06-29 09:36:09 UTC*
 
 Instead of reanimating the dead, this skill targets a recently dead ball and causes it to explode, dealing AoE damage proportional to its max HP.

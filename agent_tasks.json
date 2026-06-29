@@ -4191,7 +4191,7 @@
     },
     {
       "id": "idea-240",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Ball Loadouts",
@@ -6500,6 +6500,57 @@
         "src/arena/lightning_storm.py",
         "src/arena/lightning_storm.gd",
         "tests/test_lightning_storm.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-376",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Anti-Gravity Hazard",
+      "description": "An arena hazard zone that periodically turns on, causing any balls inside to lose traction, reducing their turn rate to near zero and making them drift in their current direction.",
+      "allowed_paths": [
+        "src/arena/anti_gravity.py",
+        "src/arena/anti_gravity.gd",
+        "tests/test_anti_gravity.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-377",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Necromancer Soul Siphon",
+      "description": "When the Necromancer ball hits an enemy that is under 20% HP, it has a chance to execute them instantly and restore its own HP proportional to the enemy's max HP, converting the defeated enemy into a temporary shield aura.",
+      "allowed_paths": [
+        "src/ai/necromancer_soul_siphon.py",
+        "src/ai/necromancer_soul_siphon.gd",
+        "tests/test_necromancer_soul_siphon.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-378",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Lightning Upgrade",
+      "description": "A new skill that deals damage to one enemy and then chains to up to 3 nearby enemies within a short radius, with each jump dealing slightly reduced damage.",
+      "allowed_paths": [
+        "src/ai/chain_lightning_upgrade.py",
+        "src/ai/chain_lightning_upgrade.gd",
+        "tests/test_chain_lightning_upgrade.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
