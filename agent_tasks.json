@@ -5567,6 +5567,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-321",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Loadout Sharing",
+      "description": "Allow players to share their custom loadouts with friends or the community using short codes, similar to deck sharing in card games.",
+      "allowed_paths": [
+        "src/ai/loadout_sharing.py",
+        "src/ai/loadout_sharing.gd",
+        "tests/test_loadout_sharing.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-322",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Random Loadout Option",
+      "description": "Add a 'Random' loadout selection that picks a random unlocked ball type and trap variant to provide an extra challenge with bonus rewards.",
+      "allowed_paths": [
+        "src/ai/random_loadout_option.py",
+        "src/ai/random_loadout_option.gd",
+        "tests/test_random_loadout_option.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
