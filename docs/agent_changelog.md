@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-237] Chain Lightning Skill — *2026-06-29 10:48:20 UTC*
+
+A new skill that strikes an enemy with lightning which then arcs to up to 3 nearby enemies, dealing reduced damage on each bounce.
+
+---
+
 ## [idea-209] Weather Systems — *2026-06-29 10:48:16 UTC*
 
 Introduce dynamic weather to arenas that affect physics and perception. For example, rain could make the terrain slippery (increasing drift) and reduce perception range for AI balls, while wind could constantly apply a slight directional force to all balls, requiring AI to adapt to the changing environment.
