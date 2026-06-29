@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-181] Decoy Flare Mechanism — *2026-06-29 07:52:10 UTC*
+
+Introduce a deployable flare hazard that draws AI targeting logic, causing balls to attack the decoy instead of actual opponents for a short duration.
+
+---
+
 ## [idea-250] Season Modifiers — *2026-06-29 07:40:26 UTC*
 
 Each 30-day season introduces a unique global modifier, like 20% faster movement speed or reduced cooldowns for specific ball classes.

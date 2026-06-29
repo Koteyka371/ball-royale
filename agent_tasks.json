@@ -3184,7 +3184,7 @@
     },
     {
       "id": "idea-181",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Flare Mechanism",
@@ -5767,6 +5767,108 @@
         "src/ui/prestige_token_shop.gd",
         "src/ai/prestige_token_shop.py",
         "tests/test_prestige_token_shop.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-333",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Season-specific visual themes for the arena",
+      "description": "Each season could alter the visual look of the arena (e.g. Winter theme for Season 1, Lava theme for Season 2, Neon theme for Season 3) to provide a fresh experience and tie into the global modifier (e.g. ice patches for speed, lava cracks for damage).",
+      "allowed_paths": [
+        "src/arena/season_specific_visual_themes_for_the_arena.py",
+        "src/arena/season_specific_visual_themes_for_the_arena.gd",
+        "tests/test_season_specific_visual_themes_for_the_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-334",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Labyrinth Mode",
+      "description": "A new game mode where the arena starts as a complex maze that slowly shifts and shrinks. Walls deal damage, forcing balls to navigate carefully while fighting for survival in an ever-tightening space.",
+      "allowed_paths": [
+        "src/ai/shrinking_labyrinth.py",
+        "src/ai/shrinking_labyrinth.gd",
+        "tests/test_shrinking_labyrinth.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-335",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Wells Mode",
+      "description": "A mode where random gravity wells spawn in the arena, pulling nearby balls towards their center and slightly damaging them over time.",
+      "allowed_paths": [
+        "src/ai/gravity_wells.py",
+        "src/ai/gravity_wells.gd",
+        "tests/test_gravity_wells.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-336",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Season leaderboards with exclusive rewards",
+      "description": "At the end of each 30-day season, the top 100 players on the leaderboard could receive exclusive cosmetic items (like a special aura or crown) and a unique title based on that season's theme to incentivize competitive play.",
+      "allowed_paths": [
+        "src/ai/season_leaderboards_with_exclusive_rewards.py",
+        "src/ai/season_leaderboards_with_exclusive_rewards.gd",
+        "tests/test_season_leaderboards_with_exclusive_rewards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-337",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Entanglement Hazard",
+      "description": "A new hazard type that links two balls together. If one takes damage or gets a status effect, the other receives a fraction of it. It requires coordination to break the link by moving far enough apart or finding a cleanser item.",
+      "allowed_paths": [
+        "src/arena/quantum_entanglement.py",
+        "src/arena/quantum_entanglement.gd",
+        "tests/test_quantum_entanglement.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-338",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Pinball Bumpers",
+      "description": "Add stationary hazards that act as pinball bumpers. Whenever a ball hits one, it deals no damage but bounces them away with immense speed.",
+      "allowed_paths": [
+        "src/ai/pinball_bumpers.py",
+        "src/ai/pinball_bumpers.gd",
+        "tests/test_pinball_bumpers.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
