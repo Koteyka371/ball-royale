@@ -5894,7 +5894,7 @@
     },
     {
       "id": "idea-340",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "EMC Burst Hazard",
@@ -8917,6 +8917,40 @@
         "src/ai/chain_reaction_clones.py",
         "src/ai/chain_reaction_clones.gd",
         "tests/test_chain_reaction_clones.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-516",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Season Backgrounds",
+      "description": "The main menu background changes visually depending on the current season theme (e.g. fiery for Inferno, snowy for Frost).",
+      "allowed_paths": [
+        "src/ai/dynamic_season_backgrounds.py",
+        "src/ai/dynamic_season_backgrounds.gd",
+        "tests/test_dynamic_season_backgrounds.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-517",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Custom Season Badges",
+      "description": "Players can equip a custom badge next to their name corresponding to the highest season rank they achieved.",
+      "allowed_paths": [
+        "src/ai/custom_season_badges.py",
+        "src/ai/custom_season_badges.gd",
+        "tests/test_custom_season_badges.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

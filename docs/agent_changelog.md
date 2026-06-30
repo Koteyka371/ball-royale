@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-340] EMC Burst Hazard — *2026-06-30 13:00:24 UTC*
+
+An Electromagnetic Pulse burst hazard that periodically spawns in the arena. When it detonates, it temporarily scrambles the AI targeting logic of any ball within its radius, causing them to randomly switch targets or wander aimlessly for a few seconds.
+
+---
+
 ## [idea-336] Season leaderboards with exclusive rewards — *2026-06-30 12:52:25 UTC*
 
 At the end of each 30-day season, the top 100 players on the leaderboard could receive exclusive cosmetic items (like a special aura or crown) and a unique title based on that season's theme to incentivize competitive play.
