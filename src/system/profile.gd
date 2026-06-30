@@ -40,6 +40,8 @@ func load_profile():
                 data["login_streak"] = 0
             if not data.has("last_login_date"):
                 data["last_login_date"] = ""
+            if not data.has("guild_name"):
+                data["guild_name"] = ""
             return
 
     # Default profile
@@ -61,7 +63,8 @@ func load_profile():
         "status_effects": [],
         "nemeses": {},
         "login_streak": 0,
-        "last_login_date": ""
+        "last_login_date": "",
+        "guild_name": ""
     }
 
 func add_quest(quest_description: String, reward: int):
@@ -158,7 +161,8 @@ func do_prestige() -> bool:
             "status_effects": data.get("status_effects", []),
             "nemeses": data.get("nemeses", {}),
             "login_streak": data.get("login_streak", 0),
-            "last_login_date": data.get("last_login_date", "")
+            "last_login_date": data.get("last_login_date", ""),
+            "guild_name": data.get("guild_name", "")
         }
         save_profile()
         var lm = load("res://src/system/leaderboard.gd").new(self)

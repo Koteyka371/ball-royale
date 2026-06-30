@@ -30,6 +30,25 @@ class BallBrain:
             if "bonus_damage" in pm.data.get("bonuses", {}):
                 self.ball.damage += pm.data["bonuses"]["bonus_damage"] * 2
 
+            # Apply guild buffs
+            if pm.data.get("guild_name", ""):
+                try:
+                    from system.guild import GuildManager
+                    gm = GuildManager("guilds.json")
+                    guild_buffs = gm.get_guild_buffs(pm.data["guild_name"])
+                    if guild_buffs:
+                        hp_percent = self.ball.hp / self.ball.max_hp if getattr(self.ball, 'max_hp', 0) > 0 else 1.0
+                        if hasattr(self.ball, 'max_hp'):
+                            self.ball.max_hp += guild_buffs.get("bonus_hp", 0) * 10
+                        if hasattr(self.ball, 'hp'):
+                            self.ball.hp = self.ball.max_hp * hp_percent
+                        if hasattr(self.ball, 'speed'):
+                            self.ball.speed += guild_buffs.get("bonus_speed", 0) * 5
+                        if hasattr(self.ball, 'damage'):
+                            self.ball.damage += guild_buffs.get("bonus_damage", 0) * 2
+                except Exception:
+                    pass
+
 
             # Apply prestige upgrades (from prestige tokens)
             prestige_upgrades = pm.data.get("prestige_upgrades", {})
