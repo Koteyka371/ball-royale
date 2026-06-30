@@ -1,0 +1,4 @@
+{
+    "title": "Magnetic Polarity System",
+    "description": "Implement a Magnetic Polarity system where each ball is randomly assigned a positive or negative charge at the start of the match. Balls with opposite charges are slowly pulled towards each other, while balls with the same charge are slightly repelled. The polarity could flip periodically throughout the match, forcing AI to adapt their movement and positioning dynamically."
+}
