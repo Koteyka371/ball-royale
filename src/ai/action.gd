@@ -158,89 +158,113 @@ func _attempt_damage(attacker, target) -> void:
 
 	if cl_timer > 0.0:
 		var enemies = self._get_enemies()
-		if enemies.size() > 0:
-			var nearby = []
-			for e in enemies:
-				if e != target and e != attacker:
-					var dist_sq = pow(e.x - target.x, 2) + pow(e.y - target.y, 2)
-					if dist_sq < 22500: # 150 radius
-						nearby.append({"dist": dist_sq, "entity": e})
+		var hazards = []
+		if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+			hazards = self.world.arena.hazards
 
-			nearby.sort_custom(func(a, b): return a["dist"] < b["dist"])
-
+		if enemies.size() > 0 or hazards.size() > 0:
 			var jump_count = 0
 			var has_orig_dmg = "damage" in attacker
 			var orig_dmg = 10.0
 			if has_orig_dmg:
 				orig_dmg = attacker.damage
 
-			for item in nearby:
-				if jump_count >= 2:
+			var current_target = target
+			var current_damage = orig_dmg * 1.5
+			var hit_entities = []
+			hit_entities.append(attacker)
+			hit_entities.append(target)
+
+			while jump_count < 2:
+				var nearby = []
+				for e in enemies:
+					if not hit_entities.has(e):
+						var dist_sq = pow(e.x - current_target.x, 2) + pow(e.y - current_target.y, 2)
+						if dist_sq < 22500:
+							nearby.append({"dist": dist_sq, "entity": e, "type": "enemy"})
+				for h in hazards:
+					if not hit_entities.has(h):
+						var is_active = true
+						if "active" in h: is_active = h.active
+						if is_active:
+							var dist_sq = pow(h.x - current_target.x, 2) + pow(h.y - current_target.y, 2)
+							if dist_sq < 22500:
+								nearby.append({"dist": dist_sq, "entity": h, "type": "hazard"})
+
+				if nearby.size() == 0:
 					break
 
-				var e = item["entity"]
-				# Temporarily set damage to half of original (or 5.0 if no original)
-				# Only if attacker is an object that allows setting dynamic properties or has the property
+				nearby.sort_custom(func(a, b): return a["dist"] < b["dist"])
+				var next_entity = nearby[0]["entity"]
+				var e_type = nearby[0]["type"]
+
 				if typeof(attacker) == TYPE_OBJECT and attacker.has_method("set"):
-					attacker.set("damage", orig_dmg * 0.5)
+					attacker.set("damage", current_damage)
 				elif "damage" in attacker:
-					attacker.damage = orig_dmg * 0.5
+					attacker.damage = current_damage
 
-				var e_ricochet = false
-				if "ricochet_barrier_timer" in e and e.ricochet_barrier_timer > 0.0:
-					e_ricochet = true
-				elif e.has_method("get_meta") and e.has_meta("ricochet_barrier_timer") and e.get_meta("ricochet_barrier_timer") > 0.0:
-					e_ricochet = true
+				if e_type == "enemy":
+					var e_ricochet = false
+					if "ricochet_barrier_timer" in next_entity and next_entity.ricochet_barrier_timer > 0.0:
+						e_ricochet = true
+					elif next_entity.has_method("get_meta") and next_entity.has_meta("ricochet_barrier_timer") and next_entity.get_meta("ricochet_barrier_timer") > 0.0:
+						e_ricochet = true
 
-				var e_reflect = false
-				if "reflect_shield_active" in e and e.reflect_shield_active:
-					e_reflect = true
-				elif e.has_method("get_meta") and e.has_meta("reflect_shield_active") and e.get_meta("reflect_shield_active"):
-					e_reflect = true
+					var e_reflect = false
+					if "reflect_shield_active" in next_entity and next_entity.reflect_shield_active:
+						e_reflect = true
+					elif next_entity.has_method("get_meta") and next_entity.has_meta("reflect_shield_active") and next_entity.get_meta("reflect_shield_active"):
+						e_reflect = true
 
-				if e_ricochet:
-					if self.world != null and self.world.has_method("_deal_damage"):
-						self.world._deal_damage(e, attacker)
-				elif e_reflect:
-					var capacity = 50.0
-					if "reflect_shield_capacity" in e:
-						capacity = e.reflect_shield_capacity
-					elif e.has_method("get_meta") and e.has_meta("reflect_shield_capacity"):
-						capacity = e.get_meta("reflect_shield_capacity")
+					if e_ricochet:
+						if self.world != null and self.world.has_method("_deal_damage"):
+							self.world._deal_damage(next_entity, attacker)
+					elif e_reflect:
+						var capacity = 50.0
+						if "reflect_shield_capacity" in next_entity:
+							capacity = next_entity.reflect_shield_capacity
+						elif next_entity.has_method("get_meta") and next_entity.has_meta("reflect_shield_capacity"):
+							capacity = next_entity.get_meta("reflect_shield_capacity")
 
-					var dmg_to_deal = original_damage * 0.5
-					if "damage" in attacker:
-						dmg_to_deal = attacker.damage
-					capacity -= dmg_to_deal
+						capacity -= current_damage
 
-					if capacity <= 0:
-						if "reflect_shield_active" in e:
-							e.reflect_shield_active = false
-						elif e.has_method("set_meta"):
-							e.set_meta("reflect_shield_active", false)
+						if capacity <= 0:
+							if "reflect_shield_active" in next_entity:
+								next_entity.reflect_shield_active = false
+							elif next_entity.has_method("set_meta"):
+								next_entity.set_meta("reflect_shield_active", false)
 
-						if "reflect_shield_capacity" in e:
-							e.reflect_shield_capacity = 0.0
-						elif e.has_method("set_meta"):
-							e.set_meta("reflect_shield_capacity", 0.0)
+							if "reflect_shield_capacity" in next_entity:
+								next_entity.reflect_shield_capacity = 0.0
+							elif next_entity.has_method("set_meta"):
+								next_entity.set_meta("reflect_shield_capacity", 0.0)
+						else:
+							if "reflect_shield_capacity" in next_entity:
+								next_entity.reflect_shield_capacity = capacity
+							elif next_entity.has_method("set_meta"):
+								next_entity.set_meta("reflect_shield_capacity", capacity)
+
+						if self.has_method("_spawn_directed_particles"):
+							self._spawn_directed_particles(next_entity, attacker, "reflect_pulse")
+						if self.world != null and self.world.has_method("_deal_damage"):
+							self.world._deal_damage(next_entity, attacker)
 					else:
-						if "reflect_shield_capacity" in e:
-							e.reflect_shield_capacity = capacity
-						elif e.has_method("set_meta"):
-							e.set_meta("reflect_shield_capacity", capacity)
-
-					if self.has_method("_spawn_directed_particles"):
-						self._spawn_directed_particles(e, attacker, "reflect_pulse")
-					if self.world != null and self.world.has_method("_deal_damage"):
-						self.world._deal_damage(e, attacker)
+						if self.world != null and self.world.has_method("_deal_damage"):
+							self.world._deal_damage(attacker, next_entity)
 				else:
-					if self.world != null and self.world.has_method("_deal_damage"):
-						self.world._deal_damage(attacker, e)
+					if "hp" in next_entity:
+						next_entity.hp -= current_damage
+						if next_entity.hp <= 0:
+							if "active" in next_entity:
+								next_entity.active = false
 
 				if self.has_method("_spawn_particles"):
-					self._spawn_particles(target.x, target.y, "lightning")
-					self._spawn_particles(e.x, e.y, "lightning")
+					self._spawn_particles(current_target.x, current_target.y, "lightning")
+					self._spawn_particles(next_entity.x, next_entity.y, "lightning")
 
+				hit_entities.append(next_entity)
+				current_target = next_entity
+				current_damage *= 1.5
 				jump_count += 1
 
 			if has_orig_dmg:
@@ -4912,135 +4936,66 @@ func _use_skill():
 
                     if target.has_method("take_damage"):
                         target.take_damage(dmg)
-
-                    if self.has_method("_spawn_skill_particles"):
-                        self._spawn_skill_particles("lightning")
-
-                    var nearby_enemies = []
-                    for e in enemies:
-                        if e != target:
-                            var d_sq = pow(e.x - target.x, 2) + pow(e.y - target.y, 2)
-                            if d_sq <= 22500.0:
-                                nearby_enemies.append({"dist": d_sq, "entity": e})
-
-                    nearby_enemies.sort_custom(func(a, b): return a["dist"] < b["dist"])
-
-                    var chain_damage = dmg * 0.5
-                    var jumps = 0
-                    for item in nearby_enemies:
-                        if jumps >= 3:
-                            break
-                        var next_target = item["entity"]
-                        if next_target.has_method("take_damage"):
-                            next_target.take_damage(chain_damage)
-
-                        if self.has_method("_spawn_skill_particles"):
-                            self._spawn_skill_particles("lightning")
-
-                        chain_damage *= 0.5
-                        jumps += 1
-
-        elif skill_name == "lightning_strike":
-            var enemies = _get_enemies()
-            if enemies.size() > 0:
-                var target = null
-                var min_dist_sq = INF
-                for e in enemies:
-                    var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
-                    if dist_sq < min_dist_sq:
-                        min_dist_sq = dist_sq
-                        target = e
-
-                var dist = sqrt(min_dist_sq)
-                if dist <= 200.0:
-                    var dmg = 24.0
-                    if "damage" in self.ball:
-                        dmg = self.ball.damage
-                    elif self.ball.has_method("has_meta") and self.ball.has_meta("damage"):
-                        dmg = self.ball.get_meta("damage")
-
-                    if target.has_method("take_damage"):
-                        target.take_damage(dmg)
-
-                    if self.has_method("_spawn_skill_particles"):
-                        self._spawn_skill_particles("lightning")
-
-                    var nearby_enemies = []
-                    for e in enemies:
-                        if e != target:
-                            var d_sq = pow(e.x - target.x, 2) + pow(e.y - target.y, 2)
-                            if d_sq <= 22500.0:
-                                nearby_enemies.append({"dist": d_sq, "entity": e})
-
-                    nearby_enemies.sort_custom(func(a, b): return a["dist"] < b["dist"])
-
-                    var chain_damage = dmg * 0.5
-                    var jumps = 0
-                    for item in nearby_enemies:
-                        if jumps >= 3:
-                            break
-                        var next_target = item["entity"]
-                        if next_target.has_method("take_damage"):
-                            next_target.take_damage(chain_damage)
-
-                        if self.has_method("_spawn_skill_particles"):
-                            self._spawn_skill_particles("lightning")
-
-                        chain_damage *= 0.5
-                        jumps += 1
-
-        elif skill_name == "lightning_strike":
-            var enemies = _get_enemies()
-            if enemies.size() > 0:
-                var target = null
-                var min_dist_sq = INF
-                for e in enemies:
-                    var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
-                    if dist_sq < min_dist_sq:
-                        min_dist_sq = dist_sq
-                        target = e
-
-                var dist = sqrt(min_dist_sq)
-                if dist <= 200.0:
-                    var dmg = 24.0
-                    if "damage" in self.ball:
-                        dmg = self.ball.damage
-                    elif self.ball.has_method("has_meta") and self.ball.has_meta("damage"):
-                        dmg = self.ball.get_meta("damage")
-
-                    if target.has_method("take_damage"):
-                        target.take_damage(dmg)
                     elif "hp" in target:
                         target.hp -= dmg
 
                     if self.has_method("_spawn_skill_particles"):
                         self._spawn_skill_particles("lightning")
 
-                    var nearby_enemies = []
-                    for e in enemies:
-                        if e != target:
-                            var d_sq = pow(e.x - target.x, 2) + pow(e.y - target.y, 2)
-                            if d_sq <= 22500.0:
-                                nearby_enemies.append({"dist": d_sq, "entity": e})
+                    var hazards = []
+                    if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+                        hazards = self.world.arena.hazards
 
-                    nearby_enemies.sort_custom(func(a, b): return a["dist"] < b["dist"])
-
-                    var chain_damage = dmg * 0.5
+                    var hit_entities = []
+                    hit_entities.append(self.ball)
+                    hit_entities.append(target)
+                    var current_target = target
+                    var chain_damage = dmg * 1.5
                     var jumps = 0
-                    for item in nearby_enemies:
-                        if jumps >= 3:
+
+                    while jumps < 3:
+                        var nearby_entities = []
+                        for e in enemies:
+                            if not hit_entities.has(e):
+                                var d_sq = pow(e.x - current_target.x, 2) + pow(e.y - current_target.y, 2)
+                                if d_sq <= 22500.0:
+                                    nearby_entities.append({"dist": d_sq, "entity": e, "type": "enemy"})
+                        for h in hazards:
+                            if not hit_entities.has(h):
+                                var is_active = true
+                                if "active" in h: is_active = h.active
+                                if is_active:
+                                    var d_sq = pow(h.x - current_target.x, 2) + pow(h.y - current_target.y, 2)
+                                    if d_sq <= 22500.0:
+                                        nearby_entities.append({"dist": d_sq, "entity": h, "type": "hazard"})
+
+                        if nearby_entities.size() == 0:
                             break
-                        var next_target = item["entity"]
-                        if next_target.has_method("take_damage"):
-                            next_target.take_damage(chain_damage)
-                        elif "hp" in next_target:
-                            next_target.hp -= chain_damage
+
+                        nearby_entities.sort_custom(func(a, b): return a["dist"] < b["dist"])
+                        var next_entity = nearby_entities[0]["entity"]
+                        var e_type = nearby_entities[0]["type"]
+
+                        if e_type == "enemy":
+                            if next_entity.has_method("take_damage"):
+                                next_entity.take_damage(chain_damage)
+                            elif "hp" in next_entity:
+                                next_entity.hp -= chain_damage
+                        else:
+                            if "hp" in next_entity:
+                                next_entity.hp -= chain_damage
+                                if next_entity.hp <= 0:
+                                    if "active" in next_entity:
+                                        next_entity.active = false
 
                         if self.has_method("_spawn_skill_particles"):
                             self._spawn_skill_particles("lightning")
 
-                        chain_damage *= 0.5
+                        hit_entities.append(next_entity)
+                        current_target = next_entity
+                        chain_damage *= 1.5
                         jumps += 1
+
         elif skill_name == "elemental_burst":
             var enemies = self._get_enemies()
             var allies = []

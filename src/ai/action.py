@@ -127,57 +127,75 @@ class Action:
         # Chain lightning effect
         if getattr(attacker, "chain_lightning_timer", 0.0) > 0:
             enemies = self._get_enemies()
-            if enemies:
-                # Find other enemies close to the target
-                nearby_enemies = []
-                for e in enemies:
-                    if e != target and e != attacker:
-                        dist_sq = (e.x - target.x)**2 + (e.y - target.y)**2
-                        if dist_sq < 22500: # 150 radius for jump
-                            nearby_enemies.append((dist_sq, e))
+            hazards = []
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                hazards = self.world.arena.hazards
 
-                nearby_enemies.sort(key=lambda x: x[0])
-
-                # Jump to up to 2 additional targets
+            if enemies or hazards:
                 jump_count = 0
                 has_original_damage = hasattr(attacker, "damage")
                 original_damage = getattr(attacker, "damage", 10.0)
+                current_target = target
+                current_damage = original_damage * 1.5
+                hit_entities = [attacker, target]
 
-                for _, e in nearby_enemies:
-                    if jump_count >= 2:
+                while jump_count < 2:
+                    nearby_entities = []
+                    for e in enemies:
+                        if e not in hit_entities:
+                            dist_sq = (e.x - current_target.x)**2 + (e.y - current_target.y)**2
+                            if dist_sq < 22500: # 150 radius for jump
+                                nearby_entities.append((dist_sq, e, "enemy"))
+                    for h in hazards:
+                        if h not in hit_entities and getattr(h, "active", True):
+                            dist_sq = (h.x - current_target.x)**2 + (h.y - current_target.y)**2
+                            if dist_sq < 22500:
+                                nearby_entities.append((dist_sq, h, "hazard"))
+
+                    if not nearby_entities:
                         break
 
-                    # Temporarily reduce damage for chain bounce
-                    attacker.damage = original_damage * 0.5
+                    nearby_entities.sort(key=lambda x: x[0])
+                    _, next_entity, e_type = nearby_entities[0]
 
-                    e_ricochet = getattr(e, "ricochet_barrier_timer", 0.0) > 0.0
-                    e_reflect = getattr(e, "reflect_shield_active", False)
+                    attacker.damage = current_damage
 
-                    if e_ricochet:
-                        if hasattr(self.world, "_deal_damage"):
-                            self.world._deal_damage(e, attacker)
-                    elif e_reflect:
-                        capacity = getattr(e, "reflect_shield_capacity", 50.0)
-                        capacity -= (getattr(attacker, 'damage', original_damage * 0.5))
-                        if capacity <= 0:
-                            e.reflect_shield_active = False
-                            e.reflect_shield_capacity = 0.0
+                    if e_type == "enemy":
+                        e_ricochet = getattr(next_entity, "ricochet_barrier_timer", 0.0) > 0.0
+                        e_reflect = getattr(next_entity, "reflect_shield_active", False)
+
+                        if e_ricochet:
+                            if hasattr(self.world, "_deal_damage"):
+                                self.world._deal_damage(next_entity, attacker)
+                        elif e_reflect:
+                            capacity = getattr(next_entity, "reflect_shield_capacity", 50.0)
+                            capacity -= current_damage
+                            if capacity <= 0:
+                                next_entity.reflect_shield_active = False
+                                next_entity.reflect_shield_capacity = 0.0
+                            else:
+                                next_entity.reflect_shield_capacity = capacity
+
+                            if hasattr(self, "_spawn_directed_particles"):
+                                self._spawn_directed_particles(next_entity, attacker, "reflect_pulse")
+                            if hasattr(self.world, "_deal_damage"):
+                                self.world._deal_damage(next_entity, attacker)
                         else:
-                            e.reflect_shield_capacity = capacity
-
-                        if hasattr(self, "_spawn_directed_particles"):
-                            self._spawn_directed_particles(e, attacker, "reflect_pulse")
-                        if hasattr(self.world, "_deal_damage"):
-                            self.world._deal_damage(e, attacker)
+                            if hasattr(self.world, "_deal_damage"):
+                                self.world._deal_damage(attacker, next_entity)
                     else:
-                        if hasattr(self.world, "_deal_damage"):
-                            self.world._deal_damage(attacker, e)
+                        if hasattr(next_entity, "hp"):
+                            next_entity.hp -= current_damage
+                            if next_entity.hp <= 0:
+                                next_entity.active = False
 
-                    # Spawn particles for lightning
-                    if hasattr(self, "_spawn_particles"):
+                    if hasattr(self, "_spawn_skill_particles"):
                         self._spawn_skill_particles("lightning")
                         self._spawn_skill_particles("lightning")
 
+                    hit_entities.append(next_entity)
+                    current_target = next_entity
+                    current_damage *= 1.5
                     jump_count += 1
 
                 # Restore original damage
@@ -3087,120 +3105,61 @@ class Action:
                     dist = math.sqrt((target.x - self.ball.x)**2 + (target.y - self.ball.y)**2)
                     if dist <= 200.0:
                         # Initial strike
+                        base_dmg = getattr(self.ball, "damage", 24.0)
                         if hasattr(target, "take_damage"):
-                            target.take_damage(getattr(self.ball, "damage", 24.0))
+                            target.take_damage(base_dmg)
                         elif hasattr(target, "hp"):
-                            target.hp -= getattr(self.ball, "damage", 24.0)
+                            target.hp -= base_dmg
                         if hasattr(self, "_spawn_skill_particles"):
                             self._spawn_skill_particles("lightning")
 
-                        # Find nearby enemies to chain to
-                        nearby_enemies = []
-                        for e in enemies:
-                            if e != target:
-                                d_sq = (e.x - target.x)**2 + (e.y - target.y)**2
-                                if d_sq <= 150.0**2:
-                                    nearby_enemies.append((d_sq, e))
+                        hazards = []
+                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                            hazards = self.world.arena.hazards
 
-                        nearby_enemies.sort(key=lambda x: x[0])
-
-                        chain_damage = getattr(self.ball, "damage", 24.0) * 0.5
+                        hit_entities = [self.ball, target]
+                        current_target = target
+                        chain_damage = base_dmg * 1.5
                         jumps = 0
-                        for _, next_target in nearby_enemies:
-                            if jumps >= 3:
+
+                        while jumps < 3:
+                            nearby_entities = []
+                            for e in enemies:
+                                if e not in hit_entities:
+                                    d_sq = (e.x - current_target.x)**2 + (e.y - current_target.y)**2
+                                    if d_sq <= 150.0**2:
+                                        nearby_entities.append((d_sq, e, "enemy"))
+                            for h in hazards:
+                                if h not in hit_entities and getattr(h, "active", True):
+                                    d_sq = (h.x - current_target.x)**2 + (h.y - current_target.y)**2
+                                    if d_sq <= 150.0**2:
+                                        nearby_entities.append((d_sq, h, "hazard"))
+
+                            if not nearby_entities:
                                 break
 
-                            if hasattr(next_target, "take_damage"):
-                                next_target.take_damage(chain_damage)
-                            elif hasattr(next_target, "hp"):
-                                next_target.hp -= chain_damage
+                            nearby_entities.sort(key=lambda x: x[0])
+                            _, next_entity, e_type = nearby_entities[0]
+
+                            if e_type == "enemy":
+                                if hasattr(next_entity, "take_damage"):
+                                    next_entity.take_damage(chain_damage)
+                                elif hasattr(next_entity, "hp"):
+                                    next_entity.hp -= chain_damage
+                            else:
+                                if hasattr(next_entity, "hp"):
+                                    next_entity.hp -= chain_damage
+                                    if next_entity.hp <= 0:
+                                        next_entity.active = False
+
                             if hasattr(self, "_spawn_skill_particles"):
                                 self._spawn_skill_particles("lightning")
 
-                            chain_damage *= 0.5
+                            hit_entities.append(next_entity)
+                            current_target = next_entity
+                            chain_damage *= 1.5
                             jumps += 1
 
-            elif skill_name == "lightning_strike":
-                enemies = self._get_enemies()
-                if enemies:
-                    # Find closest enemy
-                    target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
-                    dist = math.sqrt((target.x - self.ball.x)**2 + (target.y - self.ball.y)**2)
-                    if dist <= 200.0:
-                        # Initial strike
-                        if hasattr(target, "take_damage"):
-                            target.take_damage(getattr(self.ball, "damage", 24.0))
-                        elif hasattr(target, "hp"):
-                            target.hp -= getattr(self.ball, "damage", 24.0)
-                        if hasattr(self, "_spawn_skill_particles"):
-                            self._spawn_skill_particles("lightning")
-
-                        # Find nearby enemies to chain to
-                        nearby_enemies = []
-                        for e in enemies:
-                            if e != target:
-                                d_sq = (e.x - target.x)**2 + (e.y - target.y)**2
-                                if d_sq <= 150.0**2:
-                                    nearby_enemies.append((d_sq, e))
-
-                        nearby_enemies.sort(key=lambda x: x[0])
-
-                        chain_damage = getattr(self.ball, "damage", 24.0) * 0.5
-                        jumps = 0
-                        for _, next_target in nearby_enemies:
-                            if jumps >= 3:
-                                break
-
-                            if hasattr(next_target, "take_damage"):
-                                next_target.take_damage(chain_damage)
-                            elif hasattr(next_target, "hp"):
-                                next_target.hp -= chain_damage
-                            if hasattr(self, "_spawn_skill_particles"):
-                                self._spawn_skill_particles("lightning")
-
-                            chain_damage *= 0.5
-                            jumps += 1
-
-            elif skill_name == "lightning_strike":
-                enemies = self._get_enemies()
-                if enemies:
-                    # Find closest enemy
-                    target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
-                    dist = math.sqrt((target.x - self.ball.x)**2 + (target.y - self.ball.y)**2)
-                    if dist <= 200.0:
-                        # Initial strike
-                        if hasattr(target, "take_damage"):
-                            target.take_damage(getattr(self.ball, "damage", 24.0))
-                        elif hasattr(target, "hp"):
-                            target.hp -= getattr(self.ball, "damage", 24.0)
-                        if hasattr(self, "_spawn_skill_particles"):
-                            self._spawn_skill_particles("lightning")
-
-                        # Find nearby enemies to chain to
-                        nearby_enemies = []
-                        for e in enemies:
-                            if e != target:
-                                d_sq = (e.x - target.x)**2 + (e.y - target.y)**2
-                                if d_sq <= 150.0**2:
-                                    nearby_enemies.append((d_sq, e))
-
-                        nearby_enemies.sort(key=lambda x: x[0])
-
-                        chain_damage = getattr(self.ball, "damage", 24.0) * 0.5
-                        jumps = 0
-                        for _, next_target in nearby_enemies:
-                            if jumps >= 3:
-                                break
-
-                            if hasattr(next_target, "take_damage"):
-                                next_target.take_damage(chain_damage)
-                            elif hasattr(next_target, "hp"):
-                                next_target.hp -= chain_damage
-                            if hasattr(self, "_spawn_skill_particles"):
-                                self._spawn_skill_particles("lightning")
-
-                            chain_damage *= 0.5
-                            jumps += 1
             elif skill_name == "elemental_burst":
                 enemies = self._get_enemies()
 
