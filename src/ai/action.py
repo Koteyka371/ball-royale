@@ -91,7 +91,11 @@ class Action:
         if new_hp < old_hp:
             self._award_xp(attacker, 10.0, self.world)
             if new_hp <= 0 and old_hp > 0:
-                self._award_xp(attacker, 50.0, self.world)
+                base_xp = 50.0
+                if pm and hasattr(pm, "is_nemesis") and getattr(attacker, "ball_type", None) and getattr(target, "ball_type", None):
+                    if pm.is_nemesis(target.ball_type, attacker.ball_type):
+                        base_xp *= 2.0
+                self._award_xp(attacker, base_xp, self.world)
 
         if new_hp <= 0 and old_hp > 0 and pm and hasattr(pm, "add_kill"):
             pm.add_kill(attacker.ball_type, target.ball_type)
@@ -99,7 +103,8 @@ class Action:
                 if hasattr(attacker, "kills"):
                     attacker.kills += 1
                 if hasattr(attacker, "charge_level"):
-                    attacker.charge_level = min(100.0, getattr(attacker, "charge_level", 0.0) + 10.0)
+                    # Yields double charge level upon being defeated (Nemesis bonus)
+                    attacker.charge_level = min(100.0, getattr(attacker, "charge_level", 0.0) + 20.0)
 
         # Chain lightning effect
         if getattr(attacker, "chain_lightning_timer", 0.0) > 0:

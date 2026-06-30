@@ -132,7 +132,11 @@ func _attempt_damage(attacker, target) -> void:
 	if new_hp < old_hp:
 		self._award_xp(attacker, 10.0, self.world)
 		if new_hp <= 0 and old_hp > 0:
-			self._award_xp(attacker, 50.0, self.world)
+			var base_xp = 50.0
+			if pm != null and pm.has_method("is_nemesis") and attacker_type != "" and target_type != "":
+				if pm.is_nemesis(target_type, attacker_type):
+					base_xp *= 2.0
+			self._award_xp(attacker, base_xp, self.world)
 
 	if new_hp <= 0 and old_hp > 0 and pm != null and pm.has_method("add_kill"):
 		pm.add_kill(attacker_type, target_type)
@@ -140,11 +144,11 @@ func _attempt_damage(attacker, target) -> void:
 			if "kills" in attacker:
 				attacker.kills += 1
 			if "charge_level" in attacker:
-				attacker.charge_level = min(100.0, float(attacker.charge_level) + 10.0)
+				attacker.charge_level = min(100.0, float(attacker.charge_level) + 20.0)
 			elif attacker.has_method("set_meta"):
 				var cl = 0.0
 				if attacker.has_meta("charge_level"): cl = float(attacker.get_meta("charge_level"))
-				attacker.set_meta("charge_level", min(100.0, cl + 10.0))
+				attacker.set_meta("charge_level", min(100.0, cl + 20.0))
 
 	var cl_timer = 0.0
 	if "chain_lightning_timer" in attacker:
