@@ -1925,6 +1925,7 @@ class MovingSafeZoneMode(GameMode):
             self.zone_y += (dy / dist) * self.move_speed * delta
         else:
             # Pick a new target that is within the arena bounds minus radius buffer
+            # Ensuring it drifts in a random direction and doesn't just converge on a single static point
             buffer = max(100.0, self.zone_radius * 0.5)
             self.zone_target_x = random.uniform(buffer, arena_width - buffer)
             self.zone_target_y = random.uniform(buffer, arena_height - buffer)
@@ -2018,6 +2019,8 @@ class ShrinkingDangerZoneMode(GameMode):
         self.min_zone_radius = 50.0
         self.shrink_rate = 15.0
         self.outside_damage_per_second = 20.0
+        self.zone_target_x = 500.0
+        self.zone_target_y = 500.0
 
     def setup(self, world, balls):
         super().setup(world, balls)
@@ -2026,6 +2029,8 @@ class ShrinkingDangerZoneMode(GameMode):
         arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
         self.zone_x = arena_width / 2.0
         self.zone_y = arena_height / 2.0
+        self.zone_target_x = self.zone_x
+        self.zone_target_y = self.zone_y
         self.zone_radius = min(arena_width, arena_height) / 2.0
         self.min_zone_radius = 50.0
 
@@ -2042,6 +2047,7 @@ class ShrinkingDangerZoneMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         import math
+        import random
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
@@ -2053,6 +2059,21 @@ class ShrinkingDangerZoneMode(GameMode):
                     world.dead_balls.append(b)
                 else:
                     b.time_since_death += delta
+
+        # Drift the safe zone
+        dx = self.zone_target_x - self.zone_x
+        dy = self.zone_target_y - self.zone_y
+        dist = math.sqrt(dx*dx + dy*dy)
+        if dist > 5.0:
+            move_speed = 10.0
+            self.zone_x += (dx / dist) * move_speed * delta
+            self.zone_y += (dy / dist) * move_speed * delta
+        else:
+            arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+            arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+            buffer = max(100.0, self.zone_radius * 0.5)
+            self.zone_target_x = random.uniform(buffer, arena_width - buffer)
+            self.zone_target_y = random.uniform(buffer, arena_height - buffer)
 
         # Shrink the safe zone
         if self.zone_radius > self.min_zone_radius:
@@ -2177,6 +2198,7 @@ class SafeZoneMode(GameMode):
             self.zone_y += (dy / dist) * move_speed * delta
         else:
             # Pick a new target within the current safe zone to ensure it stays mostly within bounds
+            # Making it drift in a random direction and not converging on a single static point
             arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
             arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
             buffer = max(100.0, self.zone_radius * 0.5)
