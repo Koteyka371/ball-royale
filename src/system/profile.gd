@@ -95,6 +95,16 @@ func add_skill_points(points: int):
     data["skill_points"] += points
     save_profile()
 
+
+func get_unlocked_balls() -> Array:
+    var unlocked = []
+    if data.has("unlocked_balls"):
+        unlocked = data["unlocked_balls"].duplicate()
+    if data.get("prestige_upgrades", {}).get("unlock_time_mage", 0) > 0:
+        if not unlocked.has("time_mage"):
+            unlocked.append("time_mage")
+    return unlocked
+
 func unlock_ball(ball_name: String, cost: int) -> bool:
     if data["skill_points"] >= cost and not data["unlocked_balls"].has(ball_name):
         data["skill_points"] -= cost
@@ -112,10 +122,10 @@ func upgrade_bonus(bonus_name: String, cost: int) -> bool:
     return false
 
 func are_mutators_unlocked() -> bool:
-	return data.get("prestige_level", 0) >= 5
+	return data.get("prestige_level", 0) >= 5 or data.get("prestige_upgrades", {}).get("mutator_unlocked", 0) > 0
 
 func can_prestige() -> bool:
-    var unlocked_balls = data.get("unlocked_balls", [])
+    var unlocked_balls = get_unlocked_balls()
     var unlocked_all_balls = unlocked_balls.size() >= TOTAL_BALLS
     var bonuses = data.get("bonuses", {})
     var maxed_hp = bonuses.get("bonus_hp", 0) >= MAX_BONUS_LEVEL

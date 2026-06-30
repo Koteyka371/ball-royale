@@ -85,6 +85,14 @@ class ProfileManager:
         self.data["skill_points"] += points
         self.save()
 
+
+    def get_unlocked_balls(self):
+        unlocked = list(self.data.get("unlocked_balls", []))
+        if self.data.get("prestige_upgrades", {}).get("unlock_time_mage", 0) > 0:
+            if "time_mage" not in unlocked:
+                unlocked.append("time_mage")
+        return unlocked
+
     def unlock_ball(self, ball_name, cost):
         if self.data["skill_points"] >= cost and ball_name not in self.data["unlocked_balls"]:
             self.data["skill_points"] -= cost
@@ -102,10 +110,10 @@ class ProfileManager:
         return False
 
     def are_mutators_unlocked(self):
-        return self.data.get("prestige_level", 0) >= 5
+        return self.data.get("prestige_level", 0) >= 5 or self.data.get("prestige_upgrades", {}).get("mutator_unlocked", 0) > 0
 
     def can_prestige(self):
-        unlocked_all_balls = len(self.data.get("unlocked_balls", [])) >= self.TOTAL_BALLS
+        unlocked_all_balls = len(self.get_unlocked_balls()) >= self.TOTAL_BALLS
         maxed_hp = self.data.get("bonuses", {}).get("bonus_hp", 0) >= self.MAX_BONUS_LEVEL
         maxed_speed = self.data.get("bonuses", {}).get("bonus_speed", 0) >= self.MAX_BONUS_LEVEL
         maxed_damage = self.data.get("bonuses", {}).get("bonus_damage", 0) >= self.MAX_BONUS_LEVEL
