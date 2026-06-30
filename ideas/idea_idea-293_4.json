@@ -1,0 +1,4 @@
+{
+  "title": "Meteor Shower Weather Event",
+  "description": "Calls down meteor strikes at random locations after a brief visual warning, dealing heavy area-of-effect damage to any entities caught in the blast."
+}

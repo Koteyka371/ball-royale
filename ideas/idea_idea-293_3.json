@@ -1,0 +1,4 @@
+{
+  "title": "Tornado Weather Event",
+  "description": "Periodically spawns a tornado that randomly wanders the arena, pulling nearby entities towards its center and causing damage while disrupting their movement."
+}
