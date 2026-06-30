@@ -229,11 +229,53 @@ class Action:
                 self.world.arena.hazards.append(portal)
                 self.ball.inventory.remove("exit_portal")
 
+        # Portal Gun usage
+        if strategy in ("flee", "defend", "ambush") and hasattr(self.ball, "inventory") and "portal_gun" in self.ball.inventory:
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                from arena.procedural_arena import Hazard
+                import math as _math
+
+                # Create entrance portal
+                entrance_id = len(self.world.arena.hazards) + random.randint(10000, 99999)
+                entrance_portal = Hazard(entrance_id, self.ball.x, self.ball.y, 30.0, "teleporter", 0.0)
+                setattr(entrance_portal, 'duration', 10.0)
+                setattr(entrance_portal, 'owner_id', getattr(self.ball, 'id', None))
+
+                # Determine exit portal position
+                target_x, target_y = self.ball.x, self.ball.y
+                enemies = self._get_enemies()
+                if enemies and strategy == "ambush":
+                    target_enemy = random.choice(enemies)
+                    target_x, target_y = target_enemy.x, target_enemy.y
+                else:
+                    # Shoot across the map or to a random safe spot
+                    target_x = self.world.arena.width - self.ball.x
+                    target_y = self.world.arena.height - self.ball.y
+
+                target_x = max(50.0, min(self.world.arena.width - 50.0, target_x))
+                target_y = max(50.0, min(self.world.arena.height - 50.0, target_y))
+
+                exit_id = len(self.world.arena.hazards) + random.randint(10000, 99999)
+                exit_portal = Hazard(exit_id, target_x, target_y, 30.0, "teleporter", 0.0)
+                setattr(exit_portal, 'duration', 10.0)
+                setattr(exit_portal, 'owner_id', getattr(self.ball, 'id', None))
+
+                # Link them
+                setattr(entrance_portal, 'target_x', exit_portal.x)
+                setattr(entrance_portal, 'target_y', exit_portal.y)
+                setattr(exit_portal, 'target_x', entrance_portal.x)
+                setattr(exit_portal, 'target_y', entrance_portal.y)
+
+                self.world.arena.hazards.append(entrance_portal)
+                self.world.arena.hazards.append(exit_portal)
+                self.ball.inventory.remove("portal_gun")
+
         # Temporal rift logic to modify local delta
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for hazard in self.world.arena.hazards:
                 if getattr(hazard, "kind", "") == "temporal_rift":
-                    dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
+                    import math as _math
+                    dist = _math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
                     if dist <= hazard.radius + getattr(self.ball, "radius", 10.0):
                         time_scale = getattr(hazard, "time_scale", 0.5)
                         delta *= time_scale
@@ -1330,7 +1372,8 @@ class Action:
             self.ball.vy = dy / delta
 
             # Stamina regen/drain
-            dist = math.sqrt(dx*dx + dy*dy)
+            import math as _math
+            dist = _math.sqrt(dx*dx + dy*dy)
             if getattr(self.ball, "is_dashing", False):
                 if getattr(self.ball, "infinite_stamina_timer", 0.0) <= 0:
                     self.ball.stamina = max(0.0, getattr(self.ball, "stamina", 0.0) - 50.0 * delta)
@@ -1338,7 +1381,27 @@ class Action:
                 self.ball.stamina = min(getattr(self.ball, "max_stamina", 100.0), getattr(self.ball, "stamina", 0.0) + 30.0 * delta)
 
             if hasattr(self.ball, "distance_traveled"):
-                self.ball.distance_traveled += math.sqrt(dx*dx + dy*dy)
+                self.ball.distance_traveled += dist
+
+            # Apply stamina exhaustion
+            if hasattr(self.ball, "stamina") and hasattr(self.ball, "base_speed") and hasattr(self.ball, "base_damage"):
+                if getattr(self.ball, "_base_speed_set", False) is False:
+                    self.ball.base_speed = getattr(self.ball, "speed", 2.0)
+                    self.ball.base_damage = getattr(self.ball, "damage", 10.0)
+                    self.ball._base_speed_set = True
+
+                if self.ball.stamina < 20.0:
+                    self.ball.speed = self.ball.base_speed * 0.7
+                    self.ball.damage = self.ball.base_damage * 0.7
+                else:
+                    # check for vampire
+                    is_night = getattr(self.world, "night", False) or getattr(self.world.arena, "is_night", False) if hasattr(self.world, "arena") else getattr(self.world, "night", False)
+                    if getattr(self.ball, "ball_type", "") == "vampire" and is_night:
+                        self.ball.speed = self.ball.base_speed * 1.5
+                        self.ball.damage = self.ball.base_damage * 1.5
+                    else:
+                        self.ball.speed = self.ball.base_speed
+                        self.ball.damage = self.ball.base_damage
 
 
 
@@ -2643,6 +2706,13 @@ class Action:
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
                     self.ball.inventory.append("exit_portal")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                elif getattr(nearest, "kind", None) == "portal_gun":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("portal_gun")
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)

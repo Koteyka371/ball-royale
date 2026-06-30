@@ -321,6 +321,65 @@ func execute(strategy: String, delta: float):
 					inv.erase("exit_portal")
 					self.ball.set_meta("inventory", inv)
 
+	if (strategy == "flee" or strategy == "defend" or strategy == "ambush") and self.ball.has_meta("inventory"):
+		var inv = self.ball.get_meta("inventory")
+		if inv.has("portal_gun"):
+			if world != null and "arena" in world and "hazards" in world.arena:
+				var arena = world.arena
+
+				if load("res://src/arena/procedural_arena.gd") != null:
+					var entrance_id = arena.hazards.size() + randi() % 90000 + 10000
+					var entrance_portal = load("res://src/arena/procedural_arena.gd").Hazard.new()
+					entrance_portal.id = entrance_id
+					entrance_portal.x = self.ball.x
+					entrance_portal.y = self.ball.y
+					entrance_portal.radius = 30.0
+					entrance_portal.kind = "teleporter"
+					entrance_portal.damage = 0.0
+					entrance_portal.set_meta("duration", 10.0)
+					entrance_portal.set_meta("owner_id", self.ball.id)
+
+					var target_x = self.ball.x
+					var target_y = self.ball.y
+					var enemies = _get_enemies()
+					if enemies.size() > 0 and strategy == "ambush":
+						var enemy = enemies[randi() % enemies.size()]
+						target_x = enemy.x
+						target_y = enemy.y
+					else:
+						target_x = arena.width - self.ball.x
+						target_y = arena.height - self.ball.y
+
+					target_x = max(50.0, min(arena.width - 50.0, target_x))
+					target_y = max(50.0, min(arena.height - 50.0, target_y))
+
+					var exit_id = arena.hazards.size() + randi() % 90000 + 10000
+					var exit_portal = load("res://src/arena/procedural_arena.gd").Hazard.new()
+					exit_portal.id = exit_id
+					exit_portal.x = target_x
+					exit_portal.y = target_y
+					exit_portal.radius = 30.0
+					exit_portal.kind = "teleporter"
+					exit_portal.damage = 0.0
+					exit_portal.set_meta("duration", 10.0)
+					exit_portal.set_meta("owner_id", self.ball.id)
+
+					entrance_portal.set_meta("target_x", exit_portal.x)
+					entrance_portal.set_meta("target_y", exit_portal.y)
+					# also set native properties if available
+					if "target_x" in entrance_portal: entrance_portal.target_x = exit_portal.x
+					if "target_y" in entrance_portal: entrance_portal.target_y = exit_portal.y
+
+					exit_portal.set_meta("target_x", entrance_portal.x)
+					exit_portal.set_meta("target_y", entrance_portal.y)
+					if "target_x" in exit_portal: exit_portal.target_x = entrance_portal.x
+					if "target_y" in exit_portal: exit_portal.target_y = entrance_portal.y
+
+					arena.hazards.append(entrance_portal)
+					arena.hazards.append(exit_portal)
+					inv.erase("portal_gun")
+					self.ball.set_meta("inventory", inv)
+
 
 	# Confusion timer logic
 	var conf_timer = 0.0
@@ -4089,6 +4148,16 @@ func _collect_booster(delta: float):
                     self.ball.set_meta("inventory", [])
                 var inv = self.ball.get_meta("inventory")
                 inv.append("exit_portal")
+                self.ball.set_meta("inventory", inv)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "portal_gun":
+                if not self.ball.has_meta("inventory"):
+                    self.ball.set_meta("inventory", [])
+                var inv = self.ball.get_meta("inventory")
+                inv.append("portal_gun")
                 self.ball.set_meta("inventory", inv)
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
