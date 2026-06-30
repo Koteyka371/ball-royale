@@ -419,3 +419,68 @@ def test_time_stop_freeze():
 
     assert enemy.stun_timer == 2.0
     assert h1.frozen_timer == 2.0
+
+
+def test_bumper_hazard():
+    from ai.action import Action
+
+    class MockBall:
+        def __init__(self):
+            self.id = 1
+            self.x = 0.0
+            self.y = 0.0
+            self.vx = 0.0
+            self.vy = 0.0
+            self.base_speed = 100.0
+            self.speed = 100.0
+            self.base_damage = 10.0
+            self.damage = 10.0
+            self.hp = 100.0
+            self.max_hp = 100.0
+            self.radius = 10.0
+            self.state = "idle"
+            self.cooldowns = {}
+            self.active_skills = {}
+            self.ball_type = "easy"
+            self.inventory = []
+
+    class MockHazard:
+        def __init__(self):
+            self.x = 0.0
+            self.y = 0.0
+            self.radius = 30.0
+            self.damage = 0.0
+            self.kind = "bumper"
+
+    class MockArena:
+        def __init__(self):
+            self.hazards = [MockHazard()]
+            self.items = []
+            self.modifier_zones = []
+            self.width = 1000
+            self.height = 1000
+
+    class MockGameMode:
+        pass
+
+    class MockWorld:
+        def __init__(self):
+            self.arena = MockArena()
+            self.balls = []
+            self.events = []
+            self.game_mode = MockGameMode()
+
+    ball = MockBall()
+    ball.x = 10.0
+    ball.y = 10.0
+
+    world = MockWorld()
+    world.balls.append(ball)
+
+    action = Action(ball, world)
+    action.execute('idle', 0.016)
+
+    # Bumper should apply ~2000 speed (or set vx/vy to extremely high values)
+    assert abs(ball.vx) > 1000.0 or abs(ball.vy) > 1000.0, f"Ball speed not immense! vx: {ball.vx}, vy: {ball.vy}"
+    # Damage should be zero
+    assert ball.hp == 100.0

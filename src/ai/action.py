@@ -1270,7 +1270,7 @@ class Action:
                                 ny = dy / dist
 
                                 # Add random chaos to direction (small angle variation)
-                                import random; angle = math.atan2(ny, nx) + random.uniform(-0.5, 0.5)
+                                import random as _rnd; angle = math.atan2(ny, nx) + _rnd.uniform(-0.5, 0.5)
                                 nx = math.cos(angle)
                                 ny = math.sin(angle)
 
