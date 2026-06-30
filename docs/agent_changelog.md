@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-317] Quantum Teleport Trap — *2026-06-30 10:58:16 UTC*
+
+Add a new trap hazard that, when triggered, instantly swaps the positions of the victim and the trap's owner, disorienting enemies and allowing for creative escapes.
+
+---
+
 ## [idea-318] Aura Stacking Buffs — *2026-06-30 10:50:45 UTC*
 
 Balls emit a small aura based on their ball type. When multiple friendly balls of different types are close to each other, their auras stack, granting passive buffs (like increased health regen, damage reduction, or speed) to all balls within the combined radius. This encourages tighter group formations and diverse team compositions.
