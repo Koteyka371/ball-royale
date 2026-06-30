@@ -126,64 +126,117 @@ class Action:
 
         # Chain lightning effect
         if getattr(attacker, "chain_lightning_timer", 0.0) > 0:
-            enemies = self._get_enemies()
-            if enemies:
-                # Find other enemies close to the target
-                nearby_enemies = []
-                for e in enemies:
-                    if e != target and e != attacker:
-                        dist_sq = (e.x - target.x)**2 + (e.y - target.y)**2
-                        if dist_sq < 22500: # 150 radius for jump
-                            nearby_enemies.append((dist_sq, e))
+            bounce_targets = []
+            if hasattr(self.world, "balls"):
+                bounce_targets.extend(self.world.balls)
+            if hasattr(self.world, "entities"):
+                bounce_targets.extend(self.world.entities)
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                bounce_targets.extend(self.world.arena.hazards)
 
-                nearby_enemies.sort(key=lambda x: x[0])
+            width = getattr(self.world, "width", 1000)
+            height = getattr(self.world, "height", 1000)
 
-                # Jump to up to 2 additional targets
-                jump_count = 0
-                has_original_damage = hasattr(attacker, "damage")
-                original_damage = getattr(attacker, "damage", 10.0)
+            visited = set([id(attacker), id(target)])
+            current_source = target
 
-                for _, e in nearby_enemies:
-                    if jump_count >= 2:
-                        break
+            jump_count = 0
+            max_jumps = 3
+            has_original_damage = hasattr(attacker, "damage")
+            original_damage = getattr(attacker, "damage", 10.0)
 
-                    # Temporarily reduce damage for chain bounce
-                    attacker.damage = original_damage * 0.5
+            while jump_count < max_jumps:
+                best_dist = 22500 # 150 radius squared
+                best_target = None
 
-                    e_ricochet = getattr(e, "ricochet_barrier_timer", 0.0) > 0.0
-                    e_reflect = getattr(e, "reflect_shield_active", False)
+                for e in bounce_targets:
+                    if id(e) in visited:
+                        continue
+                    if not getattr(e, "alive", True) and not hasattr(e, "kind"):
+                        continue
+                    dx = getattr(e, "x", 0) - getattr(current_source, "x", 0)
+                    dy = getattr(e, "y", 0) - getattr(current_source, "y", 0)
+                    dist_sq = dx*dx + dy*dy
+                    if dist_sq < best_dist:
+                        best_dist = dist_sq
+                        best_target = e
 
-                    if e_ricochet:
-                        if hasattr(self.world, "_deal_damage"):
-                            self.world._deal_damage(e, attacker)
-                    elif e_reflect:
-                        capacity = getattr(e, "reflect_shield_capacity", 50.0)
-                        capacity -= (getattr(attacker, 'damage', original_damage * 0.5))
-                        if capacity <= 0:
-                            e.reflect_shield_active = False
-                            e.reflect_shield_capacity = 0.0
-                        else:
-                            e.reflect_shield_capacity = capacity
+                cx = getattr(current_source, "x", 0)
+                cy = getattr(current_source, "y", 0)
 
-                        if hasattr(self, "_spawn_directed_particles"):
-                            self._spawn_directed_particles(e, attacker, "reflect_pulse")
-                        if hasattr(self.world, "_deal_damage"):
-                            self.world._deal_damage(e, attacker)
-                    else:
-                        if hasattr(self.world, "_deal_damage"):
-                            self.world._deal_damage(attacker, e)
+                if cx**2 < best_dist and "wall_left" not in visited:
+                    best_dist = cx**2
+                    best_target = "wall_left"
+                if (width - cx)**2 < best_dist and "wall_right" not in visited:
+                    best_dist = (width - cx)**2
+                    best_target = "wall_right"
+                if cy**2 < best_dist and "wall_top" not in visited:
+                    best_dist = cy**2
+                    best_target = "wall_top"
+                if (height - cy)**2 < best_dist and "wall_bottom" not in visited:
+                    best_dist = (height - cy)**2
+                    best_target = "wall_bottom"
 
-                    # Spawn particles for lightning
-                    if hasattr(self, "_spawn_particles"):
-                        self._spawn_skill_particles("lightning")
-                        self._spawn_skill_particles("lightning")
+                if best_target is None:
+                    break
 
-                    jump_count += 1
+                jump_count += 1
 
-                # Restore original damage
-                if has_original_damage:
-                    attacker.damage = original_damage
+                if isinstance(best_target, str):
+                    visited.add(best_target)
+                    class WallPoint:
+                        pass
+                    wp = WallPoint()
+                    if best_target == "wall_left":
+                        wp.x = 0; wp.y = cy
+                    elif best_target == "wall_right":
+                        wp.x = width; wp.y = cy
+                    elif best_target == "wall_top":
+                        wp.x = cx; wp.y = 0
+                    elif best_target == "wall_bottom":
+                        wp.x = cx; wp.y = height
+                    current_source = wp
                 else:
+                    visited.add(id(best_target))
+                    current_source = best_target
+
+                    e = best_target
+                    b_type = getattr(e, "ball_type", None)
+                    is_enemy = (b_type is not None and b_type != "booster" and b_type != "spectator" and b_type != getattr(attacker, "ball_type", None))
+
+                    if is_enemy:
+                        attacker.damage = original_damage * (1.0 + 0.5 * jump_count)
+                        e_ricochet = getattr(e, "ricochet_barrier_timer", 0.0) > 0.0
+                        e_reflect = getattr(e, "reflect_shield_active", False)
+
+                        if e_ricochet:
+                            if hasattr(self.world, "_deal_damage"):
+                                self.world._deal_damage(e, attacker)
+                        elif e_reflect:
+                            capacity = getattr(e, "reflect_shield_capacity", 50.0)
+                            capacity -= getattr(attacker, 'damage', attacker.damage)
+                            if capacity <= 0:
+                                e.reflect_shield_active = False
+                                e.reflect_shield_capacity = 0.0
+                            else:
+                                e.reflect_shield_capacity = capacity
+
+                            if hasattr(self, "_spawn_directed_particles"):
+                                self._spawn_directed_particles(e, attacker, "reflect_pulse")
+                            if hasattr(self.world, "_deal_damage"):
+                                self.world._deal_damage(e, attacker)
+                        else:
+                            if hasattr(self.world, "_deal_damage"):
+                                self.world._deal_damage(attacker, e)
+
+                if hasattr(self, "_spawn_particles"):
+                    self._spawn_skill_particles("lightning")
+                    self._spawn_skill_particles("lightning")
+
+            if has_original_damage:
+                attacker.damage = original_damage
+            else:
+                if hasattr(attacker, "damage"):
                     delattr(attacker, "damage")
     """
     Action execution system.

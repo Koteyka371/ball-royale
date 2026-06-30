@@ -157,97 +157,187 @@ func _attempt_damage(attacker, target) -> void:
 		cl_timer = attacker.get_meta("chain_lightning_timer")
 
 	if cl_timer > 0.0:
-		var enemies = self._get_enemies()
-		if enemies.size() > 0:
-			var nearby = []
-			for e in enemies:
-				if e != target and e != attacker:
-					var dist_sq = pow(e.x - target.x, 2) + pow(e.y - target.y, 2)
-					if dist_sq < 22500: # 150 radius
-						nearby.append({"dist": dist_sq, "entity": e})
+		var bounce_targets = []
+		if self.world != null:
+			if "balls" in self.world:
+				bounce_targets.append_array(self.world.balls)
+			if "entities" in self.world:
+				bounce_targets.append_array(self.world.entities)
+			if "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+				bounce_targets.append_array(self.world.arena.hazards)
 
-			nearby.sort_custom(func(a, b): return a["dist"] < b["dist"])
+		var width = 1000.0
+		var height = 1000.0
+		if self.world != null:
+			if "width" in self.world:
+				width = self.world.width
+			if "height" in self.world:
+				height = self.world.height
 
-			var jump_count = 0
-			var has_orig_dmg = "damage" in attacker
-			var orig_dmg = 10.0
-			if has_orig_dmg:
-				orig_dmg = attacker.damage
+		var visited = {}
+		visited[attacker.get_instance_id() if typeof(attacker) == TYPE_OBJECT else str(attacker)] = true
+		visited[target.get_instance_id() if typeof(target) == TYPE_OBJECT else str(target)] = true
 
-			for item in nearby:
-				if jump_count >= 2:
-					break
+		var current_source = target
+		var jump_count = 0
+		var max_jumps = 3
 
-				var e = item["entity"]
-				# Temporarily set damage to half of original (or 5.0 if no original)
-				# Only if attacker is an object that allows setting dynamic properties or has the property
-				if typeof(attacker) == TYPE_OBJECT and attacker.has_method("set"):
-					attacker.set("damage", orig_dmg * 0.5)
-				elif "damage" in attacker:
-					attacker.damage = orig_dmg * 0.5
+		var has_orig_dmg = "damage" in attacker
+		var orig_dmg = 10.0
+		if has_orig_dmg:
+			orig_dmg = attacker.damage
 
-				var e_ricochet = false
-				if "ricochet_barrier_timer" in e and e.ricochet_barrier_timer > 0.0:
-					e_ricochet = true
-				elif e.has_method("get_meta") and e.has_meta("ricochet_barrier_timer") and e.get_meta("ricochet_barrier_timer") > 0.0:
-					e_ricochet = true
+		while jump_count < max_jumps:
+			var best_dist = 22500.0
+			var best_target = null
+			var is_wall = false
+			var wall_name = ""
 
-				var e_reflect = false
-				if "reflect_shield_active" in e and e.reflect_shield_active:
-					e_reflect = true
-				elif e.has_method("get_meta") and e.has_meta("reflect_shield_active") and e.get_meta("reflect_shield_active"):
-					e_reflect = true
+			for e in bounce_targets:
+				var e_id = e.get_instance_id() if typeof(e) == TYPE_OBJECT else str(e)
+				if visited.has(e_id):
+					continue
+				var e_alive = true
+				if "alive" in e:
+					e_alive = e.alive
+				elif typeof(e) == TYPE_OBJECT and e.has_method("get_meta") and e.has_meta("alive"):
+					e_alive = e.get_meta("alive")
+				if not e_alive and not "kind" in e:
+					continue
 
-				if e_ricochet:
-					if self.world != null and self.world.has_method("_deal_damage"):
-						self.world._deal_damage(e, attacker)
-				elif e_reflect:
-					var capacity = 50.0
-					if "reflect_shield_capacity" in e:
-						capacity = e.reflect_shield_capacity
-					elif e.has_method("get_meta") and e.has_meta("reflect_shield_capacity"):
-						capacity = e.get_meta("reflect_shield_capacity")
+				var ex = 0.0
+				var ey = 0.0
+				if "x" in e: ex = e.x
+				if "y" in e: ey = e.y
 
-					var dmg_to_deal = original_damage * 0.5
-					if "damage" in attacker:
-						dmg_to_deal = attacker.damage
-					capacity -= dmg_to_deal
+				var sx = 0.0
+				var sy = 0.0
+				if "x" in current_source: sx = current_source.x
+				if "y" in current_source: sy = current_source.y
 
-					if capacity <= 0:
-						if "reflect_shield_active" in e:
-							e.reflect_shield_active = false
-						elif e.has_method("set_meta"):
-							e.set_meta("reflect_shield_active", false)
+				var dist_sq = pow(ex - sx, 2) + pow(ey - sy, 2)
+				if dist_sq < best_dist:
+					best_dist = dist_sq
+					best_target = e
+					is_wall = false
 
+			var cx = 0.0
+			var cy = 0.0
+			if "x" in current_source: cx = current_source.x
+			if "y" in current_source: cy = current_source.y
+
+			if pow(cx, 2) < best_dist and not visited.has("wall_left"):
+				best_dist = pow(cx, 2)
+				best_target = {"x": 0.0, "y": cy}
+				is_wall = true
+				wall_name = "wall_left"
+			if pow(width - cx, 2) < best_dist and not visited.has("wall_right"):
+				best_dist = pow(width - cx, 2)
+				best_target = {"x": width, "y": cy}
+				is_wall = true
+				wall_name = "wall_right"
+			if pow(cy, 2) < best_dist and not visited.has("wall_top"):
+				best_dist = pow(cy, 2)
+				best_target = {"x": cx, "y": 0.0}
+				is_wall = true
+				wall_name = "wall_top"
+			if pow(height - cy, 2) < best_dist and not visited.has("wall_bottom"):
+				best_dist = pow(height - cy, 2)
+				best_target = {"x": cx, "y": height}
+				is_wall = true
+				wall_name = "wall_bottom"
+
+			if best_target == null:
+				break
+
+			jump_count += 1
+
+			if is_wall:
+				visited[wall_name] = true
+				current_source = best_target
+			else:
+				var target_id = best_target.get_instance_id() if typeof(best_target) == TYPE_OBJECT else str(best_target)
+				visited[target_id] = true
+				current_source = best_target
+
+				var b_type = null
+				if "ball_type" in best_target:
+					b_type = best_target.ball_type
+				var attacker_type = null
+				if "ball_type" in attacker:
+					attacker_type = attacker.ball_type
+
+				var is_enemy = false
+				if b_type != null and b_type != "booster" and b_type != "spectator" and b_type != attacker_type:
+					is_enemy = true
+
+				if is_enemy:
+					var new_dmg = orig_dmg * (1.0 + 0.5 * jump_count)
+					if typeof(attacker) == TYPE_OBJECT and attacker.has_method("set"):
+						attacker.set("damage", new_dmg)
+					elif "damage" in attacker:
+						attacker.damage = new_dmg
+
+					var e = best_target
+					var e_ricochet = false
+					if "ricochet_barrier_timer" in e and e.ricochet_barrier_timer > 0.0:
+						e_ricochet = true
+					elif typeof(e) == TYPE_OBJECT and e.has_method("get_meta") and e.has_meta("ricochet_barrier_timer") and e.get_meta("ricochet_barrier_timer") > 0.0:
+						e_ricochet = true
+
+					var e_reflect = false
+					if "reflect_shield_active" in e and e.reflect_shield_active:
+						e_reflect = true
+					elif typeof(e) == TYPE_OBJECT and e.has_method("get_meta") and e.has_meta("reflect_shield_active") and e.get_meta("reflect_shield_active"):
+						e_reflect = true
+
+					if e_ricochet:
+						if self.world != null and self.world.has_method("_deal_damage"):
+							self.world._deal_damage(e, attacker)
+					elif e_reflect:
+						var capacity = 50.0
 						if "reflect_shield_capacity" in e:
-							e.reflect_shield_capacity = 0.0
-						elif e.has_method("set_meta"):
-							e.set_meta("reflect_shield_capacity", 0.0)
+							capacity = e.reflect_shield_capacity
+						elif typeof(e) == TYPE_OBJECT and e.has_method("get_meta") and e.has_meta("reflect_shield_capacity"):
+							capacity = e.get_meta("reflect_shield_capacity")
+
+						var dmg_to_deal = new_dmg
+						if "damage" in attacker:
+							dmg_to_deal = attacker.damage
+						capacity -= dmg_to_deal
+
+						if capacity <= 0:
+							if "reflect_shield_active" in e:
+								e.reflect_shield_active = false
+							elif typeof(e) == TYPE_OBJECT and e.has_method("set_meta"):
+								e.set_meta("reflect_shield_active", false)
+
+							if "reflect_shield_capacity" in e:
+								e.reflect_shield_capacity = 0.0
+							elif typeof(e) == TYPE_OBJECT and e.has_method("set_meta"):
+								e.set_meta("reflect_shield_capacity", 0.0)
+						else:
+							if "reflect_shield_capacity" in e:
+								e.reflect_shield_capacity = capacity
+							elif typeof(e) == TYPE_OBJECT and e.has_method("set_meta"):
+								e.set_meta("reflect_shield_capacity", capacity)
+
+						if self.has_method("_spawn_directed_particles"):
+							self._spawn_directed_particles(e, attacker, "reflect_pulse")
+						if self.world != null and self.world.has_method("_deal_damage"):
+							self.world._deal_damage(e, attacker)
 					else:
-						if "reflect_shield_capacity" in e:
-							e.reflect_shield_capacity = capacity
-						elif e.has_method("set_meta"):
-							e.set_meta("reflect_shield_capacity", capacity)
+						if self.world != null and self.world.has_method("_deal_damage"):
+							self.world._deal_damage(attacker, e)
 
-					if self.has_method("_spawn_directed_particles"):
-						self._spawn_directed_particles(e, attacker, "reflect_pulse")
-					if self.world != null and self.world.has_method("_deal_damage"):
-						self.world._deal_damage(e, attacker)
-				else:
-					if self.world != null and self.world.has_method("_deal_damage"):
-						self.world._deal_damage(attacker, e)
+			if self.has_method("_spawn_particles"):
+				self._spawn_particles(current_source.x, current_source.y, "lightning")
 
-				if self.has_method("_spawn_particles"):
-					self._spawn_particles(target.x, target.y, "lightning")
-					self._spawn_particles(e.x, e.y, "lightning")
-
-				jump_count += 1
-
-			if has_orig_dmg:
-				if typeof(attacker) == TYPE_OBJECT and attacker.has_method("set"):
-					attacker.set("damage", orig_dmg)
-				elif "damage" in attacker:
-					attacker.damage = orig_dmg
+		if has_orig_dmg:
+			if typeof(attacker) == TYPE_OBJECT and attacker.has_method("set"):
+				attacker.set("damage", orig_dmg)
+			elif "damage" in attacker:
+				attacker.damage = orig_dmg
 
 
 var ball = null
