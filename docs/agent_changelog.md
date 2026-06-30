@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-295] Weather-Specific Equipment — *2026-06-30 09:51:12 UTC*
+
+Introduces new loadout items (e.g. 'Mud Tires', 'Thermal Goggles') that specifically counteract penalties applied by rain or fog respectively.
+
+---
+
 ## [idea-297] Dash Attack Skill — *2026-06-30 09:16:53 UTC*
 
 Add a skill for certain ball types that lets them consume all stamina to dash through enemies, dealing heavy damage.

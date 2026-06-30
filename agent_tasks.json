@@ -5127,7 +5127,7 @@
     },
     {
       "id": "idea-295",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather-Specific Equipment",
@@ -7811,6 +7811,40 @@
         "src/ai/conveyor_belt_mechanics.py",
         "src/ai/conveyor_belt_mechanics.gd",
         "tests/test_conveyor_belt_mechanics.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-453",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Dash Skill",
+      "description": "A variant of dash where if an enemy is killed during the dash, the cooldown is instantly reset.",
+      "allowed_paths": [
+        "src/ai/chain_dash_skill.py",
+        "src/ai/chain_dash_skill.gd",
+        "tests/test_chain_dash_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-454",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Stamina Pool Modifier",
+      "description": "A game mode modifier where stamina regenerates twice as fast, allowing more frequent use of stamina-based skills.",
+      "allowed_paths": [
+        "src/ai/stamina_pool.py",
+        "src/ai/stamina_pool.gd",
+        "tests/test_stamina_pool.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
