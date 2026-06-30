@@ -1386,6 +1386,13 @@ func execute(strategy: String, delta: float):
                             self.ball.hp -= hd
                             if self.ball.hp <= 0:
                                 self.ball.alive = false
+                    elif hazard.kind == "ice_patch":
+                        var _bvx = 0.0
+                        var _bvy = 0.0
+                        if "vx" in self.ball: _bvx = self.ball.vx
+                        if "vy" in self.ball: _bvy = self.ball.vy
+                        self.ball.x += _bvx * delta * 0.8
+                        self.ball.y += _bvy * delta * 0.8
                     elif hazard.kind == "tornado":
                         var dx = hazard.x - self.ball.x
                         var dy = hazard.y - self.ball.y
@@ -1671,7 +1678,8 @@ func execute(strategy: String, delta: float):
 
         if is_dash:
             if infinite_stamina <= 0:
-                my_ball.set_meta("stamina", max(0.0, act_stamina - 50.0 * delta))
+                var _drain = 100.0 if world != null and "arena" in world and "is_heatwave" in world.arena and world.arena.is_heatwave else 50.0
+                my_ball.set_meta("stamina", max(0.0, act_stamina - _drain * delta))
         elif act_dist / max(0.0001, delta * 60) < act_base_speed * 0.5:
             my_ball.set_meta("stamina", min(act_max_stamina, act_stamina + 30.0 * delta))
 

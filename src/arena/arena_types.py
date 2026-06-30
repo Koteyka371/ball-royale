@@ -1304,3 +1304,56 @@ def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = No
     if arena_class == ProceduralArena:
         return ProceduralArena(arena_size=arena_size, num_rooms=5, seed=seed)
     return arena_class(arena_size=arena_size, seed=seed)
+
+
+class WinterArena(ProceduralArena):
+    def generate(self):
+        super().generate()
+        self.is_snowing = True
+        self.is_raining = False
+        self.is_heatwave = False
+        import random
+        for i in range(5):
+            x = random.uniform(200, self.width - 200)
+            y = random.uniform(200, self.height - 200)
+            self.hazards.append(Hazard(id=len(self.hazards)+i, x=x, y=y, radius=100.0, kind="ice_patch", damage=0.0))
+
+class SummerArena(ProceduralArena):
+    def generate(self):
+        super().generate()
+        self.is_heatwave = True
+        self.is_snowing = False
+        self.is_raining = False
+        import random
+        for i in range(5):
+            x = random.uniform(200, self.width - 200)
+            y = random.uniform(200, self.height - 200)
+            self.hazards.append(Hazard(id=len(self.hazards)+i, x=x, y=y, radius=80.0, kind="lava", damage=20.0))
+
+class SpringArena(ProceduralArena):
+    def generate(self):
+        super().generate()
+        self.is_raining = True
+        self.is_snowing = False
+        self.is_heatwave = False
+        import random
+        for i in range(3):
+            x = random.uniform(200, self.width - 200)
+            y = random.uniform(200, self.height - 200)
+            self.hazards.append(Hazard(id=len(self.hazards)+i, x=x, y=y, radius=60.0, kind="healing_spring", damage=0.0))
+
+class AutumnArena(ProceduralArena):
+    def generate(self):
+        super().generate()
+        self.is_foggy = True
+        import random
+        self.wind_dx = random.uniform(-100.0, 100.0)
+        self.wind_dy = random.uniform(-100.0, 100.0)
+        for i in range(2):
+            x = random.uniform(200, self.width - 200)
+            y = random.uniform(200, self.height - 200)
+            t = Hazard(id=len(self.hazards)+i, x=x, y=y, radius=40.0, kind="tornado", damage=20.0)
+            setattr(t, 'duration', 9999.0)
+            setattr(t, 'vx', random.uniform(-50.0, 50.0))
+            setattr(t, 'vy', random.uniform(-50.0, 50.0))
+            self.hazards.append(t)

@@ -525,3 +525,55 @@ class ThickFogArena extends ProceduralArena:
 		if fog_timer >= phase_duration:
 			fog_timer = 0.0
 			is_foggy = not is_foggy
+
+
+class WinterArena extends ProceduralArena:
+    func generate():
+        super.generate()
+        var is_snowing = true
+        var is_raining = false
+        var is_heatwave = false
+        set("is_snowing", true)
+        set("is_raining", false)
+        set("is_heatwave", false)
+        for i in range(5):
+            var px = rng.randf_range(200.0, width - 200.0)
+            var py = rng.randf_range(200.0, height - 200.0)
+            hazards.append(ProceduralArena.Hazard.new(hazards.size(), px, py, 100.0, "ice_patch", 0.0))
+
+class SummerArena extends ProceduralArena:
+    func generate():
+        super.generate()
+        set("is_heatwave", true)
+        set("is_snowing", false)
+        set("is_raining", false)
+        for i in range(5):
+            var px = rng.randf_range(200.0, width - 200.0)
+            var py = rng.randf_range(200.0, height - 200.0)
+            hazards.append(ProceduralArena.Hazard.new(hazards.size(), px, py, 80.0, "lava", 20.0))
+
+class SpringArena extends ProceduralArena:
+    func generate():
+        super.generate()
+        set("is_raining", true)
+        set("is_snowing", false)
+        set("is_heatwave", false)
+        for i in range(3):
+            var px = rng.randf_range(200.0, width - 200.0)
+            var py = rng.randf_range(200.0, height - 200.0)
+            hazards.append(ProceduralArena.Hazard.new(hazards.size(), px, py, 60.0, "healing_spring", 0.0))
+
+class AutumnArena extends ProceduralArena:
+    func generate():
+        super.generate()
+        set("is_foggy", true)
+        set("wind_dx", rng.randf_range(-100.0, 100.0))
+        set("wind_dy", rng.randf_range(-100.0, 100.0))
+        for i in range(2):
+            var px = rng.randf_range(200.0, width - 200.0)
+            var py = rng.randf_range(200.0, height - 200.0)
+            var t = ProceduralArena.Hazard.new(hazards.size(), px, py, 40.0, "tornado", 20.0)
+            t.set_meta("duration", 9999.0)
+            t.set_meta("vx", rng.randf_range(-50.0, 50.0))
+            t.set_meta("vy", rng.randf_range(-50.0, 50.0))
+            hazards.append(t)

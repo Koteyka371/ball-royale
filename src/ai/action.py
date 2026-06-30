@@ -982,6 +982,9 @@ class Action:
                                 if self.ball.hp <= 0:
                                     self.ball.alive = False
                             continue
+                        elif hazard.kind == "ice_patch":
+                            self.ball.x += getattr(self.ball, "vx", 0.0) * delta * 0.8
+                            self.ball.y += getattr(self.ball, "vy", 0.0) * delta * 0.8
                         elif hazard.kind == "tornado":
                             # Pull effect, launch, and damage
                             dx = hazard.x - self.ball.x
@@ -1182,7 +1185,8 @@ class Action:
             dist = math.sqrt(dx*dx + dy*dy)
             if getattr(self.ball, "is_dashing", False):
                 if getattr(self.ball, "infinite_stamina_timer", 0.0) <= 0:
-                    self.ball.stamina = max(0.0, getattr(self.ball, "stamina", 0.0) - 50.0 * delta)
+                    drain = 100.0 if (hasattr(self.world, "arena") and getattr(self.world.arena, "is_heatwave", False)) else 50.0
+                    self.ball.stamina = max(0.0, getattr(self.ball, "stamina", 0.0) - drain * delta)
             elif dist / max(0.0001, delta * 60) < getattr(self.ball, "base_speed", 2.0) * 0.5:
                 self.ball.stamina = min(getattr(self.ball, "max_stamina", 100.0), getattr(self.ball, "stamina", 0.0) + 30.0 * delta)
 
@@ -3643,7 +3647,8 @@ class Action:
         # Regen/Drain Stamina at end of execution
         dist = math.sqrt((getattr(self.ball, "x", 0) - old_x)**2 + (getattr(self.ball, "y", 0) - old_y)**2)
         if getattr(self.ball, "is_dashing", False):
-            self.ball.stamina = max(0.0, getattr(self.ball, "stamina", 0.0) - 50.0 * delta)
+            drain = 100.0 if (hasattr(self.world, "arena") and getattr(self.world.arena, "is_heatwave", False)) else 50.0
+            self.ball.stamina = max(0.0, getattr(self.ball, "stamina", 0.0) - drain * delta)
         elif dist / max(0.0001, delta * 60) < getattr(self.ball, "base_speed", 2.0) * 0.5:
             self.ball.stamina = min(getattr(self.ball, "max_stamina", 100.0), getattr(self.ball, "stamina", 0.0) + 30.0 * delta)
 
