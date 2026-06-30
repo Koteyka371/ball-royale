@@ -677,7 +677,6 @@ class Action:
                                         for h in self.world.arena.hazards:
                                             if h.id == hazard.target_hazard_id and h.kind == "black_hole":
                                                 import math as _math
-                                                import random as _random
                                                 angle = _random.uniform(0, 2 * _math.pi)
                                                 launch_distance = getattr(h, "radius", 50.0) + 30.0
                                                 self.ball.x = h.x + _math.cos(angle) * launch_distance
