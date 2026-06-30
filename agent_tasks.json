@@ -9109,6 +9109,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-527",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Autumn Arena with leaves",
+      "description": "Autumn arena obscures vision",
+      "allowed_paths": [
+        "src/arena/autumn_arena_with_leaves.py",
+        "src/arena/autumn_arena_with_leaves.gd",
+        "tests/test_autumn_arena_with_leaves.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-528",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Spring Arena with high winds",
+      "description": "Spring arena pushes players around",
+      "allowed_paths": [
+        "src/arena/spring_arena_with_high_winds.py",
+        "src/arena/spring_arena_with_high_winds.gd",
+        "tests/test_spring_arena_with_high_winds.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }

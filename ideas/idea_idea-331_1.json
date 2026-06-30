@@ -1,4 +1,0 @@
-{
-  "title": "Add Chain Lightning Visual Arcs",
-  "description": "Render bezier curve lightning arcs between hit entities during chain bounces."
-}

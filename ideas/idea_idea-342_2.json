@@ -1,4 +1,0 @@
-{
-  "title": "Shrinking Safe-Zone Mechanics",
-  "description": "Introduce a game mode feature where the safe playable area gradually shrinks over time, applying damage-over-time (DoT) to any ball caught outside it, heavily discouraging camping."
-}
