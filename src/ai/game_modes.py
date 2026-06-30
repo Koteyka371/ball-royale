@@ -30,6 +30,9 @@ class GameMode:
 
         for b in balls:
             if getattr(b, "ball_type", None) != "spectator":
+                b.experience = getattr(b, "experience", 0.0)
+                b.level = getattr(b, "level", 1)
+
                 if mod["type"] == "global_speed":
                     b.base_speed = getattr(b, "base_speed", getattr(b, "speed", 100)) * mod["value"]
                     b.speed = getattr(b, "speed", 100) * mod["value"]
@@ -1311,8 +1314,53 @@ class DominationMode(GameMode):
 
             if red_count > blue_count:
                 pt.capture_progress += 10.0 * delta
+                # Award XP to capturing team
+                for b in balls:
+                    if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator" and getattr(b, "team", "") == "Red":
+                        dist_sq = (b.x - pt.x)**2 + (b.y - pt.y)**2
+                        if dist_sq <= pt.radius**2:
+                            b.experience = getattr(b, "experience", 0.0) + 5.0 * delta
+                            b.level = getattr(b, "level", 1)
+                            while b.experience >= 100 * b.level:
+                                b.experience -= 100 * b.level
+                                b.level += 1
+                                import random
+                                stat = random.choice(["max_hp", "damage", "speed"])
+                                if stat == "max_hp":
+                                    b.max_hp = getattr(b, "max_hp", 100) * 1.1
+                                    b.hp = getattr(b, "hp", b.max_hp) + getattr(b, "max_hp", 100) * 0.1
+                                    if b.hp > b.max_hp: b.hp = b.max_hp
+                                elif stat == "damage":
+                                    b.damage = getattr(b, "damage", 10) * 1.1
+                                    if hasattr(b, "base_damage"): b.base_damage *= 1.1
+                                elif stat == "speed":
+                                    b.speed = getattr(b, "speed", 100) * 1.1
+                                    if hasattr(b, "base_speed"): b.base_speed *= 1.1
+
             elif blue_count > red_count:
                 pt.capture_progress -= 10.0 * delta
+                # Award XP to capturing team
+                for b in balls:
+                    if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator" and getattr(b, "team", "") == "Blue":
+                        dist_sq = (b.x - pt.x)**2 + (b.y - pt.y)**2
+                        if dist_sq <= pt.radius**2:
+                            b.experience = getattr(b, "experience", 0.0) + 5.0 * delta
+                            b.level = getattr(b, "level", 1)
+                            while b.experience >= 100 * b.level:
+                                b.experience -= 100 * b.level
+                                b.level += 1
+                                import random
+                                stat = random.choice(["max_hp", "damage", "speed"])
+                                if stat == "max_hp":
+                                    b.max_hp = getattr(b, "max_hp", 100) * 1.1
+                                    b.hp = getattr(b, "hp", b.max_hp) + getattr(b, "max_hp", 100) * 0.1
+                                    if b.hp > b.max_hp: b.hp = b.max_hp
+                                elif stat == "damage":
+                                    b.damage = getattr(b, "damage", 10) * 1.1
+                                    if hasattr(b, "base_damage"): b.base_damage *= 1.1
+                                elif stat == "speed":
+                                    b.speed = getattr(b, "speed", 100) * 1.1
+                                    if hasattr(b, "base_speed"): b.base_speed *= 1.1
 
             pt.capture_progress = max(-100.0, min(100.0, pt.capture_progress))
 

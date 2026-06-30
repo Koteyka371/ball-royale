@@ -5,6 +5,37 @@ from typing import Any
 
 class Action:
 
+
+    def _award_xp(self, ball, amount, world=None) -> None:
+        if not getattr(ball, "alive", False) or getattr(ball, "ball_type", None) == "spectator":
+            return
+
+        ball.experience = getattr(ball, "experience", 0.0) + amount
+        ball.level = getattr(ball, "level", 1)
+
+        while ball.experience >= 100 * ball.level:
+            ball.experience -= 100 * ball.level
+            ball.level += 1
+
+            # Apply random stat buff
+            import random
+            stat = random.choice(["max_hp", "damage", "speed"])
+            if stat == "max_hp":
+                ball.max_hp = getattr(ball, "max_hp", 100) * 1.1
+                ball.hp = getattr(ball, "hp", ball.max_hp) + getattr(ball, "max_hp", 100) * 0.1
+                if ball.hp > ball.max_hp: ball.hp = ball.max_hp
+            elif stat == "damage":
+                ball.damage = getattr(ball, "damage", 10) * 1.1
+                if hasattr(ball, "base_damage"):
+                    ball.base_damage *= 1.1
+            elif stat == "speed":
+                ball.speed = getattr(ball, "speed", 100) * 1.1
+                if hasattr(ball, "base_speed"):
+                    ball.base_speed *= 1.1
+
+            if hasattr(world, "add_event"):
+                world.add_event("level_up", {"ball": getattr(ball, "id", None), "level": ball.level, "stat": stat})
+
     def _attempt_damage(self, attacker, target) -> None:
         # Check attack accuracy
         attack_accuracy = getattr(attacker, "attack_accuracy", 1.0)
@@ -55,6 +86,13 @@ class Action:
             attacker.damage = original_damage
 
         new_hp = getattr(target, "hp", 0.0)
+
+        # Award XP for damage dealt and kills
+        if new_hp < old_hp:
+            self._award_xp(attacker, 10.0, self.world)
+            if new_hp <= 0 and old_hp > 0:
+                self._award_xp(attacker, 50.0, self.world)
+
         if new_hp <= 0 and old_hp > 0 and pm and hasattr(pm, "add_kill"):
             pm.add_kill(attacker.ball_type, target.ball_type)
             if pm.is_nemesis(target.ball_type, attacker.ball_type):
