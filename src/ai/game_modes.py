@@ -2221,7 +2221,8 @@ class ModifierZonesMode(GameMode):
         self.zones = [
             {"id": "zone_speed", "x": arena_width * 0.25, "y": arena_height * 0.25, "radius": 150.0, "type": "speed"},
             {"id": "zone_damage", "x": arena_width * 0.75, "y": arena_height * 0.25, "radius": 150.0, "type": "damage"},
-            {"id": "zone_heal", "x": arena_width * 0.5, "y": arena_height * 0.75, "radius": 150.0, "type": "heal"}
+            {"id": "zone_heal", "x": arena_width * 0.5, "y": arena_height * 0.75, "radius": 150.0, "type": "heal"},
+            {"id": "zone_debuff", "x": arena_width * 0.5, "y": arena_height * 0.25, "radius": 150.0, "type": "debuff"}
         ]
 
         for b in balls:
@@ -2244,6 +2245,7 @@ class ModifierZonesMode(GameMode):
             in_speed_zone = False
             in_damage_zone = False
             in_heal_zone = False
+            in_debuff_zone = False
 
             for zone in self.zones:
                 dx = b.x - zone["x"]
@@ -2257,6 +2259,8 @@ class ModifierZonesMode(GameMode):
                         in_damage_zone = True
                     elif zone["type"] == "heal":
                         in_heal_zone = True
+                    elif zone["type"] == "debuff":
+                        in_debuff_zone = True
 
             if in_speed_zone:
                 b.speed = b.base_speed * 1.5
@@ -2273,6 +2277,19 @@ class ModifierZonesMode(GameMode):
                 if getattr(b, "zone_modifier_damage", False):
                     b.damage = b.base_damage
                     delattr(b, "zone_modifier_damage")
+
+            if in_debuff_zone:
+                if not hasattr(b, "base_max_hp"):
+                    b.base_max_hp = getattr(b, "max_hp", 100.0)
+                b.max_hp = b.base_max_hp * 0.5
+                if hasattr(b, "hp") and b.hp > b.max_hp:
+                    b.hp = b.max_hp
+                b.zone_modifier_debuff = True
+            else:
+                if getattr(b, "zone_modifier_debuff", False):
+                    if hasattr(b, "base_max_hp"):
+                        b.max_hp = b.base_max_hp
+                    delattr(b, "zone_modifier_debuff")
 
             if in_heal_zone:
                 if hasattr(b, "hp") and hasattr(b, "max_hp"):
