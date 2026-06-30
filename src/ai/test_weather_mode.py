@@ -104,6 +104,49 @@ def test_weather_mode_mirage():
     assert len(decoys) > 0
     assert decoys[0].speed == 0.0
 
+def test_weather_mode_seasons():
+    import ai.game_modes as gm
+    mode = gm.GAME_MODES["weather_chaos"]
+    world = MockWorld()
+    world.arena = type("MockArena", (), {"width": 1000, "height": 1000, "hazards": []})()
+
+    # Test Spring (Season 1) Rain
+    world.leaderboard_manager = type("Mock", (), {"data": {"current_season": 1}})()
+    balls = [MockBall(1)]
+    mode.setup(world, balls)
+    mode.weather = "rain"
+
+    # Mock random to always trigger hazard spawn
+    old_rnd = getattr(mode, "random", None)
+    import random
+    mode.random = type("MockRandom", (), {"choice": random.choice, "uniform": lambda *args: 500.0, "random": lambda *args: 0.0, "randint": random.randint})()
+
+    mode.tick(world, balls, 1.0) # Delta 1.0 to ensure chance
+
+    has_healing_spring = False
+    for h in world.arena.hazards:
+        if getattr(h, "kind", "") == "healing_spring":
+            has_healing_spring = True
+            break
+    assert has_healing_spring, "Spring rain did not spawn healing_spring"
+
+    # Test Winter (Season 4) Snow
+    world.arena.hazards = []
+    world.leaderboard_manager = type("Mock", (), {"data": {"current_season": 4}})()
+    mode.weather = "snow"
+
+    mode.tick(world, balls, 1.0)
+
+    has_ice_patch = False
+    for h in world.arena.hazards:
+        if getattr(h, "kind", "") == "ice_patch":
+            has_ice_patch = True
+            break
+    assert has_ice_patch, "Winter snow did not spawn ice_patch"
+
+    mode.random = old_rnd
+
+
 def test_weather_mode_heatwave():
     import ai.game_modes as gm
     mode = gm.GAME_MODES["weather_chaos"]

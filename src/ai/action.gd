@@ -1368,14 +1368,14 @@ func execute(strategy: String, delta: float):
                             var pull_strength = (hazard.radius * 2.0 / min_dist) * 50.0 * delta
                             self.ball.x += nx * pull_strength
                             self.ball.y += ny * pull_strength
-                elif hazard.kind in ["black_hole", "tornado", "portal", "teleporter", "swap_portal"]:
+                elif hazard.kind in ["black_hole", "tornado", "portal", "teleporter", "swap_portal", "ice_patch"]:
                     var current_tick = 0
                     if "tick" in self.world:
                         current_tick = self.world.tick
                     if not hazard.has_meta("last_updated_tick") or hazard.get_meta("last_updated_tick") != current_tick:
                         hazard.set_meta("last_updated_tick", current_tick)
                         if not hazard.has_meta("vx"):
-                            if hazard.kind in ["tornado", "portal", "teleporter", "swap_portal"]:
+                            if hazard.kind in ["tornado", "portal", "teleporter", "swap_portal", "ice_patch"]:
                                 hazard.set_meta("vx", randf_range(-100.0, 100.0))
                                 hazard.set_meta("vy", randf_range(-100.0, 100.0))
                             else:
@@ -1947,6 +1947,13 @@ func execute(strategy: String, delta: float):
                             elif "vx" in self.ball:
                                 self.ball.vx = nx * 2000.0
                                 self.ball.vy = ny * 2000.0
+                        continue
+                    elif hazard.kind == "ice_patch":
+                        var b = self.ball
+                        if b.has_method("set_meta"):
+                            b.set_meta("is_on_ice", true)
+                            b.set_meta("steering_mult", 0.1)
+                            b.set_meta("dash_range_mult", 2.0)
                         continue
                     elif hazard.kind == "healing_spring":
                         var heal_amount = abs(hazard.damage) * delta

@@ -1433,6 +1433,23 @@ class WeatherChaosMode extends GameMode:
 			if not "hazards" in world.arena:
 				world.arena.hazards = []
 
+			if weather == "snow":
+				var season_num = 1
+				if world != null and "leaderboard_manager" in world and world.leaderboard_manager != null and "data" in world.leaderboard_manager:
+					if world.leaderboard_manager.data.has("current_season"):
+						season_num = world.leaderboard_manager.data["current_season"]
+				var season_index = ((season_num - 1) % 4) + 1
+
+				if season_index == 4 and randf() < 0.1 * delta:
+					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
+					var x = randf_range(100.0, world.arena.width - 100.0)
+					var y = randf_range(100.0, world.arena.height - 100.0)
+					var ice = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 50.0, "ice_patch", 0.0)
+					ice.set_meta("duration", 5.0)
+					ice.set_meta("vx", randf_range(-100.0, 100.0))
+					ice.set_meta("vy", randf_range(-100.0, 100.0))
+					world.arena.hazards.append(ice)
+
 			if weather == "wind":
 				if randf() < 0.1 * delta:
 					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
@@ -1447,13 +1464,25 @@ class WeatherChaosMode extends GameMode:
 				var chance = 0.05
 				if weather == "thunderstorm":
 					chance = 0.2
+
+				var season_num = 1
+				if world != null and "leaderboard_manager" in world and world.leaderboard_manager != null and "data" in world.leaderboard_manager:
+					if world.leaderboard_manager.data.has("current_season"):
+						season_num = world.leaderboard_manager.data["current_season"]
+				var season_index = ((season_num - 1) % 4) + 1
+
 				if randf() < chance * delta:
 					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
 					var x = randf_range(100.0, world.arena.width - 100.0)
 					var y = randf_range(100.0, world.arena.height - 100.0)
-					var lightning = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 30.0, "lightning_strike", 50.0)
-					lightning.set_meta("duration", 1.0)
-					world.arena.hazards.append(lightning)
+					if weather == "rain" and season_index == 1:
+						var puddle = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 40.0, "healing_spring", -20.0)
+						puddle.set_meta("duration", 5.0)
+						world.arena.hazards.append(puddle)
+					else:
+						var lightning = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 30.0, "lightning_strike", 50.0)
+						lightning.set_meta("duration", 1.0)
+						world.arena.hazards.append(lightning)
 				if weather == "thunderstorm" and randf() < 0.05 * delta:
 					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
 					var x = randf_range(100.0, world.arena.width - 100.0)

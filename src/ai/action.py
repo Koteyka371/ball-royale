@@ -969,8 +969,8 @@ class Action:
                             hazard.last_updated_tick = current_tick
                             if not hasattr(hazard, "vx"):
 
-                                import random; hazard.vx = random.uniform(-100.0, 100.0) if hazard.kind in ("tornado", "portal", "teleporter", "swap_portal") else random.uniform(-10.0, 10.0)
-                                hazard.vy = random.uniform(-100.0, 100.0) if hazard.kind in ("tornado", "portal", "teleporter", "swap_portal") else random.uniform(-10.0, 10.0)
+                                import random; hazard.vx = random.uniform(-100.0, 100.0) if hazard.kind in ("tornado", "portal", "teleporter", "swap_portal", "ice_patch") else random.uniform(-10.0, 10.0)
+                                hazard.vy = random.uniform(-100.0, 100.0) if hazard.kind in ("tornado", "portal", "teleporter", "swap_portal", "ice_patch") else random.uniform(-10.0, 10.0)
                             if not hasattr(hazard, "lifetime"):
                                 hazard.lifetime = 0.0
                             hazard.lifetime += delta
@@ -1353,6 +1353,11 @@ class Action:
                                 # Accelerate ball significantly to create chaotic pinball-like movement
                                 self.ball.vx = nx * 2000.0
                                 self.ball.vy = ny * 2000.0
+                            continue
+                        elif hazard.kind == "ice_patch":
+                            setattr(self.ball, "is_on_ice", True)
+                            self.ball.steering_mult = 0.1
+                            self.ball.dash_range_mult = 2.0
                             continue
                         elif hazard.kind == "healing_spring":
                             # Regenerate HP over time

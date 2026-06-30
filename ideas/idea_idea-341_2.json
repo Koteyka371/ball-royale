@@ -1,0 +1,4 @@
+{
+    "title": "Meteorological Ball Type",
+    "description": "A new ball type called 'Stormweaver' whose active skill changes based on the current weather condition in Weather Chaos mode. For example, during Sandstorm, they gain a blind aura, and during Thunderstorm, they passively zap nearby targets."
+}

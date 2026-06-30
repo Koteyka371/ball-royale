@@ -261,6 +261,24 @@ class BattleRoyaleMode(GameMode):
             if not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
 
+            if self.weather == "snow":
+                season_num = 1
+                if hasattr(world, "leaderboard_manager") and hasattr(world.leaderboard_manager, "data"):
+                    season_num = world.leaderboard_manager.data.get("current_season", 1)
+                elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
+                    season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
+                season_index = ((season_num - 1) % 4) + 1
+
+                if season_index == 4 and getattr(self, "random", __import__("random")).random() < 0.1 * delta:
+                    from arena.procedural_arena import Hazard
+                    x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                    y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                    ice = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=50.0, kind="ice_patch", damage=0.0)
+                    setattr(ice, 'duration', 5.0)
+                    setattr(ice, 'vx', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
+                    setattr(ice, 'vy', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
+                    world.arena.hazards.append(ice)
+
             if self.weather == "wind":
                 if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
                     from arena.procedural_arena import Hazard
@@ -273,14 +291,27 @@ class BattleRoyaleMode(GameMode):
                     setattr(tornado, 'vy', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
                     world.arena.hazards.append(tornado)
             elif self.weather == "rain" or self.weather == "thunderstorm":
+                season_num = 1
+                if hasattr(world, "leaderboard_manager") and hasattr(world.leaderboard_manager, "data"):
+                    season_num = world.leaderboard_manager.data.get("current_season", 1)
+                elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
+                    season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
+                season_index = ((season_num - 1) % 4) + 1  # 1=Spring, 2=Summer, 3=Autumn, 4=Winter
+
                 if getattr(self, "random", __import__("random")).random() < (0.2 if self.weather == "thunderstorm" else 0.05) * delta:
                     from arena.procedural_arena import Hazard
-                    # Spawn lightning strike zone
                     x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
                     y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
-                    lightning = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=30.0, kind="lightning_strike", damage=50.0)
-                    setattr(lightning, 'duration', 1.0) # short duration strike
-                    world.arena.hazards.append(lightning)
+                    if self.weather == "rain" and season_index == 1:
+                        # Spring Rain: Healing Puddles
+                        puddle = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=40.0, kind="healing_spring", damage=-20.0)
+                        setattr(puddle, 'duration', 5.0)
+                        world.arena.hazards.append(puddle)
+                    else:
+                        # Spawn lightning strike zone
+                        lightning = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=30.0, kind="lightning_strike", damage=50.0)
+                        setattr(lightning, 'duration', 1.0) # short duration strike
+                        world.arena.hazards.append(lightning)
                 if self.weather == "thunderstorm" and getattr(self, "random", __import__("random")).random() < 0.05 * delta:
                     # Spawn tornado
                     x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
@@ -1066,6 +1097,24 @@ class WeatherChaosMode(GameMode):
             if not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
 
+            if self.weather == "snow":
+                season_num = 1
+                if hasattr(world, "leaderboard_manager") and hasattr(world.leaderboard_manager, "data"):
+                    season_num = world.leaderboard_manager.data.get("current_season", 1)
+                elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
+                    season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
+                season_index = ((season_num - 1) % 4) + 1
+
+                if season_index == 4 and getattr(self, "random", __import__("random")).random() < 0.1 * delta:
+                    from arena.procedural_arena import Hazard
+                    x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                    y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                    ice = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=50.0, kind="ice_patch", damage=0.0)
+                    setattr(ice, 'duration', 5.0)
+                    setattr(ice, 'vx', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
+                    setattr(ice, 'vy', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
+                    world.arena.hazards.append(ice)
+
             if self.weather == "wind":
                 if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
                     from arena.procedural_arena import Hazard
@@ -1078,14 +1127,27 @@ class WeatherChaosMode(GameMode):
                     setattr(tornado, 'vy', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
                     world.arena.hazards.append(tornado)
             elif self.weather == "rain" or self.weather == "thunderstorm":
+                season_num = 1
+                if hasattr(world, "leaderboard_manager") and hasattr(world.leaderboard_manager, "data"):
+                    season_num = world.leaderboard_manager.data.get("current_season", 1)
+                elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
+                    season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
+                season_index = ((season_num - 1) % 4) + 1  # 1=Spring, 2=Summer, 3=Autumn, 4=Winter
+
                 if getattr(self, "random", __import__("random")).random() < (0.2 if self.weather == "thunderstorm" else 0.05) * delta:
                     from arena.procedural_arena import Hazard
-                    # Spawn lightning strike zone
                     x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
                     y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
-                    lightning = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=30.0, kind="lightning_strike", damage=50.0)
-                    setattr(lightning, 'duration', 1.0) # short duration strike
-                    world.arena.hazards.append(lightning)
+                    if self.weather == "rain" and season_index == 1:
+                        # Spring Rain: Healing Puddles
+                        puddle = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=40.0, kind="healing_spring", damage=-20.0)
+                        setattr(puddle, 'duration', 5.0)
+                        world.arena.hazards.append(puddle)
+                    else:
+                        # Spawn lightning strike zone
+                        lightning = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=30.0, kind="lightning_strike", damage=50.0)
+                        setattr(lightning, 'duration', 1.0) # short duration strike
+                        world.arena.hazards.append(lightning)
                 if self.weather == "thunderstorm" and getattr(self, "random", __import__("random")).random() < 0.05 * delta:
                     # Spawn tornado
                     x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
