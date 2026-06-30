@@ -1,0 +1,4 @@
+{
+  "title": "Black Hole Generator Hazard",
+  "description": "A new procedural hazard that pulls nearby balls towards its center, slowing them down and dealing damage over time."
+}

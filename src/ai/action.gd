@@ -5954,6 +5954,85 @@ func _use_skill():
                         if idx != -1:
                             arena.hazards.remove_at(idx)
 
+
+        elif skill_name == "throw_hazard":
+            var arena = world.call("get_arena") if world != null and world.has_method("get_arena") else null
+            if arena == null and "arena" in world:
+                arena = world.arena
+
+            if arena != null and "hazards" in arena:
+                var hazards = arena.hazards
+                var target_hazard = null
+                var min_dist_sq = 22500.0
+                for h in hazards:
+                    var kind = ""
+                    if "kind" in h: kind = h.kind
+                    elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
+                    elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
+
+                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item"]:
+                        var hx = 0.0
+                        var hy = 0.0
+                        if "x" in h: hx = h.x
+                        elif typeof(h) == TYPE_DICTIONARY and h.has("x"): hx = h["x"]
+                        if "y" in h: hy = h.y
+                        elif typeof(h) == TYPE_DICTIONARY and h.has("y"): hy = h["y"]
+
+                        var dx = hx - self.ball.x
+                        var dy = hy - self.ball.y
+                        var dist_sq = dx*dx + dy*dy
+                        if dist_sq < min_dist_sq:
+                            min_dist_sq = dist_sq
+                            target_hazard = h
+
+                if target_hazard != null:
+                    var enemies = _get_enemies()
+                    if enemies.size() > 0:
+                        var closest_enemy = enemies[0]
+                        var min_e_dist_sq = (closest_enemy.x - self.ball.x)*(closest_enemy.x - self.ball.x) + (closest_enemy.y - self.ball.y)*(closest_enemy.y - self.ball.y)
+                        for i in range(1, enemies.size()):
+                            var e = enemies[i]
+                            var dist_sq = (e.x - self.ball.x)*(e.x - self.ball.x) + (e.y - self.ball.y)*(e.y - self.ball.y)
+                            if dist_sq < min_e_dist_sq:
+                                min_e_dist_sq = dist_sq
+                                closest_enemy = e
+
+                        var idx = hazards.find(target_hazard)
+                        if idx != -1:
+                            hazards.remove_at(idx)
+                        else:
+                            if "active" in target_hazard: target_hazard.active = false
+                            elif typeof(target_hazard) == TYPE_DICTIONARY: target_hazard["active"] = false
+
+                        var dx = closest_enemy.x - self.ball.x
+                        var dy = closest_enemy.y - self.ball.y
+                        var dist = sqrt(dx*dx + dy*dy)
+                        if dist < 0.0001: dist = 0.0001
+                        var nx = dx / dist
+                        var ny = dy / dist
+
+                        var b_radius = 10.0
+                        if "radius" in self.ball: b_radius = self.ball.radius
+
+                        var thrown_hazard = {
+                            "id": hazards.size() + int(randf() * 90000) + 10000,
+                            "x": self.ball.x + nx * (b_radius + 5.0),
+                            "y": self.ball.y + ny * (b_radius + 5.0),
+                            "radius": 15.0,
+                            "kind": "thrown_rock",
+                            "damage": 50.0,
+                            "vx": nx * 500.0,
+                            "vy": ny * 500.0,
+                            "duration": 2.0,
+                            "owner_id": self.ball.id if "id" in self.ball else null,
+                            "active": true
+                        }
+                        hazards.append(thrown_hazard)
+
+                        var cd = 5.0
+                        if "skill_cooldown" in self.ball: cd = self.ball.skill_cooldown
+                        self.ball.skill_timer = cd
+
         elif skill_name == "target_strong":
             var enemies = _get_enemies()
             if enemies.size() > 0:
