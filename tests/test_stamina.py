@@ -57,3 +57,32 @@ def test_stamina_dash():
     action.execute("idle", 0.1)
 
     assert ball.stamina > prev_stamina # Regenerated since we didn't move
+
+def test_stamina_booster():
+    ball = MockBall()
+    ball.stamina = 10.0 # low stamina
+    booster = MockBall()
+    booster.kind = "stamina_booster"
+    booster.x = 100.0
+    booster.y = 100.0
+    world = MockWorld()
+    world.balls.append(ball)
+    world.arena.hazards.append(booster)
+
+    # We must patch world._get_nearby_entities in MockWorld, or directly assign boosters. Let's just set world.boosters
+    world.boosters = [booster]
+
+    action = Action(ball, world)
+
+    # Overriding _get_boosters temporarily to return the booster for simplicity
+    action._get_boosters = lambda: [booster]
+
+    action.execute("collect_booster", 0.1)
+
+    assert ball.stamina == 100.0
+    assert getattr(ball, "infinite_stamina_timer", 0.0) > 0.0
+
+    # Dash while infinite stamina is active
+    ball.infinite_stamina_timer = 5.0
+    action.execute("chase", 0.1)
+    assert ball.stamina == 100.0 # Should not drain

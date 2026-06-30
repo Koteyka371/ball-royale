@@ -151,8 +151,10 @@ func generate():
             kind = "lava"
         elif r < 0.4:
             kind = "fake_booster"
-        elif r < 0.5:
+        elif r < 0.45:
             kind = "silence_booster"
+        elif r < 0.5:
+            kind = "stamina_booster"
         elif r < 0.75:
             kind = "proximity_trap"
         elif r < 0.9:
@@ -188,6 +190,9 @@ func generate():
             radius = 15.0
             damage = 0.0
         elif kind == "link_booster":
+            radius = 15.0
+            damage = 0.0
+        elif kind == "stamina_booster":
             radius = 15.0
             damage = 0.0
         elif kind == "tornado":

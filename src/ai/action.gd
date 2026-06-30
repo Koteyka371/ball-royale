@@ -1648,8 +1648,13 @@ func execute(strategy: String, delta: float):
             if my_ball.has_method("set_meta"):
                 my_ball.set_meta("is_dashing", false)
 
+        var infinite_stamina = 0.0
+        if my_ball.has_meta("infinite_stamina_timer"): infinite_stamina = my_ball.get_meta("infinite_stamina_timer")
+        elif "infinite_stamina_timer" in my_ball: infinite_stamina = my_ball.infinite_stamina_timer
+
         if is_dash:
-            my_ball.set_meta("stamina", max(0.0, act_stamina - 50.0 * delta))
+            if infinite_stamina <= 0:
+                my_ball.set_meta("stamina", max(0.0, act_stamina - 50.0 * delta))
         elif act_dist / max(0.0001, delta * 60) < act_base_speed * 0.5:
             my_ball.set_meta("stamina", min(act_max_stamina, act_stamina + 30.0 * delta))
 
@@ -3841,6 +3846,26 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "stamina_booster":
+                var max_stam = 100.0
+                if self.ball.has_method("get_meta") and self.ball.has_meta("max_stamina"): max_stam = self.ball.get_meta("max_stamina")
+                elif "max_stamina" in self.ball: max_stam = self.ball.max_stamina
+
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("stamina", max_stam)
+                    self.ball.set_meta("infinite_stamina_timer", 5.0)
+                else:
+                    self.ball.stamina = max_stam
+                    self.ball.infinite_stamina_timer = 5.0
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "link_booster":
                 var enemies_link = _get_enemies()
                 if enemies_link.size() > 0:
@@ -5090,6 +5115,19 @@ func _trigger_ripple_effect():
                             other.memory = mem
 
 func _update_skill_timer(delta: float):
+    var inf_stam_timer = 0.0
+    if "infinite_stamina_timer" in self.ball:
+        inf_stam_timer = self.ball.infinite_stamina_timer
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("infinite_stamina_timer"):
+        inf_stam_timer = self.ball.get_meta("infinite_stamina_timer")
+
+    if inf_stam_timer > 0:
+        inf_stam_timer -= delta
+        if "infinite_stamina_timer" in self.ball:
+            self.ball.infinite_stamina_timer = inf_stam_timer
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("infinite_stamina_timer", inf_stam_timer)
+
     var link_timer = 0.0
     if "link_booster_timer" in self.ball:
         link_timer = self.ball.link_booster_timer

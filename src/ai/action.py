@@ -1174,7 +1174,8 @@ class Action:
             # Stamina regen/drain
             dist = math.sqrt(dx*dx + dy*dy)
             if getattr(self.ball, "is_dashing", False):
-                self.ball.stamina = max(0.0, getattr(self.ball, "stamina", 0.0) - 50.0 * delta)
+                if getattr(self.ball, "infinite_stamina_timer", 0.0) <= 0:
+                    self.ball.stamina = max(0.0, getattr(self.ball, "stamina", 0.0) - 50.0 * delta)
             elif dist / max(0.0001, delta * 60) < getattr(self.ball, "base_speed", 2.0) * 0.5:
                 self.ball.stamina = min(getattr(self.ball, "max_stamina", 100.0), getattr(self.ball, "stamina", 0.0) + 30.0 * delta)
 
@@ -2484,6 +2485,14 @@ class Action:
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
+                elif getattr(nearest, "kind", None) == "stamina_booster":
+                    self.ball.stamina = getattr(self.ball, "max_stamina", 100.0)
+                    self.ball.infinite_stamina_timer = 5.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "link_booster":
                     enemies = self._get_enemies()
                     if enemies:
@@ -3269,6 +3278,9 @@ class Action:
                             other.memory = o_mem
 
     def _update_skill_timer(self, delta: float) -> None:
+        if hasattr(self.ball, "infinite_stamina_timer") and self.ball.infinite_stamina_timer > 0:
+            self.ball.infinite_stamina_timer -= delta
+
         if hasattr(self.ball, "link_booster_timer") and self.ball.link_booster_timer > 0:
             self.ball.link_booster_timer -= delta
             target = getattr(self.ball, "link_booster_target", None)
