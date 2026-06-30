@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-273] Weaponized Hazards — *2026-06-30 22:08:10 UTC*
+
+Allow specific ball types, like Elementalists or Brawlers, to grab and throw map hazards (e.g. lava rocks, spike traps) at enemies for burst damage.
+
+---
+
 ## [idea-257] Sudden Death Overtime Hazards — *2026-06-30 20:57:32 UTC*
 
 If a match reaches the time limit or zone closure, introduce extreme hazards like meteor showers or random gravity inversions instead of instantly ending the game, allowing the remaining balls to showcase their dodging mechanics.
