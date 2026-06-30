@@ -9568,6 +9568,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-554",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Swap Hazard",
+      "description": "A hazard that triggers a positional swap between two random balls when activated, causing disorientation and opening up new strategic attacks or sudden escapes.",
+      "allowed_paths": [
+        "src/arena/quantum_swap.py",
+        "src/arena/quantum_swap.gd",
+        "tests/test_quantum_swap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-555",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Leech Seed Booster",
+      "description": "A booster that allows the collecting ball's attacks to plant a leech seed on the target, draining HP over time and transferring it back to the attacker.",
+      "allowed_paths": [
+        "src/ai/leech_seed_booster.py",
+        "src/ai/leech_seed_booster.gd",
+        "tests/test_leech_seed_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
