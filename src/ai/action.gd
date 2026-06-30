@@ -694,23 +694,39 @@ func execute(strategy: String, delta: float):
 
     if my_ball.has_method("has_meta") and my_ball.has_meta("_base_speed_set"):
         if self.world != null and "arena" in self.world and "is_night" in self.world.arena:
+            var b_type_action = ""
+            if "ball_type" in my_ball:
+                b_type_action = str(my_ball.ball_type).to_lower()
             if self.world.arena.is_night:
-                var is_vampire = ("ball_type" in my_ball and my_ball.ball_type == "vampire")
-                if is_vampire:
+                if b_type_action == "vampire":
                     if "speed" in my_ball:
                         my_ball.speed = my_ball.get_meta("base_speed") * 1.5
                     if "damage" in my_ball:
                         my_ball.damage = my_ball.get_meta("base_damage") * 1.5
+                elif b_type_action == "assassin" or b_type_action == "phantom":
+                    if "speed" in my_ball:
+                        my_ball.speed = my_ball.get_meta("base_speed") * 1.2
+                    if "damage" in my_ball:
+                        my_ball.damage = my_ball.get_meta("base_damage") * 1.5
+                    if "has_stealth_drone" in my_ball:
+                        my_ball.has_stealth_drone = true
+                    my_ball.set_meta("has_stealth_drone", true)
                 else:
                     if "speed" in my_ball:
                         my_ball.speed = my_ball.get_meta("base_speed")
                     if "damage" in my_ball:
                         my_ball.damage = my_ball.get_meta("base_damage")
             else:
-                if "speed" in my_ball:
-                    my_ball.speed = my_ball.get_meta("base_speed")
-                if "damage" in my_ball:
-                    my_ball.damage = my_ball.get_meta("base_damage") * 1.2
+                if b_type_action == "paladin" or b_type_action == "guardian":
+                    if "speed" in my_ball:
+                        my_ball.speed = my_ball.get_meta("base_speed") * 1.2
+                    if "damage" in my_ball:
+                        my_ball.damage = my_ball.get_meta("base_damage") * 1.5
+                else:
+                    if "speed" in my_ball:
+                        my_ball.speed = my_ball.get_meta("base_speed")
+                    if "damage" in my_ball:
+                        my_ball.damage = my_ball.get_meta("base_damage") * 1.2
         else:
             if "speed" in my_ball:
                 my_ball.speed = my_ball.get_meta("base_speed")
@@ -6244,6 +6260,15 @@ func _apply_friendly_aura(delta: float):
                     if "damage" in self.ball: self.ball.damage = base_d * 1.5 * 1.2
                 else:
                     if "damage" in self.ball: self.ball.damage = base_d * 1.5
+            elif ball_type == "assassin" or ball_type == "phantom":
+                if stack_count >= 2:
+                    if "speed" in self.ball: self.ball.speed = base_s * 1.2 * 1.1
+                else:
+                    if "speed" in self.ball: self.ball.speed = base_s * 1.2
+                if stack_count >= 3:
+                    if "damage" in self.ball: self.ball.damage = base_d * 1.5 * 1.2
+                else:
+                    if "damage" in self.ball: self.ball.damage = base_d * 1.5
             else:
                 if stack_count < 3:
                     if "damage" in self.ball: self.ball.damage = base_d
@@ -6254,6 +6279,14 @@ func _apply_friendly_aura(delta: float):
                     day_mult = 1.2
             else:
                 day_mult = 1.2 # fallback
+
+            if world != null and "arena" in world and "is_night" in world.arena and not world.arena.is_night:
+                if ball_type == "paladin" or ball_type == "guardian":
+                    day_mult = 1.5
+                    if stack_count >= 2:
+                        if "speed" in self.ball: self.ball.speed = base_s * 1.2 * 1.1
+                    else:
+                        if "speed" in self.ball: self.ball.speed = base_s * 1.2
 
             if stack_count >= 3:
                 if "damage" in self.ball: self.ball.damage = base_d * day_mult * 1.2

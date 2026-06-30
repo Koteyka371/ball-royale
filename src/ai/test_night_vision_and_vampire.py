@@ -49,3 +49,28 @@ def test_vampire_perception_at_night():
     p = Perception(b, w)
     p.scan() # scan reads perception_radius internally but doesn't modify the ball, it relies on local var.
     # We can just run it to ensure no exceptions.
+
+def test_assassin_stats_at_night():
+    w = MockWorld(night=True)
+    b = MockBall("assassin")
+    a = Action(b, w)
+    a.execute("idle", 0.016)
+    assert b.speed == 120.0
+    assert b.damage == 15.0
+    assert getattr(b, "has_stealth_drone", False) == True
+
+def test_paladin_stats_during_day():
+    w = MockWorld(night=False)
+    b = MockBall("paladin")
+    a = Action(b, w)
+    a.execute("idle", 0.016)
+    assert b.speed == 120.0
+    assert b.damage == 15.0
+
+def test_assassin_stats_during_day():
+    w = MockWorld(night=False)
+    b = MockBall("assassin")
+    a = Action(b, w)
+    a.execute("idle", 0.016)
+    assert b.speed == 100.0
+    assert b.damage == 12.0
