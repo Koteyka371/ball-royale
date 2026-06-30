@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-350] Supernova Mode — *2026-06-30 15:49:53 UTC*
+
+An intense variation of Black Hole where instead of instantly dying, balls take rapidly scaling heat damage over time as they approach the center. Eventually, the supernova explodes, knocking all surviving balls to the edges of the arena.
+
+---
+
 ## [idea-312] Decoy Powerup — *2026-06-30 15:43:19 UTC*
 
 Add a new powerup that allows a ball to spawn a visual clone of itself. The decoy will move around randomly or towards enemies to confuse them, while the real ball can reposition or attack safely.

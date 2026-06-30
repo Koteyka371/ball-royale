@@ -6065,7 +6065,7 @@
     },
     {
       "id": "idea-350",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Supernova Mode",
@@ -9206,6 +9206,74 @@
         "src/ai/chain_lightning_relic.py",
         "src/ai/chain_lightning_relic.gd",
         "tests/test_chain_lightning_relic.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-533",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirror Image Ultimate",
+      "description": "Introduce a new ball class (Illusionist) whose ultimate skill spawns multiple decoys that actively mimic the player's inputs (movement and basic attacks) but deal reduced damage.",
+      "allowed_paths": [
+        "src/ai/mirror_image_ultimate.py",
+        "src/ai/mirror_image_ultimate.gd",
+        "tests/test_mirror_image_ultimate.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-534",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Wall Ricochet Trajectory Indicators",
+      "description": "Add visual trajectory lines for chain lightning before it casts, showing the player the expected bounce path across entities, hazards, and walls to allow for tactical positioning.",
+      "allowed_paths": [
+        "src/ai/wall_ricochet_trajectory_indicators.py",
+        "src/ai/wall_ricochet_trajectory_indicators.gd",
+        "tests/test_wall_ricochet_trajectory_indicators.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-535",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Enhancement Module",
+      "description": "Allow 'decoy_item' pickups to optionally explode upon expiring or being destroyed, dealing minor area-of-effect damage or blinding nearby enemies to provide greater utility and zoning.",
+      "allowed_paths": [
+        "src/ai/decoy_enhancement_module.py",
+        "src/ai/decoy_enhancement_module.gd",
+        "tests/test_decoy_enhancement_module.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-536",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Lightning Overload Mod",
+      "description": "Introduce an overload mechanic where chain lightning bounces exceeding a certain jump threshold detonate the final target in a small AoE blast, dealing explosive damage but putting the skill on an extended cooldown.",
+      "allowed_paths": [
+        "src/ai/chain_lightning_overload_mod.py",
+        "src/ai/chain_lightning_overload_mod.gd",
+        "tests/test_chain_lightning_overload_mod.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
