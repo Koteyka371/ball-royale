@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-276] Quicksand Hazard — *2026-06-30 11:19:39 UTC*
+
+Add a new hazard called quicksand that spawns dynamically in the arena during the game. Balls that wander into the quicksand are slowed down significantly, and taking damage from other hazards while inside quicksand amplifies the damage.
+
+---
+
 ## [idea-325] Shrinking Safe Zone with Moving Center — *2026-06-30 11:15:29 UTC*
 
 Make the safe zone center drift over time in a random direction, forcing players to constantly reposition as it shrinks rather than simply converging on a static point.

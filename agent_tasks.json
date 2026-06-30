@@ -4804,7 +4804,7 @@
     },
     {
       "id": "idea-276",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quicksand Hazard",
@@ -8390,6 +8390,176 @@
         "src/ai/daily_challenge.py",
         "src/ai/daily_challenge.gd",
         "tests/test_daily_challenge.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-487",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirror Image Decoy Movement",
+      "description": "Instead of the decoy remaining completely static, it could perfectly mirror the Trickster's movements in the opposite direction. This would drastically increase confusion for opponents, as they would have to quickly figure out which movement pattern represents the real player trying to engage or flee.",
+      "allowed_paths": [
+        "src/ai/mirror_image_decoy_movement.py",
+        "src/ai/mirror_image_decoy_movement.gd",
+        "tests/test_mirror_image_decoy_movement.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-488",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Minion Evolution Mechanic",
+      "description": "Introduce an evolution mechanic for minions created by the Necromancer. If a minion survives for more than 30 seconds or scores a killing blow, it transforms into an 'Elite Minion' with increased health, attack power, and an autonomous ranged attack.",
+      "allowed_paths": [
+        "src/ai/minion_evolution_mechanic.py",
+        "src/ai/minion_evolution_mechanic.gd",
+        "tests/test_minion_evolution_mechanic.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-489",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Detonation",
+      "description": "Allow the Trickster to manually detonate their active decoy by holding down the skill button or activating it a third time. The explosion could deal minor area-of-effect damage or briefly blind enemies within a short radius, giving the Trickster a mix of mobility and trap-setting capability.",
+      "allowed_paths": [
+        "src/ai/decoy_detonation.py",
+        "src/ai/decoy_detonation.gd",
+        "tests/test_decoy_detonation.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-490",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": " EMP Trap",
+      "description": "A deployable trap that disables enemy perception radius for a short duration.",
+      "allowed_paths": [
+        "src/arena/emp_trap.py",
+        "src/arena/emp_trap.gd",
+        "tests/test_emp_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-491",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Clone Ability",
+      "description": "A new skill where a ball creates a 1 HP holographic clone of itself that runs in the opposite direction, forcing enemies to waste attacks and cooldowns on the fake target.",
+      "allowed_paths": [
+        "src/ai/decoy_clone_ability.py",
+        "src/ai/decoy_clone_ability.gd",
+        "tests/test_decoy_clone_ability.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-492",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Necromancer Minion Sacrifice Skill",
+      "description": "Add a new active skill for the Necromancer ball called 'Corpse Explosion' where it can selectively sacrifice one of its active minions to deal significant area-of-effect damage to nearby enemies, while also temporarily applying a slow debuff to survivors caught in the blast radius.",
+      "allowed_paths": [
+        "src/ai/necromancer_minion_sacrifice_skill.py",
+        "src/ai/necromancer_minion_sacrifice_skill.gd",
+        "tests/test_necromancer_minion_sacrifice_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-493",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Nemesis Tracker Item",
+      "description": "A new active item that provides a temporary compass or minimap indicator pointing directly to the nearest Nemesis, allowing players to hunt them down.",
+      "allowed_paths": [
+        "src/ai/nemesis_tracker_item.py",
+        "src/ai/nemesis_tracker_item.gd",
+        "tests/test_nemesis_tracker_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-494",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Market Mode",
+      "description": "Players start with basic stats and abilities, but collect currency scattered across the map to buy temporary or permanent upgrades from wandering Black Market nodes during the match. These nodes act like dynamic modifier zones, but require payment, making currency collection a key strategic objective.",
+      "allowed_paths": [
+        "src/ai/black_market.py",
+        "src/ai/black_market.gd",
+        "tests/test_black_market.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-495",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Clone Detonation Mode",
+      "description": "Similar to Clone Chaos, but when a clone's HP drops to 0, it explodes dealing small area-of-effect damage. Players must navigate carefully to avoid triggering a chain reaction of exploding clones.",
+      "allowed_paths": [
+        "src/ai/clone_detonation.py",
+        "src/ai/clone_detonation.gd",
+        "tests/test_clone_detonation.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-496",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Ice Storm Weather Event",
+      "description": "Periodically spawns a blizzard that severely reduces all ball movement speed (friction increases) and creates temporary slippery ice patches as hazards that cause balls to slide uncontrollably.",
+      "allowed_paths": [
+        "src/ai/ice_storm.py",
+        "src/ai/ice_storm.gd",
+        "tests/test_ice_storm.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
