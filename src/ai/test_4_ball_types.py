@@ -24,6 +24,7 @@ class MockEntity:
 def test_warrior_priorities():
     world = MockWorld()
     warrior = Warrior(1)
+    warrior.difficulty = "hard"
     warrior.skill_timer = 5.0
     layer = Decision(warrior, world)
 
@@ -45,6 +46,7 @@ def test_warrior_priorities():
 def test_scout_priorities():
     world = MockWorld()
     scout = Scout(1)
+    scout.difficulty = "hard"
     scout.skill_timer = 5.0
     layer = Decision(scout, world)
 
@@ -79,6 +81,7 @@ def test_scout_priorities():
 def test_tank_priorities():
     world = MockWorld()
     tank = Tank(1)
+    tank.difficulty = "hard"
     tank.skill_timer = 5.0
     layer = Decision(tank, world)
 
@@ -99,6 +102,7 @@ def test_tank_priorities():
 def test_healer_priorities():
     world = MockWorld()
     healer = Healer(1)
+    healer.difficulty = "hard"
     healer.skill_timer = 5.0
     layer = Decision(healer, world)
 
