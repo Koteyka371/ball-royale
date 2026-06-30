@@ -87,6 +87,24 @@ class Action:
 
         new_hp = getattr(target, "hp", 0.0)
 
+        # Apply Necromancer healing on attack logic
+        # Check if attacker is necromancer and if so, check for minions within range
+        b_type = getattr(attacker, 'ball_type', getattr(attacker.__class__, 'BALL_TYPE', '')).lower()
+        if b_type == 'necromancer' and new_hp < old_hp: # dealt damage
+            has_minion = False
+            if hasattr(self.world, "balls"):
+                for b in self.world.balls:
+                    if getattr(b, "ball_type", "") == "minion" and getattr(b, "team", "") == getattr(attacker, "team", ""):
+                        dx = getattr(b, "x", 0) - getattr(attacker, "x", 0)
+                        dy = getattr(b, "y", 0) - getattr(attacker, "y", 0)
+                        if dx*dx + dy*dy < 40000:  # 200 radius
+                            has_minion = True
+                            break
+            if has_minion:
+                actual_damage_dealt = old_hp - new_hp
+                if actual_damage_dealt > 0:
+                    attacker.hp = min(getattr(attacker, 'hp', 100.0) + actual_damage_dealt * 0.3, getattr(attacker, 'max_hp', 100.0))
+
         # Award XP for damage dealt and kills
         if new_hp < old_hp:
             self._award_xp(attacker, 10.0, self.world)
@@ -3564,6 +3582,16 @@ class Action:
                     self.ball.damage = base_d * day_multiplier * 1.2
                 else:
                     self.ball.damage = base_d * day_multiplier
+
+        # Necromancer minion speed synergy
+        if getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower() == 'necromancer':
+            has_minion = False
+            for f in nearby_friendlies:
+                if getattr(f, "ball_type", "") == "minion":
+                    has_minion = True
+                    break
+            if has_minion:
+                self.ball.speed = base_s * 1.5
 
     def _update_skill_timer(self, delta: float) -> None:
         if hasattr(self.ball, "infinite_stamina_timer") and self.ball.infinite_stamina_timer > 0:

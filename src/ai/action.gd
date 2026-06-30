@@ -5574,6 +5574,21 @@ func _apply_friendly_aura(delta: float):
             else:
                 if "damage" in self.ball: self.ball.damage = base_d * day_mult
 
+        var b_type_aura = ""
+        if "ball_type" in self.ball:
+            b_type_aura = str(self.ball.ball_type).to_lower()
+        if b_type_aura == "necromancer":
+            var has_minion = false
+            for f in nearby_friendlies:
+                var f_type = ""
+                if "ball_type" in f: f_type = f.ball_type
+                if f_type == "minion":
+                    has_minion = true
+                    break
+            if has_minion:
+                if "speed" in self.ball:
+                    self.ball.speed = base_s * 1.5
+
 
 func _update_skill_timer(delta: float):
     var inf_stam_timer = 0.0
