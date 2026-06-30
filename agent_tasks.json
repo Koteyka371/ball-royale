@@ -5179,7 +5179,7 @@
     },
     {
       "id": "idea-298",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Exhaustion Effect",
@@ -7845,6 +7845,74 @@
         "src/ai/stamina_pool.py",
         "src/ai/stamina_pool.gd",
         "tests/test_stamina_pool.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-455",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Magnetic Boots Item",
+      "description": "An item that temporarily increases a ball's friction and weight, making them immune to external displacement forces like wind, earthquakes, and gravity wells, at the cost of reduced movement speed.",
+      "allowed_paths": [
+        "src/ai/magnetic_boots_item.py",
+        "src/ai/magnetic_boots_item.gd",
+        "tests/test_magnetic_boots_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-456",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Lightning Modifier",
+      "description": "A new weather event or arena modifier where any damage dealt to an entity has a chance to chain to nearby entities within a small radius, encouraging players to maintain spatial separation.",
+      "allowed_paths": [
+        "src/ai/chain_lightning.py",
+        "src/ai/chain_lightning.gd",
+        "tests/test_chain_lightning.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-457",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Predictor Drone",
+      "description": "A deployable item that scans the sky and warns the team 10 seconds before a weather change happens.",
+      "allowed_paths": [
+        "src/ai/predictor_drone.py",
+        "src/ai/predictor_drone.gd",
+        "tests/test_predictor_drone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-458",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Wind glider Wings",
+      "description": "A cosmetic/loadout item that increases speed and jump distance specifically when the windstorm weather is active.",
+      "allowed_paths": [
+        "src/ai/wind_glider_wings.py",
+        "src/ai/wind_glider_wings.gd",
+        "tests/test_wind_glider_wings.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

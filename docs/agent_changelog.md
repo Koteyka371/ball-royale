@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-298] Exhaustion Effect — *2026-06-30 10:08:06 UTC*
+
+Balls with 0 stamina are briefly exhausted, slowing their base speed and lowering their damage until stamina regenerates to at least 20%.
+
+---
+
 ## [idea-293] New Weather Type: Earthquake — *2026-06-30 10:07:17 UTC*
 
 Periodically shakes the screen and applies a random impulse vector to all entities, disrupting aiming and movement patterns temporarily.
