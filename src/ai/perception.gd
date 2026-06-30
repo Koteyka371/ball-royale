@@ -20,8 +20,13 @@ func scan() -> Dictionary:
             perception_radius = max(perception_radius, 2000.0)
 
 
+    var cosmetic = ""
+    if "cosmetic" in self.ball:
+        cosmetic = str(self.ball.cosmetic).to_lower().replace(" ", "_")
+    var ignores_fog = cosmetic == "thermal_goggles"
+
     if self.world != null and "arena" in self.world and "is_foggy" in self.world.arena:
-        if self.world.arena.is_foggy:
+        if self.world.arena.is_foggy and not ignores_fog:
             perception_radius = min(perception_radius, 80.0)
     if self.world != null and "arena" in self.world and "is_raining" in self.world.arena:
         if self.world.arena.is_raining:
