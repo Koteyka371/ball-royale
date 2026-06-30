@@ -155,6 +155,8 @@ func generate():
             kind = "silence_booster"
         elif r < 0.5:
             kind = "stamina_booster"
+        elif r < 0.55:
+            kind = "decoy_item"
         elif r < 0.75:
             kind = "proximity_trap"
         elif r < 0.9:
@@ -199,6 +201,9 @@ func generate():
             radius = 15.0
             damage = 0.0
         elif kind == "stamina_booster":
+            radius = 15.0
+            damage = 0.0
+        elif kind == "decoy_item":
             radius = 15.0
             damage = 0.0
         elif kind == "tornado":

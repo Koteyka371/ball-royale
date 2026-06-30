@@ -1,0 +1,4 @@
+{
+  "title": "Magnetic Mine Powerup",
+  "description": "A new hazard/powerup that allows a ball to drop a magnetic mine. Enemies that get too close are slowly pulled towards it until it explodes, dealing area damage."
+}

@@ -144,6 +144,9 @@ class Action:
 
     def execute(self, strategy: str, delta: float) -> None:
 
+        if getattr(self.ball, "is_decoy", False):
+            strategy = getattr(self.ball, "decoy_strategy", "chase")
+
         if getattr(self.ball, "silence_timer", 0.0) > 0:
             self.ball.silence_timer -= delta
             if self.ball.silence_timer < 0:
@@ -2450,6 +2453,7 @@ class Action:
                         decoy.damage = 0
                         decoy.is_decoy = True
                         decoy.decoy_timer = 5.0
+                        decoy.decoy_strategy = random.choice(["chase", "idle"])
                         self.world.balls.append(decoy)
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:

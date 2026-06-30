@@ -210,6 +210,24 @@ func _init(ball_ref, world_ref):
 
 func execute(strategy: String, delta: float):
 
+	var is_decoy = false
+	if self.ball.has_method("has_meta") and self.ball.has_meta("is_decoy"):
+		is_decoy = self.ball.get_meta("is_decoy")
+	elif "is_decoy" in self.ball:
+		is_decoy = self.ball.is_decoy
+	elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("is_decoy"):
+		is_decoy = self.ball["is_decoy"]
+
+	if is_decoy:
+		var d_strat = "chase"
+		if self.ball.has_method("has_meta") and self.ball.has_meta("decoy_strategy"):
+			d_strat = self.ball.get_meta("decoy_strategy")
+		elif "decoy_strategy" in self.ball:
+			d_strat = self.ball.decoy_strategy
+		elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("decoy_strategy"):
+			d_strat = self.ball["decoy_strategy"]
+		strategy = d_strat
+
 	if self.ball.has_method("has_meta") and self.ball.has_meta("silence_timer"):
 		var st = self.ball.get_meta("silence_timer")
 		if st > 0.0:
@@ -3778,12 +3796,16 @@ func _collect_booster(delta: float):
                         decoy.hp = decoy.max_hp
                     if "damage" in decoy:
                         decoy.damage = 0.0
+                    var strats = ["chase", "idle"]
+                    var r_strat = strats[randi() % strats.size()]
                     if decoy.has_method("set_meta"):
                         decoy.set_meta("is_decoy", true)
                         decoy.set_meta("decoy_timer", 5.0)
+                        decoy.set_meta("decoy_strategy", r_strat)
                     elif typeof(decoy) == TYPE_DICTIONARY:
                         decoy["is_decoy"] = true
                         decoy["decoy_timer"] = 5.0
+                        decoy["decoy_strategy"] = r_strat
 
                     if self.world != null and "balls" in self.world:
                         self.world.balls.append(decoy)
