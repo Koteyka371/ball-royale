@@ -3000,6 +3000,23 @@ class Action:
                 if hasattr(self.ball, "hp"):
                     self.ball.hp = min(getattr(self.ball, "max_hp", 100), self.ball.hp + 30)
                 self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
+            elif skill_name == "flare":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    import random as _rnd
+                    enemies = self._get_enemies()
+                    target_x, target_y = self.ball.x, self.ball.y
+                    if enemies:
+                        # Find closest enemy
+                        target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                        target_x, target_y = target.x, target.y
+
+                    trap_id = len(self.world.arena.hazards) + _rnd.randint(1000, 9999)
+                    from arena.procedural_arena import Hazard  # type: ignore
+                    flare_trap = Hazard(trap_id, target_x, target_y, 400.0, "flare", 0.0)
+                    setattr(flare_trap, 'duration', 5.0)
+                    self.world.arena.hazards.append(flare_trap)
+                    self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
+
             elif skill_name == "convert_hazard":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     import random as _rnd
