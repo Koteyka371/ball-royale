@@ -2780,6 +2780,33 @@ class Action:
             elif skill_name == "heal":
                 if hasattr(self.ball, "hp"):
                     self.ball.hp = min(getattr(self.ball, "max_hp", 100), self.ball.hp + 30)
+            elif skill_name == "stamina_dash":
+                self._spawn_skill_particles("dash")
+                stamina = getattr(self.ball, "stamina", 0.0)
+                self.ball.stamina = 0.0
+                dash_dist = max(100.0, stamina * 2.0)
+                enemies = self._get_enemies()
+                if enemies:
+                    target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                    dx = target.x - self.ball.x
+                    dy = target.y - self.ball.y
+                    dist = math.sqrt(dx*dx + dy*dy)
+                    if dist > 0.0001:
+                        self.ball.x += (dx/dist) * dash_dist
+                        self.ball.y += (dy/dist) * dash_dist
+                else:
+                    angle = random.uniform(0, 2 * math.pi)
+                    self.ball.x += math.cos(angle) * dash_dist
+                    self.ball.y += math.sin(angle) * dash_dist
+
+                for enemy in self._get_enemies():
+                    if (enemy.x - self.ball.x)**2 + (enemy.y - self.ball.y)**2 < (getattr(self.ball, "radius", 10.0) + getattr(enemy, "radius", 10.0) + 20)**2:
+                        dmg = getattr(self.ball, "damage", 10.0) * 2.0
+                        if hasattr(enemy, "take_damage"):
+                            enemy.take_damage(dmg)
+                        elif hasattr(enemy, "hp"):
+                            enemy.hp -= dmg
+
             elif skill_name == "dash":
                 self._spawn_skill_particles("dash")
 

@@ -4377,6 +4377,59 @@ func _use_skill():
                         if arena.has_method("queue_redraw"):
                             arena.call("queue_redraw")
 
+        elif skill_name == "stamina_dash":
+            _spawn_skill_particles("dash")
+            var st = 0.0
+            if self.ball.has_method("has_meta") and self.ball.has_meta("stamina"):
+                st = self.ball.get_meta("stamina")
+            elif "stamina" in self.ball:
+                st = self.ball.stamina
+
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("stamina", 0.0)
+            elif "stamina" in self.ball:
+                self.ball.stamina = 0.0
+
+            var dash_dist = max(100.0, st * 2.0)
+            var enemies = _get_enemies()
+            if enemies.size() > 0:
+                var target = null
+                var min_dist_sq = INF
+                for e in enemies:
+                    var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                    if dist_sq < min_dist_sq:
+                        min_dist_sq = dist_sq
+                        target = e
+                var dx = target.x - self.ball.x
+                var dy = target.y - self.ball.y
+                var dist = sqrt(min_dist_sq)
+                if dist > 0.0001:
+                    self.ball.x += (dx/dist) * dash_dist
+                    self.ball.y += (dy/dist) * dash_dist
+            else:
+                var angle = randf() * PI * 2.0
+                self.ball.x += cos(angle) * dash_dist
+                self.ball.y += sin(angle) * dash_dist
+
+            for e in _get_enemies():
+                var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                var my_radius = 10.0
+                if "radius" in self.ball: my_radius = self.ball.radius
+                elif self.ball.has_method("has_meta") and self.ball.has_meta("radius"): my_radius = self.ball.get_meta("radius")
+                var e_radius = 10.0
+                if "radius" in e: e_radius = e.radius
+                elif e.has_method("has_meta") and e.has_meta("radius"): e_radius = e.get_meta("radius")
+
+                if dist_sq < pow(my_radius + e_radius + 20.0, 2):
+                    var dmg = 20.0
+                    if "damage" in self.ball: dmg = self.ball.damage * 2.0
+                    elif self.ball.has_method("has_meta") and self.ball.has_meta("damage"): dmg = self.ball.get_meta("damage") * 2.0
+
+                    if e.has_method("take_damage"):
+                        e.take_damage(dmg)
+                    elif "hp" in e:
+                        e.hp -= dmg
+
         elif skill_name == "dash":
             _spawn_skill_particles("dash")
             var dash_range_mult = 1.0
