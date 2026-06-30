@@ -1058,18 +1058,25 @@ class Action:
                             dist2 = dx*dx + dy*dy
                             dist = math.sqrt(dist2) if dist2 > 0 else 0.0001
 
-                            # Normalize direction
-                            nx = dx / dist
-                            ny = dy / dist
+                            b_rad = getattr(self.ball, "radius", 10.0)
 
-                            # Add random chaos to direction (small angle variation)
-                            angle = math.atan2(ny, nx) + random.uniform(-0.5, 0.5)
-                            nx = math.cos(angle)
-                            ny = math.sin(angle)
+                            if dist < (b_rad + getattr(hazard, "radius", 10.0)):
+                                # Normalize direction
+                                nx = dx / dist
+                                ny = dy / dist
 
-                            bounce_strength = 600.0 * delta
-                            self.ball.x += nx * bounce_strength
-                            self.ball.y += ny * bounce_strength
+                                # Add random chaos to direction (small angle variation)
+                                angle = math.atan2(ny, nx) + random.uniform(-0.5, 0.5)
+                                nx = math.cos(angle)
+                                ny = math.sin(angle)
+
+                                bounce_strength = 600.0 * delta
+                                self.ball.x += nx * bounce_strength
+                                self.ball.y += ny * bounce_strength
+
+                                # Accelerate ball significantly to create chaotic pinball-like movement
+                                self.ball.vx = nx * 2000.0
+                                self.ball.vy = ny * 2000.0
                             continue
                         elif hazard.kind == "healing_spring":
                             # Regenerate HP over time
