@@ -207,6 +207,12 @@ class Action:
                 self.ball.chain_lightning_timer = 0.0
 
 
+        # Confusion timer logic
+        if getattr(self.ball, "confusion_timer", 0.0) > 0:
+            self.ball.confusion_timer -= delta
+            if self.ball.confusion_timer <= 0:
+                self.ball.is_confused = False
+
         # Mind control timer logic
         if getattr(self.ball, "mind_control_timer", 0.0) > 0:
             self.ball.mind_control_timer -= delta
@@ -382,6 +388,14 @@ class Action:
                                     if dist <= 100.0:
                                         other.hp -= 30.0
                                         other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 2.0
+
+                                        import random
+                                        b_type = getattr(b, "ball_type", "")
+                                        b_team = getattr(b, "team", "")
+                                        if (b_type == "trickster" or b_team == "trickster") and random.random() < 0.3:
+                                            other.is_confused = True
+                                            other.confusion_timer = 3.0
+
                                         if other.hp <= 0:
                                             other.alive = False
 
@@ -1433,6 +1447,11 @@ class Action:
 
 
     def _get_enemies(self) -> list:
+        if getattr(self.ball, "is_confused", False):
+            return self._get_allies_internal()
+        return self._get_enemies_internal()
+
+    def _get_enemies_internal(self) -> list:
         perception_radius = self._get_perception_radius()
         enemies = []
         if hasattr(self.world, "get_nearby_entities"):
@@ -1496,6 +1515,11 @@ class Action:
         return enemies
 
     def _get_allies(self) -> list:
+        if getattr(self.ball, "is_confused", False):
+            return self._get_enemies_internal()
+        return self._get_allies_internal()
+
+    def _get_allies_internal(self) -> list:
         perception_radius = self._get_perception_radius()
         if hasattr(self.world, "get_nearby_entities"):
             entities = self.world.get_nearby_entities(self.ball, perception_radius)

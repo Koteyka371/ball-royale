@@ -272,6 +272,28 @@ func execute(strategy: String, delta: float):
 					self.ball.set_meta("inventory", inv)
 
 
+	# Confusion timer logic
+	var conf_timer = 0.0
+	var is_conf = false
+	if "confusion_timer" in self.ball:
+		conf_timer = self.ball.confusion_timer
+		is_conf = self.ball.is_confused if "is_confused" in self.ball else false
+	elif self.ball.has_method("has_meta") and self.ball.has_meta("confusion_timer"):
+		conf_timer = self.ball.get_meta("confusion_timer")
+		is_conf = self.ball.get_meta("is_confused") if self.ball.has_meta("is_confused") else false
+
+	if is_conf and conf_timer > 0.0:
+		conf_timer -= delta
+		if self.ball.has_method("set_meta"):
+			self.ball.set_meta("confusion_timer", conf_timer)
+		else:
+			self.ball.confusion_timer = conf_timer
+		if conf_timer <= 0.0:
+			if self.ball.has_method("set_meta"):
+				self.ball.set_meta("is_confused", false)
+			else:
+				self.ball.is_confused = false
+
 	# Mind control timer logic
 	var mc_timer = 0.0
 	var is_mc = false
@@ -621,6 +643,19 @@ func execute(strategy: String, delta: float):
                                 if dist <= 100.0:
                                     if "hp" in other:
                                         other.hp -= 30.0
+
+                                        var rng = RandomNumberGenerator.new()
+                                        rng.randomize()
+                                        var b_type = b.ball_type if "ball_type" in b else (b.get_meta("ball_type") if b.has_method("has_meta") and b.has_meta("ball_type") else "")
+                                        var b_team_check = b.team if "team" in b else (b.get_meta("team") if b.has_method("has_meta") and b.has_meta("team") else "")
+                                        if (b_type == "trickster" or b_team_check == "trickster") and rng.randf() < 0.3:
+                                            if "is_confused" in other:
+                                                other.is_confused = true
+                                                other.confusion_timer = 3.0
+                                            elif other.has_method("set_meta"):
+                                                other.set_meta("is_confused", true)
+                                                other.set_meta("confusion_timer", 3.0)
+
                                         if other.hp <= 0:
                                             if "alive" in other:
                                                 other.alive = false
@@ -2004,6 +2039,17 @@ func _apply_obstacle_avoidance(nx: float, ny: float, target=null, ignore_enemies
     return [nx, ny]
 
 func _get_enemies() -> Array:
+    var is_conf = false
+    if "is_confused" in self.ball:
+        is_conf = self.ball.is_confused
+    elif self.ball.has_method("has_meta") and self.ball.has_meta("is_confused"):
+        is_conf = self.ball.get_meta("is_confused")
+
+    if is_conf:
+        return _get_allies_internal()
+    return _get_enemies_internal()
+
+func _get_enemies_internal() -> Array:
     var perception_radius = self._get_perception_radius()
 
     var enemies = []
@@ -2231,6 +2277,17 @@ func _get_enemies() -> Array:
     return enemies
 
 func _get_allies() -> Array:
+    var is_conf = false
+    if "is_confused" in self.ball:
+        is_conf = self.ball.is_confused
+    elif self.ball.has_method("has_meta") and self.ball.has_meta("is_confused"):
+        is_conf = self.ball.get_meta("is_confused")
+
+    if is_conf:
+        return _get_enemies_internal()
+    return _get_allies_internal()
+
+func _get_allies_internal() -> Array:
     var perception_radius = self._get_perception_radius()
 
     if self.world != null and self.world.has_method("get_nearby_entities"):

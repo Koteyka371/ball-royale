@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Explosion Fragmentation",
+  "description": "When a Trickster decoy explodes, it sends out visual fragmentation projectiles that can bounce off walls. They deal no damage but cause temporary slow/stuttering and apply minor visual noise."
+}
