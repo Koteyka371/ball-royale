@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-302] Weather System — *2026-06-30 13:17:54 UTC*
+
+Add dynamic weather that affects perception radius and ball movement speed.
+
+---
+
 ## [idea-321] Loadout Sharing — *2026-06-30 13:04:49 UTC*
 
 Allow players to share their custom loadouts with friends or the community using short codes, similar to deck sharing in card games.

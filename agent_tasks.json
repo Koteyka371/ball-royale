@@ -5247,7 +5247,7 @@
     },
     {
       "id": "idea-302",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather System",
@@ -9019,6 +9019,40 @@
         "src/ai/chain_lightning_stun_effect.py",
         "src/ai/chain_lightning_stun_effect.gd",
         "tests/test_chain_lightning_stun_effect.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-522",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Community Loadout Leaderboards",
+      "description": "Create a new leaderboard category that tracks the win rates and popularity of shared loadout codes. Players could browse the top performing loadouts each week and quickly import them into their profile to try them out in Battle Royale mode.",
+      "allowed_paths": [
+        "src/ai/community_loadout_leaderboards.py",
+        "src/ai/community_loadout_leaderboards.gd",
+        "tests/test_community_loadout_leaderboards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-523",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Loadout Code Fragments (Collectibles)",
+      "description": "Introduce scattered fragments of 'ancient' loadout codes hidden within procedurally generated arenas as rare items. If a player collects all fragments of a code during a match, they permanently unlock a special cosmetic or hidden ball type associated with that unique loadout code.",
+      "allowed_paths": [
+        "src/ai/loadout_code_fragments_collectibles.py",
+        "src/ai/loadout_code_fragments_collectibles.gd",
+        "tests/test_loadout_code_fragments_collectibles.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
