@@ -7578,6 +7578,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-439",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tug-of-War Mode",
+      "description": "Introduce a mode where a single payload is centered. Both teams fight to push/pull the payload to the opposing team’s goal.",
+      "allowed_paths": [
+        "src/ai/tug_of_war.py",
+        "src/ai/tug_of_war.gd",
+        "tests/test_tug_of_war.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-440",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Asymmetric Maps",
+      "description": "Introduce map layouts where defenders have positional advantages, like high ground or choke points, but limited resources, while attackers have open spawn areas with plenty of health packs.",
+      "allowed_paths": [
+        "src/ai/asymmetric_maps.py",
+        "src/ai/asymmetric_maps.gd",
+        "tests/test_asymmetric_maps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
