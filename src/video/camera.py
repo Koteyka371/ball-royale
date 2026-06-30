@@ -10,6 +10,7 @@ class CameraSystem:
         self.target_id: Optional[int] = None
         self.activity_scores: Dict[int, float] = {}
         self.smoothing = 0.1
+        self.shake_intensity = 0.0
 
     def update(self, balls: List[Dict[str, Any]], events: List[Dict[str, Any]]):
         # Calculate activity score for each ball
@@ -61,6 +62,12 @@ class CameraSystem:
                 actor_id = event.get("ball_id")
                 if actor_id is not None and actor_id in self.activity_scores:
                     self.activity_scores[actor_id] += 10.0
+            elif event.get("type") == "earthquake":
+                intensity = event.get("intensity", 1.0)
+                self.shake_intensity += intensity * 50.0
+
+        # Decay shake intensity
+        self.shake_intensity = max(0.0, self.shake_intensity - 2.0)
 
         # Find most active ball
         best_score = -1.0
@@ -98,9 +105,12 @@ class CameraSystem:
                 self.zoom += (target_zoom - self.zoom) * self.smoothing
 
     def get_state(self) -> Dict[str, Any]:
+        import random
+        ox = random.uniform(-self.shake_intensity, self.shake_intensity) if self.shake_intensity > 0 else 0.0
+        oy = random.uniform(-self.shake_intensity, self.shake_intensity) if self.shake_intensity > 0 else 0.0
         return {
-            "x": self.x,
-            "y": self.y,
+            "x": self.x + ox,
+            "y": self.y + oy,
             "zoom": self.zoom,
             "target_id": self.target_id
         }

@@ -700,7 +700,6 @@ class Action:
                                         for h in self.world.arena.hazards:
                                             if h.id == hazard.target_hazard_id and h.kind == "black_hole":
                                                 import math as _math
-                                                import random as _random
                                                 angle = _random.uniform(0, 2 * _math.pi)
                                                 launch_distance = getattr(h, "radius", 50.0) + 30.0
                                                 self.ball.x = h.x + _math.cos(angle) * launch_distance
@@ -2449,7 +2448,6 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                 elif getattr(nearest, "kind", None) == "decoy_item":
                     import copy
-                    import random
                     if hasattr(self.world, "balls"):
                         decoy = copy.copy(self.ball)
                         decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
@@ -2608,7 +2606,6 @@ class Action:
 
             elif skill_name == "clone":
                 import copy
-                import random
                 num_clones = random.randint(2, 4)
                 for _ in range(num_clones):
                     clone = copy.copy(self.ball)
@@ -2640,7 +2637,6 @@ class Action:
                 # Add to own skill timer
                 self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
             elif skill_name == "summon_minions":
-                import random
                 num_minions = random.randint(2, 4)
                 for _ in range(num_minions):
                     import copy
@@ -2694,7 +2690,6 @@ class Action:
                                         enemy.take_damage(explosion_damage)
             elif skill_name == "deploy_decoy":
                 import copy
-                import random
                 if hasattr(self.world, "balls"):
                     decoy = copy.copy(self.ball)
                     decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
@@ -2717,7 +2712,6 @@ class Action:
 
             elif skill_name == "deploy_illusion":
                 import copy
-                import random
                 if hasattr(self.world, "balls"):
                     illusion = copy.copy(self.ball)
                     illusion.id = getattr(self.world, "next_id", random.randint(10000, 99999))

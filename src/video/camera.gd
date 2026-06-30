@@ -9,6 +9,7 @@ var zoom: float = 1.0
 var target_id = null
 var activity_scores: Dictionary = {}
 var smoothing: float = 0.1
+var shake_intensity: float = 0.0
 
 func _init(_width: int = 800, _height: int = 600):
     width = _width
@@ -69,6 +70,11 @@ func update(balls: Array, events: Array) -> void:
             var actor_id = event.get("ball_id")
             if actor_id != null and activity_scores.has(actor_id):
                 activity_scores[actor_id] += 10.0
+        elif event.get("type", "") == "earthquake":
+            var intensity = event.get("intensity", 1.0)
+            shake_intensity += intensity * 50.0
+
+    shake_intensity = max(0.0, shake_intensity - 2.0)
 
     var best_score = -1.0
     var best_id = null
@@ -121,9 +127,14 @@ func update(balls: Array, events: Array) -> void:
             zoom += (target_zoom - zoom) * smoothing
 
 func get_state() -> Dictionary:
+    var ox = 0.0
+    var oy = 0.0
+    if shake_intensity > 0:
+        ox = randf_range(-shake_intensity, shake_intensity)
+        oy = randf_range(-shake_intensity, shake_intensity)
     return {
-        "x": x,
-        "y": y,
+        "x": x + ox,
+        "y": y + oy,
         "zoom": zoom,
         "target_id": target_id
     }
