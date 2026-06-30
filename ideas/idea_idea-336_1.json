@@ -1,4 +1,1 @@
-{
-  "title": "Season-Themed Dynamic Arenas",
-  "description": "During specific seasons, the procedural arena generation includes seasonal hazards or aesthetics. For example, during a 'Winter' season, the arena could generate slippery ice patches and snowman decoys, while a 'Summer' season could feature sun-flare hazards and sand-trap zones. This would keep the gameplay visually and mechanically fresh."
-}
+{"title": "Custom Season Badges", "description": "Players can equip a custom badge next to their name corresponding to the highest season rank they achieved."}

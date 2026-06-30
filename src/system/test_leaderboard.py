@@ -33,9 +33,9 @@ class TestLeaderboard(unittest.TestCase):
         self.lm.check_season()
 
         self.assertEqual(self.lm.data["current_season"], 2)
-        self.assertIn("Crown of Season 1", self.pm.data.get("cosmetics", []))
-        self.assertIn("Season 1 Champion", self.pm.data.get("titles", []))
-        self.assertIn("Aura of Season 1", self.pm.data.get("status_effects", []))
+        self.assertIn("Crown of Genesis", self.pm.data.get("cosmetics", []))
+        self.assertIn("Genesis Champion", self.pm.data.get("titles", []))
+        self.assertIn("Aura of Genesis", self.pm.data.get("status_effects", []))
 
     def test_season_end_not_top_100(self):
         # Create 105 players with higher prestige
@@ -50,9 +50,9 @@ class TestLeaderboard(unittest.TestCase):
         self.lm.check_season()
 
         self.assertEqual(self.lm.data["current_season"], 2)
-        self.assertNotIn("Crown of Season 1", self.pm.data.get("cosmetics", []))
-        self.assertNotIn("Season 1 Champion", self.pm.data.get("titles", []))
-        self.assertNotIn("Aura of Season 1", self.pm.data.get("status_effects", []))
+        self.assertNotIn("Crown of Genesis", self.pm.data.get("cosmetics", []))
+        self.assertNotIn("Genesis Champion", self.pm.data.get("titles", []))
+        self.assertNotIn("Aura of Genesis", self.pm.data.get("status_effects", []))
 
 if __name__ == '__main__':
     unittest.main()

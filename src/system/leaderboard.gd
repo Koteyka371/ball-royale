@@ -2,6 +2,7 @@ class_name LeaderboardManager
 extends RefCounted
 
 const SEASON_DURATION = 30 * 24 * 60 * 60 # 30 days in seconds
+const SEASON_THEMES = ["Genesis", "Inferno", "Frost", "Void", "Celestial", "Abyssal", "Ethereal", "Phantom", "Eclipse", "Radiance"]
 
 var filename = "user://leaderboard.json"
 var profile_manager = null
@@ -53,6 +54,10 @@ func check_season():
     if current_time - start_time >= SEASON_DURATION:
         end_season()
 
+func get_theme(season_num: int) -> String:
+    var index = (season_num - 1) % SEASON_THEMES.size()
+    return SEASON_THEMES[index]
+
 func end_season():
     var season_num = data.get("current_season", 1)
     var players = data.get("players", {})
@@ -69,12 +74,13 @@ func end_season():
             top_100.append(sorted_players[i]["id"])
 
         if top_100.has("local_player") and profile_manager != null:
+            var theme = get_theme(season_num)
             if profile_manager.has_method("add_cosmetic"):
-                profile_manager.call("add_cosmetic", "Crown of Season " + str(season_num))
+                profile_manager.call("add_cosmetic", "Crown of " + theme)
             if profile_manager.has_method("add_title"):
-                profile_manager.call("add_title", "Season " + str(season_num) + " Champion")
+                profile_manager.call("add_title", theme + " Champion")
             if profile_manager.has_method("add_status_effect"):
-                profile_manager.call("add_status_effect", "Aura of Season " + str(season_num))
+                profile_manager.call("add_status_effect", "Aura of " + theme)
 
     data["season_start_time"] = Time.get_unix_time_from_system()
     data["current_season"] = season_num + 1

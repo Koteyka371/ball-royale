@@ -3,6 +3,7 @@ import time
 
 class LeaderboardManager:
     SEASON_DURATION = 30 * 24 * 60 * 60  # 30 days in seconds
+    SEASON_THEMES = ["Genesis", "Inferno", "Frost", "Void", "Celestial", "Abyssal", "Ethereal", "Phantom", "Eclipse", "Radiance"]
 
     def __init__(self, filename="leaderboard.json", profile_manager=None):
         self.filename = filename
@@ -41,6 +42,10 @@ class LeaderboardManager:
         if current_time - start_time >= self.SEASON_DURATION:
             self.end_season()
 
+    def get_theme(self, season_num):
+        index = (season_num - 1) % len(self.SEASON_THEMES)
+        return self.SEASON_THEMES[index]
+
     def end_season(self):
         season_num = self.data.get("current_season", 1)
         players = self.data.get("players", {})
@@ -51,9 +56,10 @@ class LeaderboardManager:
 
             # If the local player is in the top 100, grant rewards
             if "local_player" in top_100 and self.profile_manager:
-                self.profile_manager.add_cosmetic(f"Crown of Season {season_num}")
-                self.profile_manager.add_title(f"Season {season_num} Champion")
-                self.profile_manager.add_status_effect(f"Aura of Season {season_num}")
+                theme = self.get_theme(season_num)
+                self.profile_manager.add_cosmetic(f"Crown of {theme}")
+                self.profile_manager.add_title(f"{theme} Champion")
+                self.profile_manager.add_status_effect(f"Aura of {theme}")
 
         # Reset for next season
         self.data["season_start_time"] = time.time()
