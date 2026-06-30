@@ -5792,7 +5792,7 @@
     },
     {
       "id": "idea-334",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Labyrinth Mode",
@@ -8560,6 +8560,40 @@
         "src/ai/ice_storm.py",
         "src/ai/ice_storm.gd",
         "tests/test_ice_storm.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-497",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "New Gamemode: The Floor is Lava",
+      "description": "In this mode, the entire arena floor slowly turns into lava starting from the edges. Safe zones are randomly generated platforms that appear for a limited time before submerging. Players must navigate between platforms using bounce pads and careful movement.",
+      "allowed_paths": [
+        "src/ai/new_gamemode_the_floor_is_lava.py",
+        "src/ai/new_gamemode_the_floor_is_lava.gd",
+        "tests/test_new_gamemode_the_floor_is_lava.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-498",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "New Hazard: Ice Patch",
+      "description": "Ice patches spawn randomly. When balls enter them, friction is reduced to nearly 0, causing them to slide uncontrollably until they hit a wall or exit the patch. Damage taken while on ice is slightly reduced, but they are vulnerable to environmental hazards if they slide into them.",
+      "allowed_paths": [
+        "src/arena/new_ice_patch.py",
+        "src/arena/new_ice_patch.gd",
+        "tests/test_new_ice_patch.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

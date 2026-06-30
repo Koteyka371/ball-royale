@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-334] Shrinking Labyrinth Mode — *2026-06-30 11:38:48 UTC*
+
+A new game mode where the arena starts as a complex maze that slowly shifts and shrinks. Walls deal damage, forcing balls to navigate carefully while fighting for survival in an ever-tightening space.
+
+---
+
 ## [idea-276] Quicksand Hazard — *2026-06-30 11:19:39 UTC*
 
 Add a new hazard called quicksand that spawns dynamically in the arena during the game. Balls that wander into the quicksand are slowed down significantly, and taking damage from other hazards while inside quicksand amplifies the damage.
