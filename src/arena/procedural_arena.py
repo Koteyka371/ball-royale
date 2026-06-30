@@ -30,7 +30,7 @@ class Hazard:
 
 
 class ProceduralArena:
-    def __init__(self, arena_size: float = 2000.0, num_rooms: int = 5, seed: int | None = None):
+    def __init__(self, arena_size: float = 2000.0, num_rooms: int = 5, seed: int | None = None, season_num: int = 1):
         if seed is not None:
             random.seed(seed)
         self.width = arena_size
@@ -41,6 +41,8 @@ class ProceduralArena:
         self.hazards: List[Hazard] = []
         self.wind_dx = 0.0
         self.wind_dy = 0.0
+        self.season_num = season_num
+        self.theme = self._get_season_theme(season_num)
 
         # Shrinking zone
         self.safe_zone_radius = arena_size * 0.7
@@ -49,6 +51,11 @@ class ProceduralArena:
         self.danger_grid: dict[tuple[int, int], float] = {}
 
         self.generate()
+
+    def _get_season_theme(self, season_num: int) -> str:
+        themes = ["Genesis", "Inferno", "Frost", "Void", "Celestial", "Abyssal", "Ethereal", "Phantom", "Eclipse", "Radiance"]
+        index = (season_num - 1) % len(themes)
+        return themes[index]
 
     def generate(self):
         # Generate non-overlapping rooms
@@ -118,9 +125,51 @@ class ProceduralArena:
 
         # Generate hazards
         num_hazards = self.num_rooms * 2
+        # Modify hazards and environment based on theme
+        theme_modifiers = []
+        if getattr(self, "theme", "") == "Inferno":
+            theme_modifiers = ["lava", "fire_zone", "meteor"] * 3
+            self.wind_dx += random.uniform(-10, 10)
+        elif getattr(self, "theme", "") == "Frost":
+            theme_modifiers = ["ice_patch", "blizzard"] * 3
+        elif getattr(self, "theme", "") == "Void":
+            theme_modifiers = ["gravity_well", "temporal_rift", "black_hole"] * 3
+            self.wind_dx += random.uniform(-30, 30)
+        elif getattr(self, "theme", "") == "Radiance":
+            theme_modifiers = ["healing_spring", "light_beam"] * 3
+
+        hazard_pool = ["spikes", "lava", "fake_booster", "link_booster", "stamina_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "hidden_trap", "silence_booster", "switch", "magnet", "quicksand"] + theme_modifiers
+
         for i in range(num_hazards):
-            kind = random.choice(["spikes", "lava", "fake_booster", "link_booster", "stamina_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "hidden_trap", "silence_booster", "switch", "magnet", "quicksand"])
-            if kind == "switch":
+            kind = random.choice(hazard_pool)
+            if kind == "ice_patch":
+                radius = random.uniform(50.0, 100.0)
+                damage = 0.0
+            elif kind == "blizzard":
+                radius = random.uniform(80.0, 150.0)
+                damage = 5.0
+            elif kind == "light_beam":
+                radius = random.uniform(30.0, 60.0)
+                damage = -20.0 # Healing
+            elif kind == "black_hole":
+                radius = random.uniform(20.0, 50.0)
+                damage = 100.0
+            elif kind == "fire_zone":
+                radius = random.uniform(40.0, 70.0)
+                damage = 30.0
+            elif kind == "meteor":
+                radius = random.uniform(20.0, 40.0)
+                damage = 50.0
+            elif kind == "gravity_well":
+                radius = random.uniform(50.0, 150.0)
+                damage = 0.0
+            elif kind == "temporal_rift":
+                radius = random.uniform(30.0, 60.0)
+                damage = 0.0
+            elif kind == "healing_spring":
+                radius = random.uniform(30.0, 60.0)
+                damage = -10.0
+            elif kind == "switch":
                 radius = 20.0
                 damage = 0.0
             if kind == "spikes":

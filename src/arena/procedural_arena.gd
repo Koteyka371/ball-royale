@@ -8,6 +8,8 @@ var rooms: Array = []
 var corridors: Array = []
 var hazards: Array = []
 var rng: RandomNumberGenerator
+var theme: String = "Genesis"
+var season_num: int = 1
 
 var safe_zone_radius: float
 var safe_zone_center: Array
@@ -59,10 +61,17 @@ class Corridor:
         width = _w
         height = _h
 
-func _init(_arena_size: float = 2000.0, _num_rooms: int = 5, _seed = null):
+func _get_season_theme(s_num: int) -> String:
+    var themes = ["Genesis", "Inferno", "Frost", "Void", "Celestial", "Abyssal", "Ethereal", "Phantom", "Eclipse", "Radiance"]
+    var index = (s_num - 1) % themes.size()
+    return themes[index]
+
+func _init(_arena_size: float = 2000.0, _num_rooms: int = 5, _seed = null, _season_num: int = 1):
     width = _arena_size
     height = _arena_size
     num_rooms = _num_rooms
+    season_num = _season_num
+    theme = _get_season_theme(season_num)
     rng = RandomNumberGenerator.new()
     if _seed != null:
         rng.seed = _seed
@@ -170,9 +179,53 @@ func generate():
         else:
             kind = "switch"
 
+        if theme == "Inferno":
+            if rng.randf() < 0.3: kind = "fire_zone"
+            elif rng.randf() < 0.5: kind = "meteor"
+            elif rng.randf() < 0.8: kind = "lava"
+            wind_dx += rng.randf_range(-10.0, 10.0)
+        elif theme == "Frost":
+            if rng.randf() < 0.4: kind = "ice_patch"
+            elif rng.randf() < 0.7: kind = "blizzard"
+        elif theme == "Void":
+            if rng.randf() < 0.3: kind = "gravity_well"
+            elif rng.randf() < 0.6: kind = "temporal_rift"
+            elif rng.randf() < 0.8: kind = "black_hole"
+            wind_dx += rng.randf_range(-30.0, 30.0)
+        elif theme == "Radiance":
+            if rng.randf() < 0.4: kind = "healing_spring"
+            elif rng.randf() < 0.7: kind = "light_beam"
+
         var radius = 15.0
         var damage = 20.0
-        if kind == "spikes":
+        if kind == "ice_patch":
+            radius = rng.randf_range(50.0, 100.0)
+            damage = 0.0
+        elif kind == "blizzard":
+            radius = rng.randf_range(80.0, 150.0)
+            damage = 5.0
+        elif kind == "light_beam":
+            radius = rng.randf_range(30.0, 60.0)
+            damage = -20.0
+        elif kind == "black_hole":
+            radius = rng.randf_range(20.0, 50.0)
+            damage = 100.0
+        elif kind == "fire_zone":
+            radius = rng.randf_range(40.0, 70.0)
+            damage = 30.0
+        elif kind == "meteor":
+            radius = rng.randf_range(20.0, 40.0)
+            damage = 50.0
+        elif kind == "gravity_well":
+            radius = rng.randf_range(50.0, 150.0)
+            damage = 0.0
+        elif kind == "temporal_rift":
+            radius = rng.randf_range(30.0, 60.0)
+            damage = 0.0
+        elif kind == "healing_spring":
+            radius = rng.randf_range(30.0, 60.0)
+            damage = -10.0
+        elif kind == "spikes":
             radius = rng.randf_range(15.0, 30.0)
             damage = 20.0
         elif kind == "lava":

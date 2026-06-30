@@ -1299,8 +1299,13 @@ ARENAS = {
     "day_night": DayNightArena
 }
 
-def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
+def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None, season_num: int = 1) -> ProceduralArena:
     arena_class = ARENAS.get(arena_type, ProceduralArena)
     if arena_class == ProceduralArena:
-        return ProceduralArena(arena_size=arena_size, num_rooms=5, seed=seed)
-    return arena_class(arena_size=arena_size, seed=seed)
+        return ProceduralArena(arena_size=arena_size, num_rooms=5, seed=seed, season_num=season_num)
+
+    # Check if custom arenas support season_num
+    try:
+        return arena_class(arena_size=arena_size, seed=seed, season_num=season_num)
+    except TypeError:
+        return arena_class(arena_size=arena_size, seed=seed)
