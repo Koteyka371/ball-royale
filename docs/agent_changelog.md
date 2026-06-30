@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-335] Gravity Wells Mode — *2026-06-30 13:36:26 UTC*
+
+A mode where random gravity wells spawn in the arena, pulling nearby balls towards their center and slightly damaging them over time.
+
+---
+
 ## [idea-307] Seasonal Arenas — *2026-06-30 13:23:17 UTC*
 
 Introduce seasonal procedural arenas where the default weather and environmental hazards are fixed based on the season (e.g. Winter Arena has permanent snow and ice patches, Summer Arena has extreme heat that drains stamina faster).
