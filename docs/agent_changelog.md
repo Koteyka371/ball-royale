@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-337] Quantum Entanglement Hazard — *2026-06-30 12:38:51 UTC*
+
+A new hazard type that links two balls together. If one takes damage or gets a status effect, the other receives a fraction of it. It requires coordination to break the link by moving far enough apart or finding a cleanser item.
+
+---
+
 ## [idea-338] Pinball Bumpers — *2026-06-30 12:06:24 UTC*
 
 Add stationary hazards that act as pinball bumpers. Whenever a ball hits one, it deals no damage but bounces them away with immense speed.

@@ -5843,7 +5843,7 @@
     },
     {
       "id": "idea-337",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Entanglement Hazard",
@@ -8764,6 +8764,74 @@
         "src/ai/new_decoy_active_skill_for_trickster_class.py",
         "src/ai/new_decoy_active_skill_for_trickster_class.gd",
         "tests/test_new_decoy_active_skill_for_trickster_class.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-338-1",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bumper Shield Item",
+      "description": "An active item that gives the ball a temporary bumper aura. Any enemy that touches them is bumped away with high speed, similar to the stationary bumper hazard.",
+      "allowed_paths": [
+        "src/ai/bumper_shield_item.py",
+        "src/ai/bumper_shield_item.gd",
+        "tests/test_bumper_shield_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-509",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Acid Rain Weather",
+      "description": "Rain that causes small DoT effect.",
+      "allowed_paths": [
+        "src/ai/acid_rain.py",
+        "src/ai/acid_rain.gd",
+        "tests/test_acid_rain.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-338-2",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Pinball Game Mode",
+      "description": "A game mode where the arena is mostly filled with bumpers, bounce pads, and flippers. Balls deal reduced damage with basic attacks, but slamming an enemy into a hazard deals massive bonus damage.",
+      "allowed_paths": [
+        "src/ai/pinball_game.py",
+        "src/ai/pinball_game.gd",
+        "tests/test_pinball_game.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-510",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Meteor Shower Mode",
+      "description": "High damage hazards fall from the sky.",
+      "allowed_paths": [
+        "src/ai/meteor_shower.py",
+        "src/ai/meteor_shower.gd",
+        "tests/test_meteor_shower.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
