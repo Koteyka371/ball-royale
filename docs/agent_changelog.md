@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-332] Prestige Token Shop — *2026-06-30 16:22:32 UTC*
+
+A dedicated UI shop where players can spend prestige tokens not just on permanent minor stats, but also on unique run mutators, special starting artifacts, and unlocking rare AI ball archetypes (like a Time-Mage ball).
+
+---
+
 ## [idea-348] Daily Login Rewards — *2026-06-30 15:52:26 UTC*
 
 A streak-based daily login system granting prestige tokens, skill points, and exclusive cosmetics after consecutive logins.

@@ -5757,7 +5757,7 @@
     },
     {
       "id": "idea-332",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Prestige Token Shop",
@@ -9308,6 +9308,159 @@
         "src/ai/gravity_swap.py",
         "src/ai/gravity_swap.gd",
         "tests/test_gravity_swap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-539",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weekend Multiplier Event",
+      "description": "Introduce weekend events where daily login streak rewards and skill point gains from matches are temporarily multiplied, encouraging weekend activity.",
+      "allowed_paths": [
+        "src/ai/weekend_multiplier.py",
+        "src/ai/weekend_multiplier.gd",
+        "tests/test_weekend_multiplier.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-540",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Reaction Traps",
+      "description": "Introduce a new type of hazard called Chain Reaction Traps. When one trap is triggered by a ball, it sends out a shockwave that activates all other traps within a certain radius. This creates a domino effect that can quickly engulf a large portion of the arena in damage or debuffs, requiring players to carefully navigate around clusters of traps.",
+      "allowed_paths": [
+        "src/arena/chain_reaction_traps.py",
+        "src/arena/chain_reaction_traps.gd",
+        "tests/test_chain_reaction_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-541",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Kamikaze Clones",
+      "description": "An upgraded version of the mimic clone that, instead of vanishing upon expiring, aggressively charges at the nearest enemy and detonates for a small amount of damage.",
+      "allowed_paths": [
+        "src/ai/kamikaze_clones.py",
+        "src/ai/kamikaze_clones.gd",
+        "tests/test_kamikaze_clones.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-542",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Magnetic Polarity System",
+      "description": "Implement a Magnetic Polarity system where each ball is randomly assigned a positive or negative charge at the start of the match. Balls with opposite charges are slowly pulled towards each other, while balls with the same charge are slightly repelled. The polarity could flip periodically throughout the match, forcing AI to adapt their movement and positioning dynamically.",
+      "allowed_paths": [
+        "src/ai/magnetic_polarity.py",
+        "src/ai/magnetic_polarity.gd",
+        "tests/test_magnetic_polarity.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-543",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Skill Re-activation (Teleport to Mimic)",
+      "description": "When a ball has an active mimic clone on the field, casting the skill again could instantly swap the positions of the owner and the clone, allowing for advanced juking and escape mechanics.",
+      "allowed_paths": [
+        "src/ai/skill_re_activation_teleport_to_mimic.py",
+        "src/ai/skill_re_activation_teleport_to_mimic.gd",
+        "tests/test_skill_re_activation_teleport_to_mimic.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-544",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sinkholes as base modifiers",
+      "description": "Sinkholes can now expand over time, slowly consuming nearby hazards. If a sinkhole merges with a quicksand hazard, it becomes a massive sinkhole with a stronger pull and slower speed debuff.",
+      "allowed_paths": [
+        "src/ai/sinkholes_as_base_modifiers.py",
+        "src/ai/sinkholes_as_base_modifiers.gd",
+        "tests/test_sinkholes_as_base_modifiers.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-545",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bumper enhancements",
+      "description": "Bumpers can now bounce players significantly further, granting a temporary movement speed boost upon landing to reward players for precise positioning.",
+      "allowed_paths": [
+        "src/ai/bumper_enhancements.py",
+        "src/ai/bumper_enhancements.gd",
+        "tests/test_bumper_enhancements.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-546",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sunlight Beam Hazard",
+      "description": "During the day cycle, rare but highly damaging 'sunlight beams' can focus randomly on the arena, rapidly depleting HP of balls lacking daylight buffs (like vampires, assassins, or phantoms), forcing them to seek cover behind indestructible walls.",
+      "allowed_paths": [
+        "src/arena/sunlight_beam.py",
+        "src/arena/sunlight_beam.gd",
+        "tests/test_sunlight_beam.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-547",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Lunar Eclipse Event",
+      "description": "A rare 'Lunar Eclipse' event that occurs for a brief duration, simultaneously triggering both night time buffs and day time buffs across all classes while completely disabling perception limits, leading to chaotic full-arena fights.",
+      "allowed_paths": [
+        "src/ai/lunar_eclipse.py",
+        "src/ai/lunar_eclipse.gd",
+        "tests/test_lunar_eclipse.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
