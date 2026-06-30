@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-318] Aura Stacking Buffs — *2026-06-30 10:50:45 UTC*
+
+Balls emit a small aura based on their ball type. When multiple friendly balls of different types are close to each other, their auras stack, granting passive buffs (like increased health regen, damage reduction, or speed) to all balls within the combined radius. This encourages tighter group formations and diverse team compositions.
+
+---
+
 ## [idea-213] Level Up Skill Tree — *2026-06-30 10:50:40 UTC*
 
 Introduce a mid-match level-up system where balls earn experience by dealing damage or capturing objectives, allowing them to choose perks or upgrade their base stats like speed, max HP, or damage dynamically.
