@@ -2943,7 +2943,8 @@ class ModifierZonesMode extends GameMode:
 		zones = [
 			{"id": "zone_speed", "x": arena_width * 0.25, "y": arena_height * 0.25, "radius": 150.0, "type": "speed"},
 			{"id": "zone_damage", "x": arena_width * 0.75, "y": arena_height * 0.25, "radius": 150.0, "type": "damage"},
-			{"id": "zone_heal", "x": arena_width * 0.5, "y": arena_height * 0.75, "radius": 150.0, "type": "heal"}
+			{"id": "zone_heal", "x": arena_width * 0.5, "y": arena_height * 0.75, "radius": 150.0, "type": "heal"},
+			{"id": "zone_debuff", "x": arena_width * 0.5, "y": arena_height * 0.25, "radius": 150.0, "type": "debuff"}
 		]
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
@@ -2961,6 +2962,7 @@ class ModifierZonesMode extends GameMode:
 			var in_speed_zone = false
 			var in_damage_zone = false
 			var in_heal_zone = false
+			var in_debuff_zone = false
 
 			for zone in zones:
 				var dx = b.x - zone["x"]
@@ -2974,6 +2976,8 @@ class ModifierZonesMode extends GameMode:
 						in_damage_zone = true
 					elif zone["type"] == "heal":
 						in_heal_zone = true
+					elif zone["type"] == "debuff":
+						in_debuff_zone = true
 
 			if in_speed_zone:
 				b.speed = b.get_meta("base_speed") * 1.5
@@ -2990,6 +2994,19 @@ class ModifierZonesMode extends GameMode:
 				if b.has_meta("zone_modifier_damage"):
 					b.damage = b.get_meta("base_damage")
 					b.remove_meta("zone_modifier_damage")
+
+			if in_debuff_zone:
+				if not b.has_meta("base_max_hp"):
+					b.set_meta("base_max_hp", b.get("max_hp", 100.0))
+				b.max_hp = b.get_meta("base_max_hp") * 0.5
+				if "hp" in b and b.hp > b.max_hp:
+					b.hp = b.max_hp
+				b.set_meta("zone_modifier_debuff", true)
+			else:
+				if b.has_meta("zone_modifier_debuff"):
+					if b.has_meta("base_max_hp"):
+						b.max_hp = b.get_meta("base_max_hp")
+					b.remove_meta("zone_modifier_debuff")
 
 			if in_heal_zone:
 				var max_hp = b.get("max_hp", 100.0)
