@@ -594,6 +594,8 @@ class Action:
                                 # Slow down the ball using stutter_timer logic
                                 self.ball.stutter_timer = getattr(self.ball, "stutter_timer", 0.0) + 2.0
 
+
+
                     elif hazard.kind == "switch":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
@@ -602,11 +604,23 @@ class Action:
                             current_tick = getattr(self.world, "tick", 0)
                             if not hasattr(hazard, "last_triggered_tick") or current_tick - hazard.last_triggered_tick > 100:
                                 hazard.last_triggered_tick = current_tick
+                                import random
+                                trap_type = random.choice(["laser_wall", "falling_boulder", "swinging_axe"])
                                 trap_id = 9000 + len(self.world.arena.hazards)
                                 from arena.procedural_arena import Hazard
-                                wall = Hazard(trap_id, hazard.x, hazard.y, 40.0, "laser_wall", 20.0)
-                                wall.duration = 5.0
-                                self.world.arena.hazards.append(wall)
+                                if trap_type == "laser_wall":
+                                    wall = Hazard(trap_id, hazard.x, hazard.y, 40.0, "laser_wall", 20.0)
+                                    wall.duration = 5.0
+                                    self.world.arena.hazards.append(wall)
+                                elif trap_type == "falling_boulder":
+                                    # Target current ball location
+                                    boulder = Hazard(trap_id, self.ball.x, self.ball.y, 30.0, "meteor", 100.0)
+                                    boulder.duration = 3.0
+                                    self.world.arena.hazards.append(boulder)
+                                elif trap_type == "swinging_axe":
+                                    axe = Hazard(trap_id, hazard.x, hazard.y, 60.0, "spinning_laser", 40.0)
+                                    axe.duration = 8.0
+                                    self.world.arena.hazards.append(axe)
                     elif hazard.kind == "swap_portal":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
