@@ -1807,6 +1807,7 @@ func execute(strategy: String, delta: float):
     if bounced_wall or bounced_col:
         _trigger_ripple_effect()
 
+    _apply_friendly_aura(delta)
     _update_skill_timer(delta)
 
     if delta > 0:
@@ -5418,6 +5419,161 @@ func _trigger_ripple_effect():
                             other.set_meta("memory", mem)
                         else:
                             other.memory = mem
+
+
+
+
+func _apply_friendly_aura(delta: float):
+    if world == null or not "balls" in world:
+        return
+
+    var team = ""
+    if "team" in self.ball:
+        team = self.ball.team
+    elif "ball_type" in self.ball:
+        team = self.ball.ball_type
+
+    var ball_id = -1
+    if "id" in self.ball:
+        ball_id = self.ball.id
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("id"):
+        ball_id = self.ball.get_meta("id")
+
+    var ball_type = ""
+    if "ball_type" in self.ball:
+        ball_type = self.ball.ball_type
+    elif "BALL_TYPE" in self.ball:
+        ball_type = self.ball.BALL_TYPE
+
+    # Determine aura properties
+    var aura_radius = 150.0
+
+    # Check nearby friendly balls
+    var nearby_friendlies = []
+    for other in world.balls:
+        var other_alive = true
+        if "alive" in other:
+            other_alive = other.alive
+        elif other.has_method("get_meta") and other.has_meta("alive"):
+            other_alive = other.get_meta("alive")
+
+        var other_id = -1
+        if "id" in other:
+            other_id = other.id
+        elif other.has_method("get_meta") and other.has_meta("id"):
+            other_id = other.get_meta("id")
+
+        if not other_alive or other_id == ball_id:
+            continue
+
+        var other_team = ""
+        if "team" in other:
+            other_team = other.team
+        elif "ball_type" in other:
+            other_team = other.ball_type
+
+        if other_team == team:
+            var dx = self.ball.x - other.x
+            var dy = self.ball.y - other.y
+            var dist_sq = dx*dx + dy*dy
+            if dist_sq <= aura_radius*aura_radius:
+                nearby_friendlies.append(other)
+
+    # Count unique ball types among nearby friendlies, including self
+    var unique_types = []
+    unique_types.append(ball_type)
+    for f in nearby_friendlies:
+        var f_type = ""
+        if "ball_type" in f:
+            f_type = f.ball_type
+        elif "BALL_TYPE" in f:
+            f_type = f.BALL_TYPE
+        if not unique_types.has(f_type):
+            unique_types.append(f_type)
+
+    var stack_count = unique_types.size() - 1 # How many *other* types are nearby
+
+    var base_s = 2.0
+    if self.ball.has_method("has_meta") and self.ball.has_meta("base_speed"):
+        base_s = self.ball.get_meta("base_speed")
+    elif "base_speed" in self.ball:
+        base_s = self.ball.base_speed
+
+    var base_d = 10.0
+    if self.ball.has_method("has_meta") and self.ball.has_meta("base_damage"):
+        base_d = self.ball.get_meta("base_damage")
+    elif "base_damage" in self.ball:
+        base_d = self.ball.base_damage
+
+    # Apply buffs based on stack count
+    if stack_count >= 1:
+        # 1 extra type: HP regen
+        var max_hp = 100.0
+        if "max_hp" in self.ball:
+            max_hp = self.ball.max_hp
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("max_hp"):
+            max_hp = self.ball.get_meta("max_hp")
+
+        if "hp" in self.ball:
+            self.ball.hp = min(self.ball.hp + 2.0 * delta, max_hp)
+
+    var is_dashing = false
+    if "is_dashing" in self.ball:
+        is_dashing = self.ball.is_dashing
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("is_dashing"):
+        is_dashing = self.ball.get_meta("is_dashing")
+
+    var stutter = 0.0
+    if "stutter_timer" in self.ball:
+        stutter = self.ball.stutter_timer
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("stutter_timer"):
+        stutter = self.ball.get_meta("stutter_timer")
+
+    var is_night = false
+    if world != null and "arena" in world and "is_night" in world.arena:
+        is_night = world.arena.is_night
+
+    if not is_dashing and stutter <= 0.0:
+        if stack_count >= 2:
+            if "speed" in self.ball:
+                self.ball.speed = base_s * 1.1
+        else:
+            if "speed" in self.ball:
+                self.ball.speed = base_s
+
+        if stack_count >= 3:
+            if "damage" in self.ball:
+                self.ball.damage = base_d * 1.2
+        else:
+            if "damage" in self.ball:
+                self.ball.damage = base_d
+
+        if is_night:
+            if ball_type == "vampire":
+                if stack_count >= 2:
+                    if "speed" in self.ball: self.ball.speed = base_s * 1.5 * 1.1
+                else:
+                    if "speed" in self.ball: self.ball.speed = base_s * 1.5
+                if stack_count >= 3:
+                    if "damage" in self.ball: self.ball.damage = base_d * 1.5 * 1.2
+                else:
+                    if "damage" in self.ball: self.ball.damage = base_d * 1.5
+            else:
+                if stack_count < 3:
+                    if "damage" in self.ball: self.ball.damage = base_d
+        else:
+            var day_mult = 1.0
+            if world != null and "arena" in world:
+                if "is_night" in world.arena and not world.arena.is_night:
+                    day_mult = 1.2
+            else:
+                day_mult = 1.2 # fallback
+
+            if stack_count >= 3:
+                if "damage" in self.ball: self.ball.damage = base_d * day_mult * 1.2
+            else:
+                if "damage" in self.ball: self.ball.damage = base_d * day_mult
+
 
 func _update_skill_timer(delta: float):
     var inf_stam_timer = 0.0

@@ -509,10 +509,12 @@ class Action:
 
         if strategy == "target_weak":
             self._target_weak(delta)
+            self._apply_friendly_aura(delta)
             self._update_skill_timer(delta)
             self._resolve_collisions()
             self._clamp_position()
             return
+
         """
         Executes the chosen strategy.
         """
@@ -1293,6 +1295,7 @@ class Action:
         if bounced_wall or bounced_col:
             self._trigger_ripple_effect()
 
+        self._apply_friendly_aura(delta)
         self._update_skill_timer(delta)
 
         if delta > 0:
@@ -3480,6 +3483,87 @@ class Action:
                             o_mem = getattr(other, "memory", {})
                             o_mem[self.ball.id] = {"relation": "rival"}
                             other.memory = o_mem
+
+
+
+
+
+    def _apply_friendly_aura(self, delta: float) -> None:
+        if not hasattr(self.world, "balls"):
+            return
+
+        team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
+        ball_id = getattr(self.ball, "id", None)
+        ball_type = getattr(self.ball, "ball_type", "")
+
+        # Determine aura properties
+        aura_radius = 150.0
+
+        # Check nearby friendly balls
+        nearby_friendlies = []
+        for other in self.world.balls:
+            if not getattr(other, "alive", True) or getattr(other, "id", None) == ball_id:
+                continue
+            other_team = getattr(other, "team", getattr(other, "ball_type", ""))
+            if other_team == team:
+                dist_sq = (self.ball.x - other.x)**2 + (self.ball.y - other.y)**2
+                if dist_sq <= aura_radius**2:
+                    nearby_friendlies.append(other)
+
+        # Count unique ball types among nearby friendlies, including self
+        unique_types = {ball_type}
+        for f in nearby_friendlies:
+            unique_types.add(getattr(f, "ball_type", ""))
+
+        stack_count = len(unique_types) - 1 # How many *other* types are nearby
+
+        base_s = getattr(self.ball, "base_speed", 2.0)
+        base_d = getattr(self.ball, "base_damage", 10.0)
+
+        # Apply buffs based on stack count
+        if stack_count >= 1:
+            # 1 extra type: HP regen
+            self.ball.hp = min(getattr(self.ball, "hp", 100.0) + 2.0 * delta, getattr(self.ball, "max_hp", 100.0))
+
+        # We don't want to make buffs permanent. So we just reset them if not in an aura
+        is_dashing = getattr(self.ball, "is_dashing", False)
+        stutter = getattr(self.ball, "stutter_timer", 0.0)
+        is_night = hasattr(self.world, "arena") and getattr(self.world.arena, "is_night", False)
+
+        # If we are not dashing or stuttering or night vampire, we can control the speed
+        if not is_dashing and stutter <= 0.0:
+            if stack_count >= 2:
+                # 2 extra types: Speed boost
+                self.ball.speed = base_s * 1.1
+            else:
+                self.ball.speed = base_s
+
+            if stack_count >= 3:
+                # 3 extra types: Damage boost
+                self.ball.damage = base_d * 1.2
+            else:
+                self.ball.damage = base_d
+
+            # Re-apply night mode base buffs if needed (just for vampire/normal)
+            if is_night:
+                if ball_type == "vampire":
+                    if stack_count >= 2: self.ball.speed = base_s * 1.5 * 1.1
+                    else: self.ball.speed = base_s * 1.5
+                    if stack_count >= 3: self.ball.damage = base_d * 1.5 * 1.2
+                    else: self.ball.damage = base_d * 1.5
+                else:
+                    if stack_count < 3: self.ball.damage = base_d
+            else:
+                # normal mode - in execute it says: self.ball.damage = getattr(self.ball, "base_damage", 10.0) * 1.2 during day
+                # So we must add 1.2 here for regular day damage bump for all balls if not stacked 3 times. If stacked 3 times, we multiply the base * 1.2 day bump * 1.2 stack bump
+                day_multiplier = 1.2 if not hasattr(self.world, "arena") or (hasattr(self.world.arena, "is_night") and not self.world.arena.is_night) else 1.0
+                if hasattr(self.world, "arena") and getattr(self.world.arena, "is_night", None) is None:
+                    day_multiplier = 1.0 # fallback when is_night is not even a property
+
+                if stack_count >= 3:
+                    self.ball.damage = base_d * day_multiplier * 1.2
+                else:
+                    self.ball.damage = base_d * day_multiplier
 
     def _update_skill_timer(self, delta: float) -> None:
         if hasattr(self.ball, "infinite_stamina_timer") and self.ball.infinite_stamina_timer > 0:
