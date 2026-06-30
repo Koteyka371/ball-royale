@@ -107,6 +107,7 @@ class Decision:
         weights = self.__class__.get_weights()
 
         scores = {
+            "heavy_attack": 0.0,
             "flee": 0.0,
             "ricochet_attack": 0.0,
             "defend": 0.0,
@@ -166,10 +167,16 @@ class Decision:
             scores["chase"] += 1000.0
 
         # Constraints / Invalid actions
+        if getattr(self.ball, 'stamina', 0.0) >= getattr(self.ball, 'max_stamina', 100.0) - 0.1 and enemies_count > 0:
+            scores["heavy_attack"] += 500.0
+        else:
+            scores["heavy_attack"] = -1000.0
+
         if boosters_count == 0:
             scores["collect_booster"] = -1000.0
         if enemies_count == 0:
             scores["attack"] = -1000.0
+            scores["heavy_attack"] = -1000.0
             scores["chase"] = -1000.0
             scores["use_skill"] = -1000.0
         if skill_timer > 0:
@@ -332,7 +339,7 @@ class Decision:
                 best_action = random.choice(possible) if possible else "idle"
                 best_score = scores.get(best_action, 0.0)
         else:
-            action_order = ["ricochet_attack", "hold_zone", "intercept", "escort", "flee", "defend", "collect_booster", "attack", "target_weak", "chase", "use_skill", "kite", "flank", "group_attack", "hide_behind", "idle"]
+            action_order = ["heavy_attack", "ricochet_attack", "hold_zone", "intercept", "escort", "flee", "defend", "collect_booster", "attack", "target_weak", "chase", "use_skill", "kite", "flank", "group_attack", "hide_behind", "idle"]
             valid_actions = [k for k in scores.keys() if scores[k] > -500.0]
             sorted_actions = sorted(valid_actions, key=lambda k: (scores[k], -action_order.index(k) if k in action_order else 0), reverse=True)
             if not sorted_actions:

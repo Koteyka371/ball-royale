@@ -91,6 +91,7 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     var weights = get_weights()
 
     var scores = {
+        "heavy_attack": 0.0,
         "flee": 0.0,
         "ricochet_attack": 0.0,
             "defend": 0.0,
@@ -175,10 +176,22 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
     if personality == "assassin":
         scores["chase"] += 1000.0
 
+    var ball_stamina = 0.0
+    if self.ball.has_method("has_meta") and self.ball.has_meta("stamina"): ball_stamina = float(self.ball.get_meta("stamina"))
+    elif "stamina" in self.ball: ball_stamina = float(self.ball.stamina)
+    var ball_max_stamina = 100.0
+    if self.ball.has_method("has_meta") and self.ball.has_meta("max_stamina"): ball_max_stamina = float(self.ball.get_meta("max_stamina"))
+    elif "max_stamina" in self.ball: ball_max_stamina = float(self.ball.max_stamina)
+    if ball_stamina >= ball_max_stamina - 0.1 and enemies_count > 0:
+        scores["heavy_attack"] += 500.0
+    else:
+        scores["heavy_attack"] = -1000.0
+
     if boosters_count == 0.0:
         scores["collect_booster"] = -1000.0
     if enemies_count == 0.0:
         scores["attack"] = -1000.0
+        scores["heavy_attack"] = -1000.0
         scores["chase"] = -1000.0
         scores["use_skill"] = -1000.0
     if skill_timer > 0.0:
@@ -376,7 +389,7 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
             else:
                 best_score = 0.0
     else:
-        var action_order = ["ricochet_attack", "hold_zone", "intercept", "escort", "flee", "defend", "collect_booster", "attack", "target_weak", "chase", "use_skill", "kite", "flank", "group_attack", "hide_behind", "idle"]
+        var action_order = ["heavy_attack", "ricochet_attack", "hold_zone", "intercept", "escort", "flee", "defend", "collect_booster", "attack", "target_weak", "chase", "use_skill", "kite", "flank", "group_attack", "hide_behind", "idle"]
         var possible_actions = []
         for k in scores.keys():
             if float(scores[k]) > -500.0:

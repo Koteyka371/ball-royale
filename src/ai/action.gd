@@ -1571,6 +1571,8 @@ func execute(strategy: String, delta: float):
 
     if strategy == "flee":
         _flee(delta)
+    elif strategy == "heavy_attack":
+        _heavy_attack(delta)
     elif strategy == "ricochet_attack":
         _ricochet_attack(delta)
     elif strategy == "attack":
@@ -3079,6 +3081,72 @@ func _chase(delta: float):
 
     self.ball.x += comb_nx * step
     self.ball.y += comb_ny * step
+
+func _heavy_attack(delta: float):
+    var enemies = _get_enemies()
+    if enemies.size() > 0:
+        var target = _get_target(enemies)
+        var dx = target.x - self.ball.x
+        var dy = target.y - self.ball.y
+        var dist_sq = dx*dx + dy*dy
+        var dist = 0.0
+        var nx = 0.0
+        var ny = 0.0
+        if dist_sq > 0.0001:
+            dist = sqrt(dist_sq)
+            nx = dx / dist
+            ny = dy / dist
+
+            var target_radius = 10.0
+            if "radius" in target: target_radius = target.radius
+            var ball_radius = 10.0
+            if "radius" in self.ball: ball_radius = self.ball.radius
+
+            # rudimentary obstacle avoidance
+            var step = 2.0 * delta * 60.0
+            if "speed" in self.ball: step = self.ball.speed * delta * 60.0
+            self.ball.x += nx * min(step, dist)
+            self.ball.y += ny * min(step, dist)
+
+        # Recalculate
+        dx = target.x - self.ball.x
+        dy = target.y - self.ball.y
+        dist_sq = dx*dx + dy*dy
+        if dist_sq > 0.0001: dist = sqrt(dist_sq)
+        else: dist = 0.0
+
+        var target_radius = 10.0
+        if "radius" in target: target_radius = target.radius
+        var ball_radius = 10.0
+        if "radius" in self.ball: ball_radius = self.ball.radius
+        var attack_range = ball_radius + target_radius + 5.0
+
+        if dist <= attack_range:
+            var attack_cd_timer = 0.0
+            if "attack_timer" in self.ball: attack_cd_timer = self.ball.attack_timer
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("attack_timer"): attack_cd_timer = self.ball.get_meta("attack_timer")
+
+            if attack_cd_timer <= 0.0:
+                if self.ball.has_method("set_meta"): self.ball.set_meta("stamina", 0.0)
+                elif "stamina" in self.ball: self.ball.stamina = 0.0
+
+                var original_damage = 10.0
+                if "damage" in self.ball: original_damage = self.ball.damage
+                if "damage" in self.ball: self.ball.damage = original_damage * 3.0
+
+                if self.has_method("_attempt_damage"):
+                    self._attempt_damage(self.ball, target)
+
+                if "damage" in self.ball: self.ball.damage = original_damage
+
+                if "vx" in target: target.vx += nx * 800.0
+                if "vy" in target: target.vy += ny * 800.0
+
+                var b_speed = 2.0
+                if "speed" in self.ball: b_speed = self.ball.speed
+                var new_cooldown = max(0.2, 2.0 / b_speed if b_speed > 0.0 else 1.0)
+                if self.ball.has_method("set_meta"): self.ball.set_meta("attack_timer", new_cooldown)
+                elif "attack_timer" in self.ball: self.ball.attack_timer = new_cooldown
 
 func _attack(delta: float):
     var enemies = _get_enemies()

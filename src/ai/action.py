@@ -1124,6 +1124,8 @@ class Action:
 
         if strategy == "flee":
             self._flee(delta)
+        elif strategy == "heavy_attack":
+            self._heavy_attack(delta)
         elif strategy == "ricochet_attack":
             self._ricochet_attack(delta)
         elif strategy == "attack":
@@ -1994,6 +1996,55 @@ class Action:
         step = getattr(self.ball, "speed", 2.0) * delta * 60
         self.ball.x += comb_nx * step
         self.ball.y += comb_ny * step
+
+    def _heavy_attack(self, delta: float) -> None:
+        enemies = self._get_enemies()
+        if enemies:
+            target = self._get_target(enemies)
+            dx, dy = target.x - self.ball.x, target.y - self.ball.y
+            dist_sq = dx * dx + dy * dy
+            nx, ny = 0.0, 0.0
+            if dist_sq > 0.0001:
+                dist = math.sqrt(dist_sq)
+                nx, ny = dx / dist, dy / dist
+
+                target_radius = getattr(target, "radius", 10.0)
+                ball_radius = getattr(self.ball, "radius", 10.0)
+                attack_range = ball_radius + target_radius + 5
+
+                nx, ny = self._apply_obstacle_avoidance(nx, ny, target)
+                nx, ny = self._apply_boid_rules(nx, ny)
+
+                step = getattr(self.ball, "speed", 2.0) * delta * 60
+                self.ball.x += nx * min(step, dist)
+                self.ball.y += ny * min(step, dist)
+
+            dx, dy = target.x - self.ball.x, target.y - self.ball.y
+            dist_sq = dx * dx + dy * dy
+            dist = math.sqrt(dist_sq) if dist_sq > 0.0001 else 0.0
+
+            target_radius = getattr(target, "radius", 10.0)
+            ball_radius = getattr(self.ball, "radius", 10.0)
+            attack_range = ball_radius + target_radius + 5
+
+            if dist <= attack_range:
+                attack_cd_timer = getattr(self.ball, "attack_timer", 0.0)
+                if attack_cd_timer <= 0:
+                    self.ball.stamina = 0.0
+                    original_damage = getattr(self.ball, "damage", 10.0)
+                    self.ball.damage = original_damage * 3.0
+                    if hasattr(self, "_attempt_damage"):
+                        self._attempt_damage(self.ball, target)
+                    self.ball.damage = original_damage
+
+                    if hasattr(target, "vx"): target.vx += nx * 800.0
+                    if hasattr(target, "vy"): target.vy += ny * 800.0
+
+                    b_speed = getattr(self.ball, "speed", 2.0)
+                    new_cooldown = max(0.2, 2.0 / b_speed if b_speed > 0 else 1.0)
+                    self.ball.attack_timer = new_cooldown
+                    if new_cooldown >= 0.8:
+                        self.ball.stutter_timer = min(new_cooldown * 0.4, 0.4)
 
     def _attack(self, delta: float) -> None:
         enemies = self._get_enemies()
