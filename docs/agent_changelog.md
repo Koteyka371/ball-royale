@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-308] Dynamic Safe Zone Migration — *2026-06-30 10:41:58 UTC*
+
+Instead of the safe zone merely shrinking toward the center of the arena, make the safe zone's center slowly migrate around the arena as it shrinks. This forces players to constantly reposition and prevents them from simply camping the exact center early in the game.
+
+---
+
 ## [idea-299] Heavy Attacks — *2026-06-30 10:26:17 UTC*
 
 Balls can consume all their stamina for a single heavy attack that deals massive damage and knocks the enemy back.

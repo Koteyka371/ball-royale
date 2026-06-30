@@ -5349,7 +5349,7 @@
     },
     {
       "id": "idea-308",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Dynamic Safe Zone Migration",
@@ -7981,6 +7981,91 @@
         "src/ai/sudden_death_meteor_shower.py",
         "src/ai/sudden_death_meteor_shower.gd",
         "tests/test_sudden_death_meteor_shower.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-463",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather-Specific Ball Types",
+      "description": "Introduce new ball types that specifically excel in certain weather conditions. For example, a 'Snow Yeti' ball that ignores perception reduction during snow and gains movement speed on icy surfaces, or a 'Sand Elemental' that can cloak entirely during sandstorms.",
+      "allowed_paths": [
+        "src/ai/specific_balls.py",
+        "src/ai/specific_balls.gd",
+        "tests/test_specific_balls.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-464",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Wall bounce mechanic",
+      "description": "Balls that get knocked back into a wall take additional damage based on their velocity.",
+      "allowed_paths": [
+        "src/ai/wall_bounce_mechanic.py",
+        "src/ai/wall_bounce_mechanic.gd",
+        "tests/test_wall_bounce_mechanic.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-465",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Eclipse Random Event",
+      "description": "A rare procedural event where an eclipse occurs regardless of the current phase in DayNightArena. During the eclipse, ALL balls lose their perception radius down to an extreme minimum (like 20 units) and global damage across the board is doubled, leading to chaotic close-quarter ambushes.",
+      "allowed_paths": [
+        "src/ai/eclipse_random.py",
+        "src/ai/eclipse_random.gd",
+        "tests/test_eclipse_random.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-466",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Stamina overload",
+      "description": "If a ball picks up a stamina booster while already at max stamina, they get a temporary speed boost.",
+      "allowed_paths": [
+        "src/ai/stamina_overload.py",
+        "src/ai/stamina_overload.gd",
+        "tests/test_stamina_overload.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-467",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravitational Slingshot Hazard",
+      "description": "Hazards that capture balls and rapidly accelerate them in an orbit before ejecting them at a high speed in a random direction.",
+      "allowed_paths": [
+        "src/arena/gravitational_slingshot.py",
+        "src/arena/gravitational_slingshot.gd",
+        "tests/test_gravitational_slingshot.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
