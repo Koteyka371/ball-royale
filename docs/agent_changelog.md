@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-309] Shrinking Zone Collapse Event — *2026-06-30 10:09:14 UTC*
+
+At the very end of the match when the shrinking zone reaches its minimum radius, trigger a sudden 'Collapse Event' where the zone collapses entirely into a single point, dramatically increasing damage and pulling all remaining balls inward with a strong gravitational force to force an immediate winner.
+
+---
+
 ## [idea-298] Exhaustion Effect — *2026-06-30 10:08:06 UTC*
 
 Balls with 0 stamina are briefly exhausted, slowing their base speed and lowering their damage until stamina regenerates to at least 20%.
