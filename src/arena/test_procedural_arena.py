@@ -30,5 +30,5 @@ def test_hazard_generation():
     for hazard in arena.hazards:
         assert hazard.kind in ["spikes", "lava", "fake_booster", "link_booster", "stamina_booster", "silence_booster", "poison_cloud", "proximity_trap", "explosive_barrel", "healing_spring", "trap", "spinning_laser", "laser_wall", "meteor", "conveyor_belt", "gravity_well", "black_hole", "portal", "teleporter", "swap_portal", "placeable_trap_item", "flare", "crater", "bumper", "tornado", "hidden_trap", "lightning_strike", "switch", "magnet", "temporal_rift"]
         assert hazard.radius > 0
-        assert hazard.damage > 0 or hazard.kind in ["healing_spring", "placeable_trap_item", "portal", "teleporter", "swap_portal", "flare", "crater", "bumper", "temporal_rift", "link_booster", "stamina_booster", "silence_booster", "drone_item", "stealth_drone_item", "switch", "magnet", "temporal_rift"]
+        assert hazard.damage > 0 or hazard.kind in ["healing_spring", "placeable_trap_item", "portal", "teleporter", "swap_portal", "flare", "crater", "bumper", "temporal_rift", "link_booster", "stamina_booster", "silence_booster", "drone_item", "stealth_drone_item", "shadow_booster", "switch", "magnet", "temporal_rift"]
         assert arena.is_point_inside(hazard.x, hazard.y, 0)

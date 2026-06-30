@@ -2536,6 +2536,8 @@ class Action:
                 elif getattr(nearest, "kind", None) == "stealth_drone_item":
                     self.ball.has_stealth_drone = True
                     self.ball.stealth_drone_timer = 15.0  # Duration of stealth effect
+                elif getattr(nearest, "kind", None) == "shadow_booster":
+                    self.ball.shadow_booster_timer = 15.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
@@ -3526,6 +3528,11 @@ class Action:
             self.ball.stealth_drone_timer -= delta
             if self.ball.stealth_drone_timer <= 0:
                 self.ball.has_stealth_drone = False
+
+        if hasattr(self.ball, "shadow_booster_timer") and self.ball.shadow_booster_timer > 0:
+            self.ball.shadow_booster_timer -= delta
+            if self.ball.shadow_booster_timer < 0:
+                self.ball.shadow_booster_timer = 0.0
         if hasattr(self.ball, "reflect_shield_timer") and self.ball.reflect_shield_timer > 0:
             self.ball.reflect_shield_timer -= delta
             if self.ball.reflect_shield_timer <= 0:
