@@ -329,7 +329,7 @@ class BattleRoyaleMode extends GameMode:
         self.weather_timer += delta
         if self.weather_timer > 15.0:
             self.weather_timer = 0.0
-            var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm"]
+            var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave"]
             var old_weather = self.weather
             self.weather = weathers[randi() % weathers.size()]
             if old_weather != self.weather and world != null and world.has_method("add_event"):
@@ -352,6 +352,10 @@ class BattleRoyaleMode extends GameMode:
                 world.arena.is_sandstorming = true
             else:
                 world.arena.is_sandstorming = false
+            if self.weather == "heatwave":
+                world.arena.is_heatwave = true
+            else:
+                world.arena.is_heatwave = false
             if self.weather == "snow":
                 world.arena.is_snowing = true
             else:
@@ -1380,7 +1384,7 @@ class WeatherChaosMode extends GameMode:
 		weather_timer += delta
 		if weather_timer > 10.0:
 			weather_timer = 0.0
-			var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm"]
+			var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave"]
 			var old_weather = weather
 			weather = weathers[randi() % weathers.size()]
 			if old_weather != weather and world != null and world.has_method("add_event"):
@@ -1403,6 +1407,10 @@ class WeatherChaosMode extends GameMode:
 				world.arena.is_sandstorming = true
 			else:
 				world.arena.is_sandstorming = false
+			if weather == "heatwave":
+				world.arena.is_heatwave = true
+			else:
+				world.arena.is_heatwave = false
 			if weather == "snow":
 				world.arena.is_snowing = true
 			else:

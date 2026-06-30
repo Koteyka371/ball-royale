@@ -83,7 +83,7 @@ def test_weather_mode_mirage():
     mode = gm.GAME_MODES["weather_chaos"]
     world = MockWorld()
     world.leaderboard_manager = type("Mock", (), {"data": {"current_season": 4}})()
-    world.balls = []
+
 
     trickster_ball = MockBall(1, "trickster")
     trickster_ball.SKILL = "deploy_decoy"
@@ -92,7 +92,7 @@ def test_weather_mode_mirage():
     phantom_ball.SKILL = "phase_through"
 
     balls = [trickster_ball, phantom_ball]
-    world.balls = balls
+    world.balls = balls.copy()
     mode.setup(world, balls)
 
     # Test mirage in fog
@@ -103,3 +103,34 @@ def test_weather_mode_mirage():
     decoys = [b for b in world.balls if getattr(b, "is_decoy", False)]
     assert len(decoys) > 0
     assert decoys[0].speed == 0.0
+
+def test_weather_mode_heatwave():
+    import ai.game_modes as gm
+    mode = gm.GAME_MODES["weather_chaos"]
+    world = MockWorld()
+    world.leaderboard_manager = type("Mock", (), {"data": {"current_season": 4}})()
+
+
+    ball1 = MockBall(1, "warrior")
+    ball2 = MockBall(2, "scout")
+
+    balls = [ball1, ball2]
+    world.balls = balls.copy()
+    mode.setup(world, balls)
+
+    mode.weather = "heatwave"
+    # To test mirage we might need a mocked random inside mode
+    old_rnd = getattr(mode, "random", None)
+    import random
+    mode.random = type("MockRandom", (), {"choice": random.choice, "uniform": lambda *args: 5.0, "random": lambda *args: 0.1, "randint": random.randint})()
+
+    # Check speed reduction
+    mode.tick(world, balls, 0.1)
+    assert abs(ball1.speed - (ball1.base_speed * 0.9)) < 0.01
+
+    # Check mirage spawn
+    mode.tick(world, balls, 5.0)
+    decoys = [b for b in world.balls if getattr(b, "is_decoy", False)]
+    assert len(decoys) > 0
+
+    mode.random = old_rnd
