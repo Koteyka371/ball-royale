@@ -517,7 +517,7 @@ class Action:
                             if owner:
                                 import copy
                                 holo = copy.copy(owner)
-                                import random
+                                # import random
                                 holo.id = getattr(self.world, "next_id", random.randint(10000, 99999))
                                 if hasattr(self.world, "next_id"):
                                                         self.world.next_id += 1
@@ -605,7 +605,7 @@ class Action:
                             current_tick = getattr(self.world, "tick", 0)
                             if not hasattr(hazard, "last_triggered_tick") or current_tick - hazard.last_triggered_tick > 100:
                                 hazard.last_triggered_tick = current_tick
-                                import random
+                                # import random
                                 trap_type = random.choice(["laser_wall", "falling_boulder", "swinging_axe"])
                                 trap_id = 9000 + len(self.world.arena.hazards)
                                 from arena.procedural_arena import Hazard
@@ -692,7 +692,7 @@ class Action:
                                         for h in self.world.arena.hazards:
                                             if h.id == hazard.target_hazard_id and h.kind == "black_hole":
                                                 import math as _math
-                                                import random as _random
+                                                # import random as _random
                                                 angle = _random.uniform(0, 2 * _math.pi)
                                                 launch_distance = getattr(h, "radius", 50.0) + 30.0
                                                 self.ball.x = h.x + _math.cos(angle) * launch_distance
@@ -2441,7 +2441,7 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                 elif getattr(nearest, "kind", None) == "decoy_item":
                     import copy
-                    import random
+                    # import random
                     if hasattr(self.world, "balls"):
                         decoy = copy.copy(self.ball)
                         decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
@@ -2600,7 +2600,7 @@ class Action:
 
             elif skill_name == "clone":
                 import copy
-                import random
+                # import random
                 num_clones = random.randint(2, 4)
                 for _ in range(num_clones):
                     clone = copy.copy(self.ball)
@@ -2632,7 +2632,7 @@ class Action:
                 # Add to own skill timer
                 self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
             elif skill_name == "summon_minions":
-                import random
+                # import random
                 num_minions = random.randint(2, 4)
                 for _ in range(num_minions):
                     import copy
@@ -2686,7 +2686,7 @@ class Action:
                                         enemy.take_damage(explosion_damage)
             elif skill_name == "deploy_decoy":
                 import copy
-                import random
+                # import random
                 if hasattr(self.world, "balls"):
                     decoy = copy.copy(self.ball)
                     decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
@@ -2709,7 +2709,7 @@ class Action:
 
             elif skill_name == "deploy_illusion":
                 import copy
-                import random
+                # import random
                 if hasattr(self.world, "balls"):
                     illusion = copy.copy(self.ball)
                     illusion.id = getattr(self.world, "next_id", random.randint(10000, 99999))
@@ -3075,25 +3075,6 @@ class Action:
                         # Temporarily set to our team
                         target.team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
                         self._spawn_skill_particles("mind_control")
-
-            elif skill_name == "convert_hazard":
-                convert_radius = 150.0
-                convertable_kinds = ["spikes", "lava", "fake_booster", "poison_cloud", "proximity_trap"]
-
-                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
-                    converted = False
-                    for hazard in self.world.arena.hazards:
-                        hx = getattr(hazard, "x", 0) - self.ball.x
-                        hy = getattr(hazard, "y", 0) - self.ball.y
-                        dist = math.sqrt(hx*hx + hy*hy)
-                        if dist <= convert_radius + getattr(hazard, "radius", 0):
-                            if hasattr(hazard, "kind") and hazard.kind in convertable_kinds:
-                                hazard.kind = "healing_spring"
-                                hazard.damage = 0.0
-                                setattr(hazard, "duration", 5.0)
-                                converted = True
-                    if converted:
-                        self._spawn_skill_particles("convert_hazard")
 
             elif skill_name == "ground_pound":
                 pound_radius = 120.0
