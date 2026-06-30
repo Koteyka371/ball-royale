@@ -419,6 +419,67 @@ func execute(strategy: String, delta: float):
 					inv.erase("exit_portal")
 					self.ball.set_meta("inventory", inv)
 
+	if (strategy == "flee" or strategy == "attack") and self.ball.has_meta("inventory"):
+		var inv = self.ball.get_meta("inventory")
+		if inv.has("decoy"):
+			if world != null and "balls" in world:
+				var decoy = self.ball.duplicate(true) if self.ball.has_method("duplicate") else {}
+
+				if typeof(decoy) == TYPE_OBJECT and decoy.has_method("set_meta"):
+					decoy.set_meta("id", randi() % 90000 + 10000)
+					var max_hp = 100.0
+					if decoy.has_meta("max_hp"): max_hp = decoy.get_meta("max_hp")
+					elif "max_hp" in decoy: max_hp = decoy.max_hp
+					decoy.set_meta("hp", max_hp * 0.1)
+					decoy.set_meta("max_hp", max_hp * 0.1)
+					decoy.set_meta("damage", 0.0)
+					var b_speed = 100.0
+					if decoy.has_meta("base_speed"): b_speed = decoy.get_meta("base_speed")
+					elif "base_speed" in decoy: b_speed = decoy.base_speed
+					decoy.set_meta("speed", b_speed)
+					decoy.set_meta("is_decoy", true)
+					decoy.set_meta("decoy_timer", 5.0)
+					decoy.set_meta("owner_id", self.ball.id)
+					decoy.set_meta("inventory", [])
+					decoy.set_meta("active_skills", {})
+					decoy.set_meta("cooldowns", {})
+					decoy.set_meta("SKILL", null)
+					decoy.set_meta("active_skill", null)
+					decoy.set_meta("skill_timer", 9999.0)
+					decoy.set_meta("attack_timer", 9999.0)
+				elif typeof(decoy) == TYPE_DICTIONARY:
+					decoy["id"] = randi() % 90000 + 10000
+					var max_hp = 100.0
+					if "max_hp" in self.ball: max_hp = self.ball.max_hp
+					elif self.ball.has_method("get_meta") and self.ball.has_meta("max_hp"): max_hp = self.ball.get_meta("max_hp")
+					decoy["hp"] = max_hp * 0.1
+					decoy["max_hp"] = max_hp * 0.1
+					decoy["damage"] = 0.0
+					var b_speed = 100.0
+					if "base_speed" in self.ball: b_speed = self.ball.base_speed
+					elif self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"): b_speed = self.ball.get_meta("base_speed")
+					decoy["speed"] = b_speed
+					decoy["is_decoy"] = true
+					decoy["decoy_timer"] = 5.0
+					decoy["owner_id"] = self.ball.id if "id" in self.ball else -1
+					decoy["inventory"] = []
+					decoy["x"] = self.ball.x if "x" in self.ball else 0.0
+					decoy["y"] = self.ball.y if "y" in self.ball else 0.0
+					decoy["radius"] = self.ball.radius if "radius" in self.ball else 10.0
+					decoy["ball_type"] = self.ball.ball_type if "ball_type" in self.ball else "easy"
+					decoy["team"] = self.ball.team if "team" in self.ball else decoy.get("ball_type", "easy")
+					decoy["alive"] = true
+					decoy["active_skills"] = {}
+					decoy["cooldowns"] = {}
+					decoy["SKILL"] = null
+					decoy["active_skill"] = null
+					decoy["skill_timer"] = 9999.0
+					decoy["attack_timer"] = 9999.0
+
+				world.balls.append(decoy)
+				inv.erase("decoy")
+				self.ball.set_meta("inventory", inv)
+
 
 	# Confusion timer logic
 	var conf_timer = 0.0
@@ -4504,6 +4565,16 @@ func _collect_booster(delta: float):
                     self.ball.set_meta("inventory", [])
                 var inv = self.ball.get_meta("inventory")
                 inv.append("exit_portal")
+                self.ball.set_meta("inventory", inv)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "decoy_item":
+                if not self.ball.has_meta("inventory"):
+                    self.ball.set_meta("inventory", [])
+                var inv = self.ball.get_meta("inventory")
+                inv.append("decoy")
                 self.ball.set_meta("inventory", inv)
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)

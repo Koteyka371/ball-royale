@@ -282,6 +282,35 @@ class Action:
                 self.world.arena.hazards.append(portal)
                 self.ball.inventory.remove("exit_portal")
 
+        # Check inventory for decoy to confuse enemies while fleeing or attacking
+        if strategy in ("flee", "attack") and hasattr(self.ball, "inventory") and "decoy" in self.ball.inventory:
+            if hasattr(self.world, "balls"):
+                import copy
+                import random
+                decoy = copy.copy(self.ball)
+                decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                decoy.hp = getattr(self.ball, "max_hp", 100) * 0.1
+                decoy.max_hp = decoy.hp
+                decoy.damage = 0
+                decoy.speed = getattr(self.ball, "base_speed", 100.0)
+                decoy.is_decoy = True
+                decoy.decoy_timer = 5.0
+                decoy.owner_id = getattr(self.ball, "id", None)
+                if hasattr(decoy, "inventory"):
+                    decoy.inventory = []
+                if hasattr(decoy, "active_skills"):
+                    decoy.active_skills = {}
+                if hasattr(decoy, "cooldowns"):
+                    decoy.cooldowns = {}
+                if hasattr(decoy, "SKILL"):
+                    decoy.SKILL = None
+                if hasattr(decoy, "active_skill"):
+                    decoy.active_skill = None
+                decoy.skill_timer = 9999.0
+                decoy.attack_timer = 9999.0
+                self.world.balls.append(decoy)
+                self.ball.inventory.remove("decoy")
+
         # Temporal rift logic to modify local delta
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for hazard in self.world.arena.hazards:
@@ -490,6 +519,22 @@ class Action:
             if self.ball.decoy_timer <= 0:
                 self.ball.alive = False
                 self.ball.hp = 0
+
+            # Random movement for decoy
+            import math as _math_decoy
+            import random as _rnd
+            if not hasattr(self.ball, "target_x") or _rnd.random() < 0.02:
+                arena_width = getattr(getattr(self.world, "arena", None), "width", 1000)
+                arena_height = getattr(getattr(self.world, "arena", None), "height", 1000)
+                self.ball.target_x = _rnd.uniform(100, arena_width - 100)
+                self.ball.target_y = _rnd.uniform(100, arena_height - 100)
+
+            dx = self.ball.target_x - self.ball.x
+            dy = self.ball.target_y - self.ball.y
+            dist_decoy = _math_decoy.sqrt(dx*dx + dy*dy)
+            if dist_decoy > 5.0:
+                self.ball.x += (dx/dist_decoy) * getattr(self.ball, "speed", 100.0) * delta
+                self.ball.y += (dy/dist_decoy) * getattr(self.ball, "speed", 100.0) * delta
 
         # Global decoy explosion check
         if hasattr(self.world, "balls"):
@@ -2848,6 +2893,13 @@ class Action:
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
                     self.ball.inventory.append("exit_portal")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                elif getattr(nearest, "kind", None) == "decoy_item":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("decoy")
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)

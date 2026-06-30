@@ -474,6 +474,9 @@ class ProceduralArena:
                 elif random.random() < 0.05:
                     kind = "exit_portal_item"
                     damage = 0.0
+                elif random.random() < 0.05:
+                    kind = "decoy_item"
+                    damage = 0.0
                 elif random.random() < 0.15:
                     kind = "quicksand"
                     damage = 10.0

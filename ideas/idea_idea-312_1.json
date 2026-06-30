@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Trap Items",
+  "description": "Add a new hazard kind 'decoy_trap'. It looks exactly like a health booster, but when a player tries to collect it, it explodes for area of effect damage and stuns them for 2 seconds. The AI should only be tricked by this if they have low perception stats."
+}
