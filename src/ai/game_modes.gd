@@ -3940,6 +3940,126 @@ class GravityWellMode extends GameMode:
                 var oldest_gw = gw_hazards[0]
                 world.arena.hazards.erase(oldest_gw)
 
+
+class SupernovaMode extends GameMode:
+    var supernova_radius = 50.0
+    var supernova_exploded = false
+    var explosion_timer = 0.0
+    var heat_multiplier = 1.0
+
+    func _init() -> void:
+        name = "Supernova"
+        description = "Balls take rapidly scaling heat damage as they approach the center. Eventually, the supernova explodes, knocking survivors away."
+
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        # Evaluate crowd system
+        if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
+            var crowd = world.get_node("CrowdSystem")
+            var kill_log = []
+            if "kill_log" in world:
+                kill_log = world.kill_log
+            var current_tick = 0
+            if "tick" in world:
+                current_tick = world.tick
+            crowd.tick(balls, kill_log, current_tick)
+
+        if not "dead_balls" in world:
+            world.dead_balls = []
+        for b in balls:
+            if not b.alive:
+                if not world.dead_balls.has(b):
+                    if b.has_method("set_meta"):
+                        b.set_meta("time_since_death", 0.0)
+                    world.dead_balls.append(b)
+                else:
+                    if b.has_method("get_meta") and b.has_meta("time_since_death"):
+                        b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+        var arena_width = 1000.0
+        var arena_height = 1000.0
+        if world != null and "arena" in world and world.arena != null:
+            if "width" in world.arena:
+                arena_width = world.arena.width
+            if "height" in world.arena:
+                arena_height = world.arena.height
+
+        var center_x = arena_width / 2.0
+        var center_y = arena_height / 2.0
+
+        if not supernova_exploded:
+            supernova_radius += 2.0 * delta
+            explosion_timer += delta
+
+            # Explosion triggers at e.g. 20 seconds
+            if explosion_timer >= 20.0:
+                supernova_exploded = true
+                explosion_timer = 0.0
+                # Trigger knockback for all alive balls
+                for b in balls:
+                    if b.alive and b.ball_type != "spectator":
+                        var dx = b.x - center_x
+                        var dy = b.y - center_y
+                        var dist = sqrt(dx * dx + dy * dy)
+                        if dist > 0:
+                            # Massive outward knockback force
+                            var knockback = 50000.0 / max(dist, 10.0)
+                            if "vx" in b:
+                                b.vx += (dx / dist) * knockback
+                            if "vy" in b:
+                                b.vy += (dy / dist) * knockback
+
+        for b in balls:
+            if b.alive and b.ball_type != "spectator":
+                var dx = center_x - b.x
+                var dy = center_y - b.y
+                var dist = sqrt(dx * dx + dy * dy)
+
+                if not supernova_exploded:
+                    # Pull towards center
+                    if dist > 0:
+                        var pull_strength = 20000.0 / (dist * dist)
+                        var radius_multiplier = supernova_radius / 50.0
+                        pull_strength *= radius_multiplier
+                        pull_strength = min(pull_strength, 150.0 * radius_multiplier)
+
+                        b.x += (dx / dist) * pull_strength * delta
+                        b.y += (dy / dist) * pull_strength * delta
+
+                    # Heat damage
+                    var max_dist = max(arena_width, arena_height) / 2.0
+                    if dist < max_dist:
+                        var damage_intensity = (max_dist - dist) / max_dist
+                        var heat_damage = 5.0 * pow(damage_intensity, 3) * heat_multiplier * delta
+                        if "hp" in b:
+                            b.hp -= heat_damage
+                            if b.hp <= 0:
+                                b.hp = 0
+                                b.alive = false
+
+    func check_winner(world, balls: Array):
+        var alive = []
+        for b in balls:
+            if b.alive and b.ball_type != "spectator":
+                alive.append(b)
+
+        if alive.size() == 0:
+            return "Draw"
+
+        var teams_alive = {}
+        for b in alive:
+            if "team" in b:
+                teams_alive[b.team] = true
+            else:
+                teams_alive[b.ball_type] = true
+
+        if teams_alive.size() == 1:
+            return teams_alive.keys()[0]
+
+        if alive.size() == 1:
+            return alive[0].ball_type
+
+        return null
+
 var GAME_MODES = {
 	"shifting_maze": ShiftingMazeMode.new(),
 
@@ -3980,5 +4100,6 @@ var GAME_MODES = {
     "moving_safe_zone": MovingSafeZoneMode.new(),
     "bounty_hunt": BountyHuntMode.new(),
     "earthquake": EarthquakeMode.new(),
-    "clone_chaos": CloneChaosMode.new()
+    "clone_chaos": CloneChaosMode.new(),
+    "supernova": SupernovaMode.new()
 }
