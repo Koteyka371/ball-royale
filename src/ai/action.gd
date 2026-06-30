@@ -87,6 +87,14 @@ func _attempt_damage(attacker, target) -> void:
 		if target.get_meta("reflect_shield_active"):
 			has_reflect = true
 
+	var rs_timer = -1.0
+	if "reflect_shield_timer" in target:
+		rs_timer = target.reflect_shield_timer
+	elif target.has_method("get_meta") and target.has_meta("reflect_shield_timer"):
+		rs_timer = target.get_meta("reflect_shield_timer")
+	if rs_timer != -1.0 and rs_timer <= 0.0 and has_reflect:
+		has_reflect = false
+
 	if has_ricochet:
 		if self.world != null and self.world.has_method("_deal_damage"):
 			self.world._deal_damage(target, attacker)
@@ -97,6 +105,7 @@ func _attempt_damage(attacker, target) -> void:
 		elif target.has_method("get_meta") and target.has_meta("reflect_shield_capacity"):
 			capacity = target.get_meta("reflect_shield_capacity")
 
+		var damage_to_reflect = min(capacity, original_damage)
 		capacity -= original_damage
 
 		if capacity <= 0:
@@ -118,7 +127,24 @@ func _attempt_damage(attacker, target) -> void:
 		if self.has_method("_spawn_directed_particles"):
 			self._spawn_directed_particles(target, attacker, "reflect_pulse")
 		if self.world != null and self.world.has_method("_deal_damage"):
+			var old_dmg = original_damage
+			if "damage" in attacker:
+				old_dmg = attacker.damage
+				attacker.damage = damage_to_reflect
 			self.world._deal_damage(target, attacker)
+			if "damage" in attacker:
+				attacker.damage = old_dmg
+
+		if capacity < 0:
+			var remainder_damage = -capacity
+			var old_dmg = original_damage
+			if "damage" in attacker:
+				old_dmg = attacker.damage
+				attacker.damage = remainder_damage
+			if self.world != null and self.world.has_method("_deal_damage"):
+				self.world._deal_damage(attacker, target)
+			if "damage" in attacker:
+				attacker.damage = old_dmg
 	else:
 		if self.world != null and self.world.has_method("_deal_damage"):
 			self.world._deal_damage(attacker, target)
@@ -256,6 +282,7 @@ func _attempt_damage(attacker, target) -> void:
 						elif next_entity.has_method("get_meta") and next_entity.has_meta("reflect_shield_capacity"):
 							capacity = next_entity.get_meta("reflect_shield_capacity")
 
+						var damage_to_reflect = min(capacity, current_damage)
 						capacity -= current_damage
 
 						if capacity <= 0:
@@ -277,7 +304,24 @@ func _attempt_damage(attacker, target) -> void:
 						if self.has_method("_spawn_directed_particles"):
 							self._spawn_directed_particles(next_entity, attacker, "reflect_pulse")
 						if self.world != null and self.world.has_method("_deal_damage"):
+							var old_dmg = current_damage
+							if "damage" in attacker:
+								old_dmg = attacker.damage
+								attacker.damage = damage_to_reflect
 							self.world._deal_damage(next_entity, attacker)
+							if "damage" in attacker:
+								attacker.damage = old_dmg
+
+						if capacity < 0:
+							var remainder_damage = -capacity
+							var old_dmg = current_damage
+							if "damage" in attacker:
+								old_dmg = attacker.damage
+								attacker.damage = remainder_damage
+							if self.world != null and self.world.has_method("_deal_damage"):
+								self.world._deal_damage(attacker, next_entity)
+							if "damage" in attacker:
+								attacker.damage = old_dmg
 					else:
 						if self.world != null and self.world.has_method("_deal_damage"):
 							self.world._deal_damage(attacker, next_entity)

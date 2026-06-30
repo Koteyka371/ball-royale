@@ -56,6 +56,9 @@ class Action:
 
         has_ricochet = getattr(target, "ricochet_barrier_timer", 0.0) > 0.0
         has_reflect_shield = getattr(target, "reflect_shield_active", False)
+        # Note: in Python tests reflect_shield_timer might not be set.
+        if hasattr(target, "reflect_shield_timer") and getattr(target, "reflect_shield_timer", 0.0) <= 0 and has_reflect_shield:
+            has_reflect_shield = False
 
         # Calculate base damage dealing
         if has_ricochet:
@@ -64,6 +67,10 @@ class Action:
         elif has_reflect_shield:
             # Shield consumes on use and reflects damage
             capacity = getattr(target, "reflect_shield_capacity", 50.0)
+
+            # Reflect only the damage that the shield can absorb
+            damage_to_reflect = min(capacity, original_damage)
+
             capacity -= original_damage
 
             if capacity <= 0:
@@ -77,7 +84,24 @@ class Action:
                 self._spawn_directed_particles(target, attacker, "reflect_pulse")
 
             if hasattr(self.world, "_deal_damage"):
+                # We need a way to deal partial damage.
+                # For now we'll just temporarily adjust attacker damage or similar,
+                # but it seems _deal_damage uses attacker.damage.
+
+                # We temporarily set the attacker's damage to the reflected amount
+                old_dmg = getattr(attacker, "damage", original_damage)
+                attacker.damage = damage_to_reflect
                 self.world._deal_damage(target, attacker)
+                attacker.damage = old_dmg
+
+            # If the shield broke, the remainder of the damage applies to the target
+            if capacity < 0:
+                remainder_damage = -capacity
+                old_dmg = getattr(attacker, "damage", original_damage)
+                attacker.damage = remainder_damage
+                if hasattr(self.world, "_deal_damage"):
+                    self.world._deal_damage(attacker, target)
+                attacker.damage = old_dmg
         else:
             if hasattr(self.world, "_deal_damage"):
                 self.world._deal_damage(attacker, target)
@@ -206,6 +230,7 @@ class Action:
                                 self.world._deal_damage(next_entity, attacker)
                         elif e_reflect:
                             capacity = getattr(next_entity, "reflect_shield_capacity", 50.0)
+                            damage_to_reflect = min(capacity, current_damage)
                             capacity -= current_damage
                             if capacity <= 0:
                                 next_entity.reflect_shield_active = False
@@ -216,7 +241,18 @@ class Action:
                             if hasattr(self, "_spawn_directed_particles"):
                                 self._spawn_directed_particles(next_entity, attacker, "reflect_pulse")
                             if hasattr(self.world, "_deal_damage"):
+                                old_dmg = getattr(attacker, "damage", current_damage)
+                                attacker.damage = damage_to_reflect
                                 self.world._deal_damage(next_entity, attacker)
+                                attacker.damage = old_dmg
+
+                            if capacity < 0:
+                                remainder_damage = -capacity
+                                old_dmg = getattr(attacker, "damage", current_damage)
+                                attacker.damage = remainder_damage
+                                if hasattr(self.world, "_deal_damage"):
+                                    self.world._deal_damage(attacker, next_entity)
+                                attacker.damage = old_dmg
                         else:
                             if hasattr(self.world, "_deal_damage"):
                                 self.world._deal_damage(attacker, next_entity)
@@ -819,6 +855,7 @@ class Action:
                                 # Take damage
                                 if getattr(self.ball, "reflect_shield_active", False):
                                     capacity = getattr(self.ball, "reflect_shield_capacity", 50.0)
+                                    damage_to_reflect = min(capacity, hazard.damage)
                                     capacity -= hazard.damage
                                     if capacity <= 0:
                                         self.ball.reflect_shield_active = False
@@ -831,10 +868,29 @@ class Action:
                                         for b in self.world.balls:
                                             if getattr(b, "id", None) == hazard.owner_id:
                                                 if hasattr(self.world, "_deal_damage"):
+                                                    old_dmg = getattr(hazard, "damage", hazard.damage)
+                                                    hazard.damage = damage_to_reflect
+                                                    # the target takes the reflected damage, _deal_damage args are (target, attacker)
+                                                    # wait, _deal_damage(self.ball, b) means b takes damage from self.ball.
+                                                    # We need b to take damage_to_reflect. We could set self.ball.damage temporarily.
+                                                    old_ball_dmg = getattr(self.ball, "damage", 10.0)
+                                                    self.ball.damage = damage_to_reflect
                                                     self.world._deal_damage(self.ball, b)
+                                                    self.ball.damage = old_ball_dmg
                                                 elif hasattr(b, "take_damage"):
-                                                    b.take_damage(hazard.damage)
+                                                    b.take_damage(damage_to_reflect)
                                                 break
+
+                                    if capacity < 0:
+                                        remainder_damage = -capacity
+                                        # take remainder damage
+                                        remainder_damage = remainder_damage * 2.0 if getattr(self.ball, "is_in_quicksand", False) else remainder_damage
+                                        if hasattr(self.ball, "take_damage"):
+                                            self.ball.take_damage(remainder_damage)
+                                        elif hasattr(self.ball, "hp"):
+                                            self.ball.hp -= remainder_damage
+                                            if self.ball.hp <= 0:
+                                                self.ball.alive = False
                                 else:
                                     if hasattr(self.ball, "take_damage"):
                                         self.ball.take_damage(hazard.damage * 2.0 if getattr(self.ball, "is_in_quicksand", False) else hazard.damage)
