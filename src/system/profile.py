@@ -32,6 +32,8 @@ class ProfileManager:
                     data["login_streak"] = 0
                 if "last_login_date" not in data:
                     data["last_login_date"] = ""
+                if "guild_name" not in data:
+                    data["guild_name"] = ""
                 return data
         except (FileNotFoundError, json.JSONDecodeError):
             return {
@@ -52,7 +54,8 @@ class ProfileManager:
                 "status_effects": [],
                 "nemeses": {},
                 "login_streak": 0,
-                "last_login_date": ""
+                "last_login_date": "",
+                "guild_name": ""
             }
 
     def add_quest(self, quest_description, reward):
@@ -145,7 +148,8 @@ class ProfileManager:
                 "status_effects": self.data.get("status_effects", []),
                 "nemeses": self.data.get("nemeses", {}),
                 "login_streak": self.data.get("login_streak", 0),
-                "last_login_date": self.data.get("last_login_date", "")
+                "last_login_date": self.data.get("last_login_date", ""),
+                "guild_name": self.data.get("guild_name", "")
             }
             self.save()
             lm = LeaderboardManager("leaderboard.json", profile_manager=self)

@@ -33,6 +33,21 @@ func _init(ball_ref, world_ref):
         if "damage" in self.ball:
             self.ball.damage += pm.data["bonuses"]["bonus_damage"] * 2
 
+    # Apply guild buffs
+    if pm.data.has("guild_name") and pm.data["guild_name"] != "":
+        var gm = load("res://src/system/guild.gd").new()
+        var guild_buffs = gm.get_guild_buffs(pm.data["guild_name"])
+        if guild_buffs.size() > 0:
+            if "max_hp" in self.ball:
+                var hp_percent = 1.0
+                if self.ball.max_hp > 0:
+                    hp_percent = float(self.ball.hp) / float(self.ball.max_hp)
+                self.ball.max_hp += guild_buffs.get("bonus_hp", 0) * 10
+                self.ball.hp = self.ball.max_hp * hp_percent
+            if "speed" in self.ball:
+                self.ball.speed += guild_buffs.get("bonus_speed", 0) * 5
+            if "damage" in self.ball:
+                self.ball.damage += guild_buffs.get("bonus_damage", 0) * 2
 
     # Apply prestige upgrades (from prestige tokens)
     var prestige_upgrades = pm.data.get("prestige_upgrades", {})
