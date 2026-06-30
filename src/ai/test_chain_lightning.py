@@ -39,11 +39,11 @@ class MockBall:
 def test_chain_bounce_logic():
     world = MockWorld()
     world.balls = [
-        MockBall(1, 0, 0, team="A"),
-        MockBall(2, 50, 0, team="B"),
-        MockBall(3, 100, 0, team="B"),
+        MockBall(1, 500, 500, team="A"),
+        MockBall(2, 550, 500, team="B"),
+        MockBall(3, 600, 500, team="B"),
     ]
-    world.arena = type('Arena', (), {'hazards': [MockHazard(1, 150, 0, 20.0, "breakable_wall", 0.0)]})()
+    world.arena = type('Arena', (), {'hazards': [MockHazard(1, 650, 500, 20.0, "breakable_wall", 0.0)]})()
 
     attacker = world.balls[0]
     target = world.balls[1]

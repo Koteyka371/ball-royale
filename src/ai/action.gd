@@ -161,35 +161,65 @@ func _attempt_damage(attacker, target) -> void:
 		var hazards = []
 		if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
 			hazards = self.world.arena.hazards
+			var items = []
+			if self.world != null and "arena" in self.world and self.world.arena != null:
+				if "items" in self.world.arena:
+					items = self.world.arena.items
+			var boosters = []
+			if self.world != null and "boosters" in self.world:
+				boosters = self.world.boosters
 
-		if enemies.size() > 0 or hazards.size() > 0:
-			var jump_count = 0
-			var has_orig_dmg = "damage" in attacker
-			var orig_dmg = 10.0
-			if has_orig_dmg:
-				orig_dmg = attacker.damage
+			if enemies.size() > 0 or hazards.size() > 0 or items.size() > 0 or boosters.size() > 0:
+				var jump_count = 0
+				var has_orig_dmg = "damage" in attacker
+				var orig_dmg = 10.0
+				if has_orig_dmg:
+					orig_dmg = attacker.damage
 
-			var current_target = target
-			var current_damage = orig_dmg * 1.5
-			var hit_entities = []
-			hit_entities.append(attacker)
-			hit_entities.append(target)
+				var current_target = target
+				var current_damage = orig_dmg * 1.5
+				var hit_entities = []
+				hit_entities.append(attacker)
+				hit_entities.append(target)
 
-			while jump_count < 2:
-				var nearby = []
-				for e in enemies:
-					if not hit_entities.has(e):
-						var dist_sq = pow(e.x - current_target.x, 2) + pow(e.y - current_target.y, 2)
-						if dist_sq < 22500:
-							nearby.append({"dist": dist_sq, "entity": e, "type": "enemy"})
-				for h in hazards:
-					if not hit_entities.has(h):
-						var is_active = true
-						if "active" in h: is_active = h.active
-						if is_active:
-							var dist_sq = pow(h.x - current_target.x, 2) + pow(h.y - current_target.y, 2)
+				while jump_count < 5:
+					var nearby = []
+					for e in enemies:
+						if not hit_entities.has(e):
+							var dist_sq = pow(e.x - current_target.x, 2) + pow(e.y - current_target.y, 2)
 							if dist_sq < 22500:
-								nearby.append({"dist": dist_sq, "entity": h, "type": "hazard"})
+								nearby.append({"dist": dist_sq, "entity": e, "type": "enemy"})
+					for h in hazards:
+						if not hit_entities.has(h):
+							var is_active = true
+							if "active" in h: is_active = h.active
+							if is_active:
+								var dist_sq = pow(h.x - current_target.x, 2) + pow(h.y - current_target.y, 2)
+								if dist_sq < 22500:
+									nearby.append({"dist": dist_sq, "entity": h, "type": "hazard"})
+					for b in boosters:
+						if not hit_entities.has(b):
+							var dist_sq = pow(b.x - current_target.x, 2) + pow(b.y - current_target.y, 2)
+							if dist_sq < 22500:
+								nearby.append({"dist": dist_sq, "entity": b, "type": "booster"})
+					for it in items:
+						if not hit_entities.has(it):
+							var dist_sq = pow(it.x - current_target.x, 2) + pow(it.y - current_target.y, 2)
+							if dist_sq < 22500:
+								nearby.append({"dist": dist_sq, "entity": it, "type": "item"})
+
+					if self.world != null and "arena" in self.world and self.world.arena != null:
+						var aw = 2000.0
+						var ah = 2000.0
+						if "width" in self.world.arena: aw = self.world.arena.width
+						if "height" in self.world.arena: ah = self.world.arena.height
+						var walls = [{"x": 0.0, "y": current_target.y, "name": "left_wall"}, {"x": aw, "y": current_target.y, "name": "right_wall"}, {"x": current_target.x, "y": 0.0, "name": "top_wall"}, {"x": current_target.x, "y": ah, "name": "bottom_wall"}]
+						for w in walls:
+							if not hit_entities.has(w["name"]):
+								var dist_sq = pow(w["x"] - current_target.x, 2) + pow(w["y"] - current_target.y, 2)
+								if dist_sq < 22500:
+									nearby.append({"dist": dist_sq, "entity": w, "type": "wall"})
+
 
 				if nearby.size() == 0:
 					break
@@ -251,21 +281,24 @@ func _attempt_damage(attacker, target) -> void:
 					else:
 						if self.world != null and self.world.has_method("_deal_damage"):
 							self.world._deal_damage(attacker, next_entity)
-				else:
-					if "hp" in next_entity:
-						next_entity.hp -= current_damage
-						if next_entity.hp <= 0:
-							if "active" in next_entity:
-								next_entity.active = false
+					elif e_type == "hazard" or e_type == "item" or e_type == "booster":
+						if "hp" in next_entity:
+							next_entity.hp -= current_damage
+							if next_entity.hp <= 0:
+								if "active" in next_entity:
+									next_entity.active = false
 
-				if self.has_method("_spawn_particles"):
-					self._spawn_particles(current_target.x, current_target.y, "lightning")
-					self._spawn_particles(next_entity.x, next_entity.y, "lightning")
+					if self.has_method("_spawn_particles"):
+						self._spawn_particles(current_target.x, current_target.y, "lightning")
+						self._spawn_particles(next_entity.x, next_entity.y, "lightning")
 
-				hit_entities.append(next_entity)
-				current_target = next_entity
-				current_damage *= 1.5
-				jump_count += 1
+					if e_type == "wall":
+						hit_entities.append(next_entity["name"])
+					else:
+						hit_entities.append(next_entity)
+					current_target = next_entity
+					current_damage *= 1.5
+					jump_count += 1
 
 			if has_orig_dmg:
 				if typeof(attacker) == TYPE_OBJECT and attacker.has_method("set"):
