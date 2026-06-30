@@ -504,16 +504,25 @@ class Action:
                 self.ball.speed = self.ball.base_speed * 2.0
 
         if hasattr(self.world, "arena") and getattr(self.world.arena, "is_night", None) is not None:
+            b_type = getattr(self.ball, "ball_type", "").lower()
             if self.world.arena.is_night:
-                if getattr(self.ball, "ball_type", "") == "vampire":
+                if b_type == "vampire":
                     self.ball.speed = self.ball.base_speed * 1.5
                     self.ball.damage = getattr(self.ball, "base_damage", 10.0) * 1.5
+                elif b_type in ["assassin", "phantom"]:
+                    self.ball.speed = self.ball.base_speed * 1.2
+                    self.ball.damage = getattr(self.ball, "base_damage", 10.0) * 1.5
+                    self.ball.has_stealth_drone = True
                 else:
                     self.ball.speed = self.ball.base_speed
                     self.ball.damage = getattr(self.ball, "base_damage", 10.0)
             else:
-                self.ball.speed = self.ball.base_speed
-                self.ball.damage = getattr(self.ball, "base_damage", 10.0) * 1.2
+                if b_type in ["paladin", "guardian"]:
+                    self.ball.speed = self.ball.base_speed * 1.2
+                    self.ball.damage = getattr(self.ball, "base_damage", 10.0) * 1.5
+                else:
+                    self.ball.speed = self.ball.base_speed
+                    self.ball.damage = getattr(self.ball, "base_damage", 10.0) * 1.2
         else:
             self.ball.speed = self.ball.base_speed
             self.ball.damage = getattr(self.ball, "base_damage", 10.0)
@@ -3908,6 +3917,11 @@ class Action:
                     else: self.ball.speed = base_s * 1.5
                     if stack_count >= 3: self.ball.damage = base_d * 1.5 * 1.2
                     else: self.ball.damage = base_d * 1.5
+                elif ball_type in ["assassin", "phantom"]:
+                    if stack_count >= 2: self.ball.speed = base_s * 1.2 * 1.1
+                    else: self.ball.speed = base_s * 1.2
+                    if stack_count >= 3: self.ball.damage = base_d * 1.5 * 1.2
+                    else: self.ball.damage = base_d * 1.5
                 else:
                     if stack_count < 3: self.ball.damage = base_d
             else:
@@ -3916,6 +3930,11 @@ class Action:
                 day_multiplier = 1.2 if not hasattr(self.world, "arena") or (hasattr(self.world.arena, "is_night") and not self.world.arena.is_night) else 1.0
                 if hasattr(self.world, "arena") and getattr(self.world.arena, "is_night", None) is None:
                     day_multiplier = 1.0 # fallback when is_night is not even a property
+
+                if hasattr(self.world, "arena") and getattr(self.world.arena, "is_night", None) is not None and ball_type in ["paladin", "guardian"]:
+                    day_multiplier = 1.5
+                    if stack_count >= 2: self.ball.speed = base_s * 1.2 * 1.1
+                    else: self.ball.speed = base_s * 1.2
 
                 if stack_count >= 3:
                     self.ball.damage = base_d * day_multiplier * 1.2
