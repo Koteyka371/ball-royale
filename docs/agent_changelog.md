@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-296] Stamina Potions — *2026-06-30 09:02:06 UTC*
+
+Add a new booster item that immediately replenishes a ball's stamina to 100% and grants brief infinite stamina.
+
+---
+
 ## [idea-264] Bumper Walls — *2026-06-30 09:02:01 UTC*
 
 Add bouncy bumper hazards to the arena that significantly reflect and accelerate balls on collision, creating chaotic pinball-like movement.
