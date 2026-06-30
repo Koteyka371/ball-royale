@@ -4496,13 +4496,21 @@ func _use_skill():
 
                 if dist_sq < pow(my_radius + e_radius + 20.0, 2):
                     var dmg = 20.0
-                    if "damage" in self.ball: dmg = self.ball.damage * 2.0
-                    elif self.ball.has_method("has_meta") and self.ball.has_meta("damage"): dmg = self.ball.get_meta("damage") * 2.0
+                    if "damage" in self.ball: dmg = self.ball.damage * 3.0
+                    elif self.ball.has_method("has_meta") and self.ball.has_meta("damage"): dmg = self.ball.get_meta("damage") * 3.0
 
                     if e.has_method("take_damage"):
                         e.take_damage(dmg)
                     elif "hp" in e:
                         e.hp -= dmg
+
+                    var kb_dx = e.x - self.ball.x
+                    var kb_dy = e.y - self.ball.y
+                    var kb_dist = sqrt(pow(kb_dx, 2) + pow(kb_dy, 2))
+                    if kb_dist > 0.0001:
+                        var kb_force = max(50.0, st * 1.5)
+                        e.x += (kb_dx / kb_dist) * kb_force
+                        e.y += (kb_dy / kb_dist) * kb_force
 
         elif skill_name == "dash":
             _spawn_skill_particles("dash")
