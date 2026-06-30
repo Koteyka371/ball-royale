@@ -1,0 +1,4 @@
+{
+  "title": "Eclipse Random Event",
+  "description": "A rare procedural event where an eclipse occurs regardless of the current phase in DayNightArena. During the eclipse, ALL balls lose their perception radius down to an extreme minimum (like 20 units) and global damage across the board is doubled, leading to chaotic close-quarter ambushes."
+}
