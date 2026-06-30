@@ -5264,7 +5264,7 @@
     },
     {
       "id": "idea-303",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decay Zones",
@@ -7607,6 +7607,142 @@
         "src/ai/asymmetric_maps.py",
         "src/ai/asymmetric_maps.gd",
         "tests/test_asymmetric_maps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-441",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Stamina Drain Field",
+      "description": "A hazard that constantly drains stamina of players standing inside it, discouraging camping.",
+      "allowed_paths": [
+        "src/ai/stamina_drain_field.py",
+        "src/ai/stamina_drain_field.gd",
+        "tests/test_stamina_drain_field.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-442",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Speed Burst Shoes",
+      "description": "An item that drastically increases movement speed for a short duration while leaving a trail of fire.",
+      "allowed_paths": [
+        "src/ai/speed_burst_shoes.py",
+        "src/ai/speed_burst_shoes.gd",
+        "tests/test_speed_burst_shoes.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-443",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Magnetize Weather Event",
+      "description": "Introduce a 'magnetic storm' weather event that randomly assigns positive or negative polarities to balls. Balls with opposite polarities are slowly pulled towards each other, while balls with the same polarity are pushed apart, disrupting formations and forcing repositioning.",
+      "allowed_paths": [
+        "src/ai/magnetize.py",
+        "src/ai/magnetize.gd",
+        "tests/test_magnetize.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-444",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Glitch Zone Hazard",
+      "description": "Add a new hazard called 'Glitch Zone'. When a ball enters this zone, its inputs are randomized or delayed for a short period, simulating a hacked or glitched state. This would add an element of unpredictability and require careful pathing to avoid.",
+      "allowed_paths": [
+        "src/arena/glitch_zone.py",
+        "src/arena/glitch_zone.gd",
+        "tests/test_glitch_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-445",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Crowd Chants",
+      "description": "Add specific text-based or audio-based crowd chants depending on the leading team, recognizing dominant strategies or unique ball types (e.g. chanting 'Assassin! Assassin!' when a stealth ball goes on a killing spree).",
+      "allowed_paths": [
+        "src/ai/dynamic_crowd_chants.py",
+        "src/ai/dynamic_crowd_chants.gd",
+        "tests/test_dynamic_crowd_chants.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-446",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Interactive Crowd Voting",
+      "description": "Allow spectators (or simulated crowd mechanics) to vote on events, such as which hazard spawns next or which player gets a buff during sudden death, making the arena feel more dynamic and engaged.",
+      "allowed_paths": [
+        "src/ai/interactive_crowd_voting.py",
+        "src/ai/interactive_crowd_voting.gd",
+        "tests/test_interactive_crowd_voting.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-447",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Hazards",
+      "description": "Hazards that exert a gravitational pull on all balls within a certain radius, sucking them in towards a central point that damages them.",
+      "allowed_paths": [
+        "src/arena/black_hole_hazards.py",
+        "src/arena/black_hole_hazards.gd",
+        "tests/test_black_hole_hazards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-448",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Jump Pads",
+      "description": "A new interactive tile type where stepping on it makes the ball invincible and untargetable for a short duration while it \"flies\" to a designated landing zone.",
+      "allowed_paths": [
+        "src/ai/jump_pads.py",
+        "src/ai/jump_pads.gd",
+        "tests/test_jump_pads.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

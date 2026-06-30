@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-303] Decay Zones — *2026-06-30 09:15:55 UTC*
+
+Certain areas of the map apply a temporary max HP debuff to entities inside them, making tanky balls vulnerable during late-game engagements.
+
+---
+
 ## [idea-258] Interactive Crowd System — *2026-06-30 09:02:18 UTC*
 
 Add a virtual crowd around the arena that reacts dynamically to epic kills, comebacks, and team wipes, modifying game audio and sometimes throwing small temporary buffs (like a single-use speed pad) into the arena to help losing balls.
