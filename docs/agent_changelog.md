@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-342] Weather Manipulation Buff — *2026-06-30 22:11:07 UTC*
+
+Introduce a rare 'Weather Control' booster. When picked up by a ball, it allows that ball to dictate the current weather for a set duration (e.g., 10 seconds), giving them a tactical advantage by choosing a weather condition that best fits their ball type (like summoning a thunderstorm when playing an elementalist).
+
+---
+
 ## [idea-349] Guild System — *2026-06-30 22:11:04 UTC*
 
 Players can form or join guilds, pooling resources to unlock shared guild buffs and participating in guild-vs-guild wars.
