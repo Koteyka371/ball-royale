@@ -5230,7 +5230,7 @@
     },
     {
       "id": "idea-301",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Flare Gun Skill",
@@ -8662,6 +8662,74 @@
         "src/ai/magnetic_fields_game.py",
         "src/ai/magnetic_fields_game.gd",
         "tests/test_magnetic_fields_game.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-503",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Portal Gun Item",
+      "description": "Introduce a rare 'Portal Gun' item that allows a player to shoot two linked portals onto the arena walls. Players can use these custom portals to quickly traverse the map, escape dangerous situations, or teleport projectiles to surprise enemies.",
+      "allowed_paths": [
+        "src/ai/portal_gun_item.py",
+        "src/ai/portal_gun_item.gd",
+        "tests/test_portal_gun_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-504",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Portal Collapse Event",
+      "description": "A new weather/arena event where unstable portals spawn randomly across the map. These portals occasionally collapse, releasing a shockwave that damages and knocks back nearby players, creating a dynamic and risky environment.",
+      "allowed_paths": [
+        "src/ai/portal_collapse.py",
+        "src/ai/portal_collapse.gd",
+        "tests/test_portal_collapse.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-505",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Season Catch-up Mechanics",
+      "description": "Introduce a 'Catch-up' multiplier that slightly increases the rate at which prestige or EXP is earned for players who join a season late (e.g., in the final week of a 30-day season). This helps new or returning players compete for the top 100 spots without feeling discouraged by an early insurmountable lead by others.",
+      "allowed_paths": [
+        "src/ai/season_catch_up_mechanics.py",
+        "src/ai/season_catch_up_mechanics.gd",
+        "tests/test_season_catch_up_mechanics.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-506",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Season-Themed Dynamic Arenas",
+      "description": "During specific seasons, the procedural arena generation includes seasonal hazards or aesthetics. For example, during a 'Winter' season, the arena could generate slippery ice patches and snowman decoys, while a 'Summer' season could feature sun-flare hazards and sand-trap zones. This would keep the gameplay visually and mechanically fresh.",
+      "allowed_paths": [
+        "src/arena/season_themed_dynamic_arenas.py",
+        "src/arena/season_themed_dynamic_arenas.gd",
+        "tests/test_season_themed_dynamic_arenas.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

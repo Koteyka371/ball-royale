@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-301] Flare Gun Skill — *2026-06-30 11:55:55 UTC*
+
+Add a new 'flare' active skill that certain ball types (like scout or a new 'spotter' class) can use during dark phases. The flare shoots to a target location and acts as a temporary light source, restoring vision in a large radius around it and revealing any hidden enemies in its area of effect for 5 seconds.
+
+---
+
 ## [idea-320] Hazard Trajectories & Moving Portals — *2026-06-30 11:48:46 UTC*
 
 Introduce dynamic portal hazards that move around the map using random trajectories, making it harder for players to predict when they might get sucked in and teleported to a dangerous situation.
