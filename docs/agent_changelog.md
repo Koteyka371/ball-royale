@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-213] Level Up Skill Tree — *2026-06-30 10:50:40 UTC*
+
+Introduce a mid-match level-up system where balls earn experience by dealing damage or capturing objectives, allowing them to choose perks or upgrade their base stats like speed, max HP, or damage dynamically.
+
+---
+
 ## [idea-274] Time Stop Skill — *2026-06-30 10:44:14 UTC*
 
 A rare ultimate skill that freezes all other balls and dynamic hazards for 2 seconds, allowing the user to reposition or secure critical hits without retaliation.

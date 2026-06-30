@@ -3731,7 +3731,7 @@
     },
     {
       "id": "idea-213",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Level Up Skill Tree",
@@ -8202,6 +8202,74 @@
         "src/ai/thunderstorm_conductivity.py",
         "src/ai/thunderstorm_conductivity.gd",
         "tests/test_thunderstorm_conductivity.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-476",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Hazard",
+      "description": "A rare procedural arena event that spawns a massive black hole in the center of the map. It gradually pulls all entities and items towards its center while constantly shrinking the safe zone.",
+      "allowed_paths": [
+        "src/arena/black_hole.py",
+        "src/arena/black_hole.gd",
+        "tests/test_black_hole.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-477",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Time Ultimate",
+      "description": "A support ultimate skill that records the positions, health, and statuses of all teammates over the last 3 seconds. When activated, it reverts all allies back to their state from 3 seconds ago, healing recent damage and placing them in a potentially better tactical position.",
+      "allowed_paths": [
+        "src/ai/reverse_time_ultimate.py",
+        "src/ai/reverse_time_ultimate.gd",
+        "tests/test_reverse_time_ultimate.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-478",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Ball Mechanic",
+      "description": "Introduce a deployable 'Decoy' that mimics the player's current ball type and health. AI enemies will occasionally lock onto the decoy if they fail a perception check, absorbing damage while giving the player an opportunity to escape or ambush.",
+      "allowed_paths": [
+        "src/ai/decoy_ball_mechanic.py",
+        "src/ai/decoy_ball_mechanic.gd",
+        "tests/test_decoy_ball_mechanic.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-479",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Magnetic Boots Cosmetic Modifier",
+      "description": "A cosmetic modifier 'Magnetic Boots' that reduces push-back from explosions and hazards by 50% but slightly reduces base movement speed, adding trade-offs to the loadout system.",
+      "allowed_paths": [
+        "src/ai/magnetic_boots_cosmetic.py",
+        "src/ai/magnetic_boots_cosmetic.gd",
+        "tests/test_magnetic_boots_cosmetic.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
