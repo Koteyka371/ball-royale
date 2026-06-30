@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-325] Shrinking Safe Zone with Moving Center — *2026-06-30 11:15:29 UTC*
+
+Make the safe zone center drift over time in a random direction, forcing players to constantly reposition as it shrinks rather than simply converging on a static point.
+
+---
+
 ## [idea-286] Invisibility Cloak Item — *2026-06-30 11:15:25 UTC*
 
 A new collectable item that drastically reduces the collector's radius for perception by other balls for a limited time.
