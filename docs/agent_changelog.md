@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-312] Decoy Powerup — *2026-06-30 15:43:19 UTC*
+
+Add a new powerup that allows a ball to spawn a visual clone of itself. The decoy will move around randomly or towards enemies to confuse them, while the real ball can reposition or attack safely.
+
+---
+
 ## [idea-331] Chain Lightning Enhancements — *2026-06-30 15:43:15 UTC*
 
 Improve chain lightning to bounce off walls or objects and increase damage with each jump.
