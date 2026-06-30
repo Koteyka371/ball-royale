@@ -409,3 +409,52 @@ def test_pitch_black_mode():
     mode.tick(world, balls, delta=0.016)
     assert b1.perception_radius == 250.0
     assert b2.perception_radius == 350.0
+
+
+def test_shifting_maze_setup():
+    from ai.game_modes import ShiftingMazeMode
+    mode = ShiftingMazeMode()
+    world = MockWorld()
+    setattr(world, "arena", type("Arena", (), {"width": 1000, "height": 1000})())
+
+    balls = [MockBall(1), MockBall(2)]
+    mode.setup(world, balls)
+
+    assert len(mode.walls) > 0
+    assert mode.maze_scale == 1.0
+
+def test_shifting_maze_tick_damage():
+    from ai.game_modes import ShiftingMazeMode
+    mode = ShiftingMazeMode()
+    world = MockWorld()
+    setattr(world, "arena", type("Arena", (), {"width": 1000, "height": 1000})())
+
+    # We will need to set up the ball so its take_damage works
+    ball = MockBall(1)
+    ball.x = 50.0
+    ball.y = 50.0
+    ball.radius = 20.0
+    # Override take_damage for mock
+    def take_damage(amt, src):
+        ball.hp -= amt
+        if ball.hp <= 0: ball.alive = False
+    ball.take_damage = take_damage
+
+    balls = [ball]
+    mode.setup(world, balls)
+
+    # Override walls to explicitly be on the ball
+    mode.walls = [{
+        "x": 40.0,
+        "y": 40.0,
+        "width": 100.0,
+        "height": 100.0,
+        "dx": 0.0,
+        "dy": 0.0
+    }]
+
+    initial_hp = balls[0].hp
+    mode.tick(world, balls, 1.0) # Tick 1 second
+
+    assert balls[0].hp < initial_hp
+    assert balls[0].hp == initial_hp - mode.wall_damage_per_second
