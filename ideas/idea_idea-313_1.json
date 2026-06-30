@@ -1,0 +1,4 @@
+{
+  "title": "Shrinking Safe Zone Arena Event",
+  "description": "An arena event that introduces a massive shrinking safe zone, similar to classic battle royale circles. Balls caught outside the zone will take continuous high damage over time and get their speed reduced by a 'storm' debuff. The safe zone slowly moves across the map, forcing AI balls to adapt their pathfinding and prioritize survival over combat."
+}

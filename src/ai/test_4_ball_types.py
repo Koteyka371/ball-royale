@@ -94,7 +94,7 @@ def test_tank_priorities():
     }
 
     action = layer.choose_action(perception, "calm")
-    assert action in ("defend", "group_attack", "collect_booster", "attack")
+    assert action in ("defend", "group_attack", "collect_booster", "attack", "ricochet_attack")
 
 def test_healer_priorities():
     world = MockWorld()

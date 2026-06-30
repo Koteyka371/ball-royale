@@ -1,0 +1,4 @@
+{
+  "title": "Reflective Energy Shields",
+  "description": "A new hazard/booster item that deploys a temporary, stationary energy shield wall. Balls can pass through it freely, but incoming attacks and hazard effects are reflected back towards the source. This adds a layer of positioning strategy for AI balls, allowing them to use the shield to redirect environmental damage or intercept enemy shots."
+}

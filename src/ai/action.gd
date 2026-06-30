@@ -578,6 +578,20 @@ func execute(strategy: String, delta: float):
             if "speed" in my_ball:
                 my_ball.speed = 0.01
 
+        var sl_timer = 0.0
+        if "slow_timer" in my_ball:
+            sl_timer = float(my_ball.slow_timer)
+        elif my_ball.has_method("get_meta") and my_ball.has_meta("slow_timer"):
+            sl_timer = my_ball.get_meta("slow_timer")
+
+        if sl_timer > 0.0:
+            if "speed" in my_ball:
+                my_ball.speed *= 0.5
+            if "slow_timer" in my_ball:
+                my_ball.slow_timer = sl_timer - delta
+            elif my_ball.has_method("set_meta"):
+                my_ball.set_meta("slow_timer", sl_timer - delta)
+
     # Handle minion decay
     var is_minion = false
     if self.ball.has_method("has_meta") and self.ball.has_meta("is_minion"):
@@ -1591,6 +1605,20 @@ func execute(strategy: String, delta: float):
                                 self.ball.hp -= hazard_damage
                                 if self.ball.hp <= 0:
                                     self.ball.alive = false
+                    elif hazard.kind == "expanding_slow_zone":
+                        var hazard_damage = hazard.damage * delta
+                        if self.ball.has_method("take_damage"):
+                            self.ball.take_damage(hazard_damage)
+                        elif "hp" in self.ball:
+                            self.ball.hp -= hazard_damage
+                            if self.ball.hp <= 0:
+                                self.ball.alive = false
+                        if randf() < 0.2:
+                            if "slow_timer" in self.ball:
+                                self.ball.slow_timer = 2.0
+                            elif self.ball.has_method("set_meta"):
+                                self.ball.set_meta("slow_timer", 2.0)
+                        continue
                     elif hazard.kind == "lightning_strike":
                         if not hazard.has_meta("hit_targets") or not hazard.get_meta("hit_targets"):
                             hazard.set_meta("hit_targets", true)

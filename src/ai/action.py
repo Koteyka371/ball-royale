@@ -469,6 +469,10 @@ class Action:
         if getattr(self.ball, "stutter_timer", 0.0) > 0.0:
             self.ball.speed = 0.01  # almost stopped to simulate pause
 
+        if getattr(self.ball, "slow_timer", 0.0) > 0.0:
+            self.ball.speed *= 0.5
+            self.ball.slow_timer -= delta
+
         if getattr(self.ball, "is_hologram", False):
             self.ball.hologram_timer -= delta
             if self.ball.hologram_timer <= 0:
@@ -1138,6 +1142,19 @@ class Action:
                                     if self.ball.hp <= 0:
                                         self.ball.alive = False
 
+                            continue
+                        elif hazard.kind == "expanding_slow_zone":
+                            hazard_damage = hazard.damage * delta
+                            if hasattr(self.ball, "take_damage"):
+                                self.ball.take_damage(hazard_damage)
+                            elif hasattr(self.ball, "hp"):
+                                self.ball.hp -= hazard_damage
+                                if self.ball.hp <= 0:
+                                    self.ball.alive = False
+
+                            import random as _rnd
+                            if _rnd.random() < 0.2:
+                                self.ball.slow_timer = 2.0
                             continue
                         elif hazard.kind == "lightning_strike":
                             if not getattr(hazard, "hit_targets", False):
@@ -3525,10 +3542,19 @@ class Action:
             # 1 extra type: HP regen
             self.ball.hp = min(getattr(self.ball, "hp", 100.0) + 2.0 * delta, getattr(self.ball, "max_hp", 100.0))
 
+
         # We don't want to make buffs permanent. So we just reset them if not in an aura
         is_dashing = getattr(self.ball, "is_dashing", False)
         stutter = getattr(self.ball, "stutter_timer", 0.0)
         is_night = hasattr(self.world, "arena") and getattr(self.world.arena, "is_night", False)
+
+        # Apply exhaustion
+        if getattr(self.ball, "stamina", 100.0) <= 0.0:
+            base_s *= 0.5
+            base_d *= 0.5
+
+        if getattr(self.ball, "slow_timer", 0.0) > 0.0:
+            base_s *= 0.5
 
         # If we are not dashing or stuttering or night vampire, we can control the speed
         if not is_dashing and stutter <= 0.0:
