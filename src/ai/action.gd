@@ -5143,6 +5143,74 @@ func _use_skill():
                 var smoke = ProceduralArena.Hazard.new(trap_id, self.ball.x, self.ball.y, 80.0, "smokescreen", 0.0)
                 smoke.set_meta("duration", 5.0)
                 self.world.arena.hazards.append(smoke)
+        elif skill_name == "flare":
+            var arena = null
+            if typeof(self.world) == TYPE_OBJECT and self.world.has_method("call"):
+                arena = self.world.call("get_arena")
+            elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("arena"):
+                arena = self.world["arena"]
+            elif "arena" in self.world:
+                arena = self.world.arena
+
+            if arena != null and "hazards" in arena:
+                var enemies = _get_enemies() if has_method("_get_enemies") else []
+                var target_x = 0.0
+                var target_y = 0.0
+                if "x" in self.ball: target_x = self.ball.x
+                if "y" in self.ball: target_y = self.ball.y
+
+                if enemies.size() > 0:
+                    var closest = enemies[0]
+                    var cx = 0.0
+                    var cy = 0.0
+                    if "x" in closest: cx = closest.x
+                    if "y" in closest: cy = closest.y
+                    var min_d_sq = pow(cx - target_x, 2) + pow(cy - target_y, 2)
+                    for e in enemies:
+                        var ex = 0.0
+                        var ey = 0.0
+                        if "x" in e: ex = e.x
+                        if "y" in e: ey = e.y
+                        var d_sq = pow(ex - target_x, 2) + pow(ey - target_y, 2)
+                        if d_sq < min_d_sq:
+                            closest = e
+                            min_d_sq = d_sq
+                    if "x" in closest: target_x = closest.x
+                    if "y" in closest: target_y = closest.y
+
+                var trap_id = arena.hazards.size() + int(randf() * 9000) + 1000
+
+                var flare_trap = null
+                if ClassDB.class_exists("Hazard"):
+                    flare_trap = ClassDB.instantiate("Hazard")
+                    flare_trap.id = trap_id
+                    flare_trap.x = target_x
+                    flare_trap.y = target_y
+                    flare_trap.radius = 400.0
+                    flare_trap.kind = "flare"
+                    flare_trap.damage = 0.0
+                else:
+                    flare_trap = {
+                        "id": trap_id,
+                        "x": target_x,
+                        "y": target_y,
+                        "radius": 400.0,
+                        "kind": "flare",
+                        "damage": 0.0
+                    }
+
+                if typeof(flare_trap) == TYPE_OBJECT and flare_trap.has_method("set_meta"):
+                    flare_trap.set_meta("duration", 5.0)
+                elif typeof(flare_trap) == TYPE_DICTIONARY:
+                    flare_trap["duration"] = 5.0
+
+                arena.hazards.append(flare_trap)
+
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("skill_timer", self.ball.get("skill_cooldown") if "skill_cooldown" in self.ball else 5.0)
+                elif "skill_timer" in self.ball:
+                    self.ball.skill_timer = self.ball.get("skill_cooldown") if "skill_cooldown" in self.ball else 5.0
+
         elif skill_name == "snipe":
             if "arena" in self.world and "hazards" in self.world.arena:
                 var trap_id = self.world.arena.hazards.size() + randi() % 10000

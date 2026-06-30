@@ -117,28 +117,55 @@ func scan() -> Dictionary:
                 return true
         return false
 
+    var active_flares = []
+    if arena != null and "hazards" in arena:
+        for h in arena.hazards:
+            if "kind" in h and h.kind == "flare":
+                var h_active = true
+                if "active" in h: h_active = h.active
+                elif h.has_method("has_meta") and h.has_meta("active"): h_active = h.get_meta("active")
+                if h_active:
+                    active_flares.append(h)
+
     data["enemies"] = []
     for e in entities.get("enemies", []):
         if intersects_smoke.call(e): continue
 
-        var e_has_stealth = false
-        if "has_stealth_drone" in e and e.has_stealth_drone:
-            e_has_stealth = true
-        elif e.has_method("get_meta") and e.has_meta("has_stealth_drone") and e.get_meta("has_stealth_drone"):
-            e_has_stealth = true
+        var revealed_by_flare = false
+        var ex = 0.0
+        if "x" in e: ex = e.x
+        var ey = 0.0
+        if "y" in e: ey = e.y
+        for f in active_flares:
+            var fx = 0.0
+            if "x" in f: fx = f.x
+            var fy = 0.0
+            if "y" in f: fy = f.y
+            var fr = 0.0
+            if "radius" in f: fr = f.radius
+            if pow(ex - fx, 2) + pow(ey - fy, 2) <= pow(fr, 2):
+                revealed_by_flare = true
+                break
 
-        var e_has_shadow = false
-        if e.has_method("get_meta") and e.has_meta("shadow_booster_timer"):
-            e_has_shadow = e.get_meta("shadow_booster_timer") > 0
-        elif "shadow_booster_timer" in e:
-            e_has_shadow = float(e.shadow_booster_timer) > 0
+        if not revealed_by_flare:
+            var e_has_stealth = false
+            if "has_stealth_drone" in e and e.has_stealth_drone:
+                e_has_stealth = true
+            elif e.has_method("get_meta") and e.has_meta("has_stealth_drone") and e.get_meta("has_stealth_drone"):
+                e_has_stealth = true
 
-        if e_has_stealth or e_has_shadow:
-            var dist = sqrt(pow(e.x - bx_curr, 2) + pow(e.y - by_curr, 2))
-            if e_has_shadow and dist > 30.0:
-                continue
-            elif e_has_stealth and dist > 80.0:
-                continue
+            var e_has_shadow = false
+            if e.has_method("get_meta") and e.has_meta("shadow_booster_timer"):
+                e_has_shadow = e.get_meta("shadow_booster_timer") > 0
+            elif "shadow_booster_timer" in e:
+                e_has_shadow = float(e.shadow_booster_timer) > 0
+
+            if e_has_stealth or e_has_shadow:
+                var dist = sqrt(pow(e.x - bx_curr, 2) + pow(e.y - by_curr, 2))
+                if e_has_shadow and dist > 30.0:
+                    continue
+                elif e_has_stealth and dist > 80.0:
+                    continue
 
         data["enemies"].append(e)
     data["allies"] = []

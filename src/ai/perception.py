@@ -19,7 +19,22 @@ class Perception:
         """
         perception_radius = getattr(self.ball, "perception_radius", 300.0)
 
+
         if hasattr(self.world, "arena") and getattr(self.world.arena, "is_night", None) is not None:
+            # Check for active flares in the arena
+            has_flare_vision = False
+            if hasattr(self.world.arena, "hazards"):
+                bx = getattr(self.ball, "x", 0)
+                by = getattr(self.ball, "y", 0)
+                for h in self.world.arena.hazards:
+                    if getattr(h, "kind", "") == "flare" and getattr(h, "active", True):
+                        fx = getattr(h, "x", 0)
+                        fy = getattr(h, "y", 0)
+                        fr = getattr(h, "radius", 0)
+                        if (bx - fx)**2 + (by - fy)**2 <= fr**2:
+                            has_flare_vision = True
+                            break
+
             has_night_vision = False
             if hasattr(self.ball, "traits") and "night_vision" in self.ball.traits:
                 has_night_vision = True
@@ -28,12 +43,13 @@ class Perception:
             if str(getattr(self.ball, "cosmetic", "")).lower().replace(" ", "_") == "night_vision_goggles":
                 has_night_vision = True
 
-            if self.world.arena.is_night:
+            if has_flare_vision:
+                perception_radius = max(perception_radius, 2000.0)
+            elif self.world.arena.is_night:
                 if not has_night_vision:
                     perception_radius = min(perception_radius, 100.0)
             else:
                 perception_radius = max(perception_radius, 2000.0)
-
 
         if hasattr(self.world, "arena") and getattr(self.world.arena, "is_foggy", None) is not None:
             if self.world.arena.is_foggy:
@@ -99,29 +115,47 @@ class Perception:
             return False
 
 
+
         # Apply stealth drone logic for enemies detecting us, or us detecting enemies
         filtered_enemies = []
+        active_flares = []
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            active_flares = [h for h in self.world.arena.hazards if getattr(h, "kind", "") == "flare" and getattr(h, "active", True)]
+
         for e in entities.get("enemies", []):
             if intersects_smoke(e):
                 continue
 
-            # If enemy has stealth drone, we can only see them if they are very close
-            e_has_stealth = getattr(e, "has_stealth_drone", False)
-            if not e_has_stealth and hasattr(e, "has_method") and e.has_method("get_meta") and e.has_meta("has_stealth_drone"):
-                e_has_stealth = e.get_meta("has_stealth_drone")
+            # Check if enemy is revealed by flare
+            revealed_by_flare = False
+            ex = getattr(e, "x", 0)
+            ey = getattr(e, "y", 0)
+            for f in active_flares:
+                fx = getattr(f, "x", 0)
+                fy = getattr(f, "y", 0)
+                fr = getattr(f, "radius", 0)
+                if (ex - fx)**2 + (ey - fy)**2 <= fr**2:
+                    revealed_by_flare = True
+                    break
 
-            e_has_shadow = False
-            if hasattr(e, "has_method") and e.has_method("get_meta") and e.has_meta("shadow_booster_timer"):
-                e_has_shadow = e.get_meta("shadow_booster_timer") > 0
-            elif hasattr(e, "shadow_booster_timer"):
-                e_has_shadow = e.shadow_booster_timer > 0
+            if not revealed_by_flare:
+                # If enemy has stealth drone, we can only see them if they are very close
+                e_has_stealth = getattr(e, "has_stealth_drone", False)
+                if not e_has_stealth and hasattr(e, "has_method") and e.has_method("get_meta") and e.has_meta("has_stealth_drone"):
+                    e_has_stealth = e.get_meta("has_stealth_drone")
 
-            if e_has_stealth or e_has_shadow:
-                dist = math.sqrt((getattr(e, "x", 0) - bx_curr)**2 + (getattr(e, "y", 0) - by_curr)**2)
-                if e_has_shadow and dist > 30.0:
-                    continue
-                elif e_has_stealth and dist > 80.0:
-                    continue
+                e_has_shadow = False
+                if hasattr(e, "has_method") and e.has_method("get_meta") and e.has_meta("shadow_booster_timer"):
+                    e_has_shadow = e.get_meta("shadow_booster_timer") > 0
+                elif hasattr(e, "shadow_booster_timer"):
+                    e_has_shadow = e.shadow_booster_timer > 0
+
+                if e_has_stealth or e_has_shadow:
+                    dist = math.sqrt((ex - bx_curr)**2 + (ey - by_curr)**2)
+                    if e_has_shadow and dist > 30.0:
+                        continue
+                    elif e_has_stealth and dist > 80.0:
+                        continue
             filtered_enemies.append(e)
 
         data["enemies"] = filtered_enemies
