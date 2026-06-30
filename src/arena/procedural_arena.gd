@@ -149,8 +149,10 @@ func generate():
         var kind = "spikes"
         if r < 0.25:
             kind = "lava"
-        elif r < 0.4:
+        elif r < 0.35:
             kind = "fake_booster"
+        elif r < 0.4:
+            kind = "decoy_item"
         elif r < 0.45:
             kind = "silence_booster"
         elif r < 0.5:
@@ -524,6 +526,9 @@ func update_zone(current_tick: int, delta: float) -> void:
                     h.damage = 0.0
                 elif randf() < 0.05:
                     h.kind = "shadow_booster"
+                    h.damage = 0.0
+                elif randf() < 0.05:
+                    h.kind = "decoy_item"
                     h.damage = 0.0
                 elif randf() < 0.05:
                     h.kind = "silence_booster"
