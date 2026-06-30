@@ -1504,6 +1504,32 @@ class Action:
         stun_taken = current_stun - start_stun
         silence_taken = current_silence - start_silence
 
+        # Chaos Link - Damage & Buff Sharing
+        chaos_target = getattr(self.ball, "chaos_link_target", None)
+        if chaos_target and getattr(chaos_target, "alive", True):
+            if damage_taken > 0 and not getattr(self.ball, "chaos_link_is_receiving", False):
+                chaos_target.chaos_link_is_receiving = True
+                half_damage = damage_taken * 0.5
+                if hasattr(chaos_target, "take_damage"):
+                    chaos_target.take_damage(half_damage)
+                elif hasattr(chaos_target, "hp"):
+                    chaos_target.hp -= half_damage
+                    if chaos_target.hp <= 0:
+                        chaos_target.alive = False
+
+                self.ball.hp = min(getattr(self.ball, "max_hp", 100.0), self.ball.hp + half_damage)
+                chaos_target.chaos_link_is_receiving = False
+
+            # Buff Sharing (e.g., speed, damage)
+            if hasattr(self.ball, "speed") and getattr(self.ball, "speed") > getattr(self.ball, "base_speed", 2.0):
+                if not getattr(self.ball, "chaos_link_buff_sharing", False):
+                    chaos_target.chaos_link_buff_sharing = True
+                    # Just calculate the speed difference and apply it directly as a temporary boost per tick, or set speed directly since action sets speed to base_speed at the beginning of execute
+                    # Wait, Action.execute resets speed to base_speed at the start of every tick!
+                    # So applying it directly here IS a temporary boost that wears off next tick, UNLESS the buff continues on the initiator.
+                    chaos_target.speed = getattr(self.ball, "speed")
+                    chaos_target.chaos_link_buff_sharing = False
+
         link_target = getattr(self.ball, "damage_link_target", None)
         if link_target and getattr(link_target, "alive", True):
             dist_sq = (self.ball.x - link_target.x)**2 + (self.ball.y - link_target.y)**2
@@ -3223,6 +3249,17 @@ class Action:
                         if mag > 0.0001:
                             self.ball.x += (out_x/mag) * 80.0
                             self.ball.y += (out_y/mag) * 80.0
+            elif skill_name == "chaos_link":
+                all_balls = getattr(self.world, "balls", [])
+                alive_balls = [b for b in all_balls if getattr(b, "alive", True) and b != self.ball]
+                if alive_balls:
+                    import random as _rnd
+                    target = _rnd.choice(alive_balls)
+                    self.ball.chaos_link_target = target
+                    self.ball.chaos_link_timer = 5.0
+                    target.chaos_link_target = self.ball
+                    if hasattr(self, "_spawn_directed_particles"):
+                        self._spawn_directed_particles(self.ball, target, "chaos_link")
             elif skill_name == "health_link":
                 allies = self._get_allies()
                 if allies:
@@ -3919,6 +3956,27 @@ class Action:
             self.ball.skill_timer -= delta
         if hasattr(self.ball, "attack_timer") and self.ball.attack_timer > 0:
             self.ball.attack_timer -= delta
+
+        if hasattr(self.ball, "chaos_link_timer") and self.ball.chaos_link_timer > 0:
+            self.ball.chaos_link_timer -= delta
+            target = getattr(self.ball, "chaos_link_target", None)
+
+            if target and getattr(target, "alive", True):
+                dist_sq = (target.x - self.ball.x)**2 + (target.y - self.ball.y)**2
+                if dist_sq > 90000:  # Distance > 300 breaks the link
+                    self.ball.chaos_link_timer = 0
+                    self.ball.chaos_link_target = None
+                    if getattr(target, "chaos_link_target", None) == self.ball:
+                        target.chaos_link_target = None
+                else:
+                    if self.ball.chaos_link_timer <= 0:
+                        if getattr(target, "chaos_link_target", None) == self.ball:
+                            target.chaos_link_target = None
+                        self.ball.chaos_link_target = None
+                        self.ball.chaos_link_timer = 0
+            else:
+                self.ball.chaos_link_timer = 0
+                self.ball.chaos_link_target = None
 
         if hasattr(self.ball, "health_link_timer") and self.ball.health_link_timer > 0:
             self.ball.health_link_timer -= delta

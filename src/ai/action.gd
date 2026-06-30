@@ -2183,6 +2183,55 @@ func execute(strategy: String, delta: float):
     var stun_taken = current_stun - start_stun
     var silence_taken = current_silence - start_silence
 
+    var chaos_target = null
+    if "chaos_link_target" in self.ball: chaos_target = self.ball.chaos_link_target
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("chaos_link_target"): chaos_target = self.ball.get_meta("chaos_link_target")
+
+    if chaos_target != null and ("alive" in chaos_target and chaos_target.alive):
+        var is_receiving = false
+        if "chaos_link_is_receiving" in self.ball: is_receiving = self.ball.chaos_link_is_receiving
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("chaos_link_is_receiving"): is_receiving = self.ball.get_meta("chaos_link_is_receiving")
+
+        if damage_taken > 0 and not is_receiving:
+            if "chaos_link_is_receiving" in chaos_target: chaos_target.chaos_link_is_receiving = true
+            elif chaos_target.has_method("set_meta"): chaos_target.set_meta("chaos_link_is_receiving", true)
+
+            var half_damage = damage_taken * 0.5
+            if chaos_target.has_method("take_damage"):
+                chaos_target.take_damage(half_damage)
+            elif "hp" in chaos_target:
+                chaos_target.hp -= half_damage
+                if chaos_target.hp <= 0:
+                    chaos_target.alive = false
+
+            var max_hp = 100.0
+            if "max_hp" in self.ball: max_hp = self.ball.max_hp
+            if "hp" in self.ball:
+                self.ball.hp = min(max_hp, self.ball.hp + half_damage)
+
+            if "chaos_link_is_receiving" in chaos_target: chaos_target.chaos_link_is_receiving = false
+            elif chaos_target.has_method("set_meta"): chaos_target.set_meta("chaos_link_is_receiving", false)
+
+        var c_speed = 2.0
+        var b_speed = 2.0
+        if "speed" in self.ball: c_speed = self.ball.speed
+        if "base_speed" in self.ball: b_speed = self.ball.base_speed
+
+        if c_speed > b_speed:
+            var buff_sharing = false
+            if "chaos_link_buff_sharing" in self.ball: buff_sharing = self.ball.chaos_link_buff_sharing
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("chaos_link_buff_sharing"): buff_sharing = self.ball.get_meta("chaos_link_buff_sharing")
+
+            if not buff_sharing:
+                if "chaos_link_buff_sharing" in chaos_target: chaos_target.chaos_link_buff_sharing = true
+                elif chaos_target.has_method("set_meta"): chaos_target.set_meta("chaos_link_buff_sharing", true)
+
+                if "speed" in chaos_target: chaos_target.speed = c_speed
+                elif chaos_target.has_method("set_meta"): chaos_target.set_meta("speed", c_speed)
+
+                if "chaos_link_buff_sharing" in chaos_target: chaos_target.chaos_link_buff_sharing = false
+                elif chaos_target.has_method("set_meta"): chaos_target.set_meta("chaos_link_buff_sharing", false)
+
     var link_target = null
     if "damage_link_target" in self.ball: link_target = self.ball.damage_link_target
     elif self.ball.has_method("get_meta") and self.ball.has_meta("damage_link_target"): link_target = self.ball.get_meta("damage_link_target")
@@ -5834,6 +5883,30 @@ func _spawn_skill_particles(skill_name: String = ""):
             particles.lifetime = 0.3 * (1.0 + (tier_multiplier - 1.0) * 0.2)
             particles.explosiveness = 0.5
             # Could orient opposite to velocity if we had it, but spread and low life is fine
+        elif skill_name == "chaos_link":
+            var all_balls = []
+            if self.world.has("balls"):
+                for b in self.world.balls:
+                    var is_alive = true
+                    if "alive" in b: is_alive = b.alive
+                    elif b.has_method("has_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+
+                    if is_alive and b != self.ball:
+                        all_balls.append(b)
+            if all_balls.size() > 0:
+                var target_cl = all_balls[randi() % all_balls.size()]
+                if target_cl != null:
+                    if self.ball.has_method("set_meta"):
+                        self.ball.set_meta("chaos_link_target", target_cl)
+                        self.ball.set_meta("chaos_link_timer", 5.0)
+                        target_cl.set_meta("chaos_link_target", self.ball)
+                    else:
+                        self.ball.chaos_link_target = target_cl
+                        self.ball.chaos_link_timer = 5.0
+                        target_cl.chaos_link_target = self.ball
+
+                    if self.has_method("_spawn_directed_particles"):
+                        self._spawn_directed_particles(self.ball, target_cl, "chaos_link")
         elif skill_name == "health_link":
             var allies_hl = []
             if self.world.has("balls"):
@@ -6355,6 +6428,51 @@ func _update_skill_timer(delta: float):
 
 
     var hl_timer = 0.0
+    var chaos_link_timer = 0.0
+    if "chaos_link_timer" in self.ball:
+        chaos_link_timer = self.ball.chaos_link_timer
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("chaos_link_timer"):
+        chaos_link_timer = self.ball.get_meta("chaos_link_timer")
+
+    if chaos_link_timer > 0:
+        chaos_link_timer -= delta
+        var target = null
+        if "chaos_link_target" in self.ball:
+            target = self.ball.chaos_link_target
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("chaos_link_target"):
+            target = self.ball.get_meta("chaos_link_target")
+
+        var alive = true
+        if target != null and "alive" in target: alive = target.alive
+        elif target != null and target.has_method("get_meta") and target.has_meta("alive"): alive = target.get_meta("alive")
+
+        if target != null and alive:
+            var dist_sq = pow(target.x - self.ball.x, 2) + pow(target.y - self.ball.y, 2)
+            if dist_sq > 90000:
+                if target.has_method("get_meta") and target.has_meta("chaos_link_target") and target.get_meta("chaos_link_target") == self.ball:
+                    target.set_meta("chaos_link_target", null)
+                elif "chaos_link_target" in target and target.chaos_link_target == self.ball:
+                    target.chaos_link_target = null
+                chaos_link_timer = 0.0
+                target = null
+            else:
+                if chaos_link_timer <= 0:
+                    if target.has_method("get_meta") and target.has_meta("chaos_link_target") and target.get_meta("chaos_link_target") == self.ball:
+                        target.set_meta("chaos_link_target", null)
+                    elif "chaos_link_target" in target and target.chaos_link_target == self.ball:
+                        target.chaos_link_target = null
+                    target = null
+        else:
+            chaos_link_timer = 0.0
+            target = null
+
+        if "chaos_link_timer" in self.ball:
+            self.ball.chaos_link_timer = chaos_link_timer
+            self.ball.chaos_link_target = target
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("chaos_link_timer", chaos_link_timer)
+            self.ball.set_meta("chaos_link_target", target)
+
     if "health_link_timer" in self.ball:
         hl_timer = self.ball.health_link_timer
     elif self.ball.has_method("get_meta") and self.ball.has_meta("health_link_timer"):
