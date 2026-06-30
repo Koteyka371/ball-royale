@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-330] Exploding Clones Skill Upgrade — *2026-06-30 12:44:20 UTC*
+
+An evolution for the clone skill where clones act as proximity mines. If an enemy touches a static clone, it explodes dealing area of effect damage.
+
+---
+
 ## [idea-313] Poison Cloud Area — *2026-06-30 12:44:15 UTC*
 
 A hazard that slowly expands and deals low damage to balls inside it, while occasionally debuffing their movement speed.
