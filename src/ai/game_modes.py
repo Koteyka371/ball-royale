@@ -236,7 +236,7 @@ class BattleRoyaleMode(GameMode):
         self.weather_timer += delta
         if self.weather_timer > 15.0:
             self.weather_timer = 0.0
-            weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm"]
+            weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave"]
             rnd = getattr(self, "random", __import__("random"))
             old_weather = self.weather
             self.weather = rnd.choice(weathers)
@@ -253,6 +253,7 @@ class BattleRoyaleMode(GameMode):
             world.arena.is_raining = (self.weather in ["rain", "thunderstorm"])
             world.arena.is_sandstorming = (self.weather == "sandstorm")
             world.arena.is_snowing = (self.weather == "snow")
+            world.arena.is_heatwave = (self.weather == "heatwave")
 
             if not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
@@ -289,6 +290,7 @@ class BattleRoyaleMode(GameMode):
 
         valid_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
         for b in valid_balls:
+            if getattr(b, "is_decoy", False): continue
             if not hasattr(b, "base_speed"):
                 b.base_speed = getattr(b, "speed", 100.0)
             if not hasattr(b, "base_damage"):
@@ -362,6 +364,32 @@ class BattleRoyaleMode(GameMode):
                     if hasattr(b, "hp"):
                         b.hp -= 20.0
                 b.attack_accuracy = 0.5
+            elif self.weather == "heatwave":
+                b.speed = b.base_speed * 0.9 # Slightly reduced max speed
+                b.damage = b.base_damage
+                b.dash_range_mult = 1.0
+                b.steering_mult = 1.0
+                if not hasattr(b, "mirage_timer"):
+                    b.mirage_timer = getattr(self, "random", __import__("random")).uniform(0.0, 5.0)
+                b.mirage_timer += delta
+                if b.mirage_timer >= 5.0:
+                    b.mirage_timer = 0.0
+                    if hasattr(world, "balls") and getattr(self, "random", __import__("random")).random() < 0.3:
+                        import copy
+                        decoy = copy.copy(b)
+                        decoy.id = getattr(world, "next_id", getattr(self, "random", __import__("random")).randint(10000, 99999))
+                        decoy.hp = getattr(b, "max_hp", 100) * 0.1
+                        decoy.max_hp = decoy.hp
+                        decoy.damage = 0
+                        decoy.speed = 0.0
+                        decoy.skill_timer = 9999.0
+                        decoy.attack_timer = 9999.0
+                        decoy.is_decoy = True
+                        decoy.decoy_timer = 3.0
+                        if hasattr(b, "SKILL") or getattr(b, "active_skill", None) is not None:
+                            decoy.SKILL = None
+                            decoy.active_skill = None
+                        world.balls.append(decoy)
 
         self.dark_phase_timer += delta
 
@@ -1001,7 +1029,7 @@ class WeatherChaosMode(GameMode):
         self.weather_timer += delta
         if self.weather_timer > 10.0:
             self.weather_timer = 0.0
-            weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm"]
+            weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave"]
             import random
             rnd = getattr(self, "random", random)
             old_weather = self.weather
@@ -1020,6 +1048,7 @@ class WeatherChaosMode(GameMode):
             world.arena.is_raining = (self.weather == "rain")
             world.arena.is_sandstorming = (self.weather == "sandstorm")
             world.arena.is_snowing = (self.weather == "snow")
+            world.arena.is_heatwave = (self.weather == "heatwave")
             world.arena.wind_dx = getattr(self, "wind_dx", 0.0) if self.weather == "wind" else 0.0
             world.arena.wind_dy = getattr(self, "wind_dy", 0.0) if self.weather == "wind" else 0.0
 
@@ -1059,6 +1088,7 @@ class WeatherChaosMode(GameMode):
         valid_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
 
         for b in valid_balls:
+            if getattr(b, "is_decoy", False): continue
             if not hasattr(b, "base_speed"):
                 b.base_speed = getattr(b, "speed", 100.0)
             if not hasattr(b, "base_damage"):
@@ -1177,6 +1207,32 @@ class WeatherChaosMode(GameMode):
                     # Struck by lightning!
                     b.hp = getattr(b, "hp", 100) - 20
                 b.attack_accuracy = 0.5
+            elif self.weather == "heatwave":
+                b.speed = b.base_speed * 0.9 # Slightly reduced max speed
+                b.damage = b.base_damage
+                b.dash_range_mult = 1.0
+                b.steering_mult = 1.0
+                if not hasattr(b, "mirage_timer"):
+                    b.mirage_timer = getattr(self, "random", __import__("random")).uniform(0.0, 5.0)
+                b.mirage_timer += delta
+                if b.mirage_timer >= 5.0:
+                    b.mirage_timer = 0.0
+                    if hasattr(world, "balls") and getattr(self, "random", __import__("random")).random() < 0.3:
+                        import copy
+                        decoy = copy.copy(b)
+                        decoy.id = getattr(world, "next_id", getattr(self, "random", __import__("random")).randint(10000, 99999))
+                        decoy.hp = getattr(b, "max_hp", 100) * 0.1
+                        decoy.max_hp = decoy.hp
+                        decoy.damage = 0
+                        decoy.speed = 0.0
+                        decoy.skill_timer = 9999.0
+                        decoy.attack_timer = 9999.0
+                        decoy.is_decoy = True
+                        decoy.decoy_timer = 3.0
+                        if hasattr(b, "SKILL") or getattr(b, "active_skill", None) is not None:
+                            decoy.SKILL = None
+                            decoy.active_skill = None
+                        world.balls.append(decoy)
 
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:

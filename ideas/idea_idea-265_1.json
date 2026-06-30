@@ -1,0 +1,4 @@
+{
+    "title": "Magnetize Weather Event",
+    "description": "Introduce a 'magnetic storm' weather event that randomly assigns positive or negative polarities to balls. Balls with opposite polarities are slowly pulled towards each other, while balls with the same polarity are pushed apart, disrupting formations and forcing repositioning."
+}
