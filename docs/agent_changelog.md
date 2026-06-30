@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-218] Revenge Nemesis Mechanic — *2026-06-30 11:15:21 UTC*
+
+If a ball eliminates the same enemy multiple times across different matches (tracked via persistent profile data), they become Nemeses. In future matches, the Nemesis enemy deals 20% bonus damage to their rival, but yields double points/charge level upon being defeated.
+
+---
+
 ## [idea-327] Clone Wars Game Mode — *2026-06-30 11:15:17 UTC*
 
 A new game mode where every ball starts with the 'clone' skill. The map gets filled with clones rapidly, making it a chaotic battle of finding the real enemy amidst a sea of static copies.
