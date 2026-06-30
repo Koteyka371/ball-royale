@@ -6030,7 +6030,7 @@
     },
     {
       "id": "idea-348",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Daily Login Rewards",
@@ -9274,6 +9274,40 @@
         "src/ai/chain_lightning_overload_mod.py",
         "src/ai/chain_lightning_overload_mod.gd",
         "tests/test_chain_lightning_overload_mod.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-537",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Neon Disco Mode",
+      "description": "A mode where floor panels light up with music rhythm, buffing or debuffing entities based on timing.",
+      "allowed_paths": [
+        "src/ai/neon_disco.py",
+        "src/ai/neon_disco.gd",
+        "tests/test_neon_disco.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-538",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Swap",
+      "description": "The arena periodically reverses the polarity of the center, pushing balls out and pulling hazards in.",
+      "allowed_paths": [
+        "src/ai/gravity_swap.py",
+        "src/ai/gravity_swap.gd",
+        "tests/test_gravity_swap.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

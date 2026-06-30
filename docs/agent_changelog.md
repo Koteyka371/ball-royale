@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-348] Daily Login Rewards — *2026-06-30 15:52:26 UTC*
+
+A streak-based daily login system granting prestige tokens, skill points, and exclusive cosmetics after consecutive logins.
+
+---
+
 ## [idea-350] Supernova Mode — *2026-06-30 15:49:53 UTC*
 
 An intense variation of Black Hole where instead of instantly dying, balls take rapidly scaling heat damage over time as they approach the center. Eventually, the supernova explodes, knocking all surviving balls to the edges of the arena.
