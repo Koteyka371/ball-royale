@@ -345,6 +345,25 @@ class ProceduralArena:
                             h.kind = "orbital_strike_active"
                             h.duration = 0.5
                             h.damage = 1000.0
+                elif getattr(h, "kind", "") == "lightning_strike":
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0:
+                            h.active = False
+                elif getattr(h, "kind", "") == "tornado":
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0:
+                            h.active = False
+                    if hasattr(h, "vx"):
+                        h.x += h.vx * delta
+                    if hasattr(h, "vy"):
+                        h.y += h.vy * delta
+
+                    if h.x < 0 or h.x > self.width:
+                        if hasattr(h, "vx"): h.vx *= -1
+                    if h.y < 0 or h.y > self.height:
+                        if hasattr(h, "vy"): h.vy *= -1
                 elif getattr(h, "kind", "") == "orbital_strike_active":
                     if hasattr(h, "duration"):
                         h.duration -= delta
