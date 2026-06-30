@@ -1478,16 +1478,33 @@ func execute(strategy: String, delta: float):
                         var d = sqrt(dx*dx + dy*dy)
                         if d < 0.0001: d = 0.0001
 
-                        var nx = dx / d
-                        var ny = dy / d
+                        var b_rad = 10.0
+                        if "radius" in self.ball:
+                            b_rad = self.ball.radius
 
-                        var angle = atan2(ny, nx) + randf_range(-0.5, 0.5)
-                        nx = cos(angle)
-                        ny = sin(angle)
+                        if d < (b_rad + hazard.radius):
+                            var nx = dx / d
+                            var ny = dy / d
 
-                        var bounce_strength = 600.0 * delta
-                        self.ball.x += nx * bounce_strength
-                        self.ball.y += ny * bounce_strength
+                            var angle = atan2(ny, nx) + randf_range(-0.5, 0.5)
+                            nx = cos(angle)
+                            ny = sin(angle)
+
+                            var bounce_strength = 600.0 * delta
+                            self.ball.x += nx * bounce_strength
+                            self.ball.y += ny * bounce_strength
+
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                # If it's a Dictionary with set_meta method from python mock or actual godot node, update both property and meta
+                                if "vx" in self.ball:
+                                    self.ball.vx = nx * 2000.0
+                                    self.ball.vy = ny * 2000.0
+                                else:
+                                    self.ball.set_meta("vx", nx * 2000.0)
+                                    self.ball.set_meta("vy", ny * 2000.0)
+                            elif "vx" in self.ball:
+                                self.ball.vx = nx * 2000.0
+                                self.ball.vy = ny * 2000.0
                         continue
                     elif hazard.kind == "healing_spring":
                         var heal_amount = abs(hazard.damage) * delta

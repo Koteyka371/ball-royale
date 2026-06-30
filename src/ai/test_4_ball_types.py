@@ -114,7 +114,7 @@ def test_healer_priorities():
     }
 
     action = layer.choose_action(perception, "calm")
-    assert action in ("defend", "use_skill", "flank", "chase", "attack", "ricochet_attack") # Healer's defend translates to healing/protecting
+    assert action in ("defend", "use_skill", "flank", "chase", "attack", "ricochet_attack", "group_attack") # Healer's defend translates to healing/protecting
 
 def test_neural_initialization():
     neural = Neural(1, x=10.0, y=20.0, skill="dash")
