@@ -4957,7 +4957,7 @@
     },
     {
       "id": "idea-285",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Fog of War Mode",
@@ -8066,6 +8066,142 @@
         "src/arena/gravitational_slingshot.py",
         "src/arena/gravitational_slingshot.gd",
         "tests/test_gravitational_slingshot.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-468",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Stealth Grass Hazmat Zones",
+      "description": "Introduce patches of tall grass into the procedural arena where balls become temporarily invisible to AI opponents (reducing their perception radius/threat level to 0), but take a minor constant damage over time. This creates a tradeoff between stealth and health.",
+      "allowed_paths": [
+        "src/ai/stealth_grass_hazmat_zones.py",
+        "src/ai/stealth_grass_hazmat_zones.gd",
+        "tests/test_stealth_grass_hazmat_zones.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-469",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reflective Energy Shields",
+      "description": "A new skill where a ball can activate an energy shield that doesn't just absorb damage, but reflects 50% of the incoming damage back to the attacker as a projectile for 3 seconds. Adds a skill-testing timing element against high burst-damage enemies.",
+      "allowed_paths": [
+        "src/ai/reflective_energy_shields.py",
+        "src/ai/reflective_energy_shields.gd",
+        "tests/test_reflective_energy_shields.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-470",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Predictor Item",
+      "description": "An equippable module or booster that reveals the next weather event and its duration before it happens, giving players a strategic advantage to position themselves safely.",
+      "allowed_paths": [
+        "src/ai/predictor_item.py",
+        "src/ai/predictor_item.gd",
+        "tests/test_predictor_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-471",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Explosion Fragmentation",
+      "description": "When a Trickster decoy explodes, it sends out visual fragmentation projectiles that can bounce off walls. They deal no damage but cause temporary slow/stuttering and apply minor visual noise.",
+      "allowed_paths": [
+        "src/ai/decoy_explosion_fragmentation.py",
+        "src/ai/decoy_explosion_fragmentation.gd",
+        "tests/test_decoy_explosion_fragmentation.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-472",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Time Loop Ability",
+      "description": "Create a rare, high-cost active ability for a specific ball type (like the Trickster or a new Time Mage) that allows the ball to instantly return to its location, health, and status from 3 seconds ago.",
+      "allowed_paths": [
+        "src/ai/time_loop_ability.py",
+        "src/ai/time_loop_ability.gd",
+        "tests/test_time_loop_ability.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-473",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Mirror Positions",
+      "description": "Trickster's 'deploy_decoy' skill now creates two decoys simultaneously that symmetrically orbit the caster or mirror the caster's movements, making it significantly harder for the AI to track the real Trickster.",
+      "allowed_paths": [
+        "src/ai/decoy_mirror_positions.py",
+        "src/ai/decoy_mirror_positions.gd",
+        "tests/test_decoy_mirror_positions.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-474",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Map Hazards Mode",
+      "description": "Introduce a game mode where map hazards, such as spikes, fire, and ice traps, dynamically spawn, move, or change severity as the match progresses, forcing players to adapt not just to the safe zone but also to the ever-changing terrain.",
+      "allowed_paths": [
+        "src/arena/dynamic_map_hazards.py",
+        "src/arena/dynamic_map_hazards.gd",
+        "tests/test_dynamic_map_hazards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-475",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Thunderstorm Conductivity",
+      "description": "During thunderstorms, metal-based or highly armored balls attract lightning strikes more frequently but gain a temporary speed boost or electric aura when hit.",
+      "allowed_paths": [
+        "src/ai/thunderstorm_conductivity.py",
+        "src/ai/thunderstorm_conductivity.gd",
+        "tests/test_thunderstorm_conductivity.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

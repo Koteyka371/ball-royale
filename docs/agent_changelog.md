@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-285] Fog of War Mode — *2026-06-30 10:44:09 UTC*
+
+Similar to vision reduced mode but a completely dark screen with only a cone of light matching the AI's actual perception radius.
+
+---
+
 ## [idea-314] Decoy Illusion Trap — *2026-06-30 10:42:11 UTC*
 
 Trickster's decoys can occasionally apply a visual distortion 'illusion' effect to enemies near them upon expiration, randomizing their perception so they momentarily see allies as enemies, leading to friendly fire incidents.
