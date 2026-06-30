@@ -471,3 +471,49 @@ def test_clone_skill():
         assert clone.hp == 100
 
     assert ball.skill_timer == 5.0
+def test_elemental_burst_rain():
+    from src.ai.action import Action
+    class MockArena:
+        def __init__(self):
+            self.is_raining = True
+
+    class MockWorld:
+        pass
+
+    class MockBall:
+        def __init__(self, id, ball_type="warrior", alive=True):
+            self.id = id
+            self.ball_type = ball_type
+            self.BALL_TYPE = ball_type
+            self.alive = alive
+            self.hp = 100
+            self.damage = 10.0
+            self.speed = 100.0
+            self.skill_timer = 0.0
+            self.team = "A"
+
+    world = MockWorld()
+    world.arena = MockArena()
+
+    ball = MockBall(1, "elementalist")
+    ball.skill = "elemental_burst"
+    ball.active_skill = "elemental_burst"
+    ball.x = 0
+    ball.y = 0
+    ball.team = "A"
+
+    enemy = MockBall(2, "warrior")
+    enemy.x = 50
+    enemy.y = 0
+    enemy.team = "B"
+    enemy.take_damage = lambda dmg: setattr(enemy, "hp", getattr(enemy, "hp", 100) - dmg)
+
+    world.balls = [ball, enemy]
+
+    action = Action(ball, world)
+    action._get_enemies = lambda: [enemy]
+    action._use_skill()
+
+    # Check if stun was applied
+    assert getattr(enemy, "is_stunned", False) == True
+    assert getattr(enemy, "stun_timer", 0.0) >= 2.0

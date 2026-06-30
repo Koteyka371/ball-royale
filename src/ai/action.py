@@ -3215,6 +3215,10 @@ class Action:
                 burst_radius = 80 * chain_bonus
                 base_burst_dmg = 20 * chain_bonus
 
+                is_raining = hasattr(self.world, "arena") and getattr(self.world.arena, "is_raining", False)
+                if is_raining:
+                    burst_radius *= 1.5
+
                 if enemies:
                     for enemy in enemies:
                         dx = enemy.x - self.ball.x
@@ -3223,6 +3227,10 @@ class Action:
                         if dist <= burst_radius:
                             if hasattr(enemy, "take_damage"):
                                 enemy.take_damage(base_burst_dmg)
+                            if is_raining:
+                                if not getattr(enemy, "is_stunned", False):
+                                    enemy.is_stunned = True
+                                    enemy.stun_timer = max(getattr(enemy, "stun_timer", 0.0), 2.0)
             elif skill_name == "silence_aura":
                 enemies = self._get_enemies()
                 if enemies:

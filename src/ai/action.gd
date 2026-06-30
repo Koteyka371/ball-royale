@@ -5071,12 +5071,45 @@ func _use_skill():
             var burst_radius = 80.0 * chain_bonus
             var base_burst_dmg = 20.0 * chain_bonus
 
+            var is_raining = false
+            if "arena" in self.world and self.world.arena != null:
+                if "is_raining" in self.world.arena:
+                    is_raining = self.world.arena.is_raining
+                elif self.world.arena.has_method("has_meta") and self.world.arena.has_meta("is_raining"):
+                    is_raining = self.world.arena.get_meta("is_raining")
+
+            if is_raining:
+                burst_radius *= 1.5
+
             for enemy in enemies:
                 var dx = enemy.x - self.ball.x
                 var dy = enemy.y - self.ball.y
                 if sqrt(dx*dx + dy*dy) <= burst_radius:
                     if enemy.has_method("take_damage"):
                         enemy.take_damage(base_burst_dmg)
+                    if is_raining:
+                        var is_stunned = false
+                        if "is_stunned" in enemy:
+                            is_stunned = enemy.is_stunned
+                        elif enemy.has_method("has_meta") and enemy.has_meta("is_stunned"):
+                            is_stunned = enemy.get_meta("is_stunned")
+
+                        if not is_stunned:
+                            if "is_stunned" in enemy:
+                                enemy.is_stunned = true
+                            elif enemy.has_method("set_meta"):
+                                enemy.set_meta("is_stunned", true)
+
+                            var current_stun_timer = 0.0
+                            if "stun_timer" in enemy:
+                                current_stun_timer = enemy.stun_timer
+                            elif enemy.has_method("has_meta") and enemy.has_meta("stun_timer"):
+                                current_stun_timer = enemy.get_meta("stun_timer")
+
+                            if "stun_timer" in enemy:
+                                enemy.stun_timer = max(current_stun_timer, 2.0)
+                            elif enemy.has_method("set_meta"):
+                                enemy.set_meta("stun_timer", max(current_stun_timer, 2.0))
         elif skill_name == "silence_aura":
             var enemies = _get_enemies() if has_method("_get_enemies") else []
             if enemies.size() == 0 and "balls" in self.world:
