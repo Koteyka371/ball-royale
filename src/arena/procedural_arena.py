@@ -428,6 +428,9 @@ class ProceduralArena:
                     kind = "stealth_drone_item"
                     damage = 0.0
                 elif random.random() < 0.05:
+                    kind = "blackout_immunity_item"
+                    damage = 0.0
+                elif random.random() < 0.05:
                     kind = "silence_booster"
                     damage = 0.0
                 elif random.random() < 0.10:

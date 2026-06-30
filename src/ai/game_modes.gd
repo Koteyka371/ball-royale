@@ -538,6 +538,15 @@ class BattleRoyaleMode extends GameMode:
                     if b.has_method("set_meta"):
                         b.set_meta("base_perception_radius", current_perc)
 
+                    var has_immunity = false
+                    if b.has_method("get_meta") and b.has_meta("has_blackout_immunity"):
+                        has_immunity = b.get_meta("has_blackout_immunity")
+                    elif "has_blackout_immunity" in b:
+                        has_immunity = b.has_blackout_immunity
+
+                    if has_immunity:
+                        continue
+
                     if b.ball_type == "scout":
                         b.perception_radius = 120.0
                     else:

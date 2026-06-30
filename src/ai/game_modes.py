@@ -402,6 +402,8 @@ class BattleRoyaleMode(GameMode):
             for b in balls:
                 if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                     b.base_perception_radius = getattr(b, "perception_radius", 250.0)
+                    if getattr(b, "has_blackout_immunity", False):
+                        continue
                     if b.ball_type == "scout":
                         b.perception_radius = 120.0
                     else:

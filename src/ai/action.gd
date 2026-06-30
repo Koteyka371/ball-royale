@@ -3805,6 +3805,25 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "blackout_immunity_item":
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("has_blackout_immunity", true)
+                    var current_base = 250.0
+                    if self.ball.has_meta("base_perception_radius"):
+                        current_base = float(self.ball.get_meta("base_perception_radius"))
+                    self.ball.set_meta("base_perception_radius", current_base + 300.0)
+                    self.ball.perception_radius = current_base + 300.0
+                elif "has_blackout_immunity" in self.ball:
+                    self.ball.has_blackout_immunity = true
+                    var current_base = 250.0
+                    if "base_perception_radius" in self.ball:
+                        current_base = float(self.ball.base_perception_radius)
+                    self.ball.base_perception_radius = current_base + 300.0
+                    self.ball.perception_radius = self.ball.base_perception_radius
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "silence_booster":
                 if self.world != null and "balls" in self.world:
                     for other_ball in self.world.balls:

@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Trap Items",
+  "description": "Add procedural items that look exactly like high-value items (like healing_spring or blackout_immunity_item) but explode or apply a massive silence/slow debuff when collected."
+}
