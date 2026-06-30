@@ -6047,7 +6047,7 @@
     },
     {
       "id": "idea-349",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Guild System",
@@ -9614,6 +9614,40 @@
         "src/ai/black_hole_final_phase.py",
         "src/ai/black_hole_final_phase.gd",
         "tests/test_black_hole_final_phase.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-557",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Generator Hazard",
+      "description": "A new procedural hazard that pulls nearby balls towards its center, slowing them down and dealing damage over time.",
+      "allowed_paths": [
+        "src/arena/black_hole_generator.py",
+        "src/arena/black_hole_generator.gd",
+        "tests/test_black_hole_generator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-558",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Wall-Jump Skill",
+      "description": "Allow specific ball types to bounce off walls with increased velocity to perform surprise attacks.",
+      "allowed_paths": [
+        "src/ai/wall_jump_skill.py",
+        "src/ai/wall_jump_skill.gd",
+        "tests/test_wall_jump_skill.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

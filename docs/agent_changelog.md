@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-349] Guild System — *2026-06-30 22:11:04 UTC*
+
+Players can form or join guilds, pooling resources to unlock shared guild buffs and participating in guild-vs-guild wars.
+
+---
+
 ## [idea-273] Weaponized Hazards — *2026-06-30 22:08:10 UTC*
 
 Allow specific ball types, like Elementalists or Brawlers, to grab and throw map hazards (e.g. lava rocks, spike traps) at enemies for burst damage.
