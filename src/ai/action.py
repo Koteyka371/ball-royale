@@ -143,7 +143,7 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
-
+        import random
         if getattr(self.ball, "silence_timer", 0.0) > 0:
             self.ball.silence_timer -= delta
             if self.ball.silence_timer < 0:
@@ -1063,6 +1063,7 @@ class Action:
                             ny = dy / dist
 
                             # Add random chaos to direction (small angle variation)
+                            import random
                             angle = math.atan2(ny, nx) + random.uniform(-0.5, 0.5)
                             nx = math.cos(angle)
                             ny = math.sin(angle)
