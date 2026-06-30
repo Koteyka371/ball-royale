@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-290] Kamikaze Drone Variant — *2026-06-30 16:28:54 UTC*
+
+An aggressive drone variant that homes in on the nearest enemy and explodes, dealing moderate AoE damage but destroying the drone.
+
+---
+
 ## [idea-332] Prestige Token Shop — *2026-06-30 16:22:32 UTC*
 
 A dedicated UI shop where players can spend prestige tokens not just on permanent minor stats, but also on unique run mutators, special starting artifacts, and unlocking rare AI ball archetypes (like a Time-Mage ball).

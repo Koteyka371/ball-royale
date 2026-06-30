@@ -5042,7 +5042,7 @@
     },
     {
       "id": "idea-290",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Kamikaze Drone Variant",
@@ -9461,6 +9461,40 @@
         "src/ai/lunar_eclipse.py",
         "src/ai/lunar_eclipse.gd",
         "tests/test_lunar_eclipse.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-548",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Random Boss Invasions during Late Game",
+      "description": "If a match extends beyond a certain time limit, a massive, unkillable Boss entity spawns at the center of the arena. It slowly expands an instant-kill zone or shoots devastating projectiles in random directions. This would force remaining balls to scramble, breaking defensive stalemates and creating high-stakes, chaotic finales.",
+      "allowed_paths": [
+        "src/ai/random_boss_invasions_during_late_game.py",
+        "src/ai/random_boss_invasions_during_late_game.gd",
+        "tests/test_random_boss_invasions_during_late_game.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-549",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Cursed Relic Modifier Zones",
+      "description": "Introduce dynamic zones on the map that grant massive buffs (like +200% speed or +150% damage) but come with severe curses (e.g., losing 5% HP per second or inverted steering). Players who intentionally enter these zones could make clutch plays if they manage the risk correctly, adding strategic depth to positional gameplay.",
+      "allowed_paths": [
+        "src/ai/cursed_relic_zones.py",
+        "src/ai/cursed_relic_zones.gd",
+        "tests/test_cursed_relic_zones.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
