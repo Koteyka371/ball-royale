@@ -1,4 +1,5 @@
 import json
+import datetime
 import base64
 import zlib
 from system.leaderboard import LeaderboardManager
@@ -27,6 +28,10 @@ class ProfileManager:
                     data["status_effects"] = []
                 if "nemeses" not in data:
                     data["nemeses"] = {}
+                if "login_streak" not in data:
+                    data["login_streak"] = 0
+                if "last_login_date" not in data:
+                    data["last_login_date"] = ""
                 return data
         except (FileNotFoundError, json.JSONDecodeError):
             return {
@@ -45,7 +50,9 @@ class ProfileManager:
                 "cosmetics": [],
                 "titles": [],
                 "status_effects": [],
-                "nemeses": {}
+                "nemeses": {},
+                "login_streak": 0,
+                "last_login_date": ""
             }
 
     def add_quest(self, quest_description, reward):
@@ -128,7 +135,9 @@ class ProfileManager:
                 "cosmetics": self.data.get("cosmetics", []),
                 "titles": self.data.get("titles", []),
                 "status_effects": self.data.get("status_effects", []),
-                "nemeses": self.data.get("nemeses", {})
+                "nemeses": self.data.get("nemeses", {}),
+                "login_streak": self.data.get("login_streak", 0),
+                "last_login_date": self.data.get("last_login_date", "")
             }
             self.save()
             lm = LeaderboardManager("leaderboard.json", profile_manager=self)
@@ -251,3 +260,41 @@ class ProfileManager:
         if "nemeses" not in self.data:
             return False
         return self.data["nemeses"].get(killer_type, {}).get(victim_type, 0) >= 2
+
+    def process_daily_login(self, current_date_str: str):
+        last_date_str = self.data.get("last_login_date", "")
+        if last_date_str == current_date_str:
+            return {}
+
+        streak = self.data.get("login_streak", 0)
+
+        try:
+            current_date = datetime.date.fromisoformat(current_date_str)
+            if last_date_str:
+                last_date = datetime.date.fromisoformat(last_date_str)
+                if (current_date - last_date).days == 1:
+                    streak += 1
+                else:
+                    streak = 1
+            else:
+                streak = 1
+        except Exception:
+            streak = 1
+
+        self.data["login_streak"] = streak
+        self.data["last_login_date"] = current_date_str
+
+        # Rewards
+        sp_reward = 10 * min(streak, 10)
+        self.add_skill_points(sp_reward)
+        rewards = {"skill_points": sp_reward}
+
+        if streak > 0 and streak % 7 == 0:
+            self.data["prestige_tokens"] = self.data.get("prestige_tokens", 0) + 1
+            rewards["prestige_tokens"] = 1
+            cosmetic_name = f"streak_master_{streak}"
+            self.add_cosmetic(cosmetic_name)
+            rewards["cosmetics"] = cosmetic_name
+
+        self.save()
+        return rewards

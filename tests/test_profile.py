@@ -73,6 +73,53 @@ def test_prestige_tokens():
     if os.path.exists("test_profile_tokens.json"):
         os.remove("test_profile_tokens.json")
 
+
+def test_daily_login():
+    import os
+    if os.path.exists("test_profile_daily.json"):
+        os.remove("test_profile_daily.json")
+
+    pm = ProfileManager("test_profile_daily.json")
+
+    # Day 1: New login
+    rewards = pm.process_daily_login("2023-10-01")
+    assert rewards["skill_points"] == 10
+    assert pm.data["login_streak"] == 1
+    assert pm.data["skill_points"] == 10
+
+    # Same day login: Should do nothing
+    rewards2 = pm.process_daily_login("2023-10-01")
+    assert rewards2 == {}
+    assert pm.data["login_streak"] == 1
+    assert pm.data["skill_points"] == 10
+
+    # Day 2: Consecutive login
+    rewards3 = pm.process_daily_login("2023-10-02")
+    assert rewards3["skill_points"] == 20
+    assert pm.data["login_streak"] == 2
+    assert pm.data["skill_points"] == 30
+
+    # Day 4: Skip a day, streak resets
+    rewards4 = pm.process_daily_login("2023-10-04")
+    assert rewards4["skill_points"] == 10
+    assert pm.data["login_streak"] == 1
+
+    # Force streak to 6 and simulate Day 5 login to hit 7
+    pm.data["login_streak"] = 6
+    pm.data["last_login_date"] = "2023-10-05"
+    rewards5 = pm.process_daily_login("2023-10-06")
+
+    assert pm.data["login_streak"] == 7
+    assert rewards5["skill_points"] == 70
+    assert rewards5["prestige_tokens"] == 1
+    assert rewards5["cosmetics"] == "streak_master_7"
+    assert pm.data["prestige_tokens"] == 1
+    assert "streak_master_7" in pm.data["cosmetics"]
+
+    if os.path.exists("test_profile_daily.json"):
+        os.remove("test_profile_daily.json")
+
 if __name__ == "__main__":
     test_profile()
     test_prestige_tokens()
+    test_daily_login()
