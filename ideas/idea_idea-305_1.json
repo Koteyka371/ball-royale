@@ -1,0 +1,4 @@
+{
+    "title": "Stealth Grass Hazmat Zones",
+    "description": "Introduce patches of tall grass into the procedural arena where balls become temporarily invisible to AI opponents (reducing their perception radius/threat level to 0), but take a minor constant damage over time. This creates a tradeoff between stealth and health."
+}
