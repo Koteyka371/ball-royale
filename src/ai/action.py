@@ -1387,11 +1387,22 @@ class Action:
 
             # Stamina regen/drain
             dist = math.sqrt(dx*dx + dy*dy)
+            arena = getattr(self.world, 'arena', None)
+            is_heatwave = getattr(arena, 'is_heatwave', False) if arena else False
+            is_snowing = getattr(arena, 'is_snowing', False) if arena else False
+
+            drain_mult = 2.0 if is_heatwave else 1.0
+            regen_mult = 0.5 if is_heatwave else 1.0
+
             if getattr(self.ball, "is_dashing", False):
                 if getattr(self.ball, "infinite_stamina_timer", 0.0) <= 0:
-                    self.ball.stamina = max(0.0, getattr(self.ball, "stamina", 0.0) - 50.0 * delta)
+                    self.ball.stamina = max(0.0, getattr(self.ball, "stamina", 0.0) - (50.0 * drain_mult) * delta)
             elif dist / max(0.0001, delta * 60) < getattr(self.ball, "base_speed", 2.0) * 0.5:
-                self.ball.stamina = min(getattr(self.ball, "max_stamina", 100.0), getattr(self.ball, "stamina", 0.0) + 30.0 * delta)
+                self.ball.stamina = min(getattr(self.ball, "max_stamina", 100.0), getattr(self.ball, "stamina", 0.0) + (30.0 * regen_mult) * delta)
+
+            if is_snowing and (getattr(self.ball, 'vx', 0) != 0 or getattr(self.ball, 'vy', 0) != 0):
+                self.ball.x += getattr(self.ball, 'vx', 0) * delta * 0.5
+                self.ball.y += getattr(self.ball, 'vy', 0) * delta * 0.5
 
             if hasattr(self.ball, "distance_traveled"):
                 self.ball.distance_traveled += math.sqrt(dx*dx + dy*dy)
@@ -4057,10 +4068,21 @@ class Action:
 
         # Regen/Drain Stamina at end of execution
         dist = math.sqrt((getattr(self.ball, "x", 0) - old_x)**2 + (getattr(self.ball, "y", 0) - old_y)**2)
+        arena = getattr(self.world, 'arena', None)
+        is_heatwave = getattr(arena, 'is_heatwave', False) if arena else False
+        is_snowing = getattr(arena, 'is_snowing', False) if arena else False
+
+        drain_mult = 2.0 if is_heatwave else 1.0
+        regen_mult = 0.5 if is_heatwave else 1.0
+
         if getattr(self.ball, "is_dashing", False):
-            self.ball.stamina = max(0.0, getattr(self.ball, "stamina", 0.0) - 50.0 * delta)
+            self.ball.stamina = max(0.0, getattr(self.ball, "stamina", 0.0) - (50.0 * drain_mult) * delta)
         elif dist / max(0.0001, delta * 60) < getattr(self.ball, "base_speed", 2.0) * 0.5:
-            self.ball.stamina = min(getattr(self.ball, "max_stamina", 100.0), getattr(self.ball, "stamina", 0.0) + 30.0 * delta)
+            self.ball.stamina = min(getattr(self.ball, "max_stamina", 100.0), getattr(self.ball, "stamina", 0.0) + (30.0 * regen_mult) * delta)
+
+        if is_snowing and (getattr(self.ball, 'vx', 0) != 0 or getattr(self.ball, 'vy', 0) != 0):
+            self.ball.x += getattr(self.ball, 'vx', 0) * delta * 0.5
+            self.ball.y += getattr(self.ball, 'vy', 0) * delta * 0.5
 
     def _intercept(self, delta: float) -> None:
         enemies = self._get_enemies()

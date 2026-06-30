@@ -525,3 +525,15 @@ class ThickFogArena extends ProceduralArena:
 		if fog_timer >= phase_duration:
 			fog_timer = 0.0
 			is_foggy = not is_foggy
+
+class SummerArena extends ProceduralArena:
+	var is_heatwave = true
+
+	func _init(size: float = 2000.0, seed_val = null):
+		super(size, 5, seed_val)
+
+class WinterArena extends ProceduralArena:
+	var is_snowing = true
+
+	func _init(size: float = 2000.0, seed_val = null):
+		super(size, 5, seed_val)
