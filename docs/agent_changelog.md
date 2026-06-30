@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-314] Decoy Illusion Trap — *2026-06-30 10:42:11 UTC*
+
+Trickster's decoys can occasionally apply a visual distortion 'illusion' effect to enemies near them upon expiration, randomizing their perception so they momentarily see allies as enemies, leading to friendly fire incidents.
+
+---
+
 ## [idea-266] Tornado Hazard — *2026-06-30 10:42:07 UTC*
 
 A random tornado spawns occasionally during the thunderstorm weather event. It acts as a dynamic hazard that pulls nearby balls towards it and launches them in a random direction, causing minor damage upon landing and resetting their movement.
