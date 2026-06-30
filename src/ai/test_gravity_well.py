@@ -33,3 +33,20 @@ def test_gravity_well_pull():
     print(f"Final: x={ball.x}, y={ball.y}, dist={final_dist}")
 
     assert final_dist < initial_dist
+
+
+def test_gravity_well_damage():
+    world = DummyWorld()
+    world.arena.hazards = [
+        Hazard(id=1, x=1000.0, y=1000.0, radius=200.0, kind="gravity_well", damage=10.0)
+    ]
+
+    ball = DummyBall(x=1050.0, y=1050.0, radius=10.0)
+    action = Action(ball, world)
+
+    assert ball.hp == 100.0
+    action.execute("idle", 0.1)
+
+    # 10.0 damage * 0.1 delta = 1.0
+    assert ball.hp < 100.0
+    print(f"HP after gravity well: {ball.hp}")

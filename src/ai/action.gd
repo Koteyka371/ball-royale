@@ -1358,6 +1358,24 @@ func execute(strategy: String, delta: float):
                     var dy = hazard.y - self.ball.y
                     var dist_sq = dx * dx + dy * dy
                     if dist_sq < hazard.radius * hazard.radius:
+                        # Apply slight damage if any
+                        if "damage" in hazard and hazard.damage > 0.0:
+                            var hazard_damage = hazard.damage * delta
+                            var is_qs = false
+                            if self.ball.has_method("get_meta") and self.ball.has_meta("is_in_quicksand"):
+                                is_qs = self.ball.get_meta("is_in_quicksand")
+                            elif "is_in_quicksand" in self.ball:
+                                is_qs = self.ball.is_in_quicksand
+                            if is_qs:
+                                hazard_damage *= 2.0
+
+                            if self.ball.has_method("take_damage"):
+                                self.ball.take_damage(hazard_damage)
+                            elif "hp" in self.ball:
+                                self.ball.hp -= hazard_damage
+                                if self.ball.hp <= 0:
+                                    self.ball.alive = false
+
                         if dist_sq > 0.0001:
                             var dist = sqrt(dist_sq)
                             var nx = dx / dist

@@ -955,6 +955,18 @@ class Action:
                         dy = hazard.y - self.ball.y
                         dist_sq = dx * dx + dy * dy
                         if dist_sq < hazard.radius * hazard.radius:
+                            # Apply slight damage if any
+                            if getattr(hazard, "damage", 0.0) > 0.0:
+                                hazard_damage = hazard.damage * delta
+                                if getattr(self.ball, "is_in_quicksand", False):
+                                    hazard_damage *= 2.0
+                                if hasattr(self.ball, "take_damage"):
+                                    self.ball.take_damage(hazard_damage)
+                                elif hasattr(self.ball, "hp"):
+                                    self.ball.hp -= hazard_damage
+                                    if self.ball.hp <= 0:
+                                        self.ball.alive = False
+
                             if dist_sq > 0.0001:
                                 dist = math.sqrt(dist_sq)
                                 nx, ny = dx / dist, dy / dist

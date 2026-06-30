@@ -1777,6 +1777,7 @@ class EMPBurstMode(GameMode):
         super().setup(world, balls)
         if not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
+        self.spawn_timer = 0.0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
@@ -1807,6 +1808,7 @@ class DynamicHazardsMode(GameMode):
         super().setup(world, balls)
         if not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
+        self.spawn_timer = 0.0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
@@ -2964,6 +2966,47 @@ class ShiftingMazeMode(GameMode):
             return "Draw"
         return None
 
+
+class GravityWellMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Gravity Well"
+        self.description = "Random gravity wells spawn in the arena, pulling nearby balls towards their center and slightly damaging them over time."
+        self.spawn_timer = 0.0
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+        self.spawn_timer = 0.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import random
+
+        self.spawn_timer += delta
+        if self.spawn_timer >= 5.0:
+            self.spawn_timer = 0.0
+
+            arena_width = getattr(world.arena, "width", 2000.0)
+            arena_height = getattr(world.arena, "height", 2000.0)
+
+            x = random.uniform(200.0, arena_width - 200.0)
+            y = random.uniform(200.0, arena_height - 200.0)
+
+            h_id = 9000 + len(world.arena.hazards) + random.randint(0, 1000)
+
+            from arena.procedural_arena import Hazard
+            gw = Hazard(id=h_id, x=x, y=y, radius=random.uniform(150.0, 300.0), kind="gravity_well", damage=10.0)
+            world.arena.hazards.append(gw)
+
+            # Limit total gravity wells to 5 to avoid overcrowding
+            gw_hazards = [h for h in world.arena.hazards if getattr(h, "kind", "") == "gravity_well"]
+            if len(gw_hazards) > 5:
+                # Remove the oldest one
+                oldest_gw = gw_hazards[0]
+                world.arena.hazards.remove(oldest_gw)
+
 GAME_MODES = {
     "shifting_maze": ShiftingMazeMode(),
 
@@ -2985,6 +3028,7 @@ GAME_MODES = {
     "weather_chaos": WeatherChaosMode(),
     "domination": DominationMode(),
     "black_hole": BlackHoleMode(),
+    "gravity_well": GravityWellMode(),
     "king_of_the_hill": KingOfTheHillMode(),
     "moving_zone": MovingZoneMode(),
     "vampire_royale": VampireRoyaleMode(),
