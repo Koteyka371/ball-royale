@@ -2425,6 +2425,65 @@ class BountyHuntMode(GameMode):
             return list(teams_alive)[0]
         return None
 
+class EarthquakeMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Earthquake"
+        self.description = "Periodically shakes the screen and applies random impulses to all entities."
+        self.timer = 0.0
+        self.is_shaking = False
+        self.shake_timer = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        import random
+        # Handle dead balls
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+
+        if self.is_shaking:
+            self.shake_timer -= delta
+            if self.shake_timer <= 0.0:
+                self.is_shaking = False
+            else:
+                # Apply random impulses
+                for b in balls:
+                    if getattr(b, "hp", 0) > 0:
+                        b.x += random.uniform(-50.0, 50.0) * delta
+                        b.y += random.uniform(-50.0, 50.0) * delta
+                        if hasattr(b, "vx"):
+                            b.vx += random.uniform(-50.0, 50.0)
+                        if hasattr(b, "vy"):
+                            b.vy += random.uniform(-50.0, 50.0)
+
+                if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    for hazard in world.arena.hazards:
+                        if hasattr(hazard, "x") and hasattr(hazard, "y"):
+                            hazard.x += random.uniform(-20.0, 20.0) * delta
+                            hazard.y += random.uniform(-20.0, 20.0) * delta
+
+                if hasattr(world, "arena") and hasattr(world.arena, "items"):
+                    for item in world.arena.items:
+                        if hasattr(item, "x") and hasattr(item, "y"):
+                            item.x += random.uniform(-20.0, 20.0) * delta
+                            item.y += random.uniform(-20.0, 20.0) * delta
+
+        else:
+            self.timer += delta
+            # Randomly trigger earthquake every ~10-15 seconds
+            if self.timer > 10.0 and random.random() < 0.2 * delta:
+                self.timer = 0.0
+                self.is_shaking = True
+                self.shake_timer = random.uniform(2.0, 5.0)
+                if hasattr(world, "add_event"):
+                    world.add_event("earthquake", {"type": "earthquake", "intensity": self.shake_timer / 2.0})
+
 GAME_MODES = {
 
     "blackout": BlackoutMode(),
@@ -2458,7 +2517,8 @@ GAME_MODES = {
     "shrinking_danger_zone": ShrinkingDangerZoneMode(),
     "safe_zone": SafeZoneMode(),
     "moving_safe_zone": MovingSafeZoneMode(),
-    "bounty_hunt": BountyHuntMode()
+    "bounty_hunt": BountyHuntMode(),
+    "earthquake": EarthquakeMode()
 }
 
 try:

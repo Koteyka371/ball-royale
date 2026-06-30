@@ -3190,6 +3190,90 @@ class BountyHuntMode extends GameMode:
             return teams_alive.keys()[0]
         return null
 
+class EarthquakeMode extends GameMode:
+	var timer: float = 0.0
+	var is_shaking: bool = false
+	var shake_timer: float = 0.0
+
+	func _init():
+		name = "Earthquake"
+		description = "Periodically shakes the screen and applies random impulses to all entities."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if not "dead_balls" in world:
+			world.dead_balls = []
+
+		for b in balls:
+			var alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				alive = b.get("alive", false)
+			else:
+				alive = b.alive if "alive" in b else false
+
+			if not alive:
+				if not b in world.dead_balls:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["time_since_death"] = 0.0
+					elif "time_since_death" in b:
+						b.time_since_death = 0.0
+					world.dead_balls.append(b)
+				else:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["time_since_death"] = b.get("time_since_death", 0.0) + delta
+					elif "time_since_death" in b:
+						b.time_since_death += delta
+
+		if is_shaking:
+			shake_timer -= delta
+			if shake_timer <= 0.0:
+				is_shaking = false
+			else:
+				for b in balls:
+					var hp = 0
+					if typeof(b) == TYPE_DICTIONARY:
+						hp = b.get("hp", 0)
+					else:
+						hp = b.hp if "hp" in b else 0
+					if hp > 0:
+						if typeof(b) == TYPE_DICTIONARY:
+							b["x"] = b.get("x", 0.0) + randf_range(-50.0, 50.0) * delta
+							b["y"] = b.get("y", 0.0) + randf_range(-50.0, 50.0) * delta
+							if b.has("vx"):
+								b["vx"] += randf_range(-50.0, 50.0)
+							if b.has("vy"):
+								b["vy"] += randf_range(-50.0, 50.0)
+						else:
+							if "x" in b: b.x += randf_range(-50.0, 50.0) * delta
+							if "y" in b: b.y += randf_range(-50.0, 50.0) * delta
+							if "vx" in b: b.vx += randf_range(-50.0, 50.0)
+							if "vy" in b: b.vy += randf_range(-50.0, 50.0)
+
+				if world != null and "arena" in world and world.arena != null:
+					if "hazards" in world.arena:
+						for hazard in world.arena.hazards:
+							if typeof(hazard) == TYPE_DICTIONARY:
+								hazard["x"] = hazard.get("x", 0.0) + randf_range(-20.0, 20.0) * delta
+								hazard["y"] = hazard.get("y", 0.0) + randf_range(-20.0, 20.0) * delta
+							else:
+								if "x" in hazard: hazard.x += randf_range(-20.0, 20.0) * delta
+								if "y" in hazard: hazard.y += randf_range(-20.0, 20.0) * delta
+					if "items" in world.arena:
+						for item in world.arena.items:
+							if typeof(item) == TYPE_DICTIONARY:
+								item["x"] = item.get("x", 0.0) + randf_range(-20.0, 20.0) * delta
+								item["y"] = item.get("y", 0.0) + randf_range(-20.0, 20.0) * delta
+							else:
+								if "x" in item: item.x += randf_range(-20.0, 20.0) * delta
+								if "y" in item: item.y += randf_range(-20.0, 20.0) * delta
+		else:
+			timer += delta
+			if timer > 10.0 and randf() < 0.2 * delta:
+				timer = 0.0
+				is_shaking = true
+				shake_timer = randf_range(2.0, 5.0)
+				if world != null and world.has_method("add_event"):
+					world.add_event("earthquake", {"type": "earthquake", "intensity": shake_timer / 2.0})
+
 var GAME_MODES = {
 
 	"blackout": BlackoutMode.new(),
@@ -3224,5 +3308,6 @@ var GAME_MODES = {
     "shrinking_danger_zone": ShrinkingDangerZoneMode.new(),
     "safe_zone": SafeZoneMode.new(),
     "moving_safe_zone": MovingSafeZoneMode.new(),
-    "bounty_hunt": BountyHuntMode.new()
+    "bounty_hunt": BountyHuntMode.new(),
+    "earthquake": EarthquakeMode.new()
 }

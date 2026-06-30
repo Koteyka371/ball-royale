@@ -1,0 +1,4 @@
+{
+  "title": "Chain Lightning Modifier",
+  "description": "A new weather event or arena modifier where any damage dealt to an entity has a chance to chain to nearby entities within a small radius, encouraging players to maintain spatial separation."
+}
