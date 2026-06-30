@@ -1,1 +1,4 @@
-{"title": "Meteor Shower Mode", "description": "High damage hazards fall from the sky."}
+{
+    "title": "Weather-Specific Ball Types",
+    "description": "Introduce new ball types that specifically benefit from certain weather conditions. For example, a 'Stormcaller' ball that gets a speed and damage boost during thunderstorms, or a 'Frostbite' ball that gains a shield during snow weather. This adds an additional layer of strategy when picking characters."
+}

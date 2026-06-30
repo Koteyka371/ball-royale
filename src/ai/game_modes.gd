@@ -1371,6 +1371,11 @@ class WeatherChaosMode extends GameMode:
 		for b in balls:
 			if b.ball_type != "spectator":
 				b.team = b.ball_type
+				if not b.has_meta("base_perception_radius"):
+					var pr = 250.0
+					if "perception_radius" in b:
+						pr = b.perception_radius
+					b.set_meta("base_perception_radius", pr)
 				if not b.has_meta("base_speed"):
 					if "speed" in b:
 						b.set_meta("base_speed", b.speed)
@@ -1645,6 +1650,15 @@ class WeatherChaosMode extends GameMode:
 						if "hp" in b: b.hp -= 20
 					if b.has_method("set_meta"):
 						b.set_meta("attack_accuracy", 0.5)
+				elif weather == "heatwave":
+					if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius") * 0.7
+					elif "base_perception_radius" in b: b.perception_radius = b.base_perception_radius * 0.7
+					else: b.perception_radius = 250.0 * 0.7
+					if "speed" in b: b.speed = base_spd * 0.9
+					if "damage" in b: b.damage = base_dmg
+					if b.has_method("set_meta"):
+						b.set_meta("dash_range_mult", 1.0)
+						b.set_meta("steering_mult", 1.0)
 
 	func check_winner(world, balls: Array):
 		var alive = []

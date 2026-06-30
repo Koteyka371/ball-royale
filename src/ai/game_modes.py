@@ -218,7 +218,8 @@ class BattleRoyaleMode(GameMode):
                 b.alive = False
             else:
                 b.team = b.ball_type # Default behavior
-                b.base_perception_radius = getattr(b, "perception_radius", 250.0)
+                if not hasattr(b, "base_perception_radius"):
+                    b.base_perception_radius = getattr(b, "perception_radius", 250.0)
                 if not hasattr(b, "base_speed"):
                     b.base_speed = getattr(b, "speed", 100.0)
                 if not hasattr(b, "base_damage"):
@@ -412,7 +413,8 @@ class BattleRoyaleMode(GameMode):
             # Apply dark phase
             for b in balls:
                 if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
-                    b.base_perception_radius = getattr(b, "perception_radius", 250.0)
+                    if not hasattr(b, "base_perception_radius"):
+                        b.base_perception_radius = getattr(b, "perception_radius", 250.0)
                     if b.ball_type == "scout":
                         b.perception_radius = 120.0
                     else:
@@ -1022,6 +1024,8 @@ class WeatherChaosMode(GameMode):
         valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
         for b in valid_balls:
             b.team = b.ball_type
+            if not hasattr(b, "base_perception_radius"):
+                b.base_perception_radius = getattr(b, "perception_radius", 250.0)
             if not hasattr(b, "base_speed"):
                 b.base_speed = getattr(b, "speed", 100.0)
             if not hasattr(b, "base_damage"):
@@ -1100,18 +1104,22 @@ class WeatherChaosMode(GameMode):
 
         for b in valid_balls:
             if getattr(b, "is_decoy", False): continue
+            if not hasattr(b, "base_perception_radius"):
+                b.base_perception_radius = getattr(b, "perception_radius", 250.0)
             if not hasattr(b, "base_speed"):
                 b.base_speed = getattr(b, "speed", 100.0)
             if not hasattr(b, "base_damage"):
                 b.base_damage = getattr(b, "damage", 10.0)
 
             if self.weather == "clear":
+                b.perception_radius = getattr(b, "base_perception_radius", 250.0)
                 b.speed = b.base_speed
                 b.damage = b.base_damage
                 b.dash_range_mult = 1.0
                 b.steering_mult = 1.0
                 b.attack_accuracy = 1.0
             elif self.weather == "rain":
+                b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.9
                 b.speed = b.base_speed * 0.8
                 b.damage = b.base_damage
                 # rain makes surface slippery/increases dash range but reduces steering
@@ -1126,6 +1134,7 @@ class WeatherChaosMode(GameMode):
                     b.y += getattr(b, "vy") * delta * 0.5
                 b.attack_accuracy = 0.8
             elif self.weather == "fog":
+                b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.4
                 b.speed = b.base_speed * 0.5
                 b.damage = b.base_damage * 0.8
                 b.dash_range_mult = 1.0
@@ -1153,6 +1162,7 @@ class WeatherChaosMode(GameMode):
                                 decoy.active_skill = None
                             world.balls.append(decoy)
             elif self.weather == "snow":
+                b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.6
                 b.speed = b.base_speed * 0.5
                 b.damage = b.base_damage * 1.2
                 if getattr(b, "SKILL", "") == "iceball" or getattr(b, "SKILL", "") == "elemental_burst":
@@ -1168,17 +1178,20 @@ class WeatherChaosMode(GameMode):
                     b.stutter_timer = 1.0 # Freeze for 1 second
                 b.attack_accuracy = 0.9
             elif self.weather == "wind":
+                b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.95
                 b.speed = b.base_speed
                 b.damage = b.base_damage
                 b.dash_range_mult = 1.0
                 b.steering_mult = 1.0
                 # push balls in a specific direction
             elif self.weather == "thunderstorm":
+                b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.8
                 b.speed = b.base_speed * 1.1 # Panic speed
                 b.damage = b.base_damage * 1.5 # High damage due to electricity
                 b.dash_range_mult = 1.0
                 b.steering_mult = 1.0
             elif self.weather == "sandstorm":
+                b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.3
                 b.speed = b.base_speed * 0.7 # Hard to move
                 b.damage = b.base_damage
                 b.dash_range_mult = 0.5
@@ -1219,6 +1232,7 @@ class WeatherChaosMode(GameMode):
                     b.hp = getattr(b, "hp", 100) - 20
                 b.attack_accuracy = 0.5
             elif self.weather == "heatwave":
+                b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.7
                 b.speed = b.base_speed * 0.9 # Slightly reduced max speed
                 b.damage = b.base_damage
                 b.dash_range_mult = 1.0
