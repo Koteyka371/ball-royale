@@ -5740,7 +5740,7 @@
     },
     {
       "id": "idea-331",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chain Lightning Enhancements",
@@ -9138,6 +9138,74 @@
         "src/arena/spring_arena_with_high_winds.py",
         "src/arena/spring_arena_with_high_winds.gd",
         "tests/test_spring_arena_with_high_winds.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-529",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Wormhole Links",
+      "description": "Gravity wells can randomly pair up to act as wormholes. When a player falls into one, they are instantly teleported and launched out of its pair, taking a small amount of temporal damage.",
+      "allowed_paths": [
+        "src/ai/wormhole_links.py",
+        "src/ai/wormhole_links.gd",
+        "tests/test_wormhole_links.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-530",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Placement Trap",
+      "description": "A new trap type that spawns a stationary decoy of the player when triggered by an enemy. The decoy distracts AI opponents, drawing their aggro while the true player gets a window to escape or counter-attack.",
+      "allowed_paths": [
+        "src/arena/decoy_placement_trap.py",
+        "src/arena/decoy_placement_trap.gd",
+        "tests/test_decoy_placement_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-531",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Gravity Pulse",
+      "description": "Periodically, gravity wells invert their pull and push entities outward with extreme force, adding a layer of unpredictability to the Gravity Well mode and creating new mobility options.",
+      "allowed_paths": [
+        "src/ai/reverse_gravity_pulse.py",
+        "src/ai/reverse_gravity_pulse.gd",
+        "tests/test_reverse_gravity_pulse.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-532",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Lightning Relic",
+      "description": "A consumable item that, upon use, strikes the nearest enemy with a lightning bolt that bounces to up to 3 additional nearby enemies, dealing decreasing damage with each jump. Useful for breaking up grouped opponents.",
+      "allowed_paths": [
+        "src/ai/chain_lightning_relic.py",
+        "src/ai/chain_lightning_relic.gd",
+        "tests/test_chain_lightning_relic.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

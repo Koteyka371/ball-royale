@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-331] Chain Lightning Enhancements — *2026-06-30 15:43:15 UTC*
+
+Improve chain lightning to bounce off walls or objects and increase damage with each jump.
+
+---
+
 ## [idea-344] Quantum Swap Item — *2026-06-30 13:36:32 UTC*
 
 A consumable item that allows the ball to instantly swap positions with a targeted enemy or ally, throwing off opponent positioning and escaping corner traps.
