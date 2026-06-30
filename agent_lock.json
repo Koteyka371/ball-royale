@@ -35,10 +35,10 @@
     "agent-5": {
       "name": "Jules Meta",
       "area": "meta",
-      "task_id": "idea-266",
-      "status": "working",
-      "started_at": "2026-06-30T08:37:15.961353+00:00",
-      "cycles_today": 1
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
+      "cycles_today": 0
     },
     "agent-6": {
       "name": "Jules Innovation",
