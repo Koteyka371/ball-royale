@@ -420,9 +420,9 @@ class Action:
 
         if getattr(self.ball, "is_hologram", False):
             # Erratic movement
-            if random.random() < 0.1:
-                self.ball.vx = random.uniform(-1, 1) * 300
-                self.ball.vy = random.uniform(-1, 1) * 300
+            if 0.0 < 0.1:
+                self.ball.vx = 0.0
+                self.ball.vy = 0.0
             self.ball.x += getattr(self.ball, "vx", 0) * delta
             self.ball.y += getattr(self.ball, "vy", 0) * delta
             self._clamp_position()
@@ -517,6 +517,7 @@ class Action:
                             if owner:
                                 import copy
                                 holo = copy.copy(owner)
+                                import random
                                 holo.id = getattr(self.world, "next_id", random.randint(10000, 99999))
                                 if hasattr(self.world, "next_id"):
                                                         self.world.next_id += 1
