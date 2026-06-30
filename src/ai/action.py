@@ -271,6 +271,23 @@ class Action:
                 self.world.arena.hazards.append(trap)
                 self.ball.inventory.remove("placeable_trap")
 
+        # Check inventory for swap_position to instantly swap with furthest enemy
+        if strategy == "flee" and hasattr(self.ball, "inventory") and "swap_position" in self.ball.inventory:
+            if hasattr(self.world, "balls"):
+                furthest_enemy = None
+                max_dist = -1
+                for other_ball in self.world.balls:
+                    if getattr(other_ball, "team", None) != getattr(self.ball, "team", None) and getattr(other_ball, "alive", True) and other_ball != self.ball:
+                        dist = (self.ball.x - other_ball.x)**2 + (self.ball.y - other_ball.y)**2
+                        if dist > max_dist:
+                            max_dist = dist
+                            furthest_enemy = other_ball
+                if furthest_enemy:
+                    temp_x, temp_y = furthest_enemy.x, furthest_enemy.y
+                    furthest_enemy.x, furthest_enemy.y = self.ball.x, self.ball.y
+                    self.ball.x, self.ball.y = temp_x, temp_y
+                    self.ball.inventory.remove("swap_position")
+
         # Check inventory for exit_portal to use as an escape hatch
         if strategy == "flee" and hasattr(self.ball, "inventory") and "exit_portal" in self.ball.inventory:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -2837,6 +2854,13 @@ class Action:
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
                     self.ball.inventory.append("exit_portal")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                elif getattr(nearest, "kind", None) == "swap_position_item":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("swap_position")
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)

@@ -398,6 +398,39 @@ func execute(strategy: String, delta: float):
 
 	if strategy == "flee" and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
+		if inv.has("swap_position"):
+			if world != null and "balls" in world:
+				var furthest_enemy = null
+				var max_dist = -1.0
+				var my_team = -1
+				if "team" in self.ball: my_team = self.ball.team
+				elif self.ball.has_method("get_meta") and self.ball.has_meta("team"): my_team = self.ball.get_meta("team")
+				for other_ball in world.balls:
+					var other_team = -1
+					if "team" in other_ball: other_team = other_ball.team
+					elif other_ball.has_method("get_meta") and other_ball.has_meta("team"): other_team = other_ball.get_meta("team")
+
+					var other_alive = true
+					if "alive" in other_ball: other_alive = other_ball.alive
+					elif other_ball.has_method("get_meta") and other_ball.has_meta("alive"): other_alive = other_ball.get_meta("alive")
+
+					if other_team != my_team and other_alive and other_ball != self.ball:
+						var dx = self.ball.x - other_ball.x
+						var dy = self.ball.y - other_ball.y
+						var dist = dx*dx + dy*dy
+						if dist > max_dist:
+							max_dist = dist
+							furthest_enemy = other_ball
+				if furthest_enemy != null:
+					var temp_x = furthest_enemy.x
+					var temp_y = furthest_enemy.y
+					furthest_enemy.x = self.ball.x
+					furthest_enemy.y = self.ball.y
+					self.ball.x = temp_x
+					self.ball.y = temp_y
+					inv.erase("swap_position")
+					self.ball.set_meta("inventory", inv)
+
 		if inv.has("exit_portal"):
 			if world != null and "arena" in world and "hazards" in world.arena:
 				var arena = world.arena
@@ -4481,6 +4514,16 @@ func _collect_booster(delta: float):
                     self.ball.set_meta("inventory", [])
                 var inv = self.ball.get_meta("inventory")
                 inv.append("exit_portal")
+                self.ball.set_meta("inventory", inv)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "swap_position_item":
+                if not self.ball.has_meta("inventory"):
+                    self.ball.set_meta("inventory", [])
+                var inv = self.ball.get_meta("inventory")
+                inv.append("swap_position")
                 self.ball.set_meta("inventory", inv)
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)

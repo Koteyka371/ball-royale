@@ -1,0 +1,4 @@
+{
+  "title": "Time Reversal Item",
+  "description": "An item that records the last 5 seconds of the ball's position and health. When consumed, it instantly reverts the ball to that state, undoing damage and movement."
+}

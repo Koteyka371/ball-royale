@@ -1,0 +1,4 @@
+{
+  "title": "Shrinking Wall Hazard",
+  "description": "A dynamic hazard that spawns as a large ring and slowly shrinks over time, forcing balls towards the center while dealing continuous damage to those outside."
+}

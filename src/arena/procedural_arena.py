@@ -472,6 +472,9 @@ class ProceduralArena:
                     kind = "placeable_trap_item"
                     damage = 0.0
                 elif random.random() < 0.05:
+                    kind = "swap_position_item"
+                    damage = 0.0
+                elif random.random() < 0.05:
                     kind = "exit_portal_item"
                     damage = 0.0
                 elif random.random() < 0.15:
