@@ -308,6 +308,7 @@ class Action:
         if not hasattr(self.ball, "max_stamina"):
             self.ball.max_stamina = 100.0
             self.ball.stamina = 100.0
+            self.ball.is_exhausted = False
 
         self.ball.is_dashing = False
         if strategy in ["chase", "flee", "attack"] and getattr(self.ball, "stamina", 0) >= 30.0:
@@ -324,6 +325,20 @@ class Action:
                 self.ball.damage = self.ball.base_damage * 1.2
         else:
             self.ball.speed = self.ball.base_speed
+            self.ball.damage = getattr(self.ball, "base_damage", 10.0)
+
+        stamina = getattr(self.ball, "stamina", 100.0)
+        max_stamina = getattr(self.ball, "max_stamina", 100.0)
+        is_exhausted = getattr(self.ball, "is_exhausted", False)
+
+        if stamina <= 0:
+            self.ball.is_exhausted = True
+        elif stamina >= max_stamina * 0.2:
+            self.ball.is_exhausted = False
+
+        if getattr(self.ball, "is_exhausted", False):
+            self.ball.speed *= 0.5
+            self.ball.damage *= 0.5
 
 # Handle minion decay
         if getattr(self.ball, "is_minion", False):

@@ -445,6 +445,7 @@ func execute(strategy: String, delta: float):
             base_d = my_ball.damage
         my_ball.set_meta("base_damage", base_d)
         my_ball.set_meta("_base_speed_set", true)
+        my_ball.set_meta("is_exhausted", false)
     elif "base_speed" not in my_ball and not my_ball.has_method("has_meta"):
         pass # Handle dictionaries differently? GDScript objects might not have metadata if they are dictionaries.
         # But wait, self.ball is usually a custom class instance.
@@ -464,6 +465,29 @@ func execute(strategy: String, delta: float):
         else:
             if "speed" in my_ball:
                 my_ball.speed = my_ball.get_meta("base_speed")
+            if "damage" in my_ball:
+                my_ball.damage = my_ball.get_meta("base_damage")
+
+        var cur_stamina = 100.0
+        if my_ball.has_meta("stamina"): cur_stamina = my_ball.get_meta("stamina")
+        var cur_max_stamina = 100.0
+        if my_ball.has_meta("max_stamina"): cur_max_stamina = my_ball.get_meta("max_stamina")
+        var is_exhausted = false
+        if my_ball.has_meta("is_exhausted"): is_exhausted = my_ball.get_meta("is_exhausted")
+
+        if cur_stamina <= 0:
+            is_exhausted = true
+        elif cur_stamina >= cur_max_stamina * 0.2:
+            is_exhausted = false
+
+        if my_ball.has_method("set_meta"):
+            my_ball.set_meta("is_exhausted", is_exhausted)
+
+        if is_exhausted:
+            if "speed" in my_ball:
+                my_ball.speed *= 0.5
+            if "damage" in my_ball:
+                my_ball.damage *= 0.5
 
         var st_timer = 0.0
         if "stutter_timer" in my_ball:
