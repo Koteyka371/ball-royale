@@ -1,0 +1,4 @@
+{
+  "title": "New Item: Flashbang",
+  "description": "A throwable item that temporarily blinds enemies within its blast radius, reducing their perception_radius to 0 for a few seconds. Adds tactical play in combat."
+}

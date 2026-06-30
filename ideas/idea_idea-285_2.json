@@ -1,0 +1,4 @@
+{
+  "title": "New Hazard: EMP Mine",
+  "description": "A deployable or procedurally generated hazard that, when triggered, shuts down HUD elements and minimizes the cone of light or sonar pulse effectiveness for all balls in its vicinity."
+}

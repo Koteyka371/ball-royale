@@ -2083,6 +2083,46 @@ class CustomMatchMode extends GameMode:
 
 
 
+
+
+class PitchBlackMode extends GameMode:
+	func _init() -> void:
+		name = "Pitch Black"
+		description = "A completely dark screen with only a cone of light matching the AI's actual perception radius."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if world.has_method("set_meta"):
+			world.set_meta("is_pitch_black", true)
+		for b in balls:
+			if b.ball_type != "spectator":
+				if not "team" in b:
+					b.team = b.ball_type
+				if b.has_method("set_meta"):
+					b.set_meta("cone_of_light_active", true)
+				if b.has_method("set_meta") and not b.has_meta("base_perception_radius"):
+					var perc = 250.0
+					if "perception_radius" in b:
+						perc = float(b.perception_radius)
+					b.set_meta("base_perception_radius", perc)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if world.has_method("set_meta"):
+			world.set_meta("is_pitch_black", true)
+		for b in balls:
+			if b.alive and b.ball_type != "spectator":
+				if b.has_method("set_meta"):
+					b.set_meta("cone_of_light_active", true)
+				var base_perc = 250.0
+				if b.has_method("get_meta") and b.has_meta("base_perception_radius"):
+					base_perc = b.get_meta("base_perception_radius")
+				elif "perception_radius" in b:
+					base_perc = float(b.perception_radius)
+					if b.has_method("set_meta"):
+						b.set_meta("base_perception_radius", base_perc)
+				if "perception_radius" in b:
+					b.perception_radius = base_perc
+
 class VisionReducedMode extends GameMode:
 	var pulse_timer: float = 0.0
 
@@ -3385,6 +3425,7 @@ var GAME_MODES = {
     "bumper_balls": BumperBallsMode.new(),
     "portal_node": PortalNodeMode.new(),
 	"memory_traps": MemoryTrapsMode.new(),
+	"pitch_black": PitchBlackMode.new(),
 	"vision_reduced": VisionReducedMode.new(),
 	"dynamic_hazards": DynamicHazardsMode.new(),
 	"custom_match": CustomMatchMode.new(),

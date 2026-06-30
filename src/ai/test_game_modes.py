@@ -382,3 +382,20 @@ def test_escort_mode():
     payload.y = 500.0
     payload.hp = 0
     assert mode.check_winner(world, balls) == "Attackers"
+
+
+def test_pitch_black_mode():
+    from ai.game_modes import GAME_MODES
+    mode = GAME_MODES["pitch_black"]
+
+    world = MockWorld()
+    ball1 = MockBall("b1", 100, 100)
+    ball1.ball_type = "runner"
+    ball1.perception_radius = 250.0
+
+    mode.setup(world, [ball1])
+    assert getattr(world, "is_pitch_black", False) == True
+    assert getattr(ball1, "cone_of_light_active", False) == True
+
+    mode.tick(world, [ball1], 0.1)
+    assert getattr(ball1, "perception_radius", 0) == 250.0
