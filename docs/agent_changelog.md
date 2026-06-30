@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-322] Random Loadout Option — *2026-06-30 10:58:20 UTC*
+
+Add a 'Random' loadout selection that picks a random unlocked ball type and trap variant to provide an extra challenge with bonus rewards.
+
+---
+
 ## [idea-317] Quantum Teleport Trap — *2026-06-30 10:58:16 UTC*
 
 Add a new trap hazard that, when triggered, instantly swaps the positions of the victim and the trap's owner, disorienting enemies and allowing for creative escapes.
