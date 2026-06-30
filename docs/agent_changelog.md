@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-313] Poison Cloud Area — *2026-06-30 12:44:15 UTC*
+
+A hazard that slowly expands and deals low damage to balls inside it, while occasionally debuffing their movement speed.
+
+---
+
 ## [idea-337] Quantum Entanglement Hazard — *2026-06-30 12:38:51 UTC*
 
 A new hazard type that links two balls together. If one takes damage or gets a status effect, the other receives a fraction of it. It requires coordination to break the link by moving far enough apart or finding a cleanser item.

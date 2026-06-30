@@ -5434,7 +5434,7 @@
     },
     {
       "id": "idea-313",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Poison Cloud Area",
@@ -8832,6 +8832,23 @@
         "src/ai/meteor_shower.py",
         "src/ai/meteor_shower.gd",
         "tests/test_meteor_shower.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-511",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Status Transfer Boomerang",
+      "description": "An active item that absorbs the current status effects (stun, silence, dot) of the user and can be thrown at an enemy to inflict all those absorbed status effects at once.",
+      "allowed_paths": [
+        "src/ai/status_transfer_boomerang.py",
+        "src/ai/status_transfer_boomerang.gd",
+        "tests/test_status_transfer_boomerang.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
