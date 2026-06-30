@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-344] Quantum Swap Item — *2026-06-30 13:36:32 UTC*
+
+A consumable item that allows the ball to instantly swap positions with a targeted enemy or ally, throwing off opponent positioning and escaping corner traps.
+
+---
+
 ## [idea-335] Gravity Wells Mode — *2026-06-30 13:36:26 UTC*
 
 A mode where random gravity wells spawn in the arena, pulling nearby balls towards their center and slightly damaging them over time.
