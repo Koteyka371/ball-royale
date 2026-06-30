@@ -398,7 +398,12 @@ func execute(strategy: String, delta: float):
             my_ball.set_meta("dot_duration", dot_dur - delta)
 
     if world != null and "arena" in world:
-        if world.arena.get("is_raining") == true:
+        var cosmetic = ""
+        if "cosmetic" in my_ball:
+            cosmetic = str(my_ball.cosmetic).to_lower().replace(" ", "_")
+        var ignores_mud = cosmetic == "mud_tires"
+
+        if world.arena.get("is_raining") == true and not ignores_mud:
             if "vx" in my_ball and "vy" in my_ball:
                 my_ball.x += my_ball.vx * delta * 0.2
                 my_ball.y += my_ball.vy * delta * 0.2

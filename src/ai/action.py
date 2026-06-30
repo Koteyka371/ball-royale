@@ -135,9 +135,14 @@ class Action:
 
     def _get_perception_radius(self) -> float:
         pr = float(getattr(self.ball, "perception_radius", 250.0))
+
+        # Check for Thermal Goggles loadout item to ignore fog
+        cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+        ignores_fog = cosmetic == "thermal_goggles"
+
         if hasattr(self.world, "arena") and getattr(self.world.arena, "is_raining", False):
             pr *= 0.6  # Reduced perception in rain
-        if hasattr(self.world, "arena") and getattr(self.world.arena, "is_foggy", False):
+        if hasattr(self.world, "arena") and getattr(self.world.arena, "is_foggy", False) and not ignores_fog:
             pr *= 0.4  # Further reduced perception in fog
         return pr
 
@@ -265,7 +270,10 @@ class Action:
 
         # Weather friction
         if hasattr(self.world, "arena") and hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
-            if getattr(self.world.arena, "is_raining", False):
+            cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+            ignores_mud = cosmetic == "mud_tires"
+
+            if getattr(self.world.arena, "is_raining", False) and not ignores_mud:
                 # Slippery: apply momentum (friction slide)
                 self.ball.x += getattr(self.ball, "vx", 0.0) * delta * 0.5
                 self.ball.y += getattr(self.ball, "vy", 0.0) * delta * 0.5
