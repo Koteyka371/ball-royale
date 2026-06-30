@@ -395,6 +395,40 @@ func execute(strategy: String, delta: float):
 					inv.erase("exit_portal")
 					self.ball.set_meta("inventory", inv)
 
+	if (strategy == "flee" or strategy == "defend") and self.ball.has_meta("inventory"):
+		var inv = self.ball.get_meta("inventory")
+		if inv.has("position_swap"):
+			var balls = []
+			if world != null and "balls" in world:
+				balls = world.balls
+			elif world != null and "entities" in world:
+				balls = world.entities
+
+			var target = null
+			var min_dist_sq = -1.0
+			for b in balls:
+				var is_alive = true
+				if "alive" in b: is_alive = b.alive
+				var is_decoy = false
+				if b.has_method("get_meta") and b.has_meta("is_decoy"): is_decoy = b.get_meta("is_decoy")
+				elif "is_decoy" in b: is_decoy = b.is_decoy
+
+				if is_alive and b != self.ball and not is_decoy:
+					var dist_sq = (b.x - self.ball.x)*(b.x - self.ball.x) + (b.y - self.ball.y)*(b.y - self.ball.y)
+					if min_dist_sq < 0.0 or dist_sq < min_dist_sq:
+						min_dist_sq = dist_sq
+						target = b
+
+			if target != null:
+				var temp_x = target.x
+				var temp_y = target.y
+				target.x = self.ball.x
+				target.y = self.ball.y
+				self.ball.x = temp_x
+				self.ball.y = temp_y
+				inv.erase("position_swap")
+				self.ball.set_meta("inventory", inv)
+
 
 	# Confusion timer logic
 	var conf_timer = 0.0
@@ -4416,6 +4450,16 @@ func _collect_booster(delta: float):
                     self.ball.set_meta("inventory", [])
                 var inv = self.ball.get_meta("inventory")
                 inv.append("exit_portal")
+                self.ball.set_meta("inventory", inv)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "position_swap_item":
+                if not self.ball.has_meta("inventory"):
+                    self.ball.set_meta("inventory", [])
+                var inv = self.ball.get_meta("inventory")
+                inv.append("position_swap")
                 self.ball.set_meta("inventory", inv)
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)

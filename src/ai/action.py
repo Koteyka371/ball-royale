@@ -264,6 +264,18 @@ class Action:
                 self.world.arena.hazards.append(portal)
                 self.ball.inventory.remove("exit_portal")
 
+        # Check inventory for position_swap
+        if strategy in ("flee", "defend") and hasattr(self.ball, "inventory") and "position_swap" in self.ball.inventory:
+            balls = getattr(self.world, "balls", getattr(self.world, "entities", []))
+            valid_targets = [b for b in balls if getattr(b, "alive", True) and b != self.ball and not getattr(b, "is_decoy", False)]
+            if valid_targets:
+                target = min(valid_targets, key=lambda b: (b.x - self.ball.x)**2 + (b.y - self.ball.y)**2)
+                # Swap coordinates
+                temp_x, temp_y = target.x, target.y
+                target.x, target.y = self.ball.x, self.ball.y
+                self.ball.x, self.ball.y = temp_x, temp_y
+                self.ball.inventory.remove("position_swap")
+
         # Temporal rift logic to modify local delta
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for hazard in self.world.arena.hazards:
@@ -2806,6 +2818,13 @@ class Action:
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
                     self.ball.inventory.append("exit_portal")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                elif getattr(nearest, "kind", None) == "position_swap_item":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("position_swap")
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
