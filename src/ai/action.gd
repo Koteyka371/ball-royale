@@ -91,15 +91,22 @@ func _attempt_damage(attacker, target) -> void:
 
 	if new_hp <= 0 and old_hp > 0 and pm != null and pm.has_method("add_kill"):
 		pm.add_kill(attacker_type, target_type)
-		if pm.is_nemesis(target_type, attacker_type):
-			if "kills" in attacker:
-				attacker.kills += 1
-			if "charge_level" in attacker:
-				attacker.charge_level = min(100.0, float(attacker.charge_level) + 10.0)
-			elif attacker.has_method("set_meta"):
-				var cl = 0.0
-				if attacker.has_meta("charge_level"): cl = float(attacker.get_meta("charge_level"))
-				attacker.set_meta("charge_level", min(100.0, cl + 10.0))
+		var is_target_nemesis = pm.is_nemesis(target_type, attacker_type)
+
+		var kill_increment = 1
+		var charge_increment = 10.0
+		if is_target_nemesis:
+			kill_increment = 2
+			charge_increment = 20.0
+
+		if "kills" in attacker:
+			attacker.kills += kill_increment
+		if "charge_level" in attacker:
+			attacker.charge_level = min(100.0, float(attacker.charge_level) + charge_increment)
+		elif attacker.has_method("set_meta"):
+			var cl = 0.0
+			if attacker.has_meta("charge_level"): cl = float(attacker.get_meta("charge_level"))
+			attacker.set_meta("charge_level", min(100.0, cl + charge_increment))
 
 	var cl_timer = 0.0
 	if "chain_lightning_timer" in attacker:

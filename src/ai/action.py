@@ -57,11 +57,15 @@ class Action:
         new_hp = getattr(target, "hp", 0.0)
         if new_hp <= 0 and old_hp > 0 and pm and hasattr(pm, "add_kill"):
             pm.add_kill(attacker.ball_type, target.ball_type)
-            if pm.is_nemesis(target.ball_type, attacker.ball_type):
-                if hasattr(attacker, "kills"):
-                    attacker.kills += 1
-                if hasattr(attacker, "charge_level"):
-                    attacker.charge_level = min(100.0, getattr(attacker, "charge_level", 0.0) + 10.0)
+            is_target_nemesis = pm.is_nemesis(target.ball_type, attacker.ball_type)
+
+            kill_increment = 2 if is_target_nemesis else 1
+            charge_increment = 20.0 if is_target_nemesis else 10.0
+
+            if hasattr(attacker, "kills"):
+                attacker.kills += kill_increment
+            if hasattr(attacker, "charge_level"):
+                attacker.charge_level = min(100.0, getattr(attacker, "charge_level", 0.0) + charge_increment)
 
         # Chain lightning effect
         if getattr(attacker, "chain_lightning_timer", 0.0) > 0:

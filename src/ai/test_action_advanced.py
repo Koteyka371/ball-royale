@@ -387,3 +387,50 @@ def test_reflect_shield_capacity():
     action._attempt_damage(attacker, target)
     assert target.reflect_shield_active is False
     assert len(damage_dealt_to_attacker) == 3  # The target does not reflect
+
+def test_nemesis_double_points():
+    ball = MockBall(x=100, y=100)
+    world = MockWorld()
+
+    # Needs pm and add_kill
+    from system.profile import ProfileManager
+    world.profile_manager = ProfileManager(filename="test_profile_nemesis.json")
+    world.profile_manager.data["nemeses"] = {}
+
+    action = Action(ball, world)
+
+    attacker = MockEntity(x=150, y=100, ball_type="killer_ball")
+    attacker.damage = 20.0
+    attacker.kills = 0
+    attacker.charge_level = 0.0
+
+    target = MockEntity(x=100, y=100, ball_type="victim_ball")
+    target.hp = 100.0
+
+    def mock_deal_damage(dmg_attacker, dmg_target):
+        # dmg_attacker might be the ball or target depending on ricochet
+        # In _deal_damage(attacker, target), attacker is the first arg.
+        # In test, we wrote `world._deal_damage(attacker, target)` so it is attacker, target.
+        dmg_target.hp -= dmg_attacker.damage
+    world._deal_damage = mock_deal_damage
+
+    # Make victim a nemesis of killer
+    world.profile_manager.add_kill("killer_ball", "victim_ball")
+    world.profile_manager.add_kill("killer_ball", "victim_ball")
+    # Also make killer a nemesis of victim for double points test
+    world.profile_manager.add_kill("victim_ball", "killer_ball")
+    world.profile_manager.add_kill("victim_ball", "killer_ball")
+
+    assert world.profile_manager.is_nemesis("killer_ball", "victim_ball") == True
+
+    # Normal hit, check 20% bonus damage
+    action._attempt_damage(attacker, target)
+    assert abs(target.hp - (100.0 - (20.0 * 1.2))) < 0.01
+
+    # Kill shot
+    target.hp = 10.0
+    action._attempt_damage(attacker, target)
+
+    assert target.hp <= 0.0
+    assert attacker.kills == 2
+    assert attacker.charge_level == 20.0
