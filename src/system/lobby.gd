@@ -50,6 +50,23 @@ func apply_loadout_to_ball(ball_id: int, profile: ProfileManager, loadout_name: 
         return true
     return false
 
+func apply_random_loadout(ball_id: int, profile: ProfileManager) -> bool:
+    var unlocked_balls = profile.data.get("unlocked_balls", ["basic"])
+    if unlocked_balls.is_empty():
+        unlocked_balls = ["basic"]
+
+    var ball_type = unlocked_balls[randi() % unlocked_balls.size()]
+    var trap_variants = ["normal", "poison", "stun", "ricochet", "emp", "hologram"]
+    var trap_variant = trap_variants[randi() % trap_variants.size()]
+
+    select_trap_variant(ball_id, trap_variant)
+    selections[str(ball_id) + "_ball_type"] = ball_type
+
+    # Add random loadout challenge quest
+    profile.add_quest("Win a match using a Random Loadout", 300)
+
+    return true
+
 func apply_default_loadout(ball_id: int, profile: ProfileManager) -> bool:
     var default_loadout = profile.get_default_loadout()
     if default_loadout != "":

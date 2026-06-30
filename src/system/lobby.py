@@ -43,6 +43,24 @@ class PreGameLobby:
             return True
         return False
 
+    def apply_random_loadout(self, ball_id, profile):
+        import random
+        unlocked_balls = profile.data.get("unlocked_balls", ["basic"])
+        if not unlocked_balls:
+            unlocked_balls = ["basic"]
+
+        ball_type = random.choice(unlocked_balls)
+        trap_variants = ["normal", "poison", "stun", "ricochet", "emp", "hologram"]
+        trap_variant = random.choice(trap_variants)
+
+        self.select_trap_variant(ball_id, trap_variant)
+        self.selections[f"{ball_id}_ball_type"] = ball_type
+
+        # Add random loadout challenge quest
+        profile.add_quest("Win a match using a Random Loadout", 300)
+
+        return True
+
     def apply_default_loadout(self, ball_id, profile):
         default_loadout = profile.get_default_loadout()
         if default_loadout:
