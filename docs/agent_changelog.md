@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-293] New Weather Type: Earthquake — *2026-06-30 10:07:17 UTC*
+
+Periodically shakes the screen and applies a random impulse vector to all entities, disrupting aiming and movement patterns temporarily.
+
+---
+
 ## [idea-295] Weather-Specific Equipment — *2026-06-30 09:51:12 UTC*
 
 Introduces new loadout items (e.g. 'Mud Tires', 'Thermal Goggles') that specifically counteract penalties applied by rain or fog respectively.
