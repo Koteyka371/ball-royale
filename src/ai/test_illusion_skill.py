@@ -66,3 +66,50 @@ def test_illusion_explosion():
 
     # Enemy takes damage (20 from explosion)
     assert enemy.hp <= 100.0
+
+def test_mimic_clone_movement():
+    world = MockWorld()
+    owner = MockBall(50, 50, "red")
+    owner.id = 123
+    owner.vx = 10.0
+    owner.vy = -5.0
+
+    clone = MockBall(50, 50, "red")
+    clone.id = 124
+    clone.is_mimic_clone = True
+    clone.mimic_owner = 123
+    clone.mimic_timer = 10.0
+    clone.hp = 50.0
+
+    world.balls.extend([owner, clone])
+
+    action = Action(clone, world)
+    action.execute("idle", 1.0)
+
+    # Should copy velocity and move
+    assert clone.vx == 10.0
+    assert clone.vy == -5.0
+    assert clone.x == 60.0
+    assert clone.y == 45.0
+    assert clone.mimic_timer == 9.0
+
+def test_mimic_clone_does_not_explode():
+    world = MockWorld()
+    clone = MockBall(50, 50, "red")
+    clone.is_mimic_clone = True
+    clone.is_illusion = True
+    clone.hp = 1.0
+    clone.mimic_timer = 5.0
+
+    enemy = MockBall(60, 50, "blue") # Near clone
+    world.balls.extend([clone, enemy])
+
+    action = Action(clone, world)
+
+    # Kill the clone
+    clone.hp = 0.0
+    action.execute("idle", 0.1)
+
+    assert clone.alive == False
+    # Enemy takes no damage (because mimic clone does not explode)
+    assert enemy.hp == 100.0
