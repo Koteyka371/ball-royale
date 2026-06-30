@@ -1825,6 +1825,38 @@ func execute(strategy: String, delta: float):
                             if self.ball.hp > self.ball.max_hp:
                                 self.ball.hp = self.ball.max_hp
                         continue
+                    elif hazard.kind == "damage_link":
+                        var has_target = false
+                        if "damage_link_target" in self.ball and self.ball.damage_link_target != null:
+                            has_target = true
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("damage_link_target") and self.ball.get_meta("damage_link_target") != null:
+                            has_target = true
+
+                        if not has_target:
+                            var closest_dist = INF
+                            var closest_ball = null
+                            if self.world != null and "balls" in self.world:
+                                for b in self.world.balls:
+                                    if b != self.ball and ("alive" in b and b.alive):
+                                        var b_has_target = false
+                                        if "damage_link_target" in b and b.damage_link_target != null: b_has_target = true
+                                        elif b.has_method("get_meta") and b.has_meta("damage_link_target") and b.get_meta("damage_link_target") != null: b_has_target = true
+
+                                        if not b_has_target:
+                                            var d_sq = pow(b.x - self.ball.x, 2) + pow(b.y - self.ball.y, 2)
+                                            if d_sq < closest_dist:
+                                                closest_dist = d_sq
+                                                closest_ball = b
+                            if closest_ball != null:
+                                if "damage_link_target" in self.ball: self.ball.damage_link_target = closest_ball
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("damage_link_target", closest_ball)
+
+                                if "damage_link_target" in closest_ball: closest_ball.damage_link_target = self.ball
+                                elif closest_ball.has_method("set_meta"): closest_ball.set_meta("damage_link_target", self.ball)
+
+                                if self.has_method("_spawn_directed_particles"):
+                                    self._spawn_directed_particles(self.ball, closest_ball, "damage_link")
+                        continue
 
                     var hazard_damage = hazard.damage * delta
                     if self.ball.has_method("take_damage"):
@@ -1897,6 +1929,100 @@ func execute(strategy: String, delta: float):
                 self.ball.is_stunned = false
             elif self.ball.has_method("set_meta"):
                 self.ball.set_meta("is_stunned", false)
+
+    var current_hp = 100.0
+    if "hp" in self.ball: current_hp = float(self.ball.hp)
+
+    var current_stun = 0.0
+    if "stun_timer" in self.ball:
+        current_stun = float(self.ball.stun_timer)
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("stun_timer"):
+        current_stun = float(self.ball.get_meta("stun_timer"))
+
+    var current_silence = 0.0
+    if "silence_timer" in self.ball:
+        current_silence = float(self.ball.silence_timer)
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("silence_timer"):
+        current_silence = float(self.ball.get_meta("silence_timer"))
+
+    var damage_taken = start_hp - current_hp
+    var stun_taken = current_stun - start_stun
+    var silence_taken = current_silence - start_silence
+
+    var link_target = null
+    if "damage_link_target" in self.ball: link_target = self.ball.damage_link_target
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("damage_link_target"): link_target = self.ball.get_meta("damage_link_target")
+
+    if link_target != null and ("alive" in link_target and link_target.alive):
+        var dist_sq = pow(self.ball.x - link_target.x, 2) + pow(self.ball.y - link_target.y, 2)
+        if dist_sq > 90000.0:  # Distance > 300 breaks the link
+            if "damage_link_target" in self.ball: self.ball.damage_link_target = null
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("damage_link_target", null)
+
+            var target_link = null
+            if "damage_link_target" in link_target: target_link = link_target.damage_link_target
+            elif link_target.has_method("get_meta") and link_target.has_meta("damage_link_target"): target_link = link_target.get_meta("damage_link_target")
+
+            if target_link == self.ball:
+                if "damage_link_target" in link_target: link_target.damage_link_target = null
+                elif link_target.has_method("set_meta"): link_target.set_meta("damage_link_target", null)
+        else:
+            var is_receiving = false
+            if "damage_link_is_receiving" in self.ball: is_receiving = self.ball.damage_link_is_receiving
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("damage_link_is_receiving"): is_receiving = self.ball.get_meta("damage_link_is_receiving")
+
+            if damage_taken > 0 and not is_receiving:
+                if "damage_link_is_receiving" in link_target: link_target.damage_link_is_receiving = true
+                elif link_target.has_method("set_meta"): link_target.set_meta("damage_link_is_receiving", true)
+
+                if link_target.has_method("take_damage"):
+                    link_target.take_damage(damage_taken * 0.5)
+                elif "hp" in link_target:
+                    link_target.hp -= damage_taken * 0.5
+                    if link_target.hp <= 0:
+                        link_target.alive = false
+
+                if "damage_link_is_receiving" in link_target: link_target.damage_link_is_receiving = false
+                elif link_target.has_method("set_meta"): link_target.set_meta("damage_link_is_receiving", false)
+
+            var is_receiving_stun = false
+            if "damage_link_is_receiving_stun" in self.ball: is_receiving_stun = self.ball.damage_link_is_receiving_stun
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("damage_link_is_receiving_stun"): is_receiving_stun = self.ball.get_meta("damage_link_is_receiving_stun")
+
+            if stun_taken > 0 and not is_receiving_stun:
+                if "damage_link_is_receiving_stun" in link_target: link_target.damage_link_is_receiving_stun = true
+                elif link_target.has_method("set_meta"): link_target.set_meta("damage_link_is_receiving_stun", true)
+
+                var l_stun = 0.0
+                if "stun_timer" in link_target: l_stun = link_target.stun_timer
+                elif link_target.has_method("get_meta") and link_target.has_meta("stun_timer"): l_stun = link_target.get_meta("stun_timer")
+
+                if "stun_timer" in link_target: link_target.stun_timer = l_stun + stun_taken * 0.5
+                elif link_target.has_method("set_meta"): link_target.set_meta("stun_timer", l_stun + stun_taken * 0.5)
+
+                if "is_stunned" in link_target: link_target.is_stunned = true
+                elif link_target.has_method("set_meta"): link_target.set_meta("is_stunned", true)
+
+                if "damage_link_is_receiving_stun" in link_target: link_target.damage_link_is_receiving_stun = false
+                elif link_target.has_method("set_meta"): link_target.set_meta("damage_link_is_receiving_stun", false)
+
+            var is_receiving_silence = false
+            if "damage_link_is_receiving_silence" in self.ball: is_receiving_silence = self.ball.damage_link_is_receiving_silence
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("damage_link_is_receiving_silence"): is_receiving_silence = self.ball.get_meta("damage_link_is_receiving_silence")
+
+            if silence_taken > 0 and not is_receiving_silence:
+                if "damage_link_is_receiving_silence" in link_target: link_target.damage_link_is_receiving_silence = true
+                elif link_target.has_method("set_meta"): link_target.set_meta("damage_link_is_receiving_silence", true)
+
+                var l_silence = 0.0
+                if "silence_timer" in link_target: l_silence = link_target.silence_timer
+                elif link_target.has_method("get_meta") and link_target.has_meta("silence_timer"): l_silence = link_target.get_meta("silence_timer")
+
+                if "silence_timer" in link_target: link_target.silence_timer = l_silence + silence_taken * 0.5
+                elif link_target.has_method("set_meta"): link_target.set_meta("silence_timer", l_silence + silence_taken * 0.5)
+
+                if "damage_link_is_receiving_silence" in link_target: link_target.damage_link_is_receiving_silence = false
+                elif link_target.has_method("set_meta"): link_target.set_meta("damage_link_is_receiving_silence", false)
 
     if strategy == "flee":
         _flee(delta)
@@ -4231,6 +4357,30 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "cleanser":
+                if "burn_timer" in self.ball: self.ball.burn_timer = 0.0
+                if "poison_timer" in self.ball: self.ball.poison_timer = 0.0
+                if "slow_timer" in self.ball: self.ball.slow_timer = 0.0
+                if "silence_timer" in self.ball: self.ball.silence_timer = 0.0
+                if "stun_timer" in self.ball:
+                    self.ball.stun_timer = 0.0
+                    if "is_stunned" in self.ball: self.ball.is_stunned = false
+
+                var link_target = null
+                if "damage_link_target" in self.ball: link_target = self.ball.damage_link_target
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("damage_link_target"): link_target = self.ball.get_meta("damage_link_target")
+
+                if link_target != null:
+                    var target_link = null
+                    if "damage_link_target" in link_target: target_link = link_target.damage_link_target
+                    elif link_target.has_method("get_meta") and link_target.has_meta("damage_link_target"): target_link = link_target.get_meta("damage_link_target")
+
+                    if target_link == self.ball:
+                        if "damage_link_target" in link_target: link_target.damage_link_target = null
+                        elif link_target.has_method("set_meta"): link_target.set_meta("damage_link_target", null)
+
+                    if "damage_link_target" in self.ball: self.ball.damage_link_target = null
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("damage_link_target", null)
             elif "kind" in nearest and nearest.kind == "link_booster":
                 var enemies_link = _get_enemies()
                 if enemies_link.size() > 0:

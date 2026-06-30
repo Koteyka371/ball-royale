@@ -209,6 +209,9 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        start_hp = getattr(self.ball, "hp", 100.0)
+        start_stun = getattr(self.ball, "stun_timer", 0.0)
+        start_silence = getattr(self.ball, "silence_timer", 0.0)
 
         self.ball.is_in_quicksand = False
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -1290,6 +1293,25 @@ class Action:
                                 if self.ball.hp > self.ball.max_hp:
                                     self.ball.hp = self.ball.max_hp
                             continue
+                        elif hazard.kind == "damage_link":
+                            if not getattr(self.ball, "damage_link_target", None):
+                                # Find closest other ball
+                                closest_dist = float('inf')
+                                closest_ball = None
+                                if hasattr(self.world, "balls"):
+                                    for b in self.world.balls:
+                                        if b != self.ball and getattr(b, "alive", True) and not getattr(b, "damage_link_target", None):
+                                            d_sq = (b.x - self.ball.x)**2 + (b.y - self.ball.y)**2
+                                            if d_sq < closest_dist:
+                                                closest_dist = d_sq
+                                                closest_ball = b
+                                if closest_ball:
+                                    self.ball.damage_link_target = closest_ball
+                                    closest_ball.damage_link_target = self.ball
+
+                                    if hasattr(self, "_spawn_directed_particles"):
+                                        self._spawn_directed_particles(self.ball, closest_ball, "damage_link")
+                            continue
 
                         hazard_damage = hazard.damage * delta
                         if getattr(self.ball, "is_in_quicksand", False):
@@ -1334,6 +1356,44 @@ class Action:
                 return  # Skip movement if stunned
             else:
                 self.ball.is_stunned = False
+
+        # Damage Link logic
+        current_hp = getattr(self.ball, "hp", 100.0)
+        current_stun = getattr(self.ball, "stun_timer", 0.0)
+        current_silence = getattr(self.ball, "silence_timer", 0.0)
+
+        damage_taken = start_hp - current_hp
+        stun_taken = current_stun - start_stun
+        silence_taken = current_silence - start_silence
+
+        link_target = getattr(self.ball, "damage_link_target", None)
+        if link_target and getattr(link_target, "alive", True):
+            dist_sq = (self.ball.x - link_target.x)**2 + (self.ball.y - link_target.y)**2
+            if dist_sq > 90000:  # Distance > 300 breaks the link
+                self.ball.damage_link_target = None
+                if getattr(link_target, "damage_link_target", None) == self.ball:
+                    link_target.damage_link_target = None
+            else:
+                if damage_taken > 0 and not getattr(self.ball, "damage_link_is_receiving", False):
+                    link_target.damage_link_is_receiving = True
+                    if hasattr(link_target, "take_damage"):
+                        link_target.take_damage(damage_taken * 0.5)
+                    elif hasattr(link_target, "hp"):
+                        link_target.hp -= damage_taken * 0.5
+                        if link_target.hp <= 0:
+                            link_target.alive = False
+                    link_target.damage_link_is_receiving = False
+
+                if stun_taken > 0 and not getattr(self.ball, "damage_link_is_receiving_stun", False):
+                    link_target.damage_link_is_receiving_stun = True
+                    link_target.stun_timer = getattr(link_target, "stun_timer", 0.0) + stun_taken * 0.5
+                    link_target.is_stunned = True
+                    link_target.damage_link_is_receiving_stun = False
+
+                if silence_taken > 0 and not getattr(self.ball, "damage_link_is_receiving_silence", False):
+                    link_target.damage_link_is_receiving_silence = True
+                    link_target.silence_timer = getattr(link_target, "silence_timer", 0.0) + silence_taken * 0.5
+                    link_target.damage_link_is_receiving_silence = False
 
         if strategy == "flee":
             self._flee(delta)
@@ -2713,6 +2773,30 @@ class Action:
                 elif getattr(nearest, "kind", None) == "stamina_booster":
                     self.ball.stamina = getattr(self.ball, "max_stamina", 100.0)
                     self.ball.infinite_stamina_timer = 5.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "cleanser":
+                    if hasattr(self.ball, "burn_timer"):
+                        self.ball.burn_timer = 0
+                    if hasattr(self.ball, "poison_timer"):
+                        self.ball.poison_timer = 0
+                    if hasattr(self.ball, "slow_timer"):
+                        self.ball.slow_timer = 0
+                    if hasattr(self.ball, "silence_timer"):
+                        self.ball.silence_timer = 0
+                    if hasattr(self.ball, "stun_timer"):
+                        self.ball.stun_timer = 0
+                        self.ball.is_stunned = False
+
+                    link_target = getattr(self.ball, "damage_link_target", None)
+                    if link_target:
+                        if getattr(link_target, "damage_link_target", None) == self.ball:
+                            link_target.damage_link_target = None
+                        self.ball.damage_link_target = None
+
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
