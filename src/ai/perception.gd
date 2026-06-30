@@ -22,10 +22,22 @@ func scan() -> Dictionary:
 
     if self.world != null and "arena" in self.world and "is_foggy" in self.world.arena:
         if self.world.arena.is_foggy:
-            perception_radius = min(perception_radius, 80.0)
+            var has_thermal = false
+            if "cosmetic" in self.ball:
+                var cos = str(self.ball.cosmetic).to_lower().replace(" ", "_")
+                if cos == "thermal_goggles":
+                    has_thermal = true
+            if not has_thermal:
+                perception_radius = min(perception_radius, 80.0)
     if self.world != null and "arena" in self.world and "is_raining" in self.world.arena:
         if self.world.arena.is_raining:
-            perception_radius = perception_radius * 0.8
+            var has_mud_tires = false
+            if "cosmetic" in self.ball:
+                var cos = str(self.ball.cosmetic).to_lower().replace(" ", "_")
+                if cos == "mud_tires":
+                    has_mud_tires = true
+            if not has_mud_tires:
+                perception_radius = perception_radius * 0.8
     if self.world != null and "arena" in self.world and "is_sandstorming" in self.world.arena:
         if self.world.arena.is_sandstorming:
             perception_radius = perception_radius * 0.3

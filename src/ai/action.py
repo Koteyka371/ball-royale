@@ -135,10 +135,13 @@ class Action:
 
     def _get_perception_radius(self) -> float:
         pr = float(getattr(self.ball, "perception_radius", 250.0))
+        cosmetic = str(getattr(self.ball, "cosmetic", "")).lower().replace(" ", "_")
         if hasattr(self.world, "arena") and getattr(self.world.arena, "is_raining", False):
-            pr *= 0.6  # Reduced perception in rain
+            if cosmetic != "mud_tires":
+                pr *= 0.6  # Reduced perception in rain
         if hasattr(self.world, "arena") and getattr(self.world.arena, "is_foggy", False):
-            pr *= 0.4  # Further reduced perception in fog
+            if cosmetic != "thermal_goggles":
+                pr *= 0.4  # Further reduced perception in fog
         return pr
 
 
@@ -265,10 +268,12 @@ class Action:
 
         # Weather friction
         if hasattr(self.world, "arena") and hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+            cosmetic = str(getattr(self.ball, "cosmetic", "")).lower().replace(" ", "_")
             if getattr(self.world.arena, "is_raining", False):
-                # Slippery: apply momentum (friction slide)
-                self.ball.x += getattr(self.ball, "vx", 0.0) * delta * 0.5
-                self.ball.y += getattr(self.ball, "vy", 0.0) * delta * 0.5
+                if cosmetic != "mud_tires":
+                    # Slippery: apply momentum (friction slide)
+                    self.ball.x += getattr(self.ball, "vx", 0.0) * delta * 0.5
+                    self.ball.y += getattr(self.ball, "vy", 0.0) * delta * 0.5
             if getattr(self.world.arena, "is_snowing", False):
                 # Extra slippery: apply even more momentum
                 self.ball.x += getattr(self.ball, "vx") * delta * 0.4

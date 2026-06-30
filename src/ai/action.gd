@@ -204,6 +204,31 @@ func _attempt_damage(attacker, target) -> void:
 var ball = null
 var world = null
 
+
+func _get_perception_radius() -> float:
+	var pr = 250.0
+	if "perception_radius" in self.ball:
+		pr = float(self.ball.perception_radius)
+	if self.world != null and "arena" in self.world and self.world.arena != null:
+		var arena = self.world.arena
+		if arena.get("is_raining") == true:
+			var has_mud_tires = false
+			if "cosmetic" in self.ball:
+				var cos = str(self.ball.cosmetic).to_lower().replace(" ", "_")
+				if cos == "mud_tires":
+					has_mud_tires = true
+			if not has_mud_tires:
+				pr *= 0.6
+		if arena.get("is_foggy") == true:
+			var has_thermal = false
+			if "cosmetic" in self.ball:
+				var cos = str(self.ball.cosmetic).to_lower().replace(" ", "_")
+				if cos == "thermal_goggles":
+					has_thermal = true
+			if not has_thermal:
+				pr *= 0.4
+	return pr
+
 func _init(ball_ref, world_ref):
     self.ball = ball_ref
     self.world = world_ref
@@ -399,7 +424,12 @@ func execute(strategy: String, delta: float):
 
     if world != null and "arena" in world:
         if world.arena.get("is_raining") == true:
-            if "vx" in my_ball and "vy" in my_ball:
+            var has_mud_tires = false
+            if "cosmetic" in my_ball:
+                var cos = str(my_ball.cosmetic).to_lower().replace(" ", "_")
+                if cos == "mud_tires":
+                    has_mud_tires = true
+            if not has_mud_tires and "vx" in my_ball and "vy" in my_ball:
                 my_ball.x += my_ball.vx * delta * 0.2
                 my_ball.y += my_ball.vy * delta * 0.2
         if world.arena.get("is_snowing") == true:
