@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-326] Quantum Entanglement Skill — *2026-06-30 19:06:42 UTC*
+
+A new skill that allows a ball to randomly link to another ball. Any damage taken by one is shared equally between both, but buffs are also shared. Perfect for strategic chaos.
+
+---
+
 ## [idea-279] Shield breaking mechanism — *2026-06-30 16:39:57 UTC*
 
 Currently the reflect shield reflects the first damage and is consumed. Allow the shield to have a maximum damage capacity so it can reflect multiple small hits before breaking.
