@@ -862,8 +862,24 @@ class Action:
                         dy = hazard.y - self.ball.y
                         dist_sq = dx * dx + dy * dy
                         if dist_sq < hazard.radius * hazard.radius:
-                            # Apply slow
-                            self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.3
+                            import random
+                            hazard_damage = hazard.damage * delta
+                            if hasattr(self.ball, "take_damage"):
+                                self.ball.take_damage(hazard_damage)
+                            elif hasattr(self.ball, "hp"):
+                                self.ball.hp -= hazard_damage
+                                if self.ball.hp <= 0:
+                                    self.ball.alive = False
+
+                            # Occasional slow debuff that lingers
+                            if getattr(self.ball, "quicksand_debuff_timer", 0.0) <= 0:
+                                if random.random() < 0.1:  # 10% chance per tick to apply debuff
+                                    self.ball.quicksand_debuff_timer = 2.0
+
+                            if getattr(self.ball, "quicksand_debuff_timer", 0.0) > 0:
+                                self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.3
+                                self.ball.quicksand_debuff_timer -= delta
+
                             self.ball.is_in_quicksand = True
                     elif hazard.kind == "conveyor_belt":
                         dx = hazard.x - self.ball.x
