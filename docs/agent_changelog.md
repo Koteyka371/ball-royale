@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-292] Meteor Strike Hazard — *2026-06-30 11:01:34 UTC*
+
+Random meteor hazards drop into the arena causing AoE damage and leaving fire zones.
+
+---
+
 ## [idea-322] Random Loadout Option — *2026-06-30 10:58:20 UTC*
 
 Add a 'Random' loadout selection that picks a random unlocked ball type and trap variant to provide an extra challenge with bonus rewards.

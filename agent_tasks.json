@@ -5076,7 +5076,7 @@
     },
     {
       "id": "idea-292",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Meteor Strike Hazard",
@@ -8338,6 +8338,58 @@
         "src/ai/cosmetic_auras_based_on_level.py",
         "src/ai/cosmetic_auras_based_on_level.gd",
         "tests/test_cosmetic_auras_based_on_level.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-484",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Lightning Trap",
+      "description": "A trap that, upon activation, zaps the triggering ball and then jumps to the nearest enemy ball within a short radius, losing a bit of damage with each jump. It would encourage enemies to spread out and punish grouping up.",
+      "allowed_paths": [
+        "src/arena/chain_lightning_trap.py",
+        "src/arena/chain_lightning_trap.gd",
+        "tests/test_chain_lightning_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-485",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Prestige Mastery Milestones",
+      "description": "Enhance the prestige system by granting exclusive titles, visual auras, and a custom ball type skin for every milestone (e.g., Prestige 5, Prestige 10). It incentivizes long-term engagement and lets veteran players flex their progress visually in the lobby.",
+      "allowed_paths": [
+        "src/ui/prestige_mastery_milestones.py",
+        "src/ui/prestige_mastery_milestones.gd",
+        "src/ai/prestige_mastery_milestones.py",
+        "tests/test_prestige_mastery_milestones.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-486",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Daily Challenge Modifier Mode",
+      "description": "Introduce a new game mode that randomly applies extreme global mutators daily (e.g., 'Low Gravity + Double Damage' or 'Invisible Hazards'). Players who participate and survive receive exclusive cosmetic rewards and bonus skill points, creating an ever-changing meta.",
+      "allowed_paths": [
+        "src/ai/daily_challenge.py",
+        "src/ai/daily_challenge.gd",
+        "tests/test_daily_challenge.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
