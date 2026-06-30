@@ -110,10 +110,17 @@ class Perception:
             if not e_has_stealth and hasattr(e, "has_method") and e.has_method("get_meta") and e.has_meta("has_stealth_drone"):
                 e_has_stealth = e.get_meta("has_stealth_drone")
 
-            if e_has_stealth:
+            e_has_shadow = False
+            if hasattr(e, "has_method") and e.has_method("get_meta") and e.has_meta("shadow_booster_timer"):
+                e_has_shadow = e.get_meta("shadow_booster_timer") > 0
+            elif hasattr(e, "shadow_booster_timer"):
+                e_has_shadow = e.shadow_booster_timer > 0
+
+            if e_has_stealth or e_has_shadow:
                 dist = math.sqrt((getattr(e, "x", 0) - bx_curr)**2 + (getattr(e, "y", 0) - by_curr)**2)
-                # Stealth drone masks presence outside a short radius (e.g. 50.0)
-                if dist > 80.0:
+                if e_has_shadow and dist > 30.0:
+                    continue
+                elif e_has_stealth and dist > 80.0:
                     continue
             filtered_enemies.append(e)
 
@@ -163,7 +170,7 @@ class Perception:
                                 data["boosters"].append(h)
                     else:
                         # Make sure it's not already in there by id
-                        if getattr(h, "kind", "") == "drone_item" or getattr(h, "kind", "") == "stealth_drone_item":
+                        if getattr(h, "kind", "") == "drone_item" or getattr(h, "kind", "") == "stealth_drone_item" or getattr(h, "kind", "") == "shadow_booster":
                             if not any(getattr(b, "id", None) == h.id for b in data["boosters"]):
                                 data["boosters"].append(h)
                         else:

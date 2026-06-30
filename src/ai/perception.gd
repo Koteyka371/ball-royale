@@ -127,9 +127,17 @@ func scan() -> Dictionary:
         elif e.has_method("get_meta") and e.has_meta("has_stealth_drone") and e.get_meta("has_stealth_drone"):
             e_has_stealth = true
 
-        if e_has_stealth:
+        var e_has_shadow = false
+        if e.has_method("get_meta") and e.has_meta("shadow_booster_timer"):
+            e_has_shadow = e.get_meta("shadow_booster_timer") > 0
+        elif "shadow_booster_timer" in e:
+            e_has_shadow = float(e.shadow_booster_timer) > 0
+
+        if e_has_stealth or e_has_shadow:
             var dist = sqrt(pow(e.x - bx_curr, 2) + pow(e.y - by_curr, 2))
-            if dist > 80.0:
+            if e_has_shadow and dist > 30.0:
+                continue
+            elif e_has_stealth and dist > 80.0:
                 continue
 
         data["enemies"].append(e)
@@ -192,7 +200,7 @@ func scan() -> Dictionary:
                                 break
                         if not found:
                             data["boosters"].append(h)
-                elif "kind" in h and (h.kind == "drone_item" or h.kind == "stealth_drone_item"):
+                elif "kind" in h and (h.kind == "drone_item" or h.kind == "stealth_drone_item" or h.kind == "shadow_booster"):
                     var found = false
                     for b in data["boosters"]:
                         if "id" in b and "id" in h and b.id == h.id:

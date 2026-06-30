@@ -4034,6 +4034,13 @@ func _collect_booster(delta: float):
                     self.ball.stealth_drone_timer = 15.0
                 elif "stealth_drone_timer" in self.ball:
                     self.ball.stealth_drone_timer = 15.0
+            elif "kind" in nearest and nearest.kind == "shadow_booster":
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("shadow_booster_timer", 15.0)
+                elif "shadow_booster_timer" in self.ball:
+                    self.ball.shadow_booster_timer = 15.0
+                else:
+                    self.ball.shadow_booster_timer = 15.0
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
@@ -5914,6 +5921,21 @@ func _update_skill_timer(delta: float):
                 self.ball.has_stealth_drone = false
             elif self.ball.has_method("set_meta"):
                 self.ball.set_meta("has_stealth_drone", false)
+
+    var shadow_timer = 0.0
+    if "shadow_booster_timer" in self.ball:
+        shadow_timer = float(self.ball.shadow_booster_timer)
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("shadow_booster_timer"):
+        shadow_timer = self.ball.get_meta("shadow_booster_timer")
+
+    if shadow_timer > 0.0:
+        shadow_timer -= delta
+        if shadow_timer < 0.0:
+            shadow_timer = 0.0
+        if "shadow_booster_timer" in self.ball:
+            self.ball.shadow_booster_timer = shadow_timer
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("shadow_booster_timer", shadow_timer)
 
 func _kite(delta: float):
     # Added Kite cosmetic comment
