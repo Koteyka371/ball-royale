@@ -105,6 +105,40 @@ func _handle_kill(kill_info: Dictionary, current_tick: int, balls: Array):
                 world.add_event("crowd_cheer", {"message": "The crowd roars for an incredible comeback attempt!", "volume": 1.2})
                 world.add_event("audio_event", {"sound": "comeback_cheer", "volume": 1.0})
 
+    var victim_id = kill_info.get("victim_id")
+    var victim = null
+    if victim_id != null:
+        for b in balls:
+            var b_id = -1
+            if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+                b_id = b.get("id")
+            elif typeof(b) == TYPE_DICTIONARY and b.has("id"):
+                b_id = b["id"]
+
+            if str(b_id) == str(victim_id):
+                victim = b
+                break
+
+        if victim != null:
+            var victim_team = ""
+            if typeof(victim) == TYPE_OBJECT and victim.has_method("get"):
+                victim_team = victim.get("team")
+                if victim_team == null or victim_team == "":
+                    victim_team = victim.get("ball_type")
+            elif typeof(victim) == TYPE_DICTIONARY:
+                victim_team = victim.get("team", victim.get("ball_type", ""))
+
+            var victim_team_count = 0
+            if alive_teams.has(victim_team):
+                victim_team_count = alive_teams[victim_team]
+
+            if victim_team_count == 0:
+                excitement_level += 25.0
+                if world != null and world.has_method("add_event"):
+                    world.add_event("crowd_cheer", {"message": "The crowd gasps as team " + str(victim_team) + " is wiped out!", "volume": 1.1})
+                    world.add_event("audio_event", {"sound": "team_wipe_gasp", "volume": 1.0})
+
+
 func _throw_buffs_if_needed(balls: Array, current_tick: int):
     if excitement_level < 50.0:
         return
