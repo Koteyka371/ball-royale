@@ -351,20 +351,21 @@ class ProceduralArena:
                     if hasattr(h, "duration"):
                         h.duration -= delta
                         if h.duration <= 0:
+                            h.kind = "meteor_strike"
+                            h.duration = 0.5
+                            h.damage = 1000.0
+                elif getattr(h, "kind", "") == "meteor_strike":
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0:
+                            h.kind = "fire_zone"
+                            h.duration = 5.0
+                            h.damage = 50.0
+                elif getattr(h, "kind", "") == "fire_zone":
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0:
                             h.active = False
-                            import random
-                            crater_id = 6000 + len(self.hazards) + len(new_craters) + random.randint(0, 1000)
-                            crater = Hazard(id=crater_id, x=h.x, y=h.y, radius=h.radius * 1.5, kind="crater", damage=10.0)
-                            new_craters.append(crater)
-
-                            # Destroy cover
-                            try:
-                                from arena.procedural_arena import Room # type: ignore
-                                crater_size = h.radius * 3.0
-                                new_room = Room(h.x - crater_size/2, h.y - crater_size/2, crater_size, crater_size)
-                                self.rooms.append(new_room)
-                            except ImportError:
-                                pass
                 elif h.id >= 1000 and hasattr(h, "target_radius"):
                     if h.radius < h.target_radius:
                         # Grow proportionally to reach target in roughly 600 ticks
@@ -382,7 +383,7 @@ class ProceduralArena:
                 x = random.uniform(50, self.width - 50)
                 y = random.uniform(50, self.height - 50)
                 h_id = 2500 + len(self.hazards) + random.randint(0, 1000)
-                meteor = Hazard(id=h_id, x=x, y=y, radius=30.0, kind="meteor", damage=200.0)
+                meteor = Hazard(id=h_id, x=x, y=y, radius=30.0, kind="meteor", damage=0.0)
                 meteor.target_radius = 30.0
                 setattr(meteor, "duration", 5.0)
                 self.hazards.append(meteor)
@@ -463,7 +464,7 @@ class ProceduralArena:
                 x = random.uniform(50, self.width - 50)
                 y = random.uniform(50, self.height - 50)
                 h_id = 2000 + len(self.hazards) + random.randint(0, 1000)
-                meteor = Hazard(id=h_id, x=x, y=y, radius=30.0, kind="meteor", damage=200.0)
+                meteor = Hazard(id=h_id, x=x, y=y, radius=30.0, kind="meteor", damage=0.0)
                 meteor.target_radius = 30.0
                 setattr(meteor, "duration", 5.0)
                 self.hazards.append(meteor)

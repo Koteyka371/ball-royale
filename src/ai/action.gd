@@ -1305,7 +1305,7 @@ func execute(strategy: String, delta: float):
                             self.ball.x += nx * knockback_force
                             self.ball.y += ny * knockback_force
                         continue
-                    elif hazard.kind == "meteor":
+                    elif hazard.kind in ["meteor", "meteor_strike", "fire_zone"]:
                         var hd = hazard.damage * delta
                         if self.ball.has_method("take_damage"):
                             self.ball.take_damage(hd)

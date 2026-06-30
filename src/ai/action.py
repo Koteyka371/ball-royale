@@ -904,7 +904,7 @@ class Action:
                                 self.ball.x += nx * knockback_force
                                 self.ball.y += ny * knockback_force
                             continue
-                        elif hazard.kind == "meteor":
+                        elif hazard.kind in ["meteor", "meteor_strike", "fire_zone"]:
                             hazard_damage = hazard.damage * delta
                             if hasattr(self.ball, "take_damage"):
                                 self.ball.take_damage(hazard_damage)

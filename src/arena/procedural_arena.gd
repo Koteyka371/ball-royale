@@ -381,19 +381,26 @@ func update_zone(current_tick: int, delta: float) -> void:
                     var dur = h.get_meta("duration") - delta
                     h.set_meta("duration", dur)
                     if dur <= 0:
-                        h.set_meta("active", false)
+                        h.kind = "meteor_strike"
+                        h.set_meta("duration", 0.5)
+                        h.damage = 1000.0
+            elif "kind" in h and h.kind == "meteor_strike":
+                if h.has_meta("duration"):
+                    var dur = h.get_meta("duration") - delta
+                    h.set_meta("duration", dur)
+                    if dur <= 0:
+                        h.kind = "fire_zone"
+                        h.set_meta("duration", 5.0)
+                        h.damage = 50.0
+            elif "kind" in h and h.kind == "fire_zone":
+                if h.has_meta("duration"):
+                    var dur = h.get_meta("duration") - delta
+                    h.set_meta("duration", dur)
+                    if dur <= 0:
+                        if h.has_method("set_meta"):
+                            h.set_meta("active", false)
                         if "active" in h:
                             h.active = false
-                        var crater_id = 6000 + hazards.size() + new_craters.size() + (randi() % 1000)
-                        var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
-                        var crater = ProceduralArenaScript.Hazard.new(crater_id, h.x, h.y, h.radius * 1.5, "crater", 10.0)
-                        new_craters.append(crater)
-
-                        var crater_size = h.radius * 3.0
-                        var new_room = ProceduralArenaScript.Room.new(h.x - crater_size/2, h.y - crater_size/2, crater_size, crater_size)
-                        rooms.append(new_room)
-                        if has_method("queue_redraw"):
-                            call("queue_redraw")
             elif h.id >= 1000 and h.radius < h.target_radius:
                 h.radius += (h.target_radius / 600.0) * delta * 60.0
                 if h.radius > h.target_radius:
@@ -419,7 +426,7 @@ func update_zone(current_tick: int, delta: float) -> void:
                 var y = randf_range(50, height - 50)
                 var h_id = 2500 + hazards.size() + (randi() % 1000)
                 var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
-                var meteor = ProceduralArenaScript.Hazard.new(h_id, x, y, 30.0, "meteor", 200.0)
+                var meteor = ProceduralArenaScript.Hazard.new(h_id, x, y, 30.0, "meteor", 0.0)
                 meteor.target_radius = 30.0
                 meteor.set_meta("duration", 5.0)
                 hazards.append(meteor)
@@ -865,7 +872,7 @@ func _trigger_event(event_type: String, current_tick: int) -> void:
             var x = randf_range(50, width - 50)
             var y = randf_range(50, height - 50)
             var h_id = 2000 + hazards.size() + (randi() % 1000)
-            var meteor = ProceduralArena.Hazard.new(h_id, x, y, 30.0, "meteor", 200.0)
+            var meteor = ProceduralArena.Hazard.new(h_id, x, y, 30.0, "meteor", 0.0)
             meteor.target_radius = 30.0
             meteor.set_meta("duration", 5.0)
             hazards.append(meteor)
