@@ -2462,6 +2462,8 @@ class MovingSafeZoneMode extends GameMode:
         zone_target_y = zone_y
         zone_radius = min(arena_width, arena_height) / 2.0
         min_zone_radius = 50.0
+        zone_target_x = zone_x
+        zone_target_y = zone_y
 
         var valid_balls = []
         for b in balls:
@@ -2512,6 +2514,7 @@ class MovingSafeZoneMode extends GameMode:
             zone_y += (dy / dist) * move_speed * delta
         else:
             # Pick a new target
+            # Ensuring it drifts in a random direction and doesn't just converge on a single static point
             var buffer = max(100.0, zone_radius * 0.5)
             var rng = RandomNumberGenerator.new()
             rng.randomize()
@@ -2616,6 +2619,8 @@ class ShrinkingDangerZoneMode extends GameMode:
     var shrink_rate: float = 15.0
     var outside_damage_per_second: float = 20.0
     var collapse_triggered: bool = false
+    var zone_target_x: float = 500.0
+    var zone_target_y: float = 500.0
 
     func _init() -> void:
         name = "Shrinking Danger Zone"
@@ -2636,6 +2641,8 @@ class ShrinkingDangerZoneMode extends GameMode:
         zone_y = arena_height / 2.0
         zone_radius = min(arena_width, arena_height) / 2.0
         min_zone_radius = 50.0
+        zone_target_x = zone_x
+        zone_target_y = zone_y
 
         var valid_balls = []
         for b in balls:
@@ -2666,6 +2673,28 @@ class ShrinkingDangerZoneMode extends GameMode:
                 else:
                     if b.has_method("get_meta") and b.has_meta("time_since_death"):
                         b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+
+        # Drift the safe zone
+        var ddx = zone_target_x - zone_x
+        var ddy = zone_target_y - zone_y
+        var ddist = sqrt(ddx*ddx + ddy*ddy)
+        if ddist > 5.0:
+            var d_move_speed = 10.0
+            zone_x += (ddx / ddist) * d_move_speed * delta
+            zone_y += (ddy / ddist) * d_move_speed * delta
+        else:
+            var arena_width = 1000.0
+            var arena_height = 1000.0
+            if world != null and "arena" in world and world.arena:
+                if "width" in world.arena:
+                    arena_width = float(world.arena.width)
+                if "height" in world.arena:
+                    arena_height = float(world.arena.height)
+            var buffer = max(100.0, zone_radius * 0.5)
+            var rng = RandomNumberGenerator.new()
+            rng.randomize()
+            zone_target_x = rng.randf_range(buffer, arena_width - buffer)
+            zone_target_y = rng.randf_range(buffer, arena_height - buffer)
 
         # Shrink the safe zone
         if zone_radius > min_zone_radius:
@@ -2763,6 +2792,8 @@ class SafeZoneMode extends GameMode:
         zone_target_y = zone_y
         zone_radius = min(arena_width, arena_height) / 2.0
         min_zone_radius = 50.0
+        zone_target_x = zone_x
+        zone_target_y = zone_y
 
         var valid_balls = []
         for b in balls:
@@ -2816,6 +2847,7 @@ class SafeZoneMode extends GameMode:
             zone_y += (dy / dist) * move_speed * delta
         else:
             # Pick a new target
+            # Ensuring it drifts in a random direction and doesn't just converge on a single static point
             var arena_width = 1000.0
             var arena_height = 1000.0
             if world != null and "arena" in world and world.arena:
