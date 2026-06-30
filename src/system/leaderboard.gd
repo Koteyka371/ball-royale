@@ -58,18 +58,17 @@ func end_season():
     var players = data.get("players", {})
 
     if players.size() > 0:
-        var max_prestige = -1
-        var top_players = []
-
+        var sorted_players = []
         for pid in players.keys():
-            var p_level = players[pid]
-            if p_level > max_prestige:
-                max_prestige = p_level
-                top_players = [pid]
-            elif p_level == max_prestige:
-                top_players.append(pid)
+            sorted_players.append({"id": pid, "prestige": players[pid]})
 
-        if top_players.has("local_player") and profile_manager != null:
+        sorted_players.sort_custom(func(a, b): return a["prestige"] > b["prestige"])
+
+        var top_100 = []
+        for i in range(min(100, sorted_players.size())):
+            top_100.append(sorted_players[i]["id"])
+
+        if top_100.has("local_player") and profile_manager != null:
             if profile_manager.has_method("add_cosmetic"):
                 profile_manager.call("add_cosmetic", "Crown of Season " + str(season_num))
             if profile_manager.has_method("add_title"):
