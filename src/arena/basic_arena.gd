@@ -7,6 +7,8 @@ var rng: RandomNumberGenerator
 
 var safe_zone_radius: float
 var safe_zone_center: Array
+var target_safe_zone_center: Array
+var zone_migration_timer: float = 0.0
 var last_tick: int = -1
 var danger_grid: Dictionary = {}
 var hazards: Array = []
@@ -22,6 +24,8 @@ func _init(_arena_size: float = 2000.0, _seed = null):
 
 	safe_zone_radius = width * 0.7
 	safe_zone_center = [width / 2.0, height / 2.0]
+	target_safe_zone_center = [] + safe_zone_center
+	zone_migration_timer = 0.0
 	last_tick = -1
 
 func get_random_spawn_point(radius: float) -> Array:
@@ -76,6 +80,31 @@ func update_zone(current_tick: int, delta: float) -> void:
 		safe_zone_radius -= 10.0 * delta
 		if safe_zone_radius < 50.0:
 			safe_zone_radius = 50.0
+		zone_migration_timer -= delta
+		if zone_migration_timer <= 0.0:
+			zone_migration_timer = 10.0
+			var tx = randf_range(width * 0.2, width * 0.8)
+			var ty = randf_range(height * 0.2, height * 0.8)
+			target_safe_zone_center = [tx, ty]
+
+		if target_safe_zone_center.size() > 0:
+			var cx = safe_zone_center[0]
+			var cy = safe_zone_center[1]
+			var tx = target_safe_zone_center[0]
+			var ty = target_safe_zone_center[1]
+			var dx = tx - cx
+			var dy = ty - cy
+			var dist = sqrt(dx*dx + dy*dy)
+			if dist > 0:
+				var speed = 25.0 * delta
+				if speed > dist:
+					cx = tx
+					cy = ty
+				else:
+					cx += (dx / dist) * speed
+					cy += (dy / dist) * speed
+				safe_zone_center = [cx, cy]
+
 
 		for h in hazards:
 			if "target_radius" in h and h.radius < h.target_radius:

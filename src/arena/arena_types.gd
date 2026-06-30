@@ -2,20 +2,20 @@ class_name ArenaTypes
 extends RefCounted
 
 class SwapPortal extends ProceduralArena.Hazard:
-    func _init(_id: int, _x: float, _y: float, _radius: float, _target_x: float, _target_y: float, _pair_id: int):
-        super(_id, _x, _y, _radius, "swap_portal", 0.0)
-        set_meta("target_x", _target_x)
-        set_meta("target_y", _target_y)
-        set_meta("pair_id", _pair_id)
+	func _init(_id: int, _x: float, _y: float, _radius: float, _target_x: float, _target_y: float, _pair_id: int):
+		super(_id, _x, _y, _radius, "swap_portal", 0.0)
+		set_meta("target_x", _target_x)
+		set_meta("target_y", _target_y)
+		set_meta("pair_id", _pair_id)
 
 class Portal extends ProceduralArena.Hazard:
-    var target_x: float
-    var target_y: float
+	var target_x: float
+	var target_y: float
 
-    func _init(_id: int, _x: float, _y: float, _radius: float, _target_x: float, _target_y: float):
-        super(_id, _x, _y, _radius, "portal", 0.0)
-        target_x = _target_x
-        target_y = _target_y
+	func _init(_id: int, _x: float, _y: float, _radius: float, _target_x: float, _target_y: float):
+		super(_id, _x, _y, _radius, "portal", 0.0)
+		target_x = _target_x
+		target_y = _target_y
 
 class PortalArena extends ProceduralArena:
 	func generate():
@@ -40,13 +40,13 @@ class PortalArena extends ProceduralArena:
 		hazards.append(ArenaTypes.Portal.new(3, 150.0, h-150.0, 30.0, w-150.0, 150.0))
 
 class ConveyorBelt extends ProceduralArena.Hazard:
-    var direction_vector: Array
-    var speed_magnitude: float
+	var direction_vector: Array
+	var speed_magnitude: float
 
-    func _init(_id: int, _x: float, _y: float, _radius: float, _damage: float, _dir_vec: Array, _speed: float):
-        super(_id, _x, _y, _radius, "conveyor_belt", _damage)
-        direction_vector = _dir_vec
-        speed_magnitude = _speed
+	func _init(_id: int, _x: float, _y: float, _radius: float, _damage: float, _dir_vec: Array, _speed: float):
+		super(_id, _x, _y, _radius, "conveyor_belt", _damage)
+		direction_vector = _dir_vec
+		speed_magnitude = _speed
 
 
 class FunnyFailsArena extends ProceduralArena:
@@ -116,142 +116,167 @@ class MetaEvolutionArena extends ProceduralArena:
 
 
 class BodyBlockArena extends ProceduralArena:
-    func generate() -> void:
-        rooms.clear()
-        corridors.clear()
-        hazards.clear()
-        var w := float(width)
-        var h := float(height)
-        var cx := w / 2.0
-        var cy := h / 2.0
+	func generate() -> void:
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+		var w := float(width)
+		var h := float(height)
+		var cx := w / 2.0
+		var cy := h / 2.0
 
-        # A central room where the main engagement happens
-        rooms.append(ProceduralArena.Room.new(cx - 400, cy - 200, 800, 400))
+		# A central room where the main engagement happens
+		rooms.append(ProceduralArena.Room.new(cx - 400, cy - 200, 800, 400))
 
-        # Two smaller rooms representing "ally base" and "enemy spawn"
-        rooms.append(ProceduralArena.Room.new(cx - 700, cy - 100, 200, 200)) # Left ally base
-        rooms.append(ProceduralArena.Room.new(cx + 500, cy - 100, 200, 200)) # Right enemy base
+		# Two smaller rooms representing "ally base" and "enemy spawn"
+		rooms.append(ProceduralArena.Room.new(cx - 700, cy - 100, 200, 200)) # Left ally base
+		rooms.append(ProceduralArena.Room.new(cx + 500, cy - 100, 200, 200)) # Right enemy base
 
-        # Narrow choke point corridors connecting the bases to the center room to force body blocking
-        corridors.append(ProceduralArena.Corridor.new(cx - 500, cy - 50, 100, 100))
-        corridors.append(ProceduralArena.Corridor.new(cx + 400, cy - 50, 100, 100))
+		# Narrow choke point corridors connecting the bases to the center room to force body blocking
+		corridors.append(ProceduralArena.Corridor.new(cx - 500, cy - 50, 100, 100))
+		corridors.append(ProceduralArena.Corridor.new(cx + 400, cy - 50, 100, 100))
 
-        # A central hazard to force players into tighter chokes
-        var h0 = ProceduralArena.Hazard.new()
-        h0.id = 0
-        h0.x = cx
-        h0.y = cy
-        h0.radius = 50.0
-        h0.kind = "lava"
-        h0.damage = 25.0
-        hazards.append(h0)
+		# A central hazard to force players into tighter chokes
+		var h0 = ProceduralArena.Hazard.new()
+		h0.id = 0
+		h0.x = cx
+		h0.y = cy
+		h0.radius = 50.0
+		h0.kind = "lava"
+		h0.damage = 25.0
+		hazards.append(h0)
 
 class PhysicsChainReactionsArena extends ProceduralArena:
-    func generate() -> void:
-        rooms.clear()
-        corridors.clear()
-        hazards.clear()
-        var w := float(width)
-        var h := float(height)
-        var cx := w / 2.0
-        var cy := h / 2.0
+	func generate() -> void:
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+		var w := float(width)
+		var h := float(height)
+		var cx := w / 2.0
+		var cy := h / 2.0
 
-        rooms.append(ProceduralArena.Room.new(cx - 300, cy - 300, 600, 600))
+		rooms.append(ProceduralArena.Room.new(cx - 300, cy - 300, 600, 600))
 
-        rooms.append(ProceduralArena.Room.new(cx - 700, cy - 200, 200, 400))
-        rooms.append(ProceduralArena.Room.new(cx + 500, cy - 200, 200, 400))
-        rooms.append(ProceduralArena.Room.new(cx - 200, cy - 700, 400, 200))
-        rooms.append(ProceduralArena.Room.new(cx - 200, cy + 500, 400, 200))
+		rooms.append(ProceduralArena.Room.new(cx - 700, cy - 200, 200, 400))
+		rooms.append(ProceduralArena.Room.new(cx + 500, cy - 200, 200, 400))
+		rooms.append(ProceduralArena.Room.new(cx - 200, cy - 700, 400, 200))
+		rooms.append(ProceduralArena.Room.new(cx - 200, cy + 500, 400, 200))
 
-        corridors.append(ProceduralArena.Corridor.new(cx - 550, cy - 100, 300, 200))
-        corridors.append(ProceduralArena.Corridor.new(cx + 250, cy - 100, 300, 200))
-        corridors.append(ProceduralArena.Corridor.new(cx - 100, cy - 550, 200, 300))
-        corridors.append(ProceduralArena.Corridor.new(cx - 100, cy + 250, 200, 300))
+		corridors.append(ProceduralArena.Corridor.new(cx - 550, cy - 100, 300, 200))
+		corridors.append(ProceduralArena.Corridor.new(cx + 250, cy - 100, 300, 200))
+		corridors.append(ProceduralArena.Corridor.new(cx - 100, cy - 550, 200, 300))
+		corridors.append(ProceduralArena.Corridor.new(cx - 100, cy + 250, 200, 300))
 
-        var h0 = ProceduralArena.Hazard.new()
-        h0.id = 0; h0.x = cx - 150; h0.y = cy - 150; h0.radius = 50.0; h0.kind = "spikes"; h0.damage = 30.0; hazards.append(h0)
-        var h1 = ProceduralArena.Hazard.new()
-        h1.id = 1; h1.x = cx + 150; h1.y = cy - 150; h1.radius = 50.0; h1.kind = "spikes"; h1.damage = 30.0; hazards.append(h1)
-        var h2 = ProceduralArena.Hazard.new()
-        h2.id = 2; h2.x = cx - 150; h2.y = cy + 150; h2.radius = 50.0; h2.kind = "spikes"; h2.damage = 30.0; hazards.append(h2)
-        var h3 = ProceduralArena.Hazard.new()
-        h3.id = 3; h3.x = cx + 150; h3.y = cy + 150; h3.radius = 50.0; h3.kind = "spikes"; h3.damage = 30.0; hazards.append(h3)
-        var h4 = ProceduralArena.Hazard.new()
-        h4.id = 4; h4.x = cx; h4.y = cy; h4.radius = 80.0; h4.kind = "lava"; h4.damage = 20.0; hazards.append(h4)
+		var h0 = ProceduralArena.Hazard.new()
+		h0.id = 0; h0.x = cx - 150; h0.y = cy - 150; h0.radius = 50.0; h0.kind = "spikes"; h0.damage = 30.0; hazards.append(h0)
+		var h1 = ProceduralArena.Hazard.new()
+		h1.id = 1; h1.x = cx + 150; h1.y = cy - 150; h1.radius = 50.0; h1.kind = "spikes"; h1.damage = 30.0; hazards.append(h1)
+		var h2 = ProceduralArena.Hazard.new()
+		h2.id = 2; h2.x = cx - 150; h2.y = cy + 150; h2.radius = 50.0; h2.kind = "spikes"; h2.damage = 30.0; hazards.append(h2)
+		var h3 = ProceduralArena.Hazard.new()
+		h3.id = 3; h3.x = cx + 150; h3.y = cy + 150; h3.radius = 50.0; h3.kind = "spikes"; h3.damage = 30.0; hazards.append(h3)
+		var h4 = ProceduralArena.Hazard.new()
+		h4.id = 4; h4.x = cx; h4.y = cy; h4.radius = 80.0; h4.kind = "lava"; h4.damage = 20.0; hazards.append(h4)
 
 
 class BattleRoyaleShrinkingZoneArena extends ProceduralArena:
-    func generate() -> void:
-        rooms.clear()
-        corridors.clear()
-        hazards.clear()
-        var w = width
-        var h = height
-        var cx = w / 2.0
-        var cy = h / 2.0
+	func generate() -> void:
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+		var w = width
+		var h = height
+		var cx = w / 2.0
+		var cy = h / 2.0
 
-        # Central room
-        rooms.append(ProceduralArena.Room.new(cx - 300, cy - 300, 600, 600))
+		# Central room
+		rooms.append(ProceduralArena.Room.new(cx - 300, cy - 300, 600, 600))
 
-        # Top-left room
-        rooms.append(ProceduralArena.Room.new(50, 50, 150, 150))
-        # Top-right room
-        rooms.append(ProceduralArena.Room.new(w - 200, 50, 150, 150))
-        # Bottom-left room
-        rooms.append(ProceduralArena.Room.new(50, h - 200, 150, 150))
-        # Bottom-right room
-        rooms.append(ProceduralArena.Room.new(w - 200, h - 200, 150, 150))
+		# Top-left room
+		rooms.append(ProceduralArena.Room.new(50, 50, 150, 150))
+		# Top-right room
+		rooms.append(ProceduralArena.Room.new(w - 200, 50, 150, 150))
+		# Bottom-left room
+		rooms.append(ProceduralArena.Room.new(50, h - 200, 150, 150))
+		# Bottom-right room
+		rooms.append(ProceduralArena.Room.new(w - 200, h - 200, 150, 150))
 
-        # Connecting corridors (top-left)
-        corridors.append(ProceduralArena.Corridor.new(100, 200, 50, cy - 400))
-        corridors.append(ProceduralArena.Corridor.new(100, cy - 300, cx - 300, 50))
+		# Connecting corridors (top-left)
+		corridors.append(ProceduralArena.Corridor.new(100, 200, 50, cy - 400))
+		corridors.append(ProceduralArena.Corridor.new(100, cy - 300, cx - 300, 50))
 
-        # Connecting corridors (top-right)
-        corridors.append(ProceduralArena.Corridor.new(w - 150, 200, 50, cy - 400))
-        corridors.append(ProceduralArena.Corridor.new(cx + 300, cy - 300, w - cx - 300, 50))
+		# Connecting corridors (top-right)
+		corridors.append(ProceduralArena.Corridor.new(w - 150, 200, 50, cy - 400))
+		corridors.append(ProceduralArena.Corridor.new(cx + 300, cy - 300, w - cx - 300, 50))
 
-        # Connecting corridors (bottom-left)
-        corridors.append(ProceduralArena.Corridor.new(100, cy + 250, 50, h - cy - 400))
-        corridors.append(ProceduralArena.Corridor.new(100, cy + 250, cx - 300, 50))
+		# Connecting corridors (bottom-left)
+		corridors.append(ProceduralArena.Corridor.new(100, cy + 250, 50, h - cy - 400))
+		corridors.append(ProceduralArena.Corridor.new(100, cy + 250, cx - 300, 50))
 
-        # Connecting corridors (bottom-right)
-        corridors.append(ProceduralArena.Corridor.new(w - 150, cy + 250, 50, h - cy - 400))
-        corridors.append(ProceduralArena.Corridor.new(cx + 300, cy + 250, w - cx - 300, 50))
+		# Connecting corridors (bottom-right)
+		corridors.append(ProceduralArena.Corridor.new(w - 150, cy + 250, 50, h - cy - 400))
+		corridors.append(ProceduralArena.Corridor.new(cx + 300, cy + 250, w - cx - 300, 50))
 
-        # 1 central hazard to discourage staying in the open
-        hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 80.0, "lava", 20.0))
+		# 1 central hazard to discourage staying in the open
+		hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 80.0, "lava", 20.0))
 
-    func update_zone(current_tick: int, delta: float) -> void:
-        if current_tick != last_tick:
-            last_tick = current_tick
-            safe_zone_radius -= 15.0 * delta
-            if safe_zone_radius < 50.0:
-                safe_zone_radius = 50.0
+	func update_zone(current_tick: int, delta: float) -> void:
+		if current_tick != last_tick:
+		    last_tick = current_tick
+		    safe_zone_radius -= 15.0 * delta
+		    if safe_zone_radius < 50.0:
+		        safe_zone_radius = 50.0
+		zone_migration_timer -= delta
+		if zone_migration_timer <= 0.0:
+		    zone_migration_timer = 10.0
+		    var tx = randf_range(width * 0.2, width * 0.8)
+		    var ty = randf_range(height * 0.2, height * 0.8)
+		    target_safe_zone_center = [tx, ty]
+
+		if target_safe_zone_center.size() > 0:
+		    var cx = safe_zone_center[0]
+		    var cy = safe_zone_center[1]
+		    var tx = target_safe_zone_center[0]
+		    var ty = target_safe_zone_center[1]
+		    var dx = tx - cx
+		    var dy = ty - cy
+		    var dist = sqrt(dx*dx + dy*dy)
+		    if dist > 0:
+		        var speed = 25.0 * delta
+		        if speed > dist:
+		            cx = tx
+		            cy = ty
+		        else:
+		            cx += (dx / dist) * speed
+		            cy += (dy / dist) * speed
+		        safe_zone_center = [cx, cy]
+
 
 class HealAllyArena extends ProceduralArena:
-    func generate():
-        rooms.clear()
-        corridors.clear()
-        hazards.clear()
-        var w = self.width
-        var h = self.height
-        var cx = w / 2.0
-        var cy = h / 2.0
+	func generate():
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+		var w = self.width
+		var h = self.height
+		var cx = w / 2.0
+		var cy = h / 2.0
 
-        rooms.append(ProceduralArena.Room.new(cx - 300, cy - 300, 600, 600))
-        rooms.append(ProceduralArena.Room.new(100, 100, 300, 300))
-        rooms.append(ProceduralArena.Room.new(w - 400, 100, 300, 300))
-        rooms.append(ProceduralArena.Room.new(100, h - 400, 300, 300))
-        rooms.append(ProceduralArena.Room.new(w - 400, h - 400, 300, 300))
+		rooms.append(ProceduralArena.Room.new(cx - 300, cy - 300, 600, 600))
+		rooms.append(ProceduralArena.Room.new(100, 100, 300, 300))
+		rooms.append(ProceduralArena.Room.new(w - 400, 100, 300, 300))
+		rooms.append(ProceduralArena.Room.new(100, h - 400, 300, 300))
+		rooms.append(ProceduralArena.Room.new(w - 400, h - 400, 300, 300))
 
-        corridors.append(ProceduralArena.Corridor.new(350, 200, cx - 600, 100))
-        corridors.append(ProceduralArena.Corridor.new(cx - 350, 250, 100, cy - 500))
-        corridors.append(ProceduralArena.Corridor.new(cx + 250, 200, w - cx - 600, 100))
-        corridors.append(ProceduralArena.Corridor.new(cx + 250, 250, 100, cy - 500))
-        corridors.append(ProceduralArena.Corridor.new(350, h - 300, cx - 600, 100))
-        corridors.append(ProceduralArena.Corridor.new(cx - 350, cy + 250, 100, h - cy - 500))
-        corridors.append(ProceduralArena.Corridor.new(cx + 250, h - 300, w - cx - 600, 100))
-        corridors.append(ProceduralArena.Corridor.new(cx + 250, cy + 250, 100, h - cy - 500))
+		corridors.append(ProceduralArena.Corridor.new(350, 200, cx - 600, 100))
+		corridors.append(ProceduralArena.Corridor.new(cx - 350, 250, 100, cy - 500))
+		corridors.append(ProceduralArena.Corridor.new(cx + 250, 200, w - cx - 600, 100))
+		corridors.append(ProceduralArena.Corridor.new(cx + 250, 250, 100, cy - 500))
+		corridors.append(ProceduralArena.Corridor.new(350, h - 300, cx - 600, 100))
+		corridors.append(ProceduralArena.Corridor.new(cx - 350, cy + 250, 100, h - cy - 500))
+		corridors.append(ProceduralArena.Corridor.new(cx + 250, h - 300, w - cx - 600, 100))
+		corridors.append(ProceduralArena.Corridor.new(cx + 250, cy + 250, 100, h - cy - 500))
 
 class WaitAndWatchArena extends ProceduralArena:
 	func generate() -> void:
@@ -297,23 +322,23 @@ class EscortArena extends ProceduralArena:
 
 
 class TargetStrongArena extends ProceduralArena:
-    func generate() -> void:
-        rooms.clear()
-        corridors.clear()
-        hazards.clear()
-        var w = width
-        var h = height
-        var cx = w / 2.0
-        var cy = h / 2.0
+	func generate() -> void:
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+		var w = width
+		var h = height
+		var cx = w / 2.0
+		var cy = h / 2.0
 
-        rooms.append(ProceduralArena.Room.new(cx - 300.0, cy - 300.0, 600.0, 600.0))
-        rooms.append(ProceduralArena.Room.new(cx - 500.0, cy - 100.0, 200.0, 200.0))
-        rooms.append(ProceduralArena.Room.new(cx + 300.0, cy - 100.0, 200.0, 200.0))
+		rooms.append(ProceduralArena.Room.new(cx - 300.0, cy - 300.0, 600.0, 600.0))
+		rooms.append(ProceduralArena.Room.new(cx - 500.0, cy - 100.0, 200.0, 200.0))
+		rooms.append(ProceduralArena.Room.new(cx + 300.0, cy - 100.0, 200.0, 200.0))
 
-        corridors.append(ProceduralArena.Corridor.new(cx - 350.0, cy - 50.0, 100.0, 100.0))
-        corridors.append(ProceduralArena.Corridor.new(cx + 250.0, cy - 50.0, 100.0, 100.0))
+		corridors.append(ProceduralArena.Corridor.new(cx - 350.0, cy - 50.0, 100.0, 100.0))
+		corridors.append(ProceduralArena.Corridor.new(cx + 250.0, cy - 50.0, 100.0, 100.0))
 
-        hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 50.0, "lava", 25.0))
+		hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 50.0, "lava", 25.0))
 
 
 class BallGeneticsArena extends ProceduralArena:
@@ -446,67 +471,67 @@ const ARENAS = [
 	"funny_fails",
 	"escort",
 	"wait_and_watch",
-    "battle_royale_shrinking_zone",
+	"battle_royale_shrinking_zone",
 	"emotional_contagion",
 	"body_block",
 	"meta_evolution",
-    "swarm_intelligence",
-    "avoid_trap",
-    "kite",
-    "procedural",
-    "cross",
-    "ring",
-    "four_rooms",
-    "grid",
-    "labyrinth",
-    "hazard_pit",
-    "duel",
-    "long_corridor",
-    "zigzag",
-    "fortress",
-    "split",
-    "flank",
-    "group_attack",
-    "choke_point",
-    "use_shield",
-    "retreat_to_ally",
-    "health_link",
-    "buff_ally",
-    "aggressive_chase",
-    "comebacks",
-    "circle_strafe",
-    "epic_kills",
-    "reposition",
-    "ai_commentary",
+	"swarm_intelligence",
+	"avoid_trap",
+	"kite",
+	"procedural",
+	"cross",
+	"ring",
+	"four_rooms",
+	"grid",
+	"labyrinth",
+	"hazard_pit",
+	"duel",
+	"long_corridor",
+	"zigzag",
+	"fortress",
+	"split",
+	"flank",
+	"group_attack",
+	"choke_point",
+	"use_shield",
+	"retreat_to_ally",
+	"health_link",
+	"buff_ally",
+	"aggressive_chase",
+	"comebacks",
+	"circle_strafe",
+	"epic_kills",
+	"reposition",
+	"ai_commentary",
 	"ball_relationships",
-    "clutch_plays",
-    "collect_booster",
-    "finals_1v1",
-    "team_wipes",
-    "ambush",
-    "physics_chain_reactions",
-    "target_strong",
-    "day_night"
+	"clutch_plays",
+	"collect_booster",
+	"finals_1v1",
+	"team_wipes",
+	"ambush",
+	"physics_chain_reactions",
+	"target_strong",
+	"day_night"
 ]
 
 
 class DayNightArena extends ProceduralArena:
-    var is_night = false
-    var day_night_timer = 0.0
-    var phase_duration = 10.0
+	var is_night = false
+	var day_night_timer = 0.0
+	var phase_duration = 10.0
 
-    func _init(size: float = 2000.0, seed_val = null):
-        super(size, 5, seed_val)
+	func _init(size: float = 2000.0, seed_val = null):
+		super(size, 5, seed_val)
 
-    func generate():
-        super.generate()
+	func generate():
+		super.generate()
 
-    func update_zone(current_tick: int, delta: float) -> void:
-        super.update_zone(current_tick, delta)
-        day_night_timer += delta
-        if day_night_timer >= phase_duration:
-            day_night_timer = 0.0
-            is_night = not is_night
+	func update_zone(current_tick: int, delta: float) -> void:
+		super.update_zone(current_tick, delta)
+		day_night_timer += delta
+		if day_night_timer >= phase_duration:
+		    day_night_timer = 0.0
+		    is_night = not is_night
 
 class ThickFogArena extends ProceduralArena:
 	var is_foggy = false

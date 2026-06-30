@@ -11,6 +11,8 @@ var rng: RandomNumberGenerator
 
 var safe_zone_radius: float
 var safe_zone_center: Array
+var target_safe_zone_center: Array
+var zone_migration_timer: float = 0.0
 var last_tick: int = -1
 var danger_grid: Dictionary = {}
 
@@ -71,6 +73,8 @@ func _init(_arena_size: float = 2000.0, _num_rooms: int = 5, _seed = null):
 
     safe_zone_radius = width * 0.7
     safe_zone_center = [width / 2.0, height / 2.0]
+    target_safe_zone_center = [] + safe_zone_center
+    zone_migration_timer = 0.0
     last_tick = -1
 
     generate()
@@ -359,6 +363,31 @@ func update_zone(current_tick: int, delta: float) -> void:
         safe_zone_radius -= 10.0 * delta
         if safe_zone_radius < 50.0:
             safe_zone_radius = 50.0
+        zone_migration_timer -= delta
+        if zone_migration_timer <= 0.0:
+            zone_migration_timer = 10.0
+            var tx = randf_range(width * 0.2, width * 0.8)
+            var ty = randf_range(height * 0.2, height * 0.8)
+            target_safe_zone_center = [tx, ty]
+
+        if target_safe_zone_center.size() > 0:
+            var cx = safe_zone_center[0]
+            var cy = safe_zone_center[1]
+            var tx = target_safe_zone_center[0]
+            var ty = target_safe_zone_center[1]
+            var dx = tx - cx
+            var dy = ty - cy
+            var dist = sqrt(dx*dx + dy*dy)
+            if dist > 0:
+                var speed = 25.0 * delta
+                if speed > dist:
+                    cx = tx
+                    cy = ty
+                else:
+                    cx += (dx / dist) * speed
+                    cy += (dy / dist) * speed
+                safe_zone_center = [cx, cy]
+
 
         var new_craters = []
         for h in hazards:
@@ -606,43 +635,43 @@ class RepositionArena extends ProceduralArena:
         hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 100.0, "lava", 15.0))
 
 class AICommentaryArena extends ProceduralArena:
-	func generate():
-		rooms.clear()
-		corridors.clear()
-		hazards.clear()
-		var w = width
-		var h = height
-		var cx = w / 2.0
-		var cy = h / 2.0
+    func generate():
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = width
+        var h = height
+        var cx = w / 2.0
+        var cy = h / 2.0
 
-		# Central battle room for commentary
-		rooms.append(ProceduralArena.Room.new(cx - 400.0, cy - 400.0, 800.0, 800.0))
+        # Central battle room for commentary
+        rooms.append(ProceduralArena.Room.new(cx - 400.0, cy - 400.0, 800.0, 800.0))
 
-		# 4 Viewing/Spawn rooms
-		rooms.append(ProceduralArena.Room.new(100.0, 100.0, 200.0, 200.0))
-		rooms.append(ProceduralArena.Room.new(w - 300.0, 100.0, 200.0, 200.0))
-		rooms.append(ProceduralArena.Room.new(100.0, h - 300.0, 200.0, 200.0))
-		rooms.append(ProceduralArena.Room.new(w - 300.0, h - 300.0, 200.0, 200.0))
+        # 4 Viewing/Spawn rooms
+        rooms.append(ProceduralArena.Room.new(100.0, 100.0, 200.0, 200.0))
+        rooms.append(ProceduralArena.Room.new(w - 300.0, 100.0, 200.0, 200.0))
+        rooms.append(ProceduralArena.Room.new(100.0, h - 300.0, 200.0, 200.0))
+        rooms.append(ProceduralArena.Room.new(w - 300.0, h - 300.0, 200.0, 200.0))
 
-		# Connecting corridors
-		corridors.append(ProceduralArena.Corridor.new(200.0, 200.0, cx - 600.0, 100.0))
-		corridors.append(ProceduralArena.Corridor.new(cx - 450.0, 200.0, 100.0, cy - 600.0))
+        # Connecting corridors
+        corridors.append(ProceduralArena.Corridor.new(200.0, 200.0, cx - 600.0, 100.0))
+        corridors.append(ProceduralArena.Corridor.new(cx - 450.0, 200.0, 100.0, cy - 600.0))
 
-		corridors.append(ProceduralArena.Corridor.new(cx + 400.0, 200.0, cx - 600.0, 100.0))
-		corridors.append(ProceduralArena.Corridor.new(cx + 350.0, 200.0, 100.0, cy - 600.0))
+        corridors.append(ProceduralArena.Corridor.new(cx + 400.0, 200.0, cx - 600.0, 100.0))
+        corridors.append(ProceduralArena.Corridor.new(cx + 350.0, 200.0, 100.0, cy - 600.0))
 
-		corridors.append(ProceduralArena.Corridor.new(200.0, cy + 350.0, cx - 600.0, 100.0))
-		corridors.append(ProceduralArena.Corridor.new(cx - 450.0, cy + 350.0, 100.0, cy - 600.0))
+        corridors.append(ProceduralArena.Corridor.new(200.0, cy + 350.0, cx - 600.0, 100.0))
+        corridors.append(ProceduralArena.Corridor.new(cx - 450.0, cy + 350.0, 100.0, cy - 600.0))
 
-		corridors.append(ProceduralArena.Corridor.new(cx + 400.0, cy + 350.0, cx - 600.0, 100.0))
-		corridors.append(ProceduralArena.Corridor.new(cx + 350.0, cy + 350.0, 100.0, cy - 600.0))
+        corridors.append(ProceduralArena.Corridor.new(cx + 400.0, cy + 350.0, cx - 600.0, 100.0))
+        corridors.append(ProceduralArena.Corridor.new(cx + 350.0, cy + 350.0, 100.0, cy - 600.0))
 
-		# Central hazards for exciting moments
-		var h1 = ProceduralArena.Hazard.new(0, cx - 150.0, cy - 150.0, 50.0, "lava", 20.0)
-		hazards.append(h1)
+        # Central hazards for exciting moments
+        var h1 = ProceduralArena.Hazard.new(0, cx - 150.0, cy - 150.0, 50.0, "lava", 20.0)
+        hazards.append(h1)
 
-		var h2 = ProceduralArena.Hazard.new(1, cx + 150.0, cy + 150.0, 50.0, "lava", 20.0)
-		hazards.append(h2)
+        var h2 = ProceduralArena.Hazard.new(1, cx + 150.0, cy + 150.0, 50.0, "lava", 20.0)
+        hazards.append(h2)
 
 class BallRelationshipsArena extends ProceduralArena:
     func generate():

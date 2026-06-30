@@ -11,6 +11,8 @@ class BasicArena:
         # Shrinking zone
         self.safe_zone_radius = arena_size * 0.7
         self.safe_zone_center = (arena_size / 2, arena_size / 2)
+        self.target_safe_zone_center = self.safe_zone_center = (arena_size / 2, arena_size / 2)
+        self.zone_migration_timer = 0.0
         self.last_tick = -1
         self.danger_grid: dict[tuple[int, int], float] = {}
         self.hazards = []
@@ -73,6 +75,34 @@ class BasicArena:
             self.safe_zone_radius -= 10.0 * delta
             if self.safe_zone_radius < 50.0:
                 self.safe_zone_radius = 50.0
+            if not hasattr(self, "zone_migration_timer"):
+                self.zone_migration_timer = 0.0
+                self.target_safe_zone_center = self.safe_zone_center
+
+            self.zone_migration_timer -= delta
+            if self.zone_migration_timer <= 0:
+                self.zone_migration_timer = 10.0
+                import random
+                rng = getattr(self, 'rng', random)
+                tx = rng.uniform(self.width * 0.2, self.width * 0.8)
+                ty = rng.uniform(self.height * 0.2, self.height * 0.8)
+                self.target_safe_zone_center = (tx, ty)
+
+            cx, cy = self.safe_zone_center
+            tx, ty = self.target_safe_zone_center
+            import math
+            dx = tx - cx
+            dy = ty - cy
+            dist = math.hypot(dx, dy)
+            if dist > 0:
+                speed = 25.0 * delta
+                if speed > dist:
+                    cx, cy = tx, ty
+                else:
+                    cx += (dx / dist) * speed
+                    cy += (dy / dist) * speed
+                self.safe_zone_center = (cx, cy)
+
 
             for h in self.hazards:
                 if hasattr(h, "target_radius"):
