@@ -1,0 +1,4 @@
+{
+  "title": "Ice Storm Weather Event",
+  "description": "Periodically spawns a blizzard that severely reduces all ball movement speed (friction increases) and creates temporary slippery ice patches as hazards that cause balls to slide uncontrollably."
+}

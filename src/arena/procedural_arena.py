@@ -369,6 +369,11 @@ class ProceduralArena:
                         h.duration -= delta
                         if h.duration <= 0:
                             h.active = False
+                elif getattr(h, "kind", "") == "fire_zone":
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0:
+                            h.active = False
                 elif getattr(h, "kind", "") == "meteor":
                     if hasattr(h, "duration"):
                         h.duration -= delta
@@ -378,6 +383,11 @@ class ProceduralArena:
                             crater_id = 6000 + len(self.hazards) + len(new_craters) + random.randint(0, 1000)
                             crater = Hazard(id=crater_id, x=h.x, y=h.y, radius=h.radius * 1.5, kind="crater", damage=10.0)
                             new_craters.append(crater)
+
+                            fire_id = 7000 + len(self.hazards) + len(new_craters) + random.randint(0, 1000)
+                            fire_zone = Hazard(id=fire_id, x=h.x, y=h.y, radius=h.radius * 1.8, kind="fire_zone", damage=50.0)
+                            setattr(fire_zone, "duration", 10.0)
+                            new_craters.append(fire_zone)
 
                             # Destroy cover
                             try:
