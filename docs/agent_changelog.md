@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-327] Clone Wars Game Mode — *2026-06-30 11:15:17 UTC*
+
+A new game mode where every ball starts with the 'clone' skill. The map gets filled with clones rapidly, making it a chaotic battle of finding the real enemy amidst a sea of static copies.
+
+---
+
 ## [idea-315] Swap Decoy Ability — *2026-06-30 11:15:13 UTC*
 
 Allow the Trickster to swap positions with their active decoy once before it expires. This gives them incredible mobility and the ability to pull off confusing jukes or escape lethal scenarios.
