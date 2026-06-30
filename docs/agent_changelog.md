@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-282] Interactive Environmental Traps — *2026-06-30 09:16:00 UTC*
+
+Introduce switches that balls can hit or roll over to trigger environmental traps like falling boulders, swinging axes, or temporary laser walls that damage or block opponents.
+
+---
+
 ## [idea-303] Decay Zones — *2026-06-30 09:15:55 UTC*
 
 Certain areas of the map apply a temporary max HP debuff to entities inside them, making tanky balls vulnerable during late-game engagements.
