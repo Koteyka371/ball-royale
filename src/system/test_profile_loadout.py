@@ -73,3 +73,29 @@ def test_apply_loadout_to_lobby(temp_profile_file):
 
     result2 = lobby.apply_loadout_to_ball(2, pm, "nonexistent")
     assert result2 is False
+
+
+def test_loadout_sharing_code(temp_profile_file):
+    pm = ProfileManager(temp_profile_file)
+    pm.save_loadout("shared_setup", "warrior", "emp", {"bonus_damage": 10}, cosmetic="flame", title="The Burner")
+
+    code = pm.generate_loadout_code("shared_setup")
+    assert code is not None
+    assert isinstance(code, str)
+    assert len(code) > 0
+
+    # Ensure invalid code fails gracefully
+    assert pm.import_loadout_code("invalid_import", "invalid_base64_string!!!!") is False
+    assert pm.get_loadout("invalid_import") is None
+
+    # Import the code under a new name
+    success = pm.import_loadout_code("imported_setup", code)
+    assert success is True
+
+    imported_loadout = pm.get_loadout("imported_setup")
+    assert imported_loadout is not None
+    assert imported_loadout["ball_type"] == "warrior"
+    assert imported_loadout["trap_variant"] == "emp"
+    assert imported_loadout["preferred_bonuses"]["bonus_damage"] == 10
+    assert imported_loadout["cosmetic"] == "flame"
+    assert imported_loadout["title"] == "The Burner"
