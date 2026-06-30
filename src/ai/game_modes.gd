@@ -2504,8 +2504,38 @@ class ShrinkingDangerZoneMode extends GameMode:
         # Shrink the safe zone
         if zone_radius > min_zone_radius:
             zone_radius -= shrink_rate * delta
-            if zone_radius < min_zone_radius:
+            if zone_radius <= min_zone_radius:
                 zone_radius = min_zone_radius
+
+        if zone_radius <= min_zone_radius and min_zone_radius > 0.1:
+            if not has_meta("collapse_active"):
+                set_meta("collapse_active", true)
+                min_zone_radius = 0.0
+                shrink_rate *= 5.0
+                outside_damage_per_second *= 5.0
+                if world != null and world.has_method("add_event"):
+                    world.add_event("collapse_event", {"message": "Zone Collapse Imminent!"})
+
+        if has_meta("collapse_active") and get_meta("collapse_active"):
+            for b in balls:
+                if b.alive and b.ball_type != "spectator":
+                    var bx = b.x
+                    var by = b.y
+                    if "position" in b:
+                        bx = b.position.x
+                        by = b.position.y
+                    var cdx = zone_x - bx
+                    var cdy = zone_y - by
+                    var cdist = sqrt(cdx*cdx + cdy*cdy)
+                    if cdist > 0.0001:
+                        var pull_strength = 200.0 * delta
+                        pull_strength = min(pull_strength, cdist)
+                        if "position" in b:
+                            b.position.x += (cdx / cdist) * pull_strength
+                            b.position.y += (cdy / cdist) * pull_strength
+                        else:
+                            b.x += (cdx / cdist) * pull_strength
+                            b.y += (cdy / cdist) * pull_strength
 
         # Apply continuous damage outside the safe zone
         var damage_this_tick = outside_damage_per_second * delta
@@ -2614,8 +2644,38 @@ class SafeZoneMode extends GameMode:
         # Shrink the safe zone
         if zone_radius > min_zone_radius:
             zone_radius -= shrink_rate * delta
-            if zone_radius < min_zone_radius:
+            if zone_radius <= min_zone_radius:
                 zone_radius = min_zone_radius
+
+        if zone_radius <= min_zone_radius and min_zone_radius > 0.1:
+            if not has_meta("collapse_active") or not get_meta("collapse_active"):
+                set_meta("collapse_active", true)
+                min_zone_radius = 0.0
+                shrink_rate *= 5.0
+                outside_damage_per_second *= 5.0
+                if world != null and world.has_method("add_event"):
+                    world.add_event("collapse_event", {"message": "Zone Collapse Imminent!"})
+
+        if has_meta("collapse_active") and get_meta("collapse_active"):
+            for b in balls:
+                if b.alive and b.ball_type != "spectator":
+                    var bx = b.x
+                    var by = b.y
+                    if "position" in b:
+                        bx = b.position.x
+                        by = b.position.y
+                    var cdx = zone_x - bx
+                    var cdy = zone_y - by
+                    var cdist = sqrt(cdx*cdx + cdy*cdy)
+                    if cdist > 0.0001:
+                        var pull_strength = 200.0 * delta
+                        pull_strength = min(pull_strength, cdist)
+                        if "position" in b:
+                            b.position.x += (cdx / cdist) * pull_strength
+                            b.position.y += (cdy / cdist) * pull_strength
+                        else:
+                            b.x += (cdx / cdist) * pull_strength
+                            b.y += (cdy / cdist) * pull_strength
 
         # Apply continuous damage outside the safe zone
         var damage_this_tick = outside_damage_per_second * delta

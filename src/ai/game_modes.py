@@ -1835,8 +1835,34 @@ class MovingSafeZoneMode(GameMode):
         # Shrink safe zone
         if self.zone_radius > self.min_zone_radius:
             self.zone_radius -= self.shrink_rate * delta
-            if self.zone_radius < self.min_zone_radius:
+            if self.zone_radius <= self.min_zone_radius:
                 self.zone_radius = self.min_zone_radius
+
+        if self.zone_radius <= self.min_zone_radius and self.min_zone_radius > 0.1:
+            self.collapse_active = True
+            self.min_zone_radius = 0.0
+            self.shrink_rate *= 5.0
+            self.outside_damage_per_second *= 5.0
+            if hasattr(world, "add_event"):
+                world.add_event("collapse_event", {"message": "Zone Collapse Imminent!"})
+
+        if getattr(self, "collapse_active", False):
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                    bx = b.position.x if hasattr(b, "position") else getattr(b, "x", 0.0)
+                    by = b.position.y if hasattr(b, "position") else getattr(b, "y", 0.0)
+                    cdx = self.zone_x - bx
+                    cdy = self.zone_y - by
+                    cdist = math.sqrt(cdx*cdx + cdy*cdy)
+                    if cdist > 0.0001:
+                        pull_strength = 200.0 * delta
+                        pull_strength = min(pull_strength, cdist)
+                        if hasattr(b, "position"):
+                            b.position.x += (cdx / cdist) * pull_strength
+                            b.position.y += (cdy / cdist) * pull_strength
+                        else:
+                            b.x += (cdx / cdist) * pull_strength
+                            b.y += (cdy / cdist) * pull_strength
 
         for b in balls:
             if not getattr(b, "alive", False):
@@ -1935,8 +1961,34 @@ class ShrinkingDangerZoneMode(GameMode):
         # Shrink the safe zone
         if self.zone_radius > self.min_zone_radius:
             self.zone_radius -= self.shrink_rate * delta
-            if self.zone_radius < self.min_zone_radius:
+            if self.zone_radius <= self.min_zone_radius:
                 self.zone_radius = self.min_zone_radius
+
+        if self.zone_radius <= self.min_zone_radius and self.min_zone_radius > 0.1:
+            self.collapse_active = True
+            self.min_zone_radius = 0.0
+            self.shrink_rate *= 5.0
+            self.outside_damage_per_second *= 5.0
+            if hasattr(world, "add_event"):
+                world.add_event("collapse_event", {"message": "Zone Collapse Imminent!"})
+
+        if getattr(self, "collapse_active", False):
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                    bx = b.position.x if hasattr(b, "position") else getattr(b, "x", 0.0)
+                    by = b.position.y if hasattr(b, "position") else getattr(b, "y", 0.0)
+                    cdx = self.zone_x - bx
+                    cdy = self.zone_y - by
+                    cdist = math.sqrt(cdx*cdx + cdy*cdy)
+                    if cdist > 0.0001:
+                        pull_strength = 200.0 * delta
+                        pull_strength = min(pull_strength, cdist)
+                        if hasattr(b, "position"):
+                            b.position.x += (cdx / cdist) * pull_strength
+                            b.position.y += (cdy / cdist) * pull_strength
+                        else:
+                            b.x += (cdx / cdist) * pull_strength
+                            b.y += (cdy / cdist) * pull_strength
 
         # Apply continuous damage outside the safe zone
         damage_this_tick = self.outside_damage_per_second * delta
@@ -2018,8 +2070,34 @@ class SafeZoneMode(GameMode):
         # Shrink the safe zone
         if self.zone_radius > self.min_zone_radius:
             self.zone_radius -= self.shrink_rate * delta
-            if self.zone_radius < self.min_zone_radius:
+            if self.zone_radius <= self.min_zone_radius:
                 self.zone_radius = self.min_zone_radius
+
+        if self.zone_radius <= self.min_zone_radius and self.min_zone_radius > 0.1:
+            self.collapse_active = True
+            self.min_zone_radius = 0.0
+            self.shrink_rate *= 5.0
+            self.outside_damage_per_second *= 5.0
+            if hasattr(world, "add_event"):
+                world.add_event("collapse_event", {"message": "Zone Collapse Imminent!"})
+
+        if getattr(self, "collapse_active", False):
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                    bx = b.position.x if hasattr(b, "position") else getattr(b, "x", 0.0)
+                    by = b.position.y if hasattr(b, "position") else getattr(b, "y", 0.0)
+                    cdx = self.zone_x - bx
+                    cdy = self.zone_y - by
+                    cdist = math.sqrt(cdx*cdx + cdy*cdy)
+                    if cdist > 0.0001:
+                        pull_strength = 200.0 * delta
+                        pull_strength = min(pull_strength, cdist)
+                        if hasattr(b, "position"):
+                            b.position.x += (cdx / cdist) * pull_strength
+                            b.position.y += (cdy / cdist) * pull_strength
+                        else:
+                            b.x += (cdx / cdist) * pull_strength
+                            b.y += (cdy / cdist) * pull_strength
 
         # Apply continuous damage outside the safe zone
         damage_this_tick = self.outside_damage_per_second * delta
