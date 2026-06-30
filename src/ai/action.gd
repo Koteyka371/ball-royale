@@ -239,8 +239,13 @@ func execute(strategy: String, delta: float):
 					trap.set_meta("duration", 10.0)
 
 					var trap_type = "mine"
-					if randf() > 0.5:
+					var r = randf()
+					if r > 0.75:
 						trap_type = "freeze"
+					elif r > 0.5:
+						trap_type = "black_hole"
+					elif r > 0.25:
+						trap_type = "swap"
 					trap.set_meta("trap_variant", trap_type)
 					trap.set_meta("owner_id", self.ball.id)
 
@@ -1368,6 +1373,38 @@ func execute(strategy: String, delta: float):
                                         bh.damage = 0.0
                                         bh.set_meta("duration", 3.0)
                                         world.get_arena().hazards.append(bh)
+                                if hazard.has_method("set_meta"):
+                                    hazard.set_meta("duration", 0.0)
+                                elif "duration" in hazard:
+                                    hazard.duration = 0.0
+                            elif trap_variant == "swap":
+                                var owner_id = null
+                                if hazard.has_method("get_meta") and hazard.has_meta("owner_id"):
+                                    owner_id = hazard.get_meta("owner_id")
+                                elif "owner_id" in hazard:
+                                    owner_id = hazard.owner_id
+
+                                if owner_id != null:
+                                    var owner_ball = null
+                                    var balls_list = []
+                                    if world != null and "balls" in world:
+                                        balls_list = world.balls
+                                    elif world != null and "entities" in world:
+                                        balls_list = world.entities
+
+                                    for b in balls_list:
+                                        if "id" in b and b.id == owner_id:
+                                            owner_ball = b
+                                            break
+
+                                    if owner_ball != null and owner_ball != self.ball:
+                                        var temp_x = owner_ball.x
+                                        var temp_y = owner_ball.y
+                                        owner_ball.x = old_x
+                                        owner_ball.y = old_y
+                                        self.ball.x = temp_x
+                                        self.ball.y = temp_y
+
                                 if hazard.has_method("set_meta"):
                                     hazard.set_meta("duration", 0.0)
                                 elif "duration" in hazard:
