@@ -17,7 +17,7 @@ class Assassin:
     PERCEPTION_RADIUS = 300
     AGGRESSION = 0.8
     COLOR = "purple"
-    SKILL = "dash"
+    SKILL = "stamina_dash"
     SKILL_COOLDOWN = 3.0
 
     def __init__(self, ball_id: int, x: float = 0.0, y: float = 0.0):
