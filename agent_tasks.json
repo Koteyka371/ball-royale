@@ -5332,7 +5332,7 @@
     },
     {
       "id": "idea-307",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Seasonal Arenas",
@@ -9053,6 +9053,57 @@
         "src/ai/loadout_code_fragments_collectibles.py",
         "src/ai/loadout_code_fragments_collectibles.gd",
         "tests/test_loadout_code_fragments_collectibles.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-524",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Map Hazards Based on Weather",
+      "description": "Expand the weather chaos mode by introducing dynamic map elements that change based on weather. For example, rain can create mud puddles that slow players, snow can freeze certain areas causing sliding, and heatwaves can create localized fire zones that deal damage.",
+      "allowed_paths": [
+        "src/arena/dynamic_map_hazards_based_on.py",
+        "src/arena/dynamic_map_hazards_based_on.gd",
+        "tests/test_dynamic_map_hazards_based_on.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-525",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Safe-Zone Mechanics",
+      "description": "Introduce a game mode feature where the safe playable area gradually shrinks over time, applying damage-over-time (DoT) to any ball caught outside it, heavily discouraging camping.",
+      "allowed_paths": [
+        "src/ai/shrinking_safe_zone_mechanics.py",
+        "src/ai/shrinking_safe_zone_mechanics.gd",
+        "tests/test_shrinking_safe_zone_mechanics.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-526",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Swap Trap",
+      "description": "A rare hazard that, when stepped on by a ball, instantly swaps the positions of that ball and a randomly chosen enemy, creating sudden ambushes or miraculous escapes.",
+      "allowed_paths": [
+        "src/arena/quantum_swap_trap.py",
+        "src/arena/quantum_swap_trap.gd",
+        "tests/test_quantum_swap_trap.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
