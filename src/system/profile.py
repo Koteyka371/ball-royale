@@ -1,4 +1,6 @@
 import json
+import base64
+import zlib
 from system.leaderboard import LeaderboardManager
 
 class ProfileManager:
@@ -198,6 +200,37 @@ class ProfileManager:
             self.save()
             return True
         return False
+
+
+    def generate_loadout_code(self, loadout_name):
+        loadout = self.get_loadout(loadout_name)
+        if not loadout:
+            return None
+        try:
+            json_str = json.dumps(loadout)
+            compressed = zlib.compress(json_str.encode('utf-8'))
+            b64 = base64.urlsafe_b64encode(compressed).decode('utf-8')
+            return b64.rstrip('=')
+        except Exception:
+            return None
+
+    def import_loadout_code(self, loadout_name, code):
+        try:
+            padding = '=' * ((4 - len(code) % 4) % 4)
+            b64_bytes = base64.urlsafe_b64decode(code + padding)
+            decompressed = zlib.decompress(b64_bytes)
+            loadout = json.loads(decompressed.decode('utf-8'))
+
+            # Simple validation to ensure it's a valid loadout dict
+            if isinstance(loadout, dict) and "ball_type" in loadout and "trap_variant" in loadout:
+                if "loadouts" not in self.data:
+                    self.data["loadouts"] = {}
+                self.data["loadouts"][loadout_name] = loadout
+                self.save()
+                return True
+            return False
+        except Exception:
+            return False
 
     def add_status_effect(self, effect_name):
         if "status_effects" not in self.data:

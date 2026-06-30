@@ -214,6 +214,41 @@ func delete_loadout(loadout_name: String) -> bool:
         return true
     return false
 
+
+func generate_loadout_code(loadout_name: String) -> String:
+    var loadout = get_loadout(loadout_name)
+    if loadout.is_empty():
+        return ""
+    var json_str = JSON.stringify(loadout)
+    var compressed = json_str.to_utf8_buffer().compress(FileAccess.COMPRESSION_DEFLATE)
+    var b64 = Marshalls.raw_to_base64(compressed).replace("+", "-").replace("/", "_").trim_suffix("=")
+    return b64
+
+func import_loadout_code(loadout_name: String, code: String) -> bool:
+    if code == "":
+        return false
+    var padding = ""
+    var m = (4 - (code.length() % 4)) % 4
+    for i in range(m):
+        padding += "="
+    var b64_bytes = Marshalls.base64_to_raw(code.replace("-", "+").replace("_", "/") + padding)
+    if b64_bytes.size() == 0:
+        return false
+    var decompressed = b64_bytes.decompress_dynamic(-1, FileAccess.COMPRESSION_DEFLATE)
+    if decompressed.size() == 0:
+        return false
+    var json = JSON.new()
+    var error = json.parse(decompressed.get_string_from_utf8())
+    if error == OK:
+        var parsed = json.get_data()
+        if typeof(parsed) == TYPE_DICTIONARY and parsed.has("ball_type") and parsed.has("trap_variant"):
+            if not data.has("loadouts"):
+                data["loadouts"] = {}
+            data["loadouts"][loadout_name] = parsed
+            save_profile()
+            return true
+    return false
+
 func add_status_effect(effect_name: String):
     if not data.has("status_effects"):
         data["status_effects"] = []
