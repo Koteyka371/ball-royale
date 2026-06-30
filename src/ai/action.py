@@ -131,7 +131,12 @@ class Action:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 hazards = self.world.arena.hazards
 
-            if enemies or hazards:
+            boosters = getattr(self.world, "boosters", [])
+            items = []
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "items"):
+                items = self.world.arena.items
+
+            if enemies or hazards or boosters or items:
                 jump_count = 0
                 has_original_damage = hasattr(attacker, "damage")
                 original_damage = getattr(attacker, "damage", 10.0)
@@ -139,7 +144,7 @@ class Action:
                 current_damage = original_damage * 1.5
                 hit_entities = [attacker, target]
 
-                while jump_count < 2:
+                while jump_count < 5:
                     nearby_entities = []
                     for e in enemies:
                         if e not in hit_entities:
@@ -151,6 +156,38 @@ class Action:
                             dist_sq = (h.x - current_target.x)**2 + (h.y - current_target.y)**2
                             if dist_sq < 22500:
                                 nearby_entities.append((dist_sq, h, "hazard"))
+                    for b in boosters:
+                        if b not in hit_entities:
+                            dist_sq = (b.x - current_target.x)**2 + (b.y - current_target.y)**2
+                            if dist_sq < 22500:
+                                nearby_entities.append((dist_sq, b, "booster"))
+                    for it in items:
+                        if it not in hit_entities:
+                            dist_sq = (it.x - current_target.x)**2 + (it.y - current_target.y)**2
+                            if dist_sq < 22500:
+                                nearby_entities.append((dist_sq, it, "item"))
+
+                    if hasattr(self.world, "arena"):
+                        aw = getattr(self.world.arena, "width", 2000.0)
+                        ah = getattr(self.world.arena, "height", 2000.0)
+
+                        class WallPoint:
+                            def __init__(self, x, y, name):
+                                self.x = x
+                                self.y = y
+                                self.name = name
+
+                        walls = [
+                            WallPoint(0.0, current_target.y, "left_wall"),
+                            WallPoint(aw, current_target.y, "right_wall"),
+                            WallPoint(current_target.x, 0.0, "top_wall"),
+                            WallPoint(current_target.x, ah, "bottom_wall")
+                        ]
+                        for w in walls:
+                            if w.name not in hit_entities:
+                                dist_sq = (w.x - current_target.x)**2 + (w.y - current_target.y)**2
+                                if dist_sq < 22500:
+                                    nearby_entities.append((dist_sq, w, "wall"))
 
                     if not nearby_entities:
                         break
@@ -183,7 +220,7 @@ class Action:
                         else:
                             if hasattr(self.world, "_deal_damage"):
                                 self.world._deal_damage(attacker, next_entity)
-                    else:
+                    elif e_type in ("hazard", "item", "booster"):
                         if hasattr(next_entity, "hp"):
                             next_entity.hp -= current_damage
                             if next_entity.hp <= 0:
@@ -193,7 +230,11 @@ class Action:
                         self._spawn_skill_particles("lightning")
                         self._spawn_skill_particles("lightning")
 
-                    hit_entities.append(next_entity)
+                    if e_type == "wall":
+                        hit_entities.append(next_entity.name)
+                    else:
+                        hit_entities.append(next_entity)
+
                     current_target = next_entity
                     current_damage *= 1.5
                     jump_count += 1
