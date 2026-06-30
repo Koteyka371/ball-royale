@@ -2830,8 +2830,19 @@ class Action:
                                         enemy.take_damage(explosion_damage)
             elif skill_name == "deploy_decoy":
                 import copy
-                if hasattr(self.world, "balls"):
+                active_decoys = [b for b in getattr(self.world, "balls", []) if getattr(b, "is_decoy", False) and getattr(b, "owner_id", None) == self.ball.id and getattr(b, "alive", True) and not getattr(b, "has_swapped", False)]
+                if active_decoys:
+                    decoy = active_decoys[0]
+                    tx, ty = self.ball.x, self.ball.y
+                    self.ball.x, self.ball.y = decoy.x, decoy.y
+                    decoy.x, decoy.y = tx, ty
+                    decoy.has_swapped = True
+                    self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 4.0)
+                elif hasattr(self.world, "balls"):
                     decoy = copy.copy(self.ball)
+                    decoy.owner_id = getattr(self.ball, "id", None)
+                    decoy.has_swapped = False
+                    self.ball.skill_timer = 0.5
                     decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
                     if hasattr(self.world, "next_id"):
                         self.world.next_id += 1
