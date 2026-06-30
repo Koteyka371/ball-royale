@@ -2322,6 +2322,36 @@ class VisionReducedMode extends GameMode:
 
 		return null
 
+class EMPBurstMode extends GameMode:
+	var spawn_timer: float = 0.0
+
+	func _init():
+		super._init()
+		name = "EMP Burst"
+		description = "Periodic EMP bursts scramble AI targeting!"
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if not "hazards" in world.arena:
+			world.arena.hazards = []
+		spawn_timer = 0.0
+
+	func tick(world, balls, delta: float = 0.016):
+		super.tick(world, balls, delta)
+		spawn_timer += delta
+		if spawn_timer >= 5.0:
+			spawn_timer = 0.0
+			var ProceduralArena = load("res://src/arena/procedural_arena.gd")
+			if ProceduralArena != null:
+				var x = rng.randf_range(100.0, world.arena.width - 100.0)
+				var y = rng.randf_range(100.0, world.arena.height - 100.0)
+				var new_hazard = ProceduralArena.Hazard.new(world.arena.hazards.size() + rng.randi_range(1000, 9999), x, y, 150.0, "emp_burst", 0.0)
+				if new_hazard.has_method("set_meta"):
+					new_hazard.set_meta("duration", 1.0)
+				else:
+					new_hazard.duration = 1.0
+				world.arena.hazards.append(new_hazard)
+
 class DynamicHazardsMode extends GameMode:
 	var spawn_timer = 0.0
 	var rng = RandomNumberGenerator.new()
@@ -3784,6 +3814,7 @@ var GAME_MODES = {
 	"memory_traps": MemoryTrapsMode.new(),
 	"pitch_black": PitchBlackMode.new(),
 	"vision_reduced": VisionReducedMode.new(),
+	"emp_burst": EMPBurstMode.new(),
 	"dynamic_hazards": DynamicHazardsMode.new(),
 	"custom_match": CustomMatchMode.new(),
 	"reverse_event": ReverseEventMode.new(),

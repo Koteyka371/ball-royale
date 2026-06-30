@@ -1766,6 +1766,36 @@ class VisionReducedMode(GameMode):
 
         return None
 
+class EMPBurstMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "EMP Burst"
+        self.description = "Periodic EMP bursts scramble AI targeting!"
+        self.spawn_timer = 0.0
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        self.spawn_timer += delta
+        if self.spawn_timer >= 5.0:
+            self.spawn_timer = 0.0
+
+            import random
+            from arena.procedural_arena import Hazard
+
+            x = random.uniform(100, world.arena.width - 100)
+            y = random.uniform(100, world.arena.height - 100)
+
+            emp = Hazard(id=len(world.arena.hazards) + random.randint(1000, 9999),
+                         x=x, y=y, radius=150.0, kind="emp_burst", damage=0.0)
+            emp.duration = 1.0  # Burst lasts briefly
+            world.arena.hazards.append(emp)
+
 class DynamicHazardsMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -2948,6 +2978,7 @@ GAME_MODES = {
     "memory_traps": MemoryTrapsMode(),
     "pitch_black": PitchBlackMode(),
     "vision_reduced": VisionReducedMode(),
+    "emp_burst": EMPBurstMode(),
     "dynamic_hazards": DynamicHazardsMode(),
     "custom_match": CustomMatchMode(),
     "reverse_event": ReverseEventMode(),

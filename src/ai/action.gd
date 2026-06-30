@@ -1624,6 +1624,19 @@ func execute(strategy: String, delta: float):
                                 self.ball.y = (self.ball.y + old_y) / 2.0
                         continue
 
+                    elif hazard.kind == "emp_burst":
+                        if "is_scrambled" in self.ball:
+                            self.ball.is_scrambled = true
+                            if "scramble_timer" in self.ball:
+                                self.ball.scramble_timer = 3.0
+                            else:
+                                self.ball.set_meta("scramble_timer", 3.0)
+                        elif self.ball.has_method("set_meta"):
+                            self.ball.set_meta("is_scrambled", true)
+                            self.ball.set_meta("scramble_timer", 3.0)
+                        if self.has_method("_spawn_skill_particles"):
+                            self._spawn_skill_particles("emp")
+                        continue
                     elif hazard.kind == "orbital_strike_active":
                         var hd = hazard.damage * delta
                         var is_qs = false
@@ -1983,6 +1996,25 @@ func execute(strategy: String, delta: float):
             self.ball.set_meta("team_message", {"type": "hold_position", "x": self.ball.x, "y": self.ball.y})
 
     var stun_timer = 0.0
+    var is_scrambled = false
+        if "is_scrambled" in self.ball:
+            is_scrambled = self.ball.is_scrambled
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("is_scrambled"):
+            is_scrambled = self.ball.get_meta("is_scrambled")
+
+        if is_scrambled:
+            var scr_timer = 0.0
+            if "scramble_timer" in self.ball: scr_timer = self.ball.scramble_timer
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("scramble_timer"): scr_timer = self.ball.get_meta("scramble_timer")
+
+            scr_timer -= delta
+            if "scramble_timer" in self.ball: self.ball.scramble_timer = scr_timer
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("scramble_timer", scr_timer)
+
+            if scr_timer <= 0:
+                if "is_scrambled" in self.ball: self.ball.is_scrambled = false
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("is_scrambled", false)
+
     var is_emped = false
     if "is_emped" in self.ball:
         is_emped = self.ball.is_emped
@@ -2880,6 +2912,15 @@ func _find_strongest_enemy_deterministic(enemies: Array) -> Object:
     return target
 
 func _get_target(enemies: Array) -> Object:
+
+    var is_scrambled = false
+    if "is_scrambled" in self.ball:
+        is_scrambled = self.ball.is_scrambled
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("is_scrambled"):
+        is_scrambled = self.ball.get_meta("is_scrambled")
+
+    if is_scrambled and enemies.size() > 0:
+        return enemies[randi() % enemies.size()]
     var illusions = []
     for e in enemies:
         if "is_illusion" in e and e.is_illusion:
