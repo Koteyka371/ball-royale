@@ -36,6 +36,10 @@ func load_profile():
                 data["status_effects"] = []
             if not data.has("nemeses"):
                 data["nemeses"] = {}
+            if not data.has("login_streak"):
+                data["login_streak"] = 0
+            if not data.has("last_login_date"):
+                data["last_login_date"] = ""
             return
 
     # Default profile
@@ -55,7 +59,9 @@ func load_profile():
         "cosmetics": [],
         "titles": [],
         "status_effects": [],
-        "nemeses": {}
+        "nemeses": {},
+        "login_streak": 0,
+        "last_login_date": ""
     }
 
 func add_quest(quest_description: String, reward: int):
@@ -140,7 +146,9 @@ func do_prestige() -> bool:
             "cosmetics": data.get("cosmetics", []),
             "titles": data.get("titles", []),
             "status_effects": data.get("status_effects", []),
-            "nemeses": data.get("nemeses", {})
+            "nemeses": data.get("nemeses", {}),
+            "login_streak": data.get("login_streak", 0),
+            "last_login_date": data.get("last_login_date", "")
         }
         save_profile()
         var lm = load("res://src/system/leaderboard.gd").new(self)
@@ -272,3 +280,38 @@ func is_nemesis(killer_type: String, victim_type: String) -> bool:
     if data["nemeses"].has(killer_type) and data["nemeses"][killer_type].has(victim_type):
         return data["nemeses"][killer_type][victim_type] >= 2
     return false
+
+func process_daily_login(current_date_str: String) -> Dictionary:
+    var last_date_str = data.get("last_login_date", "")
+    if last_date_str == current_date_str:
+        return {}
+
+    var streak = data.get("login_streak", 0)
+
+    if last_date_str != "":
+        var current_time = Time.get_unix_time_from_datetime_string(current_date_str + "T00:00:00")
+        var last_time = Time.get_unix_time_from_datetime_string(last_date_str + "T00:00:00")
+        var diff_days = round((current_time - last_time) / 86400.0)
+        if diff_days == 1:
+            streak += 1
+        else:
+            streak = 1
+    else:
+        streak = 1
+
+    data["login_streak"] = streak
+    data["last_login_date"] = current_date_str
+
+    var sp_reward = 10 * min(streak, 10)
+    add_skill_points(sp_reward)
+    var rewards = {"skill_points": sp_reward}
+
+    if streak > 0 and streak % 7 == 0:
+        data["prestige_tokens"] = data.get("prestige_tokens", 0) + 1
+        rewards["prestige_tokens"] = 1
+        var cosmetic_name = "streak_master_" + str(streak)
+        add_cosmetic(cosmetic_name)
+        rewards["cosmetics"] = cosmetic_name
+
+    save_profile()
+    return rewards
