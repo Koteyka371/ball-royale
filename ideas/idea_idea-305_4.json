@@ -1,0 +1,4 @@
+{
+  "title": "Hazard Trap Network",
+  "description": "Converting a hazard now links it to nearby hazards of the same type, cascading the conversion effect but at a reduced duration for the chained hazards."
+}
