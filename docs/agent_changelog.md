@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-305] Hazard Conversion Module — *2026-06-30 10:42:02 UTC*
+
+Introduce a new skill 'Convert Hazard' that temporarily changes a dangerous hazard (like spikes or a fake booster) into a healing spring or a real booster for the ball that uses it. This adds strategic utility to typically avoided areas and rewards risk-taking.
+
+---
+
 ## [idea-308] Dynamic Safe Zone Migration — *2026-06-30 10:41:58 UTC*
 
 Instead of the safe zone merely shrinking toward the center of the arena, make the safe zone's center slowly migrate around the arena as it shrinks. This forces players to constantly reposition and prevents them from simply camping the exact center early in the game.
