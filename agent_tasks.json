@@ -9602,6 +9602,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-556",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Final Phase",
+      "description": "If a match extends beyond normal limits, spawn a massive slowly growing black hole in the center that pulls all balls inward, creating an intense final showdown.",
+      "allowed_paths": [
+        "src/ai/black_hole_final_phase.py",
+        "src/ai/black_hole_final_phase.gd",
+        "tests/test_black_hole_final_phase.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
