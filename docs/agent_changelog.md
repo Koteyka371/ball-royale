@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-297] Dash Attack Skill — *2026-06-30 09:16:53 UTC*
+
+Add a skill for certain ball types that lets them consume all stamina to dash through enemies, dealing heavy damage.
+
+---
+
 ## [idea-282] Interactive Environmental Traps — *2026-06-30 09:16:00 UTC*
 
 Introduce switches that balls can hit or roll over to trigger environmental traps like falling boulders, swinging axes, or temporary laser walls that damage or block opponents.

@@ -5162,7 +5162,7 @@
     },
     {
       "id": "idea-297",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Dash Attack Skill",
@@ -7743,6 +7743,74 @@
         "src/ai/jump_pads.py",
         "src/ai/jump_pads.gd",
         "tests/test_jump_pads.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-449",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Debuff Cleansing Power-ups",
+      "description": "Add a new power-up item that instantly cleanses all negative status effects (including the new max HP debuff, burn, and poison) and grants temporary immunity, providing a strategic counterplay option against heavy debuff-focused teams or zones.",
+      "allowed_paths": [
+        "src/ai/debuff_cleansing_power_ups.py",
+        "src/ai/debuff_cleansing_power_ups.gd",
+        "tests/test_debuff_cleansing_power_ups.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-450",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Safe Zones with Multi-Buffs",
+      "description": "Introduce dynamic safe zones that not only protect from environmental damage but also apply randomized buffs (like increased speed or damage) for a short duration, encouraging players to fight for the optimal spot inside the zone.",
+      "allowed_paths": [
+        "src/ai/shrinking_safe_zones_with_multi_buffs.py",
+        "src/ai/shrinking_safe_zones_with_multi_buffs.gd",
+        "tests/test_shrinking_safe_zones_with_multi_buffs.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-451",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Illusion Traps",
+      "description": "Add a new trap type that creates a holographic duplicate of a booster or healing spring. When a ball touches it, the hologram explodes, dealing damage and applying a 'stunned/confused' debuff.",
+      "allowed_paths": [
+        "src/arena/decoy_illusion_traps.py",
+        "src/arena/decoy_illusion_traps.gd",
+        "tests/test_decoy_illusion_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-452",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Conveyor Belt Mechanics",
+      "description": "Introduce directional conveyor belts on some arenas that continuously push balls, items, and hazards in a specific direction, creating dynamic zones and testing positional control algorithms.",
+      "allowed_paths": [
+        "src/ai/conveyor_belt_mechanics.py",
+        "src/ai/conveyor_belt_mechanics.gd",
+        "tests/test_conveyor_belt_mechanics.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
