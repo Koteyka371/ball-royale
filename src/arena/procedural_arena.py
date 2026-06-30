@@ -333,6 +333,9 @@ class ProceduralArena:
             new_craters: list[Hazard] = []
             # Slowly expand dynamic hazards and decay others like flares
             for h in self.hazards:
+                if getattr(h, "frozen_timer", 0.0) > 0:
+                    h.frozen_timer -= delta
+                    continue
                 if getattr(h, "kind", "") == "flare":
                     if hasattr(h, "duration"):
                         h.duration -= delta

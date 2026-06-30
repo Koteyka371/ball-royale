@@ -2677,6 +2677,16 @@ class Action:
                     self.ball.entangle_timer = 5.0
                     target.entangle_timer = 5.0
 
+            elif skill_name == "time_stop":
+                entities = getattr(self.world, "entities", getattr(self.world, "balls", []))
+                for e in entities:
+                    if getattr(e, "id", None) != getattr(self.ball, "id", None) and getattr(e, "alive", True):
+                        e.stun_timer = max(getattr(e, "stun_timer", 0.0), 2.0)
+
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    for h in self.world.arena.hazards:
+                        h.frozen_timer = 2.0
+
             elif skill_name == "clone":
                 import copy
                 num_clones = random.randint(2, 4)

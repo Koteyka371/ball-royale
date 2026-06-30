@@ -4217,6 +4217,40 @@ func _use_skill():
                         target.set_meta("entangled_with_id", self.ball.id)
                         target.set_meta("entangle_timer", 5.0)
 
+        elif skill_name == "time_stop":
+            var entities = []
+            if "entities" in self.world: entities = self.world.entities
+            elif "balls" in self.world: entities = self.world.balls
+
+            var my_id = -1
+            if "id" in self.ball: my_id = self.ball.id
+            elif self.ball.has_method("get_meta"): my_id = self.ball.get_meta("id")
+
+            for b in entities:
+                var b_id = -2
+                if "id" in b: b_id = b.id
+                elif b.has_method("get_meta"): b_id = b.get_meta("id")
+
+                var is_alive = true
+                if "alive" in b: is_alive = b.alive
+                elif b.has_method("get_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+
+                if b_id != my_id and is_alive:
+                    var curr_stun = 0.0
+                    if "stun_timer" in b: curr_stun = b.stun_timer
+                    elif b.has_method("get_meta") and b.has_meta("stun_timer"): curr_stun = b.get_meta("stun_timer")
+
+                    var new_stun = max(curr_stun, 2.0)
+                    if "stun_timer" in b: b.stun_timer = new_stun
+                    elif b.has_method("set_meta"): b.set_meta("stun_timer", new_stun)
+
+            if "arena" in self.world and self.world.arena != null:
+                var arena = self.world.arena
+                if "hazards" in arena:
+                    for h in arena.hazards:
+                        if h.has_method("set_meta"):
+                            h.set_meta("frozen_timer", 2.0)
+
         elif skill_name == "clone":
             var num_clones = randi() % 3 + 2 # 2 to 4 clones
             for i in range(num_clones):

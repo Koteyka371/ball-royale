@@ -362,6 +362,12 @@ func update_zone(current_tick: int, delta: float) -> void:
 
         var new_craters = []
         for h in hazards:
+            if h.has_method("has_meta") and h.has_meta("frozen_timer"):
+                var ft = h.get_meta("frozen_timer")
+                if ft > 0:
+                    h.set_meta("frozen_timer", ft - delta)
+                    continue
+
             if "kind" in h and h.kind == "flare":
                 if h.has_meta("duration"):
                     var dur = h.get_meta("duration") - delta
