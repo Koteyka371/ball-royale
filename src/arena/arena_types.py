@@ -1299,6 +1299,19 @@ ARENAS = {
     "day_night": DayNightArena
 }
 
+class SummerArena(ProceduralArena):
+    def __init__(self, arena_size: float = 2000.0, seed: int | None = None):
+        super().__init__(arena_size, 5, seed)
+        self.is_heatwave = True
+
+class WinterArena(ProceduralArena):
+    def __init__(self, arena_size: float = 2000.0, seed: int | None = None):
+        super().__init__(arena_size, 5, seed)
+        self.is_snowing = True
+
+ARENAS["summer"] = SummerArena
+ARENAS["winter"] = WinterArena
+
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
     arena_class = ARENAS.get(arena_type, ProceduralArena)
     if arena_class == ProceduralArena:

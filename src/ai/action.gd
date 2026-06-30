@@ -2257,14 +2257,37 @@ func execute(strategy: String, delta: float):
         if my_ball.has_meta("infinite_stamina_timer"): infinite_stamina = my_ball.get_meta("infinite_stamina_timer")
         elif "infinite_stamina_timer" in my_ball: infinite_stamina = my_ball.infinite_stamina_timer
 
+        var arena = world.call('get_arena') if world != null and world.has_method('get_arena') else null
+        var is_heatwave = false
+        var is_snowing = false
+        if arena != null:
+            if typeof(arena) == TYPE_OBJECT and arena.has_method('get'):
+                is_heatwave = arena.get("is_heatwave") == true
+                is_snowing = arena.get("is_snowing") == true
+            elif "is_heatwave" in arena:
+                is_heatwave = arena.is_heatwave == true
+                if "is_snowing" in arena:
+                    is_snowing = arena.is_snowing == true
+
+        var drain_mult = 2.0 if is_heatwave else 1.0
+        var regen_mult = 0.5 if is_heatwave else 1.0
+
         if is_dash:
             if infinite_stamina <= 0:
-                my_ball.set_meta("stamina", max(0.0, act_stamina - 50.0 * delta))
+                my_ball.set_meta("stamina", max(0.0, act_stamina - (50.0 * drain_mult) * delta))
         elif act_dist / max(0.0001, delta * 60) < act_base_speed * 0.5:
-            my_ball.set_meta("stamina", min(act_max_stamina, act_stamina + 30.0 * delta))
+            my_ball.set_meta("stamina", min(act_max_stamina, act_stamina + (30.0 * regen_mult) * delta))
 
         var vx = dx / delta
         var vy = dy / delta
+
+        if is_snowing and (vx != 0 or vy != 0):
+            if my_ball.has_method("set_meta") and my_ball.has_meta("x"):
+                my_ball.set_meta("x", my_ball.get_meta("x") + vx * delta * 0.5)
+                my_ball.set_meta("y", my_ball.get_meta("y") + vy * delta * 0.5)
+            elif "x" in my_ball:
+                my_ball.x += vx * delta * 0.5
+                my_ball.y += vy * delta * 0.5
         if "vx" in self.ball:
             self.ball.vx = vx
             self.ball.vy = vy
