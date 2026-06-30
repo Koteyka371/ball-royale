@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-315] Swap Decoy Ability — *2026-06-30 11:15:13 UTC*
+
+Allow the Trickster to swap positions with their active decoy once before it expires. This gives them incredible mobility and the ability to pull off confusing jukes or escape lethal scenarios.
+
+---
+
 ## [idea-316] Necromancer Minion Synergy — *2026-06-30 11:15:10 UTC*
 
 Introduce synergy mechanics for the Necromancer ball. When near its generated minions, the Necromancer gains increased movement speed and its attacks heal itself for a percentage of the damage dealt.
