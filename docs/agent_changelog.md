@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-299] Heavy Attacks — *2026-06-30 10:26:17 UTC*
+
+Balls can consume all their stamina for a single heavy attack that deals massive damage and knocks the enemy back.
+
+---
+
 ## [idea-304] Quantum Tunnels Hazard — *2026-06-30 10:26:13 UTC*
 
 Hazards that teleport balls to the other side of the arena, keeping their momentum but altering their trajectory unpredictably.
