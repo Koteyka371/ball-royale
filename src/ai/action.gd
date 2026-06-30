@@ -4450,6 +4450,20 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "weather_booster":
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("weather_control_timer", 10.0)
+                else:
+                    self.ball.weather_control_timer = 10.0
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "cleanser":
                 if "burn_timer" in self.ball: self.ball.burn_timer = 0.0
                 if "poison_timer" in self.ball: self.ball.poison_timer = 0.0
@@ -6149,6 +6163,20 @@ func _apply_friendly_aura(delta: float):
 
 
 func _update_skill_timer(delta: float):
+    var weather_timer = 0.0
+    if "weather_control_timer" in self.ball:
+        weather_timer = float(self.ball.weather_control_timer)
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("weather_control_timer"):
+        weather_timer = self.ball.get_meta("weather_control_timer")
+    if weather_timer > 0:
+        weather_timer -= delta
+        if weather_timer < 0:
+            weather_timer = 0.0
+        if "weather_control_timer" in self.ball:
+            self.ball.weather_control_timer = weather_timer
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("weather_control_timer", weather_timer)
+
     var inf_stam_timer = 0.0
     if "infinite_stamina_timer" in self.ball:
         inf_stam_timer = self.ball.infinite_stamina_timer

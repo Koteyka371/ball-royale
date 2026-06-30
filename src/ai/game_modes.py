@@ -236,20 +236,49 @@ class BattleRoyaleMode(GameMode):
                     b.time_since_death += delta
 
         # Weather logic
-        self.weather_timer += delta
-        if self.weather_timer > 15.0:
+        controller = None
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "weather_control_timer", 0.0) > 0:
+                controller = b
+                break
+
+        if controller:
             self.weather_timer = 0.0
-            weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave"]
-            rnd = getattr(self, "random", __import__("random"))
+            ctype = getattr(controller, "ball_type", "default")
+            pref = "clear"
+            if ctype in ["elementalist"]: pref = "thunderstorm"
+            elif ctype in ["druid", "healer"]: pref = "rain"
+            elif ctype in ["rogue", "assassin", "stealth"]: pref = "fog"
+            elif ctype in ["mage", "conjurer"]: pref = "snow"
+            elif ctype in ["speed", "scout"]: pref = "wind"
+            elif ctype in ["tank", "brawler"]: pref = "heatwave"
+            elif ctype in ["swarm"]: pref = "sandstorm"
+            else: pref = "thunderstorm" # Default for others picking it up
+
             old_weather = self.weather
-            self.weather = rnd.choice(weathers)
+            if old_weather != pref:
+                self.weather = pref
+                if hasattr(world, "add_event"):
+                    world.add_event("weather_change", {"weather": self.weather})
+                if self.weather == "wind":
+                    rnd = getattr(self, "random", __import__("random"))
+                    self.wind_dx = rnd.uniform(-50.0, 50.0)
+                    self.wind_dy = rnd.uniform(-50.0, 50.0)
+        else:
+            self.weather_timer += delta
+            if self.weather_timer > 15.0:
+                self.weather_timer = 0.0
+                weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave"]
+                rnd = getattr(self, "random", __import__("random"))
+                old_weather = self.weather
+                self.weather = rnd.choice(weathers)
 
-            if old_weather != self.weather and hasattr(world, "add_event"):
-                world.add_event("weather_change", {"weather": self.weather})
+                if old_weather != self.weather and hasattr(world, "add_event"):
+                    world.add_event("weather_change", {"weather": self.weather})
 
-            if self.weather == "wind":
-                self.wind_dx = rnd.uniform(-50.0, 50.0)
-                self.wind_dy = rnd.uniform(-50.0, 50.0)
+                if self.weather == "wind":
+                    self.wind_dx = rnd.uniform(-50.0, 50.0)
+                    self.wind_dy = rnd.uniform(-50.0, 50.0)
 
         if hasattr(world, "arena"):
             world.arena.is_foggy = (self.weather in ["fog", "snow"])
@@ -1037,26 +1066,55 @@ class WeatherChaosMode(GameMode):
                     world.dead_balls.append(b)
                 else:
                     b.time_since_death += delta
-        self.weather_timer += delta
-        if self.weather_timer > 10.0:
+        controller = None
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "weather_control_timer", 0.0) > 0:
+                controller = b
+                break
+
+        if controller:
             self.weather_timer = 0.0
-            weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave"]
-            import random
-            rnd = getattr(self, "random", random)
+            ctype = getattr(controller, "ball_type", "default")
+            pref = "clear"
+            if ctype in ["elementalist"]: pref = "thunderstorm"
+            elif ctype in ["druid", "healer"]: pref = "rain"
+            elif ctype in ["rogue", "assassin", "stealth"]: pref = "fog"
+            elif ctype in ["mage", "conjurer"]: pref = "snow"
+            elif ctype in ["speed", "scout"]: pref = "wind"
+            elif ctype in ["tank", "brawler"]: pref = "heatwave"
+            elif ctype in ["swarm"]: pref = "sandstorm"
+            else: pref = "thunderstorm"
+
             old_weather = self.weather
-            self.weather = rnd.choice(weathers)
+            if old_weather != pref:
+                self.weather = pref
+                if hasattr(world, "add_event"):
+                    world.add_event("weather_change", {"weather": self.weather})
+                if self.weather == "wind":
+                    rnd = getattr(self, "random", __import__("random"))
+                    self.wind_dx = rnd.uniform(-50.0, 50.0)
+                    self.wind_dy = rnd.uniform(-50.0, 50.0)
+        else:
+            self.weather_timer += delta
+            if self.weather_timer > 10.0:
+                self.weather_timer = 0.0
+                weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave"]
+                import random
+                rnd = getattr(self, "random", random)
+                old_weather = self.weather
+                self.weather = rnd.choice(weathers)
 
-            if old_weather != self.weather and hasattr(world, "add_event"):
-                world.add_event("weather_change", {"weather": self.weather})
+                if old_weather != self.weather and hasattr(world, "add_event"):
+                    world.add_event("weather_change", {"weather": self.weather})
 
-            if self.weather == "wind":
-                self.wind_dx = rnd.uniform(-50.0, 50.0)
-                self.wind_dy = rnd.uniform(-50.0, 50.0)
+                if self.weather == "wind":
+                    self.wind_dx = rnd.uniform(-50.0, 50.0)
+                    self.wind_dy = rnd.uniform(-50.0, 50.0)
 
         # Apply weather effects to the arena
         if hasattr(world, "arena"):
             world.arena.is_foggy = (self.weather in ["fog", "snow"])
-            world.arena.is_raining = (self.weather == "rain")
+            world.arena.is_raining = (self.weather in ["rain", "thunderstorm"])
             world.arena.is_sandstorming = (self.weather == "sandstorm")
             world.arena.is_snowing = (self.weather == "snow")
             world.arena.is_heatwave = (self.weather == "heatwave")
