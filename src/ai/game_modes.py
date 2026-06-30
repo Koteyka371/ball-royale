@@ -300,12 +300,14 @@ class BattleRoyaleMode(GameMode):
                 b.base_damage = getattr(b, "damage", 10.0)
 
             if self.weather == "clear":
+                b.perception_radius = getattr(b, "base_perception_radius", 250.0)
                 b.speed = b.base_speed
                 b.damage = b.base_damage
                 b.dash_range_mult = 1.0
                 b.steering_mult = 1.0
                 b.attack_accuracy = 1.0
             elif self.weather == "rain":
+                b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.9
                 b.speed = b.base_speed * 0.8
                 b.damage = b.base_damage
                 b.dash_range_mult = 1.5
@@ -318,11 +320,13 @@ class BattleRoyaleMode(GameMode):
                     b.y += getattr(b, "vy") * delta * 0.5
                 b.attack_accuracy = 0.8
             elif self.weather == "fog":
+                b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.4
                 b.speed = b.base_speed * 0.8
                 b.damage = b.base_damage * 0.9
                 b.dash_range_mult = 1.0
                 b.steering_mult = 1.0
             elif self.weather == "snow":
+                b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.6
                 b.speed = b.base_speed * 0.5
                 b.damage = b.base_damage * 1.2
                 if getattr(b, "SKILL", "") == "iceball" or getattr(b, "SKILL", "") == "elemental_burst":
@@ -338,6 +342,7 @@ class BattleRoyaleMode(GameMode):
                     b.stutter_timer = 1.0 # Freeze for 1 second
                 b.attack_accuracy = 0.9
             elif self.weather == "wind":
+                b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.95
                 b.speed = b.base_speed
                 b.damage = b.base_damage
                 b.dash_range_mult = 1.0
@@ -347,11 +352,13 @@ class BattleRoyaleMode(GameMode):
                     b.x += self.wind_dx * delta
                     b.y += self.wind_dy * delta
             elif self.weather == "thunderstorm":
+                b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.8
                 b.speed = b.base_speed * 1.1
                 b.damage = b.base_damage * 1.5
                 b.dash_range_mult = 1.0
                 b.steering_mult = 1.0
             elif self.weather == "sandstorm":
+                b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.3
                 b.speed = b.base_speed * 0.7
                 b.damage = b.base_damage
                 b.dash_range_mult = 0.5
@@ -368,6 +375,7 @@ class BattleRoyaleMode(GameMode):
                         b.hp -= 20.0
                 b.attack_accuracy = 0.5
             elif self.weather == "heatwave":
+                b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.7
                 b.speed = b.base_speed * 0.9 # Slightly reduced max speed
                 b.damage = b.base_damage
                 b.dash_range_mult = 1.0

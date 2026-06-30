@@ -1487,6 +1487,9 @@ class WeatherChaosMode extends GameMode:
 				var is_earth = t in ["tank", "druid", "juggernaut"]
 
 				if weather == "clear":
+					if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius")
+					elif "base_perception_radius" in b: b.perception_radius = b.base_perception_radius
+					else: b.perception_radius = 250.0
 					if "speed" in b: b.speed = base_spd
 					if "damage" in b:
 						if is_fire: b.damage = base_dmg * 1.5
@@ -1496,6 +1499,9 @@ class WeatherChaosMode extends GameMode:
 						b.set_meta("steering_mult", 1.0)
 						b.set_meta("attack_accuracy", 1.0)
 				elif weather == "rain":
+					if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius") * 0.9
+					elif "base_perception_radius" in b: b.perception_radius = b.base_perception_radius * 0.9
+					else: b.perception_radius = 250.0 * 0.9
 					if "speed" in b: b.speed = base_spd * 0.8
 					if "damage" in b: b.damage = base_dmg
 					var sk_r = ""
@@ -1520,6 +1526,9 @@ class WeatherChaosMode extends GameMode:
 						elif b.has_method("has_meta") and b.has_meta("max_hp"): m = b.get_meta("max_hp")
 						b.hp = min(m, b.hp + 5.0 * delta)
 				elif weather == "fog":
+					if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius") * 0.4
+					elif "base_perception_radius" in b: b.perception_radius = b.base_perception_radius * 0.4
+					else: b.perception_radius = 250.0 * 0.4
 					if "speed" in b: b.speed = base_spd * 0.8
 					if "damage" in b: b.damage = base_dmg * 0.9
 					if b.has_method("set_meta"):
@@ -1567,6 +1576,9 @@ class WeatherChaosMode extends GameMode:
 						if b.has_method("set_meta"): b.set_meta("mirage_timer", mt)
 						elif "mirage_timer" in b: b.mirage_timer = mt
 				elif weather == "snow":
+					if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius") * 0.6
+					elif "base_perception_radius" in b: b.perception_radius = b.base_perception_radius * 0.6
+					else: b.perception_radius = 250.0 * 0.6
 					if "speed" in b: b.speed = base_spd * 0.5
 					if "damage" in b: b.damage = base_dmg * 1.2
 					var sk_s = ""
@@ -1592,6 +1604,9 @@ class WeatherChaosMode extends GameMode:
 					if b.has_method("set_meta"):
 						b.set_meta("attack_accuracy", 0.9)
 				elif weather == "wind":
+					if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius") * 0.95
+					elif "base_perception_radius" in b: b.perception_radius = b.base_perception_radius * 0.95
+					else: b.perception_radius = 250.0 * 0.95
 					if "speed" in b:
 						if is_air: b.speed = base_spd * 1.5
 						else: b.speed = base_spd
@@ -1600,12 +1615,18 @@ class WeatherChaosMode extends GameMode:
 						b.set_meta("dash_range_mult", 1.0)
 						b.set_meta("steering_mult", 1.0)
 				elif weather == "thunderstorm":
+					if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius") * 0.8
+					elif "base_perception_radius" in b: b.perception_radius = b.base_perception_radius * 0.8
+					else: b.perception_radius = 250.0 * 0.8
 					if "speed" in b: b.speed = base_spd * 1.1
 					if "damage" in b: b.damage = base_dmg * 1.5
 					if b.has_method("set_meta"):
 						b.set_meta("dash_range_mult", 1.0)
 						b.set_meta("steering_mult", 1.0)
 				elif weather == "sandstorm":
+					if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius") * 0.3
+					elif "base_perception_radius" in b: b.perception_radius = b.base_perception_radius * 0.3
+					else: b.perception_radius = 250.0 * 0.3
 					if "speed" in b: b.speed = base_spd * 0.7
 					if "damage" in b: b.damage = base_dmg
 					if b.has_method("set_meta"):
