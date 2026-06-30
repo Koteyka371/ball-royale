@@ -5860,7 +5860,7 @@
     },
     {
       "id": "idea-338",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Pinball Bumpers",
@@ -8730,6 +8730,40 @@
         "src/arena/season_themed_dynamic_arenas.py",
         "src/arena/season_themed_dynamic_arenas.gd",
         "tests/test_season_themed_dynamic_arenas.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-507",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather effect: Sandstorm",
+      "description": "A new weather event 'Sandstorm' where movement speed is reduced for all balls, and vision is obscured unless they are near a 'shelter' hazard or within a flare's radius. Sandstorm could deal minor damage over time to non-earth elemental classes.",
+      "allowed_paths": [
+        "src/ai/effect_sandstorm.py",
+        "src/ai/effect_sandstorm.gd",
+        "tests/test_effect_sandstorm.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-508",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "New 'Decoy' active skill for Trickster class",
+      "description": "Add a skill for the Trickster class that drops a fake booster (like a decoy) which acts as a hazard to enemies. When an enemy tries to collect it, it explodes and deals damage, while also pushing them back. This would add more strategy and mind games to the combat.",
+      "allowed_paths": [
+        "src/ai/new_decoy_active_skill_for_trickster_class.py",
+        "src/ai/new_decoy_active_skill_for_trickster_class.gd",
+        "tests/test_new_decoy_active_skill_for_trickster_class.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
