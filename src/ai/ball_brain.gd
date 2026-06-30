@@ -51,6 +51,27 @@ func _init(ball_ref, world_ref):
         if "damage" in self.ball:
             self.ball.damage += prestige_upgrades["permanent_damage"] * 2
 
+
+    # Apply starting artifacts
+    if "starting_artifact_shield" in prestige_upgrades:
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta"):
+            var inv = []
+            if self.ball.has_meta("inventory"):
+                inv = self.ball.get_meta("inventory")
+            inv.append("shield")
+            self.ball.set_meta("inventory", inv)
+        elif "inventory" in self.ball:
+            self.ball.inventory.append("shield")
+    if "starting_artifact_dash" in prestige_upgrades:
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta"):
+            var inv = []
+            if self.ball.has_meta("inventory"):
+                inv = self.ball.get_meta("inventory")
+            inv.append("dash")
+            self.ball.set_meta("inventory", inv)
+        elif "inventory" in self.ball:
+            self.ball.inventory.append("dash")
+
     var prestige_level = pm.data.get("prestige_level", 0)
     if prestige_level > 0:
         if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):

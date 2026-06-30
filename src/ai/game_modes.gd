@@ -2217,7 +2217,7 @@ class CustomMatchMode extends GameMode:
 		if pm != null and pm.has_method("are_mutators_unlocked"):
 			mutators_unlocked = pm.are_mutators_unlocked()
 		elif pm != null and "data" in pm:
-			if pm.data.get("prestige_level", 0) >= 5:
+			if pm.data.get("prestige_level", 0) >= 5 or pm.data.get("prestige_upgrades", {}).get("mutator_unlocked", 0) > 0:
 				mutators_unlocked = true
 
 		mutators_active = mutators_unlocked and mutators.size() > 0

@@ -47,6 +47,17 @@ class BallBrain:
                 if hasattr(self.ball, 'damage'):
                     self.ball.damage += prestige_upgrades["permanent_damage"] * 2
 
+
+            # Apply starting artifacts
+            if "starting_artifact_shield" in prestige_upgrades:
+                if not hasattr(self.ball, 'inventory'):
+                    self.ball.inventory = []
+                self.ball.inventory.append("shield")
+            if "starting_artifact_dash" in prestige_upgrades:
+                if not hasattr(self.ball, 'inventory'):
+                    self.ball.inventory = []
+                self.ball.inventory.append("dash")
+
             # Apply prestige aura and permanent stat increase
             prestige_level = pm.data.get("prestige_level", 0)
             if prestige_level > 0:
