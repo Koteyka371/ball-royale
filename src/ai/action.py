@@ -3433,6 +3433,51 @@ class Action:
                 self.ball.y += ny * overlap * knockback_multiplier
                 bounced = True
 
+                # Clone explosion logic
+                if getattr(self.ball, "is_clone", False) and getattr(other, "team", "") != getattr(self.ball, "team", ""):
+                    # Explode clone
+                    self.ball.hp = 0
+                    self.ball.alive = False
+
+                    # Deal AoE damage
+                    explosion_radius = 50.0
+                    explosion_damage = 30.0
+
+                    nearby_explosion = []
+                    if hasattr(self.world, "get_nearby_entities"):
+                        try:
+                            data = self.world.get_nearby_entities(self.ball, explosion_radius)
+                            if isinstance(data, dict):
+                                nearby_explosion = data.get("enemies", []) + data.get("allies", [])
+                            elif isinstance(data, list):
+                                nearby_explosion = data
+                        except Exception:
+                            pass
+
+                    for e in nearby_explosion:
+                        if e is not self.ball and getattr(e, "team", "") != getattr(self.ball, "team", ""):
+                            edx = e.x - self.ball.x
+                            edy = e.y - self.ball.y
+                            edist_sq = edx * edx + edy * edy
+                            if edist_sq <= explosion_radius * explosion_radius:
+                                if hasattr(self.world, "_deal_damage"):
+                                    # Create a dummy attacker for the clone
+                                    class DummyAttacker:
+                                        pass
+                                    dummy = DummyAttacker()
+                                    dummy.damage = explosion_damage
+                                    dummy.ball_type = getattr(self.ball, "ball_type", "")
+                                    dummy.team = getattr(self.ball, "team", "")
+                                    self.world._deal_damage(dummy, e)
+                                elif hasattr(e, "hp"):
+                                    e.hp -= explosion_damage
+                                    if e.hp <= 0:
+                                        e.alive = False
+
+                    if hasattr(self, "_spawn_skill_particles"):
+                        self._spawn_skill_particles("explosion")
+
+
                 gm = getattr(self.world, "game_mode", None)
                 if gm and getattr(gm, "name", "") == "Custom Match":
                     if getattr(gm, "mutators_active", False) and "explosive_collisions" in getattr(gm, "mutators", []):
@@ -3563,6 +3608,10 @@ class Action:
             else:
                 self.ball.speed = base_s
 
+            is_exhausted = getattr(self.ball, "is_exhausted", False)
+            if is_exhausted:
+                self.ball.speed *= 0.5
+
             if stack_count >= 3:
                 # 3 extra types: Damage boost
                 self.ball.damage = base_d * 1.2
@@ -3589,6 +3638,10 @@ class Action:
                     self.ball.damage = base_d * day_multiplier * 1.2
                 else:
                     self.ball.damage = base_d * day_multiplier
+
+            is_exhausted = getattr(self.ball, "is_exhausted", False)
+            if is_exhausted:
+                self.ball.damage *= 0.5
 
     def _update_skill_timer(self, delta: float) -> None:
         if hasattr(self.ball, "infinite_stamina_timer") and self.ball.infinite_stamina_timer > 0:

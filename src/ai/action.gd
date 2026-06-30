@@ -5386,6 +5386,52 @@ func _resolve_collisions() -> bool:
             self.ball.y += ny * overlap * knockback_multiplier
             bounced = true
 
+            var ball_is_clone = false
+            if self.ball.has_method("get_meta") and self.ball.has_meta("is_clone"):
+                ball_is_clone = self.ball.get_meta("is_clone")
+            elif "is_clone" in self.ball and self.ball.is_clone:
+                ball_is_clone = true
+
+            var ball_team = ""
+            if "team" in self.ball: ball_team = self.ball.team
+            var other_team = ""
+            if "team" in other: other_team = other.team
+
+            if ball_is_clone and other_team != ball_team and other_team != "":
+                if "hp" in self.ball: self.ball.hp = 0.0
+                if "alive" in self.ball: self.ball.alive = false
+
+                var explosion_radius = 50.0
+                var explosion_damage = 30.0
+
+                var nearby_explosion = []
+                if self.world != null and self.world.has_method("get_nearby_entities"):
+                    var exp_data = self.world.get_nearby_entities(self.ball, explosion_radius)
+                    if typeof(exp_data) == TYPE_DICTIONARY:
+                        if exp_data.has("enemies"): nearby_explosion += exp_data["enemies"]
+                        if exp_data.has("allies"): nearby_explosion += exp_data["allies"]
+                    elif typeof(exp_data) == TYPE_ARRAY:
+                        nearby_explosion = exp_data
+
+                for e in nearby_explosion:
+                    if e != self.ball:
+                        var e_team = ""
+                        if "team" in e: e_team = e.team
+                        if e_team != ball_team and e_team != "":
+                            var edx = e.x - self.ball.x
+                            var edy = e.y - self.ball.y
+                            var edist_sq = edx * edx + edy * edy
+                            if edist_sq <= explosion_radius * explosion_radius:
+                                if self.world != null and self.world.has_method("_deal_damage"):
+                                    # Hack to deal damage without full attacker object
+                                    var dummy = {"damage": explosion_damage}
+                                    self.world._deal_damage(dummy, e)
+                                elif "hp" in e:
+                                    e.hp -= explosion_damage
+                                    if e.hp <= 0 and "alive" in e:
+                                        e.alive = false
+
+
     return bounced
 
 func _trigger_ripple_effect():

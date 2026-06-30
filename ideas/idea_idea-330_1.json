@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Trap",
+  "description": "A new skill that deploys a decoy that looks exactly like the player but acts like a mine, detonating immediately when enemies get too close or attempt to attack it. Unlike static clones, decoys will actively move around erratically to draw attention before self-destructing."
+}
