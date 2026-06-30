@@ -458,10 +458,17 @@ func execute(strategy: String, delta: float):
     if my_ball.has_method("has_meta") and my_ball.has_meta("_base_speed_set"):
         if self.world != null and "arena" in self.world and "is_night" in self.world.arena:
             if self.world.arena.is_night:
-                if "speed" in my_ball:
-                    my_ball.speed = my_ball.get_meta("base_speed") * 1.5
-                if "damage" in my_ball:
-                    my_ball.damage = my_ball.get_meta("base_damage")
+                var is_vampire = ("ball_type" in my_ball and my_ball.ball_type == "vampire")
+                if is_vampire:
+                    if "speed" in my_ball:
+                        my_ball.speed = my_ball.get_meta("base_speed") * 1.5
+                    if "damage" in my_ball:
+                        my_ball.damage = my_ball.get_meta("base_damage") * 1.5
+                else:
+                    if "speed" in my_ball:
+                        my_ball.speed = my_ball.get_meta("base_speed")
+                    if "damage" in my_ball:
+                        my_ball.damage = my_ball.get_meta("base_damage")
             else:
                 if "speed" in my_ball:
                     my_ball.speed = my_ball.get_meta("base_speed")

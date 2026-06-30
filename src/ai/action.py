@@ -326,11 +326,15 @@ class Action:
 
         if hasattr(self.world, "arena") and getattr(self.world.arena, "is_night", None) is not None:
             if self.world.arena.is_night:
-                self.ball.speed = self.ball.base_speed * 1.5
-                self.ball.damage = self.ball.base_damage
+                if getattr(self.ball, "ball_type", "") == "vampire":
+                    self.ball.speed = self.ball.base_speed * 1.5
+                    self.ball.damage = getattr(self.ball, "base_damage", 10.0) * 1.5
+                else:
+                    self.ball.speed = self.ball.base_speed
+                    self.ball.damage = getattr(self.ball, "base_damage", 10.0)
             else:
                 self.ball.speed = self.ball.base_speed
-                self.ball.damage = self.ball.base_damage * 1.2
+                self.ball.damage = getattr(self.ball, "base_damage", 10.0) * 1.2
         else:
             self.ball.speed = self.ball.base_speed
             self.ball.damage = getattr(self.ball, "base_damage", 10.0)

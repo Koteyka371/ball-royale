@@ -20,8 +20,17 @@ class Perception:
         perception_radius = getattr(self.ball, "perception_radius", 300.0)
 
         if hasattr(self.world, "arena") and getattr(self.world.arena, "is_night", None) is not None:
+            has_night_vision = False
+            if hasattr(self.ball, "traits") and "night_vision" in self.ball.traits:
+                has_night_vision = True
+            if getattr(self.ball, "ball_type", "") == "vampire":
+                has_night_vision = True
+            if str(getattr(self.ball, "cosmetic", "")).lower().replace(" ", "_") == "night_vision_goggles":
+                has_night_vision = True
+
             if self.world.arena.is_night:
-                perception_radius = min(perception_radius, 100.0)
+                if not has_night_vision:
+                    perception_radius = min(perception_radius, 100.0)
             else:
                 perception_radius = max(perception_radius, 2000.0)
 

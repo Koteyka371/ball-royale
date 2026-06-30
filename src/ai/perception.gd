@@ -14,8 +14,17 @@ func scan() -> Dictionary:
         perception_radius = self.ball.perception_radius
 
     if self.world != null and "arena" in self.world and "is_night" in self.world.arena:
+        var has_night_vision = false
+        if "traits" in self.ball and typeof(self.ball.traits) == TYPE_ARRAY and self.ball.traits.has("night_vision"):
+            has_night_vision = true
+        if "ball_type" in self.ball and self.ball.ball_type == "vampire":
+            has_night_vision = true
+        if "cosmetic" in self.ball and str(self.ball.cosmetic).to_lower().replace(" ", "_") == "night_vision_goggles":
+            has_night_vision = true
+
         if self.world.arena.is_night:
-            perception_radius = min(perception_radius, 100.0)
+            if not has_night_vision:
+                perception_radius = min(perception_radius, 100.0)
         else:
             perception_radius = max(perception_radius, 2000.0)
 
