@@ -2300,6 +2300,7 @@ class MovingSafeZoneMode extends GameMode:
     var zone_target_y: float = 500.0
     var move_speed: float = 30.0
     var tick_timer: float = 0.0
+    var collapse_triggered: bool = false
 
     func _init() -> void:
         name = "Moving Safe Zone"
@@ -2307,6 +2308,7 @@ class MovingSafeZoneMode extends GameMode:
 
     func setup(world, balls: Array) -> void:
         super.setup(world, balls)
+        collapse_triggered = false
         var arena_width = 1000.0
         var arena_height = 1000.0
         if "arena" in world and world.arena:
@@ -2380,8 +2382,31 @@ class MovingSafeZoneMode extends GameMode:
         # Shrink safe zone
         if zone_radius > min_zone_radius:
             zone_radius -= shrink_rate * delta
-            if zone_radius < min_zone_radius:
+            if zone_radius <= min_zone_radius:
                 zone_radius = min_zone_radius
+                if not collapse_triggered:
+                    collapse_triggered = true
+                    if world.has_method("add_event"):
+                        world.add_event("collapse_event", {"type": "collapse_event", "message": "COLLAPSE EVENT! The zone collapses!"})
+        elif collapse_triggered:
+            if zone_radius > 0:
+                zone_radius -= shrink_rate * delta
+                if zone_radius < 0:
+                    zone_radius = 0.0
+
+            for b in balls:
+                if b.alive and b.ball_type != "spectator":
+                    var b_x = b.get("position").x if b.get("position") != null else b.get("x")
+                    var b_y = b.get("position").y if b.get("position") != null else b.get("y")
+                    var dx = zone_x - b_x
+                    var dy = zone_y - b_y
+                    var dist = sqrt(dx*dx + dy*dy)
+                    if dist > 0:
+                        var pull_strength = 2000.0
+                        if not "vx" in b: b.vx = 0.0
+                        if not "vy" in b: b.vy = 0.0
+                        b.vx += (dx / dist) * pull_strength * delta
+                        b.vy += (dy / dist) * pull_strength * delta
 
         for b in balls:
             if not b.alive:
@@ -2402,7 +2427,7 @@ class MovingSafeZoneMode extends GameMode:
 
             if bdist > zone_radius:
                 if "hp" in b:
-                    var damage = outside_damage_per_second * delta
+                    var damage = outside_damage_per_second * (10.0 if collapse_triggered else 1.0) * delta
                     b.hp -= damage
 
                     var effect_timer = 0.0
@@ -2451,6 +2476,7 @@ class ShrinkingDangerZoneMode extends GameMode:
     var min_zone_radius: float = 50.0
     var shrink_rate: float = 15.0
     var outside_damage_per_second: float = 20.0
+    var collapse_triggered: bool = false
 
     func _init() -> void:
         name = "Shrinking Danger Zone"
@@ -2458,6 +2484,7 @@ class ShrinkingDangerZoneMode extends GameMode:
 
     func setup(world, balls: Array) -> void:
         super.setup(world, balls)
+        collapse_triggered = false
         var arena_width = 1000.0
         var arena_height = 1000.0
         if "arena" in world and world.arena:
@@ -2504,11 +2531,34 @@ class ShrinkingDangerZoneMode extends GameMode:
         # Shrink the safe zone
         if zone_radius > min_zone_radius:
             zone_radius -= shrink_rate * delta
-            if zone_radius < min_zone_radius:
+            if zone_radius <= min_zone_radius:
                 zone_radius = min_zone_radius
+                if not collapse_triggered:
+                    collapse_triggered = true
+                    if world.has_method("add_event"):
+                        world.add_event("collapse_event", {"type": "collapse_event", "message": "COLLAPSE EVENT! The zone collapses!"})
+        elif collapse_triggered:
+            if zone_radius > 0:
+                zone_radius -= shrink_rate * delta
+                if zone_radius < 0:
+                    zone_radius = 0.0
+
+            for b in balls:
+                if b.alive and b.ball_type != "spectator":
+                    var b_x = b.get("position").x if b.get("position") != null else b.get("x")
+                    var b_y = b.get("position").y if b.get("position") != null else b.get("y")
+                    var dx = zone_x - b_x
+                    var dy = zone_y - b_y
+                    var dist = sqrt(dx*dx + dy*dy)
+                    if dist > 0:
+                        var pull_strength = 2000.0
+                        if not "vx" in b: b.vx = 0.0
+                        if not "vy" in b: b.vy = 0.0
+                        b.vx += (dx / dist) * pull_strength * delta
+                        b.vy += (dy / dist) * pull_strength * delta
 
         # Apply continuous damage outside the safe zone
-        var damage_this_tick = outside_damage_per_second * delta
+        var damage_this_tick = outside_damage_per_second * (10.0 if collapse_triggered else 1.0) * delta
         for b in balls:
             if b.alive and b.ball_type != "spectator":
                 var dx = b.x - zone_x
@@ -2549,6 +2599,7 @@ class SafeZoneMode extends GameMode:
     var min_zone_radius: float = 50.0
     var shrink_rate: float = 10.0
     var outside_damage_per_second: float = 10.0
+    var collapse_triggered: bool = false
 
     func _init() -> void:
         name = "Safe Zone"
@@ -2556,6 +2607,7 @@ class SafeZoneMode extends GameMode:
 
     func setup(world, balls: Array) -> void:
         super.setup(world, balls)
+        collapse_triggered = false
         var arena_width = 1000.0
         var arena_height = 1000.0
         if "arena" in world and world.arena:
@@ -2614,11 +2666,34 @@ class SafeZoneMode extends GameMode:
         # Shrink the safe zone
         if zone_radius > min_zone_radius:
             zone_radius -= shrink_rate * delta
-            if zone_radius < min_zone_radius:
+            if zone_radius <= min_zone_radius:
                 zone_radius = min_zone_radius
+                if not collapse_triggered:
+                    collapse_triggered = true
+                    if world.has_method("add_event"):
+                        world.add_event("collapse_event", {"type": "collapse_event", "message": "COLLAPSE EVENT! The zone collapses!"})
+        elif collapse_triggered:
+            if zone_radius > 0:
+                zone_radius -= shrink_rate * delta
+                if zone_radius < 0:
+                    zone_radius = 0.0
+
+            for b in balls:
+                if b.alive and b.ball_type != "spectator":
+                    var b_x = b.get("position").x if b.get("position") != null else b.get("x")
+                    var b_y = b.get("position").y if b.get("position") != null else b.get("y")
+                    var dx = zone_x - b_x
+                    var dy = zone_y - b_y
+                    var dist = sqrt(dx*dx + dy*dy)
+                    if dist > 0:
+                        var pull_strength = 2000.0
+                        if not "vx" in b: b.vx = 0.0
+                        if not "vy" in b: b.vy = 0.0
+                        b.vx += (dx / dist) * pull_strength * delta
+                        b.vy += (dy / dist) * pull_strength * delta
 
         # Apply continuous damage outside the safe zone
-        var damage_this_tick = outside_damage_per_second * delta
+        var damage_this_tick = outside_damage_per_second * (10.0 if collapse_triggered else 1.0) * delta
         for b in balls:
             if b.alive and b.ball_type != "spectator":
                 var dx = b.x - zone_x
