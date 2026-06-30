@@ -7,9 +7,9 @@ const SPEED = 4.0
 const DAMAGE = 20.0
 const RADIUS = 10.0
 const PERCEPTION_RADIUS = 300.0
-const AGGRESSION = 0.4
+const AGGRESSION = 0.8
 const COLOR = "gray"
-const SKILL = "deploy_decoy"
+const SKILL = "explosion"
 const SKILL_COOLDOWN = 12.0
 
 var id: int
@@ -35,7 +35,7 @@ func _init(ball_id: int, start_x: float = 0.0, start_y: float = 0.0):
     self.first_hit_taken = false
     self.current_action = "idle"
     self.skill_timer = 0.0
-    self.personality = Personality.new("cunning")
+    self.personality = Personality.new("reckless")
 
 func get_hp_percent() -> float:
     if self.max_hp > 0:

@@ -2007,7 +2007,7 @@ class Action:
             b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
             if b_type == "tank":
                 return self._find_strongest_enemy_deterministic(enemies)
-            elif b_type == "bomber":
+            elif b_type in ("bomber", "drone"):
                 def count_nearby(e1):
                     return sum(1 for e2 in enemies if e1 != e2 and ((e1.x - e2.x)**2 + (e1.y - e2.y)**2) <= 1600)
                 return max(enemies, key=lambda e: (count_nearby(e), -((self.ball.x - e.x)**2 + (self.ball.y - e.y)**2)))
@@ -2353,6 +2353,14 @@ class Action:
                 if hasattr(self.world, "_deal_damage"):
                     attack_timer = getattr(self.ball, "attack_timer", 0.0)
                     if attack_timer <= 0:
+                        b_type_chase_action = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
+                        if b_type_chase_action == "drone":
+                            skill_timer = getattr(self.ball, "skill_timer", 0.0)
+                            if skill_timer <= 0:
+                                self.ball.hp = 0
+                                self.ball.alive = False
+                                self.ball.current_action = "explode"
+                                return
                         self.world._deal_damage(self.ball, target)
                         if not hasattr(self.ball, "charge_level"):
                             self.ball.charge_level = 0.0
@@ -2490,14 +2498,18 @@ class Action:
                 if skill_timer <= 0:
                     optimal = True
                     b_type = getattr(self.ball, "ball_type", "")
-                    if b_type == "bomber":
+                    if b_type in ("bomber", "drone"):
                         close_enemies = sum(1 for e in enemies if math.sqrt((e.x - self.ball.x)**2 + (e.y - self.ball.y)**2) <= ball_radius + getattr(e, "radius", 10.0) + 15)
-                        optimal = close_enemies >= 3
+                        if b_type == "drone":
+                            optimal = close_enemies >= 1 # Drone explodes on single target
+                        else:
+                            optimal = close_enemies >= 3
 
                         # Suicide attack: guarantee explosion
                         if optimal:
                             self.ball.hp = 0 # Suicide
                             self.ball.alive = False
+                            self.ball.current_action = "explode"
                     elif b_type == "tank":
                         optimal = (target == self._find_strongest_enemy_deterministic(enemies))
                     elif b_type == "warrior":

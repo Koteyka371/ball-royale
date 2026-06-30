@@ -3142,7 +3142,7 @@ func _get_target(enemies: Array) -> Object:
             b_type = self.ball.ball_type.to_lower()
         if b_type == "tank":
             target = _find_strongest_enemy_deterministic(enemies)
-        elif b_type == "bomber":
+        elif b_type == "bomber" or b_type == "drone":
             var max_crowd = -1
             var min_dist_sq_bomber = INF
             for e1 in enemies:
@@ -3703,6 +3703,16 @@ func _chase(delta: float):
                 attack_timer = self.ball.get_meta("attack_timer")
 
             if attack_timer <= 0:
+                if b_type_chase == "drone":
+                    var skill_timer = 0.0
+                    if "skill_timer" in self.ball: skill_timer = self.ball.skill_timer
+                    elif self.ball.has_meta("skill_timer"): skill_timer = self.ball.get_meta("skill_timer")
+                    if skill_timer <= 0:
+                        self.ball.hp = 0
+                        if "alive" in self.ball: self.ball.alive = false
+                        if "current_action" in self.ball: self.ball.current_action = "explode"
+                        return
+
                 if self.world != null and self.world.has_method("_deal_damage"):
                     self._attempt_damage(self.ball, target)
                     if "charge_level" in self.ball:
