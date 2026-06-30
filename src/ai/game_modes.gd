@@ -2898,6 +2898,64 @@ class SafeZoneMode extends GameMode:
         pass
 
 
+
+class CloneChaosMode extends GameMode:
+	var clone_timer = 0.0
+
+	func _init() -> void:
+		name = "Clone Chaos"
+		description = "Every ball starts with the 'clone' skill with very low cooldown. The arena is quickly filled with static copies, causing mass confusion."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		for b in balls:
+			if b.has_method("set_meta"):
+				b.set_meta("skill", "clone")
+				b.set_meta("active_skill", "clone")
+				b.set_meta("skill_cooldown", 1.0)
+				b.set_meta("skill_timer", 0.0)
+			if "skill" in b: b.skill = "clone"
+			if "active_skill" in b: b.active_skill = "clone"
+			if "skill_cooldown" in b: b.skill_cooldown = 1.0
+			if "skill_timer" in b: b.skill_timer = 0.0
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		clone_timer += delta
+		if clone_timer > 3.0:
+			clone_timer = 0.0
+			for b in balls:
+				var alive = true
+				if "alive" in b: alive = b.alive
+				var skill_timer = 0.0
+				if "skill_timer" in b: skill_timer = b.skill_timer
+				if alive and skill_timer <= 0:
+					if "skill_timer" in b: b.skill_timer = 1.0
+					var num_clones = randi() % 3 + 1
+					for i in range(num_clones):
+						if b.has_method("duplicate"):
+							var clone = b.duplicate()
+							var next_id = randi() % 90000 + 10000
+							if "next_id" in world:
+								next_id = world.next_id
+								world.next_id += 1
+							if "id" in clone: clone.id = next_id
+							if "x" in clone: clone.x += randf_range(-30.0, 30.0)
+							if "y" in clone: clone.y += randf_range(-30.0, 30.0)
+							if "hp" in b and "hp" in clone: clone.hp = b.hp
+							if "max_hp" in b and "max_hp" in clone: clone.max_hp = b.max_hp
+							if clone.has_method("set_meta"):
+								clone.set_meta("is_clone", true)
+								if "id" in b: clone.set_meta("clone_owner", b.id)
+							if "alive" in clone: clone.alive = true
+							if "speed" in clone: clone.speed = 0.0
+							if "damage" in clone: clone.damage = 0.0
+							if "skill_timer" in clone: clone.skill_timer = 9999.0
+							if "skill" in clone: clone.skill = ""
+							if clone.has_method("set_meta"): clone.set_meta("skill", "")
+							if "balls" in world:
+								world.balls.append(clone)
+
 class BumperBallsMode extends GameMode:
     func _init() -> void:
         name = "Bumper Balls"
@@ -3574,5 +3632,6 @@ var GAME_MODES = {
     "safe_zone": SafeZoneMode.new(),
     "moving_safe_zone": MovingSafeZoneMode.new(),
     "bounty_hunt": BountyHuntMode.new(),
-    "earthquake": EarthquakeMode.new()
+    "earthquake": EarthquakeMode.new(),
+    "clone_chaos": CloneChaosMode.new()
 }

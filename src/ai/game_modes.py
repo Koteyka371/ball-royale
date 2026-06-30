@@ -2253,6 +2253,61 @@ class SafeZoneMode(GameMode):
             pass
 
 
+
+class CloneChaosMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Clone Chaos"
+        self.description = "Every ball starts with the 'clone' skill with very low cooldown. The arena is quickly filled with static copies, causing mass confusion."
+        self.clone_timer = 0.0
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        for b in balls:
+            b.skill = "clone"
+            b.active_skill = "clone"
+            b.SKILL = "clone"
+            b.skill_cooldown = 1.0  # very fast cooldown
+            b.skill_timer = 0.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        self.clone_timer += delta
+        # occasionally force all balls to cast if available
+        if self.clone_timer > 3.0:
+            self.clone_timer = 0.0
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "skill_timer", 0.0) <= 0:
+                    b.skill_timer = 1.0
+                    import copy
+                    import random
+                    num_clones = random.randint(1, 3)
+                    for _ in range(num_clones):
+                        clone = copy.copy(b)
+                        clone.id = getattr(world, "next_id", random.randint(10000, 99999))
+                        if hasattr(world, "next_id"):
+                            world.next_id += 1
+                        clone.x += random.uniform(-30, 30)
+                        clone.y += random.uniform(-30, 30)
+                        clone.hp = getattr(b, "hp", 100)
+                        clone.max_hp = getattr(b, "max_hp", 100)
+                        clone.team = getattr(b, "team", getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")))
+                        clone.is_clone = True
+                        clone.clone_owner = b.id
+                        clone.alive = True
+                        clone.speed = 0 # static copy
+                        clone.damage = 0 # they do no damage
+
+                        clone.skill_timer = 9999 # no skills
+                        clone.skill = None
+                        if hasattr(clone, "SKILL"):
+                            clone.SKILL = None
+                        if hasattr(clone, "active_skill"):
+                            clone.active_skill = None
+
+                        if hasattr(world, "balls"):
+                            world.balls.append(clone)
+
 class BumperBallsMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -2783,7 +2838,8 @@ GAME_MODES = {
     "safe_zone": SafeZoneMode(),
     "moving_safe_zone": MovingSafeZoneMode(),
     "bounty_hunt": BountyHuntMode(),
-    "earthquake": EarthquakeMode()
+    "earthquake": EarthquakeMode(),
+    "clone_chaos": CloneChaosMode()
 }
 
 try:
