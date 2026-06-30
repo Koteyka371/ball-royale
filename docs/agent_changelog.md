@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-329] Weather Synergy Combos — *2026-06-30 11:38:52 UTC*
+
+Combine weather hazards with ball skills, e.g. elemental burst during rain to freeze everything.
+
+---
+
 ## [idea-334] Shrinking Labyrinth Mode — *2026-06-30 11:38:48 UTC*
 
 A new game mode where the arena starts as a complex maze that slowly shifts and shrinks. Walls deal damage, forcing balls to navigate carefully while fighting for survival in an ever-tightening space.
