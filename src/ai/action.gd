@@ -882,6 +882,8 @@ func execute(strategy: String, delta: float):
                                 self.ball.stutter_timer = current_stutter + 2.0
                             elif self.ball.has_method("set_meta"):
                                 self.ball.set_meta("stutter_timer", current_stutter + 2.0)
+
+
                 elif hazard.kind == "switch":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
@@ -900,11 +902,26 @@ func execute(strategy: String, delta: float):
                             last_triggered = hazard.get_meta("last_triggered_tick")
                         if current_tick - last_triggered > 100:
                             hazard.set_meta("last_triggered_tick", current_tick)
+
+                            var rng = RandomNumberGenerator.new()
+                            rng.randomize()
+                            var r = rng.randf()
+
                             var trap_id = 9000 + self.world.arena.hazards.size()
                             var HazardClass = load("res://src/arena/procedural_arena.gd").Hazard
-                            var wall = HazardClass.new(trap_id, hazard.x, hazard.y, 40.0, "laser_wall", 20.0)
-                            wall.set_meta("duration", 5.0)
-                            self.world.arena.hazards.append(wall)
+
+                            if r < 0.33:
+                                var wall = HazardClass.new(trap_id, hazard.x, hazard.y, 40.0, "laser_wall", 20.0)
+                                wall.set_meta("duration", 5.0)
+                                self.world.arena.hazards.append(wall)
+                            elif r < 0.66:
+                                var boulder = HazardClass.new(trap_id, self.ball.x, self.ball.y, 30.0, "meteor", 100.0)
+                                boulder.set_meta("duration", 3.0)
+                                self.world.arena.hazards.append(boulder)
+                            else:
+                                var axe = HazardClass.new(trap_id, hazard.x, hazard.y, 60.0, "spinning_laser", 40.0)
+                                axe.set_meta("duration", 8.0)
+                                self.world.arena.hazards.append(axe)
                 elif hazard.kind == "swap_portal":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
