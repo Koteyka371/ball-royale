@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Ball Mechanic",
+  "description": "Introduce a deployable 'Decoy' that mimics the player's current ball type and health. AI enemies will occasionally lock onto the decoy if they fail a perception check, absorbing damage while giving the player an opportunity to escape or ambush."
+}

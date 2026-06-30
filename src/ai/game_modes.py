@@ -1605,6 +1605,53 @@ class CustomMatchMode(GameMode):
 
 
 
+class PitchBlackMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Pitch Black"
+        self.description = "The screen is completely dark. AI relies entirely on a narrow cone of light matching its perception radius."
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if hasattr(world, "arena"):
+            world.arena.is_night = True
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator":
+                b.base_perception_radius = getattr(b, "perception_radius", 250)
+                b.team = b.ball_type
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+
+        # Ensure it matches their actual base perception radius
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                b.perception_radius = getattr(b, "base_perception_radius", 250.0)
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
+        if len(teams_alive) == 1:
+            return list(teams_alive)[0]
+
+        if len(alive) == 1:
+            return alive[0].ball_type
+
+        return None
+
 class VisionReducedMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -2664,6 +2711,7 @@ GAME_MODES = {
     "bumper_balls": BumperBallsMode(),
     "portal_node": PortalNodeMode(),
     "memory_traps": MemoryTrapsMode(),
+    "pitch_black": PitchBlackMode(),
     "vision_reduced": VisionReducedMode(),
     "dynamic_hazards": DynamicHazardsMode(),
     "custom_match": CustomMatchMode(),

@@ -382,3 +382,30 @@ def test_escort_mode():
     payload.y = 500.0
     payload.hp = 0
     assert mode.check_winner(world, balls) == "Attackers"
+
+def test_pitch_black_mode():
+    from ai.game_modes import GAME_MODES
+    mode = GAME_MODES["pitch_black"]
+
+    world = MockWorld()
+    # Mock arena to check if is_night gets set
+    world.arena = type('MockArena', (), {'is_night': False})()
+
+    b1 = MockBall(1, "warrior")
+    b1.perception_radius = 250.0
+    b2 = MockBall(2, "scout")
+    b2.perception_radius = 350.0
+
+    balls = [b1, b2]
+
+    mode.setup(world, balls)
+
+    assert getattr(world.arena, "is_night", False) == True
+    assert b1.perception_radius == 250.0
+    assert b2.perception_radius == 350.0
+
+    # Tick should keep it at base
+    b1.perception_radius = 100.0  # Try changing it
+    mode.tick(world, balls, delta=0.016)
+    assert b1.perception_radius == 250.0
+    assert b2.perception_radius == 350.0
