@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-316] Necromancer Minion Synergy — *2026-06-30 11:15:10 UTC*
+
+Introduce synergy mechanics for the Necromancer ball. When near its generated minions, the Necromancer gains increased movement speed and its attacks heal itself for a percentage of the damage dealt.
+
+---
+
 ## [idea-292] Meteor Strike Hazard — *2026-06-30 11:01:34 UTC*
 
 Random meteor hazards drop into the arena causing AoE damage and leaving fire zones.
