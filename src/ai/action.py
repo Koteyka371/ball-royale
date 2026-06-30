@@ -210,7 +210,7 @@ class Action:
                 trap_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
                 trap = Hazard(trap_id, self.ball.x, self.ball.y, 20.0, "trap", 0.0)
 
-                trap_type = random.choice(["mine", "freeze", "black_hole"])
+                trap_type = random.choice(["mine", "freeze", "black_hole", "swap"])
                 setattr(trap, 'duration', 10.0)
                 setattr(trap, 'trap_variant', trap_type)
                 setattr(trap, 'owner_id', getattr(self.ball, 'id', None))
@@ -1002,6 +1002,22 @@ class Action:
                                         bh = Hazard(bh_id, hazard.x, hazard.y, 100.0, "black_hole", 0.0)
                                         bh.duration = 3.0 # Short duration
                                         self.world.arena.hazards.append(bh)
+                                    hazard.duration = 0.0 # Destroy trap
+                                elif trap_variant == "swap":
+                                    owner_id = getattr(hazard, "owner_id", None)
+                                    if owner_id is not None:
+                                        # Find owner ball
+                                        owner = None
+                                        balls = getattr(self.world, "balls", getattr(self.world, "entities", []))
+                                        for b in balls:
+                                            if getattr(b, "id", None) == owner_id:
+                                                owner = b
+                                                break
+                                        if owner and owner != self.ball:
+                                            # Swap positions
+                                            temp_x, temp_y = owner.x, owner.y
+                                            owner.x, owner.y = old_x, old_y
+                                            self.ball.x, self.ball.y = temp_x, temp_y
                                     hazard.duration = 0.0 # Destroy trap
                                 else:
                                     # Normal: Slowing effect
