@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-257] Sudden Death Overtime Hazards — *2026-06-30 20:57:32 UTC*
+
+If a match reaches the time limit or zone closure, introduce extreme hazards like meteor showers or random gravity inversions instead of instantly ending the game, allowing the remaining balls to showcase their dodging mechanics.
+
+---
+
 ## [idea-326] Quantum Entanglement Skill — *2026-06-30 19:06:42 UTC*
 
 A new skill that allows a ball to randomly link to another ball. Any damage taken by one is shared equally between both, but buffs are also shared. Perfect for strategic chaos.
