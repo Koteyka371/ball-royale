@@ -1,0 +1,4 @@
+{
+    "title": "Stamina overload",
+    "description": "If a ball picks up a stamina booster while already at max stamina, they get a temporary speed boost."
+}

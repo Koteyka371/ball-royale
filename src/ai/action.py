@@ -2818,11 +2818,19 @@ class Action:
 
                 for enemy in self._get_enemies():
                     if (enemy.x - self.ball.x)**2 + (enemy.y - self.ball.y)**2 < (getattr(self.ball, "radius", 10.0) + getattr(enemy, "radius", 10.0) + 20)**2:
-                        dmg = getattr(self.ball, "damage", 10.0) * 2.0
+                        dmg = getattr(self.ball, "damage", 10.0) * 3.0
                         if hasattr(enemy, "take_damage"):
                             enemy.take_damage(dmg)
                         elif hasattr(enemy, "hp"):
                             enemy.hp -= dmg
+
+                        kb_dx = enemy.x - self.ball.x
+                        kb_dy = enemy.y - self.ball.y
+                        kb_dist = math.sqrt(kb_dx*kb_dx + kb_dy*kb_dy)
+                        if kb_dist > 0.0001:
+                            kb_force = max(50.0, stamina * 1.5)
+                            enemy.x += (kb_dx / kb_dist) * kb_force
+                            enemy.y += (kb_dy / kb_dist) * kb_force
 
             elif skill_name == "dash":
                 self._spawn_skill_particles("dash")

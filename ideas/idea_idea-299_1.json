@@ -1,0 +1,4 @@
+{
+    "title": "Wall bounce mechanic",
+    "description": "Balls that get knocked back into a wall take additional damage based on their velocity."
+}
