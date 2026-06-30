@@ -332,9 +332,32 @@ class ProceduralArena:
     def update_zone(self, current_tick: int, delta: float):
         if current_tick != self.last_tick:
             self.last_tick = current_tick
-            self.safe_zone_radius -= 10.0 * delta
-            if self.safe_zone_radius < 50.0:
-                self.safe_zone_radius = 50.0
+            if self.safe_zone_radius > 50.0:
+                self.safe_zone_radius -= 10.0 * delta
+                if self.safe_zone_radius <= 50.0:
+                    self.safe_zone_radius = 50.0
+            else:
+                if current_tick % 120 == 0:
+                    import random
+                    if hasattr(self, "_trigger_event"):
+                        self._trigger_event(random.choice(["meteor_shower", "gravity_shift", "orbital_strike"]), current_tick)
+                    else:
+                        event_type = random.choice(["meteor_shower", "gravity_shift"])
+                        if event_type == "meteor_shower":
+                            for _ in range(10):
+                                x = random.uniform(50, self.width - 50)
+                                y = random.uniform(50, self.height - 50)
+                                # Assuming Hazard is imported in basic_arena
+
+                                m = Hazard(id=len(self.hazards) + random.randint(1000, 9999), x=x, y=y, radius=30.0, kind="meteor", damage=200.0)
+                                m.target_radius = 30.0
+                                setattr(m, "duration", 5.0)
+                                self.hazards.append(m)
+                        elif event_type == "gravity_shift":
+
+                            gw = Hazard(id=len(self.hazards) + random.randint(3000, 9999), x=self.width/2, y=self.height/2, radius=self.width/2, kind="gravity_well", damage=10.0)
+                            setattr(gw, "duration", 10.0)
+                            self.hazards.append(gw)
 
             new_craters: list[Hazard] = []
             # Slowly expand dynamic hazards and decay others like flares
