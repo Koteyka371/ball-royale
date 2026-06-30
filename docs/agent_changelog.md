@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-286] Invisibility Cloak Item — *2026-06-30 11:15:25 UTC*
+
+A new collectable item that drastically reduces the collector's radius for perception by other balls for a limited time.
+
+---
+
 ## [idea-218] Revenge Nemesis Mechanic — *2026-06-30 11:15:21 UTC*
 
 If a ball eliminates the same enemy multiple times across different matches (tracked via persistent profile data), they become Nemeses. In future matches, the Nemesis enemy deals 20% bonus damage to their rival, but yields double points/charge level upon being defeated.
