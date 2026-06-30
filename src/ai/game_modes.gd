@@ -3628,7 +3628,129 @@ class EarthquakeMode extends GameMode:
 				if world != null and world.has_method("add_event"):
 					world.add_event("earthquake", {"type": "earthquake", "intensity": shake_timer / 2.0})
 
+
+class ShiftingMazeMode extends GameMode:
+	var walls: Array = []
+	var maze_scale: float = 1.0
+	var shrink_rate: float = 0.01
+	var wall_damage_per_second: float = 50.0
+
+	func _init() -> void:
+		super._init()
+		name = "Shifting Maze"
+		description = "The arena starts as a complex maze that slowly shifts and shrinks. Walls deal damage."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if "arena" in world and world.arena != null:
+			if "width" in world.arena: arena_width = float(world.arena.width)
+			if "height" in world.arena: arena_height = float(world.arena.height)
+
+		maze_scale = 1.0
+		walls.clear()
+
+		var cell_size = 200.0
+		var cols = int(arena_width / cell_size)
+		var rows = int(arena_height / cell_size)
+
+		for c in range(cols):
+			for r in range(rows):
+				if randf() > 0.5:
+					walls.append({
+						"x": c * cell_size,
+						"y": r * cell_size,
+						"width": cell_size,
+						"height": 20.0,
+						"dx": randf_range(-10.0, 10.0),
+						"dy": randf_range(-10.0, 10.0)
+					})
+				else:
+					walls.append({
+						"x": c * cell_size,
+						"y": r * cell_size,
+						"width": 20.0,
+						"height": cell_size,
+						"dx": randf_range(-10.0, 10.0),
+						"dy": randf_range(-10.0, 10.0)
+					})
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		if maze_scale > 0.2:
+			maze_scale -= shrink_rate * delta
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if "arena" in world and world.arena != null:
+			if "width" in world.arena: arena_width = float(world.arena.width)
+			if "height" in world.arena: arena_height = float(world.arena.height)
+
+		var center_x = arena_width / 2.0
+		var center_y = arena_height / 2.0
+
+		for w in walls:
+			w["x"] += w["dx"] * delta
+			w["y"] += w["dy"] * delta
+
+		for b in balls:
+			if not b.alive:
+				continue
+
+			var bx = 0.0
+			var by = 0.0
+			if "x" in b: bx = float(b.x)
+			if "y" in b: by = float(b.y)
+			var br = 20.0
+			if "radius" in b: br = float(b.radius)
+
+			var touching_wall = false
+			for w in walls:
+				var wx = center_x + (w["x"] - center_x) * maze_scale
+				var wy = center_y + (w["y"] - center_y) * maze_scale
+				var ww = max(5.0, w["width"] * maze_scale)
+				var wh = max(5.0, w["height"] * maze_scale)
+
+				var nearest_x = clamp(bx, wx, wx + ww)
+				var nearest_y = clamp(by, wy, wy + wh)
+
+				var dist_sq = (bx - nearest_x) * (bx - nearest_x) + (by - nearest_y) * (by - nearest_y)
+				if dist_sq < br * br:
+					touching_wall = true
+					break
+
+			if touching_wall:
+				var dmg = wall_damage_per_second * delta
+				if b.has_method("take_damage"):
+					b.take_damage(dmg, "maze_wall")
+				else:
+					if "hp" in b:
+						b.hp -= dmg
+
+				if "hp" in b and b.hp <= 0:
+					b.alive = false
+
+	func check_winner(world, balls: Array):
+		var alive_count = 0
+		var last_alive = null
+		for b in balls:
+			if b.alive:
+				alive_count += 1
+				last_alive = b
+
+		if alive_count == 1:
+			if "ball_type" in last_alive:
+				return last_alive.ball_type
+			return "Unknown"
+		elif alive_count == 0:
+			return "Draw"
+
+		return null
+
 var GAME_MODES = {
+	"shifting_maze": ShiftingMazeMode.new(),
 
 	"blackout": BlackoutMode.new(),
 	"escort": EscortMode.new(),

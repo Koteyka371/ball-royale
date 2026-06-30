@@ -1,0 +1,4 @@
+{
+  "title": "Time Loop Game Mode",
+  "description": "Every 30 seconds, the game state rewinds 5 seconds in time. Balls keep their current momentum but revert to their previous positions and HP, requiring players to plan actions knowing a rewind is imminent."
+}

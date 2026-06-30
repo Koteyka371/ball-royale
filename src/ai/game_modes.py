@@ -2825,7 +2825,109 @@ class EarthquakeMode(GameMode):
                 if hasattr(world, "add_event"):
                     world.add_event("earthquake", {"type": "earthquake", "intensity": self.shake_timer / 2.0})
 
+
+class ShiftingMazeMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Shifting Maze"
+        self.description = "The arena starts as a complex maze that slowly shifts and shrinks. Walls deal damage."
+        self.walls = []
+        self.maze_scale = 1.0
+        self.shrink_rate = 0.01
+        self.wall_damage_per_second = 50.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        self.maze_scale = 1.0
+        self.walls = []
+
+        cell_size = 200
+        cols = int(arena_width / cell_size)
+        rows = int(arena_height / cell_size)
+
+        import random
+        rng = random.Random(42)
+        for c in range(cols):
+            for r in range(rows):
+                if rng.random() > 0.5:
+                    self.walls.append({
+                        "x": c * cell_size,
+                        "y": r * cell_size,
+                        "width": cell_size,
+                        "height": 20,
+                        "dx": rng.uniform(-10, 10),
+                        "dy": rng.uniform(-10, 10)
+                    })
+                else:
+                    self.walls.append({
+                        "x": c * cell_size,
+                        "y": r * cell_size,
+                        "width": 20,
+                        "height": cell_size,
+                        "dx": rng.uniform(-10, 10),
+                        "dy": rng.uniform(-10, 10)
+                    })
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        if self.maze_scale > 0.2:
+            self.maze_scale -= self.shrink_rate * delta
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        center_x = arena_width / 2.0
+        center_y = arena_height / 2.0
+
+        for w in self.walls:
+            w["x"] += w["dx"] * delta
+            w["y"] += w["dy"] * delta
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            bx = getattr(b, "x", 0.0)
+            by = getattr(b, "y", 0.0)
+            br = getattr(b, "radius", 20.0)
+
+            touching_wall = False
+            for w in self.walls:
+                wx = center_x + (w["x"] - center_x) * self.maze_scale
+                wy = center_y + (w["y"] - center_y) * self.maze_scale
+                ww = max(5, w["width"] * self.maze_scale)
+                wh = max(5, w["height"] * self.maze_scale)
+
+                nearest_x = max(wx, min(bx, wx + ww))
+                nearest_y = max(wy, min(by, wy + wh))
+
+                dist_sq = (bx - nearest_x)**2 + (by - nearest_y)**2
+                if dist_sq < br**2:
+                    touching_wall = True
+                    break
+
+            if touching_wall:
+                dmg = self.wall_damage_per_second * delta
+                if hasattr(b, "take_damage"):
+                    b.take_damage(dmg, "maze_wall")
+                else:
+                    b.hp = getattr(b, "hp", 100) - dmg
+                if getattr(b, "hp", 100) <= 0:
+                    b.alive = False
+
+    def check_winner(self, world, balls):
+        alive = [b for b in balls if getattr(b, "alive", False)]
+        if len(alive) == 1:
+            return alive[0].ball_type
+        if len(alive) == 0:
+            return "Draw"
+        return None
+
 GAME_MODES = {
+    "shifting_maze": ShiftingMazeMode(),
 
     "blackout": BlackoutMode(),
     "windstorm": WindstormMode(),
