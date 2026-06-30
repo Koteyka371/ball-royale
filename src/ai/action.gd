@@ -325,6 +325,48 @@ func execute(strategy: String, delta: float):
 					inv.erase("exit_portal")
 					self.ball.set_meta("inventory", inv)
 
+	if (strategy == "flee" or strategy == "defend") and self.ball.has_meta("inventory"):
+		var inv = self.ball.get_meta("inventory")
+		if inv.has("portal_gun"):
+			if world != null and "arena" in world and "hazards" in world.arena:
+				var arena = world.arena
+				var portal1_id = arena.hazards.size() + randi() % 90000 + 10000
+				var portal2_id = portal1_id + 1
+
+				var p2_x = self.ball.x + randf_range(-200.0, 200.0)
+				var p2_y = self.ball.y + randf_range(-200.0, 200.0)
+
+				if load("res://src/arena/procedural_arena.gd") != null:
+					var HazardClass = load("res://src/arena/procedural_arena.gd").Hazard
+					var portal1 = HazardClass.new()
+					portal1.id = portal1_id
+					portal1.x = self.ball.x
+					portal1.y = self.ball.y
+					portal1.radius = 30.0
+					portal1.kind = "portal"
+					portal1.damage = 0.0
+					portal1.set_meta("target_x", p2_x)
+					portal1.set_meta("target_y", p2_y)
+					portal1.set_meta("duration", 10.0)
+					portal1.set_meta("owner_id", self.ball.id)
+
+					var portal2 = HazardClass.new()
+					portal2.id = portal2_id
+					portal2.x = p2_x
+					portal2.y = p2_y
+					portal2.radius = 30.0
+					portal2.kind = "portal"
+					portal2.damage = 0.0
+					portal2.set_meta("target_x", self.ball.x)
+					portal2.set_meta("target_y", self.ball.y)
+					portal2.set_meta("duration", 10.0)
+					portal2.set_meta("owner_id", self.ball.id)
+
+					arena.hazards.append(portal1)
+					arena.hazards.append(portal2)
+					inv.erase("portal_gun")
+					self.ball.set_meta("inventory", inv)
+
 
 	# Confusion timer logic
 	var conf_timer = 0.0
@@ -4197,6 +4239,16 @@ func _collect_booster(delta: float):
                     self.ball.set_meta("inventory", [])
                 var inv = self.ball.get_meta("inventory")
                 inv.append("exit_portal")
+                self.ball.set_meta("inventory", inv)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "portal_gun_item":
+                if not self.ball.has_meta("inventory"):
+                    self.ball.set_meta("inventory", [])
+                var inv = self.ball.get_meta("inventory")
+                inv.append("portal_gun")
                 self.ball.set_meta("inventory", inv)
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)

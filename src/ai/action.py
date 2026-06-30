@@ -261,6 +261,34 @@ class Action:
                 self.world.arena.hazards.append(portal)
                 self.ball.inventory.remove("exit_portal")
 
+        # Check inventory for portal_gun to use strategically
+        if strategy in ("flee", "defend") and hasattr(self.ball, "inventory") and "portal_gun" in self.ball.inventory:
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                import random
+                from arena.procedural_arena import Hazard
+
+                portal1_id = len(self.world.arena.hazards) + random.randint(10000, 99999)
+                portal2_id = portal1_id + 1
+
+                p2_x = self.ball.x + random.uniform(-200.0, 200.0)
+                p2_y = self.ball.y + random.uniform(-200.0, 200.0)
+
+                portal1 = Hazard(portal1_id, self.ball.x, self.ball.y, 30.0, "portal", 0.0)
+                setattr(portal1, 'target_x', p2_x)
+                setattr(portal1, 'target_y', p2_y)
+                setattr(portal1, 'duration', 10.0)
+                setattr(portal1, 'owner_id', getattr(self.ball, 'id', None))
+
+                portal2 = Hazard(portal2_id, p2_x, p2_y, 30.0, "portal", 0.0)
+                setattr(portal2, 'target_x', self.ball.x)
+                setattr(portal2, 'target_y', self.ball.y)
+                setattr(portal2, 'duration', 10.0)
+                setattr(portal2, 'owner_id', getattr(self.ball, 'id', None))
+
+                self.world.arena.hazards.append(portal1)
+                self.world.arena.hazards.append(portal2)
+                self.ball.inventory.remove("portal_gun")
+
         # Temporal rift logic to modify local delta
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for hazard in self.world.arena.hazards:
@@ -2701,6 +2729,13 @@ class Action:
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
                     self.ball.inventory.append("exit_portal")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                elif getattr(nearest, "kind", None) == "portal_gun_item":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("portal_gun")
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
