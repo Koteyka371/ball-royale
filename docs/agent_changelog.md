@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-320] Hazard Trajectories & Moving Portals — *2026-06-30 11:48:46 UTC*
+
+Introduce dynamic portal hazards that move around the map using random trajectories, making it harder for players to predict when they might get sucked in and teleported to a dangerous situation.
+
+---
+
 ## [idea-329] Weather Synergy Combos — *2026-06-30 11:38:52 UTC*
 
 Combine weather hazards with ball skills, e.g. elemental burst during rain to freeze everything.

@@ -5553,7 +5553,7 @@
     },
     {
       "id": "idea-320",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Hazard Trajectories & Moving Portals",
@@ -8594,6 +8594,74 @@
         "src/arena/new_ice_patch.py",
         "src/arena/new_ice_patch.gd",
         "tests/test_new_ice_patch.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-499",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Lightning Storm Overload",
+      "description": "During thunderstorms, lightning strikes not only deal damage but also supercharge robotic/metal ball types, granting them temporary speed and damage buffs at the cost of slow health drain.",
+      "allowed_paths": [
+        "src/ai/lightning_storm_overload.py",
+        "src/ai/lightning_storm_overload.gd",
+        "tests/test_lightning_storm_overload.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-500",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Time Loop Game Mode",
+      "description": "Every 30 seconds, the game state rewinds 5 seconds in time. Balls keep their current momentum but revert to their previous positions and HP, requiring players to plan actions knowing a rewind is imminent.",
+      "allowed_paths": [
+        "src/ai/time_loop_game.py",
+        "src/ai/time_loop_game.gd",
+        "tests/test_time_loop_game.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-501",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mud Terrain in Rain",
+      "description": "Rainy weather creates temporary mud patches in dirt/sand arenas, slowing down movement speed of all units except those with a 'swamp' or 'water' trait.",
+      "allowed_paths": [
+        "src/ai/mud_terrain_in_rain.py",
+        "src/ai/mud_terrain_in_rain.gd",
+        "tests/test_mud_terrain_in_rain.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-502",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Magnetic Fields Game Mode",
+      "description": "A game mode where invisible magnetic fields pull or push balls depending on their assigned polarities. Every 10 seconds, polarities randomly flip, causing sudden tactical shifts and chaotic collisions.",
+      "allowed_paths": [
+        "src/ai/magnetic_fields_game.py",
+        "src/ai/magnetic_fields_game.gd",
+        "tests/test_magnetic_fields_game.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
