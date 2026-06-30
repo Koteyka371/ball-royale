@@ -1,4 +1,0 @@
-{
-  "title": "Interactive Crowd Booing / Cheering",
-  "description": "Crowd system in the arena actively reacts to ball actions. If a ball camps too long or hides, the crowd boos, and they might throw minor hazards (like small debris) into the arena to force the player out. Conversely, epic plays (multikills) trigger cheers and small beneficial drops."
-}

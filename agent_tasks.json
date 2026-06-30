@@ -9653,6 +9653,76 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-559",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild Raid Bosses",
+      "description": "Introduce a PvE mode where guild members team up to fight massive boss balls with unique mechanics. Damage dealt by all guild members over a week is combined to defeat the boss and earn exclusive guild cosmetics.",
+      "allowed_paths": [
+        "src/ui/guild_raid_bosses.py",
+        "src/ui/guild_raid_bosses.gd",
+        "src/ai/guild_raid_bosses.py",
+        "tests/test_guild_raid_bosses.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-560",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Ball Loadouts / Perk System",
+      "description": "Before entering a battle royale, balls can select two perks (e.g., 'Thick Skinned' for +10% HP, 'Nimble' for +10% Speed). This allows players to further customize the existing ball classes (like making a tankier scout or a faster elementalist).",
+      "allowed_paths": [
+        "src/ai/ball_loadouts_perk.py",
+        "src/ai/ball_loadouts_perk.gd",
+        "tests/test_ball_loadouts_perk.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-561",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild Headquarters Customization",
+      "description": "Allow guilds to spend resources on customizing a virtual headquarters. Members can view their customized HQ, which can feature unlocked statues, banners, and an interactive training arena for testing new loadouts.",
+      "allowed_paths": [
+        "src/ui/guild_headquarters_customization.py",
+        "src/ui/guild_headquarters_customization.gd",
+        "src/ai/guild_headquarters_customization.py",
+        "tests/test_guild_headquarters_customization.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-562",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Interactive Crowd Booing / Cheering",
+      "description": "Crowd system in the arena actively reacts to ball actions. If a ball camps too long or hides, the crowd boos, and they might throw minor hazards (like small debris) into the arena to force the player out. Conversely, epic plays (multikills) trigger cheers and small beneficial drops.",
+      "allowed_paths": [
+        "src/ai/interactive_crowd_booing_cheering.py",
+        "src/ai/interactive_crowd_booing_cheering.gd",
+        "tests/test_interactive_crowd_booing_cheering.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
