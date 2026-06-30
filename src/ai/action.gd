@@ -558,6 +558,12 @@ func execute(strategy: String, delta: float):
             dt = my_ball.get_meta("decoy_timer") - delta
             my_ball.set_meta("decoy_timer", dt)
 
+        var b_alive_local = true
+        if "alive" in my_ball:
+            b_alive_local = my_ball.alive
+        elif my_ball.has_method("has_meta") and my_ball.has_meta("alive"):
+            b_alive_local = my_ball.get_meta("alive")
+
         if dt <= 0.0:
             if "alive" in my_ball:
                 my_ball.alive = false
@@ -565,6 +571,38 @@ func execute(strategy: String, delta: float):
                 my_ball.set_meta("alive", false)
             if "hp" in my_ball:
                 my_ball.hp = 0.0
+        elif b_alive_local:
+            var speed = 2.0
+            if "base_speed" in my_ball:
+                speed = my_ball.base_speed
+            elif my_ball.has_method("has_meta") and my_ball.has_meta("base_speed"):
+                speed = my_ball.get_meta("base_speed")
+
+            var vx = 0.0
+            var vy = 0.0
+            var has_v = false
+            if "vx" in my_ball and "vy" in my_ball:
+                has_v = true
+                vx = my_ball.vx
+                vy = my_ball.vy
+            elif my_ball.has_method("has_meta") and my_ball.has_meta("vx"):
+                has_v = true
+                vx = my_ball.get_meta("vx")
+                vy = my_ball.get_meta("vy")
+
+            if not has_v or randf() < 0.05:
+                vx = (randf() * 2.0 - 1.0) * speed
+                vy = (randf() * 2.0 - 1.0) * speed
+                if "vx" in my_ball:
+                    my_ball.vx = vx
+                    my_ball.vy = vy
+                elif my_ball.has_method("set_meta"):
+                    my_ball.set_meta("vx", vx)
+                    my_ball.set_meta("vy", vy)
+
+            if "x" in my_ball and "y" in my_ball:
+                my_ball.x += vx * delta * 60.0
+                my_ball.y += vy * delta * 60.0
 
     if world != null and "balls" in world:
         for b in world.balls:
@@ -3894,7 +3932,7 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
-            elif "kind" in nearest and nearest.kind == "decoy_item":
+            elif "kind" in nearest and (nearest.kind == "decoy_item" or nearest.kind == "decoy_booster"):
                 var decoy = null
                 if typeof(self.ball) == TYPE_DICTIONARY:
                     decoy = self.ball.duplicate()

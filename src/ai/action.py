@@ -370,6 +370,19 @@ class Action:
             if self.ball.decoy_timer <= 0:
                 self.ball.alive = False
                 self.ball.hp = 0
+            elif getattr(self.ball, "alive", True):
+                import random
+                speed = getattr(self.ball, "base_speed", 2.0)
+                if not hasattr(self.ball, "vx"):
+                    self.ball.vx = random.uniform(-1, 1) * speed
+                    self.ball.vy = random.uniform(-1, 1) * speed
+                else:
+                    if random.random() < 0.05:
+                        self.ball.vx = random.uniform(-1, 1) * speed
+                        self.ball.vy = random.uniform(-1, 1) * speed
+
+                self.ball.x += self.ball.vx * delta * 60
+                self.ball.y += self.ball.vy * delta * 60
 
         # Global decoy explosion check
         if hasattr(self.world, "balls"):
@@ -2519,7 +2532,7 @@ class Action:
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
-                elif getattr(nearest, "kind", None) == "decoy_item":
+                elif getattr(nearest, "kind", None) in ["decoy_item", "decoy_booster"]:
                     import copy
                     if hasattr(self.world, "balls"):
                         decoy = copy.copy(self.ball)

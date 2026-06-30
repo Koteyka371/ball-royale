@@ -161,6 +161,17 @@ func scan() -> Dictionary:
             var dist = calc_dist.call(h)
 
             if dist <= perception_radius:
+                if "kind" in h and h.kind == "decoy_booster":
+                    var found = false
+                    for b in data["boosters"]:
+                        if typeof(b) == TYPE_OBJECT and typeof(h) == TYPE_OBJECT and b.get_instance_id() == h.get_instance_id():
+                            found = true
+                            break
+                        elif typeof(b) == TYPE_DICTIONARY and typeof(h) == TYPE_DICTIONARY and b.has("id") and h.has("id") and b.id == h.id:
+                            found = true
+                            break
+                    if not found:
+                        data["boosters"].append(h)
                 if "kind" in h and h.kind == "fake_booster":
                     var is_scout = ("ball_type" in self.ball and self.ball.ball_type == "scout")
                     var has_drone = ("has_drone" in self.ball and self.ball.has_drone)

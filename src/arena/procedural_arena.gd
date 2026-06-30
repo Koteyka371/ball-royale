@@ -149,6 +149,8 @@ func generate():
         var kind = "spikes"
         if r < 0.25:
             kind = "lava"
+        elif r < 0.38:
+            kind = "decoy_booster"
         elif r < 0.4:
             kind = "fake_booster"
         elif r < 0.45:
