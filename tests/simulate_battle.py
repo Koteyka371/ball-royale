@@ -469,6 +469,25 @@ class BattleSimulation:
             data = event_type
             event_type = data["type"]
 
+        if event_type == "audio_event":
+            pass # print(f"[AUDIO] {data.get('sound')} (vol: {data.get('volume')})")
+        elif event_type == "crowd_cheer":
+            pass # print(f"[CROWD] {data.get('message')}")
+        elif event_type == "crowd_throw":
+            pass # print(f"[CROWD] {data.get('message')}")
+        elif event_type == "spawn_booster":
+            try:
+                from arena.procedural_arena import Item # type: ignore
+                new_item = Item(id=getattr(self, "next_id", 9999), x=data.get('x', 0), y=data.get('y', 0), kind=data.get('kind', 'speed'), value=data.get('value', 30.0))
+                if hasattr(self, 'arena') and hasattr(self.arena, 'items'):
+                    self.arena.items.append(new_item)
+                elif hasattr(self, 'items'):
+                    self.items.append(new_item)
+                if hasattr(self, "next_id"):
+                    self.next_id += 1
+            except Exception:
+                pass
+
         if event_type == "weather_warning":
             self.kill_log.append({
                 "tick": self.tick,

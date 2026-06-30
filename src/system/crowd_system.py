@@ -71,6 +71,17 @@ class CrowdSystem:
                     self.world.add_event("crowd_cheer", {"message": "The crowd roars for an incredible comeback attempt!", "volume": 1.2})
                     self.world.add_event("audio_event", {"sound": "comeback_cheer", "volume": 1.0})
 
+        # Team Wipe detection
+        victim = next((b for b in balls if getattr(b, "id", -1) == victim_id), None)
+        if victim:
+            victim_team = getattr(victim, "team", getattr(victim, "ball_type", ""))
+            if alive_teams.get(victim_team, 0) == 0:
+                self.excitement_level += 25.0
+                if hasattr(self.world, 'add_event'):
+                    self.world.add_event("crowd_cheer", {"message": f"The crowd gasps as team {victim_team} is wiped out!", "volume": 1.1})
+                    self.world.add_event("audio_event", {"sound": "team_wipe_gasp", "volume": 1.0})
+
+
     def _throw_buffs_if_needed(self, balls: List[Any], tick: int):
         if self.excitement_level < 50.0:
             return
