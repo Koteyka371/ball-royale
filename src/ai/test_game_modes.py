@@ -458,3 +458,22 @@ def test_shifting_maze_tick_damage():
 
     assert balls[0].hp < initial_hp
     assert balls[0].hp == initial_hp - mode.wall_damage_per_second
+
+
+def test_gravity_well_mode():
+    from ai.game_modes import GAME_MODES
+    mode = GAME_MODES["gravity_well"]
+    world = MockWorld()
+    world.arena = type('MockArena', (), {'width': 2000.0, 'height': 2000.0, 'hazards': []})()
+    balls = [MockBall("teamA")]
+
+    mode.setup(world, balls)
+
+    assert hasattr(world.arena, "hazards")
+    assert len(world.arena.hazards) == 0
+
+    mode.tick(world, balls, delta=5.1)
+
+    assert len(world.arena.hazards) == 1
+    assert world.arena.hazards[0].kind == "gravity_well"
+    assert world.arena.hazards[0].damage > 0.0

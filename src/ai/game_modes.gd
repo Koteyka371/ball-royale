@@ -3894,6 +3894,52 @@ class ShiftingMazeMode extends GameMode:
 
 		return null
 
+
+class GravityWellMode extends GameMode:
+    var spawn_timer = 0.0
+
+    func _init():
+        name = "Gravity Well"
+        description = "Random gravity wells spawn in the arena, pulling nearby balls towards their center and slightly damaging them over time."
+
+    func setup(world, balls):
+        super.setup(world, balls)
+        if not "hazards" in world.arena:
+            world.arena.hazards = []
+        spawn_timer = 0.0
+
+    func tick(world, balls, delta = 0.016):
+        super.tick(world, balls, delta)
+
+        spawn_timer += delta
+        if spawn_timer >= 5.0:
+            spawn_timer = 0.0
+
+            var arena_width = 2000.0
+            var arena_height = 2000.0
+            if "width" in world.arena:
+                arena_width = world.arena.width
+            if "height" in world.arena:
+                arena_height = world.arena.height
+
+            var x = randf_range(200.0, arena_width - 200.0)
+            var y = randf_range(200.0, arena_height - 200.0)
+
+            var h_id = 9000 + world.arena.hazards.size() + (randi() % 1000)
+
+            var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
+            var gw = Hazard.new(h_id, x, y, randf_range(150.0, 300.0), "gravity_well", 10.0)
+            world.arena.hazards.append(gw)
+
+            var gw_hazards = []
+            for h in world.arena.hazards:
+                if h.kind == "gravity_well":
+                    gw_hazards.append(h)
+
+            if gw_hazards.size() > 5:
+                var oldest_gw = gw_hazards[0]
+                world.arena.hazards.erase(oldest_gw)
+
 var GAME_MODES = {
 	"shifting_maze": ShiftingMazeMode.new(),
 
@@ -3915,6 +3961,7 @@ var GAME_MODES = {
     "weather_chaos": WeatherChaosMode.new(),
     "domination": DominationMode.new(),
     "black_hole": BlackHoleMode.new(),
+    "gravity_well": GravityWellMode.new(),
     "king_of_the_hill": KingOfTheHillMode.new(),
     "moving_zone": MovingZoneMode.new(),
     "vampire_royale": VampireRoyaleMode.new(),
