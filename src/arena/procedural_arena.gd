@@ -165,6 +165,8 @@ func generate():
             kind = "magnet"
         elif r < 0.98:
             kind = "bumper"
+        elif r < 0.99:
+            kind = "quicksand"
         else:
             kind = "switch"
 
@@ -188,6 +190,9 @@ func generate():
 
         elif kind == "bumper":
             radius = rng.randf_range(30.0, 60.0)
+            damage = 0.0
+        elif kind == "quicksand":
+            radius = rng.randf_range(40.0, 80.0)
             damage = 0.0
         elif kind == "switch":
             radius = 20.0

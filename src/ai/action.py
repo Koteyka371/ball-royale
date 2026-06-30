@@ -187,6 +187,15 @@ class Action:
 
     def execute(self, strategy: str, delta: float) -> None:
 
+        self.ball.is_in_quicksand = False
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            for h in self.world.arena.hazards:
+                if getattr(h, "kind", "") == "quicksand":
+                    dist_sq = (self.ball.x - h.x)**2 + (self.ball.y - h.y)**2
+                    if dist_sq < h.radius**2:
+                        self.ball.is_in_quicksand = True
+                        break
+
         if getattr(self.ball, "silence_timer", 0.0) > 0:
             self.ball.silence_timer -= delta
             if self.ball.silence_timer < 0:
@@ -667,9 +676,9 @@ class Action:
                                                 break
                                 else:
                                     if hasattr(self.ball, "take_damage"):
-                                        self.ball.take_damage(hazard.damage)
+                                        self.ball.take_damage(hazard.damage * 2.0 if getattr(self.ball, "is_in_quicksand", False) else hazard.damage)
                                     elif hasattr(self.ball, "hp"):
-                                        self.ball.hp -= hazard.damage
+                                        self.ball.hp -= (hazard.damage * 2.0 if getattr(self.ball, "is_in_quicksand", False) else hazard.damage)
                                         if self.ball.hp <= 0:
                                             self.ball.alive = False
 
@@ -822,6 +831,14 @@ class Action:
                                         # Important: After a teleport, we must prevent the rest of the tick from adding `speed * delta` based on random boid rules
                                         return
                                 self.ball.last_teleport_tick = current_tick
+                    elif hazard.kind == "quicksand":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            # Apply slow
+                            self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.3
+                            self.ball.is_in_quicksand = True
                     elif hazard.kind == "conveyor_belt":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
@@ -948,7 +965,7 @@ class Action:
                                 trap_variant = getattr(hazard, "trap_variant", "normal")
                                 if trap_variant == "poison":
                                     # Poison: no slow, but take DoT (e.g. 5 damage per second)
-                                    poison_damage = 5.0 * delta
+                                    poison_damage = 10.0 * delta if getattr(self.ball, "is_in_quicksand", False) else 5.0 * delta
                                     if hasattr(self.ball, "take_damage"):
                                         self.ball.take_damage(poison_damage)
                                     elif hasattr(self.ball, "hp"):
@@ -1011,6 +1028,8 @@ class Action:
 
                         elif hazard.kind == "orbital_strike_active":
                             hazard_damage = hazard.damage * delta
+                            if getattr(self.ball, "is_in_quicksand", False):
+                                hazard_damage *= 2.0
                             if hasattr(self.ball, "take_damage"):
                                 self.ball.take_damage(hazard_damage)
                             elif hasattr(self.ball, "hp"):
@@ -1031,6 +1050,8 @@ class Action:
                             continue
                         elif hazard.kind == "meteor":
                             hazard_damage = hazard.damage * delta
+                            if getattr(self.ball, "is_in_quicksand", False):
+                                hazard_damage *= 2.0
                             if hasattr(self.ball, "take_damage"):
                                 self.ball.take_damage(hazard_damage)
                             elif hasattr(self.ball, "hp"):
@@ -1041,6 +1062,8 @@ class Action:
                         elif hazard.kind == "laser_wall":
                             # Special effect: laser wall burns and pushes
                             hazard_damage = hazard.damage * delta
+                            if getattr(self.ball, "is_in_quicksand", False):
+                                hazard_damage *= 2.0
                             if hasattr(self.ball, "take_damage"):
                                 self.ball.take_damage(hazard_damage)
                             elif hasattr(self.ball, "hp"):
@@ -1078,6 +1101,8 @@ class Action:
 
                                     if dist_to_beam < beam_width + self.ball.radius:
                                         hazard_damage = hazard.damage * delta
+                                        if getattr(self.ball, "is_in_quicksand", False):
+                                            hazard_damage *= 2.0
                                         if hasattr(self.ball, "take_damage"):
                                             self.ball.take_damage(hazard_damage)
                                         elif hasattr(self.ball, "hp"):
@@ -1094,12 +1119,16 @@ class Action:
                             self.ball.dot_damage_per_tick = hazard.damage
                             # Immediate application
                             hazard_damage = hazard.damage * delta
+                            if getattr(self.ball, "is_in_quicksand", False):
+                                hazard_damage *= 2.0
                         elif hazard.kind == "hidden_trap":
                             # Applies slow and low DoT when triggered
                             self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.5
                             self.ball.dot_duration = 2.0
                             self.ball.dot_damage_per_tick = hazard.damage
                             hazard_damage = hazard.damage * delta
+                            if getattr(self.ball, "is_in_quicksand", False):
+                                hazard_damage *= 2.0
                             if hasattr(self.ball, "take_damage"):
                                 self.ball.take_damage(hazard_damage)
                             elif hasattr(self.ball, "hp"):
@@ -1143,9 +1172,9 @@ class Action:
                             if not getattr(hazard, "hit_targets", False):
                                 hazard.hit_targets = True
                                 if hasattr(self.ball, "take_damage"):
-                                    self.ball.take_damage(hazard.damage)
+                                    self.ball.take_damage(hazard.damage * 2.0 if getattr(self.ball, "is_in_quicksand", False) else hazard.damage)
                                 elif hasattr(self.ball, "hp"):
-                                    self.ball.hp -= hazard.damage
+                                    self.ball.hp -= (hazard.damage * 2.0 if getattr(self.ball, "is_in_quicksand", False) else hazard.damage)
                                     if self.ball.hp <= 0:
                                         self.ball.alive = False
                                 if hasattr(self, "_spawn_skill_particles"):
@@ -1213,6 +1242,8 @@ class Action:
                             continue
 
                         hazard_damage = hazard.damage * delta
+                        if getattr(self.ball, "is_in_quicksand", False):
+                            hazard_damage *= 2.0
                         if hasattr(self.ball, "take_damage"):
                             self.ball.take_damage(hazard_damage)
                         elif hasattr(self.ball, "hp"):
