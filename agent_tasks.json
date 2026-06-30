@@ -4855,7 +4855,7 @@
     },
     {
       "id": "idea-279",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shield breaking mechanism",
@@ -9495,6 +9495,40 @@
         "src/ai/cursed_relic_zones.py",
         "src/ai/cursed_relic_zones.gd",
         "tests/test_cursed_relic_zones.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-550",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shield Generator Drone",
+      "description": "A new drone variant that follows allies and projects a localized shield, absorbing incoming damage until its energy is depleted or it is destroyed by enemies.",
+      "allowed_paths": [
+        "src/ai/shield_generator_drone.py",
+        "src/ai/shield_generator_drone.gd",
+        "tests/test_shield_generator_drone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-551",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Empowerment Matrix Trap",
+      "description": "A new hazard/trap that acts as a zone of empowerment. Allies stepping into the matrix receive temporary boosts to speed and damage, while enemies suffer a slow effect.",
+      "allowed_paths": [
+        "src/arena/empowerment_matrix_trap.py",
+        "src/arena/empowerment_matrix_trap.gd",
+        "tests/test_empowerment_matrix_trap.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

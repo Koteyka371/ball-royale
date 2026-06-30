@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-279] Shield breaking mechanism — *2026-06-30 16:39:57 UTC*
+
+Currently the reflect shield reflects the first damage and is consumed. Allow the shield to have a maximum damage capacity so it can reflect multiple small hits before breaking.
+
+---
+
 ## [idea-290] Kamikaze Drone Variant — *2026-06-30 16:28:54 UTC*
 
 An aggressive drone variant that homes in on the nearest enemy and explodes, dealing moderate AoE damage but destroying the drone.
