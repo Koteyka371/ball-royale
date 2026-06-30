@@ -991,9 +991,25 @@ func execute(strategy: String, delta: float):
                             hazard.set_meta("duration", 0.0)
 
                             if self.ball.has_method("take_damage"):
-                                self.ball.take_damage(hazard.damage)
+                                var dmg = hazard.damage
+                                var is_qs = false
+                                if self.ball.has_method("get_meta") and self.ball.has_meta("is_in_quicksand"):
+                                    is_qs = self.ball.get_meta("is_in_quicksand")
+                                elif "is_in_quicksand" in self.ball:
+                                    is_qs = self.ball.is_in_quicksand
+                                if is_qs:
+                                    dmg *= 2.0
+                                self.ball.take_damage(dmg)
                             elif "hp" in self.ball:
-                                self.ball.hp -= hazard.damage
+                                var dmg = hazard.damage
+                                var is_qs = false
+                                if self.ball.has_method("get_meta") and self.ball.has_meta("is_in_quicksand"):
+                                    is_qs = self.ball.get_meta("is_in_quicksand")
+                                elif "is_in_quicksand" in self.ball:
+                                    is_qs = self.ball.is_in_quicksand
+                                if is_qs:
+                                    dmg *= 2.0
+                                self.ball.hp -= dmg
                                 if self.ball.hp <= 0:
                                     self.ball.alive = false
 
@@ -1178,6 +1194,22 @@ func execute(strategy: String, delta: float):
                                     self.ball.x = hazard.target_x
                                     self.ball.y = hazard.target_y
                             self.ball.set_meta("last_teleport_tick", current_tick)
+                elif hazard.kind == "quicksand":
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    if dist_sq < hazard.radius * hazard.radius:
+                        # Apply slow
+                        var base_speed = 100.0
+                        if self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"):
+                            base_speed = self.ball.get_meta("base_speed")
+                        elif "base_speed" in self.ball:
+                            base_speed = self.ball.base_speed
+                        self.ball.speed = base_speed * 0.3
+                        if self.ball.has_method("set_meta"):
+                            self.ball.set_meta("is_in_quicksand", true)
+                        else:
+                            self.ball.is_in_quicksand = true
                 elif hazard.kind == "conveyor_belt":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
@@ -1500,6 +1532,13 @@ func execute(strategy: String, delta: float):
 
                     elif hazard.kind == "orbital_strike_active":
                         var hd = hazard.damage * delta
+                        var is_qs = false
+                        if self.ball.has_method("get_meta") and self.ball.has_meta("is_in_quicksand"):
+                            is_qs = self.ball.get_meta("is_in_quicksand")
+                        elif "is_in_quicksand" in self.ball:
+                            is_qs = self.ball.is_in_quicksand
+                        if is_qs:
+                            hd *= 2.0
                         if self.ball.has_method("take_damage"):
                             self.ball.take_damage(hd)
                         elif "hp" in self.ball:
@@ -1528,6 +1567,13 @@ func execute(strategy: String, delta: float):
                         continue
                     elif hazard.kind == "meteor":
                         var hd = hazard.damage * delta
+                        var is_qs = false
+                        if self.ball.has_method("get_meta") and self.ball.has_meta("is_in_quicksand"):
+                            is_qs = self.ball.get_meta("is_in_quicksand")
+                        elif "is_in_quicksand" in self.ball:
+                            is_qs = self.ball.is_in_quicksand
+                        if is_qs:
+                            hd *= 2.0
                         if self.ball.has_method("take_damage"):
                             self.ball.take_damage(hd)
                         elif "hp" in self.ball:
@@ -1537,6 +1583,13 @@ func execute(strategy: String, delta: float):
                         continue
                     elif hazard.kind == "laser_wall":
                         var hd = hazard.damage * delta
+                        var is_qs = false
+                        if self.ball.has_method("get_meta") and self.ball.has_meta("is_in_quicksand"):
+                            is_qs = self.ball.get_meta("is_in_quicksand")
+                        elif "is_in_quicksand" in self.ball:
+                            is_qs = self.ball.is_in_quicksand
+                        if is_qs:
+                            hd *= 2.0
                         if self.ball.has_method("take_damage"):
                             self.ball.take_damage(hd)
                         elif "hp" in self.ball:
@@ -1575,6 +1628,13 @@ func execute(strategy: String, delta: float):
 
                                 if dist_to_beam < beam_width + self.ball.radius:
                                     var hd = hazard.damage * delta
+                                    var is_qs = false
+                                    if self.ball.has_method("get_meta") and self.ball.has_meta("is_in_quicksand"):
+                                        is_qs = self.ball.get_meta("is_in_quicksand")
+                                    elif "is_in_quicksand" in self.ball:
+                                        is_qs = self.ball.is_in_quicksand
+                                    if is_qs:
+                                        hd *= 2.0
                                     if self.ball.has_method("take_damage"):
                                         self.ball.take_damage(hd)
                                     elif "hp" in self.ball:
@@ -1590,6 +1650,13 @@ func execute(strategy: String, delta: float):
                             self.ball.set_meta("dot_duration", 3.0)
                             self.ball.set_meta("dot_damage_per_tick", hazard.damage)
                         var hd = hazard.damage * delta
+                        var is_qs = false
+                        if self.ball.has_method("get_meta") and self.ball.has_meta("is_in_quicksand"):
+                            is_qs = self.ball.get_meta("is_in_quicksand")
+                        elif "is_in_quicksand" in self.ball:
+                            is_qs = self.ball.is_in_quicksand
+                        if is_qs:
+                            hd *= 2.0
                     elif hazard.kind == "hidden_trap":
                         var b_speed = 100.0
                         if self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"):
@@ -1601,6 +1668,13 @@ func execute(strategy: String, delta: float):
                             self.ball.set_meta("dot_duration", 2.0)
                             self.ball.set_meta("dot_damage_per_tick", hazard.damage)
                         var hd = hazard.damage * delta
+                        var is_qs = false
+                        if self.ball.has_method("get_meta") and self.ball.has_meta("is_in_quicksand"):
+                            is_qs = self.ball.get_meta("is_in_quicksand")
+                        elif "is_in_quicksand" in self.ball:
+                            is_qs = self.ball.is_in_quicksand
+                        if is_qs:
+                            hd *= 2.0
                         if self.ball.has_method("take_damage"):
                             self.ball.take_damage(hd)
                         elif "hp" in self.ball:
@@ -1645,9 +1719,25 @@ func execute(strategy: String, delta: float):
                         if not hazard.has_meta("hit_targets") or not hazard.get_meta("hit_targets"):
                             hazard.set_meta("hit_targets", true)
                             if self.ball.has_method("take_damage"):
-                                self.ball.take_damage(hazard.damage)
+                                var dmg = hazard.damage
+                                var is_qs = false
+                                if self.ball.has_method("get_meta") and self.ball.has_meta("is_in_quicksand"):
+                                    is_qs = self.ball.get_meta("is_in_quicksand")
+                                elif "is_in_quicksand" in self.ball:
+                                    is_qs = self.ball.is_in_quicksand
+                                if is_qs:
+                                    dmg *= 2.0
+                                self.ball.take_damage(dmg)
                             elif "hp" in self.ball:
-                                self.ball.hp -= hazard.damage
+                                var dmg = hazard.damage
+                                var is_qs = false
+                                if self.ball.has_method("get_meta") and self.ball.has_meta("is_in_quicksand"):
+                                    is_qs = self.ball.get_meta("is_in_quicksand")
+                                elif "is_in_quicksand" in self.ball:
+                                    is_qs = self.ball.is_in_quicksand
+                                if is_qs:
+                                    dmg *= 2.0
+                                self.ball.hp -= dmg
                                 if self.ball.hp <= 0:
                                     self.ball.alive = false
                             if has_method("_spawn_particles"):
