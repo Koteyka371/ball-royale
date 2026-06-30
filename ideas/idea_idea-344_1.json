@@ -1,4 +1,0 @@
-{
-    "title": "Decoy Placement Trap",
-    "description": "A new trap type that spawns a stationary decoy of the player when triggered by an enemy. The decoy distracts AI opponents, drawing their aggro while the true player gets a window to escape or counter-attack."
-}

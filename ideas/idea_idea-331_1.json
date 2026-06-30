@@ -1,4 +1,0 @@
-{
-  "title": "Wall Ricochet Trajectory Indicators",
-  "description": "Add visual trajectory lines for chain lightning before it casts, showing the player the expected bounce path across entities, hazards, and walls to allow for tactical positioning."
-}

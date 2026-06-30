@@ -1,4 +1,0 @@
-{
-    "title": "Decoy Enhancement Module",
-    "description": "Allow 'decoy_item' pickups to optionally explode upon expiring or being destroyed, dealing minor area-of-effect damage or blinding nearby enemies to provide greater utility and zoning."
-}

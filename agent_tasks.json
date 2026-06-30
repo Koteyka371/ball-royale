@@ -9534,6 +9534,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-552",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Reflect Damage",
+      "description": "Reflected damage has a chance to chain to a nearby enemy, creating a 'bouncing' reflect effect that punishes grouped enemies when hitting a shielded target.",
+      "allowed_paths": [
+        "src/ai/chain_reflect_damage.py",
+        "src/ai/chain_reflect_damage.gd",
+        "tests/test_chain_reflect_damage.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-553",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reflect Shield Upgrades in Shop",
+      "description": "Allow players to upgrade the max capacity of the reflect shield or its active duration via the prestige shop to increase survivability against burst damage.",
+      "allowed_paths": [
+        "src/ai/reflect_shield_upgrades_in_shop.py",
+        "src/ai/reflect_shield_upgrades_in_shop.gd",
+        "tests/test_reflect_shield_upgrades_in_shop.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
