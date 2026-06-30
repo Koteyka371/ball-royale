@@ -753,8 +753,9 @@ class Action:
                             hazard.last_updated_tick = current_tick
                             if not hasattr(hazard, "vx"):
 
-                                hazard.vx = random.uniform(-100.0, 100.0) if hazard.kind == "tornado" else random.uniform(-10.0, 10.0)
-                                hazard.vy = random.uniform(-100.0, 100.0) if hazard.kind == "tornado" else random.uniform(-10.0, 10.0)
+                                import random as _rnd2
+                                hazard.vx = _rnd2.uniform(-100.0, 100.0) if hazard.kind == "tornado" else _rnd2.uniform(-10.0, 10.0)
+                                hazard.vy = _rnd2.uniform(-100.0, 100.0) if hazard.kind == "tornado" else _rnd2.uniform(-10.0, 10.0)
                             if not hasattr(hazard, "lifetime"):
                                 hazard.lifetime = 0.0
                             hazard.lifetime += delta
@@ -1081,7 +1082,8 @@ class Action:
                                 ny = dy / dist
 
                                 # Add random chaos to direction (small angle variation)
-                                angle = math.atan2(ny, nx) + random.uniform(-0.5, 0.5)
+                                import random as _rnd
+                                angle = math.atan2(ny, nx) + _rnd.uniform(-0.5, 0.5)
                                 nx = math.cos(angle)
                                 ny = math.sin(angle)
 

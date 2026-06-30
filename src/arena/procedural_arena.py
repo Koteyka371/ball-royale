@@ -350,6 +350,16 @@ class ProceduralArena:
                         h.duration -= delta
                         if h.duration <= 0:
                             h.active = False
+                elif getattr(h, "kind", "") == "tornado":
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0:
+                            h.active = False
+                elif getattr(h, "kind", "") == "tornado":
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0:
+                            h.active = False
                 elif getattr(h, "kind", "") == "meteor":
                     if hasattr(h, "duration"):
                         h.duration -= delta
