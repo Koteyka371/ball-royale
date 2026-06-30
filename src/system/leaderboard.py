@@ -46,11 +46,11 @@ class LeaderboardManager:
         players = self.data.get("players", {})
 
         if players:
-            max_prestige = max(players.values())
-            top_players = [pid for pid, prestige in players.items() if prestige == max_prestige]
+            sorted_players = sorted(players.items(), key=lambda x: x[1], reverse=True)
+            top_100 = [pid for pid, prestige in sorted_players[:100]]
 
-            # If the local player is one of the top players, grant rewards
-            if "local_player" in top_players and self.profile_manager:
+            # If the local player is in the top 100, grant rewards
+            if "local_player" in top_100 and self.profile_manager:
                 self.profile_manager.add_cosmetic(f"Crown of Season {season_num}")
                 self.profile_manager.add_title(f"Season {season_num} Champion")
                 self.profile_manager.add_status_effect(f"Aura of Season {season_num}")
