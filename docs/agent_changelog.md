@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-258] Interactive Crowd System — *2026-06-30 09:02:18 UTC*
+
+Add a virtual crowd around the arena that reacts dynamically to epic kills, comebacks, and team wipes, modifying game audio and sometimes throwing small temporary buffs (like a single-use speed pad) into the arena to help losing balls.
+
+---
+
 ## [idea-265] Heatwave Weather Event — *2026-06-30 09:02:11 UTC*
 
 Introduce a 'heatwave' weather event where max speed is slightly reduced across the board due to overheating, but a new 'mirage' effect occasionally creates harmless illusionary clones of the balls to confuse AI targeting systems.
