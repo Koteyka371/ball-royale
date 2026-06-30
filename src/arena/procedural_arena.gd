@@ -418,6 +418,14 @@ func update_zone(current_tick: int, delta: float) -> void:
                             h.set_meta("active", false)
                         if "active" in h:
                             h.active = false
+            elif "kind" in h and h.kind == "fire_zone":
+                if h.has_meta("duration"):
+                    var dur = h.get_meta("duration") - delta
+                    h.set_meta("duration", dur)
+                    if dur <= 0:
+                        h.set_meta("active", false)
+                        if "active" in h:
+                            h.active = false
             elif "kind" in h and h.kind == "meteor":
                 if h.has_meta("duration"):
                     var dur = h.get_meta("duration") - delta
@@ -430,6 +438,11 @@ func update_zone(current_tick: int, delta: float) -> void:
                         var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
                         var crater = ProceduralArenaScript.Hazard.new(crater_id, h.x, h.y, h.radius * 1.5, "crater", 10.0)
                         new_craters.append(crater)
+
+                        var fire_id = 7000 + hazards.size() + new_craters.size() + (randi() % 1000)
+                        var fire_zone = ProceduralArenaScript.Hazard.new(fire_id, h.x, h.y, h.radius * 1.8, "fire_zone", 50.0)
+                        fire_zone.set_meta("duration", 10.0)
+                        new_craters.append(fire_zone)
 
                         var crater_size = h.radius * 3.0
                         var new_room = ProceduralArenaScript.Room.new(h.x - crater_size/2, h.y - crater_size/2, crater_size, crater_size)
