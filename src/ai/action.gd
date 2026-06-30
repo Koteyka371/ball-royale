@@ -4207,6 +4207,12 @@ func _collect_booster(delta: float):
                     var dmg = 50.0
                     if "damage" in nearest: dmg = nearest.damage
                     self.ball.take_damage(dmg)
+                if "stun_timer" in self.ball:
+                    self.ball.stun_timer = max(self.ball.stun_timer, 2.0)
+                else:
+                    var current_stun = 0.0
+                    if self.ball.has_method("get_meta") and self.ball.has_meta("stun_timer"): current_stun = self.ball.get_meta("stun_timer")
+                    self.ball.set_meta("stun_timer", max(current_stun, 2.0))
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
@@ -4558,6 +4564,30 @@ func _use_skill():
                         if dist <= explosion_radius:
                             if e.has_method("take_damage"):
                                 e.take_damage(explosion_damage)
+
+        elif skill_name == "deploy_fake_booster":
+            if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                var self_id = null
+                if "id" in self.ball: self_id = self.ball.id
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): self_id = self.ball.get_meta("id")
+
+                var hazard = {
+                    "kind": "fake_booster",
+                    "x": self.ball.x,
+                    "y": self.ball.y,
+                    "damage": 50.0,
+                    "duration": 30.0,
+                    "owner_id": self_id,
+                    "radius": 15.0
+                }
+                self.world.arena.hazards.append(hazard)
+
+                var cooldown = 5.0
+                if "SKILL_COOLDOWN" in self.ball: cooldown = self.ball.SKILL_COOLDOWN
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("SKILL_COOLDOWN"): cooldown = self.ball.get_meta("SKILL_COOLDOWN")
+
+                if "skill_timer" in self.ball: self.ball.skill_timer = cooldown
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cooldown)
 
         elif skill_name == "deploy_decoy":
             var swapped = false

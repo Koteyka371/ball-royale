@@ -2707,6 +2707,7 @@ class Action:
                 elif getattr(nearest, "kind", None) == "fake_booster":
                     if hasattr(self.ball, "take_damage"):
                         self.ball.take_damage(getattr(nearest, "damage", 50.0))
+                    self.ball.stun_timer = max(getattr(self.ball, "stun_timer", 0.0), 2.0)
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
@@ -2895,6 +2896,22 @@ class Action:
                                 if dist <= explosion_radius:
                                     if hasattr(enemy, "take_damage"):
                                         enemy.take_damage(explosion_damage)
+            elif skill_name == "deploy_fake_booster":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    class FakeBoosterHazard:
+                        def __init__(self, x, y, owner_id):
+                            self.kind = "fake_booster"
+                            self.x = x
+                            self.y = y
+                            self.damage = 50.0
+                            self.duration = 30.0
+                            self.owner_id = owner_id
+                            self.radius = 15.0
+
+                    hazard = FakeBoosterHazard(self.ball.x, self.ball.y, getattr(self.ball, "id", None))
+                    self.world.arena.hazards.append(hazard)
+                    self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 5.0)
+
             elif skill_name == "deploy_decoy":
                 import copy
                 active_decoys = [b for b in getattr(self.world, "balls", []) if getattr(b, "is_decoy", False) and getattr(b, "owner_id", None) == self.ball.id and getattr(b, "alive", True) and not getattr(b, "has_swapped", False)]
