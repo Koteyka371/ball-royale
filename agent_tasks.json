@@ -5826,7 +5826,7 @@
     },
     {
       "id": "idea-336",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Season leaderboards with exclusive rewards",
@@ -8849,6 +8849,74 @@
         "src/ai/status_transfer_boomerang.py",
         "src/ai/status_transfer_boomerang.gd",
         "tests/test_status_transfer_boomerang.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-512",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Idea 1: Ice Patches",
+      "description": "Hazards that remove friction, causing balls to slide continuously and bounce off walls faster.",
+      "allowed_paths": [
+        "src/ai/idea_1_ice_patches.py",
+        "src/ai/idea_1_ice_patches.gd",
+        "tests/test_idea_1_ice_patches.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-513",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Idea 2: EMP Mine",
+      "description": "A hidden mine that detonates on proximity, disabling AI abilities and rendering them unable to attack for 5 seconds.",
+      "allowed_paths": [
+        "src/ai/idea_2_emp_mine.py",
+        "src/ai/idea_2_emp_mine.gd",
+        "tests/test_idea_2_emp_mine.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-514",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Clone Illusion Switch",
+      "description": "Players can manually swap positions with one of their static clones using a sub-skill, allowing for advanced deception and sudden repositioning.",
+      "allowed_paths": [
+        "src/ai/clone_illusion_switch.py",
+        "src/ai/clone_illusion_switch.gd",
+        "tests/test_clone_illusion_switch.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-515",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Reaction Clones",
+      "description": "When a clone mine explodes, it causes any other friendly clones within its blast radius to also explode after a short delay, creating a cascading field of destruction.",
+      "allowed_paths": [
+        "src/ai/chain_reaction_clones.py",
+        "src/ai/chain_reaction_clones.gd",
+        "tests/test_chain_reaction_clones.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

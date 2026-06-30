@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-336] Season leaderboards with exclusive rewards — *2026-06-30 12:52:25 UTC*
+
+At the end of each 30-day season, the top 100 players on the leaderboard could receive exclusive cosmetic items (like a special aura or crown) and a unique title based on that season's theme to incentivize competitive play.
+
+---
+
 ## [idea-330] Exploding Clones Skill Upgrade — *2026-06-30 12:44:20 UTC*
 
 An evolution for the clone skill where clones act as proximity mines. If an enemy touches a static clone, it explodes dealing area of effect damage.
