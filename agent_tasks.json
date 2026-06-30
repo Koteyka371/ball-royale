@@ -5570,7 +5570,7 @@
     },
     {
       "id": "idea-321",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Loadout Sharing",
@@ -8951,6 +8951,74 @@
         "src/ai/custom_season_badges.py",
         "src/ai/custom_season_badges.gd",
         "tests/test_custom_season_badges.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-518",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "EMP Shield Item",
+      "description": "A new equippable item or booster that temporarily grants immunity to EMP bursts and other scrambling effects.",
+      "allowed_paths": [
+        "src/ai/emp_shield_item.py",
+        "src/ai/emp_shield_item.gd",
+        "tests/test_emp_shield_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-519",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Add Chain Lightning Visual Arcs",
+      "description": "Render bezier curve lightning arcs between hit entities during chain bounces.",
+      "allowed_paths": [
+        "src/ai/add_chain_lightning_visual_arcs.py",
+        "src/ai/add_chain_lightning_visual_arcs.gd",
+        "tests/test_add_chain_lightning_visual_arcs.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-520",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Hack-O-Bot Hazard",
+      "description": "A mobile robotic hazard that seeks out players and attempts to attach itself to them, periodically scrambled their targeting until destroyed.",
+      "allowed_paths": [
+        "src/arena/hack_o_bot.py",
+        "src/arena/hack_o_bot.gd",
+        "tests/test_hack_o_bot.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-521",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Lightning Stun Effect",
+      "description": "Apply a micro-stun (0.2s) to entities hit by chain lightning.",
+      "allowed_paths": [
+        "src/ai/chain_lightning_stun_effect.py",
+        "src/ai/chain_lightning_stun_effect.gd",
+        "tests/test_chain_lightning_stun_effect.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

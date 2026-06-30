@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-321] Loadout Sharing — *2026-06-30 13:04:49 UTC*
+
+Allow players to share their custom loadouts with friends or the community using short codes, similar to deck sharing in card games.
+
+---
+
 ## [idea-340] EMC Burst Hazard — *2026-06-30 13:00:24 UTC*
 
 An Electromagnetic Pulse burst hazard that periodically spawns in the arena. When it detonates, it temporarily scrambles the AI targeting logic of any ball within its radius, causing them to randomly switch targets or wander aimlessly for a few seconds.
