@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-274] Time Stop Skill — *2026-06-30 10:44:14 UTC*
+
+A rare ultimate skill that freezes all other balls and dynamic hazards for 2 seconds, allowing the user to reposition or secure critical hits without retaliation.
+
+---
+
 ## [idea-285] Fog of War Mode — *2026-06-30 10:44:09 UTC*
 
 Similar to vision reduced mode but a completely dark screen with only a cone of light matching the AI's actual perception radius.
