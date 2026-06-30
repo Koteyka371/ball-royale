@@ -317,6 +317,72 @@ func _init(ball_ref, world_ref):
 func execute(strategy: String, delta: float):
 
 
+	var is_mimic_clone = false
+	if self.ball.has_method("get_meta") and self.ball.get_meta("is_mimic_clone"): is_mimic_clone = true
+	elif "is_mimic_clone" in self.ball and self.ball.is_mimic_clone: is_mimic_clone = true
+
+	var is_alive_mine2 = true
+	if "alive" in self.ball: is_alive_mine2 = self.ball.alive
+	elif self.ball.has_method("get_meta") and self.ball.has_meta("alive"): is_alive_mine2 = self.ball.get_meta("alive")
+
+	if is_mimic_clone and is_alive_mine2:
+		var owner_id = null
+		if self.ball.has_method("get_meta") and self.ball.has_meta("mimic_owner"): owner_id = self.ball.get_meta("mimic_owner")
+		elif "mimic_owner" in self.ball: owner_id = self.ball.mimic_owner
+
+		var owner = null
+		if world != null and "balls" in world:
+			for b in world.balls:
+				var bid = null
+				if "id" in b: bid = b.id
+				elif b.has_method("get_meta") and b.has_meta("id"): bid = b.get_meta("id")
+
+				if bid != null and bid == owner_id:
+					owner = b
+					break
+
+		var ovx = 0.0
+		var ovy = 0.0
+		if owner != null:
+			var o_alive = true
+			if "alive" in owner: o_alive = owner.alive
+			elif owner.has_method("get_meta") and owner.has_meta("alive"): o_alive = owner.get_meta("alive")
+
+			if o_alive:
+				if "vx" in owner: ovx = owner.vx
+				elif owner.has_method("get_meta") and owner.has_meta("vx"): ovx = owner.get_meta("vx")
+				if "vy" in owner: ovy = owner.vy
+				elif owner.has_method("get_meta") and owner.has_meta("vy"): ovy = owner.get_meta("vy")
+
+		if "vx" in self.ball: self.ball.vx = ovx
+		elif self.ball.has_method("set_meta"): self.ball.set_meta("vx", ovx)
+		if "vy" in self.ball: self.ball.vy = ovy
+		elif self.ball.has_method("set_meta"): self.ball.set_meta("vy", ovy)
+
+		if "x" in self.ball: self.ball.x += ovx * delta
+		elif self.ball.has_method("set_meta") and self.ball.has_meta("x"): self.ball.set_meta("x", self.ball.get_meta("x") + ovx * delta)
+		if "y" in self.ball: self.ball.y += ovy * delta
+		elif self.ball.has_method("set_meta") and self.ball.has_meta("y"): self.ball.set_meta("y", self.ball.get_meta("y") + ovy * delta)
+
+		var m_timer = 10.0
+		if "mimic_timer" in self.ball: m_timer = self.ball.mimic_timer
+		elif self.ball.has_method("get_meta") and self.ball.has_meta("mimic_timer"): m_timer = self.ball.get_meta("mimic_timer")
+
+		m_timer -= delta
+		if "mimic_timer" in self.ball: self.ball.mimic_timer = m_timer
+		elif self.ball.has_method("set_meta"): self.ball.set_meta("mimic_timer", m_timer)
+
+		var m_hp = 100.0
+		if "hp" in self.ball: m_hp = self.ball.hp
+		elif self.ball.has_method("get_meta") and self.ball.has_meta("hp"): m_hp = self.ball.get_meta("hp")
+
+		if m_timer <= 0 or m_hp <= 0:
+			if "alive" in self.ball: self.ball.alive = false
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("alive", false)
+
+		self._clamp_position()
+		return
+
 	var is_clone_mine = false
 	if self.ball.has_method("get_meta") and self.ball.get_meta("is_clone"): is_clone_mine = true
 	elif "is_clone" in self.ball and self.ball.is_clone: is_clone_mine = true
@@ -924,7 +990,13 @@ func execute(strategy: String, delta: float):
             elif b.has_method("get_meta") and b.has_meta("is_illusion"):
                 b_is_illusion = b.get_meta("is_illusion")
 
-            if b_is_illusion:
+            var b_is_mimic_clone = false
+
+            if "is_mimic_clone" in b: b_is_mimic_clone = b.is_mimic_clone
+
+            elif b.has_method("get_meta") and b.has_meta("is_mimic_clone"): b_is_mimic_clone = b.get_meta("is_mimic_clone")
+
+            if b_is_illusion and not b_is_mimic_clone:
                 var b_hp = 1.0
                 if "hp" in b:
                     b_hp = b.hp
@@ -5181,6 +5253,50 @@ func _use_skill():
                         self.ball.skill_timer = 0.5
                     elif self.ball.has_method("set_meta"):
                         self.ball.set_meta("skill_timer", 0.5)
+        elif skill_name == "mimic_clone":
+            if "balls" in self.world:
+                var clone = null
+                if self.ball.has_method("duplicate"):
+                    clone = self.ball.duplicate()
+                elif self.ball is Dictionary:
+                    clone = self.ball.duplicate()
+
+                if clone != null:
+                    var next_id = randi() % 90000 + 10000
+                    if "next_id" in self.world:
+                        next_id = self.world.next_id
+                        self.world.next_id += 1
+
+                    if "id" in clone: clone.id = next_id
+                    if "hp" in clone and "max_hp" in clone:
+                        clone.max_hp = 50.0
+                        clone.hp = clone.max_hp
+                    if "damage" in clone: clone.damage = 0.0
+
+                    if "skill" in clone: clone.skill = ""
+                    if "SKILL" in clone: clone.SKILL = ""
+                    if "skill_timer" in clone: clone.skill_timer = 9999.0
+
+                    var owner_id = null
+                    if "id" in self.ball: owner_id = self.ball.id
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): owner_id = self.ball.get_meta("id")
+
+                    if clone.has_method("set_meta"):
+                        clone.set_meta("is_mimic_clone", true)
+                        clone.set_meta("is_illusion", true)
+                        clone.set_meta("mimic_timer", 10.0)
+                        clone.set_meta("mimic_owner", owner_id)
+                        clone.set_meta("skill", "")
+                        clone.set_meta("skill_timer", 9999.0)
+                    elif clone is Dictionary:
+                        clone["is_mimic_clone"] = true
+                        clone["is_illusion"] = true
+                        clone["mimic_timer"] = 10.0
+                        clone["mimic_owner"] = owner_id
+                        clone["skill"] = ""
+                        clone["skill_timer"] = 9999.0
+
+                    self.world.balls.append(clone)
         elif skill_name == "deploy_illusion":
             if "balls" in self.world:
                 var illusion = null
