@@ -284,6 +284,17 @@ func generate():
         var teleporter = ProceduralArena.Hazard.new(t_id, t_pt[0], t_pt[1], 25.0, "teleporter", 0.0)
         teleporters.append(teleporter)
 
+    # Generate one-way teleporters
+    var num_one_way = max(1, num_rooms / 2)
+    for t in range(num_one_way):
+        var t_id = hazards.size() + 9000 + t
+        var t_pt = get_random_spawn_point(25.0)
+        var one_way = ProceduralArena.Hazard.new(t_id, t_pt[0], t_pt[1], 25.0, "one_way_teleporter", 0.0)
+        var target_pt = get_random_spawn_point(25.0)
+        one_way.set_meta("target_x", target_pt[0])
+        one_way.set_meta("target_y", target_pt[1])
+        hazards.append(one_way)
+
     # Link them in pairs
     for i in range(0, teleporters.size(), 2):
         var t1 = teleporters[i]

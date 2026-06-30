@@ -836,7 +836,7 @@ class Action:
                                         self.ball.last_teleport_tick = current_tick
                                         entity_to_swap.last_teleport_tick = current_tick
 
-                    elif hazard.kind in ("portal", "teleporter"):
+                    elif hazard.kind in ("portal", "teleporter", "one_way_teleporter"):
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
                         dist_sq = dx * dx + dy * dy
@@ -845,7 +845,7 @@ class Action:
                             current_tick = getattr(self.world, "tick", 0)
                             last_teleport = getattr(self.ball, "last_teleport_tick", -100)
                             if current_tick - last_teleport > 10:  # Prevent immediate re-teleport
-                                if hazard.kind == "teleporter":
+                                if hazard.kind in ("teleporter", "one_way_teleporter"):
                                     if hasattr(hazard, "target_x") and hasattr(hazard, "target_y"):
                                         self.ball.x = getattr(hazard, "target_x")
                                         self.ball.y = getattr(hazard, "target_y")
@@ -986,15 +986,20 @@ class Action:
                                 pull_strength = min(pull_strength, dist * 0.5) # Prevent overshooting
                                 self.ball.x += nx * pull_strength
                                 self.ball.y += ny * pull_strength
-                    elif hazard.kind in ("black_hole", "tornado", "portal", "teleporter", "swap_portal"):
+                    elif hazard.kind in ("black_hole", "tornado", "portal", "teleporter", "swap_portal", "one_way_teleporter"):
                         # Only update global state once per frame using the tick counter
                         current_tick = getattr(self.world, "tick", 0)
                         if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
                             hazard.last_updated_tick = current_tick
                             if not hasattr(hazard, "vx"):
 
-                                import random; hazard.vx = random.uniform(-100.0, 100.0) if hazard.kind in ("tornado", "portal", "teleporter", "swap_portal") else random.uniform(-10.0, 10.0)
-                                hazard.vy = random.uniform(-100.0, 100.0) if hazard.kind in ("tornado", "portal", "teleporter", "swap_portal") else random.uniform(-10.0, 10.0)
+                                import random; hazard.vx = random.uniform(-100.0, 100.0) if hazard.kind in ("tornado", "portal", "teleporter", "swap_portal", "one_way_teleporter") else random.uniform(-10.0, 10.0)
+                                hazard.vy = random.uniform(-100.0, 100.0) if hazard.kind in ("tornado", "portal", "teleporter", "swap_portal", "one_way_teleporter") else random.uniform(-10.0, 10.0)
+                            if hazard.kind == "one_way_teleporter" and __import__("random").random() < 0.01:
+                                if hasattr(self.world.arena, "get_random_spawn_point"):
+                                    tx, ty = self.world.arena.get_random_spawn_point(25.0)
+                                    hazard.target_x = tx
+                                    hazard.target_y = ty
                             if not hasattr(hazard, "lifetime"):
                                 hazard.lifetime = 0.0
                             hazard.lifetime += delta

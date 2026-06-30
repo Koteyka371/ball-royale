@@ -242,6 +242,15 @@ class ProceduralArena:
             teleporter = Hazard(id=t_id, x=tx, y=ty, radius=25.0, kind="teleporter", damage=0.0)
             teleporters.append(teleporter)
 
+        # Generate one-way teleporters
+        num_one_way = max(1, self.num_rooms // 2)
+        for t in range(num_one_way):
+            t_id = len(self.hazards) + 9000 + t
+            tx, ty = self.get_random_spawn_point(25.0)
+            one_way = Hazard(id=t_id, x=tx, y=ty, radius=25.0, kind="one_way_teleporter", damage=0.0)
+            one_way.target_x, one_way.target_y = self.get_random_spawn_point(25.0)
+            self.hazards.append(one_way)
+
         # Link them in pairs
         for i in range(0, len(teleporters), 2):
             t1 = teleporters[i]
