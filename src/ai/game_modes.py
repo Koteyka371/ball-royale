@@ -3079,6 +3079,100 @@ class GravityWellMode(GameMode):
                 oldest_gw = gw_hazards[0]
                 world.arena.hazards.remove(oldest_gw)
 
+
+class SupernovaMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Supernova"
+        self.description = "Balls take rapidly scaling heat damage as they approach the center. Eventually, the supernova explodes, knocking survivors away."
+        self.supernova_radius = 50.0
+        self.supernova_exploded = False
+        self.explosion_timer = 0.0
+        self.heat_multiplier = 1.0
+
+    def tick(self, world, balls, delta: float = 0.016) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+        import math
+        arena_width = 1000.0
+        arena_height = 1000.0
+        if hasattr(world, "arena") and world.arena:
+            arena_width = getattr(world.arena, "width", 1000.0)
+            arena_height = getattr(world.arena, "height", 1000.0)
+
+        center_x = arena_width / 2.0
+        center_y = arena_height / 2.0
+
+        if not self.supernova_exploded:
+            self.supernova_radius += 2.0 * delta
+            self.explosion_timer += delta
+
+            # Explosion triggers at e.g. 20 seconds
+            if self.explosion_timer >= 20.0:
+                self.supernova_exploded = True
+                self.explosion_timer = 0.0
+                # Trigger knockback for all alive balls
+                for b in balls:
+                    if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                        dx = b.x - center_x
+                        dy = b.y - center_y
+                        dist = math.hypot(dx, dy)
+                        if dist > 0:
+                            # Massive outward knockback force
+                            knockback = 50000.0 / max(dist, 10.0)
+                            b.vx = getattr(b, "vx", 0.0) + (dx / dist) * knockback
+                            b.vy = getattr(b, "vy", 0.0) + (dy / dist) * knockback
+
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                dx = center_x - b.x
+                dy = center_y - b.y
+                dist = math.hypot(dx, dy)
+
+                if not self.supernova_exploded:
+                    # Pull towards center
+                    if dist > 0:
+                        pull_strength = 20000.0 / (dist * dist)
+                        radius_multiplier = self.supernova_radius / 50.0
+                        pull_strength *= radius_multiplier
+                        pull_strength = min(pull_strength, 150.0 * radius_multiplier)
+
+                        b.x += (dx / dist) * pull_strength * delta
+                        b.y += (dy / dist) * pull_strength * delta
+
+                    # Heat damage
+                    max_dist = max(arena_width, arena_height) / 2.0
+                    if dist < max_dist:
+                        damage_intensity = (max_dist - dist) / max_dist
+                        heat_damage = 5.0 * (damage_intensity ** 3) * self.heat_multiplier * delta
+                        if hasattr(b, "hp"):
+                            b.hp -= heat_damage
+                            if b.hp <= 0:
+                                b.hp = 0
+                                b.alive = False
+
+    def check_winner(self, world, balls):
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
+        if len(teams_alive) == 1:
+            return list(teams_alive)[0]
+
+        if len(alive) == 1:
+            return alive[0].ball_type
+
+        return None
+
+
 GAME_MODES = {
     "shifting_maze": ShiftingMazeMode(),
 
@@ -3118,7 +3212,8 @@ GAME_MODES = {
     "moving_safe_zone": MovingSafeZoneMode(),
     "bounty_hunt": BountyHuntMode(),
     "earthquake": EarthquakeMode(),
-    "clone_chaos": CloneChaosMode()
+    "clone_chaos": CloneChaosMode(),
+    "supernova": SupernovaMode()
 }
 
 try:

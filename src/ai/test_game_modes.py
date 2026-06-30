@@ -477,3 +477,57 @@ def test_gravity_well_mode():
     assert len(world.arena.hazards) == 1
     assert world.arena.hazards[0].kind == "gravity_well"
     assert world.arena.hazards[0].damage > 0.0
+
+
+def test_supernova_mode():
+    from ai.game_modes import SupernovaMode
+
+    class MockBall:
+        def __init__(self, x, y, hp=100):
+            self.x = x
+            self.y = y
+            self.hp = hp
+            self.alive = True
+            self.ball_type = "player"
+            self.team = "team1"
+            self.vx = 0.0
+            self.vy = 0.0
+            self.speed = 100
+            self.damage = 10
+
+    class MockArena:
+        def __init__(self):
+            self.width = 1000.0
+            self.height = 1000.0
+
+    class MockWorld:
+        def __init__(self):
+            self.dead_balls = []
+            self.arena = MockArena()
+
+    world = MockWorld()
+
+    # Ball close to center (500, 500)
+    b1 = MockBall(500.0, 510.0, 100)
+    # Ball far from center
+    b2 = MockBall(100.0, 100.0, 100)
+
+    balls = [b1, b2]
+
+    mode = SupernovaMode()
+
+    # Tick before explosion
+    mode.tick(world, balls, delta=1.0)
+
+    # b1 should have taken more damage than b2
+    assert b1.hp < b2.hp, f"b1 hp ({b1.hp}) should be lower than b2 hp ({b2.hp}) due to heat damage"
+
+    # Trigger explosion
+    mode.explosion_timer = 20.0
+    mode.tick(world, balls, delta=1.0)
+
+    assert mode.supernova_exploded == True
+
+    # Check knockback on survivor
+    assert b1.vy != 0 or b1.vx != 0, "b1 should have received knockback velocity"
+    assert b2.vx < 0 or b2.vy < 0, "b2 should have received knockback velocity towards top-left"
