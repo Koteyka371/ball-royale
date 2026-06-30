@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-264] Bumper Walls — *2026-06-30 09:02:01 UTC*
+
+Add bouncy bumper hazards to the arena that significantly reflect and accelerate balls on collision, creating chaotic pinball-like movement.
+
+---
+
 ## [idea-197] Payload Escort Mode — *2026-06-29 23:01:41 UTC*
 
 Introduce an Escort Mode where one team has to defend a slow-moving, high-HP 'payload' ball as it travels across the map to a designated goal. The other team tries to destroy it. This encourages formation fighting and continuous frontline pushing.
