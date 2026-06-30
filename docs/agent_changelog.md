@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-304] Quantum Tunnels Hazard — *2026-06-30 10:26:13 UTC*
+
+Hazards that teleport balls to the other side of the arena, keeping their momentum but altering their trajectory unpredictably.
+
+---
+
 ## [idea-310] Time of Day Cycle — *2026-06-30 10:26:09 UTC*
 
 Add a dynamic time-of-day cycle to matches. As it transitions from day to night, perception radii for all balls could decrease unless they have a 'night vision' trait. Certain ball types like 'vampire' could gain stat boosts at night.
