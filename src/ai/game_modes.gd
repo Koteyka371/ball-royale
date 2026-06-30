@@ -30,6 +30,8 @@ class GameMode:
 
         for b in balls:
             if b.ball_type != "spectator":
+                if not ("experience" in b): b.experience = 0.0
+                if not ("level" in b): b.level = 1
                 if mod["type"] == "global_speed":
                     if "base_speed" in b:
                         b.base_speed = b.base_speed * mod["value"]
@@ -1709,8 +1711,77 @@ class DominationMode extends GameMode:
 
             if red_count > blue_count:
                 pt.capture_progress += 10.0 * delta
+                for b in balls:
+                    var b_type = null
+                    if "ball_type" in b: b_type = b.ball_type
+                    if ("alive" in b) and b.alive and b_type != "spectator":
+                        var team = ""
+                        if "team" in b: team = b.team
+                        if team == "Red":
+                            var dist_sq = (b.x - pt.x)*(b.x - pt.x) + (b.y - pt.y)*(b.y - pt.y)
+                            if dist_sq <= pt.radius*pt.radius:
+                                if not ("experience" in b): b.experience = 0.0
+                                if not ("level" in b): b.level = 1
+                                b.experience += 5.0 * delta
+                                while b.experience >= 100 * b.level:
+                                    b.experience -= 100 * b.level
+                                    b.level += 1
+                                    var rng = randf()
+                                    var stat = "max_hp"
+                                    if rng > 0.66: stat = "damage"
+                                    elif rng > 0.33: stat = "speed"
+
+                                    if stat == "max_hp":
+                                        if "max_hp" in b: b.max_hp *= 1.1
+                                        else: b.max_hp = 110.0
+                                        if "hp" in b: b.hp += b.max_hp * 0.1
+                                        else: b.hp = b.max_hp
+                                        if b.hp > b.max_hp: b.hp = b.max_hp
+                                    elif stat == "damage":
+                                        if "damage" in b: b.damage *= 1.1
+                                        else: b.damage = 11.0
+                                        if "base_damage" in b: b.base_damage *= 1.1
+                                    elif stat == "speed":
+                                        if "speed" in b: b.speed *= 1.1
+                                        else: b.speed = 110.0
+                                        if "base_speed" in b: b.base_speed *= 1.1
+
             elif blue_count > red_count:
                 pt.capture_progress -= 10.0 * delta
+                for b in balls:
+                    var b_type = null
+                    if "ball_type" in b: b_type = b.ball_type
+                    if ("alive" in b) and b.alive and b_type != "spectator":
+                        var team = ""
+                        if "team" in b: team = b.team
+                        if team == "Blue":
+                            var dist_sq = (b.x - pt.x)*(b.x - pt.x) + (b.y - pt.y)*(b.y - pt.y)
+                            if dist_sq <= pt.radius*pt.radius:
+                                if not ("experience" in b): b.experience = 0.0
+                                if not ("level" in b): b.level = 1
+                                b.experience += 5.0 * delta
+                                while b.experience >= 100 * b.level:
+                                    b.experience -= 100 * b.level
+                                    b.level += 1
+                                    var rng = randf()
+                                    var stat = "max_hp"
+                                    if rng > 0.66: stat = "damage"
+                                    elif rng > 0.33: stat = "speed"
+
+                                    if stat == "max_hp":
+                                        if "max_hp" in b: b.max_hp *= 1.1
+                                        else: b.max_hp = 110.0
+                                        if "hp" in b: b.hp += b.max_hp * 0.1
+                                        else: b.hp = b.max_hp
+                                        if b.hp > b.max_hp: b.hp = b.max_hp
+                                    elif stat == "damage":
+                                        if "damage" in b: b.damage *= 1.1
+                                        else: b.damage = 11.0
+                                        if "base_damage" in b: b.base_damage *= 1.1
+                                    elif stat == "speed":
+                                        if "speed" in b: b.speed *= 1.1
+                                        else: b.speed = 110.0
+                                        if "base_speed" in b: b.base_speed *= 1.1
 
             pt.capture_progress = clamp(pt.capture_progress, -100.0, 100.0)
 

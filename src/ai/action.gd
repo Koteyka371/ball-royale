@@ -1,6 +1,46 @@
 class_name ActionLayer
 extends RefCounted
 
+
+func _award_xp(ball, amount: float, world=null) -> void:
+	var b_type = null
+	if "ball_type" in ball: b_type = str(ball.ball_type)
+	if not ("alive" in ball) or ball.alive == false or b_type == "spectator":
+		return
+
+	if not ("experience" in ball): ball.experience = 0.0
+	if not ("level" in ball): ball.level = 1
+
+	ball.experience += amount
+
+	while ball.experience >= 100 * ball.level:
+		ball.experience -= 100 * ball.level
+		ball.level += 1
+
+		var rng = randf()
+		var stat = "max_hp"
+		if rng > 0.66: stat = "damage"
+		elif rng > 0.33: stat = "speed"
+
+		if stat == "max_hp":
+			if "max_hp" in ball: ball.max_hp *= 1.1
+			else: ball.max_hp = 110.0
+
+			if "hp" in ball: ball.hp += ball.max_hp * 0.1
+			else: ball.hp = ball.max_hp
+			if ball.hp > ball.max_hp: ball.hp = ball.max_hp
+		elif stat == "damage":
+			if "damage" in ball: ball.damage *= 1.1
+			else: ball.damage = 11.0
+			if "base_damage" in ball: ball.base_damage *= 1.1
+		elif stat == "speed":
+			if "speed" in ball: ball.speed *= 1.1
+			else: ball.speed = 110.0
+			if "base_speed" in ball: ball.base_speed *= 1.1
+
+		if world != null and world.has_method("add_event"):
+			world.add_event("level_up", {"ball": ball.get("id"), "level": ball.level, "stat": stat})
+
 func _attempt_damage(attacker, target) -> void:
 	var attack_accuracy = 1.0
 
@@ -88,6 +128,11 @@ func _attempt_damage(attacker, target) -> void:
 
 	var new_hp = 0.0
 	if "hp" in target: new_hp = float(target.hp)
+
+	if new_hp < old_hp:
+		self._award_xp(attacker, 10.0, self.world)
+		if new_hp <= 0 and old_hp > 0:
+			self._award_xp(attacker, 50.0, self.world)
 
 	if new_hp <= 0 and old_hp > 0 and pm != null and pm.has_method("add_kill"):
 		pm.add_kill(attacker_type, target_type)
