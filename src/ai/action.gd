@@ -1210,6 +1210,14 @@ func execute(strategy: String, delta: float):
                             self.ball.set_meta("is_in_quicksand", true)
                         else:
                             self.ball.is_in_quicksand = true
+                elif hazard.kind == "ice_patch":
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    if dist_sq < hazard.radius * hazard.radius:
+                        # Apply severe sliding
+                        self.ball.steering_mult = 0.1
+                        self.ball.dash_range_mult = 3.0
                 elif hazard.kind == "conveyor_belt":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y

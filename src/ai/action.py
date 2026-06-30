@@ -862,6 +862,14 @@ class Action:
                             # Apply slow
                             self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.3
                             self.ball.is_in_quicksand = True
+                    elif hazard.kind == "ice_patch":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            # Apply severe sliding
+                            self.ball.steering_mult = 0.1
+                            self.ball.dash_range_mult = 3.0
                     elif hazard.kind == "conveyor_belt":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
