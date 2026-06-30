@@ -387,3 +387,35 @@ def test_reflect_shield_capacity():
     action._attempt_damage(attacker, target)
     assert target.reflect_shield_active is False
     assert len(damage_dealt_to_attacker) == 3  # The target does not reflect
+
+def test_time_stop_freeze():
+    ball = MockBall(x=100, y=100)
+    ball.id = 1
+    ball.skill = "time_stop"
+    ball.skill_timer = 0
+    world = MockWorld()
+
+    enemy = MockEntity(x=200, y=100, ball_type="enemy")
+    enemy.id = 2
+    enemy.stun_timer = 0.5 # Should be maxed to 2.0
+
+    world.entities = [ball, enemy]
+    world.balls = [ball, enemy]
+
+    # Give arena hazards
+    class MockHazard:
+        def __init__(self):
+            self.frozen_timer = 0.0
+            self.kind = "hazard"
+
+    h1 = MockHazard()
+    class ArenaMock:
+        def __init__(self):
+            self.hazards = [h1]
+    world.arena = ArenaMock()
+
+    action = Action(ball, world)
+    action.execute("use_skill", 0.1)
+
+    assert enemy.stun_timer == 2.0
+    assert h1.frozen_timer == 2.0
