@@ -5383,7 +5383,7 @@
     },
     {
       "id": "idea-310",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Time of Day Cycle",
@@ -7913,6 +7913,74 @@
         "src/ai/wind_glider_wings.py",
         "src/ai/wind_glider_wings.gd",
         "tests/test_wind_glider_wings.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-459",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Energy Vampire Skill",
+      "description": "A targeted skill that steals 30 stamina from an opponent and gives it to the user. Opponent is briefly slowed, and the user gets a brief speed burst from over-capped stamina.",
+      "allowed_paths": [
+        "src/ai/energy_vampire_skill.py",
+        "src/ai/energy_vampire_skill.gd",
+        "tests/test_energy_vampire_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-460",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Adrenaline Rush Mode",
+      "description": "A new gamemode where maximum stamina dictates base speed. Everyone starts with 200 max stamina but taking damage permanently reduces maximum stamina for the rest of the round.",
+      "allowed_paths": [
+        "src/ai/adrenaline_rush.py",
+        "src/ai/adrenaline_rush.gd",
+        "tests/test_adrenaline_rush.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-461",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Low Gravity Anomaly Zone",
+      "description": "Periodically, an anomaly zone spawns in the arena. Any balls entering it have their gravity removed (massively reduced friction) and bounce wildly off each other and walls with high elasticity. This causes unpredictable trajectories and forces players to rely purely on momentum or long-range attacks to score kills.",
+      "allowed_paths": [
+        "src/ai/low_gravity_anomaly_zone.py",
+        "src/ai/low_gravity_anomaly_zone.gd",
+        "tests/test_low_gravity_anomaly_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-462",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sudden Death Meteor Shower",
+      "description": "During the final 30 seconds of a match or when only two teams remain, a meteor shower begins hitting random spots on the arena. Each meteor deals massive AoE damage and leaves a temporary crater (impassable terrain) that alters movement paths and restricts dodging space.",
+      "allowed_paths": [
+        "src/ai/sudden_death_meteor_shower.py",
+        "src/ai/sudden_death_meteor_shower.gd",
+        "tests/test_sudden_death_meteor_shower.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

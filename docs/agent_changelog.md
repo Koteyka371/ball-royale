@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-310] Time of Day Cycle — *2026-06-30 10:26:09 UTC*
+
+Add a dynamic time-of-day cycle to matches. As it transitions from day to night, perception radii for all balls could decrease unless they have a 'night vision' trait. Certain ball types like 'vampire' could gain stat boosts at night.
+
+---
+
 ## [idea-309] Shrinking Zone Collapse Event — *2026-06-30 10:09:14 UTC*
 
 At the very end of the match when the shrinking zone reaches its minimum radius, trigger a sudden 'Collapse Event' where the zone collapses entirely into a single point, dramatically increasing damage and pulling all remaining balls inward with a strong gravitational force to force an immediate winner.
