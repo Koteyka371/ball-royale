@@ -3076,6 +3076,25 @@ class Action:
                         target.team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
                         self._spawn_skill_particles("mind_control")
 
+            elif skill_name == "convert_hazard":
+                convert_radius = 150.0
+                convertable_kinds = ["spikes", "lava", "fake_booster", "poison_cloud", "proximity_trap"]
+
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    converted = False
+                    for hazard in self.world.arena.hazards:
+                        hx = getattr(hazard, "x", 0) - self.ball.x
+                        hy = getattr(hazard, "y", 0) - self.ball.y
+                        dist = math.sqrt(hx*hx + hy*hy)
+                        if dist <= convert_radius + getattr(hazard, "radius", 0):
+                            if hasattr(hazard, "kind") and hazard.kind in convertable_kinds:
+                                hazard.kind = "healing_spring"
+                                hazard.damage = 0.0
+                                setattr(hazard, "duration", 5.0)
+                                converted = True
+                    if converted:
+                        self._spawn_skill_particles("convert_hazard")
+
             elif skill_name == "ground_pound":
                 pound_radius = 120.0
                 pound_damage = 40.0

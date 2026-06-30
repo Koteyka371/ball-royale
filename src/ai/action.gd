@@ -4739,6 +4739,36 @@ func _use_skill():
                             target.team = my_team
 
                         _spawn_skill_particles("mind_control")
+        elif skill_name == "convert_hazard":
+            var convert_radius = 150.0
+            var convertable_kinds = ["spikes", "lava", "fake_booster", "poison_cloud", "proximity_trap"]
+
+            if world != null and world.has_method("get_arena"):
+                var arena = world.call("get_arena")
+                if arena != null and "hazards" in arena:
+                    var converted = false
+                    for hazard in arena.hazards:
+                        var hx = hazard.x - self.ball.x
+                        var hy = hazard.y - self.ball.y
+                        var dist = sqrt(hx*hx + hy*hy)
+                        if dist <= convert_radius + (hazard.radius if "radius" in hazard else 0):
+                            if hazard.kind in convertable_kinds:
+                                hazard.kind = "healing_spring"
+                                hazard.damage = 0.0
+                                if hazard.has_method("set_meta"):
+                                    hazard.set_meta("duration", 5.0)
+                                elif typeof(hazard) == TYPE_DICTIONARY:
+                                    hazard["duration"] = 5.0
+                                else:
+                                    # Fallback for plain class without set_meta (since hazard is typically a procedural_arena.Hazard which has no meta method or duration by default in GDScript)
+                                    # Wait, looking at smokescreen in action.gd: smoke.set_meta("duration", 5.0). procedural_arena.gd Hazard doesn't have set_meta if it doesn't extend Object.
+                                    # Wait, ProceduralArena.Hazard doesn't extend Object, it extends Reference or is just an inner class.
+                                    # But we can try to set meta. Actually, earlier we saw `smoke.set_meta("duration", 5.0)` used for smokescreen, so it might be an Object.
+                                    pass
+                                converted = true
+                    if converted:
+                        _spawn_skill_particles("convert_hazard")
+
         elif skill_name == "ground_pound":
             var pound_radius = 120.0
             var pound_damage = 40.0
