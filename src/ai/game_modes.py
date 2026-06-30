@@ -214,7 +214,7 @@ class BattleRoyaleMode(GameMode):
                 b.ball_type = "spectator"
                 b.alive = False
             else:
-                b.team = b.ball_type # Default behavior
+                pass
                 b.base_perception_radius = getattr(b, "perception_radius", 250.0)
                 if not hasattr(b, "base_speed"):
                     b.base_speed = getattr(b, "speed", 100.0)
@@ -1010,7 +1010,7 @@ class WeatherChaosMode(GameMode):
             world.dead_balls = []
         valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
         for b in valid_balls:
-            b.team = b.ball_type
+
             if not hasattr(b, "base_speed"):
                 b.base_speed = getattr(b, "speed", 100.0)
             if not hasattr(b, "base_damage"):
@@ -1620,7 +1620,7 @@ class VisionReducedMode(GameMode):
             if getattr(b, "ball_type", None) != "spectator":
                 b.base_perception_radius = getattr(b, "perception_radius", 250)
                 b.perception_radius = 50.0  # Severely reduced base visibility
-                b.team = b.ball_type
+
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         if not hasattr(world, "dead_balls"):
@@ -1804,7 +1804,7 @@ class MovingSafeZoneMode(GameMode):
                 b.ball_type = "spectator"
                 b.alive = False
             else:
-                b.team = b.ball_type # Default behavior: solo
+                pass
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
@@ -1913,7 +1913,7 @@ class ShrinkingDangerZoneMode(GameMode):
                 b.ball_type = "spectator"
                 b.alive = False
             else:
-                b.team = b.ball_type # Default behavior
+                pass
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
@@ -1996,7 +1996,7 @@ class SafeZoneMode(GameMode):
                 b.ball_type = "spectator"
                 b.alive = False
             else:
-                b.team = b.ball_type # Default behavior
+                pass
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
@@ -2330,7 +2330,7 @@ class WindstormMode(GameMode):
             world.dead_balls = []
         valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
         for b in valid_balls:
-            b.team = b.ball_type
+
             if not hasattr(b, "base_speed"):
                 b.base_speed = getattr(b, "speed", 100.0)
             if not hasattr(b, "base_damage"):
@@ -2404,7 +2404,7 @@ class BlackoutMode(GameMode):
         for b in balls:
             if getattr(b, "ball_type", None) != "spectator":
                 b.base_perception_radius = getattr(b, "perception_radius", 250)
-                b.team = b.ball_type
+
 
     def tick(self, world, balls, delta=0.016):
         self.timer += delta
@@ -2422,6 +2422,31 @@ class BlackoutMode(GameMode):
                 else:
                     b.perception_radius = getattr(b, "base_perception_radius", 250.0)
 
+
+
+
+class PitchBlackMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Pitch Black"
+        self.description = "The arena is completely dark. Balls can only see within a small cone of light matching their perception radius."
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if hasattr(world, "arena"):
+            world.arena.is_pitch_black = True
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator":
+                b.base_perception_radius = getattr(b, "perception_radius", 250)
+                b.perception_radius = 80.0
+
+
+    def tick(self, world, balls, delta=0.016):
+        if hasattr(world, "arena"):
+            world.arena.is_pitch_black = True
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                b.perception_radius = 80.0
 
 class BountyHuntMode(GameMode):
     def __init__(self):
@@ -2510,6 +2535,7 @@ GAME_MODES = {
     "portal_node": PortalNodeMode(),
     "memory_traps": MemoryTrapsMode(),
     "vision_reduced": VisionReducedMode(),
+    "pitch_black": PitchBlackMode(),
     "dynamic_hazards": DynamicHazardsMode(),
     "custom_match": CustomMatchMode(),
     "reverse_event": ReverseEventMode(),

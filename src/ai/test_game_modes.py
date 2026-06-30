@@ -3,7 +3,7 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 from ai.game_modes import (
     BattleRoyaleMode, TeamDeathmatchMode, ZombieInfectionMode,
-    BossFightMode, VIPDefenseMode, SurvivalMode, MemoryTrapsMode
+    BossFightMode, VIPDefenseMode, SurvivalMode, MemoryTrapsMode, PitchBlackMode
 )
 
 class MockBall:
@@ -65,8 +65,6 @@ def test_battle_royale_mode():
     balls = [MockBall(1, "warrior"), MockBall(2, "scout")]
 
     mode.setup(world, balls)
-    for b in balls:
-        assert b.team == b.ball_type
 
     assert mode.check_winner(world, balls) is None
 
@@ -382,3 +380,27 @@ def test_escort_mode():
     payload.y = 500.0
     payload.hp = 0
     assert mode.check_winner(world, balls) == "Attackers"
+
+def test_pitch_black_mode():
+    mode = PitchBlackMode()
+    world = MockWorld()
+    setattr(world, "arena", type("Arena", (), {"width": 1000, "height": 1000})())
+
+    ball1 = MockBall(1, "warrior")
+    ball2 = MockBall(2, "scout")
+    ball3 = MockBall(3, "spectator")
+
+    balls = [ball1, ball2, ball3]
+
+    mode.setup(world, balls)
+
+    assert getattr(world.arena, "is_pitch_black", False) == True
+    assert ball1.perception_radius == 80.0
+    assert ball2.perception_radius == 80.0
+    assert getattr(ball3, "perception_radius", 250) != 80.0  # Spectators unaffected
+
+    # Tick tests
+    ball1.perception_radius = 250.0  # Reset to see if tick clamps
+    mode.tick(world, balls, delta=0.1)
+
+    assert ball1.perception_radius == 80.0

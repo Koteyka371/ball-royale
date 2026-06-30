@@ -26,6 +26,14 @@ class Perception:
                 perception_radius = max(perception_radius, 2000.0)
 
 
+
+        if hasattr(self.world, "arena") and self.world.arena is not None:
+            is_pitch_black = getattr(self.world.arena, "is_pitch_black", False)
+            if hasattr(self.world.arena, "get_meta"):
+                is_pitch_black = is_pitch_black or self.world.arena.get_meta("is_pitch_black")
+            if is_pitch_black:
+                perception_radius = min(perception_radius, 80.0)
+
         if hasattr(self.world, "arena") and getattr(self.world.arena, "is_foggy", None) is not None:
             if self.world.arena.is_foggy:
                 perception_radius = min(perception_radius, 80.0)

@@ -20,6 +20,18 @@ func scan() -> Dictionary:
             perception_radius = max(perception_radius, 2000.0)
 
 
+
+
+    if self.world != null and "arena" in self.world and self.world.arena != null:
+        var is_pitch_black = false
+        if "is_pitch_black" in self.world.arena:
+            is_pitch_black = self.world.arena.is_pitch_black
+        elif self.world.arena.has_method("has_meta") and self.world.arena.has_meta("is_pitch_black"):
+            is_pitch_black = self.world.arena.get_meta("is_pitch_black")
+
+        if is_pitch_black:
+            perception_radius = min(perception_radius, 80.0)
+
     if self.world != null and "arena" in self.world and "is_foggy" in self.world.arena:
         if self.world.arena.is_foggy:
             perception_radius = min(perception_radius, 80.0)
