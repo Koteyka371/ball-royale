@@ -683,17 +683,47 @@ class Action:
                                         self.ball.x = getattr(hazard, "target_x")
                                         self.ball.y = getattr(hazard, "target_y")
                                     else:
-                                        teleporters = [h for h in self.world.arena.hazards if h.kind == "teleporter" and h != hazard]
-                                        if teleporters:
+                                        # Teleport to opposite side
 
-                                            target_tp = random.choice(teleporters)
-                                            self.ball.x = target_tp.x
-                                            self.ball.y = target_tp.y
-                                        else:
-                                            # Random safe location
+                                        cx = self.world.arena.width / 2.0
 
-                                            self.ball.x = random.uniform(100, self.world.arena.width - 100)
-                                            self.ball.y = random.uniform(100, self.world.arena.height - 100)
+                                        cy = self.world.arena.height / 2.0
+
+                                        dx = self.ball.x - cx
+
+                                        dy = self.ball.y - cy
+
+                                        self.ball.x = cx - dx
+
+                                        self.ball.y = cy - dy
+
+                                        # Clamp position
+
+                                        self.ball.x = max(100.0, min(self.ball.x, self.world.arena.width - 100.0))
+
+                                        self.ball.y = max(100.0, min(self.ball.y, self.world.arena.height - 100.0))
+
+                                    # Teleport momentum logic
+
+                                    import random
+
+                                    vx = getattr(self.ball, 'vx', 0.0)
+
+                                    vy = getattr(self.ball, 'vy', 0.0)
+
+                                    speed = math.hypot(vx, vy)
+
+                                    if speed > 0:
+
+                                        angle = random.uniform(-math.pi, math.pi)
+
+                                        if hasattr(self.ball, 'vx'):
+
+                                            self.ball.vx = speed * math.cos(angle)
+
+                                        if hasattr(self.ball, 'vy'):
+
+                                            self.ball.vy = speed * math.sin(angle)
                                 else:
                                     launched = False
                                     if hasattr(hazard, "target_hazard_id") and hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):

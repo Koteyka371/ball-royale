@@ -986,17 +986,55 @@ func execute(strategy: String, delta: float):
                                     self.ball.x = hazard.get_meta("target_x")
                                     self.ball.y = hazard.get_meta("target_y")
                                 else:
-                                    var teleporters = []
-                                    for h in self.world.arena.hazards:
-                                        if h.kind == "teleporter" and h != hazard:
-                                            teleporters.append(h)
-                                    if teleporters.size() > 0:
-                                        var target_tp = teleporters[randi() % teleporters.size()]
-                                        self.ball.x = target_tp.x
-                                        self.ball.y = target_tp.y
-                                    else:
-                                        self.ball.x = randf_range(100.0, self.world.arena.width - 100.0)
-                                        self.ball.y = randf_range(100.0, self.world.arena.height - 100.0)
+									# Teleport to opposite side
+
+									var cx = self.world.arena.width / 2.0
+
+									var cy = self.world.arena.height / 2.0
+
+									var dx = self.ball.x - cx
+
+									var dy = self.ball.y - cy
+
+									self.ball.x = cx - dx
+
+									self.ball.y = cy - dy
+
+									# Clamp position
+
+									self.ball.x = max(100.0, min(self.ball.x, self.world.arena.width - 100.0))
+
+									self.ball.y = max(100.0, min(self.ball.y, self.world.arena.height - 100.0))
+
+								# Teleport momentum logic
+
+								var cvx = 0.0
+
+								if "vx" in self.ball:
+
+									cvx = self.ball.vx
+
+								var cvy = 0.0
+
+								if "vy" in self.ball:
+
+									cvy = self.ball.vy
+
+								var tp_speed = sqrt(cvx*cvx + cvy*cvy)
+
+								if tp_speed > 0:
+
+									var angle = randf_range(-PI, PI)
+
+									var nvx = tp_speed * cos(angle)
+
+									var nvy = tp_speed * sin(angle)
+
+									if "vx" in self.ball:
+
+										self.ball.vx = nvx
+
+										self.ball.vy = nvy
                             else:
                                 var launched = false
                                 if hazard.has_meta("target_hazard_id") and self.world != null and self.world.get("arena") != null and "hazards" in self.world.arena:
