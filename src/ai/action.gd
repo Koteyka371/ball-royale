@@ -1251,14 +1251,14 @@ func execute(strategy: String, delta: float):
                             var pull_strength = (hazard.radius * 2.0 / min_dist) * 50.0 * delta
                             self.ball.x += nx * pull_strength
                             self.ball.y += ny * pull_strength
-                elif hazard.kind == "black_hole" or hazard.kind == "tornado":
+                elif hazard.kind in ["black_hole", "tornado", "portal", "teleporter", "swap_portal"]:
                     var current_tick = 0
                     if "tick" in self.world:
                         current_tick = self.world.tick
                     if not hazard.has_meta("last_updated_tick") or hazard.get_meta("last_updated_tick") != current_tick:
                         hazard.set_meta("last_updated_tick", current_tick)
                         if not hazard.has_meta("vx"):
-                            if hazard.kind == "tornado":
+                            if hazard.kind in ["tornado", "portal", "teleporter", "swap_portal"]:
                                 hazard.set_meta("vx", randf_range(-100.0, 100.0))
                                 hazard.set_meta("vy", randf_range(-100.0, 100.0))
                             else:
@@ -1276,7 +1276,7 @@ func execute(strategy: String, delta: float):
                         if hazard.y < 100 or hazard.y > self.world.arena.height - 100:
                             hazard.set_meta("vy", -hvy)
 
-                        if "boosters" in self.world:
+                        if hazard.kind in ["black_hole", "tornado"] and "boosters" in self.world:
                             for b in self.world.boosters:
                                 var bdx = hazard.x - b.x
                                 var bdy = hazard.y - b.y
@@ -1295,22 +1295,23 @@ func execute(strategy: String, delta: float):
                                     b.x += bnx * bpull_strength
                                     b.y += bny * bpull_strength
 
-                    var dx = hazard.x - self.ball.x
-                    var dy = hazard.y - self.ball.y
-                    var dist_sq = dx * dx + dy * dy
-                    if dist_sq > 0.0001:
-                        var lifetime_mult = 1.0
-                        if hazard.kind == "black_hole" and hazard.has_meta("lifetime"):
-                            lifetime_mult = 1.0 + (hazard.get_meta("lifetime") / 10.0)
-                        var dist = sqrt(dist_sq)
-                        var nx = dx / dist
-                        var ny = dy / dist
-                        var min_dist = 10.0
-                        if dist > min_dist:
-                            min_dist = dist
-                        var pull_strength = (hazard.radius * 2.0 / min_dist) * 50.0 * delta * lifetime_mult
-                        self.ball.x += nx * pull_strength
-                        self.ball.y += ny * pull_strength
+                    if hazard.kind in ["black_hole", "tornado"]:
+                        var dx = hazard.x - self.ball.x
+                        var dy = hazard.y - self.ball.y
+                        var dist_sq = dx * dx + dy * dy
+                        if dist_sq > 0.0001:
+                            var lifetime_mult = 1.0
+                            if hazard.kind == "black_hole" and hazard.has_meta("lifetime"):
+                                lifetime_mult = 1.0 + (hazard.get_meta("lifetime") / 10.0)
+                            var dist = sqrt(dist_sq)
+                            var nx = dx / dist
+                            var ny = dy / dist
+                            var min_dist = 10.0
+                            if dist > min_dist:
+                                min_dist = dist
+                            var pull_strength = (hazard.radius * 2.0 / min_dist) * 50.0 * delta * lifetime_mult
+                            self.ball.x += nx * pull_strength
+                            self.ball.y += ny * pull_strength
 
         if "hazards" in self.world.arena:
             var alive_hazards = []
