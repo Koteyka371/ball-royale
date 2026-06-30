@@ -693,10 +693,10 @@ class Action:
                                             if h.id == hazard.target_hazard_id and h.kind == "black_hole":
                                                 import math as _math
                                                 # import random as _random
-                                                angle = _random.uniform(0, 2 * _math.pi)
+                                                angle = random.uniform(0, 2 * math.pi)
                                                 launch_distance = getattr(h, "radius", 50.0) + 30.0
-                                                self.ball.x = h.x + _math.cos(angle) * launch_distance
-                                                self.ball.y = h.y + _math.sin(angle) * launch_distance
+                                                self.ball.x = h.x + math.cos(angle) * launch_distance
+                                                self.ball.y = h.y + math.sin(angle) * launch_distance
                                                 self.ball.zone_immunity_timer = getattr(self.ball, "zone_immunity_timer", 0.0) + 1.5
                                                 launched = True
                                                 break
@@ -1014,11 +1014,11 @@ class Action:
                                 import math as _math
                                 current_tick = getattr(self.world, "tick", 0)
                                 pseudo_rand = (getattr(self.ball, "id", 0) * 17 + getattr(hazard, "id", 0) * 31 + current_tick * 13) % 1000 / 1000.0
-                                angle = pseudo_rand * 2 * _math.pi
+                                angle = pseudo_rand * 2 * math.pi
                                 pseudo_rand2 = (getattr(self.ball, "id", 0) * 23 + getattr(hazard, "id", 0) * 7 + current_tick * 19) % 1000 / 1000.0
                                 launch_dist = 50.0 + pseudo_rand2 * 100.0
-                                self.ball.x += _math.cos(angle) * launch_dist
-                                self.ball.y += _math.sin(angle) * launch_dist
+                                self.ball.x += math.cos(angle) * launch_dist
+                                self.ball.y += math.sin(angle) * launch_dist
                                 # Deal damage upon landing
                                 hazard_damage = hazard.damage
                                 if hasattr(self.ball, "take_damage"):
