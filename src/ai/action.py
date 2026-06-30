@@ -2828,9 +2828,33 @@ class Action:
                 self.ball.reflect_shield_active = True
                 self.ball.reflect_shield_timer = 5.0
                 self.ball.reflect_shield_capacity = 50.0
+
             elif skill_name == "heal":
                 if hasattr(self.ball, "hp"):
                     self.ball.hp = min(getattr(self.ball, "max_hp", 100), self.ball.hp + 30)
+                self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
+            elif skill_name == "convert_hazard":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    import random as _rnd
+                    hazards = self.world.arena.hazards
+                    target_hazard = None
+                    min_dist_sq = 40000.0  # Range 200
+                    for h in hazards:
+                        if getattr(h, "kind", "") not in ["healing_spring", "booster"]:
+                            dx = h.x - self.ball.x
+                            dy = h.y - self.ball.y
+                            dist_sq = dx*dx + dy*dy
+                            if dist_sq < min_dist_sq:
+                                min_dist_sq = dist_sq
+                                target_hazard = h
+
+                    if target_hazard:
+                        new_kind = _rnd.choice(["healing_spring", "booster"])
+                        setattr(target_hazard, "kind", new_kind)
+                        setattr(target_hazard, "damage", 0.0)
+                        setattr(target_hazard, "duration", 10.0)
+                        setattr(target_hazard, "owner_id", getattr(self.ball, "id", None))
+                        self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
             elif skill_name == "stamina_dash":
                 self._spawn_skill_particles("dash")
                 stamina = getattr(self.ball, "stamina", 0.0)
