@@ -723,14 +723,28 @@ class Action:
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
                         dist_sq = dx * dx + dy * dy
-                        # Magnetic pull effective up to 3x radius
+                        # Magnetic pull/push effective up to 3x radius
                         if dist_sq < (hazard.radius * 3.0) ** 2:
                             if dist_sq > 0.0001:
                                 dist = math.sqrt(dist_sq)
                                 nx, ny = dx / dist, dy / dist
-                                # Strength is inversely proportional to distance, similar to gravity well but broader
-                                pull_strength = (hazard.radius * 3.0 / max(10.0, dist)) * 50.0 * delta
-                                pull_strength = min(pull_strength, dist * 0.5) # Prevent overshooting the center
+                                # Hazard polarity is default 1 (pull). Can be -1 (push) if hazard has polarity
+                                hazard_polarity = getattr(hazard, "polarity", 1)
+                                ball_polarity = getattr(self.ball, "polarity", 1)
+
+                                # Opposite polarities attract (pull > 0), same polarities repel (pull < 0)
+                                if hazard_polarity != ball_polarity:
+                                    polarity_mult = 1.0  # Attract
+                                else:
+                                    polarity_mult = -1.0 # Repel
+
+                                # Strength is inversely proportional to distance
+                                pull_strength = polarity_mult * (hazard.radius * 3.0 / max(10.0, dist)) * 50.0 * delta
+
+                                # Prevent overshooting if attracting
+                                if polarity_mult > 0:
+                                    pull_strength = min(pull_strength, dist * 0.5)
+
                                 self.ball.x += nx * pull_strength
                                 self.ball.y += ny * pull_strength
                     elif hazard.kind == "gravity_well":
@@ -753,8 +767,9 @@ class Action:
                             hazard.last_updated_tick = current_tick
                             if not hasattr(hazard, "vx"):
 
-                                hazard.vx = random.uniform(-100.0, 100.0) if hazard.kind == "tornado" else random.uniform(-10.0, 10.0)
-                                hazard.vy = random.uniform(-100.0, 100.0) if hazard.kind == "tornado" else random.uniform(-10.0, 10.0)
+                                import random as _random
+                                hazard.vx = _random.uniform(-100.0, 100.0) if hazard.kind == "tornado" else _random.uniform(-10.0, 10.0)
+                                hazard.vy = _random.uniform(-100.0, 100.0) if hazard.kind == "tornado" else _random.uniform(-10.0, 10.0)
                             if not hasattr(hazard, "lifetime"):
                                 hazard.lifetime = 0.0
                             hazard.lifetime += delta
@@ -3108,6 +3123,12 @@ class Action:
                     for h in hazards_to_remove:
                         if h in self.world.arena.hazards:
                             self.world.arena.hazards.remove(h)
+
+            elif skill_name == "switch_polarity":
+                # Toggles polarity between 1 and -1
+                current_polarity = getattr(self.ball, "polarity", 1)
+                self.ball.polarity = -1 if current_polarity == 1 else 1
+                self._spawn_skill_particles("switch_polarity")
 
             elif skill_name == "target_strong":
 

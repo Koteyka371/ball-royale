@@ -212,7 +212,10 @@ func generate():
             damage = 50.0
 
         var spawn_pt = get_random_spawn_point(radius)
-        hazards.append(ProceduralArena.Hazard.new(i, spawn_pt[0], spawn_pt[1], radius, kind, damage))
+        var h = ProceduralArena.Hazard.new(i, spawn_pt[0], spawn_pt[1], radius, kind, damage)
+        if kind == "magnet":
+            h.set_meta("polarity", 1 if rng.randi() % 2 == 0 else -1)
+        hazards.append(h)
 
     # Generate guaranteed paired portals
     var num_portals = max(1, num_rooms / 2)

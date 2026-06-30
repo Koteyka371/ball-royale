@@ -171,6 +171,8 @@ class ProceduralArena:
 
             hx, hy = self.get_random_spawn_point(radius)
             new_hazard = Hazard(id=i, x=hx, y=hy, radius=radius, kind=kind, damage=damage)
+            if kind == "magnet":
+                setattr(new_hazard, "polarity", random.choice([1, -1]))
             if kind == "temporal_rift":
                 new_hazard.time_scale = random.choice([0.5, 1.5, 2.0])
             self.hazards.append(new_hazard)

@@ -1035,9 +1035,33 @@ func execute(strategy: String, delta: float):
                             var min_dist = 10.0
                             if dist > min_dist:
                                 min_dist = dist
-                            var pull_strength = (effective_radius / min_dist) * 50.0 * delta
-                            if pull_strength > dist * 0.5:
+
+                            var hazard_polarity = 1
+                            if hazard is Object and hazard.has_method("get_meta") and hazard.get_meta("polarity") != null:
+                                hazard_polarity = hazard.get_meta("polarity")
+                            elif hazard is Object and hazard.has_method("get") and hazard.get("polarity") != null:
+                                hazard_polarity = hazard.get("polarity")
+                            elif hazard is Dictionary and hazard.has("polarity"):
+                                hazard_polarity = hazard["polarity"]
+
+                            var ball_polarity = 1
+                            if self.ball is Object and self.ball.has_method("get_meta") and self.ball.get_meta("polarity") != null:
+                                ball_polarity = self.ball.get_meta("polarity")
+                            elif self.ball is Object and self.ball.has_method("get") and self.ball.get("polarity") != null:
+                                ball_polarity = self.ball.get("polarity")
+                            elif self.ball is Dictionary and self.ball.has("polarity"):
+                                ball_polarity = self.ball["polarity"]
+
+                            var polarity_mult = 1.0
+                            if hazard_polarity != ball_polarity:
+                                polarity_mult = 1.0 # Attract
+                            else:
+                                polarity_mult = -1.0 # Repel
+
+                            var pull_strength = polarity_mult * (effective_radius / min_dist) * 50.0 * delta
+                            if polarity_mult > 0.0 and pull_strength > dist * 0.5:
                                 pull_strength = dist * 0.5
+
                             self.ball.x += nx * pull_strength
                             self.ball.y += ny * pull_strength
                 elif hazard.kind == "gravity_well":
@@ -4771,6 +4795,26 @@ func _use_skill():
                         var idx = arena.hazards.find(h)
                         if idx != -1:
                             arena.hazards.remove_at(idx)
+
+        elif skill_name == "switch_polarity":
+            var current_polarity = 1
+            if self.ball is Object and self.ball.has_method("get_meta") and self.ball.get_meta("polarity") != null:
+                current_polarity = self.ball.get_meta("polarity")
+            elif self.ball is Object and self.ball.has_method("get") and self.ball.get("polarity") != null:
+                current_polarity = self.ball.get("polarity")
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("polarity"):
+                current_polarity = self.ball["polarity"]
+
+            var new_polarity = -1 if current_polarity == 1 else 1
+
+            if self.ball is Object and self.ball.has_method("set_meta"):
+                self.ball.set_meta("polarity", new_polarity)
+            elif self.ball is Object:
+                self.ball.set("polarity", new_polarity)
+            elif typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["polarity"] = new_polarity
+
+            _spawn_skill_particles("switch_polarity")
 
         elif skill_name == "target_strong":
             var enemies = _get_enemies()
