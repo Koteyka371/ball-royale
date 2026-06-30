@@ -1115,6 +1115,12 @@ class Action:
                                     self.ball.y = (self.ball.y + old_y) / 2.0
                             continue
 
+                        elif hazard.kind == "emp_burst":
+                            self.ball.is_scrambled = True
+                            self.ball.scramble_timer = 3.0
+                            if hasattr(self, "_spawn_skill_particles"):
+                                self._spawn_skill_particles("emp")
+                            continue
                         elif hazard.kind == "orbital_strike_active":
                             hazard_damage = hazard.damage * delta
                             if getattr(self.ball, "is_in_quicksand", False):
@@ -1388,6 +1394,10 @@ class Action:
             self.ball.team_message = {"type": "hold_position", "x": self.ball.x, "y": self.ball.y}
 
 
+        if getattr(self.ball, "is_scrambled", False):
+            self.ball.scramble_timer = getattr(self.ball, "scramble_timer", 0.0) - delta
+            if self.ball.scramble_timer <= 0:
+                self.ball.is_scrambled = False
         if getattr(self.ball, "is_emped", False):
             self.ball.emp_timer = getattr(self.ball, "emp_timer", 0.0) - delta
             if self.ball.emp_timer <= 0:
@@ -1861,6 +1871,9 @@ class Action:
         return max(enemies, key=self._evaluate_target_strength_deterministic)
 
     def _get_target(self, enemies: list[Any]) -> Any:
+        if getattr(self.ball, "is_scrambled", False) and enemies:
+            import random as _rnd
+            return _rnd.choice(enemies)
         # Check for illusions first (they taunt AI)
         illusions = [e for e in enemies if getattr(e, "is_illusion", False) or getattr(e, "is_decoy", False)]
         if illusions:
