@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-266] Tornado Hazard — *2026-06-30 10:42:07 UTC*
+
+A random tornado spawns occasionally during the thunderstorm weather event. It acts as a dynamic hazard that pulls nearby balls towards it and launches them in a random direction, causing minor damage upon landing and resetting their movement.
+
+---
+
 ## [idea-305] Hazard Conversion Module — *2026-06-30 10:42:02 UTC*
 
 Introduce a new skill 'Convert Hazard' that temporarily changes a dangerous hazard (like spikes or a fake booster) into a healing spring or a real booster for the ball that uses it. This adds strategic utility to typically avoided areas and rewards risk-taking.
