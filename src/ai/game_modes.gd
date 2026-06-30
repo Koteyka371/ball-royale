@@ -328,18 +328,58 @@ class BattleRoyaleMode extends GameMode:
             self.weather_timer = 0.0
             self.weather = "clear"
 
-        self.weather_timer += delta
-        if self.weather_timer > 15.0:
+        var controller = null
+        for b in balls:
+            var c_timer = 0.0
+            if "weather_control_timer" in b: c_timer = b.weather_control_timer
+            elif b.has_method("get_meta") and b.has_meta("weather_control_timer"): c_timer = b.get_meta("weather_control_timer")
+
+            var is_alive = false
+            if "alive" in b: is_alive = b.alive
+            elif b.has_method("get_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+
+            if is_alive and c_timer > 0:
+                controller = b
+                break
+
+        if controller != null:
             self.weather_timer = 0.0
-            var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave"]
+            var ctype = "default"
+            if "ball_type" in controller: ctype = controller.ball_type
+            elif controller.has_method("get_meta") and controller.has_meta("ball_type"): ctype = controller.get_meta("ball_type")
+
+            var pref = "clear"
+            if ctype in ["elementalist"]: pref = "thunderstorm"
+            elif ctype in ["druid", "healer"]: pref = "rain"
+            elif ctype in ["rogue", "assassin", "stealth"]: pref = "fog"
+            elif ctype in ["mage", "conjurer"]: pref = "snow"
+            elif ctype in ["speed", "scout"]: pref = "wind"
+            elif ctype in ["tank", "brawler"]: pref = "heatwave"
+            elif ctype in ["swarm"]: pref = "sandstorm"
+            else: pref = "thunderstorm"
+
             var old_weather = self.weather
-            self.weather = weathers[randi() % weathers.size()]
-            if old_weather != self.weather and world != null and world.has_method("add_event"):
-                world.add_event("weather_change", {"weather": self.weather})
-            if self.weather == "wind":
-                if has_method("set_meta"):
-                    set_meta("wind_dx", (randf() * 100.0) - 50.0)
-                    set_meta("wind_dy", (randf() * 100.0) - 50.0)
+            if old_weather != pref:
+                self.weather = pref
+                if world != null and world.has_method("add_event"):
+                    world.add_event("weather_change", {"weather": self.weather})
+                if self.weather == "wind":
+                    if has_method("set_meta"):
+                        set_meta("wind_dx", (randf() * 100.0) - 50.0)
+                        set_meta("wind_dy", (randf() * 100.0) - 50.0)
+        else:
+            self.weather_timer += delta
+            if self.weather_timer > 15.0:
+                self.weather_timer = 0.0
+                var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave"]
+                var old_weather = self.weather
+                self.weather = weathers[randi() % weathers.size()]
+                if old_weather != self.weather and world != null and world.has_method("add_event"):
+                    world.add_event("weather_change", {"weather": self.weather})
+                if self.weather == "wind":
+                    if has_method("set_meta"):
+                        set_meta("wind_dx", (randf() * 100.0) - 50.0)
+                        set_meta("wind_dy", (randf() * 100.0) - 50.0)
 
         if world != null and "arena" in world and world.arena != null:
             if self.weather == "fog" or self.weather == "snow":
@@ -1388,18 +1428,58 @@ class WeatherChaosMode extends GameMode:
 						b.set_meta("base_damage", 10.0)
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
-		weather_timer += delta
-		if weather_timer > 10.0:
+		var controller = null
+		for b in balls:
+			var c_timer = 0.0
+			if "weather_control_timer" in b: c_timer = b.weather_control_timer
+			elif b.has_method("get_meta") and b.has_meta("weather_control_timer"): c_timer = b.get_meta("weather_control_timer")
+
+			var is_alive = false
+			if "alive" in b: is_alive = b.alive
+			elif b.has_method("get_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+
+			if is_alive and c_timer > 0:
+				controller = b
+				break
+
+		if controller != null:
 			weather_timer = 0.0
-			var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave"]
+			var ctype = "default"
+			if "ball_type" in controller: ctype = controller.ball_type
+			elif controller.has_method("get_meta") and controller.has_meta("ball_type"): ctype = controller.get_meta("ball_type")
+
+			var pref = "clear"
+			if ctype in ["elementalist"]: pref = "thunderstorm"
+			elif ctype in ["druid", "healer"]: pref = "rain"
+			elif ctype in ["rogue", "assassin", "stealth"]: pref = "fog"
+			elif ctype in ["mage", "conjurer"]: pref = "snow"
+			elif ctype in ["speed", "scout"]: pref = "wind"
+			elif ctype in ["tank", "brawler"]: pref = "heatwave"
+			elif ctype in ["swarm"]: pref = "sandstorm"
+			else: pref = "thunderstorm"
+
 			var old_weather = weather
-			weather = weathers[randi() % weathers.size()]
-			if old_weather != weather and world != null and world.has_method("add_event"):
-				world.add_event("weather_change", {"weather": weather})
-			if weather == "wind":
-				if has_method("set_meta"):
-					set_meta("wind_dx", (randf() * 100.0) - 50.0)
-					set_meta("wind_dy", (randf() * 100.0) - 50.0)
+			if old_weather != pref:
+				weather = pref
+				if world != null and world.has_method("add_event"):
+					world.add_event("weather_change", {"weather": weather})
+				if weather == "wind":
+					if has_method("set_meta"):
+						set_meta("wind_dx", (randf() * 100.0) - 50.0)
+						set_meta("wind_dy", (randf() * 100.0) - 50.0)
+		else:
+			weather_timer += delta
+			if weather_timer > 10.0:
+				weather_timer = 0.0
+				var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave"]
+				var old_weather = weather
+				weather = weathers[randi() % weathers.size()]
+				if old_weather != weather and world != null and world.has_method("add_event"):
+					world.add_event("weather_change", {"weather": weather})
+				if weather == "wind":
+					if has_method("set_meta"):
+						set_meta("wind_dx", (randf() * 100.0) - 50.0)
+						set_meta("wind_dy", (randf() * 100.0) - 50.0)
 
 		if world != null and "arena" in world:
 			if weather == "fog" or weather == "snow":

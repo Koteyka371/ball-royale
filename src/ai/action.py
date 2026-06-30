@@ -3796,6 +3796,9 @@ class Action:
                 self.ball.speed = base_s * 1.5
 
     def _update_skill_timer(self, delta: float) -> None:
+        if hasattr(self.ball, "weather_control_timer") and self.ball.weather_control_timer > 0:
+            self.ball.weather_control_timer -= delta
+
         if hasattr(self.ball, "infinite_stamina_timer") and self.ball.infinite_stamina_timer > 0:
             self.ball.infinite_stamina_timer -= delta
 

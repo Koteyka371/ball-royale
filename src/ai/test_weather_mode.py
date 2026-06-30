@@ -134,3 +134,60 @@ def test_weather_mode_heatwave():
     assert len(decoys) > 0
 
     mode.random = old_rnd
+
+def test_weather_control_booster():
+    import ai.game_modes as gm
+    mode = gm.GAME_MODES["weather_chaos"]
+
+    class MockArena:
+        is_foggy = False
+        is_raining = False
+        is_sandstorming = False
+        is_snowing = False
+        is_heatwave = False
+        wind_dx = 0.0
+        wind_dy = 0.0
+
+    class MockWorld:
+        arena = MockArena()
+        dead_balls = []
+        def add_event(self, type, data):
+            pass
+
+    class MockBall:
+        def __init__(self, t):
+            self.alive = True
+            self.ball_type = t
+            self.weather_control_timer = 10.0
+            self.team = "test"
+
+    world = MockWorld()
+
+    # Test elementalist
+    ball = MockBall("elementalist")
+    mode.setup(world, [ball])
+    mode.weather = "clear"
+    mode.tick(world, [ball], 0.1)
+    assert mode.weather == "thunderstorm"
+    assert world.arena.is_raining == True
+
+    # Test druid
+    ball = MockBall("druid")
+    mode.setup(world, [ball])
+    mode.tick(world, [ball], 0.1)
+    assert mode.weather == "rain"
+    assert world.arena.is_raining == True
+
+    # Test rogue
+    ball = MockBall("rogue")
+    mode.setup(world, [ball])
+    mode.tick(world, [ball], 0.1)
+    assert mode.weather == "fog"
+    assert world.arena.is_foggy == True
+
+    # Test when timer runs out (should not immediately switch unless timer > 10, but we test it stops forcing)
+    ball.weather_control_timer = 0.0
+    mode.weather_timer = 9.9
+    mode.tick(world, [ball], 0.2)
+    # The normal logic will trigger and randomly pick a weather, resetting weather_timer
+    assert mode.weather_timer == 0.0
