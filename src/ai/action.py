@@ -280,6 +280,35 @@ class Action:
                 self.ball.chain_lightning_timer = 0.0
 
 
+
+        # Clone mine logic
+        if getattr(self.ball, "is_clone", False) and getattr(self.ball, "alive", True):
+            trigger_radius = 40.0
+            aoe_radius = 80.0
+            aoe_damage = 30.0
+            triggered = False
+
+            if hasattr(self.world, "balls"):
+                for e in self.world.balls:
+                    if getattr(e, "alive", True) and getattr(e, "team", getattr(e, "ball_type", "")) != getattr(self.ball, "team", getattr(self.ball, "ball_type", "")):
+                        dist_sq = (self.ball.x - getattr(e, "x", 0))**2 + (self.ball.y - getattr(e, "y", 0))**2
+                        if dist_sq <= trigger_radius**2:
+                            triggered = True
+                            break
+
+            if triggered:
+                if hasattr(self.world, "balls"):
+                    for b in self.world.balls:
+                        if getattr(b, "alive", True) and getattr(b, "team", getattr(b, "ball_type", "")) != getattr(self.ball, "team", getattr(self.ball, "ball_type", "")):
+                            d_sq = (self.ball.x - getattr(b, "x", 0))**2 + (self.ball.y - getattr(b, "y", 0))**2
+                            if d_sq <= aoe_radius**2:
+                                original_damage = getattr(self.ball, "damage", 0)
+                                self.ball.damage = aoe_damage
+                                self._attempt_damage(self.ball, b)
+                                self.ball.damage = original_damage
+                self.ball.alive = False
+                self.ball.hp = 0
+
         # Confusion timer logic
         if getattr(self.ball, "confusion_timer", 0.0) > 0:
             self.ball.confusion_timer -= delta

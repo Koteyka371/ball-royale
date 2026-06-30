@@ -259,6 +259,76 @@ func _init(ball_ref, world_ref):
 
 func execute(strategy: String, delta: float):
 
+
+	var is_clone_mine = false
+	if self.ball.has_method("get_meta") and self.ball.get_meta("is_clone"): is_clone_mine = true
+	elif "is_clone" in self.ball and self.ball.is_clone: is_clone_mine = true
+
+	var is_alive_mine = true
+	if "alive" in self.ball: is_alive_mine = self.ball.alive
+	elif self.ball.has_method("get_meta") and self.ball.has_meta("alive"): is_alive_mine = self.ball.get_meta("alive")
+
+	if is_clone_mine and is_alive_mine:
+		var trigger_radius = 40.0
+		var aoe_radius = 80.0
+		var aoe_damage = 30.0
+		var triggered = false
+
+		if world != null and "balls" in world:
+			var my_team = ""
+			if "team" in self.ball: my_team = self.ball.team
+			elif "ball_type" in self.ball: my_team = self.ball.ball_type
+
+			for e in world.balls:
+				var e_alive = true
+				if "alive" in e: e_alive = e.alive
+				var e_team = ""
+				if "team" in e: e_team = e.team
+				elif "ball_type" in e: e_team = e.ball_type
+
+				if e_alive and e_team != my_team:
+					var ex = 0.0
+					var ey = 0.0
+					if "x" in e: ex = e.x
+					elif e.has_method("get_meta") and e.has_meta("x"): ex = e.get_meta("x")
+					if "y" in e: ey = e.y
+					elif e.has_method("get_meta") and e.has_meta("y"): ey = e.get_meta("y")
+
+					var dist_sq = pow(self.ball.x - ex, 2) + pow(self.ball.y - ey, 2)
+					if dist_sq <= trigger_radius * trigger_radius:
+						triggered = true
+						break
+
+			if triggered:
+				for b in world.balls:
+					var b_alive = true
+					if "alive" in b: b_alive = b.alive
+					var b_team = ""
+					if "team" in b: b_team = b.team
+					elif "ball_type" in b: b_team = b.ball_type
+
+					if b_alive and b_team != my_team:
+						var bx = 0.0
+						var by = 0.0
+						if "x" in b: bx = b.x
+						elif b.has_method("get_meta") and b.has_meta("x"): bx = b.get_meta("x")
+						if "y" in b: by = b.y
+						elif b.has_method("get_meta") and b.has_meta("y"): by = b.get_meta("y")
+
+						var d_sq = pow(self.ball.x - bx, 2) + pow(self.ball.y - by, 2)
+						if d_sq <= aoe_radius * aoe_radius:
+							var original_damage = 0.0
+							if "damage" in self.ball: original_damage = self.ball.damage
+							if "damage" in self.ball: self.ball.damage = aoe_damage
+							self._attempt_damage(self.ball, b)
+							if "damage" in self.ball: self.ball.damage = original_damage
+
+				if "alive" in self.ball: self.ball.alive = false
+				if "hp" in self.ball: self.ball.hp = 0
+				if self.ball.has_method("set_meta"):
+					self.ball.set_meta("alive", false)
+					self.ball.set_meta("hp", 0)
+
 	if self.ball.has_method("has_meta") and self.ball.has_meta("silence_timer"):
 		var st = self.ball.get_meta("silence_timer")
 		if st > 0.0:
