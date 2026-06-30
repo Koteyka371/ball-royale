@@ -3449,6 +3449,57 @@ class Action:
                     self.world.arena.hazards.append(flare_trap)
                     self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
 
+
+            elif skill_name == "throw_hazard":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    import random as _rnd
+                    hazards = self.world.arena.hazards
+                    target_hazard = None
+                    min_dist_sq = 22500.0  # Range 150
+                    for h in hazards:
+                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item"]:
+                            dx = h.x - self.ball.x
+                            dy = h.y - self.ball.y
+                            dist_sq = dx*dx + dy*dy
+                            if dist_sq < min_dist_sq:
+                                min_dist_sq = dist_sq
+                                target_hazard = h
+
+                    if target_hazard:
+                        enemies = self._get_enemies()
+                        if enemies:
+                            closest_enemy = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                            # Remove or deactivate original hazard
+                            if target_hazard in hazards:
+                                hazards.remove(target_hazard)
+                            else:
+                                target_hazard.active = False
+
+                            # Calculate direction to enemy
+                            dx = closest_enemy.x - self.ball.x
+                            dy = closest_enemy.y - self.ball.y
+                            dist = max(0.0001, (dx*dx + dy*dy)**0.5)
+                            nx = dx / dist
+                            ny = dy / dist
+
+                            # Create new thrown hazard
+                            from arena.procedural_arena import Hazard
+                            thrown_hazard = Hazard(
+                                id=len(hazards) + _rnd.randint(10000, 99999),
+                                x=self.ball.x + nx * (getattr(self.ball, "radius", 10.0) + 5.0),
+                                y=self.ball.y + ny * (getattr(self.ball, "radius", 10.0) + 5.0),
+                                radius=15.0,
+                                kind="thrown_rock",
+                                damage=50.0
+                            )
+                            setattr(thrown_hazard, "vx", nx * 500.0)
+                            setattr(thrown_hazard, "vy", ny * 500.0)
+                            setattr(thrown_hazard, "duration", 2.0)
+                            setattr(thrown_hazard, "owner_id", getattr(self.ball, "id", None))
+                            hazards.append(thrown_hazard)
+
+                            self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
+
             elif skill_name == "convert_hazard":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     import random as _rnd
