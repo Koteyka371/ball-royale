@@ -947,7 +947,7 @@ func execute(strategy: String, delta: float):
                                             self.ball.set_meta("last_teleport_tick", current_tick)
                                         if entity_to_swap.has_method("set_meta"):
                                             entity_to_swap.set_meta("last_teleport_tick", current_tick)
-                elif hazard.kind == "portal" or hazard.kind == "teleporter":
+                elif hazard.kind == "portal" or hazard.kind == "teleporter" or hazard.kind == "wormhole":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
                     var dist_sq = dx * dx + dy * dy
@@ -959,7 +959,23 @@ func execute(strategy: String, delta: float):
                         if self.ball.has_meta("last_teleport_tick"):
                             last_teleport = self.ball.get_meta("last_teleport_tick")
                         if current_tick - last_teleport > 10:
-                            if hazard.kind == "teleporter":
+                            if hazard.kind == "wormhole":
+                                self.ball.x = self.world.arena.width - self.ball.x
+                                self.ball.y = self.world.arena.height - self.ball.y
+                                if "vx" in self.ball and "vy" in self.ball:
+                                    var angle = randf_range(-PI, PI)
+                                    var cos_a = cos(angle)
+                                    var sin_a = sin(angle)
+                                    var old_vx = self.ball.vx
+                                    var old_vy = self.ball.vy
+                                    self.ball.vx = old_vx * cos_a - old_vy * sin_a
+                                    self.ball.vy = old_vx * sin_a + old_vy * cos_a
+                                if self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("last_teleport_tick", current_tick)
+                                elif typeof(self.ball) == TYPE_DICTIONARY:
+                                    pass
+                                return
+                            elif hazard.kind == "teleporter":
                                 if hazard.has_meta("target_x") and hazard.has_meta("target_y"):
                                     self.ball.x = hazard.get_meta("target_x")
                                     self.ball.y = hazard.get_meta("target_y")

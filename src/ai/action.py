@@ -646,7 +646,7 @@ class Action:
                                         self.ball.last_teleport_tick = current_tick
                                         entity_to_swap.last_teleport_tick = current_tick
 
-                    elif hazard.kind in ("portal", "teleporter"):
+                    elif hazard.kind in ("portal", "teleporter", "wormhole"):
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
                         dist_sq = dx * dx + dy * dy
@@ -655,7 +655,26 @@ class Action:
                             current_tick = getattr(self.world, "tick", 0)
                             last_teleport = getattr(self.ball, "last_teleport_tick", -100)
                             if current_tick - last_teleport > 10:  # Prevent immediate re-teleport
-                                if hazard.kind == "teleporter":
+                                if hazard.kind == "wormhole":
+                                    import math as _math
+                                    import random as _random
+                                    new_x = getattr(self.world.arena, "width", 1000.0) - self.ball.x
+                                    new_y = getattr(self.world.arena, "height", 1000.0) - self.ball.y
+                                    self.ball.x = new_x
+                                    self.ball.y = new_y
+                                    if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+                                        angle = _random.uniform(-_math.pi, _math.pi)
+                                        cos_a = _math.cos(angle)
+                                        sin_a = _math.sin(angle)
+                                        new_vx = self.ball.vx * cos_a - self.ball.vy * sin_a
+                                        new_vy = self.ball.vx * sin_a + self.ball.vy * cos_a
+                                        self.ball.vx = new_vx
+                                        self.ball.vy = new_vy
+                                    self.ball.last_teleport_tick = current_tick
+                                    if hasattr(self.ball, "_teleported_this_tick"):
+                                        self.ball._teleported_this_tick = True
+                                    return
+                                elif hazard.kind == "teleporter":
                                     if hasattr(hazard, "target_x") and hasattr(hazard, "target_y"):
                                         self.ball.x = getattr(hazard, "target_x")
                                         self.ball.y = getattr(hazard, "target_y")
