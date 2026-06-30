@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-265] Heatwave Weather Event — *2026-06-30 09:02:11 UTC*
+
+Introduce a 'heatwave' weather event where max speed is slightly reduced across the board due to overheating, but a new 'mirage' effect occasionally creates harmless illusionary clones of the balls to confuse AI targeting systems.
+
+---
+
 ## [idea-296] Stamina Potions — *2026-06-30 09:02:06 UTC*
 
 Add a new booster item that immediately replenishes a ball's stamina to 100% and grants brief infinite stamina.
