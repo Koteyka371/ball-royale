@@ -4580,6 +4580,20 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "magnet_booster":
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("magnet_booster_timer", 10.0)
+                else:
+                    self.ball.magnet_booster_timer = 10.0
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "stamina_booster":
                 var max_stam = 100.0
                 if self.ball.has_method("get_meta") and self.ball.has_meta("max_stamina"): max_stam = self.ball.get_meta("max_stamina")
@@ -6480,6 +6494,77 @@ func _update_skill_timer(delta: float):
             self.ball.shadow_booster_timer = shadow_timer
         elif self.ball.has_method("set_meta"):
             self.ball.set_meta("shadow_booster_timer", shadow_timer)
+
+    var magnet_timer = 0.0
+    if "magnet_booster_timer" in self.ball:
+        magnet_timer = float(self.ball.magnet_booster_timer)
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("magnet_booster_timer"):
+        magnet_timer = self.ball.get_meta("magnet_booster_timer")
+
+    if magnet_timer > 0.0:
+        magnet_timer -= delta
+        if magnet_timer < 0.0:
+            magnet_timer = 0.0
+        if "magnet_booster_timer" in self.ball:
+            self.ball.magnet_booster_timer = magnet_timer
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("magnet_booster_timer", magnet_timer)
+
+        var pull_radius_sq = 40000.0
+        var pull_speed = 100.0
+
+        if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+            for hazard in self.world.arena.hazards:
+                var h_kind = ""
+                if "kind" in hazard: h_kind = hazard.kind
+                var h_radius = 15.0
+                if "radius" in hazard: h_radius = float(hazard.radius)
+                var b_radius = 15.0
+                if "radius" in self.ball: b_radius = float(self.ball.radius)
+
+                var valid_kinds = ["fake_booster", "link_booster", "stamina_booster", "weather_booster", "silence_booster", "shadow_booster", "magnet_booster", "healing_spring", "drone_item", "stealth_drone_item", "placeable_trap_item"]
+                var is_valid = false
+                for k in valid_kinds:
+                    if h_kind == k:
+                        is_valid = true
+                        break
+
+                if h_radius < b_radius or is_valid:
+                    var hx = 0.0
+                    if "x" in hazard: hx = float(hazard.x)
+                    elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("x"): hx = float(hazard["x"])
+                    var hy = 0.0
+                    if "y" in hazard: hy = float(hazard.y)
+                    elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("y"): hy = float(hazard["y"])
+
+                    var dx = self.ball.x - hx
+                    var dy = self.ball.y - hy
+                    var dist_sq = dx * dx + dy * dy
+                    if dist_sq > 0.0001 and dist_sq < pull_radius_sq:
+                        var dist = sqrt(dist_sq)
+                        if "x" in hazard: hazard.x = hx + (dx / dist) * pull_speed * delta
+                        elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("x"): hazard["x"] = hx + (dx / dist) * pull_speed * delta
+                        if "y" in hazard: hazard.y = hy + (dy / dist) * pull_speed * delta
+                        elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("y"): hazard["y"] = hy + (dy / dist) * pull_speed * delta
+
+        if self.world != null and "boosters" in self.world:
+            for booster in self.world.boosters:
+                var bx = 0.0
+                if "x" in booster: bx = float(booster.x)
+                elif typeof(booster) == TYPE_DICTIONARY and booster.has("x"): bx = float(booster["x"])
+                var by = 0.0
+                if "y" in booster: by = float(booster.y)
+                elif typeof(booster) == TYPE_DICTIONARY and booster.has("y"): by = float(booster["y"])
+
+                var dx = self.ball.x - bx
+                var dy = self.ball.y - by
+                var dist_sq = dx * dx + dy * dy
+                if dist_sq > 0.0001 and dist_sq < pull_radius_sq:
+                    var dist = sqrt(dist_sq)
+                    if "x" in booster: booster.x = bx + (dx / dist) * pull_speed * delta
+                    elif typeof(booster) == TYPE_DICTIONARY and booster.has("x"): booster["x"] = bx + (dx / dist) * pull_speed * delta
+                    if "y" in booster: booster.y = by + (dy / dist) * pull_speed * delta
+                    elif typeof(booster) == TYPE_DICTIONARY and booster.has("y"): booster["y"] = by + (dy / dist) * pull_speed * delta
 
 func _kite(delta: float):
     # Added Kite cosmetic comment

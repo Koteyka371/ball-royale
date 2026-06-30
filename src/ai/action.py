@@ -2896,6 +2896,13 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "magnet_booster":
+                    self.ball.magnet_booster_timer = 10.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "cleanser":
                     if hasattr(self.ball, "burn_timer"):
                         self.ball.burn_timer = 0
@@ -3928,6 +3935,39 @@ class Action:
             self.ball.shadow_booster_timer -= delta
             if self.ball.shadow_booster_timer < 0:
                 self.ball.shadow_booster_timer = 0.0
+
+        if hasattr(self.ball, "magnet_booster_timer") and self.ball.magnet_booster_timer > 0:
+            self.ball.magnet_booster_timer -= delta
+            if self.ball.magnet_booster_timer < 0:
+                self.ball.magnet_booster_timer = 0.0
+
+            pull_radius_sq = 40000.0  # 200 distance
+            pull_speed = 100.0
+
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                for hazard in self.world.arena.hazards:
+                    h_kind = getattr(hazard, "kind", "")
+                    h_radius = getattr(hazard, "radius", 15.0)
+                    b_radius = getattr(self.ball, "radius", 15.0)
+                    # Pull smaller hazards or collectible boosters
+                    if h_radius < b_radius or h_kind in ["fake_booster", "link_booster", "stamina_booster", "weather_booster", "silence_booster", "shadow_booster", "magnet_booster", "healing_spring", "drone_item", "stealth_drone_item", "placeable_trap_item"]:
+                        dx = self.ball.x - getattr(hazard, "x", 0.0)
+                        dy = self.ball.y - getattr(hazard, "y", 0.0)
+                        dist_sq = dx * dx + dy * dy
+                        if 0.0001 < dist_sq < pull_radius_sq:
+                            dist = math.sqrt(dist_sq)
+                            hazard.x = getattr(hazard, "x", 0.0) + (dx / dist) * pull_speed * delta
+                            hazard.y = getattr(hazard, "y", 0.0) + (dy / dist) * pull_speed * delta
+
+            if hasattr(self.world, "boosters"):
+                for booster in self.world.boosters:
+                    dx = self.ball.x - getattr(booster, "x", 0.0)
+                    dy = self.ball.y - getattr(booster, "y", 0.0)
+                    dist_sq = dx * dx + dy * dy
+                    if 0.0001 < dist_sq < pull_radius_sq:
+                        dist = math.sqrt(dist_sq)
+                        booster.x = getattr(booster, "x", 0.0) + (dx / dist) * pull_speed * delta
+                        booster.y = getattr(booster, "y", 0.0) + (dy / dist) * pull_speed * delta
         if hasattr(self.ball, "reflect_shield_timer") and self.ball.reflect_shield_timer > 0:
             self.ball.reflect_shield_timer -= delta
             if self.ball.reflect_shield_timer <= 0:

@@ -1,0 +1,4 @@
+{
+  "title": "Shrinking Magnetic Field Arena Mutator",
+  "description": "An arena mode where instead of a standard zone collapse, a massive rotating magnetic pole sits in the center. Every few seconds, it pulses, dragging all items, boosters, and players inward while scrambling their directional controls based on their current polarity (which is randomly assigned at spawn)."
+}
