@@ -132,12 +132,91 @@ func scan() -> Dictionary:
     var bx = bx_curr
     var by = by_curr
 
+
+    var is_pitch_black = false
+    if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("get_meta") and self.ball.has_meta("is_pitch_black"):
+        is_pitch_black = self.ball.get_meta("is_pitch_black")
+    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("is_pitch_black") and self.ball.is_pitch_black:
+        is_pitch_black = true
+    elif typeof(self.ball) != TYPE_DICTIONARY and "is_pitch_black" in self.ball and self.ball.is_pitch_black:
+        is_pitch_black = true
+    if self.world != null and "game_mode" in self.world and "name" in self.world.game_mode and self.world.game_mode.name == "Pitch Black":
+        is_pitch_black = true
+
+    var cone_angle = PI / 2.0
+    var vx = 0.0
+    var vy = 0.0
+    if typeof(self.ball) == TYPE_DICTIONARY:
+        if self.ball.has("vx"): vx = self.ball.vx
+        if self.ball.has("vy"): vy = self.ball.vy
+    else:
+        if "vx" in self.ball: vx = self.ball.vx
+        if "vy" in self.ball: vy = self.ball.vy
+
+    if is_pitch_black and vx == 0.0 and vy == 0.0:
+        vx = 1.0
+
+    var filter_cone = func(ent, bx_val, by_val):
+        if not is_pitch_black: return true
+        var ex = 0.0
+        var ey = 0.0
+        if typeof(ent) == TYPE_DICTIONARY:
+            if ent.has("x"): ex = ent.x
+            elif ent.has("position"): ex = ent.position.x
+            if ent.has("y"): ey = ent.y
+            elif ent.has("position"): ey = ent.position.y
+        else:
+            if "x" in ent: ex = ent.x
+            elif "position" in ent: ex = ent.position.x
+            if "y" in ent: ey = ent.y
+            elif "position" in ent: ey = ent.position.y
+
+        var dx = ex - bx_val
+        var dy = ey - by_val
+        var dist = sqrt(dx*dx + dy*dy)
+        if dist == 0.0: return true
+        var angle_to_ent = atan2(dy, dx)
+        var angle_facing = atan2(vy, vx)
+        var diff = fposmod(angle_to_ent - angle_facing + PI, 2.0 * PI) - PI
+        return abs(diff) <= cone_angle / 2.0
+
+    if is_pitch_black:
+        var temp_enemies = []
+        for e in data["enemies"]:
+            if filter_cone.call(e, bx, by): temp_enemies.append(e)
+        data["enemies"] = temp_enemies
+
+        var temp_allies = []
+        for e in data["allies"]:
+            if filter_cone.call(e, bx, by): temp_allies.append(e)
+        data["allies"] = temp_allies
+
+        var temp_boosters = []
+        for e in data["boosters"]:
+            if filter_cone.call(e, bx, by): temp_boosters.append(e)
+        data["boosters"] = temp_boosters
+
+        var temp_traps = []
+        for e in data["traps"]:
+            if filter_cone.call(e, bx, by): temp_traps.append(e)
+        data["traps"] = temp_traps
+
     var calc_dist = func(ent):
         if "x" in ent and "y" in ent:
             var dx = ent.x - bx
             var dy = ent.y - by
             return sqrt(dx*dx + dy*dy)
         return 0.0
+
+    if is_pitch_black:
+        var final_traps = []
+        for e in data["traps"]:
+            if filter_cone.call(e, bx, by): final_traps.append(e)
+        data["traps"] = final_traps
+        var final_boosters = []
+        for e in data["boosters"]:
+            if filter_cone.call(e, bx, by): final_boosters.append(e)
+        data["boosters"] = final_boosters
 
     var threat = 0.0
     var opp = 0.0

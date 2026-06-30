@@ -117,7 +117,38 @@ class Perception:
         threat = 0.0
         opp = 0.0
 
+
         bx, by = getattr(self.ball, "x", 0), getattr(self.ball, "y", 0)
+
+        is_pitch_black = getattr(self.ball, "is_pitch_black", False)
+        if hasattr(self.world, "game_mode") and getattr(self.world.game_mode, "name", "") == "Pitch Black":
+            is_pitch_black = True
+
+        cone_angle = math.radians(90) # 90 degree cone (-45 to +45) to be fair
+        vx, vy = getattr(self.ball, "vx", 0), getattr(self.ball, "vy", 0)
+        if is_pitch_black and vx == 0 and vy == 0:
+             vx = 1.0
+
+        def in_cone(ent):
+            if not is_pitch_black:
+                return True
+            ex, ey = getattr(ent, "x", 0), getattr(ent, "y", 0)
+            dx = ex - bx
+            dy = ey - by
+            dist = math.sqrt(dx*dx + dy*dy)
+            if dist == 0:
+                 return True
+            angle_to_ent = math.atan2(dy, dx)
+            angle_facing = math.atan2(vy, vx)
+
+            diff = (angle_to_ent - angle_facing + math.pi) % (2 * math.pi) - math.pi
+            return abs(diff) <= cone_angle / 2.0
+
+        data["enemies"] = [e for e in data["enemies"] if in_cone(e)]
+        data["allies"] = [e for e in data["allies"] if in_cone(e)]
+        data["boosters"] = [e for e in data["boosters"] if in_cone(e)]
+        # We process traps later including procedurals, let's do those too.
+        # But wait, we should filter at the end.
 
         # Helper to compute distance
         def calc_dist(ent):
@@ -160,6 +191,10 @@ class Perception:
                         else:
                             if not any(getattr(t, "id", None) == h.id for t in data["traps"]):
                                 data["traps"].append(h)
+
+        if is_pitch_black:
+            data["traps"] = [e for e in data["traps"] if in_cone(e)]
+            data["boosters"] = [e for e in data["boosters"] if in_cone(e)]
 
         for enemy in data["enemies"]:
             dist = calc_dist(enemy)

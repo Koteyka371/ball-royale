@@ -2083,6 +2083,61 @@ class CustomMatchMode extends GameMode:
 
 
 
+
+class PitchBlackMode extends GameMode:
+	func _init() -> void:
+		name = "Pitch Black"
+		description = "A completely dark screen where AI only perceives what is inside a cone of light matching their perception radius."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if not "dead_balls" in world:
+			world.dead_balls = []
+		for b in balls:
+			if b.ball_type != "spectator":
+				var base_perc = 250.0
+				if "perception_radius" in b:
+					base_perc = float(b.perception_radius)
+				if b.has_method("set_meta"):
+					b.set_meta("base_perception_radius", base_perc)
+					b.set_meta("is_pitch_black", true)
+				if not "team" in b:
+					b.team = b.ball_type
+				b.is_pitch_black = true
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if not "dead_balls" in world:
+			world.dead_balls = []
+		for b in balls:
+			if not b.alive:
+				if not world.dead_balls.has(b):
+					if b.has_method("set_meta"):
+						b.set_meta("time_since_death", 0.0)
+					world.dead_balls.append(b)
+				else:
+					if b.has_method("get_meta") and b.has_meta("time_since_death"):
+						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.alive and b.ball_type != "spectator":
+				alive.append(b)
+
+		if alive.size() == 0:
+			return "Draw"
+
+		var teams_alive = {}
+		for b in alive:
+			var t = b.ball_type
+			if "team" in b:
+				t = b.team
+			teams_alive[t] = true
+
+		if teams_alive.size() == 1:
+			return teams_alive.keys()[0]
+		return null
+
 class VisionReducedMode extends GameMode:
 	var pulse_timer: float = 0.0
 
@@ -3210,6 +3265,7 @@ var GAME_MODES = {
     "portal_node": PortalNodeMode.new(),
 	"memory_traps": MemoryTrapsMode.new(),
 	"vision_reduced": VisionReducedMode.new(),
+	"pitch_black": PitchBlackMode.new(),
 	"dynamic_hazards": DynamicHazardsMode.new(),
 	"custom_match": CustomMatchMode.new(),
 	"reverse_event": ReverseEventMode.new(),

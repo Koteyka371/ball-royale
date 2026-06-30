@@ -1605,6 +1605,46 @@ class CustomMatchMode(GameMode):
 
 
 
+
+class PitchBlackMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Pitch Black"
+        self.description = "A completely dark screen where AI only perceives what is inside a cone of light matching their perception radius."
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator":
+                b.base_perception_radius = getattr(b, "perception_radius", 250)
+                b.perception_radius = b.base_perception_radius
+                b.team = getattr(b, "team", b.ball_type)
+                b.is_pitch_black = True
+                # Cone vision logic will be handled in perception.py based on is_pitch_black flag.
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
+        if len(teams_alive) == 1:
+            return list(teams_alive)[0]
+        return None
+
 class VisionReducedMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -2493,6 +2533,7 @@ GAME_MODES = {
     "portal_node": PortalNodeMode(),
     "memory_traps": MemoryTrapsMode(),
     "vision_reduced": VisionReducedMode(),
+    "pitch_black": PitchBlackMode(),
     "dynamic_hazards": DynamicHazardsMode(),
     "custom_match": CustomMatchMode(),
     "reverse_event": ReverseEventMode(),
