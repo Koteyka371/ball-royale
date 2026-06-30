@@ -161,10 +161,12 @@ func generate():
             kind = "spinning_laser"
         elif r < 0.92:
             kind = "hidden_trap"
-        elif r < 0.96:
+        elif r < 0.95:
             kind = "magnet"
-        elif r < 0.98:
+        elif r < 0.97:
             kind = "bumper"
+        elif r < 0.99:
+            kind = "life_leech_zone"
         else:
             kind = "switch"
 
@@ -207,6 +209,9 @@ func generate():
         elif kind == "spinning_laser":
             radius = rng.randf_range(100.0, 150.0)
             damage = 100.0
+        elif kind == "life_leech_zone":
+            radius = rng.randf_range(40.0, 80.0)
+            damage = 20.0
         else:
             radius = 15.0
             damage = 50.0

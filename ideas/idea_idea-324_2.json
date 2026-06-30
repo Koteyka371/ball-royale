@@ -1,0 +1,4 @@
+{
+  "title": "Pinball Bumpers Enhancement",
+  "description": "Add chain-reaction bumpers. When one bumper is hit, adjacent bumpers light up and temporarily increase their knockback strength, turning certain areas into high-risk high-reward pinball sections."
+}

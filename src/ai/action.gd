@@ -1684,6 +1684,39 @@ func execute(strategy: String, delta: float):
                             if self.ball.hp > self.ball.max_hp:
                                 self.ball.hp = self.ball.max_hp
                         continue
+                    elif hazard.kind == "life_leech_zone":
+                        var hazard_damage = hazard.damage * delta
+                        if self.ball.has_method("take_damage"):
+                            self.ball.take_damage(hazard_damage)
+                        elif "hp" in self.ball:
+                            self.ball.hp -= hazard_damage
+                            if self.ball.hp <= 0:
+                                if "alive" in self.ball:
+                                    self.ball.alive = false
+
+                        var all_balls = []
+                        if self.world != null:
+                            if "entities" in self.world:
+                                all_balls = self.world.entities
+                            elif "balls" in self.world:
+                                all_balls = self.world.balls
+
+                        var lowest_hp_ball = null
+                        var lowest_hp = 9999999.0
+                        for b in all_balls:
+                            var is_alive = true
+                            if "alive" in b:
+                                is_alive = b.alive
+                            if is_alive and "hp" in b and "max_hp" in b:
+                                if b.hp < lowest_hp:
+                                    lowest_hp = b.hp
+                                    lowest_hp_ball = b
+
+                        if lowest_hp_ball != null:
+                            lowest_hp_ball.hp += hazard_damage
+                            if lowest_hp_ball.hp > lowest_hp_ball.max_hp:
+                                lowest_hp_ball.hp = lowest_hp_ball.max_hp
+                        continue
 
                     var hazard_damage = hazard.damage * delta
                     if self.ball.has_method("take_damage"):

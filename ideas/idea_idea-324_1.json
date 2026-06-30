@@ -1,0 +1,4 @@
+{
+  "title": "Reverse Controls Hazard",
+  "description": "An arena hazard that periodically applies a debuff to any ball that passes through it, reversing its pathfinding vectors (flee instead of chase, etc) for a short duration."
+}

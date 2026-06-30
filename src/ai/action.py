@@ -1211,6 +1211,30 @@ class Action:
                                 if self.ball.hp > self.ball.max_hp:
                                     self.ball.hp = self.ball.max_hp
                             continue
+                        elif hazard.kind == "life_leech_zone":
+                            hazard_damage = hazard.damage * delta
+                            if hasattr(self.ball, "take_damage"):
+                                self.ball.take_damage(hazard_damage)
+                            elif hasattr(self.ball, "hp"):
+                                self.ball.hp -= hazard_damage
+                                if self.ball.hp <= 0:
+                                    self.ball.alive = False
+
+                            # Heal the lowest HP ball on the map
+                            all_balls = getattr(self.world, "entities", getattr(self.world, "balls", []))
+                            lowest_hp_ball = None
+                            lowest_hp = float('inf')
+                            for b in all_balls:
+                                if getattr(b, "alive", True) and hasattr(b, "hp") and hasattr(b, "max_hp"):
+                                    if b.hp < lowest_hp:
+                                        lowest_hp = b.hp
+                                        lowest_hp_ball = b
+
+                            if lowest_hp_ball:
+                                lowest_hp_ball.hp += hazard_damage
+                                if lowest_hp_ball.hp > lowest_hp_ball.max_hp:
+                                    lowest_hp_ball.hp = lowest_hp_ball.max_hp
+                            continue
 
                         hazard_damage = hazard.damage * delta
                         if hasattr(self.ball, "take_damage"):
