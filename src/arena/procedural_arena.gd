@@ -378,6 +378,31 @@ func update_zone(current_tick: int, delta: float) -> void:
                         h.kind = "orbital_strike_active"
                         h.set_meta("duration", 0.5)
                         h.damage = 1000.0
+            elif "kind" in h and h.kind == "lightning_strike":
+                if h.has_meta("duration"):
+                    var dur = h.get_meta("duration") - delta
+                    h.set_meta("duration", dur)
+                    if dur <= 0:
+                        if h.has_method("set_meta"):
+                            h.set_meta("active", false)
+                        if "active" in h:
+                            h.active = false
+            elif "kind" in h and h.kind == "tornado":
+                if h.has_meta("duration"):
+                    var dur = h.get_meta("duration") - delta
+                    h.set_meta("duration", dur)
+                    if dur <= 0:
+                        if h.has_method("set_meta"):
+                            h.set_meta("active", false)
+                        if "active" in h:
+                            h.active = false
+                if h.has_meta("vx") and h.has_meta("vy"):
+                    h.x += h.get_meta("vx") * delta
+                    h.y += h.get_meta("vy") * delta
+                    if h.x < 0 or h.x > width:
+                        h.set_meta("vx", h.get_meta("vx") * -1.0)
+                    if h.y < 0 or h.y > height:
+                        h.set_meta("vy", h.get_meta("vy") * -1.0)
             elif "kind" in h and h.kind == "orbital_strike_active":
                 if h.has_meta("duration"):
                     var dur = h.get_meta("duration") - delta
