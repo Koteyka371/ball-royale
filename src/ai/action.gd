@@ -4001,7 +4001,13 @@ func _collect_booster(delta: float):
                         decoy.hp = decoy.max_hp
                     if "damage" in decoy:
                         decoy.damage = 0.0
+                    var self_id_stat = -2
+                    if "id" in self.ball: self_id_stat = self.ball.id
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): self_id_stat = self.ball.get_meta("id")
+
                     if decoy.has_method("set_meta"):
+                        decoy.set_meta("owner_id", self_id_stat)
+                        decoy.set_meta("has_swapped", false)
                         decoy.set_meta("is_decoy", true)
                         decoy.set_meta("decoy_timer", 5.0)
                     elif typeof(decoy) == TYPE_DICTIONARY:
@@ -4452,7 +4458,55 @@ func _use_skill():
                                 e.take_damage(explosion_damage)
 
         elif skill_name == "deploy_decoy":
+            var swapped = false
             if "balls" in self.world:
+                for b in self.world.balls:
+                    var is_d = false
+                    if "is_decoy" in b and b.is_decoy:
+                        is_d = true
+                    elif b.has_method("get_meta") and b.has_meta("is_decoy") and b.get_meta("is_decoy"):
+                        is_d = true
+
+                    if is_d:
+                        var owner = -1
+                        if "owner_id" in b: owner = b.owner_id
+                        elif b.has_method("get_meta") and b.has_meta("owner_id"): owner = b.get_meta("owner_id")
+
+                        var has_swapped = false
+                        if "has_swapped" in b: has_swapped = b.has_swapped
+                        elif b.has_method("get_meta") and b.has_meta("has_swapped"): has_swapped = b.get_meta("has_swapped")
+
+                        var b_alive = true
+                        if "alive" in b: b_alive = b.alive
+                        elif b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+                        var self_id = -2
+                        if "id" in self.ball: self_id = self.ball.id
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): self_id = self.ball.get_meta("id")
+
+                        if owner == self_id and not has_swapped and b_alive:
+                            var tx = self.ball.x
+                            var ty = self.ball.y
+                            self.ball.x = b.x
+                            self.ball.y = b.y
+                            b.x = tx
+                            b.y = ty
+
+                            if b.has_method("set_meta"):
+                                b.set_meta("has_swapped", true)
+                            elif "has_swapped" in b:
+                                b.has_swapped = true
+
+                            var cooldown = 4.0
+                            if "SKILL_COOLDOWN" in self.ball: cooldown = self.ball.SKILL_COOLDOWN
+                            elif self.ball.has_method("get_meta") and self.ball.has_meta("SKILL_COOLDOWN"): cooldown = self.ball.get_meta("SKILL_COOLDOWN")
+
+                            if "skill_timer" in self.ball: self.ball.skill_timer = cooldown
+                            elif self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cooldown)
+                            swapped = true
+                            break
+
+            if not swapped and "balls" in self.world:
                 var decoy = null
                 if self.ball.has_method("duplicate"):
                     decoy = self.ball.duplicate()
@@ -4469,7 +4523,13 @@ func _use_skill():
                         decoy.damage = 0.0
                     if "speed" in decoy:
                         decoy.speed = 0.0
+                    var self_id_stat = -2
+                    if "id" in self.ball: self_id_stat = self.ball.id
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): self_id_stat = self.ball.get_meta("id")
+
                     if decoy.has_method("set_meta"):
+                        decoy.set_meta("owner_id", self_id_stat)
+                        decoy.set_meta("has_swapped", false)
                         decoy.set_meta("is_decoy", true)
                         decoy.set_meta("decoy_timer", 5.0)
                         decoy.set_meta("skill_timer", 9999.0)
@@ -4478,6 +4538,8 @@ func _use_skill():
                         decoy.set_meta("skill", null)
                         decoy.set_meta("active_skill", null)
                     elif decoy is Dictionary:
+                        decoy["owner_id"] = self_id_stat
+                        decoy["has_swapped"] = false
                         decoy["is_decoy"] = true
                         decoy["decoy_timer"] = 5.0
                         decoy["skill_timer"] = 9999.0
@@ -4488,6 +4550,10 @@ func _use_skill():
                     else:
                         pass # fallback if not possible
                     self.world.balls.append(decoy)
+                    if "skill_timer" in self.ball:
+                        self.ball.skill_timer = 0.5
+                    elif self.ball.has_method("set_meta"):
+                        self.ball.set_meta("skill_timer", 0.5)
         elif skill_name == "deploy_illusion":
             if "balls" in self.world:
                 var illusion = null
