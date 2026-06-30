@@ -981,6 +981,23 @@ class Action:
                                 self.ball.quicksand_debuff_timer -= delta
 
                             self.ball.is_in_quicksand = True
+                    elif hazard.kind == "sinkhole":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            hazard_damage = hazard.damage * delta
+                            if hasattr(self.ball, "take_damage"):
+                                self.ball.take_damage(hazard_damage)
+                            elif hasattr(self.ball, "hp"):
+                                self.ball.hp -= hazard_damage
+                                if self.ball.hp <= 0:
+                                    self.ball.alive = False
+
+                            # Drastically reduce speed
+                            self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.1
+                            if hasattr(self.ball, 'status_effects'):
+                                self.ball.status_effects.append({"type": "slow", "duration": delta})
                     elif hazard.kind == "conveyor_belt":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y

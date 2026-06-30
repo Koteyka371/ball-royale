@@ -1394,6 +1394,26 @@ func execute(strategy: String, delta: float):
                         else:
                             self.ball.quicksand_debuff_timer = debuff_timer
                             self.ball.is_in_quicksand = true
+                elif hazard.kind == "sinkhole":
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    if dist_sq < hazard.radius * hazard.radius:
+                        var hd = hazard.damage * delta
+                        if self.ball.has_method("take_damage"):
+                            self.ball.take_damage(hd)
+                        elif "hp" in self.ball:
+                            self.ball.hp -= hd
+                            if self.ball.hp <= 0:
+                                self.ball.alive = false
+
+                        # Drastically reduce speed
+                        var base_speed = 100.0
+                        if self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"):
+                            base_speed = self.ball.get_meta("base_speed")
+                        elif "base_speed" in self.ball:
+                            base_speed = self.ball.base_speed
+                        self.ball.speed = base_speed * 0.1
                 elif hazard.kind == "conveyor_belt":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
