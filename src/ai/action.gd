@@ -2384,6 +2384,28 @@ func execute(strategy: String, delta: float):
                 if "chaos_link_buff_sharing" in chaos_target: chaos_target.chaos_link_buff_sharing = false
                 elif chaos_target.has_method("set_meta"): chaos_target.set_meta("chaos_link_buff_sharing", false)
 
+        var c_dmg = 10.0
+        if "damage" in self.ball: c_dmg = self.ball.damage
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("damage"): c_dmg = self.ball.get_meta("damage")
+
+        var b_dmg = 10.0
+        if "base_damage" in self.ball: b_dmg = self.ball.base_damage
+
+        if c_dmg > b_dmg:
+            var buff_sharing = false
+            if "chaos_link_buff_sharing" in self.ball: buff_sharing = self.ball.chaos_link_buff_sharing
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("chaos_link_buff_sharing"): buff_sharing = self.ball.get_meta("chaos_link_buff_sharing")
+
+            if not buff_sharing:
+                if "chaos_link_buff_sharing" in chaos_target: chaos_target.chaos_link_buff_sharing = true
+                elif chaos_target.has_method("set_meta"): chaos_target.set_meta("chaos_link_buff_sharing", true)
+
+                if "damage" in chaos_target: chaos_target.damage = c_dmg
+                elif chaos_target.has_method("set_meta"): chaos_target.set_meta("damage", c_dmg)
+
+                if "chaos_link_buff_sharing" in chaos_target: chaos_target.chaos_link_buff_sharing = false
+                elif chaos_target.has_method("set_meta"): chaos_target.set_meta("chaos_link_buff_sharing", false)
+
     var link_target = null
     if "damage_link_target" in self.ball: link_target = self.ball.damage_link_target
     elif self.ball.has_method("get_meta") and self.ball.has_meta("damage_link_target"): link_target = self.ball.get_meta("damage_link_target")

@@ -11,7 +11,7 @@ class Chaos:
     PERCEPTION_RADIUS = 250
     AGGRESSION = 0.5
     COLOR = "magenta"
-    SKILL = "random"
+    SKILL = "chaos_link"
     SKILL_COOLDOWN = 2.0
 
     def __init__(self, ball_id: int, x: float = 0.0, y: float = 0.0):

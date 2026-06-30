@@ -1638,6 +1638,12 @@ class Action:
                     chaos_target.speed = getattr(self.ball, "speed")
                     chaos_target.chaos_link_buff_sharing = False
 
+            if hasattr(self.ball, "damage") and getattr(self.ball, "damage") > getattr(self.ball, "base_damage", 10.0):
+                if not getattr(self.ball, "chaos_link_buff_sharing", False):
+                    chaos_target.chaos_link_buff_sharing = True
+                    chaos_target.damage = getattr(self.ball, "damage")
+                    chaos_target.chaos_link_buff_sharing = False
+
         link_target = getattr(self.ball, "damage_link_target", None)
         if link_target and getattr(link_target, "alive", True):
             dist_sq = (self.ball.x - link_target.x)**2 + (self.ball.y - link_target.y)**2
