@@ -42,10 +42,12 @@ def test_modifier_zones_setup():
 
     mode.setup(world, balls)
 
-    assert len(mode.zones) == 3
+    assert len(mode.zones) == 4
     assert mode.zones[0]["type"] == "speed"
     assert mode.zones[1]["type"] == "damage"
     assert mode.zones[2]["type"] == "heal"
+    assert mode.zones[3]["type"] == "debuff"
+
 
 def test_modifier_zones_tick():
     mode = GAME_MODES["modifier_zones"]
@@ -59,9 +61,10 @@ def test_modifier_zones_tick():
     ball_speed = MockBall(1, "warrior", 250, 250)
     ball_damage = MockBall(2, "warrior", 750, 250)
     ball_heal = MockBall(3, "warrior", 500, 750)
+    ball_debuff = MockBall(5, "warrior", 500, 250)
     ball_normal = MockBall(4, "warrior", 900, 900)
 
-    balls = [ball_speed, ball_damage, ball_heal, ball_normal]
+    balls = [ball_speed, ball_damage, ball_heal, ball_debuff, ball_normal]
 
     mode.setup(world, balls)
     mode.tick(world, balls, delta=1.0)
@@ -77,7 +80,13 @@ def test_modifier_zones_tick():
     # heal ball should heal 20 hp
     assert ball_heal.hp == 70.0
 
+    # debuff ball should have halved max_hp and hp capped
+    assert ball_debuff.max_hp == 50.0
+    assert getattr(ball_debuff, "zone_modifier_debuff", False)
+    assert ball_debuff.hp == 50.0
+
     # normal ball should be unaffected
+
     assert ball_normal.speed == ball_normal.base_speed
     assert ball_normal.damage == ball_normal.base_damage
     assert ball_normal.hp == 50.0
@@ -85,7 +94,11 @@ def test_modifier_zones_tick():
     # Move speed ball out of zone and tick again
     ball_speed.x = 900
     ball_speed.y = 900
-    mode.tick(world, [ball_speed], delta=1.0)
+    ball_debuff.x = 900
+    ball_debuff.y = 900
+    mode.tick(world, [ball_speed, ball_debuff], delta=1.0)
 
     assert ball_speed.speed == ball_speed.base_speed
     assert not getattr(ball_speed, "zone_modifier_speed", False)
+    assert ball_debuff.max_hp == 100.0
+    assert not getattr(ball_debuff, "zone_modifier_debuff", False)
