@@ -6661,7 +6661,7 @@
     },
     {
       "id": "idea-385",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bouncy Bumpers Mode",
@@ -10961,6 +10961,57 @@
         "src/ai/mastery.py",
         "src/ai/mastery.gd",
         "tests/test_mastery.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-636",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mass Clone Skill",
+      "description": "A rare skill or ultimate ability that creates a decoy clone for every ball currently in the arena to cause massive confusion during big fights.",
+      "allowed_paths": [
+        "src/ai/mass_clone_skill.py",
+        "src/ai/mass_clone_skill.gd",
+        "tests/test_mass_clone_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-637",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tornado Hazard Event",
+      "description": "Periodically spawn a Tornado hazard that roams around the arena and pulls nearby balls toward it, dealing damage over time.",
+      "allowed_paths": [
+        "src/arena/tornado.py",
+        "src/arena/tornado.gd",
+        "tests/test_tornado.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-638",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Clone Mine Trap",
+      "description": "A hazard that triggers when a ball gets near, immediately spawning hostile clone enemies of that ball that target the original ball.",
+      "allowed_paths": [
+        "src/arena/clone_mine_trap.py",
+        "src/arena/clone_mine_trap.gd",
+        "tests/test_clone_mine_trap.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

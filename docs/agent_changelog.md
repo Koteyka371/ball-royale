@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-385] Bouncy Bumpers Mode — *2026-07-01 16:21:27 UTC*
+
+Add a new game mode with lots of bouncy bumpers and physics-based knockback logic to push balls around the arena.
+
+---
+
 ## [idea-398] Lightning Strikes — *2026-07-01 15:47:30 UTC*
 
 During thunderstorms, lightning strikes random locations in the arena periodically, dealing massive AoE damage to any ball caught in the blast radius.
