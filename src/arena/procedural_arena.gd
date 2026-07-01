@@ -533,7 +533,7 @@ func update_zone(current_tick: int, delta: float) -> void:
                         h.set_meta("vx", h.get_meta("vx") * -1.0)
                     if h.y < 0 or h.y > height:
                         h.set_meta("vy", h.get_meta("vy") * -1.0)
-            elif "kind" in h and h.kind == "fire_ring":
+            elif "kind" in h and (h.kind == "fire_ring" or h.kind == "poison_nova"):
                 if h.has_meta("duration"):
                     var dur = h.get_meta("duration") - delta
                     h.set_meta("duration", dur)
