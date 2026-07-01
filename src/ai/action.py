@@ -1513,6 +1513,25 @@ class Action:
                             if hasattr(self, "_spawn_skill_particles"):
                                 self._spawn_skill_particles("emp")
                             continue
+                        elif hazard.kind == "poison_nova":
+                            dx = self.ball.x - hazard.x
+                            dy = self.ball.y - hazard.y
+                            dist = math.hypot(dx, dy)
+                            nova_thickness = 40.0
+                            if hazard.radius - nova_thickness <= dist <= hazard.radius + nova_thickness:
+                                # Apply severe DOT
+                                self.ball.poison_timer = getattr(self.ball, "poison_timer", 0.0) + 2.0
+                                # Also apply some direct damage
+                                hazard_damage = hazard.damage * delta
+                                if getattr(self.ball, "is_in_quicksand", False):
+                                    hazard_damage *= 2.0
+                                if hasattr(self.ball, "take_damage"):
+                                    self.ball.take_damage(hazard_damage)
+                                elif hasattr(self.ball, "hp"):
+                                    self.ball.hp -= hazard_damage
+                                    if self.ball.hp <= 0:
+                                        self.ball.alive = False
+                            continue
                         elif hazard.kind == "fire_ring":
                             dx = self.ball.x - hazard.x
                             dy = self.ball.y - hazard.y
@@ -4209,6 +4228,19 @@ class Action:
                     self.world.arena.hazards.append(fb)
                     self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
 
+            elif skill_name == "poison_nova":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    import random
+                    trap_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
+                    try:
+                        from arena.procedural_arena import Hazard
+                    except ImportError:
+                        Hazard = type('Hazard', (), {}) # dummy
+                    nova = Hazard(id=trap_id, x=self.ball.x, y=self.ball.y, radius=0.0, kind="poison_nova", damage=30.0)
+                    setattr(nova, 'duration', 5.0)
+                    setattr(nova, 'target_radius', 400.0) # Will expand
+                    setattr(nova, 'shrink_rate', -80.0) # Negative shrink_rate means it expands
+                    self.world.arena.hazards.append(nova)
             elif skill_name == "smokescreen":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
 

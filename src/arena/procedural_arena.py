@@ -473,7 +473,7 @@ class ProceduralArena:
                         if hasattr(h, "vx"): h.vx *= -1
                     if h.y < 0 or h.y > self.height:
                         if hasattr(h, "vy"): h.vy *= -1
-                elif getattr(h, "kind", "") == "fire_ring":
+                elif getattr(h, "kind", "") == "fire_ring" or getattr(h, "kind", "") == "poison_nova":
                     if hasattr(h, "duration"):
                         h.duration -= delta
                         if h.duration <= 0:
