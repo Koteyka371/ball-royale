@@ -3413,6 +3413,7 @@ class Action:
             self._idle(delta)
 
     def _use_skill(self) -> None:
+        import random
         if getattr(self.ball, "silence_timer", 0.0) > 0:
             return
         skill_timer = getattr(self.ball, "skill_timer", 0.0)
@@ -4058,6 +4059,16 @@ class Action:
 
                     self.world.arena.hazards.append(trap)
 
+            elif skill_name == "tornado_skill":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    import random
+                    trap_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
+                    from arena.procedural_arena import Hazard  # type: ignore
+                    tornado = Hazard(trap_id, self.ball.x, self.ball.y, 40.0, "tornado", 20.0)
+                    setattr(tornado, 'duration', 5.0)
+                    setattr(tornado, 'vx', random.uniform(-100.0, 100.0))
+                    setattr(tornado, 'vy', random.uniform(-100.0, 100.0))
+                    self.world.arena.hazards.append(tornado)
             elif skill_name == "explosion":
                 enemies = self._get_enemies()
                 explosion_radius = 100.0

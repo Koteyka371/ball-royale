@@ -5912,6 +5912,15 @@ func _use_skill():
                     if mag > 0.0001:
                         self.ball.x += (out_x/mag) * 80.0
                         self.ball.y += (out_y/mag) * 80.0
+        elif skill_name == "tornado_skill":
+            if "arena" in self.world and "hazards" in self.world.arena:
+                var trap_id = self.world.arena.hazards.size() + (randi() % 9000 + 1000)
+                var ProceduralArena = load("res://src/arena/procedural_arena.gd")
+                var tornado = ProceduralArena.Hazard.new(trap_id, self.ball.x, self.ball.y, 40.0, "tornado", 20.0)
+                tornado.set_meta("duration", 5.0)
+                tornado.set_meta("vx", randf_range(-100.0, 100.0))
+                tornado.set_meta("vy", randf_range(-100.0, 100.0))
+                self.world.arena.hazards.append(tornado)
         elif skill_name == "explosion":
             var enemies = _get_enemies()
             var explosion_radius = 100.0
