@@ -74,7 +74,7 @@ func scan() -> Dictionary:
     var smoke_hazards = []
     if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
         for h in self.world.arena.hazards:
-            if "kind" in h and h.kind == "smokescreen":
+            if "kind" in h and (h.kind == "smokescreen" or h.kind == "breakable_wall"):
                 smoke_hazards.append(h)
                 var hx = 0.0
                 var hy = 0.0
