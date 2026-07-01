@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-394] Blackout Game Mode — *2026-07-01 15:04:43 UTC*
+
+A new game mode where the entire arena is shrouded in complete darkness except for a small ring of light around each ball. Players must navigate and fight using echolocation cues or occasional lightning flashes that reveal the whole map for a split second.
+
+---
+
 ## [idea-328] Decoy Ball Hazard — *2026-07-01 15:04:38 UTC*
 
 Spawn a fake 'Decoy' ball hazard that mimics the appearance of a real player but explodes or triggers a stun trap when attacked or collided with by a real player.
