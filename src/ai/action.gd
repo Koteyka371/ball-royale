@@ -4859,10 +4859,37 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "fake_booster":
-                if self.ball.has_method("take_damage"):
-                    var dmg = 50.0
-                    if "damage" in nearest: dmg = nearest.damage
-                    self.ball.take_damage(dmg)
+                var explosion_radius = 45.0
+                if "radius" in nearest:
+                    explosion_radius = nearest.radius * 3
+                var dmg = 50.0
+                if "damage" in nearest: dmg = nearest.damage
+                var stun_dur = 2.0
+                if "stun_duration" in nearest: stun_dur = nearest.stun_duration
+
+                if self.world != null and "balls" in self.world:
+                    for b in self.world.balls:
+                        var bx = 0.0
+                        var by = 0.0
+                        if "x" in b: bx = b.x
+                        elif b.has_method("get_meta") and b.has_meta("x"): bx = b.get_meta("x")
+                        if "y" in b: by = b.y
+                        elif b.has_method("get_meta") and b.has_meta("y"): by = b.get_meta("y")
+                        var nx = 0.0
+                        var ny = 0.0
+                        if "x" in nearest: nx = nearest.x
+                        if "y" in nearest: ny = nearest.y
+
+                        var dx = bx - nx
+                        var dy = by - ny
+                        if sqrt(dx*dx + dy*dy) <= explosion_radius:
+                            if b.has_method("take_damage"):
+                                b.take_damage(dmg)
+                            if b.has_method("set_meta"):
+                                b.set_meta("stun_timer", stun_dur)
+                            else:
+                                b.stun_timer = stun_dur
+
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
@@ -5829,6 +5856,23 @@ func _use_skill():
                         enemy.silence_timer = 5.0
                     elif enemy.has_method("set_meta"):
                         enemy.set_meta("silence_timer", 5.0)
+        elif skill_name == "place_fake_booster":
+            if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                var fb = {}
+                fb.kind = "fake_booster"
+                fb.x = self.ball.x
+                fb.y = self.ball.y
+                fb.radius = 15.0
+                fb.damage = 50.0
+                fb.stun_duration = 2.0
+                if "id" in self.ball: fb.owner_id = self.ball.id
+                self.world.arena.hazards.append(fb)
+
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("skill_timer", 5.0)
+                else:
+                    self.ball.skill_timer = 5.0
+
         elif skill_name == "smokescreen":
             if "arena" in self.world and "hazards" in self.world.arena:
                 var trap_id = self.world.arena.hazards.size() + randi() % 10000

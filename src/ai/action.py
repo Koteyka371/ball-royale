@@ -2973,6 +2973,7 @@ class Action:
         self._idle(delta * 0.5)
 
     def _collect_booster(self, delta: float) -> None:
+        import math
         boosters = self._get_boosters()
         if boosters:
             # Check for nearby enemies to interrupt collection
@@ -3093,8 +3094,22 @@ class Action:
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
                 elif getattr(nearest, "kind", None) == "fake_booster":
-                    if hasattr(self.ball, "take_damage"):
-                        self.ball.take_damage(getattr(nearest, "damage", 50.0))
+                    import math
+                    explosion_radius = getattr(nearest, "radius", 15.0) * 3
+                    dmg = getattr(nearest, "damage", 50.0)
+                    stun_dur = getattr(nearest, "stun_duration", 2.0)
+                    if hasattr(self.world, "balls"):
+                        for b in self.world.balls:
+                            bx = getattr(b, "x", 0)
+                            by = getattr(b, "y", 0)
+                            nx = getattr(nearest, "x", 0)
+                            ny = getattr(nearest, "y", 0)
+                            dx = bx - nx
+                            dy = by - ny
+                            if math.sqrt(dx*dx + dy*dy) <= explosion_radius:
+                                if hasattr(b, "take_damage"):
+                                    b.take_damage(dmg)
+                                b.stun_timer = stun_dur
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
@@ -3709,6 +3724,21 @@ class Action:
                     for enemy in enemies:
                         if math.hypot(enemy.x - self.ball.x, enemy.y - self.ball.y) < 150.0:
                             enemy.silence_timer = 5.0
+            elif skill_name == "place_fake_booster":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    class FakeBooster:
+                        def __init__(self, x, y, owner_id):
+                            self.kind = "fake_booster"
+                            self.x = x
+                            self.y = y
+                            self.radius = 15.0
+                            self.damage = 50.0
+                            self.stun_duration = 2.0
+                            self.owner_id = owner_id
+                    fb = FakeBooster(self.ball.x, self.ball.y, getattr(self.ball, "id", None))
+                    self.world.arena.hazards.append(fb)
+                    self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
+
             elif skill_name == "smokescreen":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
 
