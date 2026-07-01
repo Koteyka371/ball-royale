@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-403] Clone Decoy Booster — *2026-07-01 15:47:26 UTC*
+
+A booster that when collected creates a temporary AI clone of the player that taunts enemies but deals no damage.
+
+---
+
 ## [idea-300] Night Vision Goggles Powerup — *2026-07-01 15:32:25 UTC*
 
 A new collectible powerup that spawns during Battle Royale matches. When collected, the ball's base_perception_radius is greatly increased and it becomes immune to the vision reduction of dark phases, giving it a massive tactical advantage during the blackout.

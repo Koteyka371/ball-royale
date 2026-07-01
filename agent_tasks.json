@@ -6967,7 +6967,7 @@
     },
     {
       "id": "idea-403",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Clone Decoy Booster",
@@ -10893,6 +10893,74 @@
         "src/ai/interactive.py",
         "src/ai/interactive.gd",
         "tests/test_interactive.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-632",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Nightmares",
+      "description": "During dark phases in Battle Royale, shadow monsters spawn randomly outside players' vision. The monsters aggressively hunt down players and despawn when the dark phase ends. Surviving players gain a significant score boost.",
+      "allowed_paths": [
+        "src/ai/shrinking_nightmares.py",
+        "src/ai/shrinking_nightmares.gd",
+        "tests/test_shrinking_nightmares.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-633",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Arena Padding",
+      "description": "Add an arena mutator or interactive element where parts of the boundary become 'Bouncy' (drastically increasing reflection speed) while other parts become 'Sticky' (catching and stopping balls), changing periodically during a match to keep players constantly aware of their positioning relative to the edges.",
+      "allowed_paths": [
+        "src/arena/dynamic_arena_padding.py",
+        "src/arena/dynamic_arena_padding.gd",
+        "tests/test_dynamic_arena_padding.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-634",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Wall Jump Ability",
+      "description": "Introduce a new active skill for certain ball types (e.g., Ninja or Acrobat) that allows them to purposefully dash into an arena boundary to trigger an instant, high-speed 'Wall Jump' ricochet, dealing massive damage to any entity caught in the rebound path while briefly granting immunity.",
+      "allowed_paths": [
+        "src/ai/wall_jump_ability.py",
+        "src/ai/wall_jump_ability.gd",
+        "tests/test_wall_jump_ability.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-635",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Mastery Mode",
+      "description": "A new game mode where the arena dynamically cycles through extreme weather events every 15 seconds. Players must collect specific weather-resistant boosters to survive the changing environments, encouraging mobility and map control.",
+      "allowed_paths": [
+        "src/ai/mastery.py",
+        "src/ai/mastery.gd",
+        "tests/test_mastery.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
