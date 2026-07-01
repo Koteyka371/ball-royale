@@ -4060,7 +4060,34 @@ class SupernovaMode extends GameMode:
 
         return null
 
+
+class DayNightMode extends GameMode:
+    var timer = 0.0
+    var phase_duration = 10.0
+
+    func _init():
+        super._init()
+        name = "Day/Night Cycle"
+        description = "Periodically toggles day and night, affecting ball behavior and visibility."
+
+    func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
+        if world != null and "arena" in world:
+            world.arena.is_night = false
+        timer = 0.0
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        if world != null and "arena" in world:
+            timer += delta
+            if timer >= phase_duration:
+                timer = 0.0
+                if "is_night" in world.arena:
+                    world.arena.is_night = not world.arena.is_night
+                else:
+                    world.arena.is_night = true
+
 var GAME_MODES = {
+	"day_night_mode": DayNightMode.new(),
 	"shifting_maze": ShiftingMazeMode.new(),
 
 	"blackout": BlackoutMode.new(),
