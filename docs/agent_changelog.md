@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-364] Moving Bumpers — *2026-07-01 11:02:30 UTC*
+
+Introduce bumpers that are attached to paths or other entities, making them dynamic obstacles in the arena.
+
+---
+
 ## [idea-275] Magnetize Powerup — *2026-07-01 01:35:25 UTC*
 
 A new powerup that temporarily draws nearby smaller hazards or other powerups towards the player, making it easier to gather resources but also increasing the risk of pulling in dangerous objects.
