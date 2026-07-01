@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-367] Gravity Inversion Zone — *2026-07-01 11:14:52 UTC*
+
+A new arena hazard that periodically reverses gravity within its radius, causing balls to be repelled from each other instead of behaving normally, which can be used to break up enemy groupings.
+
+---
+
 ## [idea-360] Portal momentum scaling — *2026-07-01 11:02:51 UTC*
 
 Increase or decrease the ball's momentum upon exiting a portal depending on its speed. Can be implemented by scaling `vx` and `vy` when `hazard.kind == 'portal'`.

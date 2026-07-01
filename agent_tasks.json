@@ -6355,7 +6355,7 @@
     },
     {
       "id": "idea-367",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gravity Inversion Zone",
@@ -9752,6 +9752,159 @@
         "src/arena/black_hole_trap.py",
         "src/arena/black_hole_trap.gd",
         "tests/test_black_hole_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-565",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Explosion Shrapnel",
+      "description": "When a fake booster explodes, it should shoot out smaller shrapnel hazards in random directions that linger for 5 seconds and deal minor damage over time to anyone who touches them.",
+      "allowed_paths": [
+        "src/ai/decoy_explosion_shrapnel.py",
+        "src/ai/decoy_explosion_shrapnel.gd",
+        "tests/test_decoy_explosion_shrapnel.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-566",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Elemental Shield Powerup",
+      "description": "A new booster that grants temporary immunity to all environmental hazard damage (lava, spikes) but does not protect from ball attacks.",
+      "allowed_paths": [
+        "src/ai/elemental_shield_powerup.py",
+        "src/ai/elemental_shield_powerup.gd",
+        "tests/test_elemental_shield_powerup.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-567",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Ice Slippage Modifier",
+      "description": "Add an 'ice_patches' hazard type that drastically lowers friction for any ball caught in it, causing their movement/velocity commands to slide uncontrollably until they exit the patch.",
+      "allowed_paths": [
+        "src/ai/ice_slippage.py",
+        "src/ai/ice_slippage.gd",
+        "tests/test_ice_slippage.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-568",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Booster Scrambler Trap",
+      "description": "A new trap type that does not deal damage, but upon collection, it shuffles the player's active skill and inventory with a random nearby player for 10 seconds.",
+      "allowed_paths": [
+        "src/arena/booster_scrambler_trap.py",
+        "src/arena/booster_scrambler_trap.gd",
+        "tests/test_booster_scrambler_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-569",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Collapse Event",
+      "description": "When the safe zone radius becomes very small, black holes start spawning and slowly merging, pulling players towards the center.",
+      "allowed_paths": [
+        "src/ai/black_hole_collapse.py",
+        "src/ai/black_hole_collapse.gd",
+        "tests/test_black_hole_collapse.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-570",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Rolling Boulders Event",
+      "description": "Periodically spawn massive boulders that roll linearly across the arena, crushing balls in their path and interacting physically with walls and other hazards before shattering into smaller rock hazards.",
+      "allowed_paths": [
+        "src/ai/rolling_boulders.py",
+        "src/ai/rolling_boulders.gd",
+        "tests/test_rolling_boulders.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-571",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bumper Chains",
+      "description": "Allow bumpers to link to one another creating long chains that sweep across the arena, functioning as a moving wall.",
+      "allowed_paths": [
+        "src/ai/bumper_chains.py",
+        "src/ai/bumper_chains.gd",
+        "tests/test_bumper_chains.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-572",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Day/Night specific bosses",
+      "description": "Spawn nocturnal bosses only at night and diurnal bosses during the day.",
+      "allowed_paths": [
+        "src/ai/daynight_specific_bosses.py",
+        "src/ai/daynight_specific_bosses.gd",
+        "tests/test_daynight_specific_bosses.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-573",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bumper Explosions",
+      "description": "Bumpers could detonate on impact if a ball has enough velocity when striking them, damaging nearby players.",
+      "allowed_paths": [
+        "src/ai/bumper_explosions.py",
+        "src/ai/bumper_explosions.gd",
+        "tests/test_bumper_explosions.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
