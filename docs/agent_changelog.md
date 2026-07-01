@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-355] Decoy Trap Hazard — *2026-07-01 13:32:25 UTC*
+
+A hazard that spawns a fake player dummy. If another player attacks it, the decoy explodes in a poison cloud, punishing impulsive actions.
+
+---
+
 ## [idea-341] Seasonal Weather Affixes — *2026-07-01 13:27:40 UTC*
 
 Make weather more dynamic by assigning unique 'Affixes' to each weather type based on the in-game season. For example, during a 'Winter Season' leaderboard period, Snow weather could additionally spawn randomly moving ice patches that cause severe sliding, while Rain could spawn healing puddles instead of lightning.

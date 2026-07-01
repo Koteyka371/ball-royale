@@ -6150,7 +6150,7 @@
     },
     {
       "id": "idea-355",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Trap Hazard",
@@ -10399,6 +10399,40 @@
         "src/ai/ping_pong.py",
         "src/ai/ping_pong.gd",
         "tests/test_ping_pong.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-603",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Day/Night Cyclic Global Vision Modifiers",
+      "description": "Introduce global visibility shifts to all game modes by making it progressively darker during a night phase, reducing 'perception_radius' dynamically across all AI balls, except those carrying a 'Lantern' cosmetic or light-source booster. This allows ambush tactics at night.",
+      "allowed_paths": [
+        "src/ai/daynight_cyclic_global_vision_modifiers.py",
+        "src/ai/daynight_cyclic_global_vision_modifiers.gd",
+        "tests/test_daynight_cyclic_global_vision_modifiers.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-604",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Season-Based Boss Spawns",
+      "description": "Introduce a random boss entity (like 'Yeti' in Winter season or 'Sandworm' in Desert season) that spawns in the center of the arena during the final zone closure, forcing players to either defeat the boss for massive points or use it to grief opponents.",
+      "allowed_paths": [
+        "src/ai/season_based_boss_spawns.py",
+        "src/ai/season_based_boss_spawns.gd",
+        "tests/test_season_based_boss_spawns.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
