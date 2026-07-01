@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-360] Portal momentum scaling — *2026-07-01 11:02:51 UTC*
+
+Increase or decrease the ball's momentum upon exiting a portal depending on its speed. Can be implemented by scaling `vx` and `vy` when `hazard.kind == 'portal'`.
+
+---
+
 ## [idea-356] Day and Night Cycle — *2026-07-01 11:02:44 UTC*
 
 Introduce a day and night cycle that affects visibility and ball behavior. Certain ball types (like Assassin or Phantom) gain stealth buffs or increased damage at night, while others like Paladin or Guardian are stronger during the day.
