@@ -1,0 +1,4 @@
+{
+  "title": "Portal Gun Item",
+  "description": "An item that players can pick up, allowing them to manually shoot two linked portals at the walls of the arena. These user-created portals remain active for 15 seconds, creating new temporary paths for flanking or escaping. They would be distinguishable from arena-generated portals by their color (e.g. orange and blue)."
+}

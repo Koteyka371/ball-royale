@@ -1,0 +1,4 @@
+{
+  "title": "Portal Overload Event",
+  "description": "A random arena event where existing portals become unstable. Instead of teleporting players instantly, entering a portal triggers a 2-second 'charging' phase where nearby players (friend or foe) are sucked in. Once charged, all sucked-in players are blasted out of the exit portal at high speeds in random directions."
+}

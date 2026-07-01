@@ -1483,7 +1483,9 @@ func execute(strategy: String, delta: float):
                                                 self.ball.zone_immunity_timer += 1.5
                                             launched = true
                                             break
-                                if not launched and hazard.get("target_x") != null:
+                                if not launched:
+                                    if hazard.get("target_x") == null or hazard.get("target_y") == null:
+                                        continue
                                     self.ball.x = hazard.target_x
                                     self.ball.y = hazard.target_y
 

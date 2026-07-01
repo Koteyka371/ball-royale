@@ -1037,6 +1037,10 @@ class Action:
                                                 launched = True
                                                 break
                                     if not launched:
+                                        if not hasattr(hazard, "target_x") or not hasattr(hazard, "target_y"):
+                                            # One-way portal exit
+                                            continue
+
                                         target_x = getattr(hazard, "target_x", hazard.x)
                                         target_y = getattr(hazard, "target_y", hazard.y)
                                         self.ball.x = target_x
