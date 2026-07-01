@@ -3088,6 +3088,13 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "magnet_booster":
+                    self.ball.pull_booster_timer = 5.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "stamina_booster":
                     self.ball.stamina = getattr(self.ball, "max_stamina", 100.0)
                     self.ball.infinite_stamina_timer = 5.0
@@ -4134,6 +4141,20 @@ class Action:
                 self.ball.speed = base_s * 1.5
 
     def _update_skill_timer(self, delta: float) -> None:
+        if hasattr(self.ball, "pull_booster_timer") and self.ball.pull_booster_timer > 0:
+            self.ball.pull_booster_timer -= delta
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                for hazard in self.world.arena.hazards:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster"]:
+                        dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
+                        if dist_sq < 250000: # 500 range
+                            import math
+                            dist = math.sqrt(dist_sq)
+                            if dist > 0.0001:
+                                nx, ny = (self.ball.x - hazard.x) / dist, (self.ball.y - hazard.y) / dist
+                                pull_strength = 150.0 * delta
+                                if hasattr(hazard, "x"): hazard.x += nx * pull_strength
+                                if hasattr(hazard, "y"): hazard.y += ny * pull_strength
         if hasattr(self.ball, "weather_control_timer") and self.ball.weather_control_timer > 0:
             self.ball.weather_control_timer -= delta
 

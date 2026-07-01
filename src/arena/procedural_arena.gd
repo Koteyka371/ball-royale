@@ -171,6 +171,8 @@ func generate():
             kind = "bumper"
         elif r < 0.99:
             kind = "quicksand"
+        elif r < 0.995:
+            kind = "magnet_booster"
         else:
             kind = "switch"
 
@@ -207,7 +209,7 @@ func generate():
         elif kind == "link_booster":
             radius = 15.0
             damage = 0.0
-        elif kind == "stamina_booster" or kind == "weather_booster":
+        elif kind == "stamina_booster" or kind == "weather_booster" or kind == "magnet_booster":
             radius = 15.0
             damage = 0.0
         elif kind == "tornado":
