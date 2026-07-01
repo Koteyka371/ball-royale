@@ -3153,7 +3153,19 @@ func execute(strategy: String, delta: float):
                 self.ball._reflection_vx = nvx
                 self.ball._reflection_vy = nvy
 
-            if speed > 500:
+            var gm = null
+            if typeof(self.world) == TYPE_DICTIONARY and self.world.has("game_mode"):
+                gm = self.world["game_mode"]
+            elif typeof(self.world) == TYPE_OBJECT and "game_mode" in self.world:
+                gm = self.world.game_mode
+
+            var is_mirror_walls = false
+            if gm != null and typeof(gm) == TYPE_OBJECT and "name" in gm and gm.name == "Mirror Walls":
+                is_mirror_walls = true
+            elif typeof(gm) == TYPE_DICTIONARY and gm.has("name") and gm["name"] == "Mirror Walls":
+                is_mirror_walls = true
+
+            if speed > 500 and not is_mirror_walls:
                 var dmg = speed * 0.05
                 if self.ball.has_method("take_damage"):
                     self.ball.take_damage(dmg)
@@ -3162,6 +3174,15 @@ func execute(strategy: String, delta: float):
                     if self.ball.hp <= 0:
                         if "alive" in self.ball: self.ball.alive = false
                         elif self.ball.has_method("set_meta"): self.ball.set_meta("alive", false)
+
+            if is_mirror_walls:
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["vx"] = nvx
+                    self.ball["vy"] = nvy
+                elif "vx" in self.ball:
+                    self.ball.vx = nvx
+                    self.ball.vy = nvy
+
 
     if bounced_wall or bounced_col:
         _trigger_ripple_effect()
