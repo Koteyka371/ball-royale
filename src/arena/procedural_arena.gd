@@ -173,8 +173,10 @@ func generate():
             kind = "quicksand"
         elif r < 0.990:
             kind = "magnet_booster"
-        elif r < 0.995:
+        elif r < 0.992:
             kind = "breakable_wall"
+        elif r < 0.997:
+            kind = "stealth_zone"
         else:
             kind = "switch"
 
@@ -226,6 +228,9 @@ func generate():
                 new_hazard.set_meta("vy", sin(angle) * speed)
             hazards.append(new_hazard)
             continue
+        elif kind == "stealth_zone":
+            radius = rng.randf_range(40.0, 80.0)
+            damage = 0.0
         elif kind == "quicksand":
             radius = rng.randf_range(40.0, 80.0)
             damage = 0.0

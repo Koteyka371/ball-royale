@@ -1,0 +1,4 @@
+{
+  "title": "Shrinking Safe Zone Hazard",
+  "description": "Introduce a Battle Royale style shrinking safe zone hazard that periodically decreases in radius over time, dealing increasing damage to entities outside the zone to force confrontations."
+}

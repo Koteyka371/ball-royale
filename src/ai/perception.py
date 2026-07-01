@@ -119,8 +119,18 @@ class Perception:
         # Apply stealth drone logic for enemies detecting us, or us detecting enemies
         filtered_enemies = []
         active_flares = []
+        stealth_zones = []
+        my_stealth_zones = []
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             active_flares = [h for h in self.world.arena.hazards if getattr(h, "kind", "") == "flare" and getattr(h, "active", True)]
+            stealth_zones = [h for h in self.world.arena.hazards if getattr(h, "kind", "") == "stealth_zone"]
+            for sz in stealth_zones:
+                hx, hy, hr = getattr(sz, "x", 0), getattr(sz, "y", 0), getattr(sz, "radius", 0)
+                if (bx_curr - hx)**2 + (by_curr - hy)**2 <= hr**2:
+                    sz_id = getattr(sz, "id", None)
+                    if sz_id is None:
+                        sz_id = f"{hx}_{hy}"
+                    my_stealth_zones.append(sz_id)
 
         for e in entities.get("enemies", []):
             if intersects_smoke(e):
@@ -139,6 +149,20 @@ class Perception:
                     break
 
             if not revealed_by_flare:
+                # Check stealth zones
+                in_enemy_stealth_zone = False
+                for sz in stealth_zones:
+                    hx, hy, hr = getattr(sz, "x", 0), getattr(sz, "y", 0), getattr(sz, "radius", 0)
+                    if (ex - hx)**2 + (ey - hy)**2 <= hr**2:
+                        sz_id = getattr(sz, "id", None)
+                        if sz_id is None:
+                            sz_id = f"{hx}_{hy}"
+                        if sz_id not in my_stealth_zones:
+                            in_enemy_stealth_zone = True
+                        break
+                if in_enemy_stealth_zone:
+                    continue
+
                 # If enemy has stealth drone, we can only see them if they are very close
                 e_has_stealth = getattr(e, "has_stealth_drone", False)
                 if not e_has_stealth and hasattr(e, "has_method") and e.has_method("get_meta") and e.has_meta("has_stealth_drone"):

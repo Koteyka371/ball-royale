@@ -118,14 +118,30 @@ func scan() -> Dictionary:
         return false
 
     var active_flares = []
-    if arena != null and "hazards" in arena:
-        for h in arena.hazards:
+    var stealth_zones = []
+    var my_stealth_zones = []
+    if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+        for h in self.world.arena.hazards:
             if "kind" in h and h.kind == "flare":
                 var h_active = true
                 if "active" in h: h_active = h.active
                 elif h.has_method("has_meta") and h.has_meta("active"): h_active = h.get_meta("active")
                 if h_active:
                     active_flares.append(h)
+            elif "kind" in h and h.kind == "stealth_zone":
+                stealth_zones.append(h)
+                var hx = 0.0
+                if "x" in h: hx = h.x
+                var hy = 0.0
+                if "y" in h: hy = h.y
+                var hr = 0.0
+                if "radius" in h: hr = h.radius
+                if pow(bx_curr - hx, 2) + pow(by_curr - hy, 2) <= pow(hr, 2):
+                    var sz_id = null
+                    if "id" in h: sz_id = h.id
+                    if sz_id == null:
+                        sz_id = str(hx) + "_" + str(hy)
+                    my_stealth_zones.append(sz_id)
 
     data["enemies"] = []
     for e in entities.get("enemies", []):
@@ -148,6 +164,25 @@ func scan() -> Dictionary:
                 break
 
         if not revealed_by_flare:
+            var in_enemy_stealth_zone = false
+            for sz in stealth_zones:
+                var hx = 0.0
+                if "x" in sz: hx = sz.x
+                var hy = 0.0
+                if "y" in sz: hy = sz.y
+                var hr = 0.0
+                if "radius" in sz: hr = sz.radius
+                if pow(ex - hx, 2) + pow(ey - hy, 2) <= pow(hr, 2):
+                    var sz_id = null
+                    if "id" in sz: sz_id = sz.id
+                    if sz_id == null:
+                        sz_id = str(hx) + "_" + str(hy)
+                    if not my_stealth_zones.has(sz_id):
+                        in_enemy_stealth_zone = true
+                    break
+            if in_enemy_stealth_zone:
+                continue
+
             var e_has_stealth = false
             if "has_stealth_drone" in e and e.has_stealth_drone:
                 e_has_stealth = true
