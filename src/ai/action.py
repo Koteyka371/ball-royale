@@ -644,11 +644,23 @@ class Action:
             cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
             ignores_mud = cosmetic == "mud_tires"
 
-            if getattr(self.world.arena, "is_raining", False) and not ignores_mud:
+            wind_dx = getattr(self.world.arena, "wind_dx", 0.0)
+            wind_dy = getattr(self.world.arena, "wind_dy", 0.0)
+            # Reset the flag every frame
+            self.ball._is_wind_riding = False
+            is_wind_riding = False
+
+            if wind_dx != 0.0 or wind_dy != 0.0:
+                ball_type = getattr(self.ball, "BALL_TYPE", getattr(self.ball, "ball_type", None))
+                if ball_type in ["scout", "drone", "swarm", "ninja", "assassin", "phantom", "rogue"]:
+                    if getattr(self.ball, "stamina", 0.0) >= 10.0:
+                        is_wind_riding = True
+
+            if getattr(self.world.arena, "is_raining", False) and not ignores_mud and not is_wind_riding:
                 # Slippery: apply momentum (friction slide)
                 self.ball.x += getattr(self.ball, "vx", 0.0) * delta * 0.5
                 self.ball.y += getattr(self.ball, "vy", 0.0) * delta * 0.5
-            if getattr(self.world.arena, "is_snowing", False):
+            if getattr(self.world.arena, "is_snowing", False) and not is_wind_riding:
                 # Extra slippery: apply even more momentum
                 self.ball.x += getattr(self.ball, "vx") * delta * 0.4
                 self.ball.y += getattr(self.ball, "vy") * delta * 0.4
@@ -659,6 +671,22 @@ class Action:
             if wind_dx != 0.0 or wind_dy != 0.0:
                 self.ball.x += wind_dx * delta
                 self.ball.y += wind_dy * delta
+
+                # Wind rider logic for lightweight balls (e.g. scout, drone, swarm)
+                ball_type = getattr(self.ball, "BALL_TYPE", getattr(self.ball, "ball_type", None))
+                if ball_type in ["scout", "drone", "swarm", "ninja", "assassin", "phantom", "rogue"]:
+                    stamina = getattr(self.ball, "stamina", 0.0)
+                    if stamina >= 10.0:
+                        # Extra speed and drain stamina
+                        self.ball.x += wind_dx * delta * 1.5
+                        self.ball.y += wind_dy * delta * 1.5
+                        # We don't drain stamina here because the later code in execute() regens stamina when idle
+                        # we can add a flag to mark that we are wind riding
+                        self.ball._is_wind_riding = True
+                    else:
+                        self.ball._is_wind_riding = False
+                else:
+                    self.ball._is_wind_riding = False
 
         # Zero gravity processing (friction)
         gm = getattr(self.world, "game_mode", None)
@@ -2259,6 +2287,9 @@ class Action:
             if getattr(self.ball, "is_dashing", False):
                 if getattr(self.ball, "infinite_stamina_timer", 0.0) <= 0:
                     self.ball.stamina = max(0.0, getattr(self.ball, "stamina", 0.0) - (50.0 * drain_mult) * delta)
+            elif getattr(self.ball, "_is_wind_riding", False):
+                if getattr(self.ball, "infinite_stamina_timer", 0.0) <= 0:
+                    self.ball.stamina = max(0.0, getattr(self.ball, "stamina", 0.0) - (15.0 * drain_mult) * delta)
             elif dist / max(0.0001, delta * 60) < getattr(self.ball, "base_speed", 2.0) * 0.5:
                 self.ball.stamina = min(getattr(self.ball, "max_stamina", 100.0), getattr(self.ball, "stamina", 0.0) + (30.0 * regen_mult) * delta)
 
@@ -5364,6 +5395,8 @@ class Action:
 
         if getattr(self.ball, "is_dashing", False):
             self.ball.stamina = max(0.0, getattr(self.ball, "stamina", 0.0) - (50.0 * drain_mult) * delta)
+        elif getattr(self.ball, "_is_wind_riding", False):
+            self.ball.stamina = max(0.0, getattr(self.ball, "stamina", 0.0) - (15.0 * drain_mult) * delta)
         elif dist / max(0.0001, delta * 60) < getattr(self.ball, "base_speed", 2.0) * 0.5:
             self.ball.stamina = min(getattr(self.ball, "max_stamina", 100.0), getattr(self.ball, "stamina", 0.0) + (30.0 * regen_mult) * delta)
 
