@@ -539,6 +539,70 @@ func execute(strategy: String, delta: float):
 					inv.erase("placeable_trap")
 					self.ball.set_meta("inventory", inv)
 
+	if (strategy == "flee" or strategy == "defend" or strategy == "attack" or strategy == "flank" or strategy == "kite") and self.ball.has_meta("inventory"):
+		var inv = self.ball.get_meta("inventory")
+		if inv.has("portal_gun"):
+			if world != null and "arena" in world and "hazards" in world.arena:
+				var arena = world.arena
+				var p1_id = arena.hazards.size() + randi() % 90000 + 10000
+				var p2_id = p1_id + 1
+
+				var p1_x = self.ball.x + randf_range(-20, 20)
+				var p1_y = self.ball.y + randf_range(-20, 20)
+
+				var p2_x = 500.0
+				var p2_y = 500.0
+
+				if strategy == "flee":
+				    if "width" in arena:
+				        p2_x = arena.width / 2.0 + randf_range(-100, 100)
+				        p2_y = arena.height / 2.0 + randf_range(-100, 100)
+				else:
+				    var target = null
+				    if "balls" in world:
+				        for b in world.balls:
+				            if b.get("team") != self.ball.get("team"):
+				                target = b
+				                break
+				    if target != null:
+				        p2_x = target.x + randf_range(-50, 50)
+				        p2_y = target.y + randf_range(-50, 50)
+				    else:
+				        p2_x = self.ball.x + randf_range(-200, 200)
+				        p2_y = self.ball.y + randf_range(-200, 200)
+
+				var p1 = null
+				var p2 = null
+				if load("res://src/arena/procedural_arena.gd") != null:
+					p1 = load("res://src/arena/procedural_arena.gd").Hazard.new()
+					p1.id = p1_id
+					p1.x = p1_x
+					p1.y = p1_y
+					p1.radius = 30.0
+					p1.kind = "teleporter"
+					p1.damage = 0.0
+					p1.set_meta("duration", 10.0)
+					p1.set_meta("target_x", p2_x)
+					p1.set_meta("target_y", p2_y)
+					p1.set_meta("owner_id", self.ball.id)
+
+					p2 = load("res://src/arena/procedural_arena.gd").Hazard.new()
+					p2.id = p2_id
+					p2.x = p2_x
+					p2.y = p2_y
+					p2.radius = 30.0
+					p2.kind = "teleporter"
+					p2.damage = 0.0
+					p2.set_meta("duration", 10.0)
+					p2.set_meta("target_x", p1_x)
+					p2.set_meta("target_y", p1_y)
+					p2.set_meta("owner_id", self.ball.id)
+
+					arena.hazards.append(p1)
+					arena.hazards.append(p2)
+					inv.erase("portal_gun")
+					self.ball.set_meta("inventory", inv)
+
 	if strategy == "flee" and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
 		if inv.has("exit_portal"):
@@ -4889,6 +4953,16 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "portal_gun_item":
+                if not self.ball.has_meta("inventory"):
+                    self.ball.set_meta("inventory", [])
+                var inv = self.ball.get_meta("inventory")
+                inv.append("portal_gun")
+                self.ball.set_meta("inventory", inv)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "exit_portal_item":
                 if not self.ball.has_meta("inventory"):
                     self.ball.set_meta("inventory", [])
@@ -6109,7 +6183,7 @@ func _use_skill():
                     elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
                     elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
 
-                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item"]:
+                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item"]:
                         var hx = 0.0
                         var hy = 0.0
                         if "x" in h: hx = h.x
@@ -6835,7 +6909,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster"]
+                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "portal_gun_item"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y

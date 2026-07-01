@@ -348,6 +348,49 @@ class Action:
                 self.world.arena.hazards.append(trap)
                 self.ball.inventory.remove("placeable_trap")
 
+        # Check inventory for portal_gun
+        if strategy in ("flee", "defend", "attack", "flank", "kite") and hasattr(self.ball, "inventory") and "portal_gun" in self.ball.inventory:
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                from arena.procedural_arena import Hazard
+                import random
+                p1_id = len(self.world.arena.hazards) + random.randint(10000, 99999)
+                p2_id = p1_id + 1
+                p1_x = self.ball.x + random.uniform(-20, 20)
+                p1_y = self.ball.y + random.uniform(-20, 20)
+
+                # Place 2nd portal strategically
+                if strategy == "flee":
+                    p2_x = self.world.arena.width / 2.0 + random.uniform(-100, 100)
+                    p2_y = self.world.arena.height / 2.0 + random.uniform(-100, 100)
+                else:
+                    enemies = getattr(self.world, "balls", [])
+                    target = None
+                    for b in enemies:
+                        if getattr(b, "team", None) != getattr(self.ball, "team", None):
+                            target = b
+                            break
+                    if target:
+                        p2_x = target.x + random.uniform(-50, 50)
+                        p2_y = target.y + random.uniform(-50, 50)
+                    else:
+                        p2_x = self.ball.x + random.uniform(-200, 200)
+                        p2_y = self.ball.y + random.uniform(-200, 200)
+
+                p1 = Hazard(p1_id, p1_x, p1_y, 30.0, "teleporter", 0.0)
+                setattr(p1, 'duration', 10.0)
+                setattr(p1, 'target_x', p2_x)
+                setattr(p1, 'target_y', p2_y)
+                setattr(p1, 'owner_id', getattr(self.ball, 'id', None))
+
+                p2 = Hazard(p2_id, p2_x, p2_y, 30.0, "teleporter", 0.0)
+                setattr(p2, 'duration', 10.0)
+                setattr(p2, 'target_x', p1_x)
+                setattr(p2, 'target_y', p1_y)
+                setattr(p2, 'owner_id', getattr(self.ball, 'id', None))
+
+                self.world.arena.hazards.extend([p1, p2])
+                self.ball.inventory.remove("portal_gun")
+
         # Check inventory for exit_portal to use as an escape hatch
         if strategy == "flee" and hasattr(self.ball, "inventory") and "exit_portal" in self.ball.inventory:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -3121,6 +3164,13 @@ class Action:
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
+                elif getattr(nearest, "kind", None) == "portal_gun_item":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("portal_gun")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
                 elif getattr(nearest, "kind", None) == "exit_portal_item":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
@@ -3545,7 +3595,7 @@ class Action:
                     target_hazard = None
                     min_dist_sq = 22500.0  # Range 150
                     for h in hazards:
-                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item"]:
+                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item"]:
                             dx = h.x - self.ball.x
                             dy = h.y - self.ball.y
                             dist_sq = dx*dx + dy*dy
@@ -4234,7 +4284,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "portal_gun_item"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math
