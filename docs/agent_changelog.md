@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-343] Shrinking Ring of Fire Hazard — *2026-07-01 11:02:35 UTC*
+
+A hazard that spawns a large ring of fire which slowly shrinks over 10 seconds. Balls caught on the ring take continuous burn damage until they escape or the ring vanishes.
+
+---
+
 ## [idea-364] Moving Bumpers — *2026-07-01 11:02:30 UTC*
 
 Introduce bumpers that are attached to paths or other entities, making them dynamic obstacles in the arena.
