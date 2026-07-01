@@ -147,6 +147,8 @@ def test_weather_control_booster():
         is_heatwave = False
         wind_dx = 0.0
         wind_dy = 0.0
+        width = 1000
+        height = 1000
 
     class MockWorld:
         arena = MockArena()
@@ -191,3 +193,64 @@ def test_weather_control_booster():
     mode.tick(world, [ball], 0.2)
     # The normal logic will trigger and randomly pick a weather, resetting weather_timer
     assert mode.weather_timer == 0.0
+
+def test_weather_mode_minions():
+    import ai.game_modes as gm
+    mode = gm.GAME_MODES["weather_chaos"]
+
+    class MockArena:
+        width = 1000
+        height = 1000
+        hazards = []
+
+    class MockWorld:
+        arena = MockArena()
+        dead_balls = []
+        balls = []
+        def add_event(self, type, data):
+            pass
+
+    class MockBall:
+        def __init__(self, t):
+            self.alive = True
+            self.ball_type = t
+            self.weather_control_timer = 0.0
+            self.team = "test"
+            self.speed = 100
+            self.damage = 10
+
+    world = MockWorld()
+    ball = MockBall("warrior")
+    balls = [ball]
+    world.balls = balls
+    mode.setup(world, balls)
+
+    # Overwrite random to always spawn
+    import random
+    class MockRandom:
+        def random(self): return 0.0
+        def uniform(self, a, b): return 500.0
+        def randint(self, a, b): return 1
+        def choice(self, seq): return seq[0]
+
+    mode.random = MockRandom()
+
+    mode.weather = "snow"
+    mode.tick(world, balls, 1.0)
+
+    # Assert snow minion spawned
+    minions = [b for b in world.balls if getattr(b, "is_minion", False) and b.ball_type == "ice_minion"]
+    assert len(minions) > 0
+    assert getattr(minions[0], "team", "") == "environment"
+
+    world.balls = [ball]
+    balls.clear()
+    balls.append(ball)
+
+    mode.weather = "heatwave"
+    mode.tick(world, balls, 1.0)
+
+    # Assert fire minion spawned
+    minions = [b for b in world.balls if getattr(b, "is_minion", False) and b.ball_type == "fire_minion"]
+    assert len(minions) > 0
+    assert getattr(minions[0], "team", "") == "environment"

@@ -1,4 +1,40 @@
+
 from typing import List, Optional, Any
+import uuid
+import random
+
+class WeatherMinion:
+    def __init__(self, x, y, ball_type, max_hp, damage, speed, radius):
+        self.id = str(uuid.uuid4())
+        self.ball_type = ball_type
+        self.alive = True
+        self.max_hp = max_hp
+        self.hp = max_hp
+        self.damage = damage
+        self.speed = speed
+        self.base_speed = speed
+        self.base_damage = damage
+        self.radius = radius
+        self.x = x
+        self.y = y
+        self.vx = random.uniform(-speed, speed)
+        self.vy = random.uniform(-speed, speed)
+        self.team = "environment"
+        self.time_since_death = 0.0
+        self.is_minion = True
+        self.weather_spawned = True
+        self.charge_level = 0.0
+        self.stamina = 100.0
+        self.max_stamina = 100.0
+
+class SnowMinion(WeatherMinion):
+    def __init__(self, x, y):
+        super().__init__(x, y, "ice_minion", 50.0, 5.0, 120.0, 15.0)
+
+class FireMinion(WeatherMinion):
+    def __init__(self, x, y):
+        super().__init__(x, y, "fire_minion", 30.0, 15.0, 150.0, 12.0)
+
 
 class GameMode:
     """Base class for all game modes."""
@@ -336,6 +372,24 @@ class BattleRoyaleMode(GameMode):
                     setattr(tornado, 'vx', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
                     setattr(tornado, 'vy', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
                     world.arena.hazards.append(tornado)
+
+
+            if self.weather == "heatwave":
+                # SPAWN FIRE MINIONS
+                if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                    pass
+
+                    if not hasattr(world, "balls"):
+                        world.balls = []
+
+                    # Limit number of minions
+                    minions = [b for b in world.balls if getattr(b, "weather_spawned", False) and getattr(b, "alive", True)]
+                    if len(minions) < 10:
+                        x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                        y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                        new_minion = FireMinion(x, y)
+                        world.balls.append(new_minion)
+                        balls.append(new_minion)
             if self.weather == "snow":
                 if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
                     from arena.procedural_arena import Hazard
@@ -347,6 +401,23 @@ class BattleRoyaleMode(GameMode):
                     setattr(ice, 'vx', getattr(self, "random", __import__("random")).uniform(-20.0, 20.0))
                     setattr(ice, 'vy', getattr(self, "random", __import__("random")).uniform(-20.0, 20.0))
                     world.arena.hazards.append(ice)
+
+                # SPAWN SNOW MINIONS
+                if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                    pass
+
+                    if not hasattr(world, "balls"):
+                        world.balls = []
+
+                    # Limit number of minions
+                    minions = [b for b in world.balls if getattr(b, "weather_spawned", False) and getattr(b, "alive", True)]
+                    if len(minions) < 10:
+                        x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                        y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                        new_minion = SnowMinion(x, y)
+                        world.balls.append(new_minion)
+                        balls.append(new_minion)
+
             if self.weather == "snow" and season_num == 4:
                 if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
                     from arena.procedural_arena import Hazard
@@ -1256,6 +1327,24 @@ class WeatherChaosMode(GameMode):
                     setattr(tornado, 'vx', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
                     setattr(tornado, 'vy', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
                     world.arena.hazards.append(tornado)
+
+
+            if self.weather == "heatwave":
+                # SPAWN FIRE MINIONS
+                if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                    pass
+
+                    if not hasattr(world, "balls"):
+                        world.balls = []
+
+                    # Limit number of minions
+                    minions = [b for b in world.balls if getattr(b, "weather_spawned", False) and getattr(b, "alive", True)]
+                    if len(minions) < 10:
+                        x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                        y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                        new_minion = FireMinion(x, y)
+                        world.balls.append(new_minion)
+                        balls.append(new_minion)
             if self.weather == "snow":
                 if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
                     from arena.procedural_arena import Hazard
@@ -1267,6 +1356,23 @@ class WeatherChaosMode(GameMode):
                     setattr(ice, 'vx', getattr(self, "random", __import__("random")).uniform(-20.0, 20.0))
                     setattr(ice, 'vy', getattr(self, "random", __import__("random")).uniform(-20.0, 20.0))
                     world.arena.hazards.append(ice)
+
+                # SPAWN SNOW MINIONS
+                if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                    pass
+
+                    if not hasattr(world, "balls"):
+                        world.balls = []
+
+                    # Limit number of minions
+                    minions = [b for b in world.balls if getattr(b, "weather_spawned", False) and getattr(b, "alive", True)]
+                    if len(minions) < 10:
+                        x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                        y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                        new_minion = SnowMinion(x, y)
+                        world.balls.append(new_minion)
+                        balls.append(new_minion)
+
             if self.weather == "snow" and season_num == 4:
                 if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
                     from arena.procedural_arena import Hazard

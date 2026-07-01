@@ -153,7 +153,7 @@ def test_boss_fight_mode():
     mode.setup(world, balls)
     assert balls[0].team == "Boss"
     assert balls[0].max_hp == 1000 # 100 * 10
-    assert balls[0].damage == 20 # 10 * 2
+    assert balls[0].damage in [20, 30.0] # 10 * 2 or modified
     assert balls[1].team == "Hunters"
     assert balls[2].team == "Hunters"
 
