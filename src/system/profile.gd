@@ -44,6 +44,8 @@ func load_profile():
                 data["last_login_date"] = ""
             if not data.has("guild_name"):
                 data["guild_name"] = ""
+            if not data.has("clan_name"):
+                data["clan_name"] = ""
             return
 
     # Default profile
@@ -67,7 +69,8 @@ func load_profile():
         "nemeses": {},
         "login_streak": 0,
         "last_login_date": "",
-        "guild_name": ""
+        "guild_name": "",
+        "clan_name": ""
     }
 
 func add_quest(quest_description: String, reward: int):
