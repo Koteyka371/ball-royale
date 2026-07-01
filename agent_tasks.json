@@ -5877,7 +5877,7 @@
     },
     {
       "id": "idea-339",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Projection Skill",
@@ -10195,6 +10195,40 @@
         "src/ai/interactive_puddles_and_ice_patches.py",
         "src/ai/interactive_puddles_and_ice_patches.gd",
         "tests/test_interactive_puddles_and_ice_patches.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-591",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Walls of Fire",
+      "description": "The edges of the arena slowly burn inwards. Any player touching the flaming boundary takes massive continuous damage. The safe zone shrinks down to a tiny dot by the end of the match.",
+      "allowed_paths": [
+        "src/ai/shrinking_walls_of_fire.py",
+        "src/ai/shrinking_walls_of_fire.gd",
+        "tests/test_shrinking_walls_of_fire.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-592",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Entanglement Mode",
+      "description": "Every player is randomly paired with another player in the arena. If one takes damage or gets a status effect, the other gets it too, regardless of distance.",
+      "allowed_paths": [
+        "src/ai/quantum_entanglement.py",
+        "src/ai/quantum_entanglement.gd",
+        "tests/test_quantum_entanglement.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

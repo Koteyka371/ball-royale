@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-339] Decoy Projection Skill — *2026-07-01 12:44:03 UTC*
+
+A new skill that creates an illusionary clone of the ball. The clone deals no damage but mimics the player's movement, confusing enemies and drawing their attacks. The clone vanishes after absorbing a set amount of damage or after a duration expires.
+
+---
+
 ## [idea-365] Mirror Match Arena — *2026-07-01 12:23:34 UTC*
 
 Every player spawns with an exact AI clone of themselves on the opposite side of the map. Clones mimic their creator's stats and skills.
