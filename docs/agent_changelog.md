@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-306] Tornado Weather Effect — *2026-07-01 22:15:56 UTC*
+
+Add a tornado weather effect that spawns a small dynamic hazard that slowly moves around the map and sucks in balls that get too close, dealing damage and applying a dizzy effect (randomized controls) for a short duration.
+
+---
+
 ## [idea-397] Windstorm Glide — *2026-07-01 19:27:18 UTC*
 
 Allow specific lightweight ball types, like the scout, to consume stamina and ride the wind drafts during 'wind' weather, traveling significantly faster and ignoring ground friction.
