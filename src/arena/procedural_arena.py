@@ -120,7 +120,7 @@ class ProceduralArena:
         # Generate hazards
         num_hazards = self.num_rooms * 2
         for i in range(num_hazards):
-            kind = random.choice(["spikes", "lava", "fake_booster", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "lightning_storm", "hidden_trap", "silence_booster", "switch", "magnet", "quicksand", "magnet_booster", "breakable_wall", "portal_gun_item"])
+            kind = random.choice(["spikes", "lava", "fake_booster", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "lightning_storm", "hidden_trap", "silence_booster", "switch", "magnet", "quicksand", "magnet_booster", "breakable_wall", "portal_gun_item", "wormhole"])
             if kind == "switch":
                 radius = 20.0
                 damage = 0.0
@@ -271,6 +271,25 @@ class ProceduralArena:
 
             self.hazards.append(sp1)
             self.hazards.append(sp2)
+        # Generate guaranteed paired wormholes
+        num_wormholes = max(1, self.num_rooms // 2)
+        for p in range(num_wormholes):
+            w1_id = len(self.hazards) + 9000 + p*2
+            w2_id = len(self.hazards) + 9000 + p*2 + 1
+
+            w1_x, w1_y = self.get_random_spawn_point(30.0)
+            w2_x, w2_y = self.get_random_spawn_point(30.0)
+
+            w1 = Hazard(id=w1_id, x=w1_x, y=w1_y, radius=30.0, kind="wormhole", damage=0.0)
+            w1.target_x = w2_x
+            w1.target_y = w2_y
+
+            w2 = Hazard(id=w2_id, x=w2_x, y=w2_y, radius=30.0, kind="wormhole", damage=0.0)
+            w2.target_x = w1_x
+            w2.target_y = w1_y
+
+            self.hazards.append(w1)
+            self.hazards.append(w2)
 
         # Generate random teleporter pads
         num_teleporters = max(2, self.num_rooms)
