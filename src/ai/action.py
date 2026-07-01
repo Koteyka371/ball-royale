@@ -1543,7 +1543,7 @@ class Action:
                                 self.ball.y += ny * overlap
 
                             if hasattr(hazard, "hp"):
-                                hazard.hp -= 100.0 * delta # damage it on bump
+                                hazard.hp -= getattr(self.ball, "damage", 100.0) * delta * 5.0 # damage it on bump
                                 if hazard.hp <= 0:
                                     hazard.active = False
                             continue

@@ -169,10 +169,12 @@ func generate():
             kind = "magnet"
         elif r < 0.98:
             kind = "bumper"
-        elif r < 0.99:
+        elif r < 0.985:
             kind = "quicksand"
-        elif r < 0.995:
+        elif r < 0.990:
             kind = "magnet_booster"
+        elif r < 0.995:
+            kind = "breakable_wall"
         else:
             kind = "switch"
 
@@ -199,6 +201,8 @@ func generate():
             damage = 0.0
             var s = get_random_spawn_point(radius)
             var new_hazard = Hazard.new(i, s[0], s[1], radius, kind, damage)
+            if kind == "breakable_wall":
+                new_hazard.set_meta("hp", 100.0)
             if rng.randf() < 0.5:
                 var target = null
                 if hazards.size() > 0:
@@ -217,6 +221,12 @@ func generate():
             continue
         elif kind == "quicksand":
             radius = rng.randf_range(40.0, 80.0)
+            damage = 0.0
+        elif kind == "magnet_booster":
+            radius = 15.0
+            damage = 0.0
+        elif kind == "breakable_wall":
+            radius = rng.randf_range(30.0, 60.0)
             damage = 0.0
         elif kind == "switch":
             radius = 20.0
