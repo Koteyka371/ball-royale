@@ -6474,7 +6474,7 @@
     },
     {
       "id": "idea-374",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather Hazards",
@@ -10723,6 +10723,40 @@
         "src/ai/gravity_inversion.py",
         "src/ai/gravity_inversion.gd",
         "tests/test_gravity_inversion.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-622",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reflective Shields",
+      "description": "An activated ability or item that gives players a temporary reflective shield. Any projectile or targeted hazard damage during this window reflects half of the damage back to the attacker.",
+      "allowed_paths": [
+        "src/ai/reflective_shields.py",
+        "src/ai/reflective_shields.gd",
+        "tests/test_reflective_shields.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-623",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Safe Zone based on Player Proximity",
+      "description": "Instead of purely time-based shrinking, the safe zone shrinks faster if multiple players are camping inside it, forcing them to fight or move out.",
+      "allowed_paths": [
+        "src/ai/shrinking_safe_zone_based_on_player_proximity.py",
+        "src/ai/shrinking_safe_zone_based_on_player_proximity.gd",
+        "tests/test_shrinking_safe_zone_based_on_player_proximity.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

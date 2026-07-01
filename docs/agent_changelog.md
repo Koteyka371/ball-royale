@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-374] Weather Hazards — *2026-07-01 15:00:11 UTC*
+
+Introduce more weather-specific hazards, like a 'mud pit' that forms when it rains, severely slowing down movement of any ball that steps in it, and 'ice slicks' in snow.
+
+---
+
 ## [idea-324] Vampiric Drain Zone — *2026-07-01 14:45:17 UTC*
 
 An arena hazard that deals small damage over time to any ball inside it, and uses the total damage dealt to heal the ball with the lowest HP on the map.
