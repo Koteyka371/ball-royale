@@ -680,6 +680,19 @@ class Action:
                 self.ball.hp = 0
                 self.ball.alive = False
 
+
+        if getattr(self.ball, "is_decoy_beacon", False):
+            # heal allies
+            if hasattr(self.world, "balls"):
+                for b in self.world.balls:
+                    if getattr(b, "alive", True) and getattr(b, "team", "") == getattr(self.ball, "team", "") and b != self.ball:
+                        dx = b.x - self.ball.x
+                        dy = b.y - self.ball.y
+                        dist = math.sqrt(dx*dx + dy*dy)
+                        if dist <= 150.0:
+                            heal_amount = 5.0 * delta
+                            b.hp = min(getattr(b, "max_hp", 100), getattr(b, "hp", 100) + heal_amount)
+
         if getattr(self.ball, "is_decoy", False):
             self.ball.decoy_timer -= delta
             if self.ball.decoy_timer <= 0:
@@ -3446,6 +3459,7 @@ class Action:
 
             elif skill_name == "clone":
                 import copy
+                import random
                 num_clones = random.randint(2, 4)
                 for _ in range(num_clones):
                     clone = copy.copy(self.ball)
@@ -3477,6 +3491,7 @@ class Action:
                 # Add to own skill timer
                 self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
             elif skill_name == "summon_minions":
+                import random
                 num_minions = random.randint(2, 4)
                 for _ in range(num_minions):
                     import copy
@@ -3528,6 +3543,33 @@ class Action:
                                 if dist <= explosion_radius:
                                     if hasattr(enemy, "take_damage"):
                                         enemy.take_damage(explosion_damage)
+
+            elif skill_name == "deploy_decoy_beacon":
+                import copy
+                import random
+
+                if hasattr(self.world, "balls"):
+                    beacon = copy.copy(self.ball)
+                    beacon.owner_id = getattr(self.ball, "id", None)
+                    self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 10.0)
+                    beacon.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                    if hasattr(self.world, "next_id"):
+                        self.world.next_id += 1
+
+                    beacon.hp = getattr(self.ball, "max_hp", 100) * 0.3
+                    beacon.max_hp = beacon.hp
+                    beacon.damage = 0
+                    beacon.speed = 0.0
+                    beacon.skill_timer = 9999.0
+                    beacon.attack_timer = 9999.0
+                    beacon.is_decoy = True
+                    beacon.is_decoy_beacon = True
+                    beacon.decoy_timer = 5.0
+                    beacon.SKILL = None
+                    beacon.skill = None
+                    beacon.active_skill = None
+                    self.world.balls.append(beacon)
+
             elif skill_name == "deploy_decoy":
                 import copy
                 active_decoys = [b for b in getattr(self.world, "balls", []) if getattr(b, "is_decoy", False) and getattr(b, "owner_id", None) == self.ball.id and getattr(b, "alive", True) and not getattr(b, "has_swapped", False)]

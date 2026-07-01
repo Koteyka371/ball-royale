@@ -982,6 +982,35 @@ func execute(strategy: String, delta: float):
             self.ball.hp = 0
             self.ball.alive = false
 
+    var is_decoy_beacon = false
+    if "is_decoy_beacon" in my_ball:
+        is_decoy_beacon = my_ball.is_decoy_beacon
+    elif my_ball.has_method("get_meta") and my_ball.has_meta("is_decoy_beacon"):
+        is_decoy_beacon = my_ball.get_meta("is_decoy_beacon")
+
+    if is_decoy_beacon:
+        if world != null and "balls" in world:
+            var b_team = ""
+            if "team" in my_ball: b_team = my_ball.team
+            elif my_ball.has_method("get_meta") and my_ball.has_meta("team"): b_team = my_ball.get_meta("team")
+
+            for b in world.balls:
+                var b_alive = true
+                if "alive" in b: b_alive = b.alive
+
+                var other_team = ""
+                if "team" in b: other_team = b.team
+                elif b.has_method("get_meta") and b.has_meta("team"): other_team = b.get_meta("team")
+
+                if b_alive and b != my_ball and other_team == b_team:
+                    var dx = b.x - my_ball.x
+                    var dy = b.y - my_ball.y
+                    var dist = sqrt(dx*dx + dy*dy)
+                    if dist <= 150.0:
+                        var heal_amount = 5.0 * delta
+                        if "hp" in b and "max_hp" in b:
+                            b.hp = min(float(b.max_hp), float(b.hp) + heal_amount)
+
     var is_decoy = false
     if "is_decoy" in my_ball:
         is_decoy = my_ball.is_decoy
@@ -5529,6 +5558,48 @@ func _use_skill():
                         if dist <= explosion_radius:
                             if e.has_method("take_damage"):
                                 e.take_damage(explosion_damage)
+
+        elif skill_name == "deploy_decoy_beacon":
+            if "balls" in self.world:
+                var beacon = null
+                if self.ball.has_method("duplicate"):
+                    beacon = self.ball.duplicate()
+                elif typeof(self.ball) == TYPE_DICTIONARY:
+                    beacon = self.ball.duplicate()
+
+                if beacon != null:
+                    if "id" in beacon:
+                        beacon.id = randi() % 90000 + 10000
+                    if "hp" in beacon and "max_hp" in beacon:
+                        beacon.max_hp = float(self.ball.max_hp) * 0.3
+                        beacon.hp = beacon.max_hp
+                    if "damage" in beacon:
+                        beacon.damage = 0.0
+                    if "speed" in beacon:
+                        beacon.speed = 0.0
+
+                    if beacon.has_method("set_meta"):
+                        beacon.set_meta("owner_id", self_id_stat)
+                        beacon.set_meta("is_decoy", true)
+                        beacon.set_meta("is_decoy_beacon", true)
+                        beacon.set_meta("decoy_timer", 5.0)
+                        beacon.set_meta("skill_timer", 9999.0)
+                        beacon.set_meta("attack_timer", 9999.0)
+                        beacon.set_meta("SKILL", null)
+                        beacon.set_meta("skill", null)
+                        beacon.set_meta("active_skill", null)
+                    elif beacon is Dictionary:
+                        beacon["owner_id"] = self_id_stat
+                        beacon["is_decoy"] = true
+                        beacon["is_decoy_beacon"] = true
+                        beacon["decoy_timer"] = 5.0
+                        beacon["skill_timer"] = 9999.0
+                        beacon["attack_timer"] = 9999.0
+                        beacon["SKILL"] = null
+                        beacon["skill"] = null
+                        beacon["active_skill"] = null
+
+                    self.world.balls.append(beacon)
 
         elif skill_name == "deploy_decoy":
             var swapped = false
