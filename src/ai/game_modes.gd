@@ -625,6 +625,24 @@ class BattleRoyaleMode extends GameMode:
                         if "hp" in b:
                             b.hp -= 20.0
 
+        if randf() < 0.05 * delta:
+            if "arena" in world and "hazards" in world.arena:
+                var hx = 100.0 + randf() * (1000.0 - 200.0)
+                var hy = 100.0 + randf() * (1000.0 - 200.0)
+                if "width" in world.arena: hx = 100.0 + randf() * (world.arena.width - 200.0)
+                if "height" in world.arena: hy = 100.0 + randf() * (world.arena.height - 200.0)
+                var HazardType = load("res://src/arena/procedural_arena.gd").Hazard
+                if HazardType != null:
+                    var vb = HazardType.new()
+                    vb.id = world.arena.hazards.size() + int(randf() * 9000.0) + 1000
+                    vb.x = hx
+                    vb.y = hy
+                    vb.radius = 30.0
+                    vb.kind = "vision_booster"
+                    vb.damage = 0.0
+                    vb.set_meta("duration", 15.0)
+                    world.arena.hazards.append(vb)
+
         # Dark phase cycle: 20s normal, 10s dark
         if not is_dark_phase and dark_phase_timer >= 20.0:
             is_dark_phase = true
@@ -639,10 +657,17 @@ class BattleRoyaleMode extends GameMode:
                     if b.has_method("set_meta"):
                         b.set_meta("base_perception_radius", current_perc)
 
-                    if b.ball_type == "scout":
-                        b.perception_radius = 120.0
+                    var vb_timer = 0.0
+                    if "vision_booster_timer" in b: vb_timer = b.vision_booster_timer
+                    elif b.has_method("get_meta") and b.has_meta("vision_booster_timer"): vb_timer = b.get_meta("vision_booster_timer")
+
+                    if vb_timer > 0.0:
+                        b.perception_radius = current_perc
                     else:
-                        b.perception_radius = 60.0
+                        if b.ball_type == "scout":
+                            b.perception_radius = 120.0
+                        else:
+                            b.perception_radius = 60.0
         elif is_dark_phase and dark_phase_timer >= 10.0:
             is_dark_phase = false
             dark_phase_timer = 0.0

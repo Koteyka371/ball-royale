@@ -541,10 +541,13 @@ class BattleRoyaleMode(GameMode):
                 if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                     if not hasattr(b, "base_perception_radius"):
                         b.base_perception_radius = getattr(b, "perception_radius", 250.0)
-                    if b.ball_type == "scout":
-                        b.perception_radius = 120.0
+                    if getattr(b, "vision_booster_timer", 0) > 0:
+                        b.perception_radius = b.base_perception_radius
                     else:
-                        b.perception_radius = 60.0
+                        if b.ball_type == "scout":
+                            b.perception_radius = 120.0
+                        else:
+                            b.perception_radius = 60.0
         elif self.is_dark_phase and self.dark_phase_timer >= 10.0:
             self.is_dark_phase = False
             self.dark_phase_timer = 0.0
