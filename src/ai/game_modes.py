@@ -3195,6 +3195,13 @@ class DayNightMode(GameMode):
                 self.timer = 0.0
                 world.arena.is_night = not getattr(world.arena, "is_night", False)
 
+
+class IceRinkMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Ice Rink"
+        self.description = "Friction and gravity are drastically reduced. Balls slide effortlessly, and collisions produce massive knockback."
+
 GAME_MODES = {
     "day_night_mode": DayNightMode(),
     "shifting_maze": ShiftingMazeMode(),
@@ -3236,7 +3243,8 @@ GAME_MODES = {
     "bounty_hunt": BountyHuntMode(),
     "earthquake": EarthquakeMode(),
     "clone_chaos": CloneChaosMode(),
-    "supernova": SupernovaMode()
+    "supernova": SupernovaMode(),
+    "ice_rink": IceRinkMode()
 }
 
 try:

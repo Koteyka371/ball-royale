@@ -4086,6 +4086,12 @@ class DayNightMode extends GameMode:
                 else:
                     world.arena.is_night = true
 
+
+class IceRinkMode extends GameMode:
+    func _init() -> void:
+        name = "Ice Rink"
+        description = "Friction and gravity are drastically reduced. Balls slide effortlessly, and collisions produce massive knockback."
+
 var GAME_MODES = {
 	"day_night_mode": DayNightMode.new(),
 	"shifting_maze": ShiftingMazeMode.new(),
@@ -4128,5 +4134,6 @@ var GAME_MODES = {
     "bounty_hunt": BountyHuntMode.new(),
     "earthquake": EarthquakeMode.new(),
     "clone_chaos": CloneChaosMode.new(),
-    "supernova": SupernovaMode.new()
+    "supernova": SupernovaMode.new(),
+    "ice_rink": IceRinkMode.new()
 }

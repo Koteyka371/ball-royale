@@ -758,6 +758,12 @@ func execute(strategy: String, delta: float):
             if "vx" in my_ball and "vy" in my_ball:
                 my_ball.x += my_ball.vx * delta * 0.4
                 my_ball.y += my_ball.vy * delta * 0.4
+
+        var gm = world.get("game_mode") if world != null else null
+        if gm != null and gm.get("name") == "Ice Rink":
+            if "vx" in my_ball and "vy" in my_ball:
+                my_ball.x += my_ball.vx * delta * 0.95
+                my_ball.y += my_ball.vy * delta * 0.95
         var wind_dx = 0.0
         if world.arena.get("wind_dx") != null:
             wind_dx = world.arena.get("wind_dx")
@@ -6540,6 +6546,8 @@ func _resolve_collisions() -> bool:
             if self.world != null and "game_mode" in self.world and self.world.game_mode != null:
                 if "name" in self.world.game_mode and self.world.game_mode.name == "Bumper Balls":
                     knockback_multiplier = 5.0
+                elif "name" in self.world.game_mode and self.world.game_mode.name == "Ice Rink":
+                    knockback_multiplier = 15.0
 
             self.ball.x += nx * overlap * knockback_multiplier
             self.ball.y += ny * overlap * knockback_multiplier

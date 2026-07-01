@@ -522,6 +522,11 @@ class Action:
                 # Extra slippery: apply even more momentum
                 self.ball.x += getattr(self.ball, "vx") * delta * 0.4
                 self.ball.y += getattr(self.ball, "vy") * delta * 0.4
+
+            gm = getattr(self.world, "game_mode", None)
+            if gm and getattr(gm, "name", "") == "Ice Rink":
+                self.ball.x += getattr(self.ball, "vx", 0.0) * delta * 0.95
+                self.ball.y += getattr(self.ball, "vy", 0.0) * delta * 0.95
             if getattr(self.world.arena, "is_foggy", False):
                 pass # Fog has no friction effect, snow has speed change
             wind_dx = getattr(self.world.arena, "wind_dx", 0.0)
@@ -4047,6 +4052,8 @@ class Action:
                 gm = getattr(self.world, "game_mode", None)
                 if gm and getattr(gm, "name", "") == "Bumper Balls":
                     knockback_multiplier = 5.0
+                elif gm and getattr(gm, "name", "") == "Ice Rink":
+                    knockback_multiplier = 15.0
 
                 self.ball.x += nx * overlap * knockback_multiplier
                 self.ball.y += ny * overlap * knockback_multiplier

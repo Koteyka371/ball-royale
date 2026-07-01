@@ -1,0 +1,4 @@
+{
+  "title": "Slippery Slope Hazard",
+  "description": "Introduce localized 'ice patches' into the procedural arena generation. Any ball moving into an ice patch has its steering and brake strength temporarily nullified and must rely purely on momentum to pass through, creating zones where players cannot easily change direction or stop to fight."
+}
