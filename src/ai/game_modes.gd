@@ -1528,18 +1528,42 @@ class WeatherChaosMode extends GameMode:
 					tornado.set_meta("vx", randf_range(-100.0, 100.0))
 					tornado.set_meta("vy", randf_range(-100.0, 100.0))
 					world.arena.hazards.append(tornado)
-			elif weather == "rain" or weather == "thunderstorm":
-				var chance = 0.05
-				if weather == "thunderstorm":
-					chance = 0.2
-				if randf() < chance * delta:
+			elif weather == "snow" and season_num == 4:
+				if randf() < 0.1 * delta:
+					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
+					var x = randf_range(100.0, world.arena.width - 100.0)
+					var y = randf_range(100.0, world.arena.height - 100.0)
+					var ice = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 50.0, "ice_patch", 0.0)
+					ice.set_meta("duration", 10.0)
+					ice.set_meta("vx", randf_range(-50.0, 50.0))
+					ice.set_meta("vy", randf_range(-50.0, 50.0))
+					world.arena.hazards.append(ice)
+			elif weather == "rain":
+				if season_num == 3:
+					if randf() < 0.1 * delta:
+						var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
+						var x = randf_range(100.0, world.arena.width - 100.0)
+						var y = randf_range(100.0, world.arena.height - 100.0)
+						var puddle = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 40.0, "healing_spring", -10.0)
+						puddle.set_meta("duration", 8.0)
+						world.arena.hazards.append(puddle)
+				else:
+					if randf() < 0.05 * delta:
+						var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
+						var x = randf_range(100.0, world.arena.width - 100.0)
+						var y = randf_range(100.0, world.arena.height - 100.0)
+						var lightning = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 30.0, "lightning_strike", 50.0)
+						lightning.set_meta("duration", 1.0)
+						world.arena.hazards.append(lightning)
+			elif weather == "thunderstorm":
+				if randf() < 0.2 * delta:
 					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
 					var x = randf_range(100.0, world.arena.width - 100.0)
 					var y = randf_range(100.0, world.arena.height - 100.0)
 					var lightning = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 30.0, "lightning_strike", 50.0)
 					lightning.set_meta("duration", 1.0)
 					world.arena.hazards.append(lightning)
-				if weather == "thunderstorm" and randf() < 0.05 * delta:
+				if randf() < 0.05 * delta:
 					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
 					var x = randf_range(100.0, world.arena.width - 100.0)
 					var y = randf_range(100.0, world.arena.height - 100.0)

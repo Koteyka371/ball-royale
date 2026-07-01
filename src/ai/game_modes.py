@@ -47,6 +47,11 @@ class GameMode:
 
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        season_num = 1
+        if hasattr(world, "leaderboard_manager"):
+            season_num = world.leaderboard_manager.data.get("current_season", 1)
+        elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
+            season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
@@ -110,6 +115,11 @@ class DraftRoyaleMode(GameMode):
             b.speed = 0.0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        season_num = 1
+        if hasattr(world, "leaderboard_manager"):
+            season_num = world.leaderboard_manager.data.get("current_season", 1)
+        elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
+            season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
         if self.phase == "drafting":
             self.timer += delta
             if self.timer > 0.5:
@@ -226,6 +236,11 @@ class BattleRoyaleMode(GameMode):
                     b.base_damage = getattr(b, "damage", 10.0)
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        season_num = 1
+        if hasattr(world, "leaderboard_manager"):
+            season_num = world.leaderboard_manager.data.get("current_season", 1)
+        elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
+            season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
@@ -302,16 +317,48 @@ class BattleRoyaleMode(GameMode):
                     setattr(tornado, 'vx', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
                     setattr(tornado, 'vy', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
                     world.arena.hazards.append(tornado)
-            elif self.weather == "rain" or self.weather == "thunderstorm":
-                if getattr(self, "random", __import__("random")).random() < (0.2 if self.weather == "thunderstorm" else 0.05) * delta:
+            if self.weather == "snow" and season_num == 4:
+                if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
+                    from arena.procedural_arena import Hazard
+                    # Spawn randomly moving ice patches
+                    x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                    y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                    ice = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=50.0, kind="ice_patch", damage=0.0)
+                    setattr(ice, 'duration', 10.0)
+                    setattr(ice, 'vx', getattr(self, "random", __import__("random")).uniform(-50.0, 50.0))
+                    setattr(ice, 'vy', getattr(self, "random", __import__("random")).uniform(-50.0, 50.0))
+                    world.arena.hazards.append(ice)
+
+            elif self.weather == "rain":
+                if season_num == 3:
+                    if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
+                        from arena.procedural_arena import Hazard
+                        # Spawn healing puddles
+                        x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                        y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                        puddle = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=40.0, kind="healing_spring", damage=-10.0)
+                        setattr(puddle, 'duration', 8.0)
+                        world.arena.hazards.append(puddle)
+                else:
+                    if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                        from arena.procedural_arena import Hazard
+                        # Spawn lightning strike zone
+                        x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                        y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                        lightning = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=30.0, kind="lightning_strike", damage=50.0)
+                        setattr(lightning, 'duration', 1.0)
+                        world.arena.hazards.append(lightning)
+            elif self.weather == "thunderstorm":
+                if getattr(self, "random", __import__("random")).random() < 0.2 * delta:
                     from arena.procedural_arena import Hazard
                     # Spawn lightning strike zone
                     x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
                     y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
                     lightning = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=30.0, kind="lightning_strike", damage=50.0)
-                    setattr(lightning, 'duration', 1.0) # short duration strike
+                    setattr(lightning, 'duration', 1.0)
                     world.arena.hazards.append(lightning)
-                if self.weather == "thunderstorm" and getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                    from arena.procedural_arena import Hazard
                     # Spawn tornado
                     x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
                     y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
@@ -541,6 +588,11 @@ class ZombieInfectionMode(GameMode):
                         b.team = "Survivor"
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        season_num = 1
+        if hasattr(world, "leaderboard_manager"):
+            season_num = world.leaderboard_manager.data.get("current_season", 1)
+        elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
+            season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
@@ -662,6 +714,11 @@ class EscortMode(GameMode):
             self.payload.y = 500.0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        season_num = 1
+        if hasattr(world, "leaderboard_manager"):
+            season_num = world.leaderboard_manager.data.get("current_season", 1)
+        elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
+            season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
         if self.payload and getattr(self.payload, "alive", False):
             import math
             dx = self.goal_x - getattr(self.payload, "x", 0)
@@ -860,6 +917,11 @@ class VampireRoyaleMode(GameMode):
         self.tick_timer = 0.0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        season_num = 1
+        if hasattr(world, "leaderboard_manager"):
+            season_num = world.leaderboard_manager.data.get("current_season", 1)
+        elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
+            season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
@@ -915,6 +977,11 @@ class KingOfTheHillMode(GameMode):
                 b.score = 0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        season_num = 1
+        if hasattr(world, "leaderboard_manager"):
+            season_num = world.leaderboard_manager.data.get("current_season", 1)
+        elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
+            season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
@@ -978,6 +1045,11 @@ class BlackHoleMode(GameMode):
         self.black_hole_radius = 50.0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        season_num = 1
+        if hasattr(world, "leaderboard_manager"):
+            season_num = world.leaderboard_manager.data.get("current_season", 1)
+        elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
+            season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
@@ -1066,6 +1138,11 @@ class WeatherChaosMode(GameMode):
                 b.base_damage = getattr(b, "damage", 10.0)
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        season_num = 1
+        if hasattr(world, "leaderboard_manager"):
+            season_num = world.leaderboard_manager.data.get("current_season", 1)
+        elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
+            season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
@@ -1144,16 +1221,48 @@ class WeatherChaosMode(GameMode):
                     setattr(tornado, 'vx', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
                     setattr(tornado, 'vy', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
                     world.arena.hazards.append(tornado)
-            elif self.weather == "rain" or self.weather == "thunderstorm":
-                if getattr(self, "random", __import__("random")).random() < (0.2 if self.weather == "thunderstorm" else 0.05) * delta:
+            if self.weather == "snow" and season_num == 4:
+                if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
+                    from arena.procedural_arena import Hazard
+                    # Spawn randomly moving ice patches
+                    x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                    y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                    ice = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=50.0, kind="ice_patch", damage=0.0)
+                    setattr(ice, 'duration', 10.0)
+                    setattr(ice, 'vx', getattr(self, "random", __import__("random")).uniform(-50.0, 50.0))
+                    setattr(ice, 'vy', getattr(self, "random", __import__("random")).uniform(-50.0, 50.0))
+                    world.arena.hazards.append(ice)
+
+            elif self.weather == "rain":
+                if season_num == 3:
+                    if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
+                        from arena.procedural_arena import Hazard
+                        # Spawn healing puddles
+                        x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                        y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                        puddle = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=40.0, kind="healing_spring", damage=-10.0)
+                        setattr(puddle, 'duration', 8.0)
+                        world.arena.hazards.append(puddle)
+                else:
+                    if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                        from arena.procedural_arena import Hazard
+                        # Spawn lightning strike zone
+                        x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                        y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                        lightning = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=30.0, kind="lightning_strike", damage=50.0)
+                        setattr(lightning, 'duration', 1.0)
+                        world.arena.hazards.append(lightning)
+            elif self.weather == "thunderstorm":
+                if getattr(self, "random", __import__("random")).random() < 0.2 * delta:
                     from arena.procedural_arena import Hazard
                     # Spawn lightning strike zone
                     x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
                     y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
                     lightning = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=30.0, kind="lightning_strike", damage=50.0)
-                    setattr(lightning, 'duration', 1.0) # short duration strike
+                    setattr(lightning, 'duration', 1.0)
                     world.arena.hazards.append(lightning)
-                if self.weather == "thunderstorm" and getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                    from arena.procedural_arena import Hazard
                     # Spawn tornado
                     x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
                     y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
@@ -1381,6 +1490,11 @@ class DominationMode(GameMode):
             pass
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        season_num = 1
+        if hasattr(world, "leaderboard_manager"):
+            season_num = world.leaderboard_manager.data.get("current_season", 1)
+        elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
+            season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
@@ -1581,6 +1695,11 @@ class ReverseEventMode(GameMode):
         self.event_duration = 0.0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        season_num = 1
+        if hasattr(world, "leaderboard_manager"):
+            season_num = world.leaderboard_manager.data.get("current_season", 1)
+        elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
+            season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
         if not self.event_active:
             self.event_timer += delta
 
@@ -1633,6 +1752,11 @@ class MemoryTrapsMode(GameMode):
             self.traps.append({"x": x, "y": y, "radius": 40.0, "cooldowns": {}})
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        season_num = 1
+        if hasattr(world, "leaderboard_manager"):
+            season_num = world.leaderboard_manager.data.get("current_season", 1)
+        elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
+            season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
@@ -1698,6 +1822,11 @@ class CustomMatchMode(GameMode):
         self.mutators_active = mutators_unlocked and len(self.mutators) > 0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        season_num = 1
+        if hasattr(world, "leaderboard_manager"):
+            season_num = world.leaderboard_manager.data.get("current_season", 1)
+        elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
+            season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
@@ -1847,6 +1976,11 @@ class PitchBlackMode(GameMode):
                 b.team = b.ball_type
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        season_num = 1
+        if hasattr(world, "leaderboard_manager"):
+            season_num = world.leaderboard_manager.data.get("current_season", 1)
+        elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
+            season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
@@ -1894,6 +2028,11 @@ class VisionReducedMode(GameMode):
                 b.team = b.ball_type
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        season_num = 1
+        if hasattr(world, "leaderboard_manager"):
+            season_num = world.leaderboard_manager.data.get("current_season", 1)
+        elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
+            season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
@@ -1948,6 +2087,11 @@ class EMPBurstMode(GameMode):
         self.spawn_timer = 0.0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        season_num = 1
+        if hasattr(world, "leaderboard_manager"):
+            season_num = world.leaderboard_manager.data.get("current_season", 1)
+        elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
+            season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
         super().tick(world, balls, delta)
 
         self.spawn_timer += delta
@@ -1979,6 +2123,11 @@ class DynamicHazardsMode(GameMode):
         self.spawn_timer = 0.0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        season_num = 1
+        if hasattr(world, "leaderboard_manager"):
+            season_num = world.leaderboard_manager.data.get("current_season", 1)
+        elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
+            season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
         super().tick(world, balls, delta)
 
         self.spawn_timer += delta
@@ -2544,6 +2693,11 @@ class CloneChaosMode(GameMode):
             b.skill_timer = 0.0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        season_num = 1
+        if hasattr(world, "leaderboard_manager"):
+            season_num = world.leaderboard_manager.data.get("current_season", 1)
+        elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
+            season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
         super().tick(world, balls, delta)
         self.clone_timer += delta
         # occasionally force all balls to cast if available
@@ -2599,6 +2753,11 @@ class BumperBallsMode(GameMode):
                 b.mutators.append("bumper_balls")
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        season_num = 1
+        if hasattr(world, "leaderboard_manager"):
+            season_num = world.leaderboard_manager.data.get("current_season", 1)
+        elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
+            season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
         arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else getattr(world, "width", 1000)
         arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else getattr(world, "height", 1000)
 
@@ -2749,6 +2908,11 @@ class ModifierZonesMode(GameMode):
                 b.team = getattr(b, "team", b.ball_type)
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        season_num = 1
+        if hasattr(world, "leaderboard_manager"):
+            season_num = world.leaderboard_manager.data.get("current_season", 1)
+        elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
+            season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
         super().tick(world, balls, delta)
         import math
 
@@ -2856,6 +3020,11 @@ class WindstormMode(GameMode):
                 b.base_damage = getattr(b, "damage", 10.0)
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        season_num = 1
+        if hasattr(world, "leaderboard_manager"):
+            season_num = world.leaderboard_manager.data.get("current_season", 1)
+        elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
+            season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
@@ -3194,6 +3363,11 @@ class GravityWellMode(GameMode):
         self.spawn_timer = 0.0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        season_num = 1
+        if hasattr(world, "leaderboard_manager"):
+            season_num = world.leaderboard_manager.data.get("current_season", 1)
+        elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
+            season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
         super().tick(world, balls, delta)
         import random
 
