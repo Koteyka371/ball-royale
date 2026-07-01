@@ -1708,7 +1708,92 @@ class CustomMatchMode(GameMode):
                 else:
                     b.time_since_death += delta
 
+
+
+
+
+
         if getattr(self, "mutators_active", False):
+            if "boss" in self.mutators:
+                if not hasattr(self, "boss_mutator_timer"):
+                    self.boss_mutator_timer = 0.0
+
+                # Check if there is already an active boss (even if dead)
+                active_boss = None
+                for b in balls:
+                    if getattr(b, "_is_boss_mutator", False):
+                        active_boss = b
+                        break
+
+                if active_boss:
+                    # Decrement boss timer
+                    if hasattr(active_boss, "_boss_mutator_duration"):
+                        active_boss._boss_mutator_duration -= delta
+                        if active_boss._boss_mutator_duration <= 0 or not getattr(active_boss, "alive", False):
+                            # Revert boss
+                            active_boss._is_boss_mutator = False
+                            if hasattr(active_boss, "_original_radius"):
+                                active_boss.radius = active_boss._original_radius
+                            if hasattr(active_boss, "_original_max_hp"):
+                                active_boss.max_hp = active_boss._original_max_hp
+                            if hasattr(active_boss, "_original_damage"):
+                                active_boss.damage = active_boss._original_damage
+                            if hasattr(active_boss, "_original_base_damage"):
+                                active_boss.base_damage = active_boss._original_base_damage
+                            if hasattr(active_boss, "_original_team"):
+                                active_boss.team = active_boss._original_team
+
+                            # Restore hp proportionally if alive
+                            if getattr(active_boss, "alive", False):
+                                hp_pct = active_boss.hp / (active_boss.max_hp * 3) if active_boss.max_hp > 0 else 1.0
+                                active_boss.hp = active_boss.max_hp * hp_pct
+
+                            # Revert everyone else's team
+                            for b in balls:
+                                if getattr(b, "_original_team", None) is not None and b != active_boss:
+                                    b.team = b._original_team
+
+                            # Give a little time buffer to prevent immediate respawn and allow tick to increment it next time
+                            self.boss_mutator_timer = delta
+                else:
+                    self.boss_mutator_timer += delta
+                    if self.boss_mutator_timer >= 10.0:
+                        self.boss_mutator_timer = 0.0
+                        import random
+                        valid_bosses = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+                        if valid_bosses:
+                            new_boss = random.choice(valid_bosses)
+                            new_boss._is_boss_mutator = True
+                            new_boss._boss_mutator_duration = 15.0
+
+                            new_boss._original_radius = getattr(new_boss, "radius", 15.0)
+                            new_boss.radius = new_boss._original_radius * 2.0
+
+                            new_boss._original_max_hp = getattr(new_boss, "max_hp", 100.0)
+                            new_boss.max_hp = new_boss._original_max_hp * 3.0
+                            hp_pct = getattr(new_boss, "hp", 100.0) / new_boss._original_max_hp if new_boss._original_max_hp > 0 else 1.0
+                            new_boss.hp = new_boss.max_hp * hp_pct
+
+                            new_boss._original_damage = getattr(new_boss, "damage", 10.0)
+                            new_boss.damage = new_boss._original_damage * 2.0
+
+                            if hasattr(new_boss, "base_damage"):
+                                new_boss._original_base_damage = new_boss.base_damage
+                                new_boss.base_damage = new_boss._original_base_damage * 2.0
+
+                            new_boss._original_team = getattr(new_boss, "team", getattr(new_boss, "ball_type", "solo"))
+                            new_boss.team = "Boss_Mutator"
+
+                            # Everyone else teams up against the boss
+                            for b in balls:
+                                if b != new_boss and getattr(b, "ball_type", None) != "spectator":
+                                    if not hasattr(b, "_original_team"):
+                                        b._original_team = getattr(b, "team", getattr(b, "ball_type", "solo"))
+                                    b.team = "Hunters"
+
+                            if hasattr(world, "add_event"):
+                                world.add_event("boss_mutator", {"message": f"{new_boss.ball_type.capitalize()} has become a Juggernaut Boss!"})
+
             trigger_reroll = False
             if "random_reroll" in self.mutators:
                 if not hasattr(self, "random_reroll_timer"):

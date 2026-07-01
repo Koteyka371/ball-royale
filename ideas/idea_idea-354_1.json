@@ -1,0 +1,4 @@
+{
+  "title": "Reverse Controls Mutator",
+  "description": "A mutator for custom matches where all movement inputs and AI logic for movement direction are periodically reversed for 5 seconds."
+}
