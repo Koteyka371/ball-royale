@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-341] Seasonal Weather Affixes — *2026-07-01 13:27:40 UTC*
+
+Make weather more dynamic by assigning unique 'Affixes' to each weather type based on the in-game season. For example, during a 'Winter Season' leaderboard period, Snow weather could additionally spawn randomly moving ice patches that cause severe sliding, while Rain could spawn healing puddles instead of lightning.
+
+---
+
 ## [idea-366] Low Gravity Mode — *2026-07-01 13:25:23 UTC*
 
 A GameMode where the friction and gravity are drastically reduced, causing balls to slide around the map effortlessly and collisions to produce massive knockback.

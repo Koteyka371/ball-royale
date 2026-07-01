@@ -5911,7 +5911,7 @@
     },
     {
       "id": "idea-341",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Seasonal Weather Affixes",
@@ -10365,6 +10365,40 @@
         "src/ai/quantum_mirror_shield.py",
         "src/ai/quantum_mirror_shield.gd",
         "tests/test_quantum_mirror_shield.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-601",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Controls Mode",
+      "description": "A game mode where all movement inputs for players (and AI logic calculations) are reversed, making movement completely counter-intuitive.",
+      "allowed_paths": [
+        "src/ai/reverse_controls.py",
+        "src/ai/reverse_controls.gd",
+        "tests/test_reverse_controls.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-602",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Ping Pong Mode",
+      "description": "A game mode with indestructible paddles at the edges of the arena that periodically sweep across, bouncing all players at high speeds.",
+      "allowed_paths": [
+        "src/ai/ping_pong.py",
+        "src/ai/ping_pong.gd",
+        "tests/test_ping_pong.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
