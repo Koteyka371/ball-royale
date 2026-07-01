@@ -2142,6 +2142,32 @@ class Action:
         if delta > 0:
             dx = self.ball.x - old_x
             dy = self.ball.y - old_y
+
+            import math as _nemesis_math
+            if hasattr(self.ball, "nemesis_booster_timer") and self.ball.nemesis_booster_timer > 0:
+                pm = getattr(self.world, "profile_manager", None)
+                if pm and hasattr(pm, "is_nemesis"):
+                    nemesis = None
+                    min_dist_sq = float('inf')
+                    if hasattr(self.world, "balls"):
+                        for other in self.world.balls:
+                            if getattr(other, "id", None) != getattr(self.ball, "id", None) and getattr(other, "hp", 0) > 0:
+                                if getattr(other, "ball_type", None) and getattr(self.ball, "ball_type", None):
+                                    if pm.is_nemesis(self.ball.ball_type, other.ball_type):
+                                        dist_sq = (other.x - self.ball.x)**2 + (other.y - self.ball.y)**2
+                                        if dist_sq < min_dist_sq:
+                                            min_dist_sq = dist_sq
+                                            nemesis = other
+                        if nemesis:
+                            ndx = nemesis.x - self.ball.x
+                            ndy = nemesis.y - self.ball.y
+                            ndist = _nemesis_math.sqrt(ndx**2 + ndy**2)
+                            if ndist > 0.0001:
+                                extra_speed = (getattr(self.ball, "base_speed", 2.0) * 0.5) * delta
+                                dx += (ndx / ndist) * extra_speed
+                                dy += (ndy / ndist) * extra_speed
+                                self.ball.x = old_x + dx
+                                self.ball.y = old_y + dy
             self.ball.vx = dx / delta
             self.ball.vy = dy / delta
 
@@ -3461,6 +3487,11 @@ class Action:
                         self.ball.base_perception_radius *= 2.0
                         self.ball.perception_radius = self.ball.base_perception_radius
                         self.ball.vision_booster_applied = True
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                elif getattr(nearest, "kind", None) == "nemesis_booster":
+                    self.ball.nemesis_booster_timer = 5.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
@@ -4816,11 +4847,15 @@ class Action:
                 self.ball.speed = base_s * 1.5
 
     def _update_skill_timer(self, delta: float) -> None:
+        if hasattr(self.ball, "nemesis_booster_timer") and self.ball.nemesis_booster_timer > 0:
+            self.ball.nemesis_booster_timer -= delta
+            if self.ball.nemesis_booster_timer < 0:
+                self.ball.nemesis_booster_timer = 0.0
         if hasattr(self.ball, "pull_booster_timer") and self.ball.pull_booster_timer > 0:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "placeable_trap_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math
