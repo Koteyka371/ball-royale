@@ -9,8 +9,8 @@ class Mimic:
     PERCEPTION_RADIUS = 250
     AGGRESSION = 0.5
     COLOR = "magenta"
-    SKILL = "none"
-    SKILL_COOLDOWN = 5.0
+    SKILL = "mimic_clone"
+    SKILL_COOLDOWN = 15.0
 
     def __init__(self, ball_id: int, x: float = 0.0, y: float = 0.0):
         self.id = ball_id
