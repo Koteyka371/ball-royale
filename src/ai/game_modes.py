@@ -2393,6 +2393,45 @@ class SafeZoneMode(GameMode):
 
 
 
+class MirrorMatchMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Mirror Match"
+        self.description = "Every player spawns with an exact AI clone of themselves on the opposite side of the map. Clones mimic their creator's stats and skills."
+        self.world = None
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        self.world = world
+
+        # We need to create clones
+        import copy
+        import random
+
+        new_clones = []
+        arena_width = getattr(getattr(world, "arena", None), "width", 2000.0)
+        arena_height = getattr(getattr(world, "arena", None), "height", 2000.0)
+
+        for b in balls:
+            clone = copy.copy(b)
+            clone.id = getattr(world, "next_id", random.randint(10000, 99999))
+            if hasattr(world, "next_id"):
+                world.next_id += 1
+
+            # Place on opposite side of map (mirror point relative to center)
+            clone.x = arena_width - b.x
+            clone.y = arena_height - b.y
+
+            # Make sure it behaves like a normal AI ball but with same stats
+            clone.is_clone = True
+            clone.clone_owner = b.id
+            clone.team = "mirror_team_" + str(b.team) if hasattr(b, "team") else "mirror"
+
+            new_clones.append(clone)
+
+        if hasattr(world, "balls"):
+            world.balls.extend(new_clones)
+
 class CloneChaosMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -3330,6 +3369,7 @@ GAME_MODES = {
     "moving_safe_zone": MovingSafeZoneMode(),
     "bounty_hunt": BountyHuntMode(),
     "earthquake": EarthquakeMode(),
+    "mirror_match": MirrorMatchMode(),
     "clone_chaos": CloneChaosMode(),
     "supernova": SupernovaMode()
 }
