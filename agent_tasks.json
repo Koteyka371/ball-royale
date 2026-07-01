@@ -6082,7 +6082,7 @@
     },
     {
       "id": "idea-351",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Destructible Cover System",
@@ -10433,6 +10433,40 @@
         "src/ai/season_based_boss_spawns.py",
         "src/ai/season_based_boss_spawns.gd",
         "tests/test_season_based_boss_spawns.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-605",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Overload Trap",
+      "description": "When a decoy explodes, it pulls in all enemies within a small radius before applying the poison cloud, ensuring the damage over time is harder to escape.",
+      "allowed_paths": [
+        "src/arena/decoy_overload_trap.py",
+        "src/arena/decoy_overload_trap.gd",
+        "tests/test_decoy_overload_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-606",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Exploding Dummy Re-Arming",
+      "description": "Players can pick up a 'Re-Arm' token to instantly reset their decoy skill cooldown and boost the explosion damage by 25% for their next deployment.",
+      "allowed_paths": [
+        "src/ai/exploding_dummy_re_arming.py",
+        "src/ai/exploding_dummy_re_arming.gd",
+        "tests/test_exploding_dummy_re_arming.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

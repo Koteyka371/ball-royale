@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-351] Destructible Cover System — *2026-07-01 13:34:58 UTC*
+
+Expand the arena procedural generation to include destructible obstacles (like crystal clusters or energy barricades) that can block movement and vision but can be destroyed with enough damage.
+
+---
+
 ## [idea-355] Decoy Trap Hazard — *2026-07-01 13:32:25 UTC*
 
 A hazard that spawns a fake player dummy. If another player attacks it, the decoy explodes in a poison cloud, punishing impulsive actions.
