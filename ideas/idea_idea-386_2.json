@@ -1,0 +1,4 @@
+{
+  "title": "Dynamic Wind Currents",
+  "description": "Add wind hazards in the arena that push balls or alter trajectory of projectile attacks, requiring balls to account for wind vectors in their movement."
+}

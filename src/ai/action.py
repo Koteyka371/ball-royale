@@ -324,7 +324,33 @@ class Action:
     def execute(self, strategy: str, delta: float) -> None:
         start_hp = getattr(self.ball, "hp", 100.0)
         start_stun = getattr(self.ball, "stun_timer", 0.0)
+
+        if hasattr(self.ball, "original_base_speed"):
+            self.ball.base_speed = self.ball.original_base_speed
+            del self.ball.original_base_speed
+
         start_silence = getattr(self.ball, "silence_timer", 0.0)
+
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            for h in self.world.arena.hazards:
+                if getattr(h, "kind", "") == "water_flood":
+                    dist_sq = (self.ball.x - h.x)**2 + (self.ball.y - h.y)**2
+                    if dist_sq < h.radius**2:
+                        cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+                        if cosmetic not in ["floatie", "submarine", "boat"]:
+                            # Keep a backup of original base speed if not exists
+                            if not hasattr(self.ball, "original_base_speed"):
+                                self.ball.original_base_speed = getattr(self.ball, "base_speed", 50.0)
+
+                            original_speed = self.ball.original_base_speed
+                            # Reduce the base speed
+                            self.ball.base_speed = original_speed * 0.3
+                            if getattr(self.ball, "speed", 0) > self.ball.base_speed:
+                                self.ball.speed = self.ball.base_speed
+                    else:
+                        # Restore if out of radius (handled elsewhere but safe to do if possible)
+                        pass
+
 
         self.ball.is_in_quicksand = False
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):

@@ -473,6 +473,17 @@ class ProceduralArena:
                         if hasattr(h, "vx"): h.vx *= -1
                     if h.y < 0 or h.y > self.height:
                         if hasattr(h, "vy"): h.vy *= -1
+
+                elif getattr(h, "kind", "") == "water_flood":
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0:
+                            h.active = False
+                    if hasattr(h, "target_radius"):
+                        if h.radius < h.target_radius:
+                            h.radius += (h.target_radius / 30.0) * delta
+                            if h.radius > h.target_radius:
+                                h.radius = h.target_radius
                 elif getattr(h, "kind", "") == "fire_ring":
                     if hasattr(h, "duration"):
                         h.duration -= delta
@@ -524,6 +535,19 @@ class ProceduralArena:
             # Remove inactive flares and meteors
             self.hazards = [h for h in self.hazards if getattr(h, "active", True)]
             self.hazards.extend(new_craters)
+
+
+        if getattr(self, "is_raining", False) and current_tick % 120 == 0:
+            import random
+            if random.random() < 0.2:
+                # Spawn a water flood hazard
+                x = random.uniform(200, self.width - 200)
+                y = random.uniform(200, self.height - 200)
+                h_id = 9500 + len(self.hazards) + random.randint(0, 1000)
+                flood = Hazard(id=h_id, x=x, y=y, radius=10.0, kind="water_flood", damage=0.0)
+                flood.target_radius = random.uniform(100.0, 300.0)
+                setattr(flood, "duration", random.uniform(20.0, 40.0))
+                self.hazards.append(flood)
 
         if current_tick % 60 == 0:
             import random

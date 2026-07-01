@@ -1,0 +1,4 @@
+{
+  "title": "Fog of War Visibility",
+  "description": "Implement a fog of war system where balls only share vision with teammates, requiring scout classes to effectively reveal enemy locations on larger arenas."
+}
