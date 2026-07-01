@@ -2477,6 +2477,108 @@ class CustomMatchMode extends GameMode:
 
 
 
+class EcholocationMode extends GameMode:
+	var flash_timer = 0.0
+	var flash_interval = 10.0
+	var is_flashing = false
+	var flash_duration = 0.5
+	var current_flash_time = 0.0
+
+	func _init() -> void:
+		name = "Echolocation"
+		description = "The arena is completely dark except for a small ring of light around each ball. Echolocation cues and occasional lightning flashes reveal the map."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		flash_timer = 0.0
+		is_flashing = false
+		current_flash_time = 0.0
+
+		if world != null and "arena" in world and world.arena != null:
+			world.arena.is_night = true
+
+		if not "dead_balls" in world:
+			world.dead_balls = []
+
+		for b in balls:
+			if b.ball_type != "spectator":
+				var base_perc = 250.0
+				if "perception_radius" in b:
+					base_perc = float(b.perception_radius)
+				if b.has_method("set_meta"):
+					b.set_meta("base_perception_radius", base_perc)
+				b.perception_radius = 60.0
+				if not "team" in b:
+					b.team = b.ball_type
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if not "dead_balls" in world:
+			world.dead_balls = []
+
+		for b in balls:
+			if not b.alive:
+				if not world.dead_balls.has(b):
+					if b.has_method("set_meta"):
+						b.set_meta("time_since_death", 0.0)
+					world.dead_balls.append(b)
+				else:
+					if b.has_method("get_meta") and b.has_meta("time_since_death"):
+						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+
+		flash_timer += delta
+
+		if is_flashing:
+			current_flash_time += delta
+			if current_flash_time >= flash_duration:
+				is_flashing = false
+				if world != null and "arena" in world and world.arena != null:
+					world.arena.is_night = true
+				for b in balls:
+					if b.alive and b.ball_type != "spectator":
+						b.perception_radius = 60.0
+		else:
+			if flash_timer >= flash_interval:
+				flash_timer = 0.0
+				is_flashing = true
+				current_flash_time = 0.0
+				if world != null and "arena" in world and world.arena != null:
+					world.arena.is_night = false
+
+				if world != null and world.has_method("add_event"):
+					world.add_event("weather_warning", {"type": "weather_warning", "message": "Lightning flash reveals the arena!"})
+
+				for b in balls:
+					if b.alive and b.ball_type != "spectator":
+						b.perception_radius = 1000.0
+
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.alive and b.ball_type != "spectator":
+				alive.append(b)
+
+		if alive.size() == 0:
+			if has_method("_award_skill_points"): call("_award_skill_points")
+			return "Draw"
+
+		var teams_alive = {}
+		for b in alive:
+			var t = b.ball_type
+			if "team" in b:
+				t = b.team
+			teams_alive[t] = true
+
+		if teams_alive.size() == 1:
+			if has_method("_award_skill_points"): call("_award_skill_points")
+			return teams_alive.keys()[0]
+
+		if alive.size() == 1:
+			if has_method("_award_skill_points"): call("_award_skill_points")
+			return alive[0].ball_type
+
+		return null
+
+
 class PitchBlackMode extends GameMode:
 	func _init() -> void:
 		name = "Pitch Black"
@@ -4732,5 +4834,6 @@ var GAME_MODES = {
     "earthquake": EarthquakeMode.new(),
     "mirror_match": MirrorMatchMode.new(),
 	"clone_chaos": CloneChaosMode.new(),
-    "supernova": SupernovaMode.new()
+    "supernova": SupernovaMode.new(),
+	"echolocation": EcholocationMode.new()
 }
