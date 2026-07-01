@@ -53,63 +53,84 @@ class Action:
         if random.random() > attack_accuracy:
             return
 
-        if is_nemesis_active:
-            attacker.damage = original_damage * 1.2
+        executed_by_necromancer = False
+        b_type_attacker = getattr(attacker, 'ball_type', getattr(attacker.__class__, 'BALL_TYPE', '')).lower()
+        if b_type_attacker == 'necromancer':
+            target_max_hp = getattr(target, 'max_hp', 100.0)
+            if old_hp > 0 and (old_hp / target_max_hp) < 0.2:
+                if random.random() < 0.25:
+                    executed_by_necromancer = True
 
-        has_ricochet = getattr(target, "ricochet_barrier_timer", 0.0) > 0.0
-        has_reflect_shield = getattr(target, "reflect_shield_active", False)
-        # Note: in Python tests reflect_shield_timer might not be set.
-        if hasattr(target, "reflect_shield_timer") and getattr(target, "reflect_shield_timer", 0.0) <= 0 and has_reflect_shield:
-            has_reflect_shield = False
-
-        # Calculate base damage dealing
-        if has_ricochet:
+        if executed_by_necromancer:
             if hasattr(self.world, "_deal_damage"):
-                self.world._deal_damage(target, attacker)
-        elif has_reflect_shield:
-            # Shield consumes on use and reflects damage
-            capacity = getattr(target, "reflect_shield_capacity", 50.0)
-
-            # Reflect only the damage that the shield can absorb
-            damage_to_reflect = min(capacity, original_damage)
-
-            capacity -= original_damage
-
-            if capacity <= 0:
-                target.reflect_shield_active = False
-                target.reflect_shield_capacity = 0.0
-            else:
-                target.reflect_shield_capacity = capacity
-
-            # Spawn a pulse particle effect towards the attacker
-            if hasattr(self, "_spawn_directed_particles"):
-                self._spawn_directed_particles(target, attacker, "reflect_pulse")
-
-            if hasattr(self.world, "_deal_damage"):
-                # We need a way to deal partial damage.
-                # For now we'll just temporarily adjust attacker damage or similar,
-                # but it seems _deal_damage uses attacker.damage.
-
-                # We temporarily set the attacker's damage to the reflected amount
                 old_dmg = getattr(attacker, "damage", original_damage)
-                attacker.damage = damage_to_reflect
-                self.world._deal_damage(target, attacker)
+                attacker.damage = old_hp + 999.0
+                self.world._deal_damage(attacker, target)
                 attacker.damage = old_dmg
 
-            # If the shield broke, the remainder of the damage applies to the target
-            if capacity < 0:
-                remainder_damage = -capacity
-                old_dmg = getattr(attacker, "damage", original_damage)
-                attacker.damage = remainder_damage
+            target_max_hp = getattr(target, 'max_hp', 100.0)
+            attacker.hp = min(getattr(attacker, 'max_hp', 100.0), getattr(attacker, 'hp', 100.0) + target_max_hp * 0.5)
+            attacker.reflect_shield_active = True
+            attacker.reflect_shield_capacity = max(getattr(attacker, 'reflect_shield_capacity', 0.0), target_max_hp * 0.5)
+            attacker.reflect_shield_timer = 5.0
+        else:
+            if is_nemesis_active:
+                attacker.damage = original_damage * 1.2
+
+            has_ricochet = getattr(target, "ricochet_barrier_timer", 0.0) > 0.0
+            has_reflect_shield = getattr(target, "reflect_shield_active", False)
+            # Note: in Python tests reflect_shield_timer might not be set.
+            if hasattr(target, "reflect_shield_timer") and getattr(target, "reflect_shield_timer", 0.0) <= 0 and has_reflect_shield:
+                has_reflect_shield = False
+
+            # Calculate base damage dealing
+            if has_ricochet:
+                if hasattr(self.world, "_deal_damage"):
+                    self.world._deal_damage(target, attacker)
+            elif has_reflect_shield:
+                # Shield consumes on use and reflects damage
+                capacity = getattr(target, "reflect_shield_capacity", 50.0)
+
+                # Reflect only the damage that the shield can absorb
+                damage_to_reflect = min(capacity, original_damage)
+
+                capacity -= original_damage
+
+                if capacity <= 0:
+                    target.reflect_shield_active = False
+                    target.reflect_shield_capacity = 0.0
+                else:
+                    target.reflect_shield_capacity = capacity
+
+                # Spawn a pulse particle effect towards the attacker
+                if hasattr(self, "_spawn_directed_particles"):
+                    self._spawn_directed_particles(target, attacker, "reflect_pulse")
+
+                if hasattr(self.world, "_deal_damage"):
+                    # We need a way to deal partial damage.
+                    # For now we'll just temporarily adjust attacker damage or similar,
+                    # but it seems _deal_damage uses attacker.damage.
+
+                    # We temporarily set the attacker's damage to the reflected amount
+                    old_dmg = getattr(attacker, "damage", original_damage)
+                    attacker.damage = damage_to_reflect
+                    self.world._deal_damage(target, attacker)
+                    attacker.damage = old_dmg
+
+                # If the shield broke, the remainder of the damage applies to the target
+                if capacity < 0:
+                    remainder_damage = -capacity
+                    old_dmg = getattr(attacker, "damage", original_damage)
+                    attacker.damage = remainder_damage
+                    if hasattr(self.world, "_deal_damage"):
+                        self.world._deal_damage(attacker, target)
+                    attacker.damage = old_dmg
+            else:
                 if hasattr(self.world, "_deal_damage"):
                     self.world._deal_damage(attacker, target)
-                attacker.damage = old_dmg
-        else:
-            if hasattr(self.world, "_deal_damage"):
-                self.world._deal_damage(attacker, target)
 
-        if is_nemesis_active:
-            attacker.damage = original_damage
+            if is_nemesis_active:
+                attacker.damage = original_damage
 
         new_hp = getattr(target, "hp", 0.0)
 
