@@ -2124,7 +2124,12 @@ class Action:
                 self.ball._reflection_vy = math.sin(angle) * new_speed
 
                 # Punishing players who get too close to the edge with high speed
-                if speed > 500:
+                gm = getattr(self.world, "game_mode", None)
+                is_mirror_walls = False
+                if gm and getattr(gm, "name", "") == "Mirror Walls":
+                    is_mirror_walls = True
+
+                if speed > 500 and not is_mirror_walls:
                     damage = speed * 0.05
                     if hasattr(self.ball, "take_damage"):
                         self.ball.take_damage(damage)
@@ -2132,6 +2137,12 @@ class Action:
                         self.ball.hp -= damage
                         if self.ball.hp <= 0:
                             self.ball.alive = False
+
+                if is_mirror_walls:
+                    # In mirror walls, give it a bounce velocity
+                    self.ball.vx = self.ball._reflection_vx
+                    self.ball.vy = self.ball._reflection_vy
+
 
         if bounced_wall or bounced_col:
             self._trigger_ripple_effect()

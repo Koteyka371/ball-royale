@@ -3999,7 +3999,18 @@ class PinballMode(GameMode):
 
         super().tick(world, balls, delta)
 
+
+class MirrorWallsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Mirror Walls"
+        self.description = "An arena event where all projectiles are reflected infinitely across mirror walls."
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
 GAME_MODES = {
+    "mirror_walls": MirrorWallsMode(),
     "zero_gravity": ZeroGravityMode(),
     "magnetic_collisions": MagneticCollisionsMode(),
     "day_night_mode": DayNightMode(),

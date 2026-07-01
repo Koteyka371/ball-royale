@@ -4899,7 +4899,18 @@ class PinballMode extends GameMode:
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 		super.tick(world, balls, delta)
 
+
+class MirrorWallsMode extends GameMode:
+    func _init():
+        super._init()
+        name = "Mirror Walls"
+        description = "An arena event where all projectiles are reflected infinitely across mirror walls."
+
+    func tick(world: Variant, balls: Array, delta: float = 0.016) -> void:
+        super.tick(world, balls, delta)
+
 var GAME_MODES = {
+    "mirror_walls": MirrorWallsMode.new(),
     "zero_gravity": ZeroGravityMode.new(),
     "magnetic_collisions": MagneticCollisionsMode.new(),
 	"day_night_mode": DayNightMode.new(),
