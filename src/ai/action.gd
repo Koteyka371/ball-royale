@@ -6784,6 +6784,19 @@ func _use_skill():
                 self.ball.x += cos(angle) * 150.0
                 self.ball.y += sin(angle) * 150.0
 
+        elif skill_name == "reflect_shield":
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("reflect_shield_active", true)
+                self.ball.set_meta("reflect_shield_timer", 3.0)
+                self.ball.set_meta("reflect_shield_capacity", 999999.0) # Infinite reflection for 3s
+            else:
+                self.ball.reflect_shield_active = true
+                self.ball.reflect_shield_timer = 3.0
+                self.ball.reflect_shield_capacity = 999999.0
+
+            if self.has_method("_spawn_skill_particles"):
+                self._spawn_skill_particles("shield")
+
         if "skill_cooldown" in self.ball:
             self.ball.skill_timer = self.ball.skill_cooldown
 

@@ -4324,7 +4324,16 @@ class Action:
                 if hasattr(self, "_spawn_skill_particles"):
                     self._spawn_skill_particles("toggle_polarity")
 
+
+            elif skill_name == "reflect_shield":
+                # Activate reflect shield
+                self.ball.reflect_shield_active = True
+                self.ball.reflect_shield_timer = 3.0
+                self.ball.reflect_shield_capacity = float('inf')  # Reflects all damage
+                if hasattr(self, "_spawn_skill_particles"):
+                    self._spawn_skill_particles("shield")
             elif skill_name == "target_strong":
+
 
                 enemies = self._get_enemies()
                 if enemies:
