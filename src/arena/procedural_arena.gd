@@ -438,7 +438,18 @@ func update_zone(current_tick: int, delta: float) -> void:
                     h.set_meta("frozen_timer", ft - delta)
                     continue
 
-            if "kind" in h and h.kind == "flare":
+            if "kind" in h and h.kind == "decoy_hazard":
+                var h_hp = 1.0
+                if "hp" in h: h_hp = h.hp
+                elif h.has_method("has_meta") and h.has_meta("hp"): h_hp = h.get_meta("hp")
+                if h_hp <= 0:
+                    if h.has_method("set_meta"): h.set_meta("active", false)
+                    if "active" in h: h.active = false
+                    var pc_id = 8000 + hazards.size() + new_craters.size() + (randi() % 1000)
+                    var poison_cloud = preload("res://src/arena/procedural_arena.gd").Hazard.new(pc_id, h.x, h.y, 80.0, "poison_cloud", 10.0)
+                    poison_cloud.set_meta("duration", 10.0)
+                    new_craters.append(poison_cloud)
+            elif "kind" in h and h.kind == "flare":
                 if h.has_meta("duration"):
                     var dur = h.get_meta("duration") - delta
                     h.set_meta("duration", dur)

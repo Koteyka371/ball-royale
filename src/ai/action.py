@@ -2071,6 +2071,20 @@ class Action:
                             enemies.append(b)
 
 
+        # Add decoy hazards to enemies so they get attacked
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            for h in self.world.arena.hazards:
+                if getattr(h, "kind", "") == "decoy_hazard" and getattr(h, "active", True):
+                    dx = getattr(h, "x", 0) - self.ball.x
+                    dy = getattr(h, "y", 0) - self.ball.y
+                    if dx*dx + dy*dy <= perception_radius*perception_radius:
+                        if not hasattr(h, "hp"):
+                            h.hp = 1.0
+                            h.max_hp = 1.0
+                            h.alive = True
+                            h.ball_type = "hazard"
+                        enemies.append(h)
+
         # Include flares as high-priority enemies if they are within perception radius
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for h in self.world.arena.hazards:

@@ -3205,6 +3205,28 @@ func _get_enemies_internal() -> Array:
 
     if self.world != null and "arena" in self.world and self.world.arena != null:
         var arena = self.world.arena
+        if world != null and "arena" in world and "hazards" in world.arena:
+            for h in world.arena.hazards:
+                if "kind" in h and h.kind == "decoy_hazard":
+                    var h_active = true
+                    if "active" in h: h_active = h.active
+                    elif h.has_method("has_meta") and h.has_meta("active"): h_active = h.get_meta("active")
+                    if h_active:
+                        var dx = h.x - self.ball.x
+                        var dy = h.y - self.ball.y
+                        if (dx*dx + dy*dy) <= perception_radius*perception_radius:
+                            if not ("hp" in h) and h.has_method("set_meta"):
+                                h.set_meta("hp", 1.0)
+                                h.set_meta("max_hp", 1.0)
+                                h.set_meta("alive", true)
+                                h.set_meta("ball_type", "hazard")
+                            elif not ("hp" in h) and typeof(h) == TYPE_DICTIONARY:
+                                h["hp"] = 1.0
+                                h["max_hp"] = 1.0
+                                h["alive"] = true
+                                h["ball_type"] = "hazard"
+                            enemies.append(h)
+
         if arena != null and "hazards" in arena:
             for h in arena.hazards:
                 if "kind" in h and h.kind == "flare":

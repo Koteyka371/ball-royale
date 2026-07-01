@@ -120,7 +120,7 @@ class ProceduralArena:
         # Generate hazards
         num_hazards = self.num_rooms * 2
         for i in range(num_hazards):
-            kind = random.choice(["spikes", "lava", "fake_booster", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "hidden_trap", "silence_booster", "switch", "magnet", "quicksand", "magnet_booster", "breakable_wall"])
+            kind = random.choice(["spikes", "lava", "decoy_hazard", "fake_booster", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "hidden_trap", "silence_booster", "switch", "magnet", "quicksand", "magnet_booster", "breakable_wall"])
             if kind == "switch":
                 radius = 20.0
                 damage = 0.0
@@ -139,6 +139,9 @@ class ProceduralArena:
             elif kind == "hidden_trap":
                 radius = random.uniform(20.0, 35.0)
                 damage = 15.0
+            elif kind == "decoy_hazard":
+                radius = 15.0
+                damage = 0.0
             elif kind == "decoy_item":
                 radius = 15.0
                 damage = 0.0
@@ -403,7 +406,15 @@ class ProceduralArena:
                 if getattr(h, "frozen_timer", 0.0) > 0:
                     h.frozen_timer -= delta
                     continue
-                if getattr(h, "kind", "") == "flare":
+                if getattr(h, "kind", "") == "decoy_hazard":
+                    if getattr(h, "hp", 1.0) <= 0:
+                        h.active = False
+                        import random
+                        pc_id = 8000 + len(self.hazards) + len(new_craters) + random.randint(0, 1000)
+                        poison_cloud = Hazard(id=pc_id, x=h.x, y=h.y, radius=80.0, kind="poison_cloud", damage=10.0)
+                        setattr(poison_cloud, "duration", 10.0)
+                        new_craters.append(poison_cloud)
+                elif getattr(h, "kind", "") == "flare":
                     if hasattr(h, "duration"):
                         h.duration -= delta
                         if h.duration <= 0:
