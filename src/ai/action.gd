@@ -1599,6 +1599,36 @@ func execute(strategy: String, delta: float):
                                 if hazard.has_meta("target_x") and hazard.has_meta("target_y"):
                                     self.ball.x = hazard.get_meta("target_x")
                                     self.ball.y = hazard.get_meta("target_y")
+
+                                    # Weaponize teleporter
+                                    var b_type = ""
+                                    if "ball_type" in self.ball:
+                                        b_type = str(self.ball.ball_type).to_lower()
+                                    var wep_tele = false
+                                    if self.ball.has_meta("weaponize_teleporter"):
+                                        wep_tele = self.ball.get_meta("weaponize_teleporter")
+                                    if b_type == "trapper" or wep_tele:
+                                        var trap = load("res://src/arena/procedural_arena.gd").Hazard.new()
+                                        if self.world.get("next_id") != null:
+                                            trap.id = self.world.next_id
+                                            self.world.next_id += 1
+                                        else:
+                                            trap.id = 99999
+                                        trap.x = self.ball.x
+                                        trap.y = self.ball.y
+                                        trap.radius = 15.0
+                                        trap.kind = "trap"
+                                        trap.damage = 0.0
+                                        trap.set_meta("duration", 10.0)
+                                        if self.ball.has_meta("trap_variant"):
+                                            trap.set_meta("trap_variant", self.ball.get_meta("trap_variant"))
+                                        else:
+                                            trap.set_meta("trap_variant", "normal")
+                                        if "id" in self.ball:
+                                            trap.set_meta("owner_id", self.ball.id)
+                                        if "arena" in self.world and "hazards" in self.world.arena:
+                                            self.world.arena.hazards.append(trap)
+
                                     self.ball.set_meta("last_teleport_tick", current_tick)
                                     return
                             if hazard.kind == "teleporter":
@@ -1698,6 +1728,34 @@ func execute(strategy: String, delta: float):
                                         if "vy" in self.ball:
                                             self.ball.vy = cvy * scale
 
+                                    # Weaponize teleporter
+                                    var b_type3 = ""
+                                    if "ball_type" in self.ball:
+                                        b_type3 = str(self.ball.ball_type).to_lower()
+                                    var wep_tele3 = false
+                                    if self.ball.has_meta("weaponize_teleporter"):
+                                        wep_tele3 = self.ball.get_meta("weaponize_teleporter")
+                                    if b_type3 == "trapper" or wep_tele3:
+                                        var trap3 = load("res://src/arena/procedural_arena.gd").Hazard.new()
+                                        if self.world.get("next_id") != null:
+                                            trap3.id = self.world.next_id
+                                            self.world.next_id += 1
+                                        else:
+                                            trap3.id = 99999
+                                        trap3.x = self.ball.x
+                                        trap3.y = self.ball.y
+                                        trap3.radius = 15.0
+                                        trap3.kind = "trap"
+                                        trap3.damage = 0.0
+                                        trap3.set_meta("duration", 10.0)
+                                        if self.ball.has_meta("trap_variant"):
+                                            trap3.set_meta("trap_variant", self.ball.get_meta("trap_variant"))
+                                        else:
+                                            trap3.set_meta("trap_variant", "normal")
+                                        if "id" in self.ball:
+                                            trap3.set_meta("owner_id", self.ball.id)
+                                        if "arena" in self.world and "hazards" in self.world.arena:
+                                            self.world.arena.hazards.append(trap3)
 
                             self.ball.set_meta("last_teleport_tick", current_tick)
                 elif hazard.kind == "ice_patch":

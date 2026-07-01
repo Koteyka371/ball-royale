@@ -1097,6 +1097,19 @@ class Action:
                                         self.ball.x = getattr(hazard, "target_x")
                                         self.ball.y = getattr(hazard, "target_y")
 
+                                        # Weaponize teleporter
+                                        b_type = getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower()
+                                        if b_type == 'trapper' or getattr(self.ball, 'weaponize_teleporter', False):
+                                            from arena.procedural_arena import Hazard
+                                            trap = Hazard(getattr(self.world, 'next_id', 99999), self.ball.x, self.ball.y, 15.0, "trap", 0.0)
+                                            setattr(trap, 'duration', 10.0)
+                                            setattr(trap, 'trap_variant', getattr(self.ball, 'trap_variant', 'normal'))
+                                            setattr(trap, 'owner_id', getattr(self.ball, 'id', None))
+                                            if hasattr(self.world, 'next_id'):
+                                                self.world.next_id += 1
+                                            if hasattr(self.world, 'arena') and hasattr(self.world.arena, 'hazards'):
+                                                self.world.arena.hazards.append(trap)
+
                                         if hasattr(self.ball, "_teleported_this_tick"):
                                             self.ball._teleported_this_tick = True
                                         self.ball.last_teleport_tick = current_tick
@@ -1184,6 +1197,19 @@ class Action:
                                             if hasattr(self.ball, 'vy'):
                                                 self.ball.vy = vy * scale
 
+
+                                        # Weaponize teleporter
+                                        b_type = getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower()
+                                        if b_type == 'trapper' or getattr(self.ball, 'weaponize_teleporter', False):
+                                            from arena.procedural_arena import Hazard
+                                            trap = Hazard(getattr(self.world, 'next_id', 99999), self.ball.x, self.ball.y, 15.0, "trap", 0.0)
+                                            setattr(trap, 'duration', 10.0)
+                                            setattr(trap, 'trap_variant', getattr(self.ball, 'trap_variant', 'normal'))
+                                            setattr(trap, 'owner_id', getattr(self.ball, 'id', None))
+                                            if hasattr(self.world, 'next_id'):
+                                                self.world.next_id += 1
+                                            if hasattr(self.world, 'arena') and hasattr(self.world.arena, 'hazards'):
+                                                self.world.arena.hazards.append(trap)
 
                                         # Reset position variables in MockBall to prevent random drifting in some test environments
                                         if hasattr(self.ball, "_teleported_this_tick"):
