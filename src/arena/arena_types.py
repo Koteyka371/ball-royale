@@ -2,6 +2,7 @@ from arena.procedural_arena import Hazard
 import random
 
 from arena.procedural_arena import ProceduralArena, Room, Hazard, Corridor
+from arena.procedural_arena import TimeDistortionArena
 
 class SwapPortal(Hazard):
     def __init__(self, id: int, x: float, y: float, radius: float, target_x: float, target_y: float, pair_id: int):
@@ -1332,6 +1333,7 @@ ARENAS = {
     "retreat_to_ally": RetreatToAllyArena,
     "health_link": HealAllyArena,
     "procedural": ProceduralArena,
+    "time_distortion": TimeDistortionArena,
     "cross": CrossArena,
     "ring": RingArena,
     "four_rooms": FourRoomsArena,

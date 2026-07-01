@@ -697,3 +697,18 @@ class ProceduralArena:
                 dist_to_center = ((cx - self.safe_zone_center[0])**2 + (cy - self.safe_zone_center[1])**2)**0.5
                 if dist_to_center > self.safe_zone_radius:
                     self.danger_grid[(i, j)] = self.danger_grid.get((i, j), 0.0) + 5.0
+
+class TimeDistortionArena(ProceduralArena):
+    def generate(self):
+        super().generate()
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central room
+        self.rooms.append(Room(cx - 200, cy - 200, 400, 400))
+
+        # Add the chrono anomaly hazard in the center
+        self.hazards.append(Hazard(0, cx, cy, 200.0, "chrono_anomaly", 0.0))

@@ -322,6 +322,10 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        # Clear hazard state flags each tick before iterating over hazards
+        if hasattr(self.ball, "_chrono_slow"):
+            delattr(self.ball, "_chrono_slow")
+
         start_hp = getattr(self.ball, "hp", 100.0)
         start_stun = getattr(self.ball, "stun_timer", 0.0)
         start_silence = getattr(self.ball, "silence_timer", 0.0)
@@ -1649,6 +1653,19 @@ class Action:
                                 if self.ball.hp <= 0:
                                     self.ball.alive = False
                             continue
+                        elif hazard.kind == "chrono_anomaly":
+                            # Slows down action timers drastically
+                            speed_mult = 0.2
+                            # For speed, instead of overriding state, we negate most of the movement that just happened
+                            # assuming the previous steps moved it. But a cleaner way is just marking the ball
+                            self.ball._chrono_slow = speed_mult
+
+                            # Decrease timers
+                            if hasattr(self.ball, "attack_timer") and self.ball.attack_timer > 0:
+                                self.ball.attack_timer += delta * (1.0 - speed_mult) # Slow down cooldowns
+                            if hasattr(self.ball, "skill_timer") and self.ball.skill_timer > 0:
+                                self.ball.skill_timer += delta * (1.0 - speed_mult)
+                            continue
                         elif hazard.kind == "tornado":
                             # Pull effect, launch, and damage
                             dx = hazard.x - self.ball.x
@@ -1854,6 +1871,12 @@ class Action:
                             self.ball.hp -= hazard_damage
                             if self.ball.hp <= 0:
                                 self.ball.alive = False
+
+
+        if hasattr(self.ball, "_chrono_slow"):
+            self.ball.speed = getattr(self.ball, "base_speed", 2.0) * getattr(self.ball, "_chrono_slow")
+        else:
+            self.ball.speed = getattr(self.ball, "base_speed", 2.0)
 
         self.ball.current_action = strategy
         self.ball.team_message = None  # Clear previous message

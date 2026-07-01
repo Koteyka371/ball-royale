@@ -509,6 +509,7 @@ const ARENAS = [
     "avoid_trap",
     "kite",
     "procedural",
+	"time_distortion",
     "cross",
     "ring",
     "four_rooms",
@@ -652,3 +653,18 @@ class WinterArena extends ProceduralArena:
 			var y = randf_range(100, height - 100)
 			var h_id = 4000 + hazards.size()
 			hazards.append(ProceduralArena.Hazard.new(h_id, x, y, randf_range(40.0, 120.0), "ice_patch", 0.0))
+
+
+class TimeDistortionArena extends ProceduralArena:
+	func generate() -> void:
+		super.generate()
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+		var w = width
+		var h = height
+		var cx = w / 2.0
+		var cy = h / 2.0
+
+		rooms.append(ProceduralArena.Room.new(cx - 200.0, cy - 200.0, 400.0, 400.0))
+		hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 200.0, "chrono_anomaly", 0.0))
