@@ -6721,6 +6721,8 @@ func _resolve_collisions() -> bool:
             if self.world != null and "game_mode" in self.world and self.world.game_mode != null:
                 if "name" in self.world.game_mode and self.world.game_mode.name == "Bumper Balls":
                     knockback_multiplier = 5.0
+                elif "name" in self.world.game_mode and self.world.game_mode.name == "Pinball":
+                    knockback_multiplier = 8.0
 
             self.ball.x += nx * overlap * knockback_multiplier
             self.ball.y += ny * overlap * knockback_multiplier

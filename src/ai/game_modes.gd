@@ -3922,6 +3922,47 @@ class EarthquakeMode extends GameMode:
 					world.add_event("earthquake", {"type": "earthquake", "intensity": shake_timer / 2.0})
 
 
+
+class PinballMode extends GameMode:
+	func _init() -> void:
+		name = "Pinball"
+		description = "Bouncy bumpers everywhere! High knockback physics!"
+
+	func setup(world, balls: Array) -> void:
+		if not "dead_balls" in world:
+			world.dead_balls = []
+
+		if "arena" in world and world.arena != null:
+			if not "hazards" in world.arena:
+				world.arena.hazards = []
+
+			for i in range(20):
+				var hx = randf_range(100.0, world.arena.get("width", 1000.0) - 100.0)
+				var hy = randf_range(100.0, world.arena.get("height", 1000.0) - 100.0)
+
+				# In GDScript action.gd, hazards are just objects or dicts we read properties from
+				var hazard = {}
+				hazard["id"] = 10000 + i
+				hazard["x"] = hx
+				hazard["y"] = hy
+				hazard["radius"] = 30.0
+				hazard["kind"] = "bumper"
+				hazard["damage"] = 0.0
+				hazard["active"] = true
+				world.arena.hazards.append(hazard)
+
+		for b in balls:
+			if not b.has_meta("mutators"):
+				b.set_meta("mutators", [])
+			var mutators = b.get_meta("mutators")
+			if not mutators.has("pinball"):
+				mutators.append("pinball")
+				b.set_meta("mutators", mutators)
+			b.damage = 0.0
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		pass
+
 class ShiftingMazeMode extends GameMode:
 	var walls: Array = []
 	var maze_scale: float = 1.0
@@ -4338,6 +4379,7 @@ var GAME_MODES = {
     "draft_royale": DraftRoyaleMode.new(),
     "tournament": TournamentMode.new(),
     "bumper_balls": BumperBallsMode.new(),
+    "pinball": PinballMode.new(),
     "portal_node": PortalNodeMode.new(),
 	"memory_traps": MemoryTrapsMode.new(),
 	"pitch_black": PitchBlackMode.new(),

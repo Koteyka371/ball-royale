@@ -548,3 +548,24 @@ def test_day_night_mode():
     # Tick again past phase duration
     mode.tick(world, [], delta=11.0)
     assert world.arena.is_night == False
+
+def test_pinball_mode():
+    from ai.game_modes import PinballMode
+    mode = PinballMode()
+    world = MockWorld()
+    world.arena = type('MockArena', (), {'width': 2000.0, 'height': 2000.0, 'hazards': []})()
+
+    balls = [MockBall(1, "warrior"), MockBall(2, "scout")]
+    balls[0].damage = 10.0
+    balls[1].damage = 10.0
+
+    mode.setup(world, balls)
+
+    assert len(world.arena.hazards) == 20
+    assert balls[0].damage == 0.0
+    assert balls[1].damage == 0.0
+
+    assert "pinball" in balls[0].mutators
+    assert "pinball" in balls[1].mutators
+
+    mode.tick(world, balls)

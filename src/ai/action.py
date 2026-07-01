@@ -4182,6 +4182,8 @@ class Action:
                 gm = getattr(self.world, "game_mode", None)
                 if gm and getattr(gm, "name", "") == "Bumper Balls":
                     knockback_multiplier = 5.0
+                elif gm and getattr(gm, "name", "") == "Pinball":
+                    knockback_multiplier = 8.0
 
                 self.ball.x += nx * overlap * knockback_multiplier
                 self.ball.y += ny * overlap * knockback_multiplier

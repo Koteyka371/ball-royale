@@ -3078,6 +3078,41 @@ class EarthquakeMode(GameMode):
                     world.add_event("earthquake", {"type": "earthquake", "intensity": self.shake_timer / 2.0})
 
 
+
+class PinballMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Pinball"
+        self.description = "Bouncy bumpers everywhere! High knockback physics!"
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        # Add many bouncy bumpers to the arena
+        if hasattr(world, "arena") and world.arena:
+            if not hasattr(world.arena, "hazards"):
+                world.arena.hazards = []
+            import random
+            from arena.procedural_arena import Hazard
+
+            # Add lots of bumpers
+            for i in range(20):
+                hx = random.uniform(100, getattr(world.arena, "width", 1000) - 100)
+                hy = random.uniform(100, getattr(world.arena, "height", 1000) - 100)
+                hazard = Hazard(10000 + i, hx, hy, 30.0, "bumper", 0.0)
+                world.arena.hazards.append(hazard)
+
+        for b in balls:
+            if not hasattr(b, "mutators"):
+                b.mutators = []
+            if "pinball" not in b.mutators:
+                b.mutators.append("pinball")
+            b.damage = 0.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        pass
+
 class ShiftingMazeMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -3435,6 +3470,7 @@ GAME_MODES = {
     "escort": EscortMode(),
     "tournament": TournamentMode(),
     "bumper_balls": BumperBallsMode(),
+    "pinball": PinballMode(),
     "portal_node": PortalNodeMode(),
     "memory_traps": MemoryTrapsMode(),
     "pitch_black": PitchBlackMode(),
