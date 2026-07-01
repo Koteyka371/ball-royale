@@ -17,9 +17,11 @@ func load_guilds():
             data = json.get_data()
             if not data.has("guilds"):
                 data["guilds"] = {}
+            if not data.has("territories"):
+                data["territories"] = {}
             return
 
-    data = {"guilds": {}}
+    data = {"guilds": {}, "territories": {}}
 
 func save_guilds():
     var file = FileAccess.open(filename, FileAccess.WRITE)
@@ -38,7 +40,9 @@ func create_guild(guild_name: String, creator_id: String) -> bool:
             "bonus_speed": 0,
             "bonus_damage": 0
         },
-        "gvg_points": 0
+        "gvg_points": 0,
+        "chat_history": [],
+        "vault": []
     }
     save_guilds()
     return true
@@ -101,3 +105,79 @@ func get_guild(guild_name: String) -> Dictionary:
     if data["guilds"].has(guild_name):
         return data["guilds"][guild_name]
     return {}
+
+func send_chat_message(guild_name: String, sender_id: String, message: String) -> bool:
+    if data["guilds"].has(guild_name):
+        if not data["guilds"][guild_name].has("chat_history"):
+            data["guilds"][guild_name]["chat_history"] = []
+        data["guilds"][guild_name]["chat_history"].append({
+            "sender": sender_id,
+            "message": message
+        })
+        save_guilds()
+        return true
+    return false
+
+func get_chat_history(guild_name: String) -> Array:
+    if data["guilds"].has(guild_name) and data["guilds"][guild_name].has("chat_history"):
+        return data["guilds"][guild_name]["chat_history"]
+    return []
+
+func get_guild_leaderboard() -> Array:
+    var guilds_list = []
+    for guild_name in data["guilds"].keys():
+        var info = data["guilds"][guild_name]
+        var points = 0
+        if info.has("gvg_points"):
+            points = info["gvg_points"]
+        guilds_list.append({
+            "name": guild_name,
+            "gvg_points": points
+        })
+    guilds_list.sort_custom(func(a, b): return a["gvg_points"] > b["gvg_points"])
+    return guilds_list
+
+func deposit_item(guild_name: String, item: String) -> bool:
+    if data["guilds"].has(guild_name):
+        if not data["guilds"][guild_name].has("vault"):
+            data["guilds"][guild_name]["vault"] = []
+        data["guilds"][guild_name]["vault"].append(item)
+        save_guilds()
+        return true
+    return false
+
+func withdraw_item(guild_name: String, item: String) -> bool:
+    if data["guilds"].has(guild_name):
+        if data["guilds"][guild_name].has("vault"):
+            var vault = data["guilds"][guild_name]["vault"]
+            if vault.has(item):
+                vault.erase(item)
+                save_guilds()
+                return true
+    return false
+
+func capture_territory(guild_name: String, territory_name: String) -> bool:
+    if data["guilds"].has(guild_name):
+        if not data.has("territories"):
+            data["territories"] = {}
+        data["territories"][territory_name] = guild_name
+        save_guilds()
+        return true
+    return false
+
+func get_territories(guild_name: String) -> Array:
+    var result = []
+    if data.has("territories"):
+        for t in data["territories"].keys():
+            if data["territories"][t] == guild_name:
+                result.append(t)
+    return result
+
+func collect_passive_resources():
+    if not data.has("territories"):
+        return
+    for territory in data["territories"].keys():
+        var owner = data["territories"][territory]
+        if data["guilds"].has(owner):
+            data["guilds"][owner]["resources"] += 5
+    save_guilds()

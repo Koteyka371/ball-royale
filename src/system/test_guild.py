@@ -85,3 +85,50 @@ def test_profile_guild_integration(temp_profile_file):
 
     pm2.do_prestige()
     assert pm2.data["guild_name"] == "MyGuild"
+
+def test_guild_chat(temp_guild_file):
+    gm = GuildManager(temp_guild_file)
+    gm.create_guild("ChatGuild", "player1")
+    assert gm.send_chat_message("ChatGuild", "player1", "Hello World!") == True
+    history = gm.get_chat_history("ChatGuild")
+    assert len(history) == 1
+    assert history[0]["sender"] == "player1"
+    assert history[0]["message"] == "Hello World!"
+
+def test_guild_vault(temp_guild_file):
+    gm = GuildManager(temp_guild_file)
+    gm.create_guild("VaultGuild", "player1")
+    assert gm.deposit_item("VaultGuild", "sword") == True
+    guild = gm.get_guild("VaultGuild")
+    assert "sword" in guild["vault"]
+    assert gm.withdraw_item("VaultGuild", "shield") == False
+    assert gm.withdraw_item("VaultGuild", "sword") == True
+    guild = gm.get_guild("VaultGuild")
+    assert "sword" not in guild["vault"]
+
+def test_guild_territories(temp_guild_file):
+    gm = GuildManager(temp_guild_file)
+    gm.create_guild("Conquerors", "player1")
+    assert gm.capture_territory("Conquerors", "Castle") == True
+    territories = gm.get_territories("Conquerors")
+    assert "Castle" in territories
+    assert gm.get_territories("NoGuild") == []
+
+    # test passive resources
+    guild = gm.get_guild("Conquerors")
+    initial_resources = guild["resources"]
+    gm.collect_passive_resources()
+    guild = gm.get_guild("Conquerors")
+    assert guild["resources"] == initial_resources + 5
+
+def test_guild_leaderboard(temp_guild_file):
+    gm = GuildManager(temp_guild_file)
+    gm.create_guild("Guild1", "p1")
+    gm.create_guild("Guild2", "p2")
+    gm.record_gvg_match("Guild1", "Guild2", "Guild2") # Guild2 wins, gets 10 points
+
+    leaderboard = gm.get_guild_leaderboard()
+    assert leaderboard[0]["name"] == "Guild2"
+    assert leaderboard[0]["gvg_points"] == 10
+    assert leaderboard[1]["name"] == "Guild1"
+    assert leaderboard[1]["gvg_points"] == 0

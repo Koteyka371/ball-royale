@@ -4086,6 +4086,99 @@ class DayNightMode extends GameMode:
                 else:
                     world.arena.is_night = true
 
+
+class GuildVsGuildMode extends GameMode:
+    var guilds = {}
+    var control_points = []
+    var territory_captured = false
+
+    func _init():
+        name = "gvg"
+        desc = "Guild vs Guild territory battle"
+
+    func setup(world_ref, balls_ref: Array):
+        super.setup(world_ref, balls_ref)
+        guilds = {}
+        control_points = [
+            {"x": 200, "y": 200, "radius": 50, "owner": null, "progress": 0},
+            {"x": 800, "y": 800, "radius": 50, "owner": null, "progress": 0},
+            {"x": 500, "y": 500, "radius": 80, "owner": null, "progress": 0}
+        ]
+        territory_captured = false
+
+        if balls.size() >= 2:
+            var mid = balls.size() / 2
+            var g1 = []
+            var g2 = []
+            for i in range(mid):
+                g1.append(balls[i].get_meta("id") if balls[i].has_method("get_meta") and balls[i].has_meta("id") else balls[i].id)
+            for i in range(mid, balls.size()):
+                g2.append(balls[i].get_meta("id") if balls[i].has_method("get_meta") and balls[i].has_meta("id") else balls[i].id)
+            guilds["GuildA"] = g1
+            guilds["GuildB"] = g2
+
+    func _tick(delta: float):
+        super._tick(delta)
+        if territory_captured:
+            return
+
+        for cp in control_points:
+            var guild_counts = {}
+            for guild in guilds.keys():
+                var count = 0
+                for ball in world.balls:
+                    var bid = ball.get_meta("id") if ball.has_method("get_meta") and ball.has_meta("id") else ball.id
+                    var balive = ball.get_meta("alive") if ball.has_method("get_meta") and ball.has_meta("alive") else ball.alive
+                    if guilds[guild].has(bid) and balive:
+                        var bx = ball.get_meta("x") if ball.has_method("get_meta") and ball.has_meta("x") else ball.x
+                        var by = ball.get_meta("y") if ball.has_method("get_meta") and ball.has_meta("y") else ball.y
+                        var dx = bx - cp["x"]
+                        var dy = by - cp["y"]
+                        if sqrt(dx*dx + dy*dy) <= cp["radius"]:
+                            count += 1
+                guild_counts[guild] = count
+
+            var dominating_guild = null
+            var max_count = 0
+            for guild in guild_counts.keys():
+                var count = guild_counts[guild]
+                if count > max_count:
+                    max_count = count
+                    dominating_guild = guild
+                elif count == max_count and count > 0:
+                    dominating_guild = null
+
+            if dominating_guild != null:
+                if cp["owner"] != dominating_guild:
+                    cp["progress"] += delta * 10
+                    if cp["progress"] >= 100:
+                        cp["owner"] = dominating_guild
+                        cp["progress"] = 100
+            else:
+                cp["progress"] = max(0, cp["progress"] - delta * 5)
+
+        var owners = []
+        for cp in control_points:
+            if cp["owner"] != null:
+                owners.append(cp["owner"])
+
+        var unique_owners = {}
+        for o in owners:
+            unique_owners[o] = true
+
+        if owners.size() == control_points.size() and unique_owners.size() == 1:
+            var winner = owners[0]
+            _end_match(winner)
+
+    func _end_match(winner_guild: String):
+        territory_captured = true
+        var GuildManager = load("res://src/system/guild.gd")
+        if GuildManager:
+            var gm = GuildManager.new()
+            gm.capture_territory(winner_guild, "GvG_Arena")
+            var loser = "GuildB" if winner_guild == "GuildA" else "GuildA"
+            gm.record_gvg_match(winner_guild, loser, winner_guild)
+
 var GAME_MODES = {
 	"day_night_mode": DayNightMode.new(),
 	"shifting_maze": ShiftingMazeMode.new(),
