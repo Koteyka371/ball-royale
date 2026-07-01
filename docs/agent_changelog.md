@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-398] Lightning Strikes — *2026-07-01 15:47:30 UTC*
+
+During thunderstorms, lightning strikes random locations in the arena periodically, dealing massive AoE damage to any ball caught in the blast radius.
+
+---
+
 ## [idea-403] Clone Decoy Booster — *2026-07-01 15:47:26 UTC*
 
 A booster that when collected creates a temporary AI clone of the player that taunts enemies but deals no damage.
