@@ -203,6 +203,8 @@ class ProceduralArena:
             new_hazard = Hazard(id=i, x=hx, y=hy, radius=radius, kind=kind, damage=damage)
             if kind == "temporal_rift":
                 new_hazard.time_scale = random.choice([0.5, 1.5, 2.0])
+            elif kind == "magnet":
+                setattr(new_hazard, "polarity", random.choice([1, -1]))
             self.hazards.append(new_hazard)
 
         # Generate guaranteed paired portals

@@ -193,6 +193,10 @@ func generate():
         elif kind == "magnet":
             radius = rng.randf_range(25.0, 45.0)
             damage = 0.0
+            var new_hazard = ProceduralArena.Hazard.new(i, spawn_pt[0], spawn_pt[1], radius, kind, damage)
+            new_hazard.set_meta("polarity", 1 if rng.randf() > 0.5 else -1)
+            hazards.append(new_hazard)
+            continue
 
         elif kind == "bumper":
             radius = rng.randf_range(30.0, 60.0)

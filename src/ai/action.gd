@@ -6170,6 +6170,35 @@ func _use_skill():
                         if "skill_cooldown" in self.ball: cd = self.ball.skill_cooldown
                         self.ball.skill_timer = cd
 
+        elif skill_name == "toggle_polarity":
+            var current_polarity = 0
+            if "polarity" in self.ball:
+                current_polarity = self.ball.polarity
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("polarity"):
+                current_polarity = self.ball.get_meta("polarity")
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("polarity"):
+                current_polarity = self.ball["polarity"]
+
+            var new_polarity = 1
+            if current_polarity == 0:
+                new_polarity = 1
+            elif current_polarity == 1:
+                new_polarity = -1
+            else:
+                new_polarity = 1
+
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                self.ball.set_meta("polarity", new_polarity)
+            elif typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["polarity"] = new_polarity
+            elif "polarity" in self.ball:
+                self.ball.polarity = new_polarity
+
+            if "skill_cooldown" in self.ball:
+                self.ball.skill_timer = self.ball.skill_cooldown
+            else:
+                self.ball.skill_timer = 5.0
+
         elif skill_name == "target_strong":
             var enemies = _get_enemies()
             if enemies.size() > 0:
