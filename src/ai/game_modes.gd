@@ -1610,6 +1610,19 @@ class WeatherChaosMode extends GameMode:
 						if "max_hp" in b: m = b.max_hp
 						elif b.has_method("has_meta") and b.has_meta("max_hp"): m = b.get_meta("max_hp")
 						b.hp = min(m, b.hp + 5.0 * delta)
+					if randf() < 0.05 * delta:
+						# Spawn mud pit
+						var Hazard = load("res://src/arena/ProceduralArena.gd").Hazard
+						var h = Hazard.new(
+							len(world.arena.hazards) + randi() % 9000 + 1000,
+							100.0 + randf() * (world.arena.width - 200.0),
+							100.0 + randf() * (world.arena.height - 200.0),
+							50.0,
+							"mud_pit",
+							0.0
+						)
+						h.set_meta("duration", 8.0)
+						world.arena.hazards.append(h)
 				elif weather == "fog":
 					if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius") * 0.4
 					elif "base_perception_radius" in b: b.perception_radius = b.base_perception_radius * 0.4
@@ -1661,6 +1674,19 @@ class WeatherChaosMode extends GameMode:
 						if b.has_method("set_meta"): b.set_meta("mirage_timer", mt)
 						elif "mirage_timer" in b: b.mirage_timer = mt
 				elif weather == "snow":
+					if randf() < 0.05 * delta:
+						# Spawn ice slick
+						var Hazard = load("res://src/arena/ProceduralArena.gd").Hazard
+						var h = Hazard.new(
+							len(world.arena.hazards) + randi() % 9000 + 1000,
+							100.0 + randf() * (world.arena.width - 200.0),
+							100.0 + randf() * (world.arena.height - 200.0),
+							50.0,
+							"ice_slick",
+							0.0
+						)
+						h.set_meta("duration", 8.0)
+						world.arena.hazards.append(h)
 					if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius") * 0.6
 					elif "base_perception_radius" in b: b.perception_radius = b.base_perception_radius * 0.6
 					else: b.perception_radius = 250.0 * 0.6

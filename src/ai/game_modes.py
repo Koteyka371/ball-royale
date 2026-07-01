@@ -311,6 +311,14 @@ class BattleRoyaleMode(GameMode):
                     lightning = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=30.0, kind="lightning_strike", damage=50.0)
                     setattr(lightning, 'duration', 1.0) # short duration strike
                     world.arena.hazards.append(lightning)
+                if self.weather == "rain" and getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                    # Spawn mud pit
+                    from arena.procedural_arena import Hazard
+                    x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                    y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                    mud_pit = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=50.0, kind="mud_pit", damage=0.0)
+                    setattr(mud_pit, 'duration', 8.0)
+                    world.arena.hazards.append(mud_pit)
                 if self.weather == "thunderstorm" and getattr(self, "random", __import__("random")).random() < 0.05 * delta:
                     # Spawn tornado
                     x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
@@ -356,6 +364,14 @@ class BattleRoyaleMode(GameMode):
                 b.dash_range_mult = 1.0
                 b.steering_mult = 1.0
             elif self.weather == "snow":
+                if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                    from arena.procedural_arena import Hazard
+                    # Spawn ice slick
+                    x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                    y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                    ice_slick = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=50.0, kind="ice_slick", damage=0.0)
+                    setattr(ice_slick, 'duration', 8.0)
+                    world.arena.hazards.append(ice_slick)
                 b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.6
                 b.speed = b.base_speed * 0.5
                 b.damage = b.base_damage * 1.2
@@ -1148,6 +1164,14 @@ class WeatherChaosMode(GameMode):
                     lightning = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=30.0, kind="lightning_strike", damage=50.0)
                     setattr(lightning, 'duration', 1.0) # short duration strike
                     world.arena.hazards.append(lightning)
+                if self.weather == "rain" and getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                    # Spawn mud pit
+                    from arena.procedural_arena import Hazard
+                    x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                    y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                    mud_pit = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=50.0, kind="mud_pit", damage=0.0)
+                    setattr(mud_pit, 'duration', 8.0)
+                    world.arena.hazards.append(mud_pit)
                 if self.weather == "thunderstorm" and getattr(self, "random", __import__("random")).random() < 0.05 * delta:
                     # Spawn tornado
                     x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
@@ -1220,6 +1244,14 @@ class WeatherChaosMode(GameMode):
                                 decoy.active_skill = None
                             world.balls.append(decoy)
             elif self.weather == "snow":
+                if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                    from arena.procedural_arena import Hazard
+                    # Spawn ice slick
+                    x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                    y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                    ice_slick = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=50.0, kind="ice_slick", damage=0.0)
+                    setattr(ice_slick, 'duration', 8.0)
+                    world.arena.hazards.append(ice_slick)
                 b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.6
                 b.speed = b.base_speed * 0.5
                 b.damage = b.base_damage * 1.2

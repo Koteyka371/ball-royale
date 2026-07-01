@@ -2229,6 +2229,31 @@ func execute(strategy: String, delta: float):
                             if self.ball.has_method("set_meta"):
                                 self.ball.set_meta("stutter_timer", 1.0)
                         continue
+                    elif hazard.kind == "mud_pit":
+                        if "speed" in self.ball:
+                            var base = self.ball.speed
+                            if self.ball.has_method("has_meta") and self.ball.has_meta("base_speed"): base = self.ball.get_meta("base_speed")
+                            elif "base_speed" in self.ball: base = self.ball.base_speed
+                            self.ball.speed = base * 0.2
+                        if self.ball.has_method("set_meta"):
+                            self.ball.set_meta("dash_range_mult", 0.2)
+                        elif "dash_range_mult" in self.ball:
+                            self.ball.dash_range_mult = 0.2
+                        continue
+                    elif hazard.kind == "ice_slick":
+                        if "speed" in self.ball:
+                            var base = self.ball.speed
+                            if self.ball.has_method("has_meta") and self.ball.has_meta("base_speed"): base = self.ball.get_meta("base_speed")
+                            elif "base_speed" in self.ball: base = self.ball.base_speed
+                            self.ball.speed = base * 1.5
+                        if self.ball.has_method("set_meta"):
+                            self.ball.set_meta("dash_range_mult", 2.0)
+                            self.ball.set_meta("steering_mult", 0.1)
+                        elif "dash_range_mult" in self.ball:
+                            self.ball.dash_range_mult = 2.0
+                            if "steering_mult" in self.ball:
+                                self.ball.steering_mult = 0.1
+                        continue
                     elif hazard.kind == "breakable_wall":
                         var dx = self.ball.x - hazard.x
                         var dy = self.ball.y - hazard.y

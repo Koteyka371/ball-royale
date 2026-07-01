@@ -1567,6 +1567,15 @@ class Action:
                                     self._spawn_skill_particles("lightning")
                                 self.ball.stutter_timer = 1.0 # Stun
                             continue
+                        elif hazard.kind == "mud_pit":
+                            self.ball.speed = getattr(self.ball, "base_speed", self.ball.speed) * 0.2
+                            self.ball.dash_range_mult = 0.2
+                            continue
+                        elif hazard.kind == "ice_slick":
+                            self.ball.dash_range_mult = 2.0
+                            self.ball.steering_mult = 0.1
+                            self.ball.speed = getattr(self.ball, "base_speed", self.ball.speed) * 1.5
+                            continue
                         elif hazard.kind == "breakable_wall":
                             # Clamp position manually
                             dx = self.ball.x - hazard.x
