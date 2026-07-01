@@ -2905,6 +2905,64 @@ func execute(strategy: String, delta: float):
 
     var bounced_col = _resolve_collisions()
     var bounced_wall = _clamp_position()
+
+    if bounced_wall:
+        var vx = 0.0
+        var vy = 0.0
+        if "vx" in self.ball: vx = self.ball.vx
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("vx"): vx = self.ball.get_meta("vx")
+        if "vy" in self.ball: vy = self.ball.vy
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("vy"): vy = self.ball.get_meta("vy")
+
+        var speed_sq = vx*vx + vy*vy
+        if speed_sq > 0:
+            var speed = sqrt(speed_sq)
+            var w = 1000.0
+            if "width" in self.world: w = self.world.width
+            var h = 1000.0
+            if "height" in self.world: h = self.world.height
+            var r = 10.0
+            if "radius" in self.ball: r = self.ball.radius
+            var margin = r + 5.0
+
+            var nvx = vx
+            var nvy = vy
+
+            if self.ball.x <= margin or self.ball.x >= w - margin:
+                nvx = -vx
+            if self.ball.y <= margin or self.ball.y >= h - margin:
+                nvy = -vy
+
+            if nvx == vx and nvy == vy:
+                nvx = -vx
+                nvy = -vy
+
+            var new_speed = min(speed * 1.5, 2000.0)
+            var angle = atan2(nvy, nvx) + randf_range(-0.1, 0.1)
+
+            nvx = cos(angle) * new_speed
+            nvy = sin(angle) * new_speed
+
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["_reflection_vx"] = nvx
+                self.ball["_reflection_vy"] = nvy
+            elif self.ball.has_method("set_meta"):
+                self.ball.set_meta("_reflection_vx", nvx)
+                self.ball.set_meta("_reflection_vy", nvy)
+            elif "vx" in self.ball:
+                self.ball._reflection_vx = nvx
+                self.ball._reflection_vy = nvy
+
+            if speed > 500:
+                var dmg = speed * 0.05
+                if self.ball.has_method("take_damage"):
+                    self.ball.take_damage(dmg)
+                elif "hp" in self.ball:
+                    self.ball.hp -= dmg
+                    if self.ball.hp <= 0:
+                        if "alive" in self.ball: self.ball.alive = false
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("alive", false)
+
     if bounced_wall or bounced_col:
         _trigger_ripple_effect()
 
@@ -2965,6 +3023,24 @@ func execute(strategy: String, delta: float):
 
         var vx = dx / delta
         var vy = dy / delta
+
+        if typeof(my_ball) == TYPE_DICTIONARY:
+            if my_ball.has("_reflection_vx"):
+                vx = my_ball["_reflection_vx"]
+                my_ball.erase("_reflection_vx")
+            if my_ball.has("_reflection_vy"):
+                vy = my_ball["_reflection_vy"]
+                my_ball.erase("_reflection_vy")
+        elif my_ball.has_method("has_meta"):
+            if my_ball.has_meta("_reflection_vx"):
+                vx = my_ball.get_meta("_reflection_vx")
+                my_ball.remove_meta("_reflection_vx")
+            if my_ball.has_meta("_reflection_vy"):
+                vy = my_ball.get_meta("_reflection_vy")
+                my_ball.remove_meta("_reflection_vy")
+        elif "_reflection_vx" in my_ball:
+            vx = my_ball._reflection_vx
+            vy = my_ball._reflection_vy
 
         if is_snowing and (vx != 0 or vy != 0):
             if my_ball.has_method("set_meta") and my_ball.has_meta("x"):

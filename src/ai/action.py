@@ -1998,6 +1998,37 @@ class Action:
 
         bounced_col = self._resolve_collisions()
         bounced_wall = self._clamp_position()
+
+        # Reflect projectiles and entities with increased speed upon hitting the boundary
+        if bounced_wall:
+            import math as _math
+            vx = getattr(self.ball, "vx", 0.0)
+            vy = getattr(self.ball, "vy", 0.0)
+            speed_sq = vx*vx + vy*vy
+
+            # Simple reflection heuristic since we don't have exact normal here.
+            # We can approximate by reversing velocity and increasing speed.
+            if speed_sq > 0:
+                speed = _math.sqrt(speed_sq)
+                # Reverse velocity, add random slight angle variation for trick shots, and multiply speed
+                import random
+                angle = _math.atan2(-vy, -vx) + random.uniform(-0.2, 0.2)
+                new_speed = min(speed * 1.5, 2000.0)  # Increase speed, cap at 2000
+
+                # Save the reflection velocity to be set after execution
+                self.ball._reflection_vx = math.cos(angle) * new_speed
+                self.ball._reflection_vy = math.sin(angle) * new_speed
+
+                # Punishing players who get too close to the edge with high speed
+                if speed > 500:
+                    damage = speed * 0.05
+                    if hasattr(self.ball, "take_damage"):
+                        self.ball.take_damage(damage)
+                    elif hasattr(self.ball, "hp"):
+                        self.ball.hp -= damage
+                        if self.ball.hp <= 0:
+                            self.ball.alive = False
+
         if bounced_wall or bounced_col:
             self._trigger_ripple_effect()
 
@@ -2009,6 +2040,13 @@ class Action:
             dy = self.ball.y - old_y
             self.ball.vx = dx / delta
             self.ball.vy = dy / delta
+
+            if hasattr(self.ball, "_reflection_vx"):
+                self.ball.vx = self.ball._reflection_vx
+                delattr(self.ball, "_reflection_vx")
+            if hasattr(self.ball, "_reflection_vy"):
+                self.ball.vy = self.ball._reflection_vy
+                delattr(self.ball, "_reflection_vy")
 
             # Stamina regen/drain
             dist = math.sqrt(dx*dx + dy*dy)
