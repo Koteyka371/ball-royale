@@ -2293,6 +2293,53 @@ func execute(strategy: String, delta: float):
                             elif "vx" in self.ball:
                                 self.ball.vx = nx * 2000.0
                                 self.ball.vy = ny * 2000.0
+
+                            var powerup = null
+                            if typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("powerup_type"):
+                                powerup = hazard.get_meta("powerup_type")
+                            elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("powerup_type"):
+                                powerup = hazard.powerup_type
+                            elif "powerup_type" in hazard:
+                                powerup = hazard.powerup_type
+
+                            if powerup == "heal":
+                                var max_hp = 100.0
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("max_hp"): max_hp = self.ball.get_meta("max_hp")
+                                elif "max_hp" in self.ball: max_hp = self.ball.max_hp
+
+                                var hp = 100.0
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("hp"): hp = self.ball.get_meta("hp")
+                                elif "hp" in self.ball: hp = self.ball.hp
+
+                                hp = min(max_hp, hp + 10.0)
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("hp", hp)
+                                if "hp" in self.ball: self.ball.hp = hp
+
+                            elif powerup == "speed":
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("speed_boost_timer", 3.0)
+                                if "speed_boost_timer" in self.ball: self.ball.speed_boost_timer = 3.0
+
+                            elif powerup == "shield":
+                                var shield = 0.0
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("shield"): shield = self.ball.get_meta("shield")
+                                elif "shield" in self.ball: shield = self.ball.shield
+
+                                shield += 20.0
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("shield", shield)
+                                if "shield" in self.ball: self.ball.shield = shield
+
+                            elif powerup == "stamina":
+                                var max_stam = 100.0
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("max_stamina"): max_stam = self.ball.get_meta("max_stamina")
+                                elif "max_stamina" in self.ball: max_stam = self.ball.max_stamina
+
+                                var stam = 100.0
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("stamina"): stam = self.ball.get_meta("stamina")
+                                elif "stamina" in self.ball: stam = self.ball.stamina
+
+                                stam = min(max_stam, stam + 20.0)
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("stamina", stam)
+                                if "stamina" in self.ball: self.ball.stamina = stam
                         continue
                     elif hazard.kind == "healing_spring":
                         var heal_amount = abs(hazard.damage) * delta
