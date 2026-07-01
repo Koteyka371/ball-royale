@@ -3424,7 +3424,15 @@ class GuildVsGuildMode(GameMode):
         except ImportError:
             pass
 
+
+class ZeroGravityMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Zero Gravity"
+        self.description = "Friction and gravity are drastically reduced, causing balls to slide around effortlessly and collisions to produce massive knockback."
+
 GAME_MODES = {
+    "zero_gravity": ZeroGravityMode(),
     "day_night_mode": DayNightMode(),
     "shifting_maze": ShiftingMazeMode(),
 

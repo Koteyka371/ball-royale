@@ -844,12 +844,12 @@ func execute(strategy: String, delta: float):
 
         if world.arena.get("is_raining") == true and not ignores_mud:
             if "vx" in my_ball and "vy" in my_ball:
-                my_ball.x += my_ball.vx * delta * 0.2
-                my_ball.y += my_ball.vy * delta * 0.2
+            my_ball.x += my_ball.vx * delta * 0.2
+            my_ball.y += my_ball.vy * delta * 0.2
         if world.arena.get("is_snowing") == true:
             if "vx" in my_ball and "vy" in my_ball:
-                my_ball.x += my_ball.vx * delta * 0.4
-                my_ball.y += my_ball.vy * delta * 0.4
+            my_ball.x += my_ball.vx * delta * 0.4
+            my_ball.y += my_ball.vy * delta * 0.4
         var wind_dx = 0.0
         if world.arena.get("wind_dx") != null:
             wind_dx = world.arena.get("wind_dx")
@@ -863,13 +863,19 @@ func execute(strategy: String, delta: float):
     var gm = null
     if world != null and "game_mode" in world:
         gm = world.game_mode
-    if gm != null and gm.name == "Custom Match":
-        if gm.get("mutators_active") == true and "zero_gravity" in gm.get("mutators", []):
-            if "vx" in my_ball and "vy" in my_ball:
-                my_ball.vx *= (1.0 - 0.5 * delta)
-                my_ball.vy *= (1.0 - 0.5 * delta)
-                my_ball.x += my_ball.vx * delta
-                my_ball.y += my_ball.vy * delta
+    var is_zero_gravity = false
+    if gm != null:
+        if gm.name == "Zero Gravity":
+            is_zero_gravity = true
+        elif gm.name == "Custom Match" and gm.get("mutators_active") == true and "zero_gravity" in gm.get("mutators", []):
+            is_zero_gravity = true
+
+    if is_zero_gravity:
+        if "vx" in my_ball and "vy" in my_ball:
+            my_ball.vx *= (1.0 - 0.5 * delta)
+            my_ball.vy *= (1.0 - 0.5 * delta)
+            my_ball.x += my_ball.vx * delta
+            my_ball.y += my_ball.vy * delta
 
     if my_ball.get("BALL_TYPE") == "mimic" and my_ball.has_method("process_mimicry"):
         var enemies = self._get_enemies()
@@ -6720,6 +6726,8 @@ func _resolve_collisions() -> bool:
             var knockback_multiplier = 1.0
             if self.world != null and "game_mode" in self.world and self.world.game_mode != null:
                 if "name" in self.world.game_mode and self.world.game_mode.name == "Bumper Balls":
+                    knockback_multiplier = 5.0
+                elif "name" in self.world.game_mode and self.world.game_mode.name == "Zero Gravity":
                     knockback_multiplier = 5.0
 
             self.ball.x += nx * overlap * knockback_multiplier
