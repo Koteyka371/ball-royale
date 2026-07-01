@@ -1125,9 +1125,18 @@ class Action:
                             if dist_sq > 0.0001:
                                 dist = math.sqrt(dist_sq)
                                 nx, ny = dx / dist, dy / dist
+                                hazard_polarity = getattr(hazard, "polarity", 1)
+                                ball_polarity = getattr(self.ball, "polarity", 0)
+                                force_direction = 1
+                                if ball_polarity != 0:
+                                    if hazard_polarity == ball_polarity:
+                                        force_direction = -1
+                                    else:
+                                        force_direction = 1
                                 # Strength is inversely proportional to distance, similar to gravity well but broader
-                                pull_strength = (hazard.radius * 3.0 / max(10.0, dist)) * 50.0 * delta
-                                pull_strength = min(pull_strength, dist * 0.5) # Prevent overshooting the center
+                                pull_strength = (hazard.radius * 3.0 / max(10.0, dist)) * 50.0 * delta * force_direction
+                                if force_direction > 0:
+                                    pull_strength = min(pull_strength, dist * 0.5) # Prevent overshooting the center
                                 self.ball.x += nx * pull_strength
                                 self.ball.y += ny * pull_strength
                     elif hazard.kind == "reverse_gravity":
@@ -3910,6 +3919,18 @@ class Action:
                     for h in hazards_to_remove:
                         if h in self.world.arena.hazards:
                             self.world.arena.hazards.remove(h)
+
+            elif skill_name == "toggle_polarity":
+                current_polarity = getattr(self.ball, "polarity", 0)
+                if current_polarity == 0:
+                    self.ball.polarity = 1
+                elif current_polarity == 1:
+                    self.ball.polarity = -1
+                else:
+                    self.ball.polarity = 1
+                self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
+                if hasattr(self, "_spawn_skill_particles"):
+                    self._spawn_skill_particles("toggle_polarity")
 
             elif skill_name == "target_strong":
 
