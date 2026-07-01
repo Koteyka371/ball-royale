@@ -553,8 +553,68 @@ class SummerArena extends ProceduralArena:
 	func _init(size: float = 2000.0, seed_val = null):
 		super(size, 5, seed_val)
 
+
+
+
+
+
+
+
+
+
+
+class LavaArena extends ProceduralArena:
+	var is_lava_theme = true
+
+	func _init(size: float = 2000.0, seed_val = null):
+		super(size, 5, seed_val)
+
+	func generate() -> void:
+		super.generate()
+		for i in range(5):
+			var x = randf_range(100, width - 100)
+			var y = randf_range(100, height - 100)
+			var h_id = 1000 + hazards.size()
+			hazards.append(ProceduralArena.Hazard.new(h_id, x, y, randf_range(30.0, 80.0), "lava", 15.0))
+
+class NeonArena extends ProceduralArena:
+	var is_neon_theme = true
+
+	func _init(size: float = 2000.0, seed_val = null):
+		super(size, 5, seed_val)
+
+	func generate() -> void:
+		super.generate()
+		for i in range(5):
+			var x = randf_range(100, width - 100)
+			var y = randf_range(100, height - 100)
+			var h_id = 2000 + hazards.size()
+			hazards.append(ProceduralArena.Hazard.new(h_id, x, y, randf_range(40.0, 60.0), "bounce_pad", 0.0))
+
+class AutumnArena extends ProceduralArena:
+	var is_windy = true
+
+	func _init(size: float = 2000.0, seed_val = null):
+		super(size, 5, seed_val)
+
+	func generate() -> void:
+		super.generate()
+		for i in range(3):
+			var x = randf_range(100, width - 100)
+			var y = randf_range(100, height - 100)
+			var h_id = 3000 + hazards.size()
+			hazards.append(ProceduralArena.Hazard.new(h_id, x, y, randf_range(50.0, 100.0), "tornado", 5.0))
+
 class WinterArena extends ProceduralArena:
 	var is_snowing = true
 
 	func _init(size: float = 2000.0, seed_val = null):
 		super(size, 5, seed_val)
+
+	func generate() -> void:
+		super.generate()
+		for i in range(5):
+			var x = randf_range(100, width - 100)
+			var y = randf_range(100, height - 100)
+			var h_id = 4000 + hazards.size()
+			hazards.append(ProceduralArena.Hazard.new(h_id, x, y, randf_range(40.0, 120.0), "ice_patch", 0.0))

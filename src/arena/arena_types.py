@@ -1328,12 +1328,116 @@ class SummerArena(ProceduralArena):
         super().__init__(arena_size, 5, seed)
         self.is_heatwave = True
 
+
+
+
+
+
+
+
+
+
+
+class LavaArena(ProceduralArena):
+    def __init__(self, arena_size: float = 2000.0, seed: int | None = None):
+        super().__init__(arena_size, 5, seed)
+        self.is_lava_theme = True
+
+    def generate(self):
+        super().generate()
+        # Add lava cracks
+        import random
+        for _ in range(5):
+            x = random.uniform(100, self.width - 100)
+            y = random.uniform(100, self.height - 100)
+            h_id = 1000 + len(self.hazards)
+            lava_crack = type("Hazard", (object,), {})()
+            lava_crack.id = h_id
+            lava_crack.x = x
+            lava_crack.y = y
+            lava_crack.radius = random.uniform(30.0, 80.0)
+            lava_crack.kind = "lava"
+            lava_crack.damage = 15.0
+            lava_crack.active = True
+            lava_crack.target_radius = 0.0
+            self.hazards.append(lava_crack)
+
+class NeonArena(ProceduralArena):
+    def __init__(self, arena_size: float = 2000.0, seed: int | None = None):
+        super().__init__(arena_size, 5, seed)
+        self.is_neon_theme = True
+
+    def generate(self):
+        super().generate()
+        # Add neon speed pads (using conveyor belt or custom speed boost)
+        import random
+        for _ in range(5):
+            x = random.uniform(100, self.width - 100)
+            y = random.uniform(100, self.height - 100)
+            h_id = 2000 + len(self.hazards)
+            speed_pad = type("Hazard", (object,), {})()
+            speed_pad.id = h_id
+            speed_pad.x = x
+            speed_pad.y = y
+            speed_pad.radius = random.uniform(40.0, 60.0)
+            speed_pad.kind = "bounce_pad" # Acts like a speed/bounce pad
+            speed_pad.damage = 0.0
+            speed_pad.active = True
+            speed_pad.target_radius = 0.0
+            self.hazards.append(speed_pad)
+
+class AutumnArena(ProceduralArena):
+    def __init__(self, arena_size: float = 2000.0, seed: int | None = None):
+        super().__init__(arena_size, 5, seed)
+        self.is_windy = True
+
+    def generate(self):
+        super().generate()
+        # Add wind tornados
+        import random
+        for _ in range(3):
+            x = random.uniform(100, self.width - 100)
+            y = random.uniform(100, self.height - 100)
+            h_id = 3000 + len(self.hazards)
+            tornado = type("Hazard", (object,), {})()
+            tornado.id = h_id
+            tornado.x = x
+            tornado.y = y
+            tornado.radius = random.uniform(50.0, 100.0)
+            tornado.kind = "tornado"
+            tornado.damage = 5.0
+            tornado.active = True
+            tornado.target_radius = 0.0
+            self.hazards.append(tornado)
+
 class WinterArena(ProceduralArena):
     def __init__(self, arena_size: float = 2000.0, seed: int | None = None):
         super().__init__(arena_size, 5, seed)
         self.is_snowing = True
 
+    def generate(self):
+        super().generate()
+        # Add ice patches
+        import random
+        for _ in range(5):
+            x = random.uniform(100, self.width - 100)
+            y = random.uniform(100, self.height - 100)
+            h_id = 4000 + len(self.hazards)
+            ice_patch = type("Hazard", (object,), {})()
+            ice_patch.id = h_id
+            ice_patch.x = x
+            ice_patch.y = y
+            ice_patch.radius = random.uniform(40.0, 120.0)
+            ice_patch.kind = "ice_patch"
+            ice_patch.damage = 0.0
+            ice_patch.active = True
+            ice_patch.target_radius = 0.0
+            self.hazards.append(ice_patch)
+
 ARENAS["summer"] = SummerArena
+ARENAS["autumn"] = AutumnArena
+ARENAS["lava"] = LavaArena
+ARENAS["neon"] = NeonArena
 ARENAS["winter"] = WinterArena
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
