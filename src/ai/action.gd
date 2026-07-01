@@ -3173,6 +3173,44 @@ func execute(strategy: String, delta: float):
         var dx = self.ball.x - old_x
         var dy = self.ball.y - old_y
 
+        var n_timer = 0.0
+        if "nemesis_booster_timer" in self.ball:
+            n_timer = float(self.ball.nemesis_booster_timer)
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("nemesis_booster_timer"):
+            n_timer = float(self.ball.get_meta("nemesis_booster_timer"))
+
+        if n_timer > 0.0:
+            if "profile_manager" in self.world and self.world.profile_manager != null and self.world.profile_manager.has_method("is_nemesis"):
+                var pm = self.world.profile_manager
+                var nemesis = null
+                var min_dist_sq = 1e9
+                if "balls" in self.world:
+                    for other in self.world.balls:
+                        if other.get("id") != self.ball.get("id") and other.get("hp", 0.0) > 0.0:
+                            var my_type = self.ball.get("ball_type")
+                            var other_type = other.get("ball_type")
+                            if my_type != null and other_type != null:
+                                if pm.is_nemesis(my_type, other_type):
+                                    var dsq = pow(other.x - self.ball.x, 2) + pow(other.y - self.ball.y, 2)
+                                    if dsq < min_dist_sq:
+                                        min_dist_sq = dsq
+                                        nemesis = other
+                if nemesis != null:
+                    var ndx = nemesis.x - self.ball.x
+                    var ndy = nemesis.y - self.ball.y
+                    var ndist = sqrt(ndx*ndx + ndy*ndy)
+                    if ndist > 0.0001:
+                        var bs = 2.0
+                        if "base_speed" in self.ball:
+                            bs = float(self.ball.base_speed)
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"):
+                            bs = float(self.ball.get_meta("base_speed"))
+                        var extra_speed = (bs * 0.5) * delta
+                        dx += (ndx / ndist) * extra_speed
+                        dy += (ndy / ndist) * extra_speed
+                        self.ball.x = old_x + dx
+                        self.ball.y = old_y + dy
+
         var act_dist = sqrt(dx*dx + dy*dy)
         var act_stamina = 100.0
         var act_max_stamina = 100.0
@@ -5436,6 +5474,13 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "nemesis_booster":
+                self.ball.set_meta("nemesis_booster_timer", 5.0)
+                if "nemesis_booster_timer" in self.ball:
+                    self.ball.nemesis_booster_timer = 5.0
+                if "arena" in self.world and "hazards" in self.world.arena:
+                    if self.world.arena.hazards.has(nearest):
+                        self.world.arena.hazards.erase(nearest)
             elif "kind" in nearest and nearest.kind == "clone_booster":
                 var clone = null
                 if self.ball.has_method("duplicate"):
@@ -6943,7 +6988,7 @@ func _use_skill():
                     elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
                     elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
 
-                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item"]:
+                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster"]:
                         var hx = 0.0
                         var hy = 0.0
                         if "x" in h: hx = h.x
@@ -7693,6 +7738,20 @@ func _apply_friendly_aura(delta: float):
 
 
 func _update_skill_timer(delta: float):
+    var n_timer = 0.0
+    if "nemesis_booster_timer" in self.ball:
+        n_timer = float(self.ball.nemesis_booster_timer)
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("nemesis_booster_timer"):
+        n_timer = float(self.ball.get_meta("nemesis_booster_timer"))
+    if n_timer > 0:
+        n_timer -= delta
+        if n_timer < 0:
+            n_timer = 0.0
+        if "nemesis_booster_timer" in self.ball:
+            self.ball.nemesis_booster_timer = n_timer
+        if self.ball.has_method("set_meta"):
+            self.ball.set_meta("nemesis_booster_timer", n_timer)
+
     var pull_timer = 0.0
     if "pull_booster_timer" in self.ball:
         pull_timer = float(self.ball.pull_booster_timer)
@@ -7715,7 +7774,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster"]
+                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y
