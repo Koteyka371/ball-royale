@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-359] One-way portals — *2026-07-01 11:35:53 UTC*
+
+Portals that only allow travel in one direction, creating strategic choke points in the arena. They can be created by giving only one of the paired portals target coordinates.
+
+---
+
 ## [idea-367] Gravity Inversion Zone — *2026-07-01 11:14:52 UTC*
 
 A new arena hazard that periodically reverses gravity within its radius, causing balls to be repelled from each other instead of behaving normally, which can be used to break up enemy groupings.
