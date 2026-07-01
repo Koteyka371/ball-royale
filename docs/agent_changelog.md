@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-361] Guilds & Alliances — *2026-07-01 12:07:28 UTC*
+
+Introduce a Guilds system where players can create or join alliances. Guilds have dedicated chat channels, leaderboards, and a shared vault. In special Guild vs Guild (GvG) game modes, players represent their guild in multi-stage battles, capturing territory on a persistent world map. Winning territories yields passive resources for all guild members.
+
+---
+
 ## [idea-368] Quantum Entanglement — *2026-07-01 12:07:23 UTC*
 
 Two balls can become quantum entangled, meaning they share damage taken but also share healing, creating new tactical trade-offs during chaotic team fights.
