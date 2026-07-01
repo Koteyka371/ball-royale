@@ -322,6 +322,25 @@ func generate():
 
             hazards.append(sp1)
             hazards.append(sp2)
+        # Generate guaranteed paired wormholes
+        var num_wormholes = max(1, num_rooms / 2)
+        for p in range(num_wormholes):
+            var w1_id = hazards.size() + 9000 + p*2
+            var w2_id = hazards.size() + 9000 + p*2 + 1
+
+            var w1_pt = get_random_spawn_point(30.0)
+            var w2_pt = get_random_spawn_point(30.0)
+
+            var w1 = ProceduralArena.Hazard.new(w1_id, w1_pt[0], w1_pt[1], 30.0, "wormhole", 0.0)
+            w1.set_meta("target_x", w2_pt[0])
+            w1.set_meta("target_y", w2_pt[1])
+
+            var w2 = ProceduralArena.Hazard.new(w2_id, w2_pt[0], w2_pt[1], 30.0, "wormhole", 0.0)
+            w2.set_meta("target_x", w1_pt[0])
+            w2.set_meta("target_y", w1_pt[1])
+
+            hazards.append(w1)
+            hazards.append(w2)
 
     # Generate random teleporter pads
     var num_teleporters = max(2, num_rooms)

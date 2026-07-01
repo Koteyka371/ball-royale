@@ -1,0 +1,4 @@
+{
+    "title": "Quantum Entanglement Hazard",
+    "description": "A hazard that entangles the ball with a random enemy ball for 5 seconds. If the ball takes damage, the enemy ball takes damage. If the enemy ball gains speed, the ball gains speed."
+}
