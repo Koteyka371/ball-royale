@@ -2234,7 +2234,10 @@ func execute(strategy: String, delta: float):
                             self.ball.y += ny * overlap
 
                         if hazard.has_meta("hp"):
-                            var new_hp = hazard.get_meta("hp") - 100.0 * delta
+                            var base_dmg = 100.0
+                            if "damage" in self.ball:
+                                base_dmg = self.ball.damage
+                            var new_hp = hazard.get_meta("hp") - base_dmg * delta * 5.0
                             hazard.set_meta("hp", new_hp)
                             if new_hp <= 0:
                                 hazard.active = false
