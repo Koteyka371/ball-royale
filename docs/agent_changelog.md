@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-323] Bait Traps — *2026-07-01 11:02:39 UTC*
+
+Allow stealth-based or trap-focused balls to place fake booster items that explode or stun enemies when collected, adding a psychological layer to item collection.
+
+---
+
 ## [idea-343] Shrinking Ring of Fire Hazard — *2026-07-01 11:02:35 UTC*
 
 A hazard that spawns a large ring of fire which slowly shrinks over 10 seconds. Balls caught on the ring take continuous burn damage until they escape or the ring vanishes.
