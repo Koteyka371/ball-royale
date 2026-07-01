@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-356] Day and Night Cycle — *2026-07-01 11:02:44 UTC*
+
+Introduce a day and night cycle that affects visibility and ball behavior. Certain ball types (like Assassin or Phantom) gain stealth buffs or increased damage at night, while others like Paladin or Guardian are stronger during the day.
+
+---
+
 ## [idea-323] Bait Traps — *2026-07-01 11:02:39 UTC*
 
 Allow stealth-based or trap-focused balls to place fake booster items that explode or stun enemies when collected, adding a psychological layer to item collection.
