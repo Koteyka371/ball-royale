@@ -257,8 +257,10 @@ func generate():
         portal1.set_meta("target_y", p2_pt[1])
 
         var portal2 = ProceduralArena.Hazard.new(p2_id, p2_pt[0], p2_pt[1], 30.0, "portal", 0.0)
-        portal2.set_meta("target_x", p1_pt[0])
-        portal2.set_meta("target_y", p1_pt[1])
+        var is_two_way = randf() < 0.5
+        if is_two_way:
+            portal2.set_meta("target_x", p1_pt[0])
+            portal2.set_meta("target_y", p1_pt[1])
 
         var bh_hazards = []
         for h in hazards:
@@ -267,7 +269,8 @@ func generate():
         if bh_hazards.size() > 0 and randf() < 0.3:
             var target_bh = bh_hazards[randi() % bh_hazards.size()]
             portal1.set_meta("target_hazard_id", target_bh.id)
-            portal2.set_meta("target_hazard_id", target_bh.id)
+            if is_two_way:
+                portal2.set_meta("target_hazard_id", target_bh.id)
 
         hazards.append(portal1)
         hazards.append(portal2)
