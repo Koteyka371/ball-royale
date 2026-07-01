@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-363] Bumper Upgrades — *2026-07-01 12:13:52 UTC*
+
+Allow bumpers to be upgraded to give powerups to the ball that bounces off them, creating interesting mechanics where players might intentionally hit bumpers.
+
+---
+
 ## [idea-361] Guilds & Alliances — *2026-07-01 12:07:28 UTC*
 
 Introduce a Guilds system where players can create or join alliances. Guilds have dedicated chat channels, leaderboards, and a shared vault. In special Guild vs Guild (GvG) game modes, players represent their guild in multi-stage battles, capturing territory on a persistent world map. Winning territories yields passive resources for all guild members.

@@ -6287,7 +6287,7 @@
     },
     {
       "id": "idea-363",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bumper Upgrades",
@@ -10058,6 +10058,75 @@
         "src/ai/shrinking_safe_zones.py",
         "src/ai/shrinking_safe_zones.gd",
         "tests/test_shrinking_safe_zones.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-583",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild Perks Tree",
+      "description": "Expand the guild system to include a progression tree where the guild master can spend 'Guild XP' earned from GvG matches to unlock permanent passive bonuses for all members (e.g. +5% HP, +10% move speed).",
+      "allowed_paths": [
+        "src/ui/guild_perks_tree.py",
+        "src/ui/guild_perks_tree.gd",
+        "src/ai/guild_perks_tree.py",
+        "tests/test_guild_perks_tree.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-584",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Gravity Anomaly Hazard",
+      "description": "Introduce a rare Black Hole hazard that appears periodically in the center of the arena. It slowly pulls all balls towards it. Balls that get too close take heavy continuous damage, but skilled players can use the black hole's gravitational pull to slingshot themselves at high speeds toward enemies or objectives.",
+      "allowed_paths": [
+        "src/arena/black_hole_gravity_anomaly.py",
+        "src/arena/black_hole_gravity_anomaly.gd",
+        "tests/test_black_hole_gravity_anomaly.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-585",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounty Contracts",
+      "description": "Allow guilds to place bounties on other guilds. When a bounty is placed, members of the opposing guild are highlighted on the map and yield double points/rewards when eliminated during a match.",
+      "allowed_paths": [
+        "src/ai/bounty_contracts.py",
+        "src/ai/bounty_contracts.gd",
+        "tests/test_bounty_contracts.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-586",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Teleporter Nodes",
+      "description": "Place quantum teleporter nodes around the map. Entering one node instantly teleports a ball to a paired node on the other side of the arena. This creates high-risk, high-reward escape routes or flanking paths, but teleporters have a brief cooldown and leave a visual trail revealing the destination.",
+      "allowed_paths": [
+        "src/ai/quantum_teleporter_nodes.py",
+        "src/ai/quantum_teleporter_nodes.gd",
+        "tests/test_quantum_teleporter_nodes.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
