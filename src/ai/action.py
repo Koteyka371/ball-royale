@@ -1613,10 +1613,21 @@ class Action:
                                 bounce_strength = 600.0 * delta
                                 self.ball.x += nx * bounce_strength
                                 self.ball.y += ny * bounce_strength
-
                                 # Accelerate ball significantly to create chaotic pinball-like movement
                                 self.ball.vx = nx * 2000.0
                                 self.ball.vy = ny * 2000.0
+
+                                # Apply bumper powerup if present
+                                powerup = getattr(hazard, "powerup_type", None)
+                                if powerup == "heal":
+                                    self.ball.hp = min(getattr(self.ball, "max_hp", 100.0), getattr(self.ball, "hp", 100.0) + 10.0)
+                                elif powerup == "speed":
+                                    self.ball.speed_boost_timer = 3.0
+                                elif powerup == "shield":
+                                    self.ball.shield = getattr(self.ball, "shield", 0.0) + 20.0
+                                elif powerup == "stamina":
+                                    self.ball.stamina = min(getattr(self.ball, "max_stamina", 100.0), getattr(self.ball, "stamina", 100.0) + 20.0)
+
                             continue
                         elif hazard.kind == "healing_spring":
                             # Regenerate HP over time
