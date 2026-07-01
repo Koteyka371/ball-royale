@@ -523,6 +523,7 @@ class BattleRoyaleMode(GameMode):
                         decoy.attack_timer = 9999.0
                         decoy.is_decoy = True
                         decoy.decoy_timer = 3.0
+                        decoy.decoy_type = "stun_trap" if getattr(self, "random", __import__("random")).random() < 0.5 else "explosive"
                         if hasattr(b, "SKILL") or getattr(b, "active_skill", None) is not None:
                             decoy.SKILL = None
                             decoy.active_skill = None
@@ -1394,6 +1395,7 @@ class WeatherChaosMode(GameMode):
                             decoy.attack_timer = 9999.0
                             decoy.is_decoy = True
                             decoy.decoy_timer = 3.0
+                            decoy.decoy_type = "stun_trap" if getattr(self, "random", __import__("random")).random() < 0.5 else "explosive"
                             if hasattr(b, "SKILL") or getattr(b, "active_skill", None) is not None:
                                 decoy.SKILL = None
                                 decoy.active_skill = None
@@ -1453,6 +1455,7 @@ class WeatherChaosMode(GameMode):
                             decoy.attack_timer = 9999.0
                             decoy.is_decoy = True
                             decoy.decoy_timer = 3.0
+                            decoy.decoy_type = "stun_trap" if getattr(self, "random", __import__("random")).random() < 0.5 else "explosive"
                             if hasattr(b, "SKILL") or getattr(b, "active_skill", None) is not None:
                                 decoy.SKILL = None
                                 decoy.active_skill = None
@@ -1494,6 +1497,7 @@ class WeatherChaosMode(GameMode):
                         decoy.attack_timer = 9999.0
                         decoy.is_decoy = True
                         decoy.decoy_timer = 3.0
+                        decoy.decoy_type = "stun_trap" if getattr(self, "random", __import__("random")).random() < 0.5 else "explosive"
                         if hasattr(b, "SKILL") or getattr(b, "active_skill", None) is not None:
                             decoy.SKILL = None
                             decoy.active_skill = None

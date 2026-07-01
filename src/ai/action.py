@@ -731,8 +731,11 @@ class Action:
                                     dy = other.y - b.y
                                     dist = math.sqrt(dx*dx + dy*dy)
                                     if dist <= 100.0:
-                                        other.hp -= 30.0
-                                        other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 2.0
+                                        if getattr(b, "decoy_type", "") == "stun_trap":
+                                            other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 5.0
+                                        else:
+                                            other.hp -= 30.0
+                                            other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 2.0
 
                                         import random
                                         b_type = getattr(b, "ball_type", "")
@@ -3707,6 +3710,14 @@ class Action:
                     decoy.SKILL = None
                     decoy.skill = None
                     decoy.active_skill = None
+                    if getattr(self.ball, "ball_type", "") == "trickster":
+                        import random
+                        if random.random() < 0.5:
+                            decoy.decoy_type = "stun_trap"
+                        else:
+                            decoy.decoy_type = "explosive"
+                    else:
+                        decoy.decoy_type = "explosive"
 
                     self.world.balls.append(decoy)
 
