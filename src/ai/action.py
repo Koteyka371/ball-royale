@@ -1050,7 +1050,7 @@ class Action:
                                         self.ball.last_teleport_tick = current_tick
                                         entity_to_swap.last_teleport_tick = current_tick
 
-                    elif hazard.kind in ("portal", "teleporter"):
+                    elif hazard.kind in ("portal", "teleporter", "one_way_teleporter"):
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
                         dist_sq = dx * dx + dy * dy
@@ -1059,7 +1059,7 @@ class Action:
                             current_tick = getattr(self.world, "tick", 0)
                             last_teleport = getattr(self.ball, "last_teleport_tick", -100)
                             if current_tick - last_teleport > 10:  # Prevent immediate re-teleport
-                                if hazard.kind == "teleporter":
+                                if hazard.kind in ("teleporter", "one_way_teleporter"):
                                     if hasattr(hazard, "target_x") and hasattr(hazard, "target_y"):
                                         self.ball.x = getattr(hazard, "target_x")
                                         self.ball.y = getattr(hazard, "target_y")

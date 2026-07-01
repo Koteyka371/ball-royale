@@ -298,6 +298,18 @@ class ProceduralArena:
             self.hazards.append(t1)
             self.hazards.append(t2)
 
+        # Generate one-way teleporters
+        num_oneway = 2
+        for t in range(num_oneway):
+            t_id = len(self.hazards) + 6500 + t
+            tx, ty = self.get_random_spawn_point(25.0)
+            teleporter = Hazard(id=t_id, x=tx, y=ty, radius=25.0, kind="one_way_teleporter", damage=0.0)
+            target_tx, target_ty = self.get_random_spawn_point(25.0)
+            setattr(teleporter, 'target_x', target_tx)
+            setattr(teleporter, 'target_y', target_ty)
+            setattr(teleporter, 'change_timer', 5.0)
+            self.hazards.append(teleporter)
+
     def get_random_spawn_point(self, radius: float) -> Tuple[float, float]:
         if not self.rooms:
             return (random.uniform(radius, self.width - radius),
@@ -406,6 +418,14 @@ class ProceduralArena:
                 if getattr(h, "frozen_timer", 0.0) > 0:
                     h.frozen_timer -= delta
                     continue
+                if getattr(h, "kind", "") == "one_way_teleporter":
+                    if hasattr(h, "change_timer"):
+                        h.change_timer -= delta
+                        if h.change_timer <= 0:
+                            h.change_timer = 5.0
+                            target_tx, target_ty = self.get_random_spawn_point(25.0)
+                            h.target_x = target_tx
+                            h.target_y = target_ty
                 if getattr(h, "kind", "") == "flare":
                     if hasattr(h, "duration"):
                         h.duration -= delta

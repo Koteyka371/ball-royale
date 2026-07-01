@@ -347,6 +347,18 @@ func generate():
         hazards.append(t1)
         hazards.append(t2)
 
+    # Generate one-way teleporters
+    var num_oneway = 2
+    for t in range(num_oneway):
+        var t_id = hazards.size() + 6500 + t
+        var pt = get_random_spawn_point(25.0)
+        var teleporter = ProceduralArena.Hazard.new(t_id, pt[0], pt[1], 25.0, "one_way_teleporter", 0.0)
+        var target_pt = get_random_spawn_point(25.0)
+        teleporter.set_meta("target_x", target_pt[0])
+        teleporter.set_meta("target_y", target_pt[1])
+        teleporter.set_meta("change_timer", 5.0)
+        hazards.append(teleporter)
+
 func get_random_spawn_point(radius: float) -> Array:
     if rooms.size() == 0:
         return [rng.randf_range(radius, width - radius), rng.randf_range(radius, height - radius)]
@@ -446,6 +458,16 @@ func update_zone(current_tick: int, delta: float) -> void:
                 if ft > 0:
                     h.set_meta("frozen_timer", ft - delta)
                     continue
+
+            if "kind" in h and h.kind == "one_way_teleporter":
+                if h.has_method("has_meta") and h.has_meta("change_timer"):
+                    var t = h.get_meta("change_timer") - delta
+                    if t <= 0:
+                        t = 5.0
+                        var target_pt = get_random_spawn_point(25.0)
+                        h.set_meta("target_x", target_pt[0])
+                        h.set_meta("target_y", target_pt[1])
+                    h.set_meta("change_timer", t)
 
             if "kind" in h and h.kind == "flare":
                 if h.has_meta("duration"):
