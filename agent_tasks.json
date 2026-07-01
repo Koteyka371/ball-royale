@@ -6491,7 +6491,7 @@
     },
     {
       "id": "idea-375",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Lightning Storm Hazard",
@@ -10263,6 +10263,23 @@
         "src/ai/decoy_mine.py",
         "src/ai/decoy_mine.gd",
         "tests/test_decoy_mine.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-595",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Controls Mutator",
+      "description": "A mutator for custom matches where all movement inputs and AI logic for movement direction are periodically reversed for 5 seconds.",
+      "allowed_paths": [
+        "src/ai/reverse_controls_mutator.py",
+        "src/ai/reverse_controls_mutator.gd",
+        "tests/test_reverse_controls_mutator.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

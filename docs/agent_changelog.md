@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-375] Lightning Storm Hazard — *2026-07-01 12:55:37 UTC*
+
+A hazard that roams the arena similar to a tornado, but instead of pulling balls in, it periodically shoots lightning strikes at nearby balls, dealing burst damage and temporarily disabling their skills.
+
+---
+
 ## [idea-354] Random Boss Mutation Event — *2026-07-01 12:46:55 UTC*
 
 During Custom Match, when the boss mutator is active, occasionally select a random ball and boost their size, health, and damage for 15 seconds, making them a temporary 'juggernaut' boss. The other players must team up to defeat them before they rack up too many kills.
