@@ -2247,8 +2247,104 @@ class CustomMatchMode extends GameMode:
 					if b.has_method("get_meta") and b.has_meta("time_since_death"):
 						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
 
+
+
+
 		if mutators_active:
 			var trigger_reroll = false
+			if mutators.has("boss"):
+				if not has_meta("boss_mutator_timer"):
+					set_meta("boss_mutator_timer", 0.0)
+
+				var active_boss = null
+				for b in balls:
+					if b.has_meta("_is_boss_mutator") and b.get_meta("_is_boss_mutator"):
+						active_boss = b
+						break
+
+				if active_boss != null:
+					var b_dur = active_boss.get_meta("_boss_mutator_duration") - delta
+					active_boss.set_meta("_boss_mutator_duration", b_dur)
+					if b_dur <= 0 or not active_boss.alive:
+						active_boss.set_meta("_is_boss_mutator", false)
+						if active_boss.has_meta("_original_radius"):
+							if "radius" in active_boss:
+								active_boss.radius = active_boss.get_meta("_original_radius")
+							else:
+								active_boss.set_meta("radius", active_boss.get_meta("_original_radius"))
+						if active_boss.has_meta("_original_max_hp"):
+							active_boss.max_hp = active_boss.get_meta("_original_max_hp")
+						if active_boss.has_meta("_original_damage"):
+							active_boss.damage = active_boss.get_meta("_original_damage")
+						if active_boss.has_meta("_original_base_damage"):
+							active_boss.base_damage = active_boss.get_meta("_original_base_damage")
+						if active_boss.has_meta("_original_team"):
+							active_boss.team = active_boss.get_meta("_original_team")
+
+						if active_boss.alive:
+							var orig_hp = active_boss.get_meta("_original_max_hp") if active_boss.has_meta("_original_max_hp") else 100.0
+							var hp_pct = active_boss.hp / (orig_hp * 3.0) if orig_hp > 0 else 1.0
+							active_boss.hp = orig_hp * hp_pct
+
+						for b in balls:
+							if b != active_boss and b.has_meta("_original_team"):
+								b.team = b.get_meta("_original_team")
+
+						set_meta("boss_mutator_timer", delta)
+				else:
+					var b_timer = get_meta("boss_mutator_timer") + delta
+					if b_timer >= 10.0:
+						b_timer = 0.0
+						var valid_bosses = []
+						for b in balls:
+							if b.alive and b.get("ball_type", "") != "spectator":
+								valid_bosses.append(b)
+						if valid_bosses.size() > 0:
+							var new_boss = valid_bosses[randi() % valid_bosses.size()]
+							new_boss.set_meta("_is_boss_mutator", true)
+							new_boss.set_meta("_boss_mutator_duration", 15.0)
+
+							var orig_rad = 15.0
+							if "radius" in new_boss:
+								orig_rad = new_boss.radius
+								new_boss.radius = orig_rad * 2.0
+							elif new_boss.has_meta("radius"):
+								orig_rad = new_boss.get_meta("radius")
+								new_boss.set_meta("radius", orig_rad * 2.0)
+							new_boss.set_meta("_original_radius", orig_rad)
+
+							var orig_max_hp = new_boss.get("max_hp", 100.0)
+							new_boss.set_meta("_original_max_hp", orig_max_hp)
+							new_boss.max_hp = orig_max_hp * 3.0
+
+							var hp_pct = new_boss.get("hp", 100.0) / orig_max_hp if orig_max_hp > 0 else 1.0
+							new_boss.hp = new_boss.max_hp * hp_pct
+
+							var orig_dmg = new_boss.get("damage", 10.0)
+							new_boss.set_meta("_original_damage", orig_dmg)
+							new_boss.damage = orig_dmg * 2.0
+
+							if "base_damage" in new_boss:
+								new_boss.set_meta("_original_base_damage", new_boss.base_damage)
+								new_boss.base_damage = new_boss.get_meta("_original_base_damage") * 2.0
+
+							new_boss.set_meta("_original_team", new_boss.get("team", new_boss.get("ball_type", "solo")))
+							new_boss.team = "Boss_Mutator"
+
+							for b in balls:
+								if b != new_boss and b.get("ball_type", "") != "spectator":
+									if not b.has_meta("_original_team"):
+										b.set_meta("_original_team", b.get("team", b.get("ball_type", "solo")))
+									b.team = "Hunters"
+
+							if world != null and world.has_method("add_event"):
+								world.add_event("boss_mutator", {"message": "A player has become a Juggernaut Boss!"})
+
+					set_meta("boss_mutator_timer", b_timer)
+
+					set_meta("boss_mutator_timer", b_timer)
+
+			var trigger_reroll = false			var trigger_reroll = false
 			var types = ['paladin', 'assassin', 'ninja', 'warrior', 'guardian', 'chaos', 'bomber', 'templar', 'necromancer', 'vampire', 'sniper', 'king', 'easy', 'phantom', 'warlock', 'mimic', 'juggernaut', 'tank', 'berserker', 'druid', 'hard', 'scout', 'brawler', 'medium', 'neural', 'ranger', 'healer', 'rogue', 'drone', 'swarm', 'conjurer', 'monk', 'mage', 'elementalist', 'trickster']
 			if mutators.has("random_reroll"):
 				if not has_meta("random_reroll_timer"):
