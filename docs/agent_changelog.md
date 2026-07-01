@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-379] Clan System — *2026-07-01 12:55:42 UTC*
+
+Allow players to create or join clans, complete clan-specific quests, and compete in clan vs clan leaderboards.
+
+---
+
 ## [idea-375] Lightning Storm Hazard — *2026-07-01 12:55:37 UTC*
 
 A hazard that roams the arena similar to a tornado, but instead of pulling balls in, it periodically shoots lightning strikes at nearby balls, dealing burst damage and temporarily disabling their skills.
