@@ -588,7 +588,31 @@ func execute(strategy: String, delta: float):
 			self.ball.silence_timer = max(0.0, st)
 	if (strategy == "flee" or strategy == "defend") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
-		if inv.has("placeable_trap"):
+		if inv.has("lightning_rod"):
+			if world != null and "arena" in world and "hazards" in world.arena:
+				var arena = world.arena
+				var rod_id = arena.hazards.size() + randi() % 10000
+
+				var rod = null
+				if load("res://src/arena/procedural_arena.gd") != null:
+					rod = load("res://src/arena/procedural_arena.gd").Hazard.new()
+					rod.id = rod_id
+					rod.x = self.ball.x
+					rod.y = self.ball.y
+					rod.radius = 100.0
+					rod.kind = "lightning_rod"
+					rod.damage = 0.0
+					rod.set_meta("charge", 0.0)
+					rod.set_meta("max_charge", 100.0)
+					rod.set_meta("owner_id", self.ball.id)
+
+					arena.hazards.append(rod)
+					inv.erase("lightning_rod")
+					self.ball.set_meta("inventory", inv)
+
+	if (strategy == "flee" or strategy == "defend") and self.ball.has_meta("inventory"):
+		var inv2 = self.ball.get_meta("inventory")
+		if inv2.has("placeable_trap"):
 			if world != null and "arena" in world and "hazards" in world.arena:
 				var arena = world.arena
 				var trap_id = arena.hazards.size() + randi() % 10000
@@ -2376,33 +2400,93 @@ func execute(strategy: String, delta: float):
                     elif hazard.kind == "lightning_strike":
                         if not hazard.has_meta("hit_targets") or not hazard.get_meta("hit_targets"):
                             hazard.set_meta("hit_targets", true)
-                            if self.ball.has_method("take_damage"):
-                                var dmg = hazard.damage
-                                var is_qs = false
-                                if self.ball.has_method("get_meta") and self.ball.has_meta("is_in_quicksand"):
-                                    is_qs = self.ball.get_meta("is_in_quicksand")
-                                elif "is_in_quicksand" in self.ball:
-                                    is_qs = self.ball.is_in_quicksand
-                                if is_qs:
-                                    dmg *= 2.0
-                                self.ball.take_damage(dmg)
-                            elif "hp" in self.ball:
-                                var dmg = hazard.damage
-                                var is_qs = false
-                                if self.ball.has_method("get_meta") and self.ball.has_meta("is_in_quicksand"):
-                                    is_qs = self.ball.get_meta("is_in_quicksand")
-                                elif "is_in_quicksand" in self.ball:
-                                    is_qs = self.ball.is_in_quicksand
-                                if is_qs:
-                                    dmg *= 2.0
-                                self.ball.hp -= dmg
-                                if self.ball.hp <= 0:
-                                    self.ball.alive = false
-                            if has_method("_spawn_particles"):
-                                _spawn_particles(self.ball.x, self.ball.y, "lightning")
-                            if self.ball.has_method("set_meta"):
-                                self.ball.set_meta("stutter_timer", 1.0)
+
+                            var rod_nearby = false
+                            if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                                for h in self.world.arena.hazards:
+                                    if h.has("kind") and h.kind == "lightning_rod" or (h.has_method("get_meta") and h.has_meta("kind") and h.get_meta("kind") == "lightning_rod") or h.get("kind") == "lightning_rod":
+                                        var dist_sq = pow(h.x - hazard.x, 2) + pow(h.y - hazard.y, 2)
+                                        if dist_sq < 90000:
+                                            var cur_chg = 0.0
+                                            if h.has_meta("charge"): cur_chg = h.get_meta("charge")
+                                            h.set_meta("charge", cur_chg + hazard.damage)
+                                            rod_nearby = true
+                                            break
+
+                            if not rod_nearby:
+                                if self.ball.has_method("take_damage"):
+                                    var dmg = hazard.damage
+                                    var is_qs = false
+                                    if self.ball.has_method("get_meta") and self.ball.has_meta("is_in_quicksand"):
+                                        is_qs = self.ball.get_meta("is_in_quicksand")
+                                    elif "is_in_quicksand" in self.ball:
+                                        is_qs = self.ball.is_in_quicksand
+                                    if is_qs:
+                                        dmg *= 2.0
+                                    self.ball.take_damage(dmg)
+                                elif "hp" in self.ball:
+                                    var dmg = hazard.damage
+                                    var is_qs = false
+                                    if self.ball.has_method("get_meta") and self.ball.has_meta("is_in_quicksand"):
+                                        is_qs = self.ball.get_meta("is_in_quicksand")
+                                    elif "is_in_quicksand" in self.ball:
+                                        is_qs = self.ball.is_in_quicksand
+                                    if is_qs:
+                                        dmg *= 2.0
+                                    self.ball.hp -= dmg
+                                    if self.ball.hp <= 0:
+                                        self.ball.alive = false
+                                if has_method("_spawn_particles"):
+                                    _spawn_particles(self.ball.x, self.ball.y, "lightning")
+                                if self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("stutter_timer", 1.0)
                         continue
+                    elif hazard.kind == "lightning_rod":
+                        var chg = 0.0
+                        if hazard.has_meta("charge"): chg = hazard.get_meta("charge")
+                        var max_chg = 100.0
+                        if hazard.has_meta("max_charge"): max_chg = hazard.get_meta("max_charge")
+
+                        if chg >= max_chg:
+                            var owner_team = null
+                            if hazard.has_meta("owner_id") and self.world != null and "balls" in self.world:
+                                var oid = hazard.get_meta("owner_id")
+                                for b in self.world.balls:
+                                    if b.has("id") and b.id == oid:
+                                        if "team" in b: owner_team = b.team
+                                        elif b.has_method("get_meta") and b.has_meta("team"): owner_team = b.get_meta("team")
+                                        break
+
+                            if self.world != null and "balls" in self.world:
+                                for enemy in self.world.balls:
+                                    var is_enemy = true
+                                    var e_team = null
+                                    if "team" in enemy: e_team = enemy.team
+                                    elif enemy.has_method("get_meta") and enemy.has_meta("team"): e_team = enemy.get_meta("team")
+                                    if owner_team != null and e_team == owner_team:
+                                        is_enemy = false
+
+                                    if is_enemy:
+                                        var dist_sq = pow(enemy.x - hazard.x, 2) + pow(enemy.y - hazard.y, 2)
+                                        if dist_sq < 90000: # 300 radius
+                                            if "silence_timer" in enemy: enemy.silence_timer = 3.0
+                                            if enemy.has_method("set_meta"):
+                                                enemy.set_meta("speed_booster_timer", 0.0)
+                                                enemy.set_meta("is_emped", true)
+                                                enemy.set_meta("emp_timer", 3.0)
+                                            if "has_shield" in enemy: enemy.has_shield = false
+
+                            if self.has_method("_spawn_skill_particles"):
+                                self._spawn_skill_particles("emp")
+
+                            # Mark for safe removal
+                            if self.world != null:
+                                if not self.world.has_meta("hazards_to_remove"):
+                                    self.world.set_meta("hazards_to_remove", [])
+                                var h_to_remove = self.world.get_meta("hazards_to_remove")
+                                h_to_remove.append(hazard)
+                                self.world.set_meta("hazards_to_remove", h_to_remove)
+                            hazard.active = false
                     elif hazard.kind == "breakable_wall":
                         var dx = self.ball.x - hazard.x
                         var dy = self.ball.y - hazard.y
@@ -5345,6 +5429,16 @@ func _collect_booster(delta: float):
                 var dur = 5.0
                 if "duration" in nearest: dur = nearest.duration
                 self.ball.set_meta("zone_immunity_timer", dur)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "lightning_rod_item":
+                if not self.ball.has_meta("inventory"):
+                    self.ball.set_meta("inventory", [])
+                var inv = self.ball.get_meta("inventory")
+                inv.append("lightning_rod")
+                self.ball.set_meta("inventory", inv)
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:

@@ -350,12 +350,23 @@ class Action:
                 self.world.arena.hazards.append(flare)
                 self.ball.inventory.remove("deployable_flare")
 
+        if strategy in ("flee", "defend") and hasattr(self.ball, "inventory") and "lightning_rod" in self.ball.inventory:
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                from arena.procedural_arena import Hazard
+                rod_id = len(self.world.arena.hazards) + __import__("random").randint(1000, 9999)
+                rod = Hazard(rod_id, self.ball.x, self.ball.y, 100.0, "lightning_rod", 0.0)
+                setattr(rod, 'charge', 0.0)
+                setattr(rod, 'max_charge', 100.0)
+                setattr(rod, 'owner_id', getattr(self.ball, 'id', None))
+                self.world.arena.hazards.append(rod)
+                self.ball.inventory.remove("lightning_rod")
+
         # Check inventory for traps to place if fleeing or defending
         if strategy in ("flee", "defend") and hasattr(self.ball, "inventory") and "placeable_trap" in self.ball.inventory:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
 
                 from arena.procedural_arena import Hazard
-                trap_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
+                trap_id = len(self.world.arena.hazards) + __import__("random").randint(1000, 9999)
                 trap = Hazard(trap_id, self.ball.x, self.ball.y, 20.0, "trap", 0.0)
 
                 trap_type = random.choice(["mine", "freeze", "black_hole", "swap"])
@@ -1714,15 +1725,69 @@ class Action:
                         elif hazard.kind == "lightning_strike":
                             if not getattr(hazard, "hit_targets", False):
                                 hazard.hit_targets = True
-                                if hasattr(self.ball, "take_damage"):
-                                    self.ball.take_damage(hazard.damage * 2.0 if getattr(self.ball, "is_in_quicksand", False) else hazard.damage)
-                                elif hasattr(self.ball, "hp"):
-                                    self.ball.hp -= (hazard.damage * 2.0 if getattr(self.ball, "is_in_quicksand", False) else hazard.damage)
-                                    if self.ball.hp <= 0:
-                                        self.ball.alive = False
+
+                                # Check for lightning rod
+                                rod_nearby = False
+                                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                                    for h in self.world.arena.hazards:
+                                        if getattr(h, "kind", "") == "lightning_rod":
+                                            dist_sq = (h.x - hazard.x)**2 + (h.y - hazard.y)**2
+                                            if dist_sq < 90000: # 300 range to attract
+                                                h.charge = getattr(h, "charge", 0.0) + hazard.damage
+                                                rod_nearby = True
+                                                break
+
+                                if not rod_nearby:
+                                    if hasattr(self.ball, "take_damage"):
+                                        self.ball.take_damage(hazard.damage * 2.0 if getattr(self.ball, "is_in_quicksand", False) else hazard.damage)
+                                    elif hasattr(self.ball, "hp"):
+                                        self.ball.hp -= (hazard.damage * 2.0 if getattr(self.ball, "is_in_quicksand", False) else hazard.damage)
+                                        if self.ball.hp <= 0:
+                                            self.ball.alive = False
+                                    if hasattr(self, "_spawn_skill_particles"):
+                                        self._spawn_skill_particles("lightning")
+                                    self.ball.stutter_timer = 1.0 # Stun
+                            continue
+                        elif hazard.kind == "lightning_rod":
+                            if not hasattr(hazard, "charge"):
+                                hazard.charge = 0.0
+
+                            # EMP effect check
+                            if hazard.charge >= getattr(hazard, "max_charge", 100.0):
+                                owner_id = getattr(hazard, "owner_id", None)
+                                owner_team = None
+                                if owner_id is not None and hasattr(self.world, "balls"):
+                                    for b in self.world.balls:
+                                        if getattr(b, "id", None) == owner_id:
+                                            owner_team = getattr(b, "team", None)
+                                            break
+
+                                if hasattr(self.world, "balls"):
+                                    for enemy in self.world.balls:
+                                        if not getattr(enemy, "alive", True): continue
+                                        is_enemy = True
+                                        if owner_team is not None and getattr(enemy, "team", None) == owner_team:
+                                            is_enemy = False
+
+                                        if is_enemy:
+                                            dist_sq = (enemy.x - hazard.x)**2 + (enemy.y - hazard.y)**2
+                                            if dist_sq < 90000: # 300 radius
+                                                enemy.silence_timer = 3.0
+                                                if hasattr(enemy, "speed_booster_timer"):
+                                                    enemy.speed_booster_timer = 0.0
+                                                if hasattr(enemy, "has_shield"):
+                                                    enemy.has_shield = False
+                                                # Apply slow
+                                                setattr(enemy, "is_emped", True)
+                                                setattr(enemy, "emp_timer", 3.0)
                                 if hasattr(self, "_spawn_skill_particles"):
-                                    self._spawn_skill_particles("lightning")
-                                self.ball.stutter_timer = 1.0 # Stun
+                                    self._spawn_skill_particles("emp")
+
+                                # Mark for safe removal
+                                if not hasattr(self.world, "_hazards_to_remove"):
+                                    self.world._hazards_to_remove = []
+                                self.world._hazards_to_remove.append(hazard)
+                                hazard.active = False
                             continue
                         elif hazard.kind == "breakable_wall":
                             # Clamp position manually
@@ -3427,6 +3492,13 @@ class Action:
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
+                elif getattr(nearest, "kind", None) == "lightning_rod_item":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("lightning_rod")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
                 elif getattr(nearest, "kind", None) == "placeable_trap_item":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
@@ -4175,7 +4247,7 @@ class Action:
             elif skill_name == "smokescreen":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
 
-                    trap_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
+                    trap_id = len(self.world.arena.hazards) + __import__("random").randint(1000, 9999)
                     from arena.procedural_arena import Hazard  # type: ignore
                     smoke = Hazard(trap_id, self.ball.x, self.ball.y, 80.0, "smokescreen", 0.0)
                     setattr(smoke, 'duration', 5.0)
@@ -4184,7 +4256,7 @@ class Action:
                 # Drop a temporary trap hazard
 
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
-                    trap_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
+                    trap_id = len(self.world.arena.hazards) + __import__("random").randint(1000, 9999)
                     from arena.procedural_arena import Hazard  # type: ignore
                     trap = Hazard(trap_id, self.ball.x, self.ball.y, 15.0, "trap", 0.0)
                     setattr(trap, 'duration', 5.0) # Trap lasts for 5 seconds
@@ -4201,7 +4273,7 @@ class Action:
             elif skill_name == "tornado_skill":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     import random
-                    trap_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
+                    trap_id = len(self.world.arena.hazards) + __import__("random").randint(1000, 9999)
                     from arena.procedural_arena import Hazard  # type: ignore
                     tornado = Hazard(trap_id, self.ball.x, self.ball.y, 40.0, "tornado", 20.0)
                     setattr(tornado, 'duration', 5.0)
@@ -4906,7 +4978,7 @@ class Action:
                     if trap_timer <= 0.0:
 
                         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
-                            trap_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
+                            trap_id = len(self.world.arena.hazards) + __import__("random").randint(1000, 9999)
                             from arena.procedural_arena import Hazard  # type: ignore
                             trap = Hazard(trap_id, self.ball.x, self.ball.y, 10.0, "trap", 0.0)
                             setattr(trap, 'duration', 3.0)
