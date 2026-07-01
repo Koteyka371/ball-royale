@@ -5913,6 +5913,49 @@ func _use_skill():
 
                     self.world.balls.append(beacon)
 
+
+        elif skill_name == "shoot_portals":
+            var arena = self.world.get("arena") if self.world != null else null
+            if arena != null and "hazards" in arena:
+                # Portal 1 near self
+                var p1_id = arena.hazards.size() + randi_range(10000, 49999)
+                var p1 = load("res://src/arena/procedural_arena.gd").Hazard.new(p1_id, self.ball.x + randf_range(-20, 20), self.ball.y + randf_range(-20, 20), 30.0, "teleporter", 0.0)
+
+                # Portal 2 near target or random
+                var p2_id = arena.hazards.size() + randi_range(50000, 99999)
+                var target_x = 0.0
+                var target_y = 0.0
+                var enemies = _get_enemies()
+                if enemies.size() > 0:
+                    var target = _find_strongest_enemy_deterministic(enemies)
+                    target_x = target.x + randf_range(-30, 30)
+                    target_y = target.y + randf_range(-30, 30)
+                else:
+                    var width = arena.get("width") if arena.get("width") != null else 1000.0
+                    var height = arena.get("height") if arena.get("height") != null else 1000.0
+                    target_x = randf_range(100.0, width - 100.0)
+                    target_y = randf_range(100.0, height - 100.0)
+
+                var p2 = load("res://src/arena/procedural_arena.gd").Hazard.new(p2_id, target_x, target_y, 30.0, "teleporter", 0.0)
+
+                p1.set_meta("target_x", p2.x)
+                p1.set_meta("target_y", p2.y)
+                p2.set_meta("target_x", p1.x)
+                p2.set_meta("target_y", p1.y)
+
+                p1.set_meta("duration", 10.0)
+                p2.set_meta("duration", 10.0)
+                p1.set_meta("owner_id", self.ball.get("id"))
+                p2.set_meta("owner_id", self.ball.get("id"))
+
+                arena.hazards.append(p1)
+                arena.hazards.append(p2)
+
+                var cd = self.ball.get("SKILL_COOLDOWN")
+                if cd != null:
+                    self.ball.skill_timer = cd
+                else:
+                    self.ball.skill_timer = 5.0
         elif skill_name == "deploy_decoy":
             var swapped = false
             if "balls" in self.world:
