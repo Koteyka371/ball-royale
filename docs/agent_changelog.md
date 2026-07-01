@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-353] Environmental Hazard - Sinkholes — *2026-07-01 14:18:33 UTC*
+
+In procedural arenas, sinkholes can randomly appear. Balls caught in a sinkhole have their speed reduced drastically and slowly take damage over time until they manage to dash or kite their way out.
+
+---
+
 ## [idea-352] Wormhole Trap — *2026-07-01 14:07:00 UTC*
 
 A new hazard type that links two specific points in the arena. If a ball gets too close, it gets instantly teleported to the other wormhole node, carrying its current momentum. This would create chaotic repositioning.
