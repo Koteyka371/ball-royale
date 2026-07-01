@@ -1,0 +1,4 @@
+{
+    "title": "Shrinking Safe Zone based on Player Proximity",
+    "description": "Instead of purely time-based shrinking, the safe zone shrinks faster if multiple players are camping inside it, forcing them to fight or move out."
+}
