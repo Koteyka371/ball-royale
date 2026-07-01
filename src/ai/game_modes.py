@@ -3173,7 +3173,30 @@ class SupernovaMode(GameMode):
         return None
 
 
+
+class DayNightMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Day/Night Cycle"
+        self.description = "Periodically toggles day and night, affecting ball behavior and visibility."
+        self.timer = 0.0
+        self.phase_duration = 10.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if hasattr(world, "arena"):
+            world.arena.is_night = False
+        self.timer = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        if hasattr(world, "arena"):
+            self.timer += delta
+            if self.timer >= self.phase_duration:
+                self.timer = 0.0
+                world.arena.is_night = not getattr(world.arena, "is_night", False)
+
 GAME_MODES = {
+    "day_night_mode": DayNightMode(),
     "shifting_maze": ShiftingMazeMode(),
 
     "blackout": BlackoutMode(),

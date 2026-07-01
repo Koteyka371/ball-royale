@@ -531,3 +531,20 @@ def test_supernova_mode():
     # Check knockback on survivor
     assert b1.vy != 0 or b1.vx != 0, "b1 should have received knockback velocity"
     assert b2.vx < 0 or b2.vy < 0, "b2 should have received knockback velocity towards top-left"
+
+def test_day_night_mode():
+    from ai.game_modes import DayNightMode
+    world = type('MockWorld', (), {})()
+    world.arena = type('MockArena', (), {'is_night': False})()
+
+    mode = DayNightMode()
+    mode.setup(world, [])
+    assert world.arena.is_night == False
+
+    # Tick past phase duration
+    mode.tick(world, [], delta=11.0)
+    assert world.arena.is_night == True
+
+    # Tick again past phase duration
+    mode.tick(world, [], delta=11.0)
+    assert world.arena.is_night == False
