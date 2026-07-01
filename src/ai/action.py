@@ -3364,6 +3364,7 @@ class Action:
             self._idle(delta)
 
     def _use_skill(self) -> None:
+        import random
         if getattr(self.ball, "silence_timer", 0.0) > 0:
             return
         skill_timer = getattr(self.ball, "skill_timer", 0.0)
