@@ -4327,7 +4327,14 @@ class GuildVsGuildMode extends GameMode:
             var loser = "GuildB" if winner_guild == "GuildA" else "GuildA"
             gm.record_gvg_match(winner_guild, loser, winner_guild)
 
+
+class ZeroGravityMode extends GameMode:
+    func _init() -> void:
+        name = "Zero Gravity"
+        description = "Friction and gravity are drastically reduced, causing balls to slide around effortlessly and collisions to produce massive knockback."
+
 var GAME_MODES = {
+    "zero_gravity": ZeroGravityMode.new(),
 	"day_night_mode": DayNightMode.new(),
 	"shifting_maze": ShiftingMazeMode.new(),
 

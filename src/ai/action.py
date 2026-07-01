@@ -555,14 +555,21 @@ class Action:
 
         # Zero gravity processing (friction)
         gm = getattr(self.world, "game_mode", None)
-        if gm and getattr(gm, "name", "") == "Custom Match":
-            if getattr(gm, "mutators_active", False) and "zero_gravity" in getattr(gm, "mutators", []):
-                # Apply friction
-                if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
-                    self.ball.vx *= (1.0 - 0.5 * delta)
-                    self.ball.vy *= (1.0 - 0.5 * delta)
-                    self.ball.x += self.ball.vx * delta
-                    self.ball.y += self.ball.vy * delta
+        is_zero_gravity = False
+        if gm:
+            if getattr(gm, "name", "") == "Zero Gravity":
+                is_zero_gravity = True
+            elif getattr(gm, "name", "") == "Custom Match":
+                if getattr(gm, "mutators_active", False) and "zero_gravity" in getattr(gm, "mutators", []):
+                    is_zero_gravity = True
+
+        if is_zero_gravity:
+            # Apply friction
+            if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+                self.ball.vx *= (1.0 - 0.5 * delta)
+                self.ball.vy *= (1.0 - 0.5 * delta)
+                self.ball.x += self.ball.vx * delta
+                self.ball.y += self.ball.vy * delta
 
         if getattr(self.ball, "BALL_TYPE", "") == "mimic" and hasattr(self.ball, "process_mimicry"):
             enemies = self._get_enemies()
@@ -4133,6 +4140,8 @@ class Action:
                 knockback_multiplier = 1.0
                 gm = getattr(self.world, "game_mode", None)
                 if gm and getattr(gm, "name", "") == "Bumper Balls":
+                    knockback_multiplier = 5.0
+                elif gm and getattr(gm, "name", "") == "Zero Gravity":
                     knockback_multiplier = 5.0
 
                 self.ball.x += nx * overlap * knockback_multiplier

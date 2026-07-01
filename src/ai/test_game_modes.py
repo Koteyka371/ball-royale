@@ -548,3 +548,23 @@ def test_day_night_mode():
     # Tick again past phase duration
     mode.tick(world, [], delta=11.0)
     assert world.arena.is_night == False
+
+def test_zero_gravity_mode():
+    from ai.game_modes import ZeroGravityMode
+    mode = ZeroGravityMode()
+    world = MockWorld()
+    balls = [MockBall(1, "warrior"), MockBall(2, "scout")]
+
+    mode.setup(world, balls)
+
+    assert mode.name == "Zero Gravity"
+
+def test_zero_gravity_mode():
+    from ai.game_modes import ZeroGravityMode
+    mode = ZeroGravityMode()
+    world = MockWorld()
+    balls = [MockBall(1, "warrior"), MockBall(2, "scout")]
+
+    mode.setup(world, balls)
+
+    assert mode.name == "Zero Gravity"
