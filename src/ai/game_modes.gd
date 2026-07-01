@@ -3088,6 +3088,46 @@ class SafeZoneMode extends GameMode:
 
 
 
+class MirrorMatchMode extends GameMode:
+	func _init() -> void:
+		name = "Mirror Match"
+		description = "Every player spawns with an exact AI clone of themselves on the opposite side of the map. Clones mimic their creator's stats and skills."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+
+		var arena_width = 2000.0
+		var arena_height = 2000.0
+		if "arena" in world and world.arena != null:
+			if "width" in world.arena: arena_width = world.arena.width
+			if "height" in world.arena: arena_height = world.arena.height
+
+		var new_clones = []
+		for b in balls:
+			if b.has_method("duplicate"):
+				var clone = b.duplicate()
+				var next_id = randi() % 90000 + 10000
+				if "next_id" in world:
+					next_id = world.next_id
+					world.next_id += 1
+				if "id" in clone: clone.id = next_id
+
+				if "x" in clone and "x" in b: clone.x = arena_width - b.x
+				if "y" in clone and "y" in b: clone.y = arena_height - b.y
+
+				if clone.has_method("set_meta"):
+					clone.set_meta("is_clone", true)
+					if "id" in b: clone.set_meta("clone_owner", b.id)
+
+				if "team" in clone and "team" in b:
+					clone.team = "mirror_team_" + str(b.team)
+
+				new_clones.append(clone)
+
+		if "balls" in world:
+			for c in new_clones:
+				world.balls.append(c)
+
 class CloneChaosMode extends GameMode:
 	var clone_timer = 0.0
 
@@ -4232,6 +4272,7 @@ var GAME_MODES = {
     "moving_safe_zone": MovingSafeZoneMode.new(),
     "bounty_hunt": BountyHuntMode.new(),
     "earthquake": EarthquakeMode.new(),
-    "clone_chaos": CloneChaosMode.new(),
+    "mirror_match": MirrorMatchMode.new(),
+	"clone_chaos": CloneChaosMode.new(),
     "supernova": SupernovaMode.new()
 }
