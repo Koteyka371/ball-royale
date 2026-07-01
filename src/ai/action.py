@@ -322,6 +322,22 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        arena = getattr(self.world, "arena", None)
+        if arena and getattr(arena, "global_freeze_timer", 0.0) > 0.0:
+            current_tick = getattr(self.world, "tick", 0)
+            if getattr(arena, "last_freeze_tick", -1) != current_tick:
+                arena.last_freeze_tick = current_tick
+                arena.global_freeze_timer -= delta
+
+            owner_id = getattr(arena, "global_freeze_owner", None)
+            is_owner = (owner_id == getattr(self.ball, "id", None))
+
+            # To check ally, we need owner's ball_type. For simplicity, just owner is immune.
+            # Actually we can't easily get owner's ball_type if we only have id, so let's just make owner immune.
+            if not is_owner:
+                self.ball.stun_timer = max(getattr(self.ball, "stun_timer", 0.0), getattr(arena, "global_freeze_timer", 0.0))
+                self.ball.is_stunned = True
+
         start_hp = getattr(self.ball, "hp", 100.0)
         start_stun = getattr(self.ball, "stun_timer", 0.0)
         start_silence = getattr(self.ball, "silence_timer", 0.0)
@@ -882,10 +898,12 @@ class Action:
                                 hazard.vx = 0.0
                             if not hasattr(hazard, "vy"):
                                 hazard.vy = 0.0
-                            hazard.x += hazard.vx * delta
-                            hazard.y += hazard.vy * delta
-                            hazard.vx *= (1.0 - 2.0 * delta)
-                            hazard.vy *= (1.0 - 2.0 * delta)
+                            arena_ref = getattr(self.world, "arena", None)
+                            if not (arena_ref and getattr(arena_ref, "global_freeze_timer", 0.0) > 0.0):
+                                hazard.x += hazard.vx * delta
+                                hazard.y += hazard.vy * delta
+                                hazard.vx *= (1.0 - 2.0 * delta)
+                                hazard.vy *= (1.0 - 2.0 * delta)
 
                             if hazard.x < hazard.radius or hazard.x > self.world.arena.width - hazard.radius:
                                 hazard.vx *= -1
@@ -1348,8 +1366,10 @@ class Action:
                             if not hasattr(hazard, "lifetime"):
                                 hazard.lifetime = 0.0
                             hazard.lifetime += delta
-                            hazard.x += hazard.vx * delta
-                            hazard.y += hazard.vy * delta
+                            arena_ref = getattr(self.world, "arena", None)
+                            if not (arena_ref and getattr(arena_ref, "global_freeze_timer", 0.0) > 0.0):
+                                hazard.x += hazard.vx * delta
+                                hazard.y += hazard.vy * delta
                             if hasattr(self.world.arena, "width") and hasattr(self.world.arena, "height"):
                                 if hazard.x < 100 or hazard.x > self.world.arena.width - 100:
                                     hazard.vx *= -1
@@ -3409,6 +3429,14 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "freeze_booster":
+                    if hasattr(self.world, "arena"):
+                        self.world.arena.global_freeze_timer = 3.0
+                        self.world.arena.global_freeze_owner = getattr(self.ball, "id", None)
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
+                        self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "stamina_booster":
                     self.ball.stamina = getattr(self.ball, "max_stamina", 100.0)
                     self.ball.infinite_stamina_timer = 5.0
@@ -4570,7 +4598,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "freeze_booster"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math
