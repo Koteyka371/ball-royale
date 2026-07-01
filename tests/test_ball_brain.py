@@ -107,7 +107,7 @@ def test_decision_layer():
     perception_data = brain.perception()
     emotion = brain.emotion(perception_data)
     decision = brain.decision(perception_data, emotion)
-    assert decision in ["attack", "defend", "kite", "ricochet_attack", "target_weak"]
+    assert decision in ["attack", "defend", "kite", "ricochet_attack", "target_weak", "hold_zone", "use_skill"]
 
     # High danger -> defend
     world.entities["enemies"] = [MockBall() for _ in range(4)] # danger_level = 0.8
@@ -153,7 +153,7 @@ def test_full_process():
 
     brain.process(0.1)
     # 1 enemy, hp 100 -> rage emotion (hp>80%, enemies>0). decision attack
-    assert ball.current_action in ["attack", "chase", "kite"]
+    assert ball.current_action in ["attack", "chase", "kite", "use_skill"]
 
 
 def test_skin_perks():

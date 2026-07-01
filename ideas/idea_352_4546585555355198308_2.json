@@ -1,0 +1,4 @@
+{
+  "title": "Time Dilation Zone",
+  "description": "An arena hazard that slows down all physical interactions (movement, ability execution) for entities inside its radius by 50%, simulating localized time distortion."
+}
