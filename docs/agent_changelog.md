@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-396] Chain Lightning Combo — *2026-07-01 18:00:20 UTC*
+
+Introduce a chained lightning attack that bounces between nearby targets. During 'thunderstorm' weather, the chain range and damage are significantly increased.
+
+---
+
 ## [idea-416] Mirror Dimension — *2026-07-01 18:00:15 UTC*
 
 An arena event where all projectiles are reflected infinitely across mirror walls.
