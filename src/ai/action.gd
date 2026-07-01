@@ -986,23 +986,61 @@ func execute(strategy: String, delta: float):
             cosmetic = str(my_ball.cosmetic).to_lower().replace(" ", "_")
         var ignores_mud = cosmetic == "mud_tires"
 
-        if world.arena.get("is_raining") == true and not ignores_mud:
-            if "vx" in my_ball and "vy" in my_ball:
-            my_ball.x += my_ball.vx * delta * 0.2
-            my_ball.y += my_ball.vy * delta * 0.2
-        if world.arena.get("is_snowing") == true:
-            if "vx" in my_ball and "vy" in my_ball:
-            my_ball.x += my_ball.vx * delta * 0.4
-            my_ball.y += my_ball.vy * delta * 0.4
+        # Reset flag every frame
+        if typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("set_meta"):
+            my_ball.set_meta("_is_wind_riding", false)
+        else:
+            my_ball["_is_wind_riding"] = false
+
         var wind_dx = 0.0
         if world.arena.get("wind_dx") != null:
             wind_dx = world.arena.get("wind_dx")
         var wind_dy = 0.0
         if world.arena.get("wind_dy") != null:
             wind_dy = world.arena.get("wind_dy")
+
+        var is_wind_riding_f = false
+        if wind_dx != 0.0 or wind_dy != 0.0:
+            var b_type_f = null
+            if "BALL_TYPE" in my_ball: b_type_f = my_ball.BALL_TYPE
+            elif "ball_type" in my_ball: b_type_f = my_ball.ball_type
+            if b_type_f in ["scout", "drone", "swarm", "ninja", "assassin", "phantom", "rogue"]:
+                var st_f = 0.0
+                if "stamina" in my_ball: st_f = my_ball.stamina
+                if st_f >= 10.0:
+                    is_wind_riding_f = true
+
+        if world.arena.get("is_raining") == true and not ignores_mud and not is_wind_riding_f:
+            if "vx" in my_ball and "vy" in my_ball:
+                my_ball.x += my_ball.vx * delta * 0.2
+                my_ball.y += my_ball.vy * delta * 0.2
+        if world.arena.get("is_snowing") == true and not is_wind_riding_f:
+            if "vx" in my_ball and "vy" in my_ball:
+                my_ball.x += my_ball.vx * delta * 0.4
+                my_ball.y += my_ball.vy * delta * 0.4
         if wind_dx != 0.0 or wind_dy != 0.0:
             my_ball.x += wind_dx * delta
             my_ball.y += wind_dy * delta
+
+            # Wind rider logic for lightweight balls
+            var b_type = null
+            if "BALL_TYPE" in my_ball:
+                b_type = my_ball.BALL_TYPE
+            elif "ball_type" in my_ball:
+                b_type = my_ball.ball_type
+
+            if b_type in ["scout", "drone", "swarm", "ninja", "assassin", "phantom", "rogue"]:
+                var current_stamina = 0.0
+                if "stamina" in my_ball:
+                    current_stamina = my_ball.stamina
+                if current_stamina >= 10.0:
+                    my_ball.x += wind_dx * delta * 1.5
+                    my_ball.y += wind_dy * delta * 1.5
+                    if typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("set_meta"):
+                        my_ball.set_meta("_is_wind_riding", true)
+                    else:
+                        my_ball["_is_wind_riding"] = true
+                # Flag already reset at top of block
 
     var gm = null
     if world != null and "game_mode" in world:
@@ -3334,6 +3372,12 @@ func execute(strategy: String, delta: float):
         if is_dash:
             if infinite_stamina <= 0:
                 my_ball.set_meta("stamina", max(0.0, act_stamina - (50.0 * drain_mult) * delta))
+        elif my_ball.has_meta("_is_wind_riding") and my_ball.get_meta("_is_wind_riding") == true:
+            if infinite_stamina <= 0:
+                my_ball.set_meta("stamina", max(0.0, act_stamina - (15.0 * drain_mult) * delta))
+        elif "_is_wind_riding" in my_ball and my_ball._is_wind_riding == true:
+            if infinite_stamina <= 0:
+                my_ball.set_meta("stamina", max(0.0, act_stamina - (15.0 * drain_mult) * delta))
         elif act_dist / max(0.0001, delta * 60) < act_base_speed * 0.5:
             my_ball.set_meta("stamina", min(act_max_stamina, act_stamina + (30.0 * regen_mult) * delta))
 
