@@ -153,6 +153,8 @@ func generate():
             kind = "fake_booster"
         elif r < 0.4:
             kind = "decoy_item"
+        elif r < 0.42:
+            kind = "portal_gun_item"
         elif r < 0.45:
             kind = "silence_booster"
         elif r < 0.5:
@@ -646,6 +648,9 @@ func update_zone(current_tick: int, delta: float) -> void:
                     h.damage = 0.0
                 elif randf() < 0.05:
                     h.kind = "position_swap_item"
+                    h.damage = 0.0
+                elif randf() < 0.05:
+                    h.kind = "portal_gun_item"
                     h.damage = 0.0
                 elif randf() < 0.15:
                     h.kind = "quicksand"

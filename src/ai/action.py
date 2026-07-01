@@ -389,6 +389,47 @@ class Action:
                 self.ball.x, self.ball.y = temp_x, temp_y
                 self.ball.inventory.remove("position_swap")
 
+        # Check inventory for portal_gun to shoot linked portals
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "portal_gun" in self.ball.inventory:
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                from arena.procedural_arena import Hazard
+                portal1_id = len(self.world.arena.hazards) + random.randint(10000, 49999)
+                portal2_id = len(self.world.arena.hazards) + random.randint(50000, 99999)
+
+                # Create entry portal near self
+                p1 = Hazard(portal1_id, self.ball.x + random.uniform(-20, 20), self.ball.y + random.uniform(-20, 20), 30.0, "teleporter", 0.0)
+                setattr(p1, 'duration', 10.0)
+                setattr(p1, 'owner_id', getattr(self.ball, 'id', None))
+
+                # Find target location for exit portal
+                target_x, target_y = self.ball.x, self.ball.y
+                if strategy == "flee":
+                    target_x += random.uniform(-300, 300)
+                    target_y += random.uniform(-300, 300)
+                elif strategy == "attack":
+                    enemies = self._get_enemies()
+                    if enemies:
+                        closest = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                        target_x, target_y = closest.x, closest.y
+                else: # defend
+                    target_x += random.uniform(-100, 100)
+                    target_y += random.uniform(-100, 100)
+
+                # Create exit portal
+                p2 = Hazard(portal2_id, target_x, target_y, 30.0, "teleporter", 0.0)
+                setattr(p2, 'duration', 10.0)
+                setattr(p2, 'owner_id', getattr(self.ball, 'id', None))
+
+                # Link portals
+                setattr(p1, 'target_x', p2.x)
+                setattr(p1, 'target_y', p2.y)
+                setattr(p2, 'target_x', p1.x)
+                setattr(p2, 'target_y', p1.y)
+
+                self.world.arena.hazards.append(p1)
+                self.world.arena.hazards.append(p2)
+                self.ball.inventory.remove("portal_gun")
+
         # Temporal rift logic to modify local delta
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for hazard in self.world.arena.hazards:
@@ -3209,6 +3250,13 @@ class Action:
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
+                elif getattr(nearest, "kind", None) == "portal_gun_item":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("portal_gun")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
                 elif getattr(nearest, "kind", None) == "fake_booster":
                     import math
                     import random
@@ -3620,7 +3668,7 @@ class Action:
                     target_hazard = None
                     min_dist_sq = 22500.0  # Range 150
                     for h in hazards:
-                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item"]:
+                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item"]:
                             dx = h.x - self.ball.x
                             dy = h.y - self.ball.y
                             dist_sq = dx*dx + dy*dy
@@ -4321,7 +4369,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math

@@ -121,7 +121,8 @@ class Decision:
             "hide_behind": 0.0,
             "idle": 0.0,
             "escort": 0.0,
-            "intercept": 0.0
+            "intercept": 0.0,
+            "hold_zone": 0.0
         }
 
         # Calculate scores using dot product
