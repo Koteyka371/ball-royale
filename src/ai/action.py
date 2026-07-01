@@ -1187,10 +1187,20 @@ class Action:
                                 if self.ball.hp <= 0:
                                     self.ball.alive = False
 
-                            # Drastically reduce speed
-                            self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.1
-                            if hasattr(self.ball, 'status_effects'):
-                                self.ball.status_effects.append({"type": "slow", "duration": delta})
+                            # Drastically reduce speed unless dashing or kiting
+                            # Wait, the problem says "until they manage to dash or kite their way out."
+                            # So they take damage and have speed reduced. BUT if they are dashing or kiting,
+                            # they have a chance to get out.
+                            # So we reduce speed heavily if they are NOT dashing and NOT kiting.
+                            # We should probably reduce it heavily anyway, but slightly less if kiting/dashing?
+                            # Ah, the instructions say:
+                            # "Balls caught in a sinkhole have their speed reduced drastically and slowly take damage over time until they manage to dash or kite their way out."
+                            # If they are dashing, they use `base_speed * 2.0`, which we might override here.
+                            # If they kite, they move normally?
+                            if not getattr(self.ball, "is_dashing", False) and strategy != "kite":
+                                self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.1
+                                if hasattr(self.ball, 'status_effects'):
+                                    self.ball.status_effects.append({"type": "slow", "duration": delta})
                     elif hazard.kind == "conveyor_belt":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y

@@ -1,0 +1,4 @@
+{
+  "title": "Chain Reaction Explosions",
+  "description": "When a ball dies, it explodes, and if the explosion kills another ball, that one also explodes with a larger radius."
+}
