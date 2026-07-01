@@ -6610,7 +6610,7 @@
     },
     {
       "id": "idea-382",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather Effects Mode",
@@ -11114,6 +11114,74 @@
         "src/ai/juggernaut.py",
         "src/ai/juggernaut.gd",
         "tests/test_juggernaut.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-645",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Trickster Fake Health Bar",
+      "description": "Tricksters occasionally display a fake health bar to enemies making them look severely wounded, baiting them into a trap.",
+      "allowed_paths": [
+        "src/ai/trickster_fake_health_bar.py",
+        "src/ai/trickster_fake_health_bar.gd",
+        "tests/test_trickster_fake_health_bar.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-646",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Alchemist Ball Type",
+      "description": "Introduce a new Alchemist ball type that specifically benefits from poison and DoT mechanics. They gain a slight speed buff when inside a poison_cloud or poison_nova, and their basic attacks have a small chance to apply a very weak, stacking poison effect.",
+      "allowed_paths": [
+        "src/ai/alchemist_ball.py",
+        "src/ai/alchemist_ball.gd",
+        "tests/test_alchemist_ball.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-647",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Poison Gas Zone",
+      "description": "Add a dynamic battle royale mechanic where the arena is gradually engulfed by a poison gas zone that moves randomly, forcing players closer together and introducing severe DoT damage outside the safe area.",
+      "allowed_paths": [
+        "src/ai/shrinking_poison_gas_zone.py",
+        "src/ai/shrinking_poison_gas_zone.gd",
+        "tests/test_shrinking_poison_gas_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-648",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Collapse Mode",
+      "description": "An arena mode where instead of a ring closing, a slow-moving black hole sweeps across the map sucking in anything in its path.",
+      "allowed_paths": [
+        "src/ai/black_hole_collapse.py",
+        "src/ai/black_hole_collapse.gd",
+        "tests/test_black_hole_collapse.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

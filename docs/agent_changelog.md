@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-382] Weather Effects Mode — *2026-07-01 16:44:48 UTC*
+
+Add dynamic weather hazards like lightning strikes, snowstorms (slowing down movement), or rain (reducing vision range).
+
+---
+
 ## [idea-381] Poison Nova Skill — *2026-07-01 16:42:46 UTC*
 
 A skill that emits an expanding ring of poison, applying a severe Damage Over Time effect to all enemies caught in it.
