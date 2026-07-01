@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-380] Weekly Mutators — *2026-07-01 13:48:41 UTC*
+
+Introduce weekly mutators to standard game modes (e.g., low gravity, double damage) to keep gameplay fresh.
+
+---
+
 ## [idea-373] Shrinking Safe Zone Modifiers — *2026-07-01 13:48:36 UTC*
 
 Combine the shrinking safe zone mode with the modifier zones. The modifiers spawn near the center of the safe zone to force players to clash over the buffs while trying to survive the incoming death circle.
