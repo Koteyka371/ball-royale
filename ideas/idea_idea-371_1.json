@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Ball Hazard",
+  "description": "Introduce a new 'decoy_zone' hazard that visually replicates the player's ball when entered, causing enemies to attack the decoy instead of the actual player for a short duration."
+}

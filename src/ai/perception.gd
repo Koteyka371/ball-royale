@@ -72,6 +72,8 @@ func scan() -> Dictionary:
 
     var in_smoke = false
     var smoke_hazards = []
+    var stealth_zones = []
+    var my_stealth_zones = {}
     if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
         for h in self.world.arena.hazards:
             if "kind" in h and h.kind == "smokescreen":
@@ -85,6 +87,20 @@ func scan() -> Dictionary:
                 var dist = sqrt(pow(hx - bx_curr, 2) + pow(hy - by_curr, 2))
                 if dist <= hr:
                     in_smoke = true
+            elif "kind" in h and h.kind == "stealth_zone":
+                stealth_zones.append(h)
+                var hx = 0.0
+                var hy = 0.0
+                var hr = 0.0
+                if "x" in h: hx = h.x
+                if "y" in h: hy = h.y
+                if "radius" in h: hr = h.radius
+                var dist = sqrt(pow(hx - bx_curr, 2) + pow(hy - by_curr, 2))
+                if dist <= hr:
+                    var hid = null
+                    if "id" in h: hid = h.id
+                    else: hid = h.get_instance_id() if typeof(h) == TYPE_OBJECT else hash(h)
+                    if hid != null: my_stealth_zones[hid] = true
     if in_smoke:
         perception_radius = min(perception_radius, 50.0)
 
@@ -163,6 +179,32 @@ func scan() -> Dictionary:
             if e_has_stealth or e_has_shadow:
                 var dist = sqrt(pow(e.x - bx_curr, 2) + pow(e.y - by_curr, 2))
                 if e_has_shadow and dist > 30.0:
+                    continue
+                elif e_has_stealth and dist > 80.0:
+                    continue
+
+        var e_stealth_zones = {}
+        for sz in stealth_zones:
+            var szx = 0.0
+            if "x" in sz: szx = sz.x
+            var szy = 0.0
+            if "y" in sz: szy = sz.y
+            var szr = 0.0
+            if "radius" in sz: szr = sz.radius
+            if pow(ex - szx, 2) + pow(ey - szy, 2) <= pow(szr, 2):
+                if "id" in sz: e_stealth_zones[sz.id] = true
+                else: e_stealth_zones[sz.get_instance_id() if typeof(sz) == TYPE_OBJECT else hash(sz)] = true
+
+        var has_my_stealth = (my_stealth_zones.size() > 0)
+        var has_e_stealth = (e_stealth_zones.size() > 0)
+        if has_e_stealth:
+            var intersection = false
+            for k in my_stealth_zones.keys():
+                if e_stealth_zones.has(k):
+                    intersection = true
+                    break
+            if not intersection:
+                if not revealed_by_flare:
                     continue
                 elif e_has_stealth and dist > 80.0:
                     continue

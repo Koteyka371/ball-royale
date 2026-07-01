@@ -84,6 +84,8 @@ class Perception:
 
         in_smoke = False
         smoke_hazards = []
+        stealth_zones = []
+        my_stealth_zones = set()
         bx_curr, by_curr = getattr(self.ball, "x", 0), getattr(self.ball, "y", 0)
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for h in self.world.arena.hazards:
@@ -92,6 +94,11 @@ class Perception:
                     dist = math.sqrt((getattr(h, "x", 0) - bx_curr)**2 + (getattr(h, "y", 0) - by_curr)**2)
                     if dist <= getattr(h, "radius", 0):
                         in_smoke = True
+                elif getattr(h, "kind", "") == "stealth_zone":
+                    stealth_zones.append(h)
+                    dist = math.sqrt((getattr(h, "x", 0) - bx_curr)**2 + (getattr(h, "y", 0) - by_curr)**2)
+                    if dist <= getattr(h, "radius", 0):
+                        my_stealth_zones.add(getattr(h, "id", id(h)))
         if in_smoke:
             perception_radius = min(perception_radius, 50.0)
 
@@ -153,6 +160,18 @@ class Perception:
                 if e_has_stealth or e_has_shadow:
                     dist = math.sqrt((ex - bx_curr)**2 + (ey - by_curr)**2)
                     if e_has_shadow and dist > 30.0:
+                        continue
+                    elif e_has_stealth and dist > 80.0:
+                        continue
+
+            e_stealth_zones = set()
+            for sz in stealth_zones:
+                if (ex - getattr(sz, "x", 0))**2 + (ey - getattr(sz, "y", 0))**2 <= getattr(sz, "radius", 0)**2:
+                    e_stealth_zones.add(getattr(sz, "id", id(sz)))
+
+            if e_stealth_zones:
+                if not my_stealth_zones.intersection(e_stealth_zones):
+                    if not revealed_by_flare:
                         continue
                     elif e_has_stealth and dist > 80.0:
                         continue

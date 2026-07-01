@@ -560,6 +560,9 @@ class ProceduralArena:
                 elif random.random() < 0.05:
                     kind = "position_swap_item"
                     damage = 0.0
+                elif random.random() < 0.10:
+                    kind = "stealth_zone"
+                    damage = 0.0
                 elif random.random() < 0.15:
                     kind = "quicksand"
                     damage = 10.0
