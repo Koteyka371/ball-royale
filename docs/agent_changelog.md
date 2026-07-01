@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-391] Reverse Knockback Mode — *2026-07-01 14:36:03 UTC*
+
+A game mode where collisions pull entities together instead of pushing them apart, creating chaotic clusters of balls that can be targeted by AoE attacks.
+
+---
+
 ## [idea-384] Meteor Shower Skill — *2026-07-01 14:28:46 UTC*
 
 A skill that rains down meteors on random enemy locations, creating a chaotic hazard zone.

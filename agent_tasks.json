@@ -6763,7 +6763,7 @@
     },
     {
       "id": "idea-391",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Reverse Knockback Mode",
@@ -10553,6 +10553,74 @@
         "src/ai/shrinking_labyrinth.py",
         "src/ai/shrinking_labyrinth.gd",
         "tests/test_shrinking_labyrinth.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-612",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Laser Tripwire Trap",
+      "description": "A deployable skill that sets a laser tripwire between two points. Enemies crossing the tripwire take heavy damage and are briefly stunned.",
+      "allowed_paths": [
+        "src/arena/laser_tripwire_trap.py",
+        "src/arena/laser_tripwire_trap.gd",
+        "tests/test_laser_tripwire_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-613",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reflective Shield",
+      "description": "A defensive skill that grants a temporary shield reflecting incoming damage back to attackers for a short duration.",
+      "allowed_paths": [
+        "src/ai/reflective_shield.py",
+        "src/ai/reflective_shield.gd",
+        "tests/test_reflective_shield.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-614",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Trap Items",
+      "description": "Introduce items that look like boosters on the map but explode or apply debuffs when a player collects them.",
+      "allowed_paths": [
+        "src/arena/decoy_trap_items.py",
+        "src/arena/decoy_trap_items.gd",
+        "tests/test_decoy_trap_items.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-615",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Turret Deployment",
+      "description": "Allow players to deploy temporary turrets that shoot nearby enemies autonomously.",
+      "allowed_paths": [
+        "src/ai/turret_deployment.py",
+        "src/ai/turret_deployment.gd",
+        "tests/test_turret_deployment.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
