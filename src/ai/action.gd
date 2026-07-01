@@ -1677,13 +1677,20 @@ func execute(strategy: String, delta: float):
                             if self.ball.hp <= 0:
                                 self.ball.alive = false
 
-                        # Drastically reduce speed
-                        var base_speed = 100.0
-                        if self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"):
-                            base_speed = self.ball.get_meta("base_speed")
-                        elif "base_speed" in self.ball:
-                            base_speed = self.ball.base_speed
-                        self.ball.speed = base_speed * 0.1
+                        # Drastically reduce speed unless dashing or kiting
+                        var is_dashing = false
+                        if self.ball.has_method("get_meta") and self.ball.has_meta("is_dashing"):
+                            is_dashing = self.ball.get_meta("is_dashing")
+                        elif "is_dashing" in self.ball:
+                            is_dashing = self.ball.is_dashing
+
+                        if not is_dashing and strategy != "kite":
+                            var base_speed = 100.0
+                            if self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"):
+                                base_speed = self.ball.get_meta("base_speed")
+                            elif "base_speed" in self.ball:
+                                base_speed = self.ball.base_speed
+                            self.ball.speed = base_speed * 0.1
                 elif hazard.kind == "conveyor_belt":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
