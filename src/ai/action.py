@@ -1,5 +1,6 @@
 import random
 import math
+import random
 
 from typing import Any
 
@@ -37,6 +38,7 @@ class Action:
                 world.add_event("level_up", {"ball": getattr(ball, "id", None), "level": ball.level, "stat": stat})
 
     def _attempt_damage(self, attacker, target) -> None:
+        import random
         # Check attack accuracy
         attack_accuracy = getattr(attacker, "attack_accuracy", 1.0)
 
@@ -138,15 +140,23 @@ class Action:
                     if pm.is_nemesis(target.ball_type, attacker.ball_type):
                         base_xp *= 2.0
                 self._award_xp(attacker, base_xp, self.world)
-
         if new_hp <= 0 and old_hp > 0 and pm and hasattr(pm, "add_kill"):
             pm.add_kill(attacker.ball_type, target.ball_type)
             if pm.is_nemesis(target.ball_type, attacker.ball_type):
                 if hasattr(attacker, "kills"):
                     attacker.kills += 1
                 if hasattr(attacker, "charge_level"):
-                    # Yields double charge level upon being defeated (Nemesis bonus)
                     attacker.charge_level = min(100.0, getattr(attacker, "charge_level", 0.0) + 20.0)
+
+            # Drop material on kill
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "items"):
+                import random
+                mat_type = random.choice(["Iron Ore", "Magic Dust", "Void Shard"])
+                new_id = getattr(self.world, "next_id", 9999)
+                if hasattr(self.world, "next_id"): self.world.next_id += 1
+                mat = {"id": f"mat_{new_id}", "x": getattr(target, "x", 0), "y": getattr(target, "y", 0), "ball_type": "item", "kind": "material", "material_type": mat_type, "radius": 15.0, "active": True}
+                self.world.arena.items.append(mat)
+
 
         # Chain lightning effect
         if getattr(attacker, "chain_lightning_timer", 0.0) > 0:
@@ -257,7 +267,15 @@ class Action:
                             if hasattr(self.world, "_deal_damage"):
                                 self.world._deal_damage(attacker, next_entity)
                     elif e_type in ("hazard", "item", "booster"):
-                        if hasattr(next_entity, "hp"):
+                        if getattr(next_entity, "kind", next_entity.get("kind", "") if isinstance(next_entity, dict) else "") == "material":
+                            if getattr(next_entity, "active", next_entity.get("active", False) if isinstance(next_entity, dict) else False):
+                                if hasattr(next_entity, "active"): next_entity.active = False
+                                elif isinstance(next_entity, dict): next_entity["active"] = False
+                                pm = getattr(self.world, "profile_manager", None)
+                                if pm and hasattr(pm, "add_material"):
+                                    m_type = getattr(next_entity, "material_type", next_entity.get("material_type", "Iron Ore") if isinstance(next_entity, dict) else "Iron Ore")
+                                    pm.add_material(m_type, 1)
+                        elif hasattr(next_entity, "hp"):
                             next_entity.hp -= current_damage
                             if next_entity.hp <= 0:
                                 next_entity.active = False
@@ -3012,6 +3030,7 @@ class Action:
 
     def _collect_booster(self, delta: float) -> None:
         import math
+        import random
         boosters = self._get_boosters()
         if boosters:
             # Check for nearby enemies to interrupt collection
@@ -3133,6 +3152,7 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                 elif getattr(nearest, "kind", None) == "fake_booster":
                     import math
+                    import random
                     explosion_radius = getattr(nearest, "radius", 15.0) * 3
                     dmg = getattr(nearest, "damage", 50.0)
                     stun_dur = getattr(nearest, "stun_duration", 2.0)

@@ -16,6 +16,8 @@ class ProfileManager:
         try:
             with open(self.filename, 'r') as f:
                 data = json.load(f)
+                if "inventory" not in data:
+                    data["inventory"] = {"materials": {}, "crafted_items": {}}
                 if "loadouts" not in data:
                     data["loadouts"] = {}
                 if "quests" not in data:
@@ -38,6 +40,7 @@ class ProfileManager:
         except (FileNotFoundError, json.JSONDecodeError):
             return {
                 "skill_points": 0,
+                "inventory": {"materials": {}, "crafted_items": {}},
                 "unlocked_balls": ["basic"],
                 "bonuses": {
                     "bonus_hp": 0,
@@ -132,6 +135,7 @@ class ProfileManager:
 
             self.data = {
                 "skill_points": 0,
+                "inventory": {"materials": {}, "crafted_items": {}},
                 "unlocked_balls": ["basic"],
                 "bonuses": {
                     "bonus_hp": 0,
@@ -310,3 +314,32 @@ class ProfileManager:
 
         self.save()
         return rewards
+
+    def add_material(self, material_name, amount):
+        if "inventory" not in self.data:
+            self.data["inventory"] = {"materials": {}, "crafted_items": {}}
+        mats = self.data["inventory"]["materials"]
+        mats[material_name] = mats.get(material_name, 0) + amount
+        self.save()
+
+    def craft_item(self, recipe_id):
+        recipes = {
+            "health_potion": {"materials": {"Iron Ore": 1, "Magic Dust": 1}, "yields": 1},
+            "speed_boost": {"materials": {"Magic Dust": 2}, "yields": 1},
+            "artifact": {"materials": {"Void Shard": 3}, "crafted_items": {"health_potion": 1}, "yields": 1}
+        }
+        if recipe_id not in recipes: return False
+        if "inventory" not in self.data: self.data["inventory"] = {"materials": {}, "crafted_items": {}}
+        inv = self.data["inventory"]
+        req = recipes[recipe_id]
+        for m, c in req.get("materials", {}).items():
+            if inv["materials"].get(m, 0) < c: return False
+        for c_item, c in req.get("crafted_items", {}).items():
+            if inv["crafted_items"].get(c_item, 0) < c: return False
+        for m, c in req.get("materials", {}).items():
+            inv["materials"][m] -= c
+        for c_item, c in req.get("crafted_items", {}).items():
+            inv["crafted_items"][c_item] -= c
+        inv["crafted_items"][recipe_id] = inv["crafted_items"].get(recipe_id, 0) + req["yields"]
+        self.save()
+        return True
