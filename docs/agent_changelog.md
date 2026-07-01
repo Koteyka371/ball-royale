@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-362] Crafting System and Item Synthesis — *2026-07-01 11:56:31 UTC*
+
+Implement a crafting system where players gather materials (like 'Iron Ore', 'Magic Dust', 'Void Shard') dropped by destroyed balls or special hazards during matches. These materials can be used between matches to craft consumable boosters, temporary stats modifiers, or rare cosmetics. Advanced recipes might require synthesizing basic items into more potent artifacts.
+
+---
+
 ## [idea-283] Magnetic Hazards — *2026-07-01 11:56:27 UTC*
 
 Add magnetic hazards that continuously pull or push balls depending on their active polarity. Balls could change their own polarity using a specific skill to either use the hazard for a speed boost or avoid being dragged in.
