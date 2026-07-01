@@ -568,3 +568,24 @@ def test_zero_gravity_mode():
     mode.setup(world, balls)
 
     assert mode.name == "Zero Gravity"
+
+def test_pinball_mode():
+    from ai.game_modes import GAME_MODES
+    mode = GAME_MODES.get("pinball")
+    assert mode is not None
+    assert mode.name == "Pinball Mode"
+
+    class PinballMockArena:
+        def __init__(self):
+            self.width = 1000
+            self.height = 1000
+            self.hazards = []
+
+    world = MockWorld()
+    world.arena = PinballMockArena()
+    balls = [MockBall(1, 100, 100), MockBall(2, 200, 200)]
+    mode.setup(world, balls)
+
+    assert hasattr(world.arena, "hazards")
+    assert len(world.arena.hazards) >= 20
+    assert any(h.kind == "bumper" for h in world.arena.hazards)
