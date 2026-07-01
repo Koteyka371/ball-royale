@@ -1,0 +1,4 @@
+{
+  "title": "Bouncy Terrain Mutator",
+  "description": "Add a new mutator or game mode 'Bouncy Terrain' where collision with the arena walls or certain hazards doesn't stop or damage the ball, but reflects their velocity dramatically (like a pinball bumper), increasing chaos and requiring balls to adapt their pathfinding."
+}
