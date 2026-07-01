@@ -120,7 +120,7 @@ class ProceduralArena:
         # Generate hazards
         num_hazards = self.num_rooms * 2
         for i in range(num_hazards):
-            kind = random.choice(["spikes", "lava", "fake_booster", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "lightning_storm", "hidden_trap", "silence_booster", "switch", "magnet", "quicksand", "magnet_booster", "breakable_wall", "portal_gun_item", "wormhole"])
+            kind = random.choice(["spikes", "lava", "fake_booster", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "lightning_storm", "hidden_trap", "silence_booster", "switch", "magnet", "quicksand", "magnet_booster", "breakable_wall", "portal_gun_item", "wormhole", "slippery_zone"])
             if kind == "switch":
                 radius = 20.0
                 damage = 0.0
@@ -174,6 +174,9 @@ class ProceduralArena:
                 damage = 0.0
             elif kind == "magnet":
                 radius = random.uniform(25.0, 45.0)
+                damage = 0.0
+            elif kind == "slippery_zone":
+                radius = random.uniform(50.0, 100.0)
                 damage = 0.0
             elif kind == "bumper":
                 radius = random.uniform(30.0, 60.0)
@@ -486,6 +489,19 @@ class ProceduralArena:
                         h.duration -= delta
                         if h.duration <= 0:
                             h.active = False
+                elif getattr(h, "kind", "") == "slippery_zone":
+                    if not hasattr(h, "cycle_timer"):
+                        h.cycle_timer = 0.0
+                        h.is_slippery_active = False
+
+                    h.cycle_timer -= delta
+                    if h.cycle_timer <= 0:
+                        if getattr(h, "is_slippery_active", False):
+                            h.is_slippery_active = False
+                            h.cycle_timer = 5.0 # off for 5 seconds
+                        else:
+                            h.is_slippery_active = True
+                            h.cycle_timer = 5.0 # on for 5 seconds
                 elif getattr(h, "kind", "") == "fire_zone":
                     if hasattr(h, "duration"):
                         h.duration -= delta

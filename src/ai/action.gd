@@ -1720,6 +1720,29 @@ func execute(strategy: String, delta: float):
                         if self.ball.has_method("set_meta"):
                             self.ball.set_meta("is_slipping", true)
 
+                elif hazard.kind == "slippery_zone":
+                    var is_active = false
+                    if hazard.has_meta("is_slippery_active"):
+                        is_active = hazard.get_meta("is_slippery_active")
+                    if is_active:
+                        var dx = hazard.x - self.ball.x
+                        var dy = hazard.y - self.ball.y
+                        var dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            if "vx" in self.ball and "vy" in self.ball:
+                                var speed_mult = 1.0
+                                self.ball.x += self.ball.vx * delta * speed_mult
+                                self.ball.y += self.ball.vy * delta * speed_mult
+
+                            var base_s = 100.0
+                            if self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"):
+                                base_s = self.ball.get_meta("base_speed")
+                            elif "base_speed" in self.ball:
+                                base_s = self.ball.base_speed
+                            self.ball.speed = base_s * 1.5
+                            if self.ball.has_method("set_meta"):
+                                self.ball.set_meta("is_slipping", true)
+
                 elif hazard.kind == "quicksand":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y

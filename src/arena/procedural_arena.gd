@@ -177,6 +177,8 @@ func generate():
             kind = "magnet_booster"
         elif r < 0.995:
             kind = "breakable_wall"
+        elif r < 0.996:
+            kind = "slippery_zone"
         elif r < 0.997:
             kind = "tornado"
         elif r < 0.999:
@@ -237,6 +239,9 @@ func generate():
             damage = 0.0
         elif kind == "magnet_booster":
             radius = 15.0
+            damage = 0.0
+        elif kind == "slippery_zone":
+            radius = rng.randf_range(50.0, 100.0)
             damage = 0.0
         elif kind == "breakable_wall":
             radius = rng.randf_range(30.0, 60.0)
@@ -482,6 +487,21 @@ func update_zone(current_tick: int, delta: float) -> void:
                         h.kind = "orbital_strike_active"
                         h.set_meta("duration", 0.5)
                         h.damage = 1000.0
+            elif "kind" in h and h.kind == "slippery_zone":
+                if not h.has_meta("cycle_timer"):
+                    h.set_meta("cycle_timer", 0.0)
+                    h.set_meta("is_slippery_active", false)
+
+                var c_timer = h.get_meta("cycle_timer") - delta
+                if c_timer <= 0.0:
+                    if h.get_meta("is_slippery_active"):
+                        h.set_meta("is_slippery_active", false)
+                        h.set_meta("cycle_timer", 5.0)
+                    else:
+                        h.set_meta("is_slippery_active", true)
+                        h.set_meta("cycle_timer", 5.0)
+                else:
+                    h.set_meta("cycle_timer", c_timer)
             elif "kind" in h and h.kind == "lightning_strike":
                 if h.has_meta("duration"):
                     var dur = h.get_meta("duration") - delta
