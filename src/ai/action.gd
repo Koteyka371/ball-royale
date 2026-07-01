@@ -4856,6 +4856,19 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "magnet_booster":
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("pull_booster_timer", 5.0)
+                else:
+                    self.ball.pull_booster_timer = 5.0
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "stamina_booster":
                 var max_stam = 100.0
                 if self.ball.has_method("get_meta") and self.ball.has_meta("max_stamina"): max_stam = self.ball.get_meta("max_stamina")
@@ -6684,6 +6697,44 @@ func _apply_friendly_aura(delta: float):
 
 
 func _update_skill_timer(delta: float):
+    var pull_timer = 0.0
+    if "pull_booster_timer" in self.ball:
+        pull_timer = float(self.ball.pull_booster_timer)
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("pull_booster_timer"):
+        pull_timer = self.ball.get_meta("pull_booster_timer")
+    if pull_timer > 0:
+        pull_timer -= delta
+        if "pull_booster_timer" in self.ball:
+            self.ball.pull_booster_timer = pull_timer
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("pull_booster_timer", pull_timer)
+
+        if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+            for hazard in self.world.arena.hazards:
+                var h_rad = 100.0
+                if "radius" in hazard: h_rad = hazard.radius
+                elif hazard.has_method("get_meta") and hazard.has_meta("radius"): h_rad = hazard.get_meta("radius")
+
+                var h_kind = ""
+                if "kind" in hazard: h_kind = hazard.kind
+                elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
+
+                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster"]
+                if h_rad < 30.0 or pullable.has(h_kind):
+                    var dx = self.ball.x - hazard.x
+                    var dy = self.ball.y - hazard.y
+                    var dist_sq = dx*dx + dy*dy
+                    if dist_sq < 250000:
+                        var dist = sqrt(dist_sq)
+                        if dist > 0.0001:
+                            var nx = dx / dist
+                            var ny = dy / dist
+                            var pull_strength = 150.0 * delta
+                            if "x" in hazard: hazard.x += nx * pull_strength
+                            elif hazard.has_method("set_meta") and hazard.has_meta("x"): hazard.set_meta("x", hazard.get_meta("x") + nx * pull_strength)
+                            if "y" in hazard: hazard.y += ny * pull_strength
+                            elif hazard.has_method("set_meta") and hazard.has_meta("y"): hazard.set_meta("y", hazard.get_meta("y") + ny * pull_strength)
+
     var weather_timer = 0.0
     if "weather_control_timer" in self.ball:
         weather_timer = float(self.ball.weather_control_timer)
