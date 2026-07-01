@@ -501,6 +501,23 @@ class Action:
                 self.ball.alive = False
                 self.ball.hp = 0
 
+        # Magnet Tether Movement Logic
+        magnet_tether_timer = getattr(self.ball, "magnet_tether_timer", 0.0)
+        if magnet_tether_timer > 0:
+            target = getattr(self.ball, "magnet_tether_target", None)
+            if target and getattr(target, "alive", True):
+                import math as _math
+                dx = target.x - self.ball.x
+                dy = target.y - self.ball.y
+                dist = _math.hypot(dx, dy)
+                if dist > 0:
+                    tether_speed = getattr(self.ball, "speed", 2.0) * 3.0
+                    self.ball.vx = (dx / dist) * tether_speed
+                    self.ball.vy = (dy / dist) * tether_speed
+                    self.ball.x += self.ball.vx * delta
+                    self.ball.y += self.ball.vy * delta
+            self.ball.magnet_tether_timer = magnet_tether_timer - delta
+
         # Confusion timer logic
         if getattr(self.ball, "confusion_timer", 0.0) > 0:
             self.ball.confusion_timer -= delta
@@ -3444,6 +3461,12 @@ class Action:
                     for h in self.world.arena.hazards:
                         h.frozen_timer = 2.0
 
+            elif skill_name == "magnet_tether":
+                enemies = self._get_enemies()
+                if enemies:
+                    target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                    self.ball.magnet_tether_target = target
+                    self.ball.magnet_tether_timer = 1.0  # Duration of the pull
             elif skill_name == "clone":
                 import copy
                 num_clones = random.randint(2, 4)

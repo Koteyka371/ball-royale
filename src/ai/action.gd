@@ -530,6 +530,52 @@ func execute(strategy: String, delta: float):
 					self.ball.set_meta("alive", false)
 					self.ball.set_meta("hp", 0)
 
+	var m_tether_timer = 0.0
+	if self.ball.has_method("has_meta") and self.ball.has_meta("magnet_tether_timer"):
+		m_tether_timer = self.ball.get_meta("magnet_tether_timer")
+	elif "magnet_tether_timer" in self.ball:
+		m_tether_timer = self.ball.magnet_tether_timer
+
+	if m_tether_timer > 0:
+		var target = null
+		if self.ball.has_method("has_meta") and self.ball.has_meta("magnet_tether_target"):
+			target = self.ball.get_meta("magnet_tether_target")
+		elif "magnet_tether_target" in self.ball:
+			target = self.ball.magnet_tether_target
+
+		var is_target_alive = true
+		if target != null:
+			if "alive" in target:
+				is_target_alive = target.alive
+			elif target.has_method("has_meta") and target.has_meta("alive"):
+				is_target_alive = target.get_meta("alive")
+
+		if target != null and is_target_alive:
+			var dx = target.x - self.ball.x
+			var dy = target.y - self.ball.y
+			var dist = sqrt(dx*dx + dy*dy)
+			if dist > 0:
+				var tether_speed = 2.0 * 3.0
+				if "speed" in self.ball:
+					tether_speed = self.ball.speed * 3.0
+
+				var nvx = (dx / dist) * tether_speed
+				var nvy = (dy / dist) * tether_speed
+
+				if "vx" in self.ball: self.ball.vx = nvx
+				elif self.ball.has_method("set_meta"): self.ball.set_meta("vx", nvx)
+				if "vy" in self.ball: self.ball.vy = nvy
+				elif self.ball.has_method("set_meta"): self.ball.set_meta("vy", nvy)
+
+				if "x" in self.ball: self.ball.x += nvx * delta
+				elif self.ball.has_method("set_meta") and self.ball.has_meta("x"): self.ball.set_meta("x", self.ball.get_meta("x") + nvx * delta)
+				if "y" in self.ball: self.ball.y += nvy * delta
+				elif self.ball.has_method("set_meta") and self.ball.has_meta("y"): self.ball.set_meta("y", self.ball.get_meta("y") + nvy * delta)
+
+		m_tether_timer -= delta
+		if "magnet_tether_timer" in self.ball: self.ball.magnet_tether_timer = m_tether_timer
+		elif self.ball.has_method("set_meta"): self.ball.set_meta("magnet_tether_timer", m_tether_timer)
+
 	if self.ball.has_method("has_meta") and self.ball.has_meta("silence_timer"):
 		var st = self.ball.get_meta("silence_timer")
 		if st > 0.0:
@@ -5422,6 +5468,20 @@ func _use_skill():
                         if h.has_method("set_meta"):
                             h.set_meta("frozen_timer", 2.0)
 
+        elif skill_name == "magnet_tether":
+            var enemies = _get_enemies()
+            if enemies.size() > 0:
+                var target = enemies[0]
+                var min_dist = pow(target.x - self.ball.x, 2) + pow(target.y - self.ball.y, 2)
+                for i in range(1, enemies.size()):
+                    var e = enemies[i]
+                    var dist = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                    if dist < min_dist:
+                        min_dist = dist
+                        target = e
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("magnet_tether_target", target)
+                    self.ball.set_meta("magnet_tether_timer", 1.0)
         elif skill_name == "clone":
             var num_clones = randi() % 3 + 2 # 2 to 4 clones
             for i in range(num_clones):
