@@ -1,4 +1,0 @@
-{
-  "title": "Ice Slippage Modifier",
-  "description": "Add an 'ice_patches' hazard type that drastically lowers friction for any ball caught in it, causing their movement/velocity commands to slide uncontrollably until they exit the patch."
-}

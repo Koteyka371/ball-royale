@@ -1,4 +1,0 @@
-{
-  "title": "Chain Reaction Explosives",
-  "description": "Introduce a new arena hazard 'volatile_barrel' that explodes when taking damage. If multiple barrels are near each other, one explosion triggers the others, creating a massive chain reaction that can wipe out grouped enemies or be tactically detonated by sniper balls."
-}

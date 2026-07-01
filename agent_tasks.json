@@ -10336,6 +10336,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-599",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Generator Item",
+      "description": "An active item that allows players to deploy a miniature black hole. The black hole slowly pulls nearby enemies towards its center and deals continuous damage while they remain within its event horizon. This adds area-denial capabilities and creates opportunities for combo attacks when enemies are grouped up.",
+      "allowed_paths": [
+        "src/ai/black_hole_generator_item.py",
+        "src/ai/black_hole_generator_item.gd",
+        "tests/test_black_hole_generator_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-600",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Mirror Shield",
+      "description": "A defensive item that creates a temporary energy shield around the ball. While active, any projectiles or ranged attacks that hit the shield are reflected back towards the attacker with increased velocity, rewarding precise timing and punishing predictable ranged spam.",
+      "allowed_paths": [
+        "src/ai/quantum_mirror_shield.py",
+        "src/ai/quantum_mirror_shield.gd",
+        "tests/test_quantum_mirror_shield.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }

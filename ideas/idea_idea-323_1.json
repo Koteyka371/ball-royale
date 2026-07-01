@@ -1,4 +1,0 @@
-{
-  "title": "Decoy Explosion Shrapnel",
-  "description": "When a fake booster explodes, it should shoot out smaller shrapnel hazards in random directions that linger for 5 seconds and deal minor damage over time to anyone who touches them."
-}

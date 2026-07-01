@@ -1,4 +1,0 @@
-{
-  "title": "Shrinking Safe Zones",
-  "description": "Introduce a shrinking safe zone mechanic over time, forcing players towards the center of the arena. Taking damage when outside the zone increases as the zone shrinks."
-}
