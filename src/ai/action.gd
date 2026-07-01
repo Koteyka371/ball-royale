@@ -394,6 +394,11 @@ func _init(ball_ref, world_ref):
 
 func execute(strategy: String, delta: float):
 
+    if self.ball.has_method("remove_meta") and self.ball.has_meta("_chrono_slow"):
+        self.ball.remove_meta("_chrono_slow")
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("_chrono_slow"):
+        self.ball.erase("_chrono_slow")
+
 
 	var is_mimic_clone = false
 	if self.ball.has_method("get_meta") and self.ball.get_meta("is_mimic_clone"): is_mimic_clone = true
@@ -2368,6 +2373,17 @@ func execute(strategy: String, delta: float):
                             self.ball.hp -= hd
                             if self.ball.hp <= 0:
                                 self.ball.alive = false
+                    elif hazard.kind == "chrono_anomaly":
+                        var speed_mult = 0.2
+                        if self.ball.has_method("set_meta"):
+                            self.ball.set_meta("_chrono_slow", speed_mult)
+                        elif typeof(self.ball) == TYPE_DICTIONARY:
+                            self.ball["_chrono_slow"] = speed_mult
+
+                        if "attack_timer" in self.ball and self.ball.attack_timer > 0:
+                            self.ball.attack_timer += delta * (1.0 - speed_mult)
+                        if "skill_timer" in self.ball and self.ball.skill_timer > 0:
+                            self.ball.skill_timer += delta * (1.0 - speed_mult)
                     elif hazard.kind == "tornado":
                         var dx = hazard.x - self.ball.x
                         var dy = hazard.y - self.ball.y
@@ -2639,7 +2655,26 @@ func execute(strategy: String, delta: float):
                         if self.ball.hp <= 0:
                             self.ball.alive = false
 
-    if "current_action" in self.ball:
+    var has_chrono = false
+    var chrono_mult = 1.0
+    if self.ball.has_method("has_meta") and self.ball.has_meta("_chrono_slow"):
+        has_chrono = true
+        chrono_mult = self.ball.get_meta("_chrono_slow")
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("_chrono_slow"):
+        has_chrono = true
+        chrono_mult = self.ball["_chrono_slow"]
+
+    var b_speed = 2.0
+    if "base_speed" in self.ball:
+        b_speed = self.ball.base_speed
+
+    if "speed" in self.ball:
+        if has_chrono:
+            self.ball.speed = b_speed * chrono_mult
+        else:
+            self.ball.speed = b_speed
+
+    if "current_action" in self.ball or typeof(self.ball) == TYPE_DICTIONARY:
         self.ball.current_action = strategy
 
     if self.ball.has_method("set_meta"):
