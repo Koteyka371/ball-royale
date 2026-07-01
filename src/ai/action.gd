@@ -69,88 +69,143 @@ func _attempt_damage(attacker, target) -> void:
 	if randf() > attack_accuracy:
 		return
 
-	if is_nemesis_active:
-		if "damage" in attacker:
-			attacker.damage = original_damage * 1.2
+	var executed_by_necromancer = false
+	if attacker_type.to_lower() == "necromancer":
+		var target_max_hp = 100.0
+		if "max_hp" in target:
+			target_max_hp = float(target.max_hp)
+		elif target.has_method("get_meta") and target.has_meta("max_hp"):
+			target_max_hp = float(target.get_meta("max_hp"))
 
-	var has_ricochet = false
-	if "ricochet_barrier_timer" in target and target.ricochet_barrier_timer > 0.0:
-		has_ricochet = true
-	elif target.has_method("get_meta") and target.has_meta("ricochet_barrier_timer"):
-		if target.get_meta("ricochet_barrier_timer") > 0.0:
-			has_ricochet = true
+		if old_hp > 0 and (old_hp / target_max_hp) < 0.2:
+			if randf() < 0.25:
+				executed_by_necromancer = true
 
-	var has_reflect = false
-	if "reflect_shield_active" in target and target.reflect_shield_active:
-		has_reflect = true
-	elif target.has_method("get_meta") and target.has_meta("reflect_shield_active"):
-		if target.get_meta("reflect_shield_active"):
-			has_reflect = true
+	if executed_by_necromancer:
+		var target_max_hp = 100.0
+		if "max_hp" in target:
+			target_max_hp = float(target.max_hp)
+		elif target.has_method("get_meta") and target.has_meta("max_hp"):
+			target_max_hp = float(target.get_meta("max_hp"))
 
-	var rs_timer = -1.0
-	if "reflect_shield_timer" in target:
-		rs_timer = target.reflect_shield_timer
-	elif target.has_method("get_meta") and target.has_meta("reflect_shield_timer"):
-		rs_timer = target.get_meta("reflect_shield_timer")
-	if rs_timer != -1.0 and rs_timer <= 0.0 and has_reflect:
-		has_reflect = false
-
-	if has_ricochet:
-		if self.world != null and self.world.has_method("_deal_damage"):
-			self.world._deal_damage(target, attacker)
-	elif has_reflect:
-		var capacity = 50.0
-		if "reflect_shield_capacity" in target:
-			capacity = target.reflect_shield_capacity
-		elif target.has_method("get_meta") and target.has_meta("reflect_shield_capacity"):
-			capacity = target.get_meta("reflect_shield_capacity")
-
-		var damage_to_reflect = min(capacity, original_damage)
-		capacity -= original_damage
-
-		if capacity <= 0:
-			if "reflect_shield_active" in target:
-				target.reflect_shield_active = false
-			elif target.has_method("set_meta"):
-				target.set_meta("reflect_shield_active", false)
-
-			if "reflect_shield_capacity" in target:
-				target.reflect_shield_capacity = 0.0
-			elif target.has_method("set_meta"):
-				target.set_meta("reflect_shield_capacity", 0.0)
-		else:
-			if "reflect_shield_capacity" in target:
-				target.reflect_shield_capacity = capacity
-			elif target.has_method("set_meta"):
-				target.set_meta("reflect_shield_capacity", capacity)
-
-		if self.has_method("_spawn_directed_particles"):
-			self._spawn_directed_particles(target, attacker, "reflect_pulse")
 		if self.world != null and self.world.has_method("_deal_damage"):
 			var old_dmg = original_damage
 			if "damage" in attacker:
 				old_dmg = attacker.damage
-				attacker.damage = damage_to_reflect
-			self.world._deal_damage(target, attacker)
+				attacker.damage = old_hp + 999.0
+			self.world._deal_damage(attacker, target)
 			if "damage" in attacker:
 				attacker.damage = old_dmg
 
-		if capacity < 0:
-			var remainder_damage = -capacity
-			var old_dmg = original_damage
+		var attacker_max_hp = 100.0
+		if "max_hp" in attacker: attacker_max_hp = float(attacker.max_hp)
+
+		var cur_hp = attacker_max_hp
+		if "hp" in attacker: cur_hp = float(attacker.hp)
+
+		var new_hp = min(attacker_max_hp, cur_hp + target_max_hp * 0.5)
+		if "hp" in attacker:
+			attacker.hp = new_hp
+		elif attacker.has_method("set_meta"):
+			attacker.set_meta("hp", new_hp)
+
+		var shield_cap = 0.0
+		if "reflect_shield_capacity" in attacker: shield_cap = float(attacker.reflect_shield_capacity)
+		elif attacker.has_method("get_meta") and attacker.has_meta("reflect_shield_capacity"): shield_cap = float(attacker.get_meta("reflect_shield_capacity"))
+		shield_cap = max(shield_cap, target_max_hp * 0.5)
+
+		if "reflect_shield_active" in attacker: attacker.reflect_shield_active = true
+		elif attacker.has_method("set_meta"): attacker.set_meta("reflect_shield_active", true)
+
+		if "reflect_shield_capacity" in attacker: attacker.reflect_shield_capacity = shield_cap
+		elif attacker.has_method("set_meta"): attacker.set_meta("reflect_shield_capacity", shield_cap)
+
+		if "reflect_shield_timer" in attacker: attacker.reflect_shield_timer = 5.0
+		elif attacker.has_method("set_meta"): attacker.set_meta("reflect_shield_timer", 5.0)
+
+	else:
+		if is_nemesis_active:
 			if "damage" in attacker:
-				old_dmg = attacker.damage
-				attacker.damage = remainder_damage
+				attacker.damage = original_damage * 1.2
+
+		var has_ricochet = false
+		if "ricochet_barrier_timer" in target and target.ricochet_barrier_timer > 0.0:
+			has_ricochet = true
+		elif target.has_method("get_meta") and target.has_meta("ricochet_barrier_timer"):
+			if target.get_meta("ricochet_barrier_timer") > 0.0:
+				has_ricochet = true
+
+		var has_reflect = false
+		if "reflect_shield_active" in target and target.reflect_shield_active:
+			has_reflect = true
+		elif target.has_method("get_meta") and target.has_meta("reflect_shield_active"):
+			if target.get_meta("reflect_shield_active"):
+				has_reflect = true
+
+		var rs_timer = -1.0
+		if "reflect_shield_timer" in target:
+			rs_timer = target.reflect_shield_timer
+		elif target.has_method("get_meta") and target.has_meta("reflect_shield_timer"):
+			rs_timer = target.get_meta("reflect_shield_timer")
+		if rs_timer != -1.0 and rs_timer <= 0.0 and has_reflect:
+			has_reflect = false
+
+		if has_ricochet:
+			if self.world != null and self.world.has_method("_deal_damage"):
+				self.world._deal_damage(target, attacker)
+		elif has_reflect:
+			var capacity = 50.0
+			if "reflect_shield_capacity" in target:
+				capacity = target.reflect_shield_capacity
+			elif target.has_method("get_meta") and target.has_meta("reflect_shield_capacity"):
+				capacity = target.get_meta("reflect_shield_capacity")
+
+			var damage_to_reflect = min(capacity, original_damage)
+			capacity -= original_damage
+
+			if capacity <= 0:
+				if "reflect_shield_active" in target:
+					target.reflect_shield_active = false
+				elif target.has_method("set_meta"):
+					target.set_meta("reflect_shield_active", false)
+
+				if "reflect_shield_capacity" in target:
+					target.reflect_shield_capacity = 0.0
+				elif target.has_method("set_meta"):
+					target.set_meta("reflect_shield_capacity", 0.0)
+			else:
+				if "reflect_shield_capacity" in target:
+					target.reflect_shield_capacity = capacity
+				elif target.has_method("set_meta"):
+					target.set_meta("reflect_shield_capacity", capacity)
+
+			if self.has_method("_spawn_directed_particles"):
+				self._spawn_directed_particles(target, attacker, "reflect_pulse")
+			if self.world != null and self.world.has_method("_deal_damage"):
+				var old_dmg = original_damage
+				if "damage" in attacker:
+					old_dmg = attacker.damage
+					attacker.damage = damage_to_reflect
+				self.world._deal_damage(target, attacker)
+				if "damage" in attacker:
+					attacker.damage = old_dmg
+
+			if capacity < 0:
+				var remainder_damage = -capacity
+				var old_dmg = original_damage
+				if "damage" in attacker:
+					old_dmg = attacker.damage
+					attacker.damage = remainder_damage
+				if self.world != null and self.world.has_method("_deal_damage"):
+					self.world._deal_damage(attacker, target)
+				if "damage" in attacker:
+					attacker.damage = old_dmg
+		else:
 			if self.world != null and self.world.has_method("_deal_damage"):
 				self.world._deal_damage(attacker, target)
-			if "damage" in attacker:
-				attacker.damage = old_dmg
-	else:
-		if self.world != null and self.world.has_method("_deal_damage"):
-			self.world._deal_damage(attacker, target)
 
-	if is_nemesis_active and "damage" in attacker:
-		attacker.damage = original_damage
+		if is_nemesis_active and "damage" in attacker:
+			attacker.damage = original_damage
 
 	var new_hp = 0.0
 	if "hp" in target: new_hp = float(target.hp)
