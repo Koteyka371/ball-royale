@@ -1854,8 +1854,12 @@ class Action:
                                     self.ball.take_damage(hazard_damage)
                                 elif hasattr(self.ball, "hp"):
                                     self.ball.hp -= hazard_damage
-                                    if self.ball.hp <= 0:
+                                    if getattr(self.ball, "hp", 0) <= 0:
                                         self.ball.alive = False
+
+                                # Apply dizzy effect (confusion)
+                                self.ball.is_confused = True
+                                self.ball.confusion_timer = max(getattr(self.ball, "confusion_timer", 0.0), 3.0)
 
                             continue
                         elif hazard.kind == "lightning_storm":
