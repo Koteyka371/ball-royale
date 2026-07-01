@@ -4060,7 +4060,69 @@ class SupernovaMode extends GameMode:
 
         return null
 
+
+class MirrorMatchMode extends GameMode:
+	func _init() -> void:
+		name = "Mirror Match"
+		description = "Every player spawns with an exact AI clone of themselves on the opposite side of the map. Clones mimic their creator's stats and skills."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+
+		var arena_width = 2000.0
+		var arena_height = 2000.0
+		if world.get("arena") != null:
+			if "width" in world.arena: arena_width = world.arena.width
+			if "height" in world.arena: arena_height = world.arena.height
+
+		var new_clones = []
+		for b in balls:
+			var ball_type = ""
+			if "ball_type" in b: ball_type = b.ball_type
+			elif b.has_method("get_meta") and b.has_meta("ball_type"): ball_type = b.get_meta("ball_type")
+
+			if ball_type == "spectator":
+				continue
+
+			var clone = null
+			if b.has_method("duplicate"):
+				clone = b.duplicate(true)
+			elif typeof(b) == TYPE_DICTIONARY:
+				clone = b.duplicate(true)
+
+			if clone != null:
+				var next_id = randi() % 90000 + 10000
+				if "next_id" in world:
+					next_id = world.next_id
+					world.next_id += 1
+
+				if "id" in clone: clone.id = next_id
+				elif clone.has_method("set_meta"): clone.set_meta("id", next_id)
+
+				var orig_x = 0.0
+				var orig_y = 0.0
+				if "x" in b: orig_x = b.x
+				if "y" in b: orig_y = b.y
+
+				if "x" in clone: clone.x = arena_width - orig_x
+				if "y" in clone: clone.y = arena_height - orig_y
+
+				if clone.has_method("set_meta"):
+					clone.set_meta("is_clone", true)
+					var owner_id = 0
+					if "id" in b: owner_id = b.id
+					clone.set_meta("clone_owner", owner_id)
+				elif typeof(clone) == TYPE_DICTIONARY:
+					clone["is_clone"] = true
+					if "id" in b: clone["clone_owner"] = b.id
+
+				new_clones.append(clone)
+
+		for clone in new_clones:
+			balls.append(clone)
+
 var GAME_MODES = {
+	"mirror_match": MirrorMatchMode.new(),
 	"shifting_maze": ShiftingMazeMode.new(),
 
 	"blackout": BlackoutMode.new(),

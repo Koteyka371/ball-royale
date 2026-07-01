@@ -1,0 +1,4 @@
+{
+  "title": "Time Loop Mode",
+  "description": "Every 10 seconds, the game state resets to its exact position 5 seconds ago, forcing players to anticipate both future actions and past patterns."
+}

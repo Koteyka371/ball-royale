@@ -3173,7 +3173,51 @@ class SupernovaMode(GameMode):
         return None
 
 
+
+class MirrorMatchMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Mirror Match"
+        self.description = "Every player spawns with an exact AI clone of themselves on the opposite side of the map. Clones mimic their creator's stats and skills."
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        import copy
+        import random
+
+        arena_width = getattr(world.arena, "width", 2000.0) if hasattr(world, "arena") else 2000.0
+        arena_height = getattr(world.arena, "height", 2000.0) if hasattr(world, "arena") else 2000.0
+
+        new_clones = []
+        for b in balls:
+            if getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            clone = copy.copy(b)
+            # Deep copy mutable attributes according to Memory directives
+            clone.inventory = copy.deepcopy(getattr(b, "inventory", []))
+            clone.active_skills = copy.deepcopy(getattr(b, "active_skills", []))
+            if hasattr(b, "buffs"):
+                clone.buffs = copy.deepcopy(getattr(b, "buffs", []))
+
+            clone.id = getattr(world, "next_id", random.randint(10000, 99999))
+            if hasattr(world, "next_id"):
+                world.next_id += 1
+
+            clone.x = arena_width - b.x
+            clone.y = arena_height - b.y
+
+            clone.is_clone = True
+            clone.clone_owner = b.id
+
+            new_clones.append(clone)
+
+        balls.extend(new_clones)
+        if hasattr(world, "balls"):
+            world.balls = balls
+
 GAME_MODES = {
+    "mirror_match": MirrorMatchMode(),
     "shifting_maze": ShiftingMazeMode(),
 
     "blackout": BlackoutMode(),

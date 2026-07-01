@@ -531,3 +531,45 @@ def test_supernova_mode():
     # Check knockback on survivor
     assert b1.vy != 0 or b1.vx != 0, "b1 should have received knockback velocity"
     assert b2.vx < 0 or b2.vy < 0, "b2 should have received knockback velocity towards top-left"
+
+def test_mirror_match_mode():
+    world = MockWorld()
+    world.arena = type('MockArena', (), {'width': 2000.0, 'height': 2000.0})()
+
+    b1 = MockBall(1, 'ninja')
+    b1.x = 100.0
+    b1.y = 100.0
+    b1.id = 1
+    b1.ball_type = "ninja"
+    b1.hp = 100
+    b1.max_hp = 100
+    b1.speed = 150
+    b1.damage = 25
+    b1.inventory = ["speed_boost"]
+
+    b2 = MockBall(2, 'tank')
+    b2.x = 500.0
+    b2.y = 500.0
+    b2.id = 2
+    b2.ball_type = "tank"
+
+    balls = [b1, b2]
+
+    from ai.game_modes import GAME_MODES
+    mode = GAME_MODES["mirror_match"]
+    mode.setup(world, balls)
+
+    assert len(balls) == 4, "Should have 2 original balls + 2 clones"
+
+    clone1 = next((b for b in balls if getattr(b, "clone_owner", None) == 1), None)
+    assert clone1 is not None
+    assert clone1.x == 1900.0
+    assert clone1.y == 1900.0
+    assert clone1.ball_type == "ninja"
+    assert clone1.inventory == ["speed_boost"]
+    assert getattr(clone1, "is_clone", False) == True
+
+    clone2 = next((b for b in balls if getattr(b, "clone_owner", None) == 2), None)
+    assert clone2 is not None
+    assert clone2.x == 1500.0
+    assert clone2.y == 1500.0
