@@ -28,6 +28,20 @@ class GameMode:
         mod_index = ((season_num - 1) % 4) + 1
         mod = modifiers[mod_index]
 
+        # Apply weekly mutator
+        import time
+        current_week = int(time.time() / (7 * 24 * 3600))
+        weekly_mutators = {
+            0: {"type": "low_gravity"},
+            1: {"type": "double_damage"},
+            2: {"type": "high_speed"},
+            3: {"type": "vampirism"},
+        }
+        week_index = current_week % len(weekly_mutators)
+        week_mod = weekly_mutators[week_index]
+        world.weekly_mutator = week_mod["type"]
+
+
         for b in balls:
             if getattr(b, "ball_type", None) != "spectator":
                 b.experience = getattr(b, "experience", 0.0)
@@ -44,6 +58,17 @@ class GameMode:
                     b.hp = getattr(b, "hp", getattr(b, "max_hp", 100))
                 elif mod["type"] == "global_cooldown":
                     b.cooldown_multiplier = getattr(b, "cooldown_multiplier", 1.0) * mod["value"]
+
+                if week_mod["type"] == "double_damage":
+                    b.base_damage = getattr(b, "base_damage", getattr(b, "damage", 10)) * 2.0
+                    b.damage = getattr(b, "damage", 10) * 2.0
+                elif week_mod["type"] == "high_speed":
+                    b.base_speed = getattr(b, "base_speed", getattr(b, "speed", 100)) * 1.5
+                    b.speed = getattr(b, "speed", 100) * 1.5
+                elif week_mod["type"] == "vampirism":
+                    b.lifesteal = getattr(b, "lifesteal", 0.0) + 0.5
+                elif week_mod["type"] == "low_gravity":
+                    b.mass = getattr(b, "mass", 1.0) * 0.5
 
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
