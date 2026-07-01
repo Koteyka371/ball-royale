@@ -152,12 +152,24 @@ def test_boss_fight_mode():
 
     mode.setup(world, balls)
     assert balls[0].team == "Boss"
-    assert balls[0].max_hp == 1000 # 100 * 10
+    # Hunter count is 2. Multiplier is 10 + (2 * 2) = 14
+    assert balls[0].max_hp == 1400 # 100 * 14
     assert balls[0].damage == 20 # 10 * 2
     assert balls[1].team == "Hunters"
     assert balls[2].team == "Hunters"
 
     assert mode.check_winner(world, balls) is None
+
+    # Test enrage phase
+    balls[0].hp = 300  # < 30% of 1400 (which is 420)
+    balls[0].base_speed = 50
+    balls[0].speed = 50
+    mode.tick(world, balls)
+
+    assert mode.boss_enraged is True
+    assert balls[0].damage == 30 # 20 * 1.5
+    assert balls[0].base_speed == 75 # 50 * 1.5
+    assert balls[0].speed == 75
 
     balls[0].alive = False
     assert mode.check_winner(world, balls) == "Hunters"

@@ -1,0 +1,4 @@
+{
+    "title": "Minion Spawning Phase",
+    "description": "Add a phase in BossFightMode where if the boss drops below 50% HP, it spawns small minion balls that protect the boss or distract hunters."
+}

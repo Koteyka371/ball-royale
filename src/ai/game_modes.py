@@ -670,14 +670,24 @@ class BossFightMode(GameMode):
         super().__init__()
         self.name = "Boss Fight"
         self.description = "Multiple players fight one giant boss."
+        self.boss_enraged = False
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
+        self.boss_enraged = False
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
-        if balls:
-            boss = balls[0]
+
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+
+        if valid_balls:
+            boss = valid_balls[0]
             boss.team = "Boss"
-            boss.max_hp *= 10
+
+            hunter_count = len(valid_balls) - 1
+            hp_multiplier = 10 + (hunter_count * 2) # dynamic HP scaling
+
+            boss.max_hp = getattr(boss, "max_hp", 100) * hp_multiplier
             boss.hp = boss.max_hp
             boss.damage = getattr(boss, "damage", 10) * 2
 
@@ -697,9 +707,22 @@ class BossFightMode(GameMode):
             if hasattr(boss, "base_speed"):
                 boss.base_speed = getattr(boss, "base_speed", 50) * 0.8
 
-            for b in balls[1:]:
-                if getattr(b, "ball_type", None) != "spectator":
-                    b.team = "Hunters"
+            for b in valid_balls[1:]:
+                b.team = "Hunters"
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        # Enrage phase
+        for b in balls:
+            if getattr(b, "team", "") == "Boss" and getattr(b, "alive", False):
+                hp_percent = getattr(b, "hp", 0) / max(1, getattr(b, "max_hp", 1))
+                if hp_percent <= 0.3 and not self.boss_enraged:
+                    self.boss_enraged = True
+                    b.damage = getattr(b, "damage", 10) * 1.5
+                    b.base_speed = getattr(b, "base_speed", 50) * 1.5
+                    if hasattr(b, "speed"):
+                        b.speed = b.base_speed
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
