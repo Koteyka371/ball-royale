@@ -1,0 +1,4 @@
+{
+  "title": "Rolling Boulders Event",
+  "description": "Periodically spawn massive boulders that roll linearly across the arena, crushing balls in their path and interacting physically with walls and other hazards before shattering into smaller rock hazards."
+}

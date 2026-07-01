@@ -483,6 +483,19 @@ func update_zone(current_tick: int, delta: float) -> void:
                         h.set_meta("vx", h.get_meta("vx") * -1.0)
                     if h.y < 0 or h.y > height:
                         h.set_meta("vy", h.get_meta("vy") * -1.0)
+            elif "kind" in h and h.kind == "fire_ring":
+                if h.has_meta("duration"):
+                    var dur = h.get_meta("duration") - delta
+                    h.set_meta("duration", dur)
+                    if dur <= 0:
+                        h.set_meta("active", false)
+                        if "active" in h:
+                            h.active = false
+                    else:
+                        var shrink_rate = 50.0
+                        if h.has_meta("shrink_rate"):
+                            shrink_rate = h.get_meta("shrink_rate")
+                        h.radius = max(0.0, h.radius - shrink_rate * delta)
             elif "kind" in h and h.kind == "orbital_strike_active":
                 if h.has_meta("duration"):
                     var dur = h.get_meta("duration") - delta
@@ -560,7 +573,7 @@ func update_zone(current_tick: int, delta: float) -> void:
                     new_hazards.append(h)
             hazards = new_hazards
 
-            var event_types = ["meteor_shower", "gravity_shift", "moving_walls", "orbital_strike", "none"]
+            var event_types = ["meteor_shower", "gravity_shift", "moving_walls", "orbital_strike", "fire_ring", "none"]
             var event_type = event_types[randi() % event_types.size()]
             if event_type != "none":
                 _trigger_event(event_type, current_tick)
@@ -1025,6 +1038,13 @@ func _trigger_event(event_type: String, current_tick: int) -> void:
         wall.target_radius = width
         wall.set_meta("duration", 8.0)
         hazards.append(wall)
+    elif event_type == "fire_ring":
+        var h_id = 4500 + hazards.size()
+        var ring = ProceduralArena.Hazard.new(h_id, width/2, height/2, 500.0, "fire_ring", 40.0)
+        ring.target_radius = 0.0
+        ring.set_meta("duration", 10.0)
+        ring.set_meta("shrink_rate", 500.0 / 10.0)
+        hazards.append(ring)
 
 func _update_danger_grid() -> void:
     danger_grid.clear()

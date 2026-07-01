@@ -437,6 +437,14 @@ class ProceduralArena:
                         if hasattr(h, "vx"): h.vx *= -1
                     if h.y < 0 or h.y > self.height:
                         if hasattr(h, "vy"): h.vy *= -1
+                elif getattr(h, "kind", "") == "fire_ring":
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0:
+                            h.active = False
+                        else:
+                            shrink_rate = getattr(h, "shrink_rate", 50.0)
+                            h.radius = max(0.0, h.radius - shrink_rate * delta)
                 elif getattr(h, "kind", "") == "orbital_strike_active":
                     if hasattr(h, "duration"):
                         h.duration -= delta
@@ -499,7 +507,7 @@ class ProceduralArena:
             self.hazards = [h for h in self.hazards if h.id < 1000]
 
             # Periodically trigger random arena-wide events
-            event_type = random.choice(["meteor_shower", "gravity_shift", "moving_walls", "orbital_strike", "none"])
+            event_type = random.choice(["meteor_shower", "gravity_shift", "moving_walls", "orbital_strike", "fire_ring", "none"])
             if event_type != "none":
                 self._trigger_event(event_type, current_tick)
 
@@ -601,6 +609,14 @@ class ProceduralArena:
             wall.target_radius = self.width
             setattr(wall, "duration", 8.0)
             self.hazards.append(wall)
+        elif event_type == "fire_ring":
+            h_id = 4500 + len(self.hazards)
+            # Starts as a large ring and shrinks to 0 over 10 seconds
+            ring = Hazard(id=h_id, x=self.width/2, y=self.height/2, radius=500.0, kind="fire_ring", damage=40.0)
+            ring.target_radius = 0.0
+            setattr(ring, "duration", 10.0)
+            setattr(ring, "shrink_rate", 500.0 / 10.0)
+            self.hazards.append(ring)
 
     def _update_danger_grid(self):
         self.danger_grid.clear()

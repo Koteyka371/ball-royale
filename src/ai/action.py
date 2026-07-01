@@ -1312,6 +1312,23 @@ class Action:
                             if hasattr(self, "_spawn_skill_particles"):
                                 self._spawn_skill_particles("emp")
                             continue
+                        elif hazard.kind == "fire_ring":
+                            dx = self.ball.x - hazard.x
+                            dy = self.ball.y - hazard.y
+                            dist = math.hypot(dx, dy)
+                            ring_thickness = 30.0
+                            if hazard.radius - ring_thickness <= dist <= hazard.radius + ring_thickness:
+                                hazard_damage = hazard.damage * delta
+                                if getattr(self.ball, "is_in_quicksand", False):
+                                    hazard_damage *= 2.0
+                                if hasattr(self.ball, "take_damage"):
+                                    self.ball.take_damage(hazard_damage)
+                                elif hasattr(self.ball, "hp"):
+                                    self.ball.hp -= hazard_damage
+                                    if self.ball.hp <= 0:
+                                        self.ball.alive = False
+                            continue
+
                         elif hazard.kind == "orbital_strike_active":
                             hazard_damage = hazard.damage * delta
                             if getattr(self.ball, "is_in_quicksand", False):
