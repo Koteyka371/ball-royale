@@ -1,4 +1,0 @@
-{
-  "title": "Dynamic Arena Padding",
-  "description": "Add an arena mutator or interactive element where parts of the boundary become 'Bouncy' (drastically increasing reflection speed) while other parts become 'Sticky' (catching and stopping balls), changing periodically during a match to keep players constantly aware of their positioning relative to the edges."
-}

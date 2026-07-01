@@ -1,4 +1,0 @@
-{
-    "title": "Quantum Entanglement Hazard",
-    "description": "A new hazard type that links two entities' states. Any damage, healing, or status effects applied to one entity are simultaneously applied to the other until the link expires."
-}
