@@ -1208,6 +1208,23 @@ class Action:
                             if not hasattr(self.ball, "is_slipping"):
                                 self.ball.is_slipping = True
 
+                    elif hazard.kind == "slippery_zone":
+                        if getattr(hazard, "is_slippery_active", False):
+                            dx = hazard.x - self.ball.x
+                            dy = hazard.y - self.ball.y
+                            dist_sq = dx * dx + dy * dy
+                            if dist_sq < hazard.radius * hazard.radius:
+                                if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+                                    # Extreme slip: apply pure momentum
+                                    speed_mult = 1.0
+                                    self.ball.x += self.ball.vx * delta * speed_mult
+                                    self.ball.y += self.ball.vy * delta * speed_mult
+
+                                # Make turn rate near zero by bumping speed significantly (turning depends on speed limits typically, or we just flag it)
+                                self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 1.5
+                                if not hasattr(self.ball, "is_slipping"):
+                                    self.ball.is_slipping = True
+
                     elif hazard.kind == "quicksand":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
