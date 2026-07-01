@@ -63,3 +63,31 @@ def test_chain_bounce_logic():
     assert world.balls[1].hp == 90.0
     assert world.balls[2].hp == 92.0
     assert world.arena.hazards[0].hp == 93.6
+
+def test_chain_bounce_thunderstorm():
+    world = MockWorld()
+    world.balls = [
+        MockBall(1, 500, 500, team="A"),
+        MockBall(2, 550, 500, team="B"),
+        # Place ball 3 at distance 250, normally out of range (150) but in range for thunderstorm (300)
+        MockBall(3, 800, 500, team="B"),
+    ]
+    world.arena = type('Arena', (), {'hazards': [], 'weather': 'thunderstorm'})()
+
+    attacker = world.balls[0]
+    target = world.balls[1]
+
+    action = Action(attacker, world)
+    action._get_enemies = lambda: [b for b in world.balls if b.team != attacker.team]
+    action._spawn_particles = lambda x,y,k: None
+    action._spawn_skill_particles = lambda k: None
+
+    action._attempt_damage(attacker, target)
+
+    # Original damage 10.
+    # Target takes normal attack -> 10. Target hp = 90
+    # Thunderstorm damage multiplier = 1.2
+    # Chain jumps to ball 3. Chain damage = 10 * 1.2 = 12. Ball 3 hp = 88.
+
+    assert world.balls[1].hp == 90.0
+    assert world.balls[2].hp == 88.0

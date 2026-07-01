@@ -192,11 +192,23 @@ class Action:
                 items = self.world.arena.items
 
             if enemies or hazards or boosters or items:
+                weather_is_thunderstorm = hasattr(self.world, "arena") and getattr(self.world.arena, "weather", "") == "thunderstorm"
+                if not weather_is_thunderstorm and hasattr(self.world, "game_mode") and getattr(self.world.game_mode, "weather", "") == "thunderstorm":
+                    weather_is_thunderstorm = True
+
+                chain_range = 150
+                chain_damage_multiplier = 0.8
+
+                if weather_is_thunderstorm:
+                    chain_range = 300
+                    chain_damage_multiplier = 1.2
+
+                chain_range_sq = chain_range * chain_range
                 jump_count = 0
                 has_original_damage = hasattr(attacker, "damage")
                 original_damage = getattr(attacker, "damage", 10.0)
                 current_target = target
-                current_damage = original_damage * 0.8
+                current_damage = original_damage * chain_damage_multiplier
                 hit_entities = [attacker, target]
 
                 while jump_count < 3:
@@ -204,22 +216,22 @@ class Action:
                     for e in enemies:
                         if e not in hit_entities:
                             dist_sq = (e.x - current_target.x)**2 + (e.y - current_target.y)**2
-                            if dist_sq < 22500: # 150 radius for jump
+                            if dist_sq < chain_range_sq:
                                 nearby_entities.append((dist_sq, e, "enemy"))
                     for h in hazards:
                         if h not in hit_entities and getattr(h, "active", True):
                             dist_sq = (h.x - current_target.x)**2 + (h.y - current_target.y)**2
-                            if dist_sq < 22500:
+                            if dist_sq < chain_range_sq:
                                 nearby_entities.append((dist_sq, h, "hazard"))
                     for b in boosters:
                         if b not in hit_entities:
                             dist_sq = (b.x - current_target.x)**2 + (b.y - current_target.y)**2
-                            if dist_sq < 22500:
+                            if dist_sq < chain_range_sq:
                                 nearby_entities.append((dist_sq, b, "booster"))
                     for it in items:
                         if it not in hit_entities:
                             dist_sq = (it.x - current_target.x)**2 + (it.y - current_target.y)**2
-                            if dist_sq < 22500:
+                            if dist_sq < chain_range_sq:
                                 nearby_entities.append((dist_sq, it, "item"))
 
                     if hasattr(self.world, "arena"):
@@ -241,7 +253,7 @@ class Action:
                         for w in walls:
                             if w.name not in hit_entities:
                                 dist_sq = (w.x - current_target.x)**2 + (w.y - current_target.y)**2
-                                if dist_sq < 22500:
+                                if dist_sq < chain_range_sq:
                                     nearby_entities.append((dist_sq, w, "wall"))
 
                     if not nearby_entities:

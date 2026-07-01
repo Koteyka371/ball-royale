@@ -271,7 +271,22 @@ func _attempt_damage(attacker, target) -> void:
 					orig_dmg = attacker.damage
 
 				var current_target = target
-				var current_damage = orig_dmg * 0.8
+				var weather_is_thunderstorm = false
+				if self.world != null:
+					if "arena" in self.world and self.world.arena != null and "weather" in self.world.arena and self.world.arena.weather == "thunderstorm":
+						weather_is_thunderstorm = true
+					elif "game_mode" in self.world and self.world.game_mode != null and "weather" in self.world.game_mode and self.world.game_mode.weather == "thunderstorm":
+						weather_is_thunderstorm = true
+
+				var chain_range = 150.0
+				var chain_damage_multiplier = 0.8
+
+				if weather_is_thunderstorm:
+					chain_range = 300.0
+					chain_damage_multiplier = 1.2
+
+				var chain_range_sq = chain_range * chain_range
+				var current_damage = orig_dmg * chain_damage_multiplier
 				var hit_entities = []
 				hit_entities.append(attacker)
 				hit_entities.append(target)
@@ -281,7 +296,7 @@ func _attempt_damage(attacker, target) -> void:
 					for e in enemies:
 						if not hit_entities.has(e):
 							var dist_sq = pow(e.x - current_target.x, 2) + pow(e.y - current_target.y, 2)
-							if dist_sq < 22500:
+							if dist_sq < chain_range_sq:
 								nearby.append({"dist": dist_sq, "entity": e, "type": "enemy"})
 					for h in hazards:
 						if not hit_entities.has(h):
@@ -289,17 +304,17 @@ func _attempt_damage(attacker, target) -> void:
 							if "active" in h: is_active = h.active
 							if is_active:
 								var dist_sq = pow(h.x - current_target.x, 2) + pow(h.y - current_target.y, 2)
-								if dist_sq < 22500:
+								if dist_sq < chain_range_sq:
 									nearby.append({"dist": dist_sq, "entity": h, "type": "hazard"})
 					for b in boosters:
 						if not hit_entities.has(b):
 							var dist_sq = pow(b.x - current_target.x, 2) + pow(b.y - current_target.y, 2)
-							if dist_sq < 22500:
+							if dist_sq < chain_range_sq:
 								nearby.append({"dist": dist_sq, "entity": b, "type": "booster"})
 					for it in items:
 						if not hit_entities.has(it):
 							var dist_sq = pow(it.x - current_target.x, 2) + pow(it.y - current_target.y, 2)
-							if dist_sq < 22500:
+							if dist_sq < chain_range_sq:
 								nearby.append({"dist": dist_sq, "entity": it, "type": "item"})
 
 					if self.world != null and "arena" in self.world and self.world.arena != null:
@@ -311,7 +326,7 @@ func _attempt_damage(attacker, target) -> void:
 						for w in walls:
 							if not hit_entities.has(w["name"]):
 								var dist_sq = pow(w["x"] - current_target.x, 2) + pow(w["y"] - current_target.y, 2)
-								if dist_sq < 22500:
+								if dist_sq < chain_range_sq:
 									nearby.append({"dist": dist_sq, "entity": w, "type": "wall"})
 
 
