@@ -6984,7 +6984,7 @@
     },
     {
       "id": "idea-404",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "New Hazard: Time Dilation Field",
@@ -11182,6 +11182,40 @@
         "src/ai/black_hole_collapse.py",
         "src/ai/black_hole_collapse.gd",
         "tests/test_black_hole_collapse.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-649",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Resistant Items",
+      "description": "Boots or goggles that specifically negate the negative movement or vision debuffs applied by certain weather effects.",
+      "allowed_paths": [
+        "src/ai/resistant_items.py",
+        "src/ai/resistant_items.gd",
+        "tests/test_resistant_items.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-650",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tsunami Event",
+      "description": "A weather event that acts as a hazard where a giant wave sweeps across the screen and moves all players to a certain side, causing damage if they hit walls.",
+      "allowed_paths": [
+        "src/ai/tsunami.py",
+        "src/ai/tsunami.gd",
+        "tests/test_tsunami.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

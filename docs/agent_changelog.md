@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-404] New Hazard: Time Dilation Field — *2026-07-01 16:48:48 UTC*
+
+A new procedural arena hazard that drastically slows down the movement speed and action timers of all balls caught within its radius, creating tactical chokepoints.
+
+---
+
 ## [idea-382] Weather Effects Mode — *2026-07-01 16:44:48 UTC*
 
 Add dynamic weather hazards like lightning strikes, snowstorms (slowing down movement), or rain (reducing vision range).
