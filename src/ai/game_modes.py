@@ -342,6 +342,17 @@ class BattleRoyaleMode(GameMode):
                     setattr(tornado, 'vx', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
                     setattr(tornado, 'vy', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
                     world.arena.hazards.append(tornado)
+            if self.weather == "snow":
+                if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                    from arena.procedural_arena import Hazard
+                    # Spawn ice slicks
+                    x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                    y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                    ice = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=50.0, kind="ice_patch", damage=0.0)
+                    setattr(ice, 'duration', 10.0)
+                    setattr(ice, 'vx', getattr(self, "random", __import__("random")).uniform(-20.0, 20.0))
+                    setattr(ice, 'vy', getattr(self, "random", __import__("random")).uniform(-20.0, 20.0))
+                    world.arena.hazards.append(ice)
             if self.weather == "snow" and season_num == 4:
                 if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
                     from arena.procedural_arena import Hazard
@@ -355,6 +366,14 @@ class BattleRoyaleMode(GameMode):
                     world.arena.hazards.append(ice)
 
             elif self.weather == "rain":
+                if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                    from arena.procedural_arena import Hazard
+                    # Spawn mud pit
+                    x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                    y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                    mud_pit = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=60.0, kind="quicksand", damage=0.0)
+                    setattr(mud_pit, 'duration', 15.0)
+                    world.arena.hazards.append(mud_pit)
                 if season_num == 3:
                     if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
                         from arena.procedural_arena import Hazard
@@ -1246,6 +1265,17 @@ class WeatherChaosMode(GameMode):
                     setattr(tornado, 'vx', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
                     setattr(tornado, 'vy', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
                     world.arena.hazards.append(tornado)
+            if self.weather == "snow":
+                if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                    from arena.procedural_arena import Hazard
+                    # Spawn ice slicks
+                    x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                    y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                    ice = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=50.0, kind="ice_patch", damage=0.0)
+                    setattr(ice, 'duration', 10.0)
+                    setattr(ice, 'vx', getattr(self, "random", __import__("random")).uniform(-20.0, 20.0))
+                    setattr(ice, 'vy', getattr(self, "random", __import__("random")).uniform(-20.0, 20.0))
+                    world.arena.hazards.append(ice)
             if self.weather == "snow" and season_num == 4:
                 if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
                     from arena.procedural_arena import Hazard
@@ -1259,6 +1289,14 @@ class WeatherChaosMode(GameMode):
                     world.arena.hazards.append(ice)
 
             elif self.weather == "rain":
+                if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                    from arena.procedural_arena import Hazard
+                    # Spawn mud pit
+                    x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                    y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                    mud_pit = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=60.0, kind="quicksand", damage=0.0)
+                    setattr(mud_pit, 'duration', 15.0)
+                    world.arena.hazards.append(mud_pit)
                 if season_num == 3:
                     if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
                         from arena.procedural_arena import Hazard
