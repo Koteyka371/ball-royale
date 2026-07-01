@@ -86,7 +86,7 @@ def test_weather_mode_mirage():
 
 
     trickster_ball = MockBall(1, "trickster")
-    trickster_ball.SKILL = "deploy_decoy"
+    trickster_ball.SKILL = "shoot_portals"
 
     phantom_ball = MockBall(2, "phantom")
     phantom_ball.SKILL = "phase_through"

@@ -3761,6 +3761,43 @@ class Action:
                     beacon.active_skill = None
                     self.world.balls.append(beacon)
 
+
+            elif skill_name == "shoot_portals":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    import random
+                    from src.arena.procedural_arena import Hazard
+                    # Portal 1 near self
+                    p1_id = len(self.world.arena.hazards) + random.randint(10000, 49999)
+                    p1 = Hazard(id=p1_id, x=self.ball.x + random.uniform(-20, 20), y=self.ball.y + random.uniform(-20, 20), radius=30.0, kind="teleporter", damage=0.0)
+
+                    # Portal 2 somewhere random or targeted
+                    p2_id = len(self.world.arena.hazards) + random.randint(50000, 99999)
+                    enemies = self._get_enemies()
+                    if enemies:
+                        target = self._find_strongest_enemy_deterministic(enemies)
+                        target_x = target.x + random.uniform(-30, 30)
+                        target_y = target.y + random.uniform(-30, 30)
+                    else:
+                        width = getattr(self.world.arena, "width", 1000)
+                        height = getattr(self.world.arena, "height", 1000)
+                        target_x = random.uniform(100, width - 100)
+                        target_y = random.uniform(100, height - 100)
+
+                    p2 = Hazard(id=p2_id, x=target_x, y=target_y, radius=30.0, kind="teleporter", damage=0.0)
+
+                    p1.target_x = p2.x
+                    p1.target_y = p2.y
+                    p2.target_x = p1.x
+                    p2.target_y = p1.y
+
+                    p1.duration = 10.0
+                    p2.duration = 10.0
+                    p1.owner_id = getattr(self.ball, "id", None)
+                    p2.owner_id = getattr(self.ball, "id", None)
+
+                    self.world.arena.hazards.append(p1)
+                    self.world.arena.hazards.append(p2)
+                    self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 5.0)
             elif skill_name == "deploy_decoy":
                 import copy
                 active_decoys = [b for b in getattr(self.world, "balls", []) if getattr(b, "is_decoy", False) and getattr(b, "owner_id", None) == self.ball.id and getattr(b, "alive", True) and not getattr(b, "has_swapped", False)]
