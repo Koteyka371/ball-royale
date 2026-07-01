@@ -4044,12 +4044,22 @@ class BlackoutMode extends GameMode:
 
 		for b in balls:
 			if b.alive and b.ball_type != "spectator":
-				if is_blackout:
+				var has_night_vision = false
+				if "traits" in b and typeof(b.traits) == TYPE_ARRAY and b.traits.has("night_vision"):
+					has_night_vision = true
+				if "ball_type" in b and b.ball_type == "vampire":
+					has_night_vision = true
+				if "cosmetic" in b and str(b.cosmetic).to_lower().replace(" ", "_") == "night_vision_goggles":
+					has_night_vision = true
+
+				if is_blackout and not has_night_vision:
 					b.perception_radius = 50.0
 				else:
 					var base_perc = 250.0
 					if b.has_method("get_meta") and b.has_meta("base_perception_radius"):
 						base_perc = float(b.get_meta("base_perception_radius"))
+					elif "base_perception_radius" in b:
+						base_perc = float(b.base_perception_radius)
 					b.perception_radius = base_perc
 
 

@@ -3339,7 +3339,15 @@ class BlackoutMode(GameMode):
 
         for b in balls:
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
-                if self.is_blackout:
+                has_night_vision = False
+                if hasattr(b, "traits") and "night_vision" in b.traits:
+                    has_night_vision = True
+                if getattr(b, "ball_type", "") == "vampire":
+                    has_night_vision = True
+                if str(getattr(b, "cosmetic", "")).lower().replace(" ", "_") == "night_vision_goggles":
+                    has_night_vision = True
+
+                if self.is_blackout and not has_night_vision:
                     b.perception_radius = 50.0
                 else:
                     b.perception_radius = getattr(b, "base_perception_radius", 250.0)

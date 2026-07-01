@@ -120,7 +120,7 @@ class ProceduralArena:
         # Generate hazards
         num_hazards = self.num_rooms * 2
         for i in range(num_hazards):
-            kind = random.choice(["spikes", "lava", "fake_booster", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "lightning_storm", "hidden_trap", "silence_booster", "switch", "magnet", "quicksand", "magnet_booster", "breakable_wall", "portal_gun_item"])
+            kind = random.choice(["spikes", "lava", "fake_booster", "decoy_item", "link_booster", "stamina_booster", "night_vision_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "lightning_storm", "hidden_trap", "silence_booster", "switch", "magnet", "quicksand", "magnet_booster", "breakable_wall", "portal_gun_item"])
             if kind == "switch":
                 radius = 20.0
                 damage = 0.0
@@ -148,7 +148,7 @@ class ProceduralArena:
             elif kind == "link_booster":
                 radius = 15.0
                 damage = 0.0
-            elif kind == "stamina_booster" or kind == "weather_booster" or kind == "magnet_booster":
+            elif kind == "stamina_booster" or kind == "night_vision_booster" or kind == "weather_booster" or kind == "magnet_booster":
                 radius = 15.0
                 damage = 0.0
             elif kind == "breakable_wall":

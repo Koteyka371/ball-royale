@@ -1,0 +1,4 @@
+{
+  "title": "Shrinking Hazard Zone",
+  "description": "Implement a Battle Royale shrinking zone mechanic. The safe zone radius decreases over time, and any ball outside of it takes continuous damage. It forces players into tighter spaces and increases confrontation frequency as the match progresses."
+}

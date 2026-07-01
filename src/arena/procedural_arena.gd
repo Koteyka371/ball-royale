@@ -157,8 +157,10 @@ func generate():
             kind = "portal_gun_item"
         elif r < 0.45:
             kind = "silence_booster"
-        elif r < 0.5:
+        elif r < 0.48:
             kind = "stamina_booster"
+        elif r < 0.50:
+            kind = "night_vision_booster"
         elif r < 0.55:
             kind = "weather_booster"
         elif r < 0.75:
@@ -250,7 +252,7 @@ func generate():
         elif kind == "link_booster":
             radius = 15.0
             damage = 0.0
-        elif kind == "stamina_booster" or kind == "weather_booster" or kind == "magnet_booster":
+        elif kind == "stamina_booster" or kind == "night_vision_booster" or kind == "weather_booster" or kind == "magnet_booster":
             radius = 15.0
             damage = 0.0
         elif kind == "tornado":
