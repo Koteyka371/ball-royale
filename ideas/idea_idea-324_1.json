@@ -1,0 +1,4 @@
+{
+  "title": "Shrinking Safe Zone Arena",
+  "description": "An arena type where a circular safe zone shrinks continuously towards a random point, pushing players into close combat and damaging those outside."
+}

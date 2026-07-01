@@ -2192,6 +2192,84 @@ func execute(strategy: String, delta: float):
                             if self.ball.hp > self.ball.max_hp:
                                 self.ball.hp = self.ball.max_hp
                         continue
+                    elif hazard.kind == "vampiric_pool":
+                        var hazard_damage = hazard.damage * delta
+                        if "is_in_quicksand" in self.ball and self.ball.is_in_quicksand:
+                            hazard_damage *= 2.0
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("is_in_quicksand") and self.ball.get_meta("is_in_quicksand"):
+                            hazard_damage *= 2.0
+
+                        var old_hp = 0.0
+                        if "hp" in self.ball:
+                            old_hp = float(self.ball.hp)
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("hp"):
+                            old_hp = float(self.ball.get_meta("hp"))
+
+                        if self.ball.has_method("take_damage"):
+                            self.ball.take_damage(hazard_damage)
+                        elif "hp" in self.ball:
+                            self.ball.hp -= hazard_damage
+                            if self.ball.hp <= 0:
+                                if "alive" in self.ball:
+                                    self.ball.alive = false
+                                elif self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("alive", false)
+
+                        var new_hp = 0.0
+                        if "hp" in self.ball:
+                            new_hp = float(self.ball.hp)
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("hp"):
+                            new_hp = float(self.ball.get_meta("hp"))
+
+                        var actual_damage_dealt = old_hp - new_hp
+
+                        if actual_damage_dealt > 0:
+                            var current_total = 0.0
+                            if "total_damage_dealt" in hazard:
+                                current_total = float(hazard.total_damage_dealt)
+                            elif hazard.has_method("get_meta") and hazard.has_meta("total_damage_dealt"):
+                                current_total = float(hazard.get_meta("total_damage_dealt"))
+
+                            if "total_damage_dealt" in hazard:
+                                hazard.total_damage_dealt = current_total + actual_damage_dealt
+                            elif hazard.has_method("set_meta"):
+                                hazard.set_meta("total_damage_dealt", current_total + actual_damage_dealt)
+
+                            var lowest_hp_ball = null
+                            var lowest_hp = INF
+                            if self.world != null and "balls" in self.world:
+                                for b in self.world.balls:
+                                    var is_alive = false
+                                    if "alive" in b: is_alive = b.alive
+                                    elif b.has_method("get_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+
+                                    var b_type = ""
+                                    if "ball_type" in b: b_type = b.ball_type
+                                    elif b.has_method("get_meta") and b.has_meta("ball_type"): b_type = b.get_meta("ball_type")
+
+                                    if is_alive and b_type != "spectator":
+                                        var b_hp = INF
+                                        if "hp" in b: b_hp = float(b.hp)
+                                        elif b.has_method("get_meta") and b.has_meta("hp"): b_hp = float(b.get_meta("hp"))
+
+                                        if b_hp < lowest_hp:
+                                            lowest_hp = b_hp
+                                            lowest_hp_ball = b
+
+                            if lowest_hp_ball != null:
+                                if "hp" in lowest_hp_ball:
+                                    lowest_hp_ball.hp += actual_damage_dealt
+                                    if "max_hp" in lowest_hp_ball and lowest_hp_ball.hp > lowest_hp_ball.max_hp:
+                                        lowest_hp_ball.hp = lowest_hp_ball.max_hp
+                                elif lowest_hp_ball.has_method("get_meta") and lowest_hp_ball.has_meta("hp"):
+                                    var new_b_hp = float(lowest_hp_ball.get_meta("hp")) + actual_damage_dealt
+                                    if lowest_hp_ball.has_meta("max_hp"):
+                                        var max_hp = float(lowest_hp_ball.get_meta("max_hp"))
+                                        if new_b_hp > max_hp:
+                                            new_b_hp = max_hp
+                                    lowest_hp_ball.set_meta("hp", new_b_hp)
+
+                        continue
                     elif hazard.kind == "damage_link":
                         var has_target = false
                         if "damage_link_target" in self.ball and self.ball.damage_link_target != null:

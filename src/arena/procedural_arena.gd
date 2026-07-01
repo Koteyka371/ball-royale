@@ -173,6 +173,8 @@ func generate():
             kind = "quicksand"
         elif r < 0.995:
             kind = "magnet_booster"
+        elif r < 0.998:
+            kind = "vampiric_pool"
         else:
             kind = "switch"
 

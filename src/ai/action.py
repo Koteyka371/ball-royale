@@ -1535,6 +1535,44 @@ class Action:
                                 if self.ball.hp > self.ball.max_hp:
                                     self.ball.hp = self.ball.max_hp
                             continue
+                        elif hazard.kind == "vampiric_pool":
+                            hazard_damage = hazard.damage * delta
+                            if getattr(self.ball, "is_in_quicksand", False):
+                                hazard_damage *= 2.0
+
+                            old_hp = getattr(self.ball, "hp", 0.0)
+                            if hasattr(self.ball, "take_damage"):
+                                self.ball.take_damage(hazard_damage)
+                            elif hasattr(self.ball, "hp"):
+                                self.ball.hp -= hazard_damage
+                                if self.ball.hp <= 0:
+                                    self.ball.alive = False
+
+                            new_hp = getattr(self.ball, "hp", 0.0)
+                            actual_damage_dealt = old_hp - new_hp
+
+                            if actual_damage_dealt > 0:
+                                # Track total damage dealt in the hazard object
+                                current_total = getattr(hazard, "total_damage_dealt", 0.0)
+                                setattr(hazard, "total_damage_dealt", current_total + actual_damage_dealt)
+
+                                # Find lowest HP ball to heal
+                                lowest_hp_ball = None
+                                lowest_hp = float('inf')
+                                if hasattr(self.world, "balls"):
+                                    for b in self.world.balls:
+                                        if getattr(b, "alive", True) and getattr(b, "ball_type", "") != "spectator":
+                                            b_hp = getattr(b, "hp", float('inf'))
+                                            if b_hp < lowest_hp:
+                                                lowest_hp = b_hp
+                                                lowest_hp_ball = b
+
+                                if lowest_hp_ball:
+                                    lowest_hp_ball.hp += actual_damage_dealt
+                                    if hasattr(lowest_hp_ball, "max_hp") and lowest_hp_ball.hp > lowest_hp_ball.max_hp:
+                                        lowest_hp_ball.hp = lowest_hp_ball.max_hp
+
+                            continue
                         elif hazard.kind == "damage_link":
                             if not getattr(self.ball, "damage_link_target", None):
                                 # Find closest other ball
