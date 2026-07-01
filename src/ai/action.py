@@ -484,6 +484,11 @@ class Action:
                     else:
                         partner.hp -= hp_diff * 0.5
                     partner._is_entangle_syncing = False
+                elif hp_diff < 0:
+                    # Apply 50% healing to partner
+                    partner._is_entangle_syncing = True
+                    partner.hp = min(getattr(partner, "max_hp", 100.0), partner.hp - hp_diff * 0.5)
+                    partner._is_entangle_syncing = False
 
                 dx = self.ball.x - prev_x
                 dy = self.ball.y - prev_y

@@ -715,6 +715,16 @@ func execute(strategy: String, delta: float):
                         partner.hp -= hp_diff * 0.5
                     if partner.has_method("set_meta"):
                         partner.set_meta("_is_entangle_syncing", false)
+                elif hp_diff < 0:
+                    if partner.has_method("set_meta"):
+                        partner.set_meta("_is_entangle_syncing", true)
+                    var max_hp = 100.0
+                    if "max_hp" in partner:
+                        max_hp = partner.max_hp
+                    if "hp" in partner:
+                        partner.hp = min(max_hp, partner.hp - hp_diff * 0.5)
+                    if partner.has_method("set_meta"):
+                        partner.set_meta("_is_entangle_syncing", false)
 
                 var dx = my_ball.get("x") - prev_x
                 var dy = my_ball.get("y") - prev_y
