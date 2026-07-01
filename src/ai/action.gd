@@ -6717,6 +6717,33 @@ func _clamp_position() -> bool:
             if old_x != self.ball.x or old_y != self.ball.y:
                 bounced = true
 
+        if bounced:
+            var w = 1000.0
+            var h = 1000.0
+            if "arena" in self.world and self.world.arena != null:
+                w = self.world.arena.get("width", 1000.0)
+                h = self.world.arena.get("height", 1000.0)
+            elif "width" in self.world:
+                w = self.world.get("width", 1000.0)
+                h = self.world.get("height", 1000.0)
+
+            var speed_multiplier = 1.5
+            var reflected = false
+
+            if "vx" in self.ball and "vy" in self.ball:
+                if self.ball.x <= radius or self.ball.x >= w - radius:
+                    self.ball.vx = -self.ball.vx * speed_multiplier
+                    reflected = true
+                if self.ball.y <= radius or self.ball.y >= h - radius:
+                    self.ball.vy = -self.ball.vy * speed_multiplier
+                    reflected = true
+
+            if reflected:
+                if "speed" in self.ball:
+                    self.ball.speed = min(self.ball.speed * speed_multiplier, 10.0)
+                if "hp" in self.ball:
+                    self.ball.hp -= 5.0
+
     return bounced
 
 func _resolve_collisions() -> bool:

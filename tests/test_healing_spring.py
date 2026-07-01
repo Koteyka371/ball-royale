@@ -4,8 +4,8 @@ from arena.procedural_arena import ProceduralArena, Hazard
 
 class MockBall:
     def __init__(self):
-        self.x = 100
-        self.y = 100
+        self.x = 1000
+        self.y = 1000
         self.radius = 10
         self.hp = 50
         self.max_hp = 100
@@ -17,14 +17,14 @@ class MockWorld:
     def __init__(self):
         self.arena = ProceduralArena(num_rooms=1)
         self.arena.hazards.clear()
-        self.arena.hazards.append(Hazard(id=1, x=100, y=100, radius=50, kind="healing_spring", damage=-20))
+        self.arena.hazards.append(Hazard(id=1, x=1000, y=1000, radius=50, kind="healing_spring", damage=-20))
         self.balls = []
         self.tick = 1
         self.width = 2000
         self.height = 2000
 
     def get_nearby_entities(self, ball, radius):
-        return {"enemies": [], "allies": [], "boosters": []}
+        return {"enemies": [], "allies": [], "boosters": [], "hazards": self.arena.hazards}
 
 def test_healing_spring_regenerates_hp():
     ball = MockBall()

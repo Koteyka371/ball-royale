@@ -4181,6 +4181,31 @@ class Action:
             if old_x != self.ball.x or old_y != self.ball.y:
                 bounced = True
 
+        if bounced:
+            # Reflect velocity and increase speed
+            if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+                width = getattr(self.world.arena, "width", getattr(self.world, "width", 1000)) if hasattr(self.world, "arena") else getattr(self.world, "width", 1000)
+                height = getattr(self.world.arena, "height", getattr(self.world, "height", 1000)) if hasattr(self.world, "arena") else getattr(self.world, "height", 1000)
+
+                speed_multiplier = 1.5
+                reflected = False
+
+                if self.ball.x <= radius or self.ball.x >= width - radius:
+                    self.ball.vx = -self.ball.vx * speed_multiplier
+                    reflected = True
+                if self.ball.y <= radius or self.ball.y >= height - radius:
+                    self.ball.vy = -self.ball.vy * speed_multiplier
+                    reflected = True
+
+                if reflected:
+                    # Also increase base speed temporarily for "insane trick shots"
+                    if hasattr(self.ball, "speed"):
+                        self.ball.speed = min(getattr(self.ball, "speed", 2.0) * speed_multiplier, 10.0)
+
+                    # Punish players who get too close to the edge
+                    if hasattr(self.ball, "hp"):
+                        self.ball.hp -= 5.0
+
         return bounced
 
     def _resolve_collisions(self) -> bool:

@@ -1,0 +1,4 @@
+{
+  "title": "Black Hole Hazards",
+  "description": "Introduce a new 'black hole' hazard that slowly pulls entities towards its center. Its gravitational pull increases the closer an entity is to the core. If a ball reaches the center, they are teleported to a random location in the arena but with halved HP."
+}
