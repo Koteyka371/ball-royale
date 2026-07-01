@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-397] Windstorm Glide — *2026-07-01 19:27:18 UTC*
+
+Allow specific lightweight ball types, like the scout, to consume stamina and ride the wind drafts during 'wind' weather, traveling significantly faster and ignoring ground friction.
+
+---
+
 ## [idea-357] Interactive Environmental Hazards — *2026-07-01 18:05:42 UTC*
 
 Add interactive environmental elements that balls can trigger or push into each other, such as explosive barrels or bouncing pads. This would add an extra layer of strategy for positioning.
