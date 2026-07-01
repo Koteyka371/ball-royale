@@ -7035,7 +7035,7 @@
     },
     {
       "id": "idea-407",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gravity Mine Booster",
@@ -11284,6 +11284,23 @@
         "src/arena/teleporter_hub_arena.py",
         "src/arena/teleporter_hub_arena.gd",
         "tests/test_teleporter_hub_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-655",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Necromancer Bone Armor",
+      "description": "Necromancer periodically generates bone armor stacks that mitigate flat damage from incoming attacks.",
+      "allowed_paths": [
+        "src/ai/necromancer_bone_armor.py",
+        "src/ai/necromancer_bone_armor.gd",
+        "tests/test_necromancer_bone_armor.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

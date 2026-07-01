@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-407] Gravity Mine Booster — *2026-07-01 17:06:06 UTC*
+
+A booster that deploys a small trap which pulls nearby enemies in and deals continuous damage when triggered.
+
+---
+
 ## [idea-377] Necromancer Soul Siphon — *2026-07-01 16:52:23 UTC*
 
 When the Necromancer ball hits an enemy that is under 20% HP, it has a chance to execute them instantly and restore its own HP proportional to the enemy's max HP, converting the defeated enemy into a temporary shield aura.
