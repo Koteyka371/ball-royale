@@ -711,7 +711,7 @@ class BossFightMode(GameMode):
         boss.team = "Boss"
         boss.max_hp = getattr(boss, "max_hp", 100) * 10.0
         boss.hp = boss.max_hp
-        boss.damage = getattr(boss, "damage", 10.0) * 3.0
+        boss.damage = getattr(boss, "damage", 10.0) * 2.0
         boss.radius = getattr(boss, "radius", 10.0) * 3.0
 
         # Slower but unstoppable

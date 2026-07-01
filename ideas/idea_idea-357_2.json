@@ -1,0 +1,4 @@
+{
+  "title": "Mirror Dimension Arena",
+  "description": "A procedural arena variant featuring a large central mirror wall. Balls entering the reflection zone spawn a phantom clone on the opposite side of the mirror that mimics their movements perfectly. If a ball's clone is destroyed by hazards or enemies, the original ball suffers a severe max HP penalty."
+}
