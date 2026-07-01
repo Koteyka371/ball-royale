@@ -309,7 +309,7 @@ class BattleRoyaleMode(GameMode):
             self.weather_timer += delta
             if self.weather_timer > 15.0:
                 self.weather_timer = 0.0
-                weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave"]
+                weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard"]
                 rnd = getattr(self, "random", __import__("random"))
                 old_weather = self.weather
                 self.weather = rnd.choice(weathers)
@@ -322,10 +322,10 @@ class BattleRoyaleMode(GameMode):
                     self.wind_dy = rnd.uniform(-50.0, 50.0)
 
         if hasattr(world, "arena"):
-            world.arena.is_foggy = (self.weather in ["fog", "snow"])
+            world.arena.is_foggy = (self.weather in ["fog", "snow", "blizzard"])
             world.arena.is_raining = (self.weather in ["rain", "thunderstorm"])
             world.arena.is_sandstorming = (self.weather == "sandstorm")
-            world.arena.is_snowing = (self.weather == "snow")
+            world.arena.is_snowing = (self.weather in ["snow", "blizzard"])
             world.arena.is_heatwave = (self.weather == "heatwave")
 
             if not hasattr(world.arena, "hazards"):
@@ -342,7 +342,17 @@ class BattleRoyaleMode(GameMode):
                     setattr(tornado, 'vx', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
                     setattr(tornado, 'vy', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
                     world.arena.hazards.append(tornado)
-            if self.weather == "snow":
+            if self.weather == "blizzard":
+                if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
+                    from arena.procedural_arena import Hazard
+                    x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                    y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                    ice = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=80.0, kind="ice_patch", damage=0.0)
+                    setattr(ice, 'duration', 10.0)
+                    setattr(ice, 'vx', getattr(self, "random", __import__("random")).uniform(-50.0, 50.0))
+                    setattr(ice, 'vy', getattr(self, "random", __import__("random")).uniform(-50.0, 50.0))
+                    world.arena.hazards.append(ice)
+            if self.weather in ["snow", "blizzard"]:
                 if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
                     from arena.procedural_arena import Hazard
                     # Spawn ice slicks
@@ -353,7 +363,7 @@ class BattleRoyaleMode(GameMode):
                     setattr(ice, 'vx', getattr(self, "random", __import__("random")).uniform(-20.0, 20.0))
                     setattr(ice, 'vy', getattr(self, "random", __import__("random")).uniform(-20.0, 20.0))
                     world.arena.hazards.append(ice)
-            if self.weather == "snow" and season_num == 4:
+            if self.weather in ["snow", "blizzard"] and season_num == 4:
                 if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
                     from arena.procedural_arena import Hazard
                     # Spawn randomly moving ice patches
@@ -430,7 +440,7 @@ class BattleRoyaleMode(GameMode):
                 b.attack_accuracy = 1.0
             elif self.weather == "rain":
                 b.cosmetic = "umbrella"
-                b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.9
+                b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.5
                 b.speed = b.base_speed * 0.8
                 b.damage = b.base_damage
                 b.dash_range_mult = 1.5
@@ -448,7 +458,22 @@ class BattleRoyaleMode(GameMode):
                 b.damage = b.base_damage * 0.9
                 b.dash_range_mult = 1.0
                 b.steering_mult = 1.0
-            elif self.weather == "snow":
+            elif self.weather == "blizzard":
+                b.cosmetic = "snow_goggles"
+                b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.4
+                b.speed = b.base_speed * 0.3
+                b.damage = b.base_damage * 1.5
+                b.dash_range_mult = 1.0
+                b.steering_mult = 0.8
+                if getattr(b, "SKILL", "") == "iceball" or getattr(b, "SKILL", "") == "elemental_burst":
+                    b.speed = b.base_speed * 1.5
+                if not hasattr(b, "chill_stacks"):
+                    b.chill_stacks = 0.0
+                b.chill_stacks += delta * 2.0
+                if b.chill_stacks >= 3.0:
+                    b.chill_stacks = 0.0
+                    b.stutter_timer = 2.0
+            elif self.weather in ["snow", "blizzard"]:
                 b.cosmetic = "snow_goggles"
                 b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.6
                 b.speed = b.base_speed * 0.5
@@ -466,7 +491,7 @@ class BattleRoyaleMode(GameMode):
                     b.stutter_timer = 1.0 # Freeze for 1 second
                 b.attack_accuracy = 0.9
             elif self.weather == "wind":
-                b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.95
+                b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.55
                 b.speed = b.base_speed
                 b.damage = b.base_damage
                 b.dash_range_mult = 1.0
@@ -1232,7 +1257,7 @@ class WeatherChaosMode(GameMode):
             self.weather_timer += delta
             if self.weather_timer > 10.0:
                 self.weather_timer = 0.0
-                weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave"]
+                weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard"]
                 import random
                 rnd = getattr(self, "random", random)
                 old_weather = self.weather
@@ -1247,10 +1272,10 @@ class WeatherChaosMode(GameMode):
 
         # Apply weather effects to the arena
         if hasattr(world, "arena"):
-            world.arena.is_foggy = (self.weather in ["fog", "snow"])
+            world.arena.is_foggy = (self.weather in ["fog", "snow", "blizzard"])
             world.arena.is_raining = (self.weather in ["rain", "thunderstorm"])
             world.arena.is_sandstorming = (self.weather == "sandstorm")
-            world.arena.is_snowing = (self.weather == "snow")
+            world.arena.is_snowing = (self.weather in ["snow", "blizzard"])
             world.arena.is_heatwave = (self.weather == "heatwave")
             world.arena.wind_dx = getattr(self, "wind_dx", 0.0) if self.weather == "wind" else 0.0
             world.arena.wind_dy = getattr(self, "wind_dy", 0.0) if self.weather == "wind" else 0.0
@@ -1269,7 +1294,17 @@ class WeatherChaosMode(GameMode):
                     setattr(tornado, 'vx', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
                     setattr(tornado, 'vy', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
                     world.arena.hazards.append(tornado)
-            if self.weather == "snow":
+            if self.weather == "blizzard":
+                if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
+                    from arena.procedural_arena import Hazard
+                    x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                    y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                    ice = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=80.0, kind="ice_patch", damage=0.0)
+                    setattr(ice, 'duration', 10.0)
+                    setattr(ice, 'vx', getattr(self, "random", __import__("random")).uniform(-50.0, 50.0))
+                    setattr(ice, 'vy', getattr(self, "random", __import__("random")).uniform(-50.0, 50.0))
+                    world.arena.hazards.append(ice)
+            if self.weather in ["snow", "blizzard"]:
                 if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
                     from arena.procedural_arena import Hazard
                     # Spawn ice slicks
@@ -1280,7 +1315,7 @@ class WeatherChaosMode(GameMode):
                     setattr(ice, 'vx', getattr(self, "random", __import__("random")).uniform(-20.0, 20.0))
                     setattr(ice, 'vy', getattr(self, "random", __import__("random")).uniform(-20.0, 20.0))
                     world.arena.hazards.append(ice)
-            if self.weather == "snow" and season_num == 4:
+            if self.weather in ["snow", "blizzard"] and season_num == 4:
                 if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
                     from arena.procedural_arena import Hazard
                     # Spawn randomly moving ice patches
@@ -1360,7 +1395,7 @@ class WeatherChaosMode(GameMode):
                 b.attack_accuracy = 1.0
             elif self.weather == "rain":
                 b.cosmetic = "umbrella"
-                b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.9
+                b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.5
                 b.speed = b.base_speed * 0.8
                 b.damage = b.base_damage
                 # rain makes surface slippery/increases dash range but reduces steering
@@ -1403,7 +1438,22 @@ class WeatherChaosMode(GameMode):
                                 decoy.SKILL = None
                                 decoy.active_skill = None
                             world.balls.append(decoy)
-            elif self.weather == "snow":
+            elif self.weather == "blizzard":
+                b.cosmetic = "snow_goggles"
+                b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.4
+                b.speed = b.base_speed * 0.3
+                b.damage = b.base_damage * 1.5
+                b.dash_range_mult = 1.0
+                b.steering_mult = 0.8
+                if getattr(b, "SKILL", "") == "iceball" or getattr(b, "SKILL", "") == "elemental_burst":
+                    b.speed = b.base_speed * 1.5
+                if not hasattr(b, "chill_stacks"):
+                    b.chill_stacks = 0.0
+                b.chill_stacks += delta * 2.0
+                if b.chill_stacks >= 3.0:
+                    b.chill_stacks = 0.0
+                    b.stutter_timer = 2.0
+            elif self.weather in ["snow", "blizzard"]:
                 b.cosmetic = "snow_goggles"
                 b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.6
                 b.speed = b.base_speed * 0.5
@@ -1421,7 +1471,7 @@ class WeatherChaosMode(GameMode):
                     b.stutter_timer = 1.0 # Freeze for 1 second
                 b.attack_accuracy = 0.9
             elif self.weather == "wind":
-                b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.95
+                b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.55
                 b.speed = b.base_speed
                 b.damage = b.base_damage
                 b.dash_range_mult = 1.0

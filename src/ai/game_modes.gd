@@ -413,7 +413,7 @@ class BattleRoyaleMode extends GameMode:
             self.weather_timer += delta
             if self.weather_timer > 15.0:
                 self.weather_timer = 0.0
-                var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave"]
+                var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard"]
                 var old_weather = self.weather
                 self.weather = weathers[randi() % weathers.size()]
                 if old_weather != self.weather and world != null and world.has_method("add_event"):
@@ -424,7 +424,7 @@ class BattleRoyaleMode extends GameMode:
                         set_meta("wind_dy", (randf() * 100.0) - 50.0)
 
         if world != null and "arena" in world and world.arena != null:
-            if self.weather == "fog" or self.weather == "snow":
+            if self.weather == "fog" or self.weather in ["snow", "blizzard"]:
                 world.arena.is_foggy = true
             else:
                 world.arena.is_foggy = false
@@ -440,7 +440,7 @@ class BattleRoyaleMode extends GameMode:
                 world.arena.is_heatwave = true
             else:
                 world.arena.is_heatwave = false
-            if self.weather == "snow":
+            if self.weather in ["snow", "blizzard"]:
                 world.arena.is_snowing = true
             else:
                 world.arena.is_snowing = false
@@ -458,7 +458,7 @@ class BattleRoyaleMode extends GameMode:
                     tornado.set_meta("vx", randf_range(-100.0, 100.0))
                     tornado.set_meta("vy", randf_range(-100.0, 100.0))
                     world.arena.hazards.append(tornado)
-            elif self.weather == "snow":
+            elif self.weather in ["snow", "blizzard"]:
                 if randf() < 0.05 * delta:
                     var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
                     var x = randf_range(100.0, world.arena.width - 100.0)
@@ -558,7 +558,7 @@ class BattleRoyaleMode extends GameMode:
                     if b.has_method("set_meta"):
                         b.set_meta("dash_range_mult", 1.0)
                         b.set_meta("steering_mult", 1.0)
-                elif self.weather == "snow":
+                elif self.weather in ["snow", "blizzard"]:
 			if "speed" in b: b.speed = base_spd * 0.5
 			if "damage" in b: b.damage = base_dmg * 1.2
 			var sk_s = ""
@@ -1555,7 +1555,7 @@ class WeatherChaosMode extends GameMode:
 			weather_timer += delta
 			if weather_timer > 10.0:
 				weather_timer = 0.0
-				var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave"]
+				var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard"]
 				var old_weather = weather
 				weather = weathers[randi() % weathers.size()]
 				if old_weather != weather and world != null and world.has_method("add_event"):
@@ -1566,7 +1566,7 @@ class WeatherChaosMode extends GameMode:
 						set_meta("wind_dy", (randf() * 100.0) - 50.0)
 
 		if world != null and "arena" in world:
-			if weather == "fog" or weather == "snow":
+			if weather == "fog" or weather in ["snow", "blizzard"]:
 				world.arena.is_foggy = true
 			else:
 				world.arena.is_foggy = false
@@ -1582,7 +1582,7 @@ class WeatherChaosMode extends GameMode:
 				world.arena.is_heatwave = true
 			else:
 				world.arena.is_heatwave = false
-			if weather == "snow":
+			if weather in ["snow", "blizzard"]:
 				world.arena.is_snowing = true
 			else:
 				world.arena.is_snowing = false
@@ -1612,7 +1612,17 @@ class WeatherChaosMode extends GameMode:
 					tornado.set_meta("vx", randf_range(-100.0, 100.0))
 					tornado.set_meta("vy", randf_range(-100.0, 100.0))
 					world.arena.hazards.append(tornado)
-			elif weather == "snow":
+			elif weather == "blizzard":
+				if randf() < 0.1 * delta:
+					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
+					var x = randf_range(100.0, world.arena.width - 100.0)
+					var y = randf_range(100.0, world.arena.height - 100.0)
+					var ice = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 80.0, "ice_patch", 0.0)
+					ice.set_meta("duration", 10.0)
+					ice.set_meta("vx", randf_range(-50.0, 50.0))
+					ice.set_meta("vy", randf_range(-50.0, 50.0))
+					world.arena.hazards.append(ice)
+			elif weather in ["snow", "blizzard"]:
 				if randf() < 0.05 * delta:
 					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
 					var x = randf_range(100.0, world.arena.width - 100.0)
@@ -1622,7 +1632,7 @@ class WeatherChaosMode extends GameMode:
 					ice.set_meta("vx", randf_range(-20.0, 20.0))
 					ice.set_meta("vy", randf_range(-20.0, 20.0))
 					world.arena.hazards.append(ice)
-			if weather == "snow" and season_num == 4:
+			if weather in ["snow", "blizzard"] and season_num == 4:
 				if randf() < 0.1 * delta:
 					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
 					var x = randf_range(100.0, world.arena.width - 100.0)
@@ -1713,9 +1723,9 @@ class WeatherChaosMode extends GameMode:
 				elif weather == "rain":
 					if typeof(b) == TYPE_OBJECT: b.set("cosmetic", "umbrella")
 					elif typeof(b) == TYPE_DICTIONARY: b["cosmetic"] = "umbrella"
-					if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius") * 0.9
-					elif "base_perception_radius" in b: b.perception_radius = b.base_perception_radius * 0.9
-					else: b.perception_radius = 250.0 * 0.9
+					if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius") * 0.5
+					elif "base_perception_radius" in b: b.perception_radius = b.base_perception_radius * 0.5
+					else: b.perception_radius = 250.0 * 0.5
 					if "speed" in b: b.speed = base_spd * 0.8
 					if "damage" in b: b.damage = base_dmg
 					var sk_r = ""
@@ -1789,7 +1799,34 @@ class WeatherChaosMode extends GameMode:
 									world.balls.append(decoy)
 						if b.has_method("set_meta"): b.set_meta("mirage_timer", mt)
 						elif "mirage_timer" in b: b.mirage_timer = mt
-				elif weather == "snow":
+				elif weather == "blizzard":
+					if typeof(b) == TYPE_OBJECT: b.set("cosmetic", "snow_goggles")
+					elif typeof(b) == TYPE_DICTIONARY: b["cosmetic"] = "snow_goggles"
+					if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius") * 0.4
+					elif "base_perception_radius" in b: b.perception_radius = b.base_perception_radius * 0.4
+					else: b.perception_radius = 250.0 * 0.4
+					if "speed" in b: b.speed = base_spd * 0.3
+					if "damage" in b: b.damage = base_dmg * 1.5
+					if b.has_method("set_meta"):
+						b.set_meta("dash_range_mult", 1.0)
+						b.set_meta("steering_mult", 0.8)
+					var sk_r2 = ""
+					if "SKILL" in b: sk_r2 = b.SKILL
+					elif b.has_method("has_meta") and b.has_meta("SKILL"): sk_r2 = b.get_meta("SKILL")
+					if sk_r2 == "iceball" or sk_r2 == "elemental_burst":
+						if "speed" in b: b.speed = base_spd * 1.5
+					var ch = 0.0
+					if "chill_stacks" in b: ch = b.chill_stacks
+					elif b.has_method("has_meta") and b.has_meta("chill_stacks"): ch = b.get_meta("chill_stacks")
+					ch += delta * 2.0
+					if ch >= 3.0:
+						ch = 0.0
+						if "stutter_timer" in b: b.stutter_timer = 2.0
+						elif typeof(b) == TYPE_DICTIONARY: b["stutter_timer"] = 2.0
+					if b.has_method("set_meta"): b.set_meta("chill_stacks", ch)
+					elif typeof(b) == TYPE_DICTIONARY: b["chill_stacks"] = ch
+					else: b.chill_stacks = ch
+				elif weather in ["snow", "blizzard"]:
 					if typeof(b) == TYPE_OBJECT: b.set("cosmetic", "snow_goggles")
 					elif typeof(b) == TYPE_DICTIONARY: b["cosmetic"] = "snow_goggles"
 					if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius") * 0.6
@@ -1820,9 +1857,9 @@ class WeatherChaosMode extends GameMode:
 					if b.has_method("set_meta"):
 						b.set_meta("attack_accuracy", 0.9)
 				elif weather == "wind":
-					if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius") * 0.95
-					elif "base_perception_radius" in b: b.perception_radius = b.base_perception_radius * 0.95
-					else: b.perception_radius = 250.0 * 0.95
+					if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius") * 0.55
+					elif "base_perception_radius" in b: b.perception_radius = b.base_perception_radius * 0.55
+					else: b.perception_radius = 250.0 * 0.55
 					if "speed" in b:
 						if is_air: b.speed = base_spd * 1.5
 						else: b.speed = base_spd
