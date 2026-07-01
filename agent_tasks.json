@@ -9723,6 +9723,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-563",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Boots Booster",
+      "description": "A booster that gives the player immunity to pulling effects and quicksand.",
+      "allowed_paths": [
+        "src/ai/gravity_boots_booster.py",
+        "src/ai/gravity_boots_booster.gd",
+        "tests/test_gravity_boots_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-564",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Trap",
+      "description": "A trap that slowly pulls players in before exploding.",
+      "allowed_paths": [
+        "src/arena/black_hole_trap.py",
+        "src/arena/black_hole_trap.gd",
+        "tests/test_black_hole_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
