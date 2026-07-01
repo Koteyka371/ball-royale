@@ -203,10 +203,10 @@
     "agent-25": {
       "name": "Jules Worker 25",
       "area": "meta",
-      "status": "working",
-      "task_id": "idea-368",
-      "started_at": "2026-07-01T11:08:08.921429+00:00",
-      "cycles_today": 2
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 1
     },
     "agent-26": {
       "name": "Jules Worker 26",
