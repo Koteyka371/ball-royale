@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-372] Weather-dependent Cosmetics — *2026-07-01 12:18:30 UTC*
+
+Add visual changes (cosmetics) to balls that change dynamically depending on the current weather condition, like a little umbrella when it rains or snow goggles in snow.
+
+---
+
 ## [idea-363] Bumper Upgrades — *2026-07-01 12:13:52 UTC*
 
 Allow bumpers to be upgraded to give powerups to the ball that bounces off them, creating interesting mechanics where players might intentionally hit bumpers.

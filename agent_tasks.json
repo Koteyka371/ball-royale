@@ -6440,7 +6440,7 @@
     },
     {
       "id": "idea-372",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather-dependent Cosmetics",
@@ -10127,6 +10127,40 @@
         "src/ai/quantum_teleporter_nodes.py",
         "src/ai/quantum_teleporter_nodes.gd",
         "tests/test_quantum_teleporter_nodes.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-587",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Cursed Bumpers",
+      "description": "Some bumpers provide a massive immediate boost to speed and damage, but apply a slow damage-over-time or stamina drain effect that lasts until the ball hits a normal bumper.",
+      "allowed_paths": [
+        "src/ai/cursed_bumpers.py",
+        "src/ai/cursed_bumpers.gd",
+        "tests/test_cursed_bumpers.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-588",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bumper Chaining",
+      "description": "If a ball hits multiple bumpers in a row without hitting a wall or using stamina, the bumper powerups are multiplied or enhanced, encouraging skilled pinball-style navigation.",
+      "allowed_paths": [
+        "src/ai/bumper_chaining.py",
+        "src/ai/bumper_chaining.gd",
+        "tests/test_bumper_chaining.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
