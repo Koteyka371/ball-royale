@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-388] Decoy Distraction Beacon — *2026-07-01 14:28:41 UTC*
+
+A new skill that deploys a stationary decoy beacon which draws enemy aggro and emits a continuous low-level heal to nearby allies before exploding.
+
+---
+
 ## [idea-353] Environmental Hazard - Sinkholes — *2026-07-01 14:18:33 UTC*
 
 In procedural arenas, sinkholes can randomly appear. Balls caught in a sinkhole have their speed reduced drastically and slowly take damage over time until they manage to dash or kite their way out.
