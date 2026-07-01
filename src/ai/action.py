@@ -391,6 +391,18 @@ class Action:
                 self.world.arena.hazards.append(trap)
                 self.ball.inventory.remove("placeable_trap")
 
+        # Deploy a small trap which pulls nearby enemies in and deals continuous damage when triggered
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "placeable_trap_booster" in self.ball.inventory:
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                from arena.procedural_arena import Hazard
+                import random
+                trap_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
+                trap = Hazard(trap_id, self.ball.x, self.ball.y, 40.0, "pull_trap", 10.0)
+                setattr(trap, 'duration', 10.0)
+                setattr(trap, 'owner_id', getattr(self.ball, 'id', None))
+                self.world.arena.hazards.append(trap)
+                self.ball.inventory.remove("placeable_trap_booster")
+
         # Check inventory for exit_portal to use as an escape hatch
         if strategy == "flee" and hasattr(self.ball, "inventory") and "exit_portal" in self.ball.inventory:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -3579,6 +3591,15 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "placeable_trap_booster":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("placeable_trap_booster")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "stamina_booster":
                     self.ball.stamina = getattr(self.ball, "max_stamina", 100.0)
                     self.ball.infinite_stamina_timer = 5.0
@@ -4799,7 +4820,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "placeable_trap_booster"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math
@@ -4809,6 +4830,32 @@ class Action:
                                 pull_strength = 150.0 * delta
                                 if hasattr(hazard, "x"): hazard.x += nx * pull_strength
                                 if hasattr(hazard, "y"): hazard.y += ny * pull_strength
+
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            for hazard in self.world.arena.hazards:
+                if getattr(hazard, "kind", "") == "pull_trap":
+                    if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
+                        dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
+                        if dist_sq < 10000: # 100 range to trigger the trap pull
+                            import math
+                            dist = math.sqrt(dist_sq)
+                            if dist > 0.0001:
+                                nx, ny = (hazard.x - self.ball.x) / dist, (hazard.y - self.ball.y) / dist
+                                pull_strength = 100.0 * delta
+                                self.ball.x += nx * pull_strength
+                                self.ball.y += ny * pull_strength
+                                if hasattr(self.ball, "hp"):
+                                    # Continuous damage when triggered
+                                    dmg = getattr(hazard, "damage", 10.0) * delta
+
+                                    if getattr(hazard, "owner_id", None) is not None and hasattr(self.world, "balls"):
+                                        owner = next((b for b in self.world.balls if getattr(b, "id", None) == hazard.owner_id), None)
+                                        if owner and hasattr(self.world, "_deal_damage"):
+                                            # Using _deal_damage instead of raw hp subtraction to register stats, etc.
+                                            old_dmg = getattr(owner, "damage", 10.0)
+                                            owner.damage = getattr(hazard, "damage", 10.0) * delta
+                                            self.world._deal_damage(owner, self.ball)
+                                            owner.damage = old_dmg
         if hasattr(self.ball, "weather_control_timer") and self.ball.weather_control_timer > 0:
             self.ball.weather_control_timer -= delta
 
