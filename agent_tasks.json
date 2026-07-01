@@ -6525,7 +6525,7 @@
     },
     {
       "id": "idea-377",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Necromancer Soul Siphon",
@@ -11267,6 +11267,23 @@
         "src/ai/shield_generator_booster.py",
         "src/ai/shield_generator_booster.gd",
         "tests/test_shield_generator_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-654",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Teleporter Hub Arena",
+      "description": "A specialized game mode or arena layout featuring a central teleporter hub that randomly connects to various peripheral zones, shifting its destinations every few seconds to create chaotic navigation challenges.",
+      "allowed_paths": [
+        "src/arena/teleporter_hub_arena.py",
+        "src/arena/teleporter_hub_arena.gd",
+        "tests/test_teleporter_hub_arena.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

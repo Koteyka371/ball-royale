@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-377] Necromancer Soul Siphon — *2026-07-01 16:52:23 UTC*
+
+When the Necromancer ball hits an enemy that is under 20% HP, it has a chance to execute them instantly and restore its own HP proportional to the enemy's max HP, converting the defeated enemy into a temporary shield aura.
+
+---
+
 ## [idea-345] Weaponized Teleporters — *2026-07-01 16:51:02 UTC*
 
 Allow some specific classes or items to 'weaponize' teleporters by placing a temporary trap on the destination pad, dealing damage or applying status effects to the next entity that teleports through.
