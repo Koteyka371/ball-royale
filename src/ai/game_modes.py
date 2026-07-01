@@ -461,7 +461,11 @@ class BattleRoyaleMode(GameMode):
                 b.attack_accuracy = 0.9
             elif self.weather == "wind":
                 b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.95
-                b.speed = b.base_speed
+                is_lightweight = getattr(b, "ball_type", "") in ["scout", "speed", "ninja", "phantom"]
+                if is_lightweight and getattr(b, "stamina", 0.0) > 0.0:
+                    b.speed = b.base_speed * 1.5
+                else:
+                    b.speed = b.base_speed
                 b.damage = b.base_damage
                 b.dash_range_mult = 1.0
                 b.steering_mult = 1.0
@@ -1409,7 +1413,11 @@ class WeatherChaosMode(GameMode):
                 b.attack_accuracy = 0.9
             elif self.weather == "wind":
                 b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.95
-                b.speed = b.base_speed
+                is_lightweight = getattr(b, "ball_type", "") in ["scout", "speed", "ninja", "phantom"]
+                if is_lightweight and getattr(b, "stamina", 0.0) > 0.0:
+                    b.speed = b.base_speed * 1.5
+                else:
+                    b.speed = b.base_speed
                 b.damage = b.base_damage
                 b.dash_range_mult = 1.0
                 b.steering_mult = 1.0

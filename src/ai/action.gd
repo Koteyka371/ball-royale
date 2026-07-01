@@ -888,14 +888,22 @@ func execute(strategy: String, delta: float):
             cosmetic = str(my_ball.cosmetic).to_lower().replace(" ", "_")
         var ignores_mud = cosmetic == "mud_tires"
 
+        var ball_t = ""
+        if "ball_type" in my_ball: ball_t = my_ball.ball_type
+        var is_lightweight = (ball_t == "scout" or ball_t == "speed" or ball_t == "ninja" or ball_t == "phantom")
+        var in_wind = false
+        if world.arena.get("wind_dx") != null and (world.arena.get("wind_dx") != 0.0 or world.arena.get("wind_dy") != 0.0):
+            in_wind = true
         if world.arena.get("is_raining") == true and not ignores_mud:
-            if "vx" in my_ball and "vy" in my_ball:
-            my_ball.x += my_ball.vx * delta * 0.2
-            my_ball.y += my_ball.vy * delta * 0.2
+            if not (is_lightweight and (my_ball.stamina if "stamina" in my_ball else 0.0) > 0.0 and in_wind):
+                if "vx" in my_ball and "vy" in my_ball:
+                    my_ball.x += my_ball.vx * delta * 0.2
+                    my_ball.y += my_ball.vy * delta * 0.2
         if world.arena.get("is_snowing") == true:
-            if "vx" in my_ball and "vy" in my_ball:
-            my_ball.x += my_ball.vx * delta * 0.4
-            my_ball.y += my_ball.vy * delta * 0.4
+            if not (is_lightweight and (my_ball.stamina if "stamina" in my_ball else 0.0) > 0.0 and in_wind):
+                if "vx" in my_ball and "vy" in my_ball:
+                    my_ball.x += my_ball.vx * delta * 0.4
+                    my_ball.y += my_ball.vy * delta * 0.4
         var wind_dx = 0.0
         if world.arena.get("wind_dx") != null:
             wind_dx = world.arena.get("wind_dx")
@@ -903,8 +911,20 @@ func execute(strategy: String, delta: float):
         if world.arena.get("wind_dy") != null:
             wind_dy = world.arena.get("wind_dy")
         if wind_dx != 0.0 or wind_dy != 0.0:
-            my_ball.x += wind_dx * delta
-            my_ball.y += wind_dy * delta
+            var ball_t_w = ""
+            if "ball_type" in my_ball: ball_t_w = my_ball.ball_type
+            var is_lightweight_w = (ball_t_w == "scout" or ball_t_w == "speed" or ball_t_w == "ninja" or ball_t_w == "phantom")
+            var stam = 0.0
+            if "stamina" in my_ball: stam = my_ball.stamina
+            if is_lightweight_w and stam > 0.0:
+                my_ball.x += wind_dx * delta * 2.0
+                my_ball.y += wind_dy * delta * 2.0
+                stam -= 5.0 * delta
+                if stam < 0.0: stam = 0.0
+                my_ball.stamina = stam
+            else:
+                my_ball.x += wind_dx * delta
+                my_ball.y += wind_dy * delta
 
     var gm = null
     if world != null and "game_mode" in world:

@@ -585,7 +585,9 @@ class BattleRoyaleMode extends GameMode:
                         b.set_meta("attack_accuracy", 0.9)
                 elif self.weather == "wind":
                     if "speed" in b:
-                        if is_air: b.speed = base_spd * 1.5
+                        var ball_type = (b.ball_type if "ball_type" in b else "")
+                        var is_lightweight = (ball_type == "scout" or ball_type == "speed" or ball_type == "ninja" or ball_type == "phantom")
+                        if is_air or (is_lightweight and (b.stamina if "stamina" in b else 0.0) > 0.0): b.speed = base_spd * 1.5
                         else: b.speed = base_spd
                     if "damage" in b: b.damage = base_dmg
                     if b.has_method("set_meta"):
@@ -1840,7 +1842,9 @@ class WeatherChaosMode extends GameMode:
 					elif "base_perception_radius" in b: b.perception_radius = b.base_perception_radius * 0.95
 					else: b.perception_radius = 250.0 * 0.95
 					if "speed" in b:
-						if is_air: b.speed = base_spd * 1.5
+						var ball_type = (b.ball_type if "ball_type" in b else "")
+						var is_lightweight = (ball_type == "scout" or ball_type == "speed" or ball_type == "ninja" or ball_type == "phantom")
+						if is_air or (is_lightweight and (b.stamina if "stamina" in b else 0.0) > 0.0): b.speed = base_spd * 1.5
 						else: b.speed = base_spd
 					if "damage" in b: b.damage = base_dmg
 					if b.has_method("set_meta"):

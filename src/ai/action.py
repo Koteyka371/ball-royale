@@ -595,21 +595,30 @@ class Action:
             cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
             ignores_mud = cosmetic == "mud_tires"
 
+            is_lightweight = getattr(self.ball, "ball_type", "") in ["scout", "speed", "ninja", "phantom"]
             if getattr(self.world.arena, "is_raining", False) and not ignores_mud:
                 # Slippery: apply momentum (friction slide)
-                self.ball.x += getattr(self.ball, "vx", 0.0) * delta * 0.5
-                self.ball.y += getattr(self.ball, "vy", 0.0) * delta * 0.5
+                if not (is_lightweight and getattr(self.ball, "stamina", 0.0) > 0.0 and (getattr(self.world.arena, "wind_dx", 0.0) != 0.0 or getattr(self.world.arena, "wind_dy", 0.0) != 0.0)):
+                    self.ball.x += getattr(self.ball, "vx", 0.0) * delta * 0.5
+                    self.ball.y += getattr(self.ball, "vy", 0.0) * delta * 0.5
             if getattr(self.world.arena, "is_snowing", False):
                 # Extra slippery: apply even more momentum
-                self.ball.x += getattr(self.ball, "vx") * delta * 0.4
-                self.ball.y += getattr(self.ball, "vy") * delta * 0.4
+                if not (is_lightweight and getattr(self.ball, "stamina", 0.0) > 0.0 and (getattr(self.world.arena, "wind_dx", 0.0) != 0.0 or getattr(self.world.arena, "wind_dy", 0.0) != 0.0)):
+                    self.ball.x += getattr(self.ball, "vx") * delta * 0.4
+                    self.ball.y += getattr(self.ball, "vy") * delta * 0.4
             if getattr(self.world.arena, "is_foggy", False):
                 pass # Fog has no friction effect, snow has speed change
             wind_dx = getattr(self.world.arena, "wind_dx", 0.0)
             wind_dy = getattr(self.world.arena, "wind_dy", 0.0)
             if wind_dx != 0.0 or wind_dy != 0.0:
-                self.ball.x += wind_dx * delta
-                self.ball.y += wind_dy * delta
+                if is_lightweight and getattr(self.ball, "stamina", 0.0) > 0.0:
+                    # Lightweight balls ride the wind: faster movement, no ground friction applied previously applies but we handle the riding here.
+                    self.ball.x += wind_dx * delta * 2.0
+                    self.ball.y += wind_dy * delta * 2.0
+                    self.ball.stamina = max(0.0, self.ball.stamina - 5.0 * delta)
+                else:
+                    self.ball.x += wind_dx * delta
+                    self.ball.y += wind_dy * delta
 
         # Zero gravity processing (friction)
         gm = getattr(self.world, "game_mode", None)
