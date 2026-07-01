@@ -522,6 +522,7 @@ class ProceduralArena:
                 # Start with a very small radius and grow
                 is_temporal_rift = random.random() < 0.1
                 is_gravity_well = random.random() < 0.2
+                is_reverse_gravity = random.random() < 0.1
                 if random.random() < 0.1:
                     kind = "drone_item"
                     damage = 0.0
@@ -562,8 +563,18 @@ class ProceduralArena:
                     kind = "sinkhole"
                     damage = 5.0
                 else:
-                    kind = "temporal_rift" if is_temporal_rift else ("gravity_well" if is_gravity_well else "trap")
-                    damage = 0.0 if (is_gravity_well or is_temporal_rift) else 100.0
+                    if is_temporal_rift:
+                        kind = "temporal_rift"
+                        damage = 0.0
+                    elif is_reverse_gravity:
+                        kind = "reverse_gravity"
+                        damage = 0.0
+                    elif is_gravity_well:
+                        kind = "gravity_well"
+                        damage = 0.0
+                    else:
+                        kind = "trap"
+                        damage = 100.0
                 new_hazard = Hazard(id=h_id, x=x, y=y, radius=10.0, kind=kind, damage=damage)
                 if kind == "temporal_rift":
                     setattr(new_hazard, "time_scale", random.choice([0.5, 1.5, 2.0]))
