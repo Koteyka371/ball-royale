@@ -895,10 +895,16 @@ class Action:
                                 hazard.y = max(hazard.radius, min(hazard.y, self.world.arena.height - hazard.radius))
 
                             if getattr(hazard, "is_exploded", False):
+                                hazard.active = False
                                 hazard.duration = 0.0
                                 for b in getattr(self.world, "balls", []):
                                     if getattr(b, "alive", False) and math.hypot(b.x - hazard.x, b.y - hazard.y) < hazard.radius * 4:
-                                        if hasattr(b, "take_damage"):
+                                        if hasattr(self.world, "_deal_damage"):
+                                            old_dmg = getattr(self.ball, "damage", hazard.damage * 2.0)
+                                            self.ball.damage = hazard.damage * 2.0
+                                            self.world._deal_damage(self.ball, b)
+                                            self.ball.damage = old_dmg
+                                        elif hasattr(b, "take_damage"):
                                             b.take_damage(hazard.damage * 2.0)
                                         else:
                                             b.hp -= hazard.damage * 2.0
@@ -1746,8 +1752,10 @@ class Action:
                             dist = math.hypot(dx, dy)
                             if dist < (self.ball.radius + hazard.radius) and dist > 0.0001:
                                 nx, ny = dx / dist, dy / dist
-                                self.ball.vx = nx * 1000.0
-                                self.ball.vy = ny * 1000.0
+                                self.ball.vx = nx * 1500.0
+                                self.ball.vy = ny * 1500.0
+                                if hasattr(self.ball, "is_dashing"):
+                                    self.ball.is_dashing = True
                             continue
                         elif hazard.kind == "bumper":
                             dx = self.ball.x - hazard.x

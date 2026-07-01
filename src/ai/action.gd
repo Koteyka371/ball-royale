@@ -1401,13 +1401,33 @@ func execute(strategy: String, delta: float):
                             hazard.y = max(hazard.radius, min(hazard.y, world.arena.height - hazard.radius))
 
                         if hazard.has_meta("is_exploded") and hazard.get_meta("is_exploded"):
+                            hazard.set_meta("active", false)
+                            hazard.active = false
                             hazard.duration = 0.0
                             if "balls" in world:
                                 for b in world.balls:
                                     if b.alive:
                                         var bdist = sqrt((b.x - hazard.x) * (b.x - hazard.x) + (b.y - hazard.y) * (b.y - hazard.y))
                                         if bdist < hazard.radius * 4:
-                                            if b.has_method("take_damage"):
+                                            if world.has_method("_deal_damage"):
+                                                var old_dmg = 10.0
+                                                if "damage" in self.ball:
+                                                    old_dmg = self.ball.damage
+                                                elif self.ball.has_method("get_meta") and self.ball.has_meta("damage"):
+                                                    old_dmg = self.ball.get_meta("damage")
+
+                                                if self.ball.has_method("set_meta"):
+                                                    self.ball.set_meta("damage", hazard.damage * 2.0)
+                                                else:
+                                                    self.ball.damage = hazard.damage * 2.0
+
+                                                world.call("_deal_damage", self.ball, b)
+
+                                                if self.ball.has_method("set_meta"):
+                                                    self.ball.set_meta("damage", old_dmg)
+                                                else:
+                                                    self.ball.damage = old_dmg
+                                            elif b.has_method("take_damage"):
                                                 b.take_damage(hazard.damage * 2.0)
                                             else:
                                                 b.hp -= hazard.damage * 2.0
@@ -2438,11 +2458,13 @@ func execute(strategy: String, delta: float):
                             var nx = dx / d
                             var ny = dy / d
                             if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
-                                self.ball.set_meta("vx", nx * 1000.0)
-                                self.ball.set_meta("vy", ny * 1000.0)
+                                self.ball.set_meta("vx", nx * 1500.0)
+                                self.ball.set_meta("vy", ny * 1500.0)
+                                self.ball.set_meta("is_dashing", true)
                             elif "vx" in self.ball:
-                                self.ball.vx = nx * 1000.0
-                                self.ball.vy = ny * 1000.0
+                                self.ball.vx = nx * 1500.0
+                                self.ball.vy = ny * 1500.0
+                                self.ball.is_dashing = true
                         continue
                     elif hazard.kind == "bumper":
                         var dx = self.ball.x - hazard.x
