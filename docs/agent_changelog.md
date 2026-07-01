@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-354] Random Boss Mutation Event — *2026-07-01 12:46:55 UTC*
+
+During Custom Match, when the boss mutator is active, occasionally select a random ball and boost their size, health, and damage for 15 seconds, making them a temporary 'juggernaut' boss. The other players must team up to defeat them before they rack up too many kills.
+
+---
+
 ## [idea-339] Decoy Projection Skill — *2026-07-01 12:44:03 UTC*
 
 A new skill that creates an illusionary clone of the ball. The clone deals no damage but mimics the player's movement, confusing enemies and drawing their attacks. The clone vanishes after absorbing a set amount of damage or after a duration expires.

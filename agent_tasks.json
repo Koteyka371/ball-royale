@@ -6133,7 +6133,7 @@
     },
     {
       "id": "idea-354",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Random Boss Mutation Event",
@@ -10229,6 +10229,40 @@
         "src/ai/quantum_entanglement.py",
         "src/ai/quantum_entanglement.gd",
         "tests/test_quantum_entanglement.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-593",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirror Dimension Arena",
+      "description": "A new arena that spawns permanent mirror clones on the exact opposite side of the map for every player, tracking their movement inversely.",
+      "allowed_paths": [
+        "src/arena/mirror_dimension_arena.py",
+        "src/arena/mirror_dimension_arena.gd",
+        "tests/test_mirror_dimension_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-594",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Mine",
+      "description": "A decoy clone that acts like the mimic clone but instead of just expiring or dying, it explodes and deals massive area of effect damage when it absorbs enough damage.",
+      "allowed_paths": [
+        "src/ai/decoy_mine.py",
+        "src/ai/decoy_mine.gd",
+        "tests/test_decoy_mine.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
