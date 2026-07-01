@@ -18,6 +18,8 @@ func load_profile():
         var error = json.parse(text)
         if error == OK:
             data = json.get_data()
+            if not data.has("inventory"):
+                data["inventory"] = {"materials": {}, "crafted_items": {}}
             if not data.has("loadouts"):
                 data["loadouts"] = {}
             if not data.has("prestige_level"):
@@ -47,6 +49,7 @@ func load_profile():
     # Default profile
     data = {
         "skill_points": 0,
+        "inventory": {"materials": {}, "crafted_items": {}},
         "unlocked_balls": ["basic"],
         "bonuses": {
             "bonus_hp": 0,
@@ -145,7 +148,8 @@ func do_prestige() -> bool:
 
         data = {
             "skill_points": 0,
-            "unlocked_balls": ["basic"],
+            "inventory": {"materials": {}, "crafted_items": {}},
+        "unlocked_balls": ["basic"],
             "bonuses": {
                 "bonus_hp": 0,
                 "bonus_speed": 0,
@@ -264,6 +268,8 @@ func import_loadout_code(loadout_name: String, code: String) -> bool:
     if error == OK:
         var parsed = json.get_data()
         if typeof(parsed) == TYPE_DICTIONARY and parsed.has("ball_type") and parsed.has("trap_variant"):
+            if not data.has("inventory"):
+                data["inventory"] = {"materials": {}, "crafted_items": {}}
             if not data.has("loadouts"):
                 data["loadouts"] = {}
             data["loadouts"][loadout_name] = parsed
@@ -329,3 +335,43 @@ func process_daily_login(current_date_str: String) -> Dictionary:
 
     save_profile()
     return rewards
+
+func add_material(material_name: String, amount: int) -> void:
+    if not data.has("inventory"):
+        data["inventory"] = {"materials": {}, "crafted_items": {}}
+    var mats = data["inventory"]["materials"]
+    if mats.has(material_name):
+        mats[material_name] += amount
+    else:
+        mats[material_name] = amount
+    save_profile()
+
+func craft_item(recipe_id: String) -> bool:
+    var recipes = {
+        "health_potion": {"materials": {"Iron Ore": 1, "Magic Dust": 1}, "yields": 1},
+        "speed_boost": {"materials": {"Magic Dust": 2}, "yields": 1},
+        "artifact": {"materials": {"Void Shard": 3}, "crafted_items": {"health_potion": 1}, "yields": 1}
+    }
+    if not recipes.has(recipe_id): return false
+    if not data.has("inventory"): data["inventory"] = {"materials": {}, "crafted_items": {}}
+    var inv = data["inventory"]
+    var req = recipes[recipe_id]
+    var req_mats = req.get("materials", {})
+    var req_craft = req.get("crafted_items", {})
+
+    for m in req_mats.keys():
+        if not inv["materials"].has(m) or inv["materials"][m] < req_mats[m]: return false
+    for c_item in req_craft.keys():
+        if not inv["crafted_items"].has(c_item) or inv["crafted_items"][c_item] < req_craft[c_item]: return false
+
+    for m in req_mats.keys():
+        inv["materials"][m] -= req_mats[m]
+    for c_item in req_craft.keys():
+        inv["crafted_items"][c_item] -= req_craft[c_item]
+
+    if inv["crafted_items"].has(recipe_id):
+        inv["crafted_items"][recipe_id] += req["yields"]
+    else:
+        inv["crafted_items"][recipe_id] = req["yields"]
+    save_profile()
+    return true

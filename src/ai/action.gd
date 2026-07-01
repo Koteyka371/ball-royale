@@ -163,7 +163,6 @@ func _attempt_damage(attacker, target) -> void:
 				if pm.is_nemesis(target_type, attacker_type):
 					base_xp *= 2.0
 			self._award_xp(attacker, base_xp, self.world)
-
 	if new_hp <= 0 and old_hp > 0 and pm != null and pm.has_method("add_kill"):
 		pm.add_kill(attacker_type, target_type)
 		if pm.is_nemesis(target_type, attacker_type):
@@ -175,6 +174,20 @@ func _attempt_damage(attacker, target) -> void:
 				var cl = 0.0
 				if attacker.has_meta("charge_level"): cl = float(attacker.get_meta("charge_level"))
 				attacker.set_meta("charge_level", min(100.0, cl + 20.0))
+
+		var arena = world.call("get_arena") if world != null and world.has_method("get_arena") else null
+		if arena != null and "items" in arena:
+			var mat_types = ["Iron Ore", "Magic Dust", "Void Shard"]
+			var mat_type = mat_types[randi() % mat_types.size()]
+			var new_id = 9999
+			if "next_id" in world:
+				new_id = world.next_id
+				world.next_id += 1
+			var tx = target.get("x") if "x" in target else 0.0
+			var ty = target.get("y") if "y" in target else 0.0
+			var mat = {"id": "mat_" + str(new_id), "x": tx, "y": ty, "ball_type": "item", "kind": "material", "material_type": mat_type, "radius": 15.0, "active": true}
+			arena.items.append(mat)
+
 
 	var cl_timer = 0.0
 	if "chain_lightning_timer" in attacker:
@@ -326,7 +339,28 @@ func _attempt_damage(attacker, target) -> void:
 						if self.world != null and self.world.has_method("_deal_damage"):
 							self.world._deal_damage(attacker, next_entity)
 					elif e_type == "hazard" or e_type == "item" or e_type == "booster":
-						if "hp" in next_entity:
+						var n_kind = ""
+						if typeof(next_entity) == TYPE_DICTIONARY and next_entity.has("kind"): n_kind = next_entity["kind"]
+						elif typeof(next_entity) == TYPE_OBJECT and next_entity.has_meta("kind"): n_kind = next_entity.get_meta("kind")
+						elif typeof(next_entity) == TYPE_OBJECT and "kind" in next_entity: n_kind = next_entity.kind
+
+						if n_kind == "material":
+							var n_active = false
+							if typeof(next_entity) == TYPE_DICTIONARY and next_entity.has("active"): n_active = next_entity["active"]
+							elif typeof(next_entity) == TYPE_OBJECT and "active" in next_entity: n_active = next_entity.active
+
+							if n_active:
+								if typeof(next_entity) == TYPE_DICTIONARY: next_entity["active"] = false
+								elif typeof(next_entity) == TYPE_OBJECT and "active" in next_entity: next_entity.active = false
+
+								var pm = null
+								if world != null and "profile_manager" in world: pm = world.profile_manager
+								if pm != null and pm.has_method("add_material"):
+									var m_type = "Iron Ore"
+									if typeof(next_entity) == TYPE_DICTIONARY and next_entity.has("material_type"): m_type = next_entity["material_type"]
+									elif typeof(next_entity) == TYPE_OBJECT and "material_type" in next_entity: m_type = next_entity.material_type
+									pm.add_material(m_type, 1)
+						elif "hp" in next_entity:
 							next_entity.hp -= current_damage
 							if next_entity.hp <= 0:
 								if "active" in next_entity:
