@@ -1733,6 +1733,29 @@ class CustomMatchMode(GameMode):
 
 
 
+
+class DayNightCycleMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Day/Night Cycle"
+        self.description = "The arena cycles between day and night. Assassins, Phantoms, and Vampires are stronger at night. Paladins and Guardians are stronger during the day."
+        self.phase_duration = 10.0
+        self.timer = 0.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if hasattr(world, "arena"):
+            world.arena.is_night = False
+        self.timer = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        self.timer += delta
+        if self.timer >= self.phase_duration:
+            self.timer = 0.0
+            if hasattr(world, "arena"):
+                world.arena.is_night = not getattr(world.arena, "is_night", False)
+
 class PitchBlackMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -3185,6 +3208,7 @@ GAME_MODES = {
     "bumper_balls": BumperBallsMode(),
     "portal_node": PortalNodeMode(),
     "memory_traps": MemoryTrapsMode(),
+    "day_night_cycle": DayNightCycleMode(),
     "pitch_black": PitchBlackMode(),
     "vision_reduced": VisionReducedMode(),
     "emp_burst": EMPBurstMode(),

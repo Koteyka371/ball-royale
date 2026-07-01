@@ -2269,6 +2269,30 @@ class CustomMatchMode extends GameMode:
 
 
 
+
+class DayNightCycleMode extends GameMode:
+	var phase_duration = 10.0
+	var timer = 0.0
+
+	func _init():
+		super._init()
+		name = "Day/Night Cycle"
+		description = "The arena cycles between day and night. Assassins, Phantoms, and Vampires are stronger at night. Paladins and Guardians are stronger during the day."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if "arena" in world:
+			world.arena.is_night = false
+		timer = 0.0
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+		timer += delta
+		if timer >= phase_duration:
+			timer = 0.0
+			if "arena" in world and "is_night" in world.arena:
+				world.arena.is_night = not world.arena.is_night
+
 class PitchBlackMode extends GameMode:
 	func _init() -> void:
 		name = "Pitch Black"
@@ -4072,6 +4096,7 @@ var GAME_MODES = {
     "bumper_balls": BumperBallsMode.new(),
     "portal_node": PortalNodeMode.new(),
 	"memory_traps": MemoryTrapsMode.new(),
+	"day_night_cycle": DayNightCycleMode.new(),
 	"pitch_black": PitchBlackMode.new(),
 	"vision_reduced": VisionReducedMode.new(),
 	"emp_burst": EMPBurstMode.new(),

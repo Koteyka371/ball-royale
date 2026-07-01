@@ -1,0 +1,4 @@
+{
+  "title": "Team Morale System",
+  "description": "When an allied ball dies, surviving teammates suffer a temporary 'morale drop' debuff that slightly reduces speed and damage, while the killing team gains a 'morale boost' buff, encouraging more careful team-play."
+}
