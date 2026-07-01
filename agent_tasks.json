@@ -7104,7 +7104,7 @@
     },
     {
       "id": "idea-411",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Nemesis Hunter Booster",
@@ -11301,6 +11301,23 @@
         "src/ai/necromancer_bone_armor.py",
         "src/ai/necromancer_bone_armor.gd",
         "tests/test_necromancer_bone_armor.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-656",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Echo Booster",
+      "description": "A new booster that deploys a decoy of the collecting ball that emits loud pings, revealing hidden enemies within a wide radius and causing them to briefly run away from the decoy in fear, creating crowd control opportunities.",
+      "allowed_paths": [
+        "src/ai/echo_booster.py",
+        "src/ai/echo_booster.gd",
+        "tests/test_echo_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

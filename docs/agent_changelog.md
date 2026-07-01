@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-411] Nemesis Hunter Booster — *2026-07-01 17:27:22 UTC*
+
+A booster that specifically increases movement speed towards your nemesis.
+
+---
+
 ## [idea-407] Gravity Mine Booster — *2026-07-01 17:06:06 UTC*
 
 A booster that deploys a small trap which pulls nearby enemies in and deals continuous damage when triggered.
