@@ -1,0 +1,4 @@
+{
+  "title": "Chain Lightning Ability",
+  "description": "Add a new ability that targets one enemy and bounces to nearby enemies, dealing reduced damage on each subsequent bounce."
+}

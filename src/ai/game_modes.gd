@@ -4813,6 +4813,39 @@ class ZeroGravityMode extends GameMode:
         name = "Zero Gravity"
         description = "Friction and gravity are drastically reduced, causing balls to slide around effortlessly and collisions to produce massive knockback."
 
+
+class PinballMode extends GameMode:
+	func _init() -> void:
+		name = "Pinball Mode"
+		description = "Lots of bouncy bumpers and physics-based knockback logic to push balls around the arena."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if "arena" in world and world.arena != null:
+			if not "hazards" in world.arena:
+				world.arena.hazards = []
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if "width" in world.arena:
+				arena_width = world.arena.width
+			if "height" in world.arena:
+				arena_height = world.arena.height
+
+			var HazardClass = load("res://src/arena/procedural_arena.gd").Hazard if ResourceLoader.exists("res://src/arena/procedural_arena.gd") else null
+			for i in range(20):
+				var x = randf_range(100.0, arena_width - 100.0)
+				var y = randf_range(100.0, arena_height - 100.0)
+				var radius = randf_range(30.0, 60.0)
+				if HazardClass != null:
+					var h = HazardClass.new(10000 + i, x, y, radius, "bumper", 0.0)
+					world.arena.hazards.append(h)
+				else:
+					var h = {"id": 10000 + i, "x": x, "y": y, "radius": radius, "kind": "bumper", "damage": 0.0}
+					world.arena.hazards.append(h)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
 var GAME_MODES = {
     "zero_gravity": ZeroGravityMode.new(),
     "magnetic_collisions": MagneticCollisionsMode.new(),
@@ -4827,6 +4860,7 @@ var GAME_MODES = {
     "draft_royale": DraftRoyaleMode.new(),
     "tournament": TournamentMode.new(),
     "bumper_balls": BumperBallsMode.new(),
+	"pinball": PinballMode.new(),
     "portal_node": PortalNodeMode.new(),
 	"memory_traps": MemoryTrapsMode.new(),
 	"pitch_black": PitchBlackMode.new(),
