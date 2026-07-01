@@ -57,9 +57,9 @@ def test_chain_bounce_logic():
 
     # Original damage 10.
     # Target takes normal attack -> 10. Target hp = 90
-    # Chain jumps to ball 3 (distance 50). Chain damage = 15. Ball 3 hp = 85.
-    # Chain jumps to hazard (distance 50 from ball 3). Chain damage = 22.5. Hazard hp = 77.5
+    # Chain jumps to ball 3 (distance 50). Chain damage = 8. Ball 3 hp = 92.
+    # Chain jumps to hazard (distance 50 from ball 3). Chain damage = 6.4. Hazard hp = 93.6
 
     assert world.balls[1].hp == 90.0
-    assert world.balls[2].hp == 85.0
-    assert world.arena.hazards[0].hp == 77.5
+    assert world.balls[2].hp == 92.0
+    assert world.arena.hazards[0].hp == 93.6

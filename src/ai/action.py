@@ -175,10 +175,10 @@ class Action:
                 has_original_damage = hasattr(attacker, "damage")
                 original_damage = getattr(attacker, "damage", 10.0)
                 current_target = target
-                current_damage = original_damage * 1.5
+                current_damage = original_damage * 0.8
                 hit_entities = [attacker, target]
 
-                while jump_count < 5:
+                while jump_count < 3:
                     nearby_entities = []
                     for e in enemies:
                         if e not in hit_entities:
@@ -290,7 +290,7 @@ class Action:
                         hit_entities.append(next_entity)
 
                     current_target = next_entity
-                    current_damage *= 1.5
+                    current_damage *= 0.8
                     jump_count += 1
 
                 # Restore original damage

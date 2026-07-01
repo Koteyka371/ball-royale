@@ -216,12 +216,12 @@ func _attempt_damage(attacker, target) -> void:
 					orig_dmg = attacker.damage
 
 				var current_target = target
-				var current_damage = orig_dmg * 1.5
+				var current_damage = orig_dmg * 0.8
 				var hit_entities = []
 				hit_entities.append(attacker)
 				hit_entities.append(target)
 
-				while jump_count < 5:
+				while jump_count < 3:
 					var nearby = []
 					for e in enemies:
 						if not hit_entities.has(e):
@@ -375,7 +375,7 @@ func _attempt_damage(attacker, target) -> void:
 					else:
 						hit_entities.append(next_entity)
 					current_target = next_entity
-					current_damage *= 1.5
+					current_damage *= 0.8
 					jump_count += 1
 
 			if has_orig_dmg:
