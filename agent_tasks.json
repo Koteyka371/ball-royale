@@ -4923,7 +4923,7 @@
     },
     {
       "id": "idea-283",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Magnetic Hazards",
@@ -9939,6 +9939,23 @@
         "src/ai/chain_reaction_explosives.py",
         "src/ai/chain_reaction_explosives.gd",
         "tests/test_chain_reaction_explosives.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-576",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Portal Overload Event",
+      "description": "A random arena event where existing portals become unstable. Instead of teleporting players instantly, entering a portal triggers a 2-second 'charging' phase where nearby players (friend or foe) are sucked in. Once charged, all sucked-in players are blasted out of the exit portal at high speeds in random directions.",
+      "allowed_paths": [
+        "src/ai/portal_overload.py",
+        "src/ai/portal_overload.gd",
+        "tests/test_portal_overload.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

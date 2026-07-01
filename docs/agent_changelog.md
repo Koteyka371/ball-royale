@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-283] Magnetic Hazards — *2026-07-01 11:56:27 UTC*
+
+Add magnetic hazards that continuously pull or push balls depending on their active polarity. Balls could change their own polarity using a specific skill to either use the hazard for a speed boost or avoid being dragged in.
+
+---
+
 ## [idea-359] One-way portals — *2026-07-01 11:35:53 UTC*
 
 Portals that only allow travel in one direction, creating strategic choke points in the arena. They can be created by giving only one of the paired portals target coordinates.
