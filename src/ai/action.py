@@ -1041,6 +1041,22 @@ class Action:
                                         target_y = getattr(hazard, "target_y", hazard.y)
                                         self.ball.x = target_x
                                         self.ball.y = target_y
+
+                                        vx = getattr(self.ball, 'vx', 0.0)
+                                        vy = getattr(self.ball, 'vy', 0.0)
+                                        speed = (vx*vx + vy*vy)**0.5
+                                        if speed > 0:
+                                            scale = 1.0
+                                            if speed < 200.0:
+                                                scale = 1.5
+                                            elif speed > 400.0:
+                                                scale = 0.5
+                                            if hasattr(self.ball, 'vx'):
+                                                self.ball.vx = vx * scale
+                                            if hasattr(self.ball, 'vy'):
+                                                self.ball.vy = vy * scale
+
+
                                         # Reset position variables in MockBall to prevent random drifting in some test environments
                                         if hasattr(self.ball, "_teleported_this_tick"):
                                             self.ball._teleported_this_tick = True

@@ -1486,6 +1486,26 @@ func execute(strategy: String, delta: float):
                                 if not launched and hazard.get("target_x") != null:
                                     self.ball.x = hazard.target_x
                                     self.ball.y = hazard.target_y
+
+                                    var cvx = 0.0
+                                    if "vx" in self.ball:
+                                        cvx = self.ball.vx
+                                    var cvy = 0.0
+                                    if "vy" in self.ball:
+                                        cvy = self.ball.vy
+                                    var spd = sqrt(cvx*cvx + cvy*cvy)
+                                    if spd > 0:
+                                        var scale = 1.0
+                                        if spd < 200.0:
+                                            scale = 1.5
+                                        elif spd > 400.0:
+                                            scale = 0.5
+                                        if "vx" in self.ball:
+                                            self.ball.vx = cvx * scale
+                                        if "vy" in self.ball:
+                                            self.ball.vy = cvy * scale
+
+
                             self.ball.set_meta("last_teleport_tick", current_tick)
                 elif hazard.kind == "quicksand":
                     var dx = hazard.x - self.ball.x
