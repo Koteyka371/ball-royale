@@ -2649,6 +2649,13 @@ func execute(strategy: String, delta: float):
                                 self.ball.hp -= hazard_damage
                                 if self.ball.hp <= 0:
                                     self.ball.alive = false
+
+                            # Apply dizzy effect (confusion)
+                            self.ball.is_confused = true
+                            if "confusion_timer" in self.ball and self.ball.confusion_timer > 3.0:
+                                pass
+                            else:
+                                self.ball.confusion_timer = 3.0
                     elif hazard.kind == "lightning_strike":
                         if not hazard.has_meta("hit_targets") or not hazard.get_meta("hit_targets"):
                             hazard.set_meta("hit_targets", true)
