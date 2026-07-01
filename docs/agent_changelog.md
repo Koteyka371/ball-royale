@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-402] Nemesis Mode — *2026-07-01 16:32:32 UTC*
+
+A new game mode where one overpowered boss ball faces off against a team of weaker AI balls.
+
+---
+
 ## [idea-385] Bouncy Bumpers Mode — *2026-07-01 16:21:27 UTC*
 
 Add a new game mode with lots of bouncy bumpers and physics-based knockback logic to push balls around the arena.

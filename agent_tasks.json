@@ -6950,7 +6950,7 @@
     },
     {
       "id": "idea-402",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Nemesis Mode",
@@ -11012,6 +11012,40 @@
         "src/arena/clone_mine_trap.py",
         "src/arena/clone_mine_trap.gd",
         "tests/test_clone_mine_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-639",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Obstacle Course Mode",
+      "description": "A survival mode where players must navigate an increasingly difficult obstacle course filled with moving lasers, rotating bumpers, and collapsing floors.",
+      "allowed_paths": [
+        "src/ai/obstacle_course.py",
+        "src/ai/obstacle_course.gd",
+        "tests/test_obstacle_course.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-640",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Lightning Ability",
+      "description": "Add a new ability that targets one enemy and bounces to nearby enemies, dealing reduced damage on each subsequent bounce.",
+      "allowed_paths": [
+        "src/ai/chain_lightning_ability.py",
+        "src/ai/chain_lightning_ability.gd",
+        "tests/test_chain_lightning_ability.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
