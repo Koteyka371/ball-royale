@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-373] Shrinking Safe Zone Modifiers — *2026-07-01 13:48:36 UTC*
+
+Combine the shrinking safe zone mode with the modifier zones. The modifiers spawn near the center of the safe zone to force players to clash over the buffs while trying to survive the incoming death circle.
+
+---
+
 ## [idea-351] Destructible Cover System — *2026-07-01 13:34:58 UTC*
 
 Expand the arena procedural generation to include destructible obstacles (like crystal clusters or energy barricades) that can block movement and vision but can be destroyed with enough damage.
