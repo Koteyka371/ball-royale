@@ -5127,6 +5127,39 @@ func _collect_booster(delta: float):
                     self.ball.stealth_drone_timer = 15.0
                 elif "stealth_drone_timer" in self.ball:
                     self.ball.stealth_drone_timer = 15.0
+            elif "kind" in nearest and nearest.kind == "vision_booster":
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("vision_booster_timer", 15.0)
+                elif "vision_booster_timer" in self.ball:
+                    self.ball.vision_booster_timer = 15.0
+                else:
+                    self.ball.vision_booster_timer = 15.0
+
+                var vb_applied = false
+                if "vision_booster_applied" in self.ball:
+                    vb_applied = self.ball.vision_booster_applied
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("vision_booster_applied"):
+                    vb_applied = self.ball.get_meta("vision_booster_applied")
+
+                if not vb_applied:
+                    var base_perc = 250.0
+                    if "perception_radius" in self.ball:
+                        base_perc = float(self.ball.perception_radius)
+                    if self.ball.has_method("get_meta") and self.ball.has_meta("base_perception_radius"):
+                        base_perc = self.ball.get_meta("base_perception_radius")
+
+                    base_perc *= 2.0
+
+                    if self.ball.has_method("set_meta"):
+                        self.ball.set_meta("base_perception_radius", base_perc)
+                        self.ball.set_meta("vision_booster_applied", true)
+
+                    self.ball.perception_radius = base_perc
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "shadow_booster":
                 if self.ball.has_method("set_meta"):
                     self.ball.set_meta("shadow_booster_timer", 15.0)
@@ -7271,7 +7304,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "portal_gun_item"]
+                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "portal_gun_item"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y
@@ -7568,6 +7601,39 @@ func _update_skill_timer(delta: float):
             self.ball.shadow_booster_timer = shadow_timer
         elif self.ball.has_method("set_meta"):
             self.ball.set_meta("shadow_booster_timer", shadow_timer)
+
+    var vb_timer = 0.0
+    if "vision_booster_timer" in self.ball:
+        vb_timer = float(self.ball.vision_booster_timer)
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("vision_booster_timer"):
+        vb_timer = self.ball.get_meta("vision_booster_timer")
+
+    if vb_timer > 0.0:
+        vb_timer -= delta
+        if vb_timer <= 0.0:
+            vb_timer = 0.0
+            var vb_applied = false
+            if "vision_booster_applied" in self.ball:
+                vb_applied = self.ball.vision_booster_applied
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("vision_booster_applied"):
+                vb_applied = self.ball.get_meta("vision_booster_applied")
+
+            if vb_applied:
+                var base_perc = 250.0
+                if self.ball.has_method("get_meta") and self.ball.has_meta("base_perception_radius"):
+                    base_perc = self.ball.get_meta("base_perception_radius") / 2.0
+                    self.ball.set_meta("base_perception_radius", base_perc)
+                self.ball.perception_radius = base_perc
+
+                if "vision_booster_applied" in self.ball:
+                    self.ball.vision_booster_applied = false
+                elif self.ball.has_method("set_meta"):
+                    self.ball.set_meta("vision_booster_applied", false)
+
+        if "vision_booster_timer" in self.ball:
+            self.ball.vision_booster_timer = vb_timer
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("vision_booster_timer", vb_timer)
 
 func _kite(delta: float):
     # Added Kite cosmetic comment

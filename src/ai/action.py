@@ -3314,6 +3314,17 @@ class Action:
                 elif getattr(nearest, "kind", None) == "stealth_drone_item":
                     self.ball.has_stealth_drone = True
                     self.ball.stealth_drone_timer = 15.0  # Duration of stealth effect
+                elif getattr(nearest, "kind", None) == "vision_booster":
+                    self.ball.vision_booster_timer = 15.0
+                    if not getattr(self.ball, "vision_booster_applied", False):
+                        if not hasattr(self.ball, "base_perception_radius"):
+                            self.ball.base_perception_radius = getattr(self.ball, "perception_radius", 250.0)
+                        self.ball.base_perception_radius *= 2.0
+                        self.ball.perception_radius = self.ball.base_perception_radius
+                        self.ball.vision_booster_applied = True
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
                 elif getattr(nearest, "kind", None) == "shadow_booster":
                     self.ball.shadow_booster_timer = 15.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -4570,7 +4581,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math
@@ -4691,6 +4702,15 @@ class Action:
             self.ball.shadow_booster_timer -= delta
             if self.ball.shadow_booster_timer < 0:
                 self.ball.shadow_booster_timer = 0.0
+
+        if hasattr(self.ball, "vision_booster_timer") and self.ball.vision_booster_timer > 0:
+            self.ball.vision_booster_timer -= delta
+            if self.ball.vision_booster_timer <= 0:
+                self.ball.vision_booster_timer = 0.0
+                if hasattr(self.ball, "base_perception_radius") and getattr(self.ball, "vision_booster_applied", False):
+                    self.ball.base_perception_radius /= 2.0
+                    self.ball.perception_radius = self.ball.base_perception_radius
+                    self.ball.vision_booster_applied = False
         if hasattr(self.ball, "reflect_shield_timer") and self.ball.reflect_shield_timer > 0:
             self.ball.reflect_shield_timer -= delta
             if self.ball.reflect_shield_timer <= 0:
