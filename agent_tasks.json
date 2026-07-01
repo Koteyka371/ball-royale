@@ -5689,7 +5689,7 @@
     },
     {
       "id": "idea-328",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Ball Hazard",
@@ -10757,6 +10757,40 @@
         "src/ai/shrinking_safe_zone_based_on_player_proximity.py",
         "src/ai/shrinking_safe_zone_based_on_player_proximity.gd",
         "tests/test_shrinking_safe_zone_based_on_player_proximity.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-624",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Temperature System",
+      "description": "Expand the weather logic to include a persistent 'temperature' variable for the arena, which determines how long ice slicks last or how quickly mud dries into solid ground. Characters with certain abilities (like fireball) could dynamically melt ice patches into puddles of water, creating interesting environmental interactions.",
+      "allowed_paths": [
+        "src/ai/dynamic_temperature.py",
+        "src/ai/dynamic_temperature.gd",
+        "tests/test_dynamic_temperature.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-625",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather-Adaptive Cosmetics",
+      "description": "Give balls visual upgrades that provide functional benefits based on the weather, such as snowshoes that negate the slippery effect on ice slicks or spiked tires that help them navigate mud pits without being slowed down as severely. These could be found as temporary power-ups.",
+      "allowed_paths": [
+        "src/ai/adaptive_cosmetics.py",
+        "src/ai/adaptive_cosmetics.gd",
+        "tests/test_adaptive_cosmetics.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
