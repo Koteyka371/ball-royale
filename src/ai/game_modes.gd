@@ -28,6 +28,22 @@ class GameMode:
         var mod_index = ((season_num - 1) % 4) + 1
         var mod = modifiers[mod_index]
 
+        var current_week = int(Time.get_unix_time_from_system() / (7.0 * 24.0 * 3600.0))
+        var weekly_mutators = {
+            0: {"type": "low_gravity"},
+            1: {"type": "double_damage"},
+            2: {"type": "high_speed"},
+            3: {"type": "vampirism"}
+        }
+        var week_index = current_week % weekly_mutators.size()
+        var week_mod = weekly_mutators[week_index]
+        if typeof(world) == TYPE_OBJECT or typeof(world) == TYPE_DICTIONARY:
+            if world is Object and world.has_method("set"):
+                world.set("weekly_mutator", week_mod["type"])
+            elif typeof(world) == TYPE_DICTIONARY:
+                world["weekly_mutator"] = week_mod["type"]
+
+
         for b in balls:
             if b.ball_type != "spectator":
                 if not ("experience" in b): b.experience = 0.0
@@ -59,10 +75,36 @@ class GameMode:
                 elif mod["type"] == "global_cooldown":
                     if "cooldown_multiplier" in b:
                         b.cooldown_multiplier = b.cooldown_multiplier * mod["value"]
+
                     elif b.has_method("get_meta") and b.has_meta("cooldown_multiplier"):
                         b.set_meta("cooldown_multiplier", b.get_meta("cooldown_multiplier") * mod["value"])
                     elif b.has_method("set_meta"):
                         b.set_meta("cooldown_multiplier", mod["value"])
+
+                if week_mod["type"] == "double_damage":
+                    if "base_damage" in b:
+                        b.base_damage = b.base_damage * 2.0
+                    elif b.has_method("get_meta") and b.has_meta("base_damage"):
+                        b.set_meta("base_damage", b.get_meta("base_damage") * 2.0)
+                    if "damage" in b:
+                        b.damage = b.damage * 2.0
+                elif week_mod["type"] == "high_speed":
+                    if "base_speed" in b:
+                        b.base_speed = b.base_speed * 1.5
+                    elif b.has_method("get_meta") and b.has_meta("base_speed"):
+                        b.set_meta("base_speed", b.get_meta("base_speed") * 1.5)
+                    if "speed" in b:
+                        b.speed = b.speed * 1.5
+                elif week_mod["type"] == "vampirism":
+                    if "lifesteal" in b:
+                        b.lifesteal = b.lifesteal + 0.5
+                    elif b.has_method("get_meta"):
+                        b.set_meta("lifesteal", b.get_meta("lifesteal", 0.0) + 0.5)
+                elif week_mod["type"] == "low_gravity":
+                    if "mass" in b:
+                        b.mass = b.mass * 0.5
+                    elif b.has_method("get_meta"):
+                        b.set_meta("mass", b.get_meta("mass", 1.0) * 0.5)
 
 
     func tick(world, balls: Array, delta: float = 0.016) -> void:
