@@ -11425,6 +11425,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-663",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Grappling Hook Booster",
+      "description": "A consumable booster that allows a ball to grapple onto another ball or the wall and pull themselves quickly towards it, giving them bursts of mobility.",
+      "allowed_paths": [
+        "src/ai/grappling_hook_booster.py",
+        "src/ai/grappling_hook_booster.gd",
+        "tests/test_grappling_hook_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
