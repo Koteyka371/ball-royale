@@ -1,4 +1,0 @@
-{
-  "title": "Gravity Well Trap",
-  "description": "A placeable trap that, when triggered, creates a temporary miniature black hole that violently pulls nearby balls and items towards the center, ignoring collision lines. It doesn't deal damage itself but leaves players vulnerable to AoE attacks."
-}

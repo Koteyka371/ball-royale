@@ -11442,6 +11442,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-664",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Anomaly: Solar Eclipse",
+      "description": "A rare weather event that gradually darkens the entire arena, drastically reducing vision radius for all players except those with night vision. Causes some hazards to behave differently (e.g. solar panels stop providing power, shadow boosters spawn more frequently).",
+      "allowed_paths": [
+        "src/ai/anomaly_solar_eclipse.py",
+        "src/ai/anomaly_solar_eclipse.gd",
+        "tests/test_anomaly_solar_eclipse.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-665",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Well Trap",
+      "description": "A placeable trap that, when triggered, creates a temporary miniature black hole that violently pulls nearby balls and items towards the center, ignoring collision lines. It doesn't deal damage itself but leaves players vulnerable to AoE attacks.",
+      "allowed_paths": [
+        "src/arena/gravity_well_trap.py",
+        "src/arena/gravity_well_trap.gd",
+        "tests/test_gravity_well_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
