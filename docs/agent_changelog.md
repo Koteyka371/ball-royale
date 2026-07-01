@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-275] Magnetize Powerup — *2026-07-01 01:35:25 UTC*
+
+A new powerup that temporarily draws nearby smaller hazards or other powerups towards the player, making it easier to gather resources but also increasing the risk of pulling in dangerous objects.
+
+---
+
 ## [idea-342] Weather Manipulation Buff — *2026-06-30 22:11:07 UTC*
 
 Introduce a rare 'Weather Control' booster. When picked up by a ball, it allows that ball to dictate the current weather for a set duration (e.g., 10 seconds), giving them a tactical advantage by choosing a weather condition that best fits their ball type (like summoning a thunderstorm when playing an elementalist).
