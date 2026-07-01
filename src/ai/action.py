@@ -943,6 +943,38 @@ class Action:
                                 hazard.vy *= -1
                                 hazard.y = max(hazard.radius, min(hazard.y, self.world.arena.height - hazard.radius))
 
+                            # Collide with other explosive barrels or hazards
+                            for other_hazard in self.world.arena.hazards:
+                                if hazard.id != getattr(other_hazard, "id", None) and getattr(other_hazard, "kind", "") == "explosive_barrel":
+                                    dx_b = hazard.x - other_hazard.x
+                                    dy_b = hazard.y - other_hazard.y
+                                    dist_b = math.hypot(dx_b, dy_b)
+                                    if dist_b < hazard.radius + getattr(other_hazard, "radius", 0):
+                                        if dist_b > 0.0001:
+                                            nx_b = dx_b / dist_b
+                                            ny_b = dy_b / dist_b
+                                            overlap_b = (hazard.radius + getattr(other_hazard, "radius", 0)) - dist_b
+                                            # Separate them
+                                            hazard.x += nx_b * (overlap_b / 2)
+                                            hazard.y += ny_b * (overlap_b / 2)
+                                            if hasattr(other_hazard, "x"): other_hazard.x -= nx_b * (overlap_b / 2)
+                                            if hasattr(other_hazard, "y"): other_hazard.y -= ny_b * (overlap_b / 2)
+
+                                            # Transfer momentum
+                                            rel_vx = hazard.vx - getattr(other_hazard, "vx", 0.0)
+                                            rel_vy = hazard.vy - getattr(other_hazard, "vy", 0.0)
+                                            impulse = (rel_vx * nx_b + rel_vy * ny_b)
+                                            if impulse < 0:
+                                                hazard.vx -= impulse * nx_b
+                                                hazard.vy -= impulse * ny_b
+                                                if hasattr(other_hazard, "vx"): other_hazard.vx += impulse * nx_b
+                                                if hasattr(other_hazard, "vy"): other_hazard.vy += impulse * ny_b
+
+                                                if math.hypot(hazard.vx, hazard.vy) > 300.0 or math.hypot(getattr(other_hazard, "vx", 0.0), getattr(other_hazard, "vy", 0.0)) > 300.0:
+                                                    hazard.is_exploded = True
+                                                    if hasattr(other_hazard, "is_exploded"): other_hazard.is_exploded = True
+
+
                             if getattr(hazard, "is_exploded", False):
                                 hazard.duration = 0.0
                                 for b in getattr(self.world, "balls", []):
@@ -1492,11 +1524,21 @@ class Action:
 
                                 if dist > 0:
                                     nx, ny = (self.ball.x - hazard.x) / dist, (self.ball.y - hazard.y) / dist
-                                    hazard.vx = getattr(hazard, "vx", 0.0) - nx * 300.0 * delta
-                                    hazard.vy = getattr(hazard, "vy", 0.0) - ny * 300.0 * delta
+                                    overlap = (self.ball.radius + hazard.radius) - dist
+                                    if overlap > 0:
+                                        # Push the barrel
+                                        push_speed = max(500.0, speed * 3.0)
+                                        hazard.vx = getattr(hazard, "vx", 0.0) - nx * push_speed
+                                        hazard.vy = getattr(hazard, "vy", 0.0) - ny * push_speed
+
+                                        self.ball.x += nx * (overlap / 2)
+                                        self.ball.y += ny * (overlap / 2)
+                                        hazard.x -= nx * (overlap / 2)
+                                        hazard.y -= ny * (overlap / 2)
 
                                 if speed > 300.0 or hazard_speed > 300.0 or getattr(self.ball, "active_skill", None) is not None:
                                     hazard.is_exploded = True
+
 
                         elif hazard.kind == "trap":
                             if getattr(hazard, "owner_id", None) == getattr(self.ball, "id", object()):
@@ -1853,8 +1895,12 @@ class Action:
                             dist = math.hypot(dx, dy)
                             if dist < (self.ball.radius + hazard.radius) and dist > 0.0001:
                                 nx, ny = dx / dist, dy / dist
-                                self.ball.vx = nx * 1000.0
-                                self.ball.vy = ny * 1000.0
+                                self.ball.vx = nx * 1500.0
+                                self.ball.vy = ny * 1500.0
+                                # Add a little bit of position bump so they actually move
+                                self.ball.x += nx * 20.0
+                                self.ball.y += ny * 20.0
+                                # Trigger some logic if needed
                             continue
                         elif hazard.kind == "bumper":
                             dx = self.ball.x - hazard.x
@@ -1964,9 +2010,9 @@ class Action:
 
 
         if hasattr(self.ball, "_chrono_slow"):
-            self.ball.speed = getattr(self.ball, "base_speed", 2.0) * getattr(self.ball, "_chrono_slow")
-        else:
-            self.ball.speed = getattr(self.ball, "base_speed", 2.0)
+            # Don't completely override the speed logic that was set earlier in this function
+            self.ball.speed = self.ball.speed * getattr(self.ball, "_chrono_slow")
+
 
         self.ball.current_action = strategy
         self.ball.team_message = None  # Clear previous message

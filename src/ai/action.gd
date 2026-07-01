@@ -1498,6 +1498,41 @@ func execute(strategy: String, delta: float):
                             hazard.set_meta("vy", -hazard.get_meta("vy"))
                             hazard.y = max(hazard.radius, min(hazard.y, world.arena.height - hazard.radius))
 
+                        # Collide with other explosive barrels or hazards
+                        for other_hazard in world.arena.hazards:
+                            var h_id = hazard.get_instance_id() if typeof(hazard) == TYPE_OBJECT else hash(hazard)
+                            var oh_id = other_hazard.get_instance_id() if typeof(other_hazard) == TYPE_OBJECT else hash(other_hazard)
+                            if h_id != oh_id and other_hazard.kind == "explosive_barrel":
+                                var dx_b = hazard.x - other_hazard.x
+                                var dy_b = hazard.y - other_hazard.y
+                                var dist_b = sqrt(dx_b*dx_b + dy_b*dy_b)
+                                if dist_b < hazard.radius + other_hazard.radius:
+                                    if dist_b > 0.0001:
+                                        var nx_b = dx_b / dist_b
+                                        var ny_b = dy_b / dist_b
+                                        var overlap_b = (hazard.radius + other_hazard.radius) - dist_b
+                                        # Separate them
+                                        hazard.x += nx_b * (overlap_b / 2.0)
+                                        hazard.y += ny_b * (overlap_b / 2.0)
+                                        other_hazard.x -= nx_b * (overlap_b / 2.0)
+                                        other_hazard.y -= ny_b * (overlap_b / 2.0)
+
+                                        # Transfer momentum
+                                        var ohvx = other_hazard.get_meta("vx") if other_hazard.has_meta("vx") else 0.0
+                                        var ohvy = other_hazard.get_meta("vy") if other_hazard.has_meta("vy") else 0.0
+                                        var rel_vx = hvx - ohvx
+                                        var rel_vy = hvy - ohvy
+                                        var impulse = (rel_vx * nx_b + rel_vy * ny_b)
+                                        if impulse < 0:
+                                            hazard.set_meta("vx", hvx - impulse * nx_b)
+                                            hazard.set_meta("vy", hvy - impulse * ny_b)
+                                            other_hazard.set_meta("vx", ohvx + impulse * nx_b)
+                                            other_hazard.set_meta("vy", ohvy + impulse * ny_b)
+
+                                            if sqrt(hvx*hvx + hvy*hvy) > 300.0 or sqrt(ohvx*ohvx + ohvy*ohvy) > 300.0:
+                                                hazard.set_meta("is_exploded", true)
+                                                other_hazard.set_meta("is_exploded", true)
+
                         if hazard.has_meta("is_exploded") and hazard.get_meta("is_exploded"):
                             hazard.duration = 0.0
                             if "balls" in world:
@@ -2128,8 +2163,15 @@ func execute(strategy: String, delta: float):
                             if dist > 0:
                                 var nx = (self.ball.x - hazard.x) / dist
                                 var ny = (self.ball.y - hazard.y) / dist
-                                hazard.set_meta("vx", hvx - nx * 300.0 * delta)
-                                hazard.set_meta("vy", hvy - ny * 300.0 * delta)
+                                var overlap = (self.ball.radius + hazard.radius) - dist
+                                if overlap > 0:
+                                    var push_speed = max(500.0, speed * 3.0)
+                                    hazard.set_meta("vx", hvx - nx * push_speed)
+                                    hazard.set_meta("vy", hvy - ny * push_speed)
+                                    self.ball.x += nx * (overlap / 2.0)
+                                    self.ball.y += ny * (overlap / 2.0)
+                                    hazard.x -= nx * (overlap / 2.0)
+                                    hazard.y -= ny * (overlap / 2.0)
 
                             var has_skill = false
                             if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("active_skill") and self.ball.get_meta("active_skill") != null:
