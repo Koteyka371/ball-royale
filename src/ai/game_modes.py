@@ -1507,6 +1507,7 @@ class MovingZoneMode(GameMode):
 
     def setup(self, world, balls):
         super().setup(world, balls)
+        self.world = world
         for b in balls:
             if getattr(b, "ball_type", None) != "spectator":
                 b.score = 0
@@ -1928,6 +1929,7 @@ class PortalNodeMode(GameMode):
 
     def setup(self, world, balls):
         super().setup(world, balls)
+        self.world = world
         self.team_scores = {}
         for b in balls:
             team = getattr(b, "team", "Solo")
@@ -1997,6 +1999,7 @@ class MovingSafeZoneMode(GameMode):
 
     def setup(self, world, balls):
         super().setup(world, balls)
+        self.world = world
         self.collapse_triggered = False
         arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
         arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
@@ -2136,6 +2139,7 @@ class ShrinkingDangerZoneMode(GameMode):
 
     def setup(self, world, balls):
         super().setup(world, balls)
+        self.world = world
         self.collapse_triggered = False
         arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
         arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
@@ -2264,6 +2268,7 @@ class SafeZoneMode(GameMode):
 
     def setup(self, world, balls):
         super().setup(world, balls)
+        self.world = world
         self.collapse_triggered = False
         arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
         arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
@@ -2779,6 +2784,7 @@ class BlackoutMode(GameMode):
 
     def setup(self, world, balls):
         super().setup(world, balls)
+        self.world = world
         self.timer = 0.0
         self.is_blackout = False
         for b in balls:
@@ -2950,6 +2956,7 @@ class ShiftingMazeMode(GameMode):
 
     def setup(self, world, balls):
         super().setup(world, balls)
+        self.world = world
         arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
         arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
 
@@ -3184,6 +3191,7 @@ class DayNightMode(GameMode):
 
     def setup(self, world, balls):
         super().setup(world, balls)
+        self.world = world
         if hasattr(world, "arena"):
             world.arena.is_night = False
         self.timer = 0.0
@@ -3194,6 +3202,93 @@ class DayNightMode(GameMode):
             if self.timer >= self.phase_duration:
                 self.timer = 0.0
                 world.arena.is_night = not getattr(world.arena, "is_night", False)
+
+
+class GuildVsGuildMode(GameMode):
+    """Guild vs Guild mode where players capture territory on a persistent world map."""
+    def __init__(self):
+        super().__init__()
+        self.name = "gvg"
+        self.desc = "Guild vs Guild territory battle"
+        self.guilds = {} # mapping of guild name to list of ball ids
+        self.control_points = []
+        self.territory_captured = False
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.world = world
+        self.guilds = {}
+        self.control_points = [
+            {"x": 200, "y": 200, "radius": 50, "owner": None, "progress": 0},
+            {"x": 800, "y": 800, "radius": 50, "owner": None, "progress": 0},
+            {"x": 500, "y": 500, "radius": 80, "owner": None, "progress": 0}
+        ]
+        self.territory_captured = False
+
+        # mock assign balls to guilds for testing
+        if len(balls) >= 2:
+            guild1_balls = balls[:len(balls)//2]
+            guild2_balls = balls[len(balls)//2:]
+            self.guilds["GuildA"] = [b.id for b in guild1_balls]
+            self.guilds["GuildB"] = [b.id for b in guild2_balls]
+
+    def _tick(self, delta):
+        # no super()._tick(delta) in GameMode
+        if self.territory_captured:
+            return
+
+        import math
+
+        # Update control points
+        for cp in self.control_points:
+            guild_counts = {}
+            for guild, members in self.guilds.items():
+                count = 0
+                for ball in self.world.balls:
+                    if ball.id in members and ball.alive:
+                        dx = ball.x - cp["x"]
+                        dy = ball.y - cp["y"]
+                        if math.sqrt(dx*dx + dy*dy) <= cp["radius"]:
+                            count += 1
+                guild_counts[guild] = count
+
+            # Find dominating guild
+            dominating_guild = None
+            max_count = 0
+            for guild, count in guild_counts.items():
+                if count > max_count:
+                    max_count = count
+                    dominating_guild = guild
+                elif count == max_count and count > 0:
+                    dominating_guild = None # Contested
+
+            if dominating_guild:
+                if cp["owner"] != dominating_guild:
+                    cp["progress"] += delta * 10
+                    if cp["progress"] >= 100:
+                        cp["owner"] = dominating_guild
+                        cp["progress"] = 100
+            else:
+                cp["progress"] = max(0, cp["progress"] - delta * 5)
+
+        # Check win condition (one guild owns all CPs)
+        owners = [cp["owner"] for cp in self.control_points if cp["owner"] is not None]
+        if len(owners) == len(self.control_points) and len(set(owners)) == 1:
+            winner = owners[0]
+            self._end_match(winner)
+
+    def _end_match(self, winner_guild):
+        self.territory_captured = True
+        try:
+            from system.guild import GuildManager
+            gm = GuildManager()
+            gm.capture_territory(winner_guild, "GvG_Arena")
+
+            # record match
+            loser = "GuildB" if winner_guild == "GuildA" else "GuildA"
+            gm.record_gvg_match(winner_guild, loser, winner_guild)
+        except ImportError:
+            pass
 
 GAME_MODES = {
     "day_night_mode": DayNightMode(),

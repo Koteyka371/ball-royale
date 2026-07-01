@@ -11,9 +11,11 @@ class GuildManager:
                 data = json.load(f)
                 if "guilds" not in data:
                     data["guilds"] = {}
+                if "territories" not in data:
+                    data["territories"] = {}
                 return data
         except (FileNotFoundError, json.JSONDecodeError):
-            return {"guilds": {}}
+            return {"guilds": {}, "territories": {}}
 
     def save(self):
         with open(self.filename, 'w') as f:
@@ -31,7 +33,9 @@ class GuildManager:
                 "bonus_speed": 0,
                 "bonus_damage": 0
             },
-            "gvg_points": 0
+            "gvg_points": 0,
+            "chat_history": [],
+            "vault": []
         }
         self.save()
         return True
@@ -92,3 +96,67 @@ class GuildManager:
 
     def get_guild(self, guild_name):
         return self.data["guilds"].get(guild_name)
+
+    def send_chat_message(self, guild_name, sender_id, message):
+        if guild_name in self.data["guilds"]:
+            self.data["guilds"][guild_name].setdefault("chat_history", []).append({
+                "sender": sender_id,
+                "message": message
+            })
+            self.save()
+            return True
+        return False
+
+    def get_chat_history(self, guild_name):
+        if guild_name in self.data["guilds"]:
+            return self.data["guilds"][guild_name].get("chat_history", [])
+        return []
+
+    def get_guild_leaderboard(self):
+        guilds = []
+        for name, info in self.data["guilds"].items():
+            guilds.append({
+                "name": name,
+                "gvg_points": info.get("gvg_points", 0)
+            })
+        guilds.sort(key=lambda x: x["gvg_points"], reverse=True)
+        return guilds
+
+    def deposit_item(self, guild_name, item):
+        if guild_name in self.data["guilds"]:
+            self.data["guilds"][guild_name].setdefault("vault", []).append(item)
+            self.save()
+            return True
+        return False
+
+    def withdraw_item(self, guild_name, item):
+        if guild_name in self.data["guilds"]:
+            vault = self.data["guilds"][guild_name].setdefault("vault", [])
+            if item in vault:
+                vault.remove(item)
+                self.save()
+                return True
+        return False
+
+    def capture_territory(self, guild_name, territory_name):
+        if guild_name in self.data["guilds"]:
+            if "territories" not in self.data:
+                self.data["territories"] = {}
+            self.data["territories"][territory_name] = guild_name
+            self.save()
+            return True
+        return False
+
+    def get_territories(self, guild_name):
+        if "territories" not in self.data:
+            return []
+        return [t for t, owner in self.data["territories"].items() if owner == guild_name]
+
+    def collect_passive_resources(self):
+        if "territories" not in self.data:
+            return
+        # Each territory grants 5 resources to its owner
+        for territory, owner in self.data["territories"].items():
+            if owner in self.data["guilds"]:
+                self.data["guilds"][owner]["resources"] += 5
+        self.save()
