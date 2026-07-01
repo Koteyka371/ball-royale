@@ -241,7 +241,25 @@ func generate():
             damage = 50.0
 
         var spawn_pt = get_random_spawn_point(radius)
-        hazards.append(ProceduralArena.Hazard.new(i, spawn_pt[0], spawn_pt[1], radius, kind, damage))
+        var hazard = ProceduralArena.Hazard.new(i, spawn_pt[0], spawn_pt[1], radius, kind, damage)
+        if kind == "temporal_rift":
+            var time_scales = [0.5, 1.5]
+            hazard.set_meta("time_scale", time_scales[randi() % time_scales.size()])
+        elif kind == "one_way_teleporter":
+            var tx = randf_range(50.0, width - 50.0)
+            var ty = randf_range(50.0, height - 50.0)
+            hazard.set_meta("target_x", tx)
+            hazard.set_meta("target_y", ty)
+            hazard.set_meta("update_timer", randf_range(10.0, 30.0))
+        elif kind == "hidden_trap":
+            hazard.set_meta("reveal_timer", randf_range(3.0, 8.0))
+            hazard.set_meta("is_visible", false)
+        elif kind == "tornado":
+            var angle = randf_range(0.0, PI * 2)
+            var speed = randf_range(30.0, 80.0)
+            hazard.set_meta("vx", cos(angle) * speed)
+            hazard.set_meta("vy", sin(angle) * speed)
+        hazards.append(hazard)
 
     # Generate guaranteed paired portals
     var num_portals = max(1, num_rooms / 2)
@@ -437,6 +455,16 @@ func update_zone(current_tick: int, delta: float) -> void:
                         h.kind = "orbital_strike_active"
                         h.set_meta("duration", 0.5)
                         h.damage = 1000.0
+            elif "kind" in h and h.kind == "one_way_teleporter":
+                if h.has_meta("update_timer"):
+                    var timer = h.get_meta("update_timer") - delta
+                    h.set_meta("update_timer", timer)
+                    if timer <= 0:
+                        var tx = randf_range(50.0, width - 50.0)
+                        var ty = randf_range(50.0, height - 50.0)
+                        h.set_meta("target_x", tx)
+                        h.set_meta("target_y", ty)
+                        h.set_meta("update_timer", randf_range(10.0, 30.0))
             elif "kind" in h and h.kind == "lightning_strike":
                 if h.has_meta("duration"):
                     var dur = h.get_meta("duration") - delta

@@ -120,7 +120,7 @@ class ProceduralArena:
         # Generate hazards
         num_hazards = self.num_rooms * 2
         for i in range(num_hazards):
-            kind = random.choice(["spikes", "lava", "fake_booster", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "hidden_trap", "silence_booster", "switch", "magnet", "quicksand", "magnet_booster"])
+            kind = random.choice(["spikes", "lava", "fake_booster", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "hidden_trap", "silence_booster", "switch", "magnet", "quicksand", "magnet_booster", "one_way_teleporter"])
             if kind == "switch":
                 radius = 20.0
                 damage = 0.0
@@ -169,6 +169,9 @@ class ProceduralArena:
             elif kind == "magnet":
                 radius = random.uniform(25.0, 45.0)
                 damage = 0.0
+            elif kind == "one_way_teleporter":
+                radius = 25.0
+                damage = 0.0
             elif kind == "bumper":
                 radius = random.uniform(30.0, 60.0)
                 damage = 0.0
@@ -203,6 +206,19 @@ class ProceduralArena:
             new_hazard = Hazard(id=i, x=hx, y=hy, radius=radius, kind=kind, damage=damage)
             if kind == "temporal_rift":
                 new_hazard.time_scale = random.choice([0.5, 1.5, 2.0])
+            elif kind == "one_way_teleporter":
+                tx, ty = self.get_random_spawn_point(25.0)
+                setattr(new_hazard, "target_x", tx)
+                setattr(new_hazard, "target_y", ty)
+                setattr(new_hazard, "update_timer", random.uniform(10.0, 30.0))
+            elif kind == "hidden_trap":
+                setattr(new_hazard, "reveal_timer", random.uniform(3.0, 8.0))
+                setattr(new_hazard, "is_visible", False)
+            elif kind == "tornado":
+                angle = random.uniform(0, 3.14159 * 2)
+                speed = random.uniform(30.0, 80.0)
+                setattr(new_hazard, "vx", math.cos(angle) * speed)
+                setattr(new_hazard, "vy", math.sin(angle) * speed)
             self.hazards.append(new_hazard)
 
         # Generate guaranteed paired portals
@@ -405,6 +421,15 @@ class ProceduralArena:
                             h.kind = "orbital_strike_active"
                             h.duration = 0.5
                             h.damage = 1000.0
+                elif getattr(h, "kind", "") == "one_way_teleporter":
+                    if hasattr(h, "update_timer"):
+                        h.update_timer -= delta
+                        if h.update_timer <= 0:
+                            import random
+                            tx, ty = self.get_random_spawn_point(25.0)
+                            h.target_x = tx
+                            h.target_y = ty
+                            h.update_timer = random.uniform(10.0, 30.0)
                 elif getattr(h, "kind", "") == "lightning_strike":
                     if hasattr(h, "duration"):
                         h.duration -= delta
