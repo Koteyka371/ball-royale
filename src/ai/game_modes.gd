@@ -1572,6 +1572,8 @@ class WeatherChaosMode extends GameMode:
 				var is_earth = t in ["tank", "druid", "juggernaut"]
 
 				if weather == "clear":
+					if typeof(b) == TYPE_OBJECT: b.set("cosmetic", "none")
+					elif typeof(b) == TYPE_DICTIONARY: b["cosmetic"] = "none"
 					if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius")
 					elif "base_perception_radius" in b: b.perception_radius = b.base_perception_radius
 					else: b.perception_radius = 250.0
@@ -1584,6 +1586,8 @@ class WeatherChaosMode extends GameMode:
 						b.set_meta("steering_mult", 1.0)
 						b.set_meta("attack_accuracy", 1.0)
 				elif weather == "rain":
+					if typeof(b) == TYPE_OBJECT: b.set("cosmetic", "umbrella")
+					elif typeof(b) == TYPE_DICTIONARY: b["cosmetic"] = "umbrella"
 					if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius") * 0.9
 					elif "base_perception_radius" in b: b.perception_radius = b.base_perception_radius * 0.9
 					else: b.perception_radius = 250.0 * 0.9
@@ -1661,6 +1665,8 @@ class WeatherChaosMode extends GameMode:
 						if b.has_method("set_meta"): b.set_meta("mirage_timer", mt)
 						elif "mirage_timer" in b: b.mirage_timer = mt
 				elif weather == "snow":
+					if typeof(b) == TYPE_OBJECT: b.set("cosmetic", "snow_goggles")
+					elif typeof(b) == TYPE_DICTIONARY: b["cosmetic"] = "snow_goggles"
 					if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius") * 0.6
 					elif "base_perception_radius" in b: b.perception_radius = b.base_perception_radius * 0.6
 					else: b.perception_radius = 250.0 * 0.6
@@ -1700,6 +1706,8 @@ class WeatherChaosMode extends GameMode:
 						b.set_meta("dash_range_mult", 1.0)
 						b.set_meta("steering_mult", 1.0)
 				elif weather == "thunderstorm":
+					if typeof(b) == TYPE_OBJECT: b.set("cosmetic", "lightning_rod")
+					elif typeof(b) == TYPE_DICTIONARY: b["cosmetic"] = "lightning_rod"
 					if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius") * 0.8
 					elif "base_perception_radius" in b: b.perception_radius = b.base_perception_radius * 0.8
 					else: b.perception_radius = 250.0 * 0.8
@@ -1709,6 +1717,8 @@ class WeatherChaosMode extends GameMode:
 						b.set_meta("dash_range_mult", 1.0)
 						b.set_meta("steering_mult", 1.0)
 				elif weather == "sandstorm":
+					if typeof(b) == TYPE_OBJECT: b.set("cosmetic", "dust_mask")
+					elif typeof(b) == TYPE_DICTIONARY: b["cosmetic"] = "dust_mask"
 					if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius") * 0.3
 					elif "base_perception_radius" in b: b.perception_radius = b.base_perception_radius * 0.3
 					else: b.perception_radius = 250.0 * 0.3
@@ -1731,6 +1741,8 @@ class WeatherChaosMode extends GameMode:
 					if b.has_method("set_meta"):
 						b.set_meta("attack_accuracy", 0.5)
 				elif weather == "heatwave":
+					if typeof(b) == TYPE_OBJECT: b.set("cosmetic", "sunglasses")
+					elif typeof(b) == TYPE_DICTIONARY: b["cosmetic"] = "sunglasses"
 					if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius") * 0.7
 					elif "base_perception_radius" in b: b.perception_radius = b.base_perception_radius * 0.7
 					else: b.perception_radius = 250.0 * 0.7
