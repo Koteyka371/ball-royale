@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-392] Bouncy Borders — *2026-07-01 15:32:21 UTC*
+
+The arena boundaries reflect projectiles and entities with increased speed, allowing for insane trick shots and punishing players who get too close to the edge.
+
+---
+
 ## [idea-333] Season-specific visual themes for the arena — *2026-07-01 15:28:19 UTC*
 
 Each season could alter the visual look of the arena (e.g. Winter theme for Season 1, Lava theme for Season 2, Neon theme for Season 3) to provide a fresh experience and tie into the global modifier (e.g. ice patches for speed, lava cracks for damage).

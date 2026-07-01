@@ -6780,7 +6780,7 @@
     },
     {
       "id": "idea-392",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bouncy Borders",
@@ -10859,6 +10859,40 @@
         "src/arena/decoy_minefield_arena.py",
         "src/arena/decoy_minefield_arena.gd",
         "tests/test_decoy_minefield_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-630",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Arena Hazards",
+      "description": "Hazards can change their size, shape, and damage dynamically during the game, based on arena-wide events and seasonal modifiers.",
+      "allowed_paths": [
+        "src/arena/dynamic_arena_hazards.py",
+        "src/arena/dynamic_arena_hazards.gd",
+        "tests/test_dynamic_arena_hazards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-631",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Interactive Weather System",
+      "description": "Weather conditions in different seasonal arenas (like heatwaves, snowstorms, or heavy winds) actively affect ball movement speed, friction, and ability cooldowns.",
+      "allowed_paths": [
+        "src/ai/interactive.py",
+        "src/ai/interactive.gd",
+        "tests/test_interactive.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
