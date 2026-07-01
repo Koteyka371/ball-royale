@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-333] Season-specific visual themes for the arena — *2026-07-01 15:28:19 UTC*
+
+Each season could alter the visual look of the arena (e.g. Winter theme for Season 1, Lava theme for Season 2, Neon theme for Season 3) to provide a fresh experience and tie into the global modifier (e.g. ice patches for speed, lava cracks for damage).
+
+---
+
 ## [idea-394] Blackout Game Mode — *2026-07-01 15:04:43 UTC*
 
 A new game mode where the entire arena is shrouded in complete darkness except for a small ring of light around each ball. Players must navigate and fight using echolocation cues or occasional lightning flashes that reveal the whole map for a split second.

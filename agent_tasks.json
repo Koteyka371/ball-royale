@@ -5775,7 +5775,7 @@
     },
     {
       "id": "idea-333",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Season-specific visual themes for the arena",
@@ -10791,6 +10791,74 @@
         "src/ai/adaptive_cosmetics.py",
         "src/ai/adaptive_cosmetics.gd",
         "tests/test_adaptive_cosmetics.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-626",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Illusionists",
+      "description": "A new ball type that can create up to 3 different types of decoys simultaneously - one that explodes, one that stuns, and one that heals nearby allies when it is destroyed.",
+      "allowed_paths": [
+        "src/ai/decoy_illusionists.py",
+        "src/ai/decoy_illusionists.gd",
+        "tests/test_decoy_illusionists.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-627",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Thunderstorm Modifier",
+      "description": "Periodically, lightning strikes the arena. Balls caught in the blast radius are stunned for a short duration and take damage. A visual warning appears briefly before the strike.",
+      "allowed_paths": [
+        "src/ai/thunderstorm.py",
+        "src/ai/thunderstorm.gd",
+        "tests/test_thunderstorm.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-628",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sonar Pulse Ability",
+      "description": "A new AI ability that temporarily increases the ball's perception radius significantly, emitting a ping that reveals the location of nearby enemies and items, particularly useful in dark or low-visibility game modes.",
+      "allowed_paths": [
+        "src/ai/sonar_pulse_ability.py",
+        "src/ai/sonar_pulse_ability.gd",
+        "tests/test_sonar_pulse_ability.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-629",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Minefield Arena",
+      "description": "A new game mode where the arena is randomly seeded with invisible decoys. Players must carefully navigate the map or use vision-revealing abilities to avoid setting off massive chain reactions.",
+      "allowed_paths": [
+        "src/arena/decoy_minefield_arena.py",
+        "src/arena/decoy_minefield_arena.gd",
+        "tests/test_decoy_minefield_arena.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
