@@ -3416,6 +3416,32 @@ class Action:
 
             if skill_name == "command":
                 self.ball.team_message = {"type": "buff_command", "radius": 200}
+            elif skill_name == "meteor_strike":
+                enemies = self._get_enemies()
+                if enemies and hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    import random as _rnd
+                    try:
+                        from arena.procedural_arena import Hazard
+                    except ImportError:
+                        # Fallback for tests if needed, but normally ProceduralArena is there
+                        class Hazard:
+                            def __init__(self, id, x, y, radius, kind, damage):
+                                self.id = id
+                                self.x = x
+                                self.y = y
+                                self.radius = radius
+                                self.kind = kind
+                                self.damage = damage
+                    num_meteors = _rnd.randint(3, 5)
+                    for _ in range(num_meteors):
+                        target = _rnd.choice(enemies)
+                        offset_x = _rnd.uniform(-50, 50)
+                        offset_y = _rnd.uniform(-50, 50)
+                        trap_id = 15000 + len(self.world.arena.hazards) + _rnd.randint(0, 1000)
+                        meteor = Hazard(trap_id, getattr(target, 'x', 0) + offset_x, getattr(target, 'y', 0) + offset_y, 30.0, "meteor", 200.0)
+                        setattr(meteor, 'target_radius', 30.0)
+                        setattr(meteor, 'duration', 5.0)
+                        self.world.arena.hazards.append(meteor)
             elif skill_name == "entangle":
                 enemies = self._get_enemies()
                 if enemies:

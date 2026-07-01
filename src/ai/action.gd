@@ -5362,6 +5362,29 @@ func _use_skill():
                 self.ball.set_meta("team_message", {"type": "buff_command", "radius": 200})
             elif "team_message" in self.ball:
                 self.ball.team_message = {"type": "buff_command", "radius": 200}
+        elif skill_name == "meteor_strike":
+            var enemies = _get_enemies()
+            var arena = world.call("get_arena") if world != null and world.has_method("get_arena") else null
+            if arena == null and "arena" in world:
+                arena = world.arena
+            if enemies.size() > 0 and arena != null and "hazards" in arena:
+                var num_meteors = (randi() % 3) + 3
+                var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
+                for i in range(num_meteors):
+                    var target = enemies[randi() % enemies.size()]
+                    var t_x = 0.0
+                    var t_y = 0.0
+                    if "x" in target: t_x = target.x
+                    elif typeof(target) == TYPE_DICTIONARY and target.has("x"): t_x = target["x"]
+                    if "y" in target: t_y = target.y
+                    elif typeof(target) == TYPE_DICTIONARY and target.has("y"): t_y = target["y"]
+                    var offset_x = randf_range(-50.0, 50.0)
+                    var offset_y = randf_range(-50.0, 50.0)
+                    var trap_id = 15000 + arena.hazards.size() + (randi() % 1000)
+                    var meteor = ProceduralArenaScript.Hazard.new(trap_id, t_x + offset_x, t_y + offset_y, 30.0, "meteor", 200.0)
+                    meteor.target_radius = 30.0
+                    meteor.set_meta("duration", 5.0)
+                    arena.hazards.append(meteor)
         elif skill_name == "entangle":
             var enemies = _get_enemies()
             if enemies.size() > 0:
