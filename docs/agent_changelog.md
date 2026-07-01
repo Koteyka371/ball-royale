@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-378] Chain Lightning Upgrade — *2026-07-01 16:48:55 UTC*
+
+A new skill that deals damage to one enemy and then chains to up to 3 nearby enemies within a short radius, with each jump dealing slightly reduced damage.
+
+---
+
 ## [idea-404] New Hazard: Time Dilation Field — *2026-07-01 16:48:48 UTC*
 
 A new procedural arena hazard that drastically slows down the movement speed and action timers of all balls caught within its radius, creating tactical chokepoints.
