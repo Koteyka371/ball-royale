@@ -575,3 +575,60 @@ def test_chaos_link_skill():
     action._update_skill_timer(1.0)
     assert ball1.chaos_link_timer == 0.0
     assert ball1.chaos_link_target == None
+
+def test_decoy_explosion_stun_trap():
+    from ai.action import Action
+    ball = MockBall(x=100, y=100)
+    world = MockWorld()
+
+    decoy = MockBall(x=100, y=100)
+    decoy.is_decoy = True
+    decoy.alive = True
+    decoy.hp = 0
+    decoy.decoy_type = "stun_trap"
+    decoy.team = "decoy_team"
+    decoy.decoy_timer = 5.0
+    decoy.id = 999
+
+    enemy = MockBall(x=120, y=120)
+    enemy.team = "enemy_team"
+    enemy.id = 888
+    enemy.stutter_timer = 0.0
+    enemy.hp = 100.0
+
+    world.balls = [decoy, enemy]
+    action = Action(ball, world)
+    action.execute("idle", 0.1)
+
+    assert getattr(decoy, "_decoy_exploded", False) is True
+    assert getattr(enemy, "stutter_timer", 0.0) == 5.0
+    # Make sure hp doesn't change since it's a stun trap
+    assert enemy.hp == 100.0
+
+def test_decoy_explosion_explosive():
+    from ai.action import Action
+    ball = MockBall(x=100, y=100)
+    world = MockWorld()
+
+    decoy = MockBall(x=100, y=100)
+    decoy.is_decoy = True
+    decoy.alive = True
+    decoy.hp = 0
+    decoy.decoy_type = "explosive"
+    decoy.team = "decoy_team"
+    decoy.decoy_timer = 5.0
+    decoy.id = 999
+
+    enemy = MockBall(x=120, y=120)
+    enemy.team = "enemy_team"
+    enemy.id = 888
+    enemy.stutter_timer = 0.0
+    enemy.hp = 100.0
+
+    world.balls = [decoy, enemy]
+    action = Action(ball, world)
+    action.execute("idle", 0.1)
+
+    assert getattr(decoy, "_decoy_exploded", False) is True
+    assert getattr(enemy, "stutter_timer", 0.0) == 2.0
+    assert enemy.hp == 70.0
