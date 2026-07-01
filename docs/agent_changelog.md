@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-365] Mirror Match Arena — *2026-07-01 12:23:34 UTC*
+
+Every player spawns with an exact AI clone of themselves on the opposite side of the map. Clones mimic their creator's stats and skills.
+
+---
+
 ## [idea-372] Weather-dependent Cosmetics — *2026-07-01 12:18:30 UTC*
 
 Add visual changes (cosmetics) to balls that change dynamically depending on the current weather condition, like a little umbrella when it rains or snow goggles in snow.

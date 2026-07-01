@@ -6321,7 +6321,7 @@
     },
     {
       "id": "idea-365",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mirror Match Arena",
@@ -10161,6 +10161,40 @@
         "src/ai/bumper_chaining.py",
         "src/ai/bumper_chaining.gd",
         "tests/test_bumper_chaining.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-589",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Predictor Booster",
+      "description": "A new booster that spawns occasionally. Collecting it gives the player a 10-second warning before the weather changes and grants them temporary immunity to negative weather effects (like slow movement in mud/snow or lightning strikes in thunderstorms) for the first 15 seconds of the new weather phase.",
+      "allowed_paths": [
+        "src/ai/predictor_booster.py",
+        "src/ai/predictor_booster.gd",
+        "tests/test_predictor_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-590",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Interactive Puddles and Ice Patches",
+      "description": "Dynamically generate interactive puddles during rain that eventually turn into ice patches if the weather switches to snow. Puddles reduce steering and increase dash distance, while ice patches cause a brief slide without any directional control.",
+      "allowed_paths": [
+        "src/ai/interactive_puddles_and_ice_patches.py",
+        "src/ai/interactive_puddles_and_ice_patches.gd",
+        "tests/test_interactive_puddles_and_ice_patches.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
