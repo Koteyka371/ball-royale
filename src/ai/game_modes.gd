@@ -3583,7 +3583,17 @@ class BlackoutMode extends GameMode:
 		for b in balls:
 			if b.alive and b.ball_type != "spectator":
 				if is_blackout:
-					b.perception_radius = 50.0
+					var has_vision = false
+					if b.has_method("get_meta") and b.has_meta("has_vision_booster"): has_vision = b.get_meta("has_vision_booster")
+					elif "has_vision_booster" in b: has_vision = b.has_vision_booster
+
+					if has_vision:
+						var base_perc = 250.0
+						if b.has_method("get_meta") and b.has_meta("base_perception_radius"):
+							base_perc = float(b.get_meta("base_perception_radius"))
+						b.perception_radius = base_perc
+					else:
+						b.perception_radius = 50.0
 				else:
 					var base_perc = 250.0
 					if b.has_method("get_meta") and b.has_meta("base_perception_radius"):

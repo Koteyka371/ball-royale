@@ -4869,6 +4869,30 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "vision_booster":
+                var current_base = 250.0
+                if self.ball.has_method("get_meta") and self.ball.has_meta("base_perception_radius"):
+                    current_base = float(self.ball.get_meta("base_perception_radius"))
+                elif "base_perception_radius" in self.ball:
+                    current_base = float(self.ball.base_perception_radius)
+                elif "perception_radius" in self.ball:
+                    current_base = float(self.ball.perception_radius)
+
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("has_vision_booster", true)
+                    self.ball.set_meta("base_perception_radius", current_base * 2.5)
+                else:
+                    self.ball.has_vision_booster = true
+                    self.ball.base_perception_radius = current_base * 2.5
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "stamina_booster":
                 var max_stam = 100.0
                 if self.ball.has_method("get_meta") and self.ball.has_meta("max_stamina"): max_stam = self.ball.get_meta("max_stamina")
@@ -6719,7 +6743,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster"]
+                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "vision_booster"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y

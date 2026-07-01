@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Clone Trap",
+  "description": "A new collectible trap item that drops a visually identical clone of the player's ball. AI opponents with high aggression (e.g., 'warrior') will prioritize attacking the clone. Upon taking lethal damage, the clone explodes, dealing significant AoE damage and applying a short stun to nearby enemies."
+}

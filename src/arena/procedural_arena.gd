@@ -171,8 +171,10 @@ func generate():
             kind = "bumper"
         elif r < 0.99:
             kind = "quicksand"
-        elif r < 0.995:
+        elif r < 0.992:
             kind = "magnet_booster"
+        elif r < 0.995:
+            kind = "vision_booster"
         else:
             kind = "switch"
 
@@ -204,6 +206,9 @@ func generate():
             radius = 20.0
             damage = 0.0
         elif kind == "silence_booster":
+            radius = 15.0
+            damage = 0.0
+        elif kind == "vision_booster":
             radius = 15.0
             damage = 0.0
         elif kind == "link_booster":
@@ -546,6 +551,9 @@ func update_zone(current_tick: int, delta: float) -> void:
                     h.damage = 0.0
                 elif randf() < 0.05:
                     h.kind = "stealth_drone_item"
+                    h.damage = 0.0
+                elif randf() < 0.05:
+                    h.kind = "vision_booster"
                     h.damage = 0.0
                 elif randf() < 0.05:
                     h.kind = "shadow_booster"

@@ -1,0 +1,4 @@
+{
+  "title": "Shrinking Safe Zones during Blackout",
+  "description": "To amplify the tension of Blackout Mode, introduce small, dynamically spawning 'Light Wells' across the map. These zones provide temporary normal vision while standing inside them but shrink over time, forcing players into close-quarters combat as they scramble for visibility during the darkness phase."
+}

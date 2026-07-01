@@ -2798,7 +2798,10 @@ class BlackoutMode(GameMode):
         for b in balls:
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 if self.is_blackout:
-                    b.perception_radius = 50.0
+                    if getattr(b, "has_vision_booster", False):
+                        b.perception_radius = getattr(b, "base_perception_radius", 250.0)
+                    else:
+                        b.perception_radius = 50.0
                 else:
                     b.perception_radius = getattr(b, "base_perception_radius", 250.0)
 
