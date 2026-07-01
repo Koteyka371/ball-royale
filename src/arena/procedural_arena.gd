@@ -175,6 +175,10 @@ func generate():
             kind = "magnet_booster"
         elif r < 0.995:
             kind = "breakable_wall"
+        elif r < 0.997:
+            kind = "tornado"
+        elif r < 0.999:
+            kind = "lightning_storm"
         else:
             kind = "switch"
 
@@ -250,6 +254,9 @@ func generate():
         elif kind == "tornado":
             radius = rng.randf_range(30.0, 60.0)
             damage = 15.0
+        elif kind == "lightning_storm":
+            radius = rng.randf_range(30.0, 60.0)
+            damage = 0.0
         elif kind == "spinning_laser":
             radius = rng.randf_range(100.0, 150.0)
             damage = 100.0
@@ -487,7 +494,7 @@ func update_zone(current_tick: int, delta: float) -> void:
                             h.set_meta("vx", h.get_meta("vx") * -1.0)
                         if h.y < 0 or h.y > height:
                             h.set_meta("vy", h.get_meta("vy") * -1.0)
-            elif "kind" in h and h.kind == "tornado":
+            elif "kind" in h and h.kind in ["tornado", "lightning_storm"]:
                 if h.has_meta("duration"):
                     var dur = h.get_meta("duration") - delta
                     h.set_meta("duration", dur)

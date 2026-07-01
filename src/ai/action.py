@@ -1209,15 +1209,15 @@ class Action:
                                 pull_strength = min(pull_strength, dist * 0.5) # Prevent overshooting
                                 self.ball.x += nx * pull_strength
                                 self.ball.y += ny * pull_strength
-                    elif hazard.kind in ("black_hole", "tornado", "portal", "teleporter", "swap_portal"):
+                    elif hazard.kind in ("black_hole", "tornado", "portal", "teleporter", "swap_portal", "lightning_storm"):
                         # Only update global state once per frame using the tick counter
                         current_tick = getattr(self.world, "tick", 0)
                         if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
                             hazard.last_updated_tick = current_tick
                             if not hasattr(hazard, "vx"):
 
-                                import random; hazard.vx = random.uniform(-100.0, 100.0) if hazard.kind in ("tornado", "portal", "teleporter", "swap_portal") else random.uniform(-10.0, 10.0)
-                                hazard.vy = random.uniform(-100.0, 100.0) if hazard.kind in ("tornado", "portal", "teleporter", "swap_portal") else random.uniform(-10.0, 10.0)
+                                import random; hazard.vx = random.uniform(-100.0, 100.0) if hazard.kind in ("tornado", "portal", "teleporter", "swap_portal", "lightning_storm") else random.uniform(-10.0, 10.0)
+                                hazard.vy = random.uniform(-100.0, 100.0) if hazard.kind in ("tornado", "portal", "teleporter", "swap_portal", "lightning_storm") else random.uniform(-10.0, 10.0)
                             if not hasattr(hazard, "lifetime"):
                                 hazard.lifetime = 0.0
                             hazard.lifetime += delta
@@ -1552,6 +1552,36 @@ class Action:
                                     self.ball.hp -= hazard_damage
                                     if self.ball.hp <= 0:
                                         self.ball.alive = False
+
+                            continue
+                        elif hazard.kind == "lightning_storm":
+                            current_tick = getattr(self.world, "tick", 0)
+                            if not hasattr(hazard, "last_strike_tick"):
+                                hazard.last_strike_tick = 0
+
+                            if current_tick - hazard.last_strike_tick >= 120:  # Strike every 2 seconds roughly
+                                # Check if ball is inside
+                                if dist <= hazard.radius:
+                                    hazard.last_strike_tick = current_tick
+                                    dmg = 40.0
+                                    is_qs = getattr(self.ball, "is_in_quicksand", False)
+                                    if is_qs:
+                                        dmg *= 2.0
+
+                                    if hasattr(self.ball, "take_damage"):
+                                        self.ball.take_damage(dmg)
+                                    elif hasattr(self.ball, "hp"):
+                                        self.ball.hp -= dmg
+                                        if self.ball.hp <= 0:
+                                            self.ball.alive = False
+
+                                    if hasattr(self.ball, "silence_timer"):
+                                        self.ball.silence_timer = max(getattr(self.ball, "silence_timer", 0), 2.0)
+                                    else:
+                                        self.ball.silence_timer = 2.0
+
+                                    if hasattr(self, "_spawn_skill_particles"):
+                                        self._spawn_skill_particles("lightning")
 
                             continue
                         elif hazard.kind == "lightning_strike":
