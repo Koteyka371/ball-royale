@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-324] Vampiric Drain Zone — *2026-07-01 14:45:17 UTC*
+
+An arena hazard that deals small damage over time to any ball inside it, and uses the total damage dealt to heal the ball with the lowest HP on the map.
+
+---
+
 ## [idea-391] Reverse Knockback Mode — *2026-07-01 14:36:03 UTC*
 
 A game mode where collisions pull entities together instead of pushing them apart, creating chaotic clusters of balls that can be targeted by AoE attacks.

@@ -5621,7 +5621,7 @@
     },
     {
       "id": "idea-324",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Vampiric Drain Zone",
@@ -10621,6 +10621,108 @@
         "src/ai/turret_deployment.py",
         "src/ai/turret_deployment.gd",
         "tests/test_turret_deployment.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-616",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Laser Fence Hazards",
+      "description": "Add placeable laser fences that link together between nodes. Passing through the laser deals high damage and applies a short slow effect, encouraging positional counterplay.",
+      "allowed_paths": [
+        "src/arena/laser_fence_hazards.py",
+        "src/arena/laser_fence_hazards.gd",
+        "tests/test_laser_fence_hazards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-617",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Grappling Hook Environmental Traversal",
+      "description": "Expand the magnet tether mechanic into an environmental grappling hook, allowing players to hook onto walls or specific nodes to swing across hazards quickly.",
+      "allowed_paths": [
+        "src/ai/grappling_hook_environmental_traversal.py",
+        "src/ai/grappling_hook_environmental_traversal.gd",
+        "tests/test_grappling_hook_environmental_traversal.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-618",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Ultimate",
+      "description": "A new ball type that can summon a slow-moving black hole, pulling in nearby balls and hazards, dealing heavy damage over time.",
+      "allowed_paths": [
+        "src/ai/black_hole_ultimate.py",
+        "src/ai/black_hole_ultimate.gd",
+        "tests/test_black_hole_ultimate.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-619",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Rubber Band Bonds",
+      "description": "Teams of balls are tethered together by invisible rubber bands. If they move too far apart, they are snapped back together with massive force, dealing damage to anything in their path.",
+      "allowed_paths": [
+        "src/ai/rubber_band_bonds.py",
+        "src/ai/rubber_band_bonds.gd",
+        "tests/test_rubber_band_bonds.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-620",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Friction Mode",
+      "description": "Balls continuously accelerate as long as they are moving, turning the arena into a high-speed ping-pong match. Collisions deal extra damage based on speed.",
+      "allowed_paths": [
+        "src/ai/reverse_friction.py",
+        "src/ai/reverse_friction.gd",
+        "tests/test_reverse_friction.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-621",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Inversion Modifier",
+      "description": "A random arena event that periodically reverses gravity, sending all balls bouncing towards the center instead of outwards.",
+      "allowed_paths": [
+        "src/ai/gravity_inversion.py",
+        "src/ai/gravity_inversion.gd",
+        "tests/test_gravity_inversion.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
