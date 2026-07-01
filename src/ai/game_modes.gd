@@ -4086,7 +4086,236 @@ class DayNightMode extends GameMode:
                 else:
                     world.arena.is_night = true
 
+
+class ModifierShrinkingZoneMode extends GameMode:
+	var zone_x: float = 500.0
+	var zone_y: float = 500.0
+	var zone_radius: float = 500.0
+	var min_zone_radius: float = 50.0
+	var shrink_rate: float = 10.0
+	var outside_damage_per_second: float = 10.0
+	var zone_target_x: float = 500.0
+	var zone_target_y: float = 500.0
+	var collapse_triggered: bool = false
+	var zones: Array = []
+
+	func _init() -> void:
+		name = "Modifier Shrinking Zone"
+		description = "A shrinking safe zone mode where modifier zones spawn near the center to encourage combat."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		collapse_triggered = false
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if "arena" in world and world.arena:
+			if "width" in world.arena:
+				arena_width = float(world.arena.width)
+			if "height" in world.arena:
+				arena_height = float(world.arena.height)
+
+		zone_x = arena_width / 2.0
+		zone_y = arena_height / 2.0
+		zone_target_x = zone_x
+		zone_target_y = zone_y
+		zone_radius = min(arena_width, arena_height) / 2.0
+		min_zone_radius = 50.0
+
+		# Spawn modifier zones near the center
+		var center_x = arena_width / 2.0
+		var center_y = arena_height / 2.0
+		zones = [
+			{"id": "zone_speed", "x": center_x + randf_range(-100, 100), "y": center_y + randf_range(-100, 100), "radius": 75.0, "type": "speed"},
+			{"id": "zone_damage", "x": center_x + randf_range(-100, 100), "y": center_y + randf_range(-100, 100), "radius": 75.0, "type": "damage"},
+			{"id": "zone_heal", "x": center_x + randf_range(-100, 100), "y": center_y + randf_range(-100, 100), "radius": 75.0, "type": "heal"},
+			{"id": "zone_debuff", "x": center_x + randf_range(-100, 100), "y": center_y + randf_range(-100, 100), "radius": 75.0, "type": "debuff"}
+		]
+
+		var valid_balls = []
+		for b in balls:
+			if b.ball_type != "spectator":
+				valid_balls.append(b)
+
+		for i in range(valid_balls.size()):
+			var b = valid_balls[i]
+			if i >= 20:
+				b.ball_type = "spectator"
+				b.alive = false
+			else:
+				b.team = b.ball_type
+
+		if not "dead_balls" in world:
+			world.dead_balls = []
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		# Evaluate crowd system
+		if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
+			var crowd = world.get_node("CrowdSystem")
+			var kill_log = []
+			if "kill_log" in world:
+				kill_log = world.kill_log
+			var current_tick = 0
+			if "tick" in world:
+				current_tick = world.tick
+			crowd.tick(balls, kill_log, current_tick)
+
+		if not "dead_balls" in world:
+			world.dead_balls = []
+
+		for b in balls:
+			if not b.alive:
+				if not world.dead_balls.has(b):
+					if b.has_method("set_meta"):
+						b.set_meta("time_since_death", 0.0)
+					world.dead_balls.append(b)
+				else:
+					if b.has_method("get_meta") and b.has_meta("time_since_death"):
+						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+
+		# Move the safe zone slightly near center
+		var dx = zone_target_x - zone_x
+		var dy = zone_target_y - zone_y
+		var dist = sqrt(dx*dx + dy*dy)
+		if dist > 5.0:
+			var move_speed = 15.0 # pixels per second
+			zone_x += (dx / dist) * move_speed * delta
+			zone_y += (dy / dist) * move_speed * delta
+		else:
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if world != null and "arena" in world and world.arena:
+				if "width" in world.arena:
+					arena_width = float(world.arena.width)
+				if "height" in world.arena:
+					arena_height = float(world.arena.height)
+			var buffer = max(100.0, zone_radius * 0.5)
+			zone_target_x = arena_width / 2.0 + randf_range(-100, 100)
+			zone_target_y = arena_height / 2.0 + randf_range(-100, 100)
+
+		# Shrink the safe zone
+		if zone_radius > min_zone_radius:
+			zone_radius -= shrink_rate * delta
+			if zone_radius <= min_zone_radius:
+				zone_radius = min_zone_radius
+				if not collapse_triggered:
+					collapse_triggered = true
+					if world.has_method("add_event"):
+						world.add_event("collapse_event", {"type": "collapse_event", "message": "COLLAPSE EVENT! The zone collapses!"})
+		elif collapse_triggered:
+			if zone_radius > 0:
+				zone_radius -= shrink_rate * delta
+				if zone_radius < 0:
+					zone_radius = 0.0
+
+			for b in balls:
+				if b.get("alive", false) and b.get("ball_type", "") != "spectator":
+					var dx_b = zone_x - b.x
+					var dy_b = zone_y - b.y
+					var dist_b = sqrt(dx_b*dx_b + dy_b*dy_b)
+					if dist_b > 0:
+						var pull_strength = 2000.0
+						if not "vx" in b:
+							b.vx = 0.0
+						if not "vy" in b:
+							b.vy = 0.0
+						b.vx += (dx_b / dist_b) * pull_strength * delta
+						b.vy += (dy_b / dist_b) * pull_strength * delta
+
+		# Apply continuous damage outside safe zone and apply buffs inside zones
+		for b in balls:
+			if not b.get("alive", false) or b.get("ball_type", "") == "spectator":
+				continue
+
+			var dx_b = b.x - zone_x
+			var dy_b = b.y - zone_y
+			var dist_b = sqrt(dx_b*dx_b + dy_b*dy_b)
+			if dist_b > zone_radius:
+				if "hp" in b:
+					b.hp -= outside_damage_per_second * delta
+					if b.hp <= 0:
+						b.hp = 0
+
+			if not b.has_meta("base_speed"):
+				b.set_meta("base_speed", b.get("speed", 100.0))
+			if not b.has_meta("base_damage"):
+				b.set_meta("base_damage", b.get("damage", 10.0))
+
+			var in_speed_zone = false
+			var in_damage_zone = false
+			var in_heal_zone = false
+			var in_debuff_zone = false
+
+			for zone in zones:
+				var dx_z = b.x - zone["x"]
+				var dy_z = b.y - zone["y"]
+				var dist_z = sqrt(dx_z*dx_z + dy_z*dy_z)
+
+				if dist_z <= zone["radius"]:
+					if zone["type"] == "speed":
+						in_speed_zone = true
+					elif zone["type"] == "damage":
+						in_damage_zone = true
+					elif zone["type"] == "heal":
+						in_heal_zone = true
+					elif zone["type"] == "debuff":
+						in_debuff_zone = true
+
+			if in_speed_zone:
+				b.speed = b.get_meta("base_speed") * 1.5
+				b.set_meta("zone_modifier_speed", true)
+			else:
+				if b.has_meta("zone_modifier_speed"):
+					b.speed = b.get_meta("base_speed")
+					b.remove_meta("zone_modifier_speed")
+
+			if in_damage_zone:
+				b.damage = b.get_meta("base_damage") * 1.5
+				b.set_meta("zone_modifier_damage", true)
+			else:
+				if b.has_meta("zone_modifier_damage"):
+					b.damage = b.get_meta("base_damage")
+					b.remove_meta("zone_modifier_damage")
+
+			if in_debuff_zone:
+				if not b.has_meta("base_max_hp"):
+					b.set_meta("base_max_hp", b.get("max_hp", 100.0))
+				b.max_hp = b.get_meta("base_max_hp") * 0.5
+				if "hp" in b and b.hp > b.max_hp:
+					b.hp = b.max_hp
+				b.set_meta("zone_modifier_debuff", true)
+			else:
+				if b.has_meta("zone_modifier_debuff"):
+					if b.has_meta("base_max_hp"):
+						b.max_hp = b.get_meta("base_max_hp")
+					b.remove_meta("zone_modifier_debuff")
+
+			if in_heal_zone:
+				var max_hp = b.get("max_hp", 100.0)
+				b.hp = min(max_hp, b.hp + 20.0 * delta)
+
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.get("alive", false) and b.get("ball_type", "") != "spectator":
+				alive.append(b)
+		if alive.is_empty():
+			if self.has_method("_award_skill_points"):
+				self.call("_award_skill_points")
+			return "Draw"
+
+		var teams_alive = {}
+		for b in alive:
+			var team = b.get("team") if b.get("team") != null else b.get("ball_type")
+			teams_alive[team] = true
+
+		if teams_alive.size() == 1:
+			if self.has_method("_award_skill_points"):
+				self.call("_award_skill_points")
+			return teams_alive.keys()[0]
+		return null
+
 var GAME_MODES = {
+	"modifier_shrinking_zone": ModifierShrinkingZoneMode.new(),
 	"day_night_mode": DayNightMode.new(),
 	"shifting_maze": ShiftingMazeMode.new(),
 

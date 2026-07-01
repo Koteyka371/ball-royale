@@ -1,0 +1,4 @@
+{
+  "title": "Bouncing Modifier Orbs",
+  "description": "Instead of static modifier zones, buffs and debuffs spawn as physics-based orbs that bounce around the arena. Players must chase them to gain their effects while avoiding debuff orbs."
+}
