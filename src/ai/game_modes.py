@@ -3832,6 +3832,12 @@ class GuildVsGuildMode(GameMode):
             pass
 
 
+class MagneticCollisionsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Magnetic Collisions"
+        self.description = "Collisions pull entities together instead of pushing them apart, creating chaotic clusters of balls that can be targeted by AoE attacks."
+
 class ZeroGravityMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -3840,6 +3846,7 @@ class ZeroGravityMode(GameMode):
 
 GAME_MODES = {
     "zero_gravity": ZeroGravityMode(),
+    "magnetic_collisions": MagneticCollisionsMode(),
     "day_night_mode": DayNightMode(),
     "shifting_maze": ShiftingMazeMode(),
 
