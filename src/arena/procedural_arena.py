@@ -411,7 +411,7 @@ class ProceduralArena:
                         target = next((x for x in self.hazards if x.id == h.target_hazard_id), None)
                         if target:
                             h.orbit_angle += getattr(h, "orbit_speed", 1.0) * delta
-                                    h.x = target.x + math.cos(h.orbit_angle) * getattr(h, "orbit_radius", 50.0)
+                            h.x = target.x + math.cos(h.orbit_angle) * getattr(h, "orbit_radius", 50.0)
                             h.y = target.y + math.sin(h.orbit_angle) * getattr(h, "orbit_radius", 50.0)
                     else:
                         if hasattr(h, "vx"):
