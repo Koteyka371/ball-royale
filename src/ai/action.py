@@ -1735,6 +1735,37 @@ class Action:
                                 if self.ball.hp > self.ball.max_hp:
                                     self.ball.hp = self.ball.max_hp
                             continue
+                        elif hazard.kind == "vampiric_puddle":
+                            hazard_damage = hazard.damage * delta
+                            if hasattr(self.ball, "take_damage"):
+                                self.ball.take_damage(hazard_damage)
+                            elif hasattr(self.ball, "hp"):
+                                self.ball.hp -= hazard_damage
+                                if self.ball.hp <= 0:
+                                    self.ball.alive = False
+
+                            # Accumulate healing in the hazard
+                            if not hasattr(hazard, "accumulated_healing"):
+                                hazard.accumulated_healing = 0.0
+                            hazard.accumulated_healing += hazard_damage
+
+                            # Find ball with lowest HP to heal
+                            lowest_hp_ball = None
+                            lowest_hp = float('inf')
+                            if hasattr(self.world, "balls"):
+                                for b in self.world.balls:
+                                    if getattr(b, "alive", True) and hasattr(b, "hp") and hasattr(b, "max_hp") and b.hp < b.max_hp:
+                                        if b.hp < lowest_hp:
+                                            lowest_hp = b.hp
+                                            lowest_hp_ball = b
+
+                            # Heal the lowest HP ball
+                            if lowest_hp_ball and hazard.accumulated_healing > 0:
+                                lowest_hp_ball.hp += hazard.accumulated_healing
+                                if lowest_hp_ball.hp > lowest_hp_ball.max_hp:
+                                    lowest_hp_ball.hp = lowest_hp_ball.max_hp
+                                hazard.accumulated_healing = 0.0
+                            continue
                         elif hazard.kind == "damage_link":
                             if not getattr(self.ball, "damage_link_target", None):
                                 # Find closest other ball
@@ -4398,7 +4429,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math
