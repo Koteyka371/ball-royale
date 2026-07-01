@@ -3545,6 +3545,7 @@ class Action:
 
     def _use_skill(self) -> None:
         import random
+        import math
         if getattr(self.ball, "silence_timer", 0.0) > 0:
             return
         skill_timer = getattr(self.ball, "skill_timer", 0.0)
@@ -3597,6 +3598,23 @@ class Action:
 
             if skill_name == "command":
                 self.ball.team_message = {"type": "buff_command", "radius": 200}
+            elif skill_name == "magnetic_tether":
+                enemies = self._get_enemies()
+                if enemies:
+                    import math
+                    nearest = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                    dist = math.hypot(nearest.x - self.ball.x, nearest.y - self.ball.y)
+                    if dist < 400.0:
+                        self.ball.tether_target = getattr(nearest, 'id', id(nearest))
+                        self.ball.tether_timer = 0.5
+
+                        # Apply damage
+                        old_hp = getattr(nearest, 'hp', 0.0)
+                        nearest.hp -= 5.0
+
+                        if hasattr(self.world, 'spawn_particle'):
+                            self.world.spawn_particle(self.ball.x, self.ball.y, "tether", nearest.x, nearest.y)
+                        self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
             elif skill_name == "meteor_strike":
                 enemies = self._get_enemies()
                 if enemies and hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -4656,6 +4674,30 @@ class Action:
                 self.ball.speed = base_s * 1.5
 
     def _update_skill_timer(self, delta: float) -> None:
+        if getattr(self.ball, "tether_timer", 0.0) > 0:
+            self.ball.tether_timer -= delta
+            if self.ball.tether_timer <= 0:
+                self.ball.tether_timer = 0.0
+                self.ball.tether_target = None
+            elif getattr(self.ball, "tether_target", None) is not None:
+                # Find target
+                target = None
+                if hasattr(self.world, "balls"):
+                    for b in self.world.balls:
+                        if getattr(b, "id", None) == self.ball.tether_target:
+                            target = b
+                            break
+                if target:
+                    import math
+                    dx = target.x - self.ball.x
+                    dy = target.y - self.ball.y
+                    dist = math.hypot(dx, dy)
+                    pull_speed = 600.0 * delta # Faster than normal
+                    if dist > 50:
+                        self.ball.x += (dx/dist) * min(pull_speed, dist - 50)
+                        self.ball.y += (dy/dist) * min(pull_speed, dist - 50)
+
+
         if hasattr(self.ball, "pull_booster_timer") and self.ball.pull_booster_timer > 0:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):

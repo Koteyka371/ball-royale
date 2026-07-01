@@ -5672,6 +5672,30 @@ func _use_skill():
                 self.ball.set_meta("team_message", {"type": "buff_command", "radius": 200})
             elif "team_message" in self.ball:
                 self.ball.team_message = {"type": "buff_command", "radius": 200}
+        elif skill_name == "magnetic_tether":
+            var enemies = _get_enemies()
+            if enemies.size() > 0:
+                var nearest = null
+                var min_d2 = 9999999.0
+                for e in enemies:
+                    var d2 = (e.x - self.ball.x)*(e.x - self.ball.x) + (e.y - self.ball.y)*(e.y - self.ball.y)
+                    if d2 < min_d2:
+                        min_d2 = d2
+                        nearest = e
+
+                if nearest != null:
+                    var dist = sqrt(min_d2)
+                    if dist < 400.0:
+                        if self.ball.has_method("set_meta"):
+                            self.ball.set_meta("tether_target", nearest.id if "id" in nearest else nearest.get_instance_id())
+                            self.ball.set_meta("tether_timer", 0.5)
+
+                        nearest.hp -= 5.0
+                        _spawn_skill_particles("tether")
+                        if "skill_cooldown" in self.ball:
+                            self.ball.skill_timer = self.ball.skill_cooldown
+                        else:
+                            self.ball.skill_timer = 5.0
         elif skill_name == "meteor_strike":
             var enemies = _get_enemies()
             var arena = world.call("get_arena") if world != null and world.has_method("get_arena") else null
@@ -7427,6 +7451,32 @@ func _apply_friendly_aura(delta: float):
 
 
 func _update_skill_timer(delta: float):
+        if self.ball.has_meta("tether_timer") and self.ball.get_meta("tether_timer") > 0.0:
+            var t_timer = self.ball.get_meta("tether_timer") - delta
+            self.ball.set_meta("tether_timer", t_timer)
+            if t_timer <= 0:
+                self.ball.set_meta("tether_timer", 0.0)
+                self.ball.set_meta("tether_target", null)
+            elif self.ball.has_meta("tether_target") and self.ball.get_meta("tether_target") != null:
+                var target_id = self.ball.get_meta("tether_target")
+                var target = null
+                if "balls" in self.world:
+                    for b in self.world.balls:
+                        var bid = b.id if "id" in b else b.get_instance_id()
+                        if bid == target_id:
+                            target = b
+                            break
+                if target != null:
+                    var dx = target.x - self.ball.x
+                    var dy = target.y - self.ball.y
+                    var dist = sqrt(dx*dx + dy*dy)
+                    var pull_speed = 600.0 * delta
+                    if dist > 50.0:
+                        var move_dist = min(pull_speed, dist - 50.0)
+                        self.ball.x += (dx/dist) * move_dist
+                        self.ball.y += (dy/dist) * move_dist
+
+
     var pull_timer = 0.0
     if "pull_booster_timer" in self.ball:
         pull_timer = float(self.ball.pull_booster_timer)
