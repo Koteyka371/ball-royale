@@ -541,6 +541,17 @@ func update_zone(current_tick: int, delta: float) -> void:
                 if h.radius > h.target_radius:
                     h.radius = h.target_radius
 
+        for h in hazards:
+            if h.kind == "tethered_trap" and h.get_meta("active", true):
+                var tethers_alive = false
+                for tp in hazards:
+                    if tp.kind == "tether_point" and tp.has_meta("parent_id") and tp.get_meta("parent_id") == h.id and tp.get_meta("active", true):
+                        tethers_alive = true
+                        break
+                if not tethers_alive:
+                    h.active = false
+                    h.set_meta("active", false)
+
         var active_hazards = []
         for h in hazards:
             var is_active = true
@@ -620,6 +631,9 @@ func update_zone(current_tick: int, delta: float) -> void:
                 elif randf() < 0.05:
                     h.kind = "position_swap_item"
                     h.damage = 0.0
+                elif randf() < 0.05:
+                    h.kind = "tethered_trap"
+                    h.damage = 0.0
                 elif randf() < 0.15:
                     h.kind = "quicksand"
                     h.damage = 10.0
@@ -629,6 +643,20 @@ func update_zone(current_tick: int, delta: float) -> void:
                 elif randf() < 0.2:
                     h.kind = "gravity_well"
                     h.damage = 0.0
+
+                if h.kind == "tethered_trap":
+                    h.set_meta("hp", 100.0)
+                    for j in range(3):
+                        var angle = j * (2.0 * PI / 3.0)
+                        var tx = x + cos(angle) * 150.0
+                        var ty = y + sin(angle) * 150.0
+                        var tid = h_id + 5000 + j
+                        var tp = ProceduralArena.Hazard.new(tid, tx, ty, 20.0, "tether_point", 0.0)
+                        tp.set_meta("hp", 50.0)
+                        tp.set_meta("parent_id", h_id)
+                        tp.target_radius = 20.0
+                        hazards.append(tp)
+
                 hazards.append(h)
 
         if current_tick % 10 == 0:

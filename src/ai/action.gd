@@ -1625,6 +1625,28 @@ func execute(strategy: String, delta: float):
                             var pull_strength = (hazard.radius * 2.0 / min_dist) * 50.0 * delta
                             self.ball.x += nx * pull_strength
                             self.ball.y += ny * pull_strength
+                elif hazard.kind == "tethered_trap":
+                    var target_radius = 300.0
+                    if hazard.has_meta("target_radius"):
+                        target_radius = hazard.get_meta("target_radius")
+                    elif "target_radius" in hazard:
+                        target_radius = hazard.target_radius
+
+                    if dist_sq > 0.0001:
+                        var dist = sqrt(dist_sq)
+                        if dist < target_radius:
+                            var nx = dx / dist
+                            var ny = dy / dist
+                            var min_dist = 10.0
+                            if dist > min_dist:
+                                min_dist = dist
+                            var pull_strength = (target_radius * 2.0 / min_dist) * 50.0 * delta
+                            self.ball.x += nx * pull_strength
+                            self.ball.y += ny * pull_strength
+
+                            if dist < hazard.radius:
+                                self.ball.hp = 0
+                                self.ball.alive = false
                 elif hazard.kind in ["black_hole", "tornado", "portal", "teleporter", "swap_portal"]:
                     var current_tick = 0
                     if "tick" in self.world:
@@ -2153,6 +2175,27 @@ func execute(strategy: String, delta: float):
                                 _spawn_particles(self.ball.x, self.ball.y, "lightning")
                             if self.ball.has_method("set_meta"):
                                 self.ball.set_meta("stutter_timer", 1.0)
+                        continue
+                    elif hazard.kind == "tether_point":
+                        var dx = self.ball.x - hazard.x
+                        var dy = self.ball.y - hazard.y
+                        var d = sqrt(dx*dx + dy*dy)
+                        var b_rad = 10.0
+                        if "radius" in self.ball:
+                            b_rad = self.ball.radius
+                        if d < (b_rad + hazard.radius) and d > 0:
+                            var nx = dx / d
+                            var ny = dy / d
+                            var overlap = (b_rad + hazard.radius) - d
+                            self.ball.x += nx * overlap
+                            self.ball.y += ny * overlap
+
+                            if hazard.has_meta("hp"):
+                                var new_hp = hazard.get_meta("hp") - 100.0 * delta
+                                hazard.set_meta("hp", new_hp)
+                                if new_hp <= 0:
+                                    hazard.active = false
+                                    hazard.set_meta("active", false)
                         continue
                     elif hazard.kind == "breakable_wall":
                         var dx = self.ball.x - hazard.x

@@ -1151,6 +1151,21 @@ class Action:
                                 pull_strength = min(pull_strength, dist * 0.5) # Prevent overshooting
                                 self.ball.x += nx * pull_strength
                                 self.ball.y += ny * pull_strength
+                    elif hazard.kind == "tethered_trap":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq > 0.0001:
+                            dist = math.sqrt(dist_sq)
+                            if dist < hazard.target_radius:
+                                nx, ny = dx / dist, dy / dist
+                                pull_strength = (hazard.target_radius * 2.0 / max(10.0, dist)) * 50.0 * delta
+                                self.ball.x += nx * pull_strength
+                                self.ball.y += ny * pull_strength
+
+                                if dist < hazard.radius:
+                                    self.ball.hp = 0
+                                    self.ball.alive = False
                     elif hazard.kind in ("black_hole", "tornado", "portal", "teleporter", "swap_portal"):
                         # Only update global state once per frame using the tick counter
                         current_tick = getattr(self.world, "tick", 0)
@@ -1508,6 +1523,21 @@ class Action:
                                 if hasattr(self, "_spawn_skill_particles"):
                                     self._spawn_skill_particles("lightning")
                                 self.ball.stutter_timer = 1.0 # Stun
+                            continue
+                        elif hazard.kind == "tether_point":
+                            dx = self.ball.x - hazard.x
+                            dy = self.ball.y - hazard.y
+                            dist = math.hypot(dx, dy)
+                            if dist < (self.ball.radius + hazard.radius) and dist > 0:
+                                nx, ny = dx / dist, dy / dist
+                                overlap = (self.ball.radius + hazard.radius) - dist
+                                self.ball.x += nx * overlap
+                                self.ball.y += ny * overlap
+
+                                if hasattr(hazard, "hp"):
+                                    hazard.hp -= 100.0 * delta # damage it on bump
+                                    if hazard.hp <= 0:
+                                        hazard.active = False
                             continue
                         elif hazard.kind == "breakable_wall":
                             # Clamp position manually

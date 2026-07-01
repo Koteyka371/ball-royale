@@ -410,6 +410,7 @@ class ProceduralArena:
                     if hasattr(h, "target_hazard_id"):
                         target = next((x for x in self.hazards if x.id == h.target_hazard_id), None)
                         if target:
+                            import math
                             h.orbit_angle += getattr(h, "orbit_speed", 1.0) * delta
                             h.x = target.x + math.cos(h.orbit_angle) * getattr(h, "orbit_radius", 50.0)
                             h.y = target.y + math.sin(h.orbit_angle) * getattr(h, "orbit_radius", 50.0)
@@ -485,6 +486,18 @@ class ProceduralArena:
                         if h.radius > h.target_radius:
                             h.radius = h.target_radius
 
+            # Check tethered_trap active state
+            for h in self.hazards:
+                if getattr(h, "kind", "") == "tethered_trap" and getattr(h, "active", True):
+                    # Check if any tether points are alive
+                    tethers_alive = False
+                    for tp in self.hazards:
+                        if getattr(tp, "kind", "") == "tether_point" and getattr(tp, "parent_id", -1) == h.id and getattr(tp, "active", True):
+                            tethers_alive = True
+                            break
+                    if not tethers_alive:
+                        h.active = False
+
             # Remove inactive flares and meteors
             self.hazards = [h for h in self.hazards if getattr(h, "active", True)]
             self.hazards.extend(new_craters)
@@ -555,6 +568,9 @@ class ProceduralArena:
                 elif random.random() < 0.05:
                     kind = "position_swap_item"
                     damage = 0.0
+                elif random.random() < 0.05:
+                    kind = "tethered_trap"
+                    damage = 0.0
                 elif random.random() < 0.15:
                     kind = "quicksand"
                     damage = 10.0
@@ -569,6 +585,22 @@ class ProceduralArena:
                     setattr(new_hazard, "time_scale", random.choice([0.5, 1.5, 2.0]))
                 elif kind == "breakable_wall":
                     setattr(new_hazard, "hp", 100.0)
+                elif kind == "tethered_trap":
+                    setattr(new_hazard, "hp", 100.0) # Actually, the tethers have HP
+                    new_hazard.target_radius = target_radius
+                    # Spawn 3 tether points
+                    import math
+                    for i in range(3):
+                        angle = i * (2 * math.pi / 3)
+                        tx = x + math.cos(angle) * 150.0
+                        ty = y + math.sin(angle) * 150.0
+                        tid = h_id + 5000 + i
+                        tp = Hazard(id=tid, x=tx, y=ty, radius=20.0, kind="tether_point", damage=0.0)
+                        setattr(tp, "hp", 50.0)
+                        setattr(tp, "parent_id", h_id)
+                        tp.target_radius = 20.0
+                        self.hazards.append(tp)
+
                 new_hazard.target_radius = target_radius
                 self.hazards.append(new_hazard)
 
