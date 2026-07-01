@@ -397,14 +397,14 @@ class BattleRoyaleMode(GameMode):
                     world.arena.hazards.append(lightning)
                 if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
                     from arena.procedural_arena import Hazard
-                    # Spawn tornado
+                    # Spawn tornado siren
                     x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
                     y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
-                    tornado = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=40.0, kind="tornado", damage=20.0)
-                    setattr(tornado, 'duration', 5.0)
-                    setattr(tornado, 'vx', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
-                    setattr(tornado, 'vy', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
-                    world.arena.hazards.append(tornado)
+                    tornado_siren = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=40.0, kind="tornado_siren", damage=0.0)
+                    setattr(tornado_siren, 'duration', 3.0)
+                    setattr(tornado_siren, "vx", getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
+                    setattr(tornado_siren, "vy", getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
+                    world.arena.hazards.append(tornado_siren)
 
         valid_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
         for b in valid_balls:
@@ -1317,14 +1317,14 @@ class WeatherChaosMode(GameMode):
                     world.arena.hazards.append(lightning)
                 if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
                     from arena.procedural_arena import Hazard
-                    # Spawn tornado
+                    # Spawn tornado siren
                     x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
                     y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
-                    tornado = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=40.0, kind="tornado", damage=20.0)
-                    setattr(tornado, 'duration', 5.0)
-                    setattr(tornado, 'vx', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
-                    setattr(tornado, 'vy', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
-                    world.arena.hazards.append(tornado)
+                    tornado_siren = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=40.0, kind="tornado_siren", damage=0.0)
+                    setattr(tornado_siren, 'duration', 3.0)
+                    setattr(tornado_siren, "vx", getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
+                    setattr(tornado_siren, "vy", getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
+                    world.arena.hazards.append(tornado_siren)
 
         valid_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
 

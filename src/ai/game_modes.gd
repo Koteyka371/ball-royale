@@ -490,11 +490,11 @@ class BattleRoyaleMode extends GameMode:
                     var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
                     var x = randf_range(100.0, world.arena.width - 100.0)
                     var y = randf_range(100.0, world.arena.height - 100.0)
-                    var tornado = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 40.0, "tornado", 20.0)
-                    tornado.set_meta("duration", 5.0)
-                    tornado.set_meta("vx", randf_range(-100.0, 100.0))
-                    tornado.set_meta("vy", randf_range(-100.0, 100.0))
-                    world.arena.hazards.append(tornado)
+                    var tornado_siren = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 40.0, "tornado_siren", 0.0)
+                    tornado_siren.set_meta("duration", 3.0)
+                    tornado_siren.set_meta("vx", randf_range(-100.0, 100.0))
+                    tornado_siren.set_meta("vy", randf_range(-100.0, 100.0))
+                    world.arena.hazards.append(tornado_siren)
 
         for b in balls:
             if b.alive and b.ball_type != "spectator":
@@ -1684,11 +1684,11 @@ class WeatherChaosMode extends GameMode:
 					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
 					var x = randf_range(100.0, world.arena.width - 100.0)
 					var y = randf_range(100.0, world.arena.height - 100.0)
-					var tornado = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 40.0, "tornado", 20.0)
-					tornado.set_meta("duration", 5.0)
-					tornado.set_meta("vx", randf_range(-100.0, 100.0))
-					tornado.set_meta("vy", randf_range(-100.0, 100.0))
-					world.arena.hazards.append(tornado)
+					var tornado_siren = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 40.0, "tornado_siren", 0.0)
+					tornado_siren.set_meta("duration", 3.0)
+					tornado_siren.set_meta("vx", randf_range(-100.0, 100.0))
+					tornado_siren.set_meta("vy", randf_range(-100.0, 100.0))
+					world.arena.hazards.append(tornado_siren)
 
 		for b in balls:
 			if b.alive and b.ball_type != "spectator":

@@ -258,6 +258,9 @@ func generate():
         elif kind == "tornado":
             radius = rng.randf_range(30.0, 60.0)
             damage = 15.0
+        elif kind == "tornado_siren":
+            radius = rng.randf_range(30.0, 60.0)
+            damage = 0.0
         elif kind == "lightning_storm":
             radius = rng.randf_range(30.0, 60.0)
             damage = 0.0
@@ -517,6 +520,28 @@ func update_zone(current_tick: int, delta: float) -> void:
                             h.set_meta("vx", h.get_meta("vx") * -1.0)
                         if h.y < 0 or h.y > height:
                             h.set_meta("vy", h.get_meta("vy") * -1.0)
+            elif "kind" in h and h.kind == "tornado_siren":
+                if h.has_meta("duration"):
+                    var dur = h.get_meta("duration") - delta
+                    h.set_meta("duration", dur)
+                    if dur <= 0:
+                        if h.has_method("set_meta"):
+                            h.set_meta("active", false)
+                        if "active" in h:
+                            h.active = false
+                        # Spawn the actual tornado
+                        var t = Hazard.new(hazards.size() + (randi() % 9000 + 1000), h.x, h.y, h.radius, "tornado", 20.0)
+                        t.set_meta("duration", 5.0)
+                        if h.has_meta("vx"): t.set_meta("vx", h.get_meta("vx"))
+                        if h.has_meta("vy"): t.set_meta("vy", h.get_meta("vy"))
+                        hazards.append(t)
+                if h.has_meta("vx") and h.has_meta("vy"):
+                    h.x += h.get_meta("vx") * delta
+                    h.y += h.get_meta("vy") * delta
+                    if h.x < 0 or h.x > width:
+                        h.set_meta("vx", h.get_meta("vx") * -1.0)
+                    if h.y < 0 or h.y > height:
+                        h.set_meta("vy", h.get_meta("vy") * -1.0)
             elif "kind" in h and h.kind in ["tornado", "lightning_storm"]:
                 if h.has_meta("duration"):
                     var dur = h.get_meta("duration") - delta

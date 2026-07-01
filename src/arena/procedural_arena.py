@@ -120,7 +120,7 @@ class ProceduralArena:
         # Generate hazards
         num_hazards = self.num_rooms * 2
         for i in range(num_hazards):
-            kind = random.choice(["spikes", "lava", "fake_booster", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "lightning_storm", "hidden_trap", "silence_booster", "switch", "magnet", "quicksand", "magnet_booster", "breakable_wall", "portal_gun_item", "wormhole", "clone_booster"])
+            kind = random.choice(["spikes", "lava", "fake_booster", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "tornado_siren", "lightning_storm", "hidden_trap", "silence_booster", "switch", "magnet", "quicksand", "magnet_booster", "breakable_wall", "portal_gun_item", "wormhole", "clone_booster"])
             if kind == "switch":
                 radius = 20.0
                 damage = 0.0
@@ -157,6 +157,9 @@ class ProceduralArena:
             elif kind == "tornado":
                 radius = random.uniform(30.0, 60.0)
                 damage = 15.0
+            elif kind == "tornado_siren":
+                radius = random.uniform(30.0, 60.0)
+                damage = 0.0
             elif kind == "lightning_storm":
                 radius = random.uniform(30.0, 60.0)
                 damage = 0.0
@@ -459,6 +462,27 @@ class ProceduralArena:
                             if hasattr(h, "vx"): h.vx *= -1
                         if h.y < 0 or h.y > self.height:
                             if hasattr(h, "vy"): h.vy *= -1
+                elif getattr(h, "kind", "") == "tornado_siren":
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0:
+                            h.active = False
+                            # Spawn the actual tornado
+                            import random
+                            t = Hazard(id=len(self.hazards) + random.randint(1000, 9999), x=h.x, y=h.y, radius=h.radius, kind="tornado", damage=20.0)
+                            setattr(t, "duration", 5.0)
+                            if hasattr(h, "vx"): setattr(t, "vx", h.vx)
+                            if hasattr(h, "vy"): setattr(t, "vy", h.vy)
+                            self.hazards.append(t)
+                    if hasattr(h, "vx"):
+                        h.x += h.vx * delta
+                    if hasattr(h, "vy"):
+                        h.y += h.vy * delta
+
+                    if h.x < 0 or h.x > self.width:
+                        if hasattr(h, "vx"): h.vx *= -1
+                    if h.y < 0 or h.y > self.height:
+                        if hasattr(h, "vy"): h.vy *= -1
                 elif getattr(h, "kind", "") == "tornado":
                     if hasattr(h, "duration"):
                         h.duration -= delta
