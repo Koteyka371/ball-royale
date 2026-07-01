@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-352] Wormhole Trap — *2026-07-01 14:07:00 UTC*
+
+A new hazard type that links two specific points in the arena. If a ball gets too close, it gets instantly teleported to the other wormhole node, carrying its current momentum. This would create chaotic repositioning.
+
+---
+
 ## [idea-380] Weekly Mutators — *2026-07-01 13:48:41 UTC*
 
 Introduce weekly mutators to standard game modes (e.g., low gravity, double damage) to keep gameplay fresh.

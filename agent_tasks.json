@@ -6099,7 +6099,7 @@
     },
     {
       "id": "idea-352",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Wormhole Trap",
@@ -10484,6 +10484,75 @@
         "src/ai/energy_shields.py",
         "src/ai/energy_shields.gd",
         "tests/test_energy_shields.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-608",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tag Team Mode",
+      "description": "A new game mode where players queue as a team of two balls but only one is active at a time. The active ball can swap with their teammate using a tag mechanism, which could have a cooldown or require returning to a specific zone. This allows for strategic combinations of different ball types and requires careful management of both balls' health.",
+      "allowed_paths": [
+        "src/ai/tag_team.py",
+        "src/ai/tag_team.gd",
+        "tests/test_tag_team.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-609",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Safe Zone",
+      "description": "A game mode where the safe zone expands outward from the center, and the center becomes dangerous. It forces players to move towards the edges of the map as the game progresses, completely changing standard battle royale dynamics.",
+      "allowed_paths": [
+        "src/ai/reverse_safe_zone.py",
+        "src/ai/reverse_safe_zone.gd",
+        "tests/test_reverse_safe_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-610",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Daily Quests",
+      "description": "Introduce daily quests to encourage players to log in every day. Quests could include tasks like 'Deal 10,000 damage', 'Survive for 5 minutes', or 'Play 3 matches in the current weekly mutator mode'. Completing quests would reward players with experience, currency, or cosmetic items.",
+      "allowed_paths": [
+        "src/ui/daily_quests.py",
+        "src/ui/daily_quests.gd",
+        "src/ai/daily_quests.py",
+        "tests/test_daily_quests.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-611",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Labyrinth",
+      "description": "Combine the shifting maze with the shrinking safe zone. Walls dynamically shift and crush players while the safe area gets smaller, forcing players to quickly navigate dead ends before the storm catches them.",
+      "allowed_paths": [
+        "src/ai/shrinking_labyrinth.py",
+        "src/ai/shrinking_labyrinth.gd",
+        "tests/test_shrinking_labyrinth.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
