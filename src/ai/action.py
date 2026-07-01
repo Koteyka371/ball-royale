@@ -1189,6 +1189,22 @@ class Action:
                                         # Important: After a teleport, we must prevent the rest of the tick from adding `speed * delta` based on random boid rules
                                         return
                                 self.ball.last_teleport_tick = current_tick
+                    elif hazard.kind == "ice_patch":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+                                # Keep sliding in the current direction, drastically reducing steering
+                                speed_mult = 1.5 # Slight speed boost while slipping
+                                self.ball.x += self.ball.vx * delta * speed_mult
+                                self.ball.y += self.ball.vy * delta * speed_mult
+
+                            # Decrease turning capability by essentially locking in movement
+                            self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 1.5
+                            if not hasattr(self.ball, "is_slipping"):
+                                self.ball.is_slipping = True
+
                     elif hazard.kind == "quicksand":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y

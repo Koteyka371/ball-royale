@@ -1,0 +1,4 @@
+{
+  "title": "Dynamic Temperature System",
+  "description": "Expand the weather logic to include a persistent 'temperature' variable for the arena, which determines how long ice slicks last or how quickly mud dries into solid ground. Characters with certain abilities (like fireball) could dynamically melt ice patches into puddles of water, creating interesting environmental interactions."
+}
