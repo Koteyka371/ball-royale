@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-319] Weaponized Portals & Portal Gun Item — *2026-07-01 13:15:12 UTC*
+
+Add an active item (Portal Gun) that allows balls to shoot two linked portals onto the map on demand. Players can use this to strategically reposition or bait enemies into falling through and getting ambushed.
+
+---
+
 ## [idea-379] Clan System — *2026-07-01 12:55:42 UTC*
 
 Allow players to create or join clans, complete clan-specific quests, and compete in clan vs clan leaderboards.

@@ -5536,7 +5536,7 @@
     },
     {
       "id": "idea-319",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weaponized Portals & Portal Gun Item",
@@ -10280,6 +10280,57 @@
         "src/ai/reverse_controls_mutator.py",
         "src/ai/reverse_controls_mutator.gd",
         "tests/test_reverse_controls_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-596",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Clan Wars Game Mode",
+      "description": "A new game mode where two clans face off against each other in a multi-round tournament. Winning yields special clan cosmetics and bonus clan points for the leaderboard.",
+      "allowed_paths": [
+        "src/ai/clan_wars_game.py",
+        "src/ai/clan_wars_game.gd",
+        "tests/test_clan_wars_game.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-597",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Stormcaller Booster",
+      "description": "A rare booster that upon collection surrounds the player with a mini lightning storm for 10 seconds. It grants a speed boost and periodically strikes nearby hazards or enemies to clear a path.",
+      "allowed_paths": [
+        "src/ai/stormcaller_booster.py",
+        "src/ai/stormcaller_booster.gd",
+        "tests/test_stormcaller_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-598",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Clan Vault",
+      "description": "A shared storage space where clan members can deposit and withdraw crafting materials or unwanted items, with rank-based access controls.",
+      "allowed_paths": [
+        "src/ai/clan_vault.py",
+        "src/ai/clan_vault.gd",
+        "tests/test_clan_vault.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
