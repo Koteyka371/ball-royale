@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-300] Night Vision Goggles Powerup — *2026-07-01 15:32:25 UTC*
+
+A new collectible powerup that spawns during Battle Royale matches. When collected, the ball's base_perception_radius is greatly increased and it becomes immune to the vision reduction of dark phases, giving it a massive tactical advantage during the blackout.
+
+---
+
 ## [idea-392] Bouncy Borders — *2026-07-01 15:32:21 UTC*
 
 The arena boundaries reflect projectiles and entities with increased speed, allowing for insane trick shots and punishing players who get too close to the edge.
