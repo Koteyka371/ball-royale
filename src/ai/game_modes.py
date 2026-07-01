@@ -330,6 +330,7 @@ class BattleRoyaleMode(GameMode):
                 b.base_damage = getattr(b, "damage", 10.0)
 
             if self.weather == "clear":
+                b.cosmetic = "none"
                 b.perception_radius = getattr(b, "base_perception_radius", 250.0)
                 b.speed = b.base_speed
                 b.damage = b.base_damage
@@ -337,6 +338,7 @@ class BattleRoyaleMode(GameMode):
                 b.steering_mult = 1.0
                 b.attack_accuracy = 1.0
             elif self.weather == "rain":
+                b.cosmetic = "umbrella"
                 b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.9
                 b.speed = b.base_speed * 0.8
                 b.damage = b.base_damage
@@ -356,6 +358,7 @@ class BattleRoyaleMode(GameMode):
                 b.dash_range_mult = 1.0
                 b.steering_mult = 1.0
             elif self.weather == "snow":
+                b.cosmetic = "snow_goggles"
                 b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.6
                 b.speed = b.base_speed * 0.5
                 b.damage = b.base_damage * 1.2
@@ -388,6 +391,7 @@ class BattleRoyaleMode(GameMode):
                 b.dash_range_mult = 1.0
                 b.steering_mult = 1.0
             elif self.weather == "sandstorm":
+                b.cosmetic = "dust_mask"
                 b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.3
                 b.speed = b.base_speed * 0.7
                 b.damage = b.base_damage
@@ -405,6 +409,7 @@ class BattleRoyaleMode(GameMode):
                         b.hp -= 20.0
                 b.attack_accuracy = 0.5
             elif self.weather == "heatwave":
+                b.cosmetic = "sunglasses"
                 b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.7
                 b.speed = b.base_speed * 0.9 # Slightly reduced max speed
                 b.damage = b.base_damage
@@ -1170,6 +1175,7 @@ class WeatherChaosMode(GameMode):
                 b.base_damage = getattr(b, "damage", 10.0)
 
             if self.weather == "clear":
+                b.cosmetic = "none"
                 b.perception_radius = getattr(b, "base_perception_radius", 250.0)
                 b.speed = b.base_speed
                 b.damage = b.base_damage
@@ -1177,6 +1183,7 @@ class WeatherChaosMode(GameMode):
                 b.steering_mult = 1.0
                 b.attack_accuracy = 1.0
             elif self.weather == "rain":
+                b.cosmetic = "umbrella"
                 b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.9
                 b.speed = b.base_speed * 0.8
                 b.damage = b.base_damage
@@ -1220,6 +1227,7 @@ class WeatherChaosMode(GameMode):
                                 decoy.active_skill = None
                             world.balls.append(decoy)
             elif self.weather == "snow":
+                b.cosmetic = "snow_goggles"
                 b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.6
                 b.speed = b.base_speed * 0.5
                 b.damage = b.base_damage * 1.2
@@ -1249,6 +1257,7 @@ class WeatherChaosMode(GameMode):
                 b.dash_range_mult = 1.0
                 b.steering_mult = 1.0
             elif self.weather == "sandstorm":
+                b.cosmetic = "dust_mask"
                 b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.3
                 b.speed = b.base_speed * 0.7 # Hard to move
                 b.damage = b.base_damage
@@ -1290,6 +1299,7 @@ class WeatherChaosMode(GameMode):
                     b.hp = getattr(b, "hp", 100) - 20
                 b.attack_accuracy = 0.5
             elif self.weather == "heatwave":
+                b.cosmetic = "sunglasses"
                 b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.7
                 b.speed = b.base_speed * 0.9 # Slightly reduced max speed
                 b.damage = b.base_damage
