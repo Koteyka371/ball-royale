@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-345] Weaponized Teleporters — *2026-07-01 16:51:02 UTC*
+
+Allow some specific classes or items to 'weaponize' teleporters by placing a temporary trap on the destination pad, dealing damage or applying status effects to the next entity that teleports through.
+
+---
+
 ## [idea-378] Chain Lightning Upgrade — *2026-07-01 16:48:55 UTC*
 
 A new skill that deals damage to one enemy and then chains to up to 3 nearby enemies within a short radius, with each jump dealing slightly reduced damage.

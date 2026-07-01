@@ -5979,7 +5979,7 @@
     },
     {
       "id": "idea-345",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weaponized Teleporters",
@@ -11216,6 +11216,57 @@
         "src/ai/tsunami.py",
         "src/ai/tsunami.gd",
         "tests/test_tsunami.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-651",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chrono Shift Skill",
+      "description": "A new skill that allows balls to speed up time in a localized area around them for a few seconds, drastically increasing their movement and attack speed while moving outside enemies slowly.",
+      "allowed_paths": [
+        "src/ai/chrono_shift_skill.py",
+        "src/ai/chrono_shift_skill.gd",
+        "tests/test_chrono_shift_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-652",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Rewind Powerup",
+      "description": "A rare collectible booster that temporarily stores a ball's position, health, and cooldown states, then instantly rewinds them 3 seconds into the past if their HP drops below zero.",
+      "allowed_paths": [
+        "src/ai/rewind_powerup.py",
+        "src/ai/rewind_powerup.gd",
+        "tests/test_rewind_powerup.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-653",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shield Generator Booster",
+      "description": "A booster that gives the collecting ball a temporary shield that absorbs the next incoming instance of damage.",
+      "allowed_paths": [
+        "src/ai/shield_generator_booster.py",
+        "src/ai/shield_generator_booster.gd",
+        "tests/test_shield_generator_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
