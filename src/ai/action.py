@@ -3363,6 +3363,38 @@ class Action:
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
+                elif getattr(nearest, "kind", None) == "clone_booster":
+                    import copy
+                    if hasattr(self.world, "balls"):
+                        clone = copy.copy(self.ball)
+                        clone.id = getattr(self.world, "next_id", __import__('random').randint(10000, 99999))
+                        if hasattr(self.world, "next_id"):
+                            self.world.next_id += 1
+
+                        clone.hp = getattr(self.ball, "max_hp", 100)
+                        clone.max_hp = clone.hp
+                        clone.damage = 0
+                        clone.speed = getattr(self.ball, "speed", 2.0)
+                        clone.owner_id = getattr(self.ball, "id", None)
+                        clone.is_decoy = True
+                        clone.decoy_timer = 5.0
+                        clone.skill_timer = 9999.0
+                        clone.attack_timer = 9999.0
+                        clone.SKILL = None
+                        clone.skill = None
+                        clone.active_skill = None
+
+                        # Add a small offset so they don't spawn exactly on top of each other
+                        clone.x += 10
+                        clone.y += 10
+
+                        self.world.balls.append(clone)
+
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "shadow_booster":
                     self.ball.shadow_booster_timer = 15.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -4619,7 +4651,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math

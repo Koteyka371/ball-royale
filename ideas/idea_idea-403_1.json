@@ -1,0 +1,4 @@
+{
+  "title": "Clone Mine Trap",
+  "description": "A hazard that triggers when a ball gets near, immediately spawning hostile clone enemies of that ball that target the original ball."
+}
