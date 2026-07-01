@@ -1271,7 +1271,43 @@ class ThickFogArena(ProceduralArena):
             self.fog_timer = 0.0
             self.is_foggy = not self.is_foggy
 
+
+class ThunderstormArena(ProceduralArena):
+    def __init__(self, arena_size: float = 2000.0, seed: int | None = None):
+        super().__init__(arena_size, 5, seed)
+        self.lightning_timer = 0.0
+        self.strike_interval = 2.0  # seconds between lightning strikes
+
+    def update_zone(self, current_tick: int, delta: float):
+        super().update_zone(current_tick, delta)
+        self.lightning_timer += delta
+        if self.lightning_timer >= self.strike_interval:
+            self.lightning_timer = 0.0
+            import random
+            # Spawn lightning strike
+            x = random.uniform(50, self.width - 50)
+            y = random.uniform(50, self.height - 50)
+            h_id = 9000 + len(self.hazards) + random.randint(0, 1000)
+            lightning = Hazard(id=h_id, x=x, y=y, radius=60.0, kind="lightning", damage=300.0)
+            lightning.target_radius = 60.0
+            setattr(lightning, "duration", 0.5)  # Very short duration
+            self.hazards.append(lightning)
+
+        # Clean up expired lightning
+        surviving_hazards = []
+        for h in self.hazards:
+            if getattr(h, "kind", "") == "lightning":
+                duration = getattr(h, "duration", 0.0)
+                duration -= delta
+                setattr(h, "duration", duration)
+                if duration > 0:
+                    surviving_hazards.append(h)
+            else:
+                surviving_hazards.append(h)
+        self.hazards = surviving_hazards
+
 ARENAS = {
+    "thunderstorm": ThunderstormArena,
     "thick_fog": ThickFogArena,
     "black_hole": BlackHoleArena,
     "neural_ball": NeuralBallArena,

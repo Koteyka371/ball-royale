@@ -458,7 +458,41 @@ class BlackHoleArena extends ProceduralArena:
 		var h0 = ProceduralArena.Hazard.new(0, cx, cy, 200.0, "black_hole", 30.0)
 		hazards.append(h0)
 
+
+class ThunderstormArena extends ProceduralArena:
+	var lightning_timer = 0.0
+	var strike_interval = 2.0
+
+	func _init(size: float = 2000.0, seed_val = null):
+		super(size, 5, seed_val)
+
+	func update_zone(current_tick: int, delta: float) -> void:
+		super.update_zone(current_tick, delta)
+		lightning_timer += delta
+		if lightning_timer >= strike_interval:
+			lightning_timer = 0.0
+			var x = randf_range(50.0, width - 50.0)
+			var y = randf_range(50.0, height - 50.0)
+			var h_id = 9000 + hazards.size() + (randi() % 1000)
+			var lightning = ProceduralArena.Hazard.new(h_id, x, y, 60.0, "lightning", 300.0)
+			lightning.set_meta("target_radius", 60.0)
+			lightning.set_meta("duration", 0.5)
+			hazards.append(lightning)
+
+		var surviving_hazards = []
+		for h in hazards:
+			if h.kind == "lightning":
+				var duration = h.get_meta("duration", 0.0)
+				duration -= delta
+				h.set_meta("duration", duration)
+				if duration > 0:
+					surviving_hazards.append(h)
+			else:
+				surviving_hazards.append(h)
+		hazards = surviving_hazards
+
 const ARENAS = [
+	"thunderstorm",
 	"thick_fog",
 	"black_hole",
 	"neural_ball",
