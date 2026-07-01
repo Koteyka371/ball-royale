@@ -191,3 +191,20 @@ def test_weather_control_booster():
     mode.tick(world, [ball], 0.2)
     # The normal logic will trigger and randomly pick a weather, resetting weather_timer
     assert mode.weather_timer == 0.0
+
+def test_weather_mode_rain_vision():
+    import ai.game_modes as gm
+    mode = gm.GAME_MODES["weather_chaos"]
+    world = MockWorld()
+    world.leaderboard_manager = type("Mock", (), {"data": {"current_season": 4}})()
+
+    ball = MockBall(1, "warrior")
+    ball.perception_radius = 250.0
+    ball.base_perception_radius = 250.0
+    balls = [ball]
+    mode.setup(world, balls)
+
+    mode.weather = "rain"
+    mode.tick(world, balls, 0.1)
+
+    assert ball.perception_radius == 125.0 # 250 * 0.5
