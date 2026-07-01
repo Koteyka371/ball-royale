@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-416] Mirror Dimension — *2026-07-01 18:00:15 UTC*
+
+An arena event where all projectiles are reflected infinitely across mirror walls.
+
+---
+
 ## [idea-411] Nemesis Hunter Booster — *2026-07-01 17:27:22 UTC*
 
 A booster that specifically increases movement speed towards your nemesis.

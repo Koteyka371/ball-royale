@@ -7190,7 +7190,7 @@
     },
     {
       "id": "idea-416",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mirror Dimension",
@@ -11318,6 +11318,40 @@
         "src/ai/echo_booster.py",
         "src/ai/echo_booster.gd",
         "tests/test_echo_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-657",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Nemesis Tracking Aura",
+      "description": "A passive skill that periodically reveals the location of your nemeses through walls, allowing you to track them down more easily.",
+      "allowed_paths": [
+        "src/ai/nemesis_tracking_aura.py",
+        "src/ai/nemesis_tracking_aura.gd",
+        "tests/test_nemesis_tracking_aura.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-658",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Revenge Burst",
+      "description": "An explosive ability that deals more damage the more nemeses you have alive on the field, giving a comeback mechanic.",
+      "allowed_paths": [
+        "src/ai/revenge_burst.py",
+        "src/ai/revenge_burst.gd",
+        "tests/test_revenge_burst.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
