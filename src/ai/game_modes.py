@@ -1983,6 +1983,89 @@ class CustomMatchMode(GameMode):
 
 
 
+class EcholocationMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Echolocation"
+        self.description = "The arena is completely dark except for a small ring of light around each ball. Echolocation cues and occasional lightning flashes reveal the map."
+        self.flash_timer = 0.0
+        self.flash_interval = 10.0
+        self.is_flashing = False
+        self.flash_duration = 0.5
+        self.current_flash_time = 0.0
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        self.world = world
+        self.flash_timer = 0.0
+        self.is_flashing = False
+        self.current_flash_time = 0.0
+
+        if hasattr(world, "arena"):
+            world.arena.is_night = True
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator":
+                b.base_perception_radius = getattr(b, "perception_radius", 250.0)
+                b.team = getattr(b, "team", b.ball_type)
+                b.perception_radius = 60.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+
+        self.flash_timer += delta
+
+        if self.is_flashing:
+            self.current_flash_time += delta
+            if self.current_flash_time >= self.flash_duration:
+                self.is_flashing = False
+                if hasattr(world, "arena"):
+                    world.arena.is_night = True
+                for b in balls:
+                    if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                        b.perception_radius = 60.0
+        else:
+            if self.flash_timer >= self.flash_interval:
+                self.flash_timer = 0.0
+                self.is_flashing = True
+                self.current_flash_time = 0.0
+                if hasattr(world, "arena"):
+                    world.arena.is_night = False
+
+                if hasattr(world, "add_event"):
+                    world.add_event("weather_warning", {"type": "weather_warning", "message": "Lightning flash reveals the arena!"})
+
+                for b in balls:
+                    if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                        b.perception_radius = 1000.0
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
+        if len(teams_alive) == 1:
+            return list(teams_alive)[0]
+
+        if len(alive) == 1:
+            return alive[0].ball_type
+
+        return None
+
+
 class PitchBlackMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -3889,7 +3972,8 @@ GAME_MODES = {
     "earthquake": EarthquakeMode(),
     "mirror_match": MirrorMatchMode(),
     "clone_chaos": CloneChaosMode(),
-    "supernova": SupernovaMode()
+    "supernova": SupernovaMode(),
+    "echolocation": EcholocationMode()
 }
 
 try:
