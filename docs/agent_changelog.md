@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-381] Poison Nova Skill — *2026-07-01 16:42:46 UTC*
+
+A skill that emits an expanding ring of poison, applying a severe Damage Over Time effect to all enemies caught in it.
+
+---
+
 ## [idea-389] Portal Gun Skill — *2026-07-01 16:42:42 UTC*
 
 A new skill for a Trickster ball that shoots two linked portals onto the arena ground, allowing the ball or its allies to instantly teleport across the map and ambush enemies.
