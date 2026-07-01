@@ -650,7 +650,7 @@ func execute(strategy: String, delta: float):
 						target_y += randf_range(-300.0, 300.0)
 					elif strategy == "attack":
 						var enemies = _get_enemies()
-						if enemies != null and enemies.size() > 0:
+                if enemies != null and enemies.size() > 0:
 							var closest = enemies[0]
 							var bmin_dist = pow(closest.x - self.ball.x, 2) + pow(closest.y - self.ball.y, 2)
 							for e in enemies:
@@ -5812,7 +5812,51 @@ func _use_skill():
                         illusion["skill_timer"] = 9999.0
 
                     self.world.balls.append(illusion)
-        elif skill_name == "Действие" or skill_name == "action_skill":
+            elif skill_name == "repel" or skill_name == "magnetic_repel":
+                if "team_message" in self.ball:
+                    self.ball.team_message = {"type": "repel_used", "radius": 150}
+                elif self.ball.has_method("set_meta"):
+                    self.ball.set_meta("team_message", {"type": "repel_used", "radius": 150})
+                var enemies = self._get_enemies()
+                if enemies != null and enemies.size() > 0:
+                    for target in enemies:
+                        var t_x = 0.0
+                        var t_y = 0.0
+                        if "x" in target: t_x = target.x
+                        elif target.has_method("get_meta") and target.has_meta("x"): t_x = target.get_meta("x")
+                        if "y" in target: t_y = target.y
+                        elif target.has_method("get_meta") and target.has_meta("y"): t_y = target.get_meta("y")
+                        var dist_sq = (t_x - self.ball.x) * (t_x - self.ball.x) + (t_y - self.ball.y) * (t_y - self.ball.y)
+                        if dist_sq <= 22500:
+                            var dist = sqrt(dist_sq)
+                            if dist > 0.0001:
+                                var push_strength = 500.0
+                                var nx = (t_x - self.ball.x) / dist
+                                var ny = (t_y - self.ball.y) / dist
+                                if "x" in target: target.x += nx * push_strength * delta
+                                elif target.has_method("set_meta"): target.set_meta("x", t_x + nx * push_strength * delta)
+                                if "y" in target: target.y += ny * push_strength * delta
+                                elif target.has_method("set_meta"): target.set_meta("y", t_y + ny * push_strength * delta)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    for hazard in self.world.arena.hazards:
+                        var h_x = 0.0
+                        var h_y = 0.0
+                        if "x" in hazard: h_x = hazard.x
+                        elif hazard.has_method("get_meta") and hazard.has_meta("x"): h_x = hazard.get_meta("x")
+                        if "y" in hazard: h_y = hazard.y
+                        elif hazard.has_method("get_meta") and hazard.has_meta("y"): h_y = hazard.get_meta("y")
+                        var dist_sq = (h_x - self.ball.x) * (h_x - self.ball.x) + (h_y - self.ball.y) * (h_y - self.ball.y)
+                        if dist_sq <= 22500:
+                            var dist = sqrt(dist_sq)
+                            if dist > 0.0001:
+                                var push_strength = 500.0
+                                var nx = (h_x - self.ball.x) / dist
+                                var ny = (h_y - self.ball.y) / dist
+                                if "x" in hazard: hazard.x += nx * push_strength * delta
+                                elif hazard.has_method("set_meta"): hazard.set_meta("x", h_x + nx * push_strength * delta)
+                                if "y" in hazard: hazard.y += ny * push_strength * delta
+                                elif hazard.has_method("set_meta"): hazard.set_meta("y", h_y + ny * push_strength * delta)
+            elif skill_name == "Действие" or skill_name == "action_skill":
             if self.ball.has_method("set_meta"):
                 self.ball.set_meta("team_message", {"type": "action_skill_used", "radius": 150})
             elif "team_message" in self.ball:
@@ -7121,6 +7165,78 @@ func _apply_friendly_aura(delta: float):
 
 
 func _update_skill_timer(delta: float):
+    var b_type = ""
+    if "ball_type" in self.ball: b_type = self.ball.ball_type
+    elif "BALL_TYPE" in self.ball: b_type = self.ball.BALL_TYPE
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("ball_type"): b_type = self.ball.get_meta("ball_type")
+
+    if b_type == "magnet":
+        if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+            for hazard in self.world.arena.hazards:
+                var h_rad = 100.0
+                if "radius" in hazard: h_rad = hazard.radius
+                elif hazard.has_method("get_meta") and hazard.has_meta("radius"): h_rad = hazard.get_meta("radius")
+
+                var h_kind = ""
+                if "kind" in hazard: h_kind = hazard.kind
+                elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
+
+                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "portal_gun_item"]
+                if h_rad < 30.0 or pullable.has(h_kind):
+                    var h_x = 0.0
+                    var h_y = 0.0
+                    if "x" in hazard: h_x = hazard.x
+                    elif hazard.has_method("get_meta") and hazard.has_meta("x"): h_x = hazard.get_meta("x")
+                    if "y" in hazard: h_y = hazard.y
+                    elif hazard.has_method("get_meta") and hazard.has_meta("y"): h_y = hazard.get_meta("y")
+
+                    var dist_sq = (h_x - self.ball.x)*(h_x - self.ball.x) + (h_y - self.ball.y)*(h_y - self.ball.y)
+                    if dist_sq < 90000.0:
+                        var dist = sqrt(dist_sq)
+                        if dist > 0.0001:
+                            var nx = (self.ball.x - h_x) / dist
+                            var ny = (self.ball.y - h_y) / dist
+                            var pull_strength = 100.0 * delta
+                            if "x" in hazard: hazard.x += nx * pull_strength
+                            elif hazard.has_method("set_meta"): hazard.set_meta("x", h_x + nx * pull_strength)
+                            if "y" in hazard: hazard.y += ny * pull_strength
+                            elif hazard.has_method("set_meta"): hazard.set_meta("y", h_y + ny * pull_strength)
+
+        if self.world != null and "balls" in self.world:
+            for other in self.world.balls:
+                if typeof(other) == typeof(self.ball) and other == self.ball: continue
+                elif other.has_method("get_instance_id") and self.ball.has_method("get_instance_id") and other.get_instance_id() == self.ball.get_instance_id(): continue
+                var o_alive = false
+                if "alive" in other: o_alive = other.alive
+                elif other.has_method("get_meta") and other.has_meta("alive"): o_alive = other.get_meta("alive")
+
+                if o_alive:
+                    var o_rad = 10.0
+                    if "radius" in other: o_rad = other.radius
+                    elif other.has_method("get_meta") and other.has_meta("radius"): o_rad = other.get_meta("radius")
+                    var b_rad = 10.0
+                    if "radius" in self.ball: b_rad = self.ball.radius
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("radius"): b_rad = self.ball.get_meta("radius")
+
+                    if o_rad < b_rad:
+                        var o_x = 0.0
+                        var o_y = 0.0
+                        if "x" in other: o_x = other.x
+                        elif other.has_method("get_meta") and other.has_meta("x"): o_x = other.get_meta("x")
+                        if "y" in other: o_y = other.y
+                        elif other.has_method("get_meta") and other.has_meta("y"): o_y = other.get_meta("y")
+                        var dist_sq = (o_x - self.ball.x)*(o_x - self.ball.x) + (o_y - self.ball.y)*(o_y - self.ball.y)
+                        if dist_sq < 90000.0:
+                            var dist = sqrt(dist_sq)
+                            if dist > 0.0001:
+                                var nx = (self.ball.x - o_x) / dist
+                                var ny = (self.ball.y - o_y) / dist
+                                var pull_strength = 100.0 * delta
+                                if "x" in other: other.x += nx * pull_strength
+                                elif other.has_method("set_meta"): other.set_meta("x", o_x + nx * pull_strength)
+                                if "y" in other: other.y += ny * pull_strength
+                                elif other.has_method("set_meta"): other.set_meta("y", o_y + ny * pull_strength)
+
     var pull_timer = 0.0
     if "pull_booster_timer" in self.ball:
         pull_timer = float(self.ball.pull_booster_timer)
