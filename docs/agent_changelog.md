@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-357] Interactive Environmental Hazards — *2026-07-01 18:05:42 UTC*
+
+Add interactive environmental elements that balls can trigger or push into each other, such as explosive barrels or bouncing pads. This would add an extra layer of strategy for positioning.
+
+---
+
 ## [idea-396] Chain Lightning Combo — *2026-07-01 18:00:20 UTC*
 
 Introduce a chained lightning attack that bounces between nearby targets. During 'thunderstorm' weather, the chain range and damage are significantly increased.

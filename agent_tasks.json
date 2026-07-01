@@ -6184,7 +6184,7 @@
     },
     {
       "id": "idea-357",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Interactive Environmental Hazards",
@@ -11352,6 +11352,57 @@
         "src/ai/revenge_burst.py",
         "src/ai/revenge_burst.gd",
         "tests/test_revenge_burst.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-659",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncy Castle Arena",
+      "description": "The arena itself is made of bouncy material, making balls bounce with more force.",
+      "allowed_paths": [
+        "src/arena/bouncy_castle_arena.py",
+        "src/arena/bouncy_castle_arena.gd",
+        "tests/test_bouncy_castle_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-660",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Synergy Traps",
+      "description": "Traps that react dynamically to current weather conditions, e.g., puddle traps becoming electrified during a thunderstorm or freezing during a blizzard to root enemies.",
+      "allowed_paths": [
+        "src/arena/synergy_traps.py",
+        "src/arena/synergy_traps.gd",
+        "tests/test_synergy_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-661",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Meteor Swarm Event",
+      "description": "A random game event where meteors crash into the arena, creating temporary hazardous craters and leaving behind rare materials when destroyed.",
+      "allowed_paths": [
+        "src/ai/meteor_swarm.py",
+        "src/ai/meteor_swarm.gd",
+        "tests/test_meteor_swarm.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
