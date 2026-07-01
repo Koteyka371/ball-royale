@@ -840,11 +840,13 @@ class ZombieInfectionMode extends GameMode:
 class BossFightMode extends GameMode:
     func _init() -> void:
         name = "Boss Fight"
-        description = "Multiple players fight one giant boss."
+        description = "One giant boss ball faces off against a team of weaker hunters."
+
     func setup(world, balls: Array) -> void:
         super.setup(world, balls)
         if not "dead_balls" in world:
             world.dead_balls = []
+
         var valid_balls = []
         for b in balls:
             if b.ball_type != "spectator":
@@ -854,12 +856,11 @@ class BossFightMode extends GameMode:
             var boss = valid_balls[0]
             boss.team = "Boss"
             if "max_hp" in boss:
-                boss.max_hp *= 10
+                boss.max_hp *= 10.0
                 boss.hp = boss.max_hp
             if "damage" in boss:
-                boss.damage *= 2
+                boss.damage *= 3.0
 
-            # Position the boss in the center of the arena
             var arena_width = 1000
             var arena_height = 1000
             if world != null and "arena" in world and world.arena != null:
@@ -880,12 +881,27 @@ class BossFightMode extends GameMode:
                 boss.set_meta("radius", 30.0)
 
             if "base_speed" in boss:
-                boss.base_speed *= 0.8
+                boss.base_speed *= 0.6
             elif boss.has_meta("base_speed"):
-                boss.set_meta("base_speed", boss.get_meta("base_speed") * 0.8)
+                boss.set_meta("base_speed", boss.get_meta("base_speed") * 0.6)
+
+            if "mass" in boss:
+                boss.mass *= 5.0
+            elif boss.has_meta("mass"):
+                boss.set_meta("mass", boss.get_meta("mass") * 5.0)
 
             for i in range(1, valid_balls.size()):
                 valid_balls[i].team = "Hunters"
+                if "max_hp" in valid_balls[i]:
+                    valid_balls[i].max_hp *= 0.8
+                    valid_balls[i].hp = valid_balls[i].max_hp
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        super.tick(world, balls, delta)
+        for b in balls:
+            if "team" in b and b.team == "Boss" and b.alive:
+                if "hp" in b and "max_hp" in b:
+                    b.hp = min(b.hp + 5.0 * delta, b.max_hp)
 
     func check_winner(world, balls: Array):
         var alive = []

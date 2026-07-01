@@ -675,41 +675,52 @@ class ZombieInfectionMode(GameMode):
         # but basic logic allows checking teams
         return None
 
+
 class BossFightMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Boss Fight"
-        self.description = "Multiple players fight one giant boss."
+        self.description = "One giant boss ball faces off against a team of weaker hunters."
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
-        if balls:
-            boss = balls[0]
-            boss.team = "Boss"
-            boss.max_hp *= 10
-            boss.hp = boss.max_hp
-            boss.damage = getattr(boss, "damage", 10) * 2
 
-            # Position the boss in the center of the arena
-            arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
-            arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
-            boss.x = arena_width / 2
-            boss.y = arena_height / 2
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        if not valid_balls:
+            return
 
-            # Make the boss bigger (radius)
-            if hasattr(boss, "radius"):
-                boss.radius *= 3
-            else:
-                boss.radius = 30
+        # First ball is the boss
+        boss = valid_balls[0]
+        boss.team = "Boss"
+        boss.max_hp = getattr(boss, "max_hp", 100) * 10.0
+        boss.hp = boss.max_hp
+        boss.damage = getattr(boss, "damage", 10.0) * 3.0
+        boss.radius = getattr(boss, "radius", 10.0) * 3.0
 
-            # Make the boss heavier/slower (optional, but requested boss ball)
-            if hasattr(boss, "base_speed"):
-                boss.base_speed = getattr(boss, "base_speed", 50) * 0.8
+        # Slower but unstoppable
+        boss.base_speed = float(getattr(boss, "base_speed", getattr(boss, "speed", 100.0))) * 0.6
+        boss.mass = getattr(boss, "mass", 1.0) * 5.0
 
-            for b in balls[1:]:
-                if getattr(b, "ball_type", None) != "spectator":
-                    b.team = "Hunters"
+        # Position boss in center
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        boss.x = arena_width / 2.0
+        boss.y = arena_height / 2.0
+
+        # The rest are hunters
+        for b in valid_balls[1:]:
+            b.team = "Hunters"
+            b.max_hp = getattr(b, "max_hp", 100) * 0.8
+            b.hp = b.max_hp
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        # Boss slowly regenerates health
+        for b in balls:
+            if getattr(b, "team", "") == "Boss" and getattr(b, "alive", False):
+                b.hp = min(b.hp + 5.0 * delta, getattr(b, "max_hp", 1000.0))
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
