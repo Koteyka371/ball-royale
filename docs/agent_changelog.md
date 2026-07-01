@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-368] Quantum Entanglement — *2026-07-01 12:07:23 UTC*
+
+Two balls can become quantum entangled, meaning they share damage taken but also share healing, creating new tactical trade-offs during chaotic team fights.
+
+---
+
 ## [idea-311] Destructible Terrain / Hazards — *2026-07-01 11:56:35 UTC*
 
 Introduce arena hazards or obstacles that can be destroyed after taking enough damage. This would allow players/AI to carve new paths or intentionally drop hazards onto enemies.

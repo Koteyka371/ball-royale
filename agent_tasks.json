@@ -6372,7 +6372,7 @@
     },
     {
       "id": "idea-368",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Entanglement",
@@ -9956,6 +9956,108 @@
         "src/ai/portal_overload.py",
         "src/ai/portal_overload.gd",
         "tests/test_portal_overload.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-577",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Blacksmith NPC",
+      "description": "A neutral NPC that wanders the arena and can upgrade your crafted artifacts if you protect them from hazards for 30 seconds.",
+      "allowed_paths": [
+        "src/ai/blacksmith_npc.py",
+        "src/ai/blacksmith_npc.gd",
+        "tests/test_blacksmith_npc.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-578",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Material Magnet Booster",
+      "description": "A temporary power-up that pulls all dropped materials within a 500-radius towards the player for 10 seconds, helping safe collection in danger zones.",
+      "allowed_paths": [
+        "src/ai/material_magnet_booster.py",
+        "src/ai/material_magnet_booster.gd",
+        "tests/test_material_magnet_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-579",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Collapse Mechanic",
+      "description": "Black holes now collapse into massive explosions after a certain amount of time, sending everything they sucked in flying outward and dealing immense damage to nearby entities.",
+      "allowed_paths": [
+        "src/ai/black_hole_collapse_mechanic.py",
+        "src/ai/black_hole_collapse_mechanic.gd",
+        "tests/test_black_hole_collapse_mechanic.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-580",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirror Coat Shield",
+      "description": "A new active skill that reflects all projectiles and hazard effects back to their source for a short duration, but lowers movement speed by 50% while active.",
+      "allowed_paths": [
+        "src/ai/mirror_coat_shield.py",
+        "src/ai/mirror_coat_shield.gd",
+        "tests/test_mirror_coat_shield.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-581",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weapon Attachments",
+      "description": "Add drops for weapon attachments like silencers (reduces visibility on map), extended mags, or modified scopes that augment base abilities temporarily.",
+      "allowed_paths": [
+        "src/ai/weapon_attachments.py",
+        "src/ai/weapon_attachments.gd",
+        "tests/test_weapon_attachments.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-582",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Safe Zones",
+      "description": "Introduce a shrinking safe zone mechanic over time, forcing players towards the center of the arena. Taking damage when outside the zone increases as the zone shrinks.",
+      "allowed_paths": [
+        "src/ai/shrinking_safe_zones.py",
+        "src/ai/shrinking_safe_zones.gd",
+        "tests/test_shrinking_safe_zones.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
