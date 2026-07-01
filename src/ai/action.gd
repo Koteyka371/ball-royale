@@ -5236,6 +5236,62 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "clone_booster":
+                var clone = null
+                if self.ball.has_method("duplicate"):
+                    clone = self.ball.duplicate()
+                elif typeof(self.ball) == TYPE_DICTIONARY:
+                    clone = self.ball.duplicate()
+
+                if clone != null:
+                    if "id" in clone:
+                        clone.id = randi() % 90000 + 10000
+                    if "hp" in clone and "max_hp" in clone:
+                        clone.max_hp = float(self.ball.max_hp)
+                        clone.hp = clone.max_hp
+                    if "damage" in clone:
+                        clone.damage = 0.0
+                    if "speed" in clone and "speed" in self.ball:
+                        clone.speed = self.ball.speed
+
+                    if "x" in clone and "y" in clone:
+                        clone.x += 10
+                        clone.y += 10
+
+                    var self_id_stat = -2
+                    if "id" in self.ball: self_id_stat = self.ball.id
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): self_id_stat = self.ball.get_meta("id")
+
+                    if clone.has_method("set_meta"):
+                        clone.set_meta("owner_id", self_id_stat)
+                        clone.set_meta("is_decoy", true)
+                        clone.set_meta("decoy_timer", 5.0)
+                        clone.set_meta("skill_timer", 9999.0)
+                        clone.set_meta("attack_timer", 9999.0)
+                        clone.set_meta("SKILL", null)
+                        clone.set_meta("skill", null)
+                        clone.set_meta("active_skill", null)
+                    elif typeof(clone) == TYPE_DICTIONARY:
+                        clone["owner_id"] = self_id_stat
+                        clone["is_decoy"] = true
+                        clone["decoy_timer"] = 5.0
+                        clone["skill_timer"] = 9999.0
+                        clone["attack_timer"] = 9999.0
+                        clone["SKILL"] = null
+                        clone["skill"] = null
+                        clone["active_skill"] = null
+
+                    if self.world != null and "balls" in self.world:
+                        self.world.balls.append(clone)
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "shadow_booster":
                 if self.ball.has_method("set_meta"):
                     self.ball.set_meta("shadow_booster_timer", 15.0)
@@ -7380,7 +7436,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "portal_gun_item"]
+                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "portal_gun_item", "clone_booster"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y
