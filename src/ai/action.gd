@@ -1047,6 +1047,18 @@ func execute(strategy: String, delta: float):
                                             elif other.has_method("set_meta"):
                                                 other.set_meta("alive", false)
 
+                        if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+                            if world.arena.has_method("get"):
+                                var ScriptType = load("res://src/arena/procedural_arena.gd")
+                                if ScriptType != null and ScriptType.has_method("new"):
+                                    pass # Fallback since we might need nested class
+                                var CloudHazard = load("res://src/arena/procedural_arena.gd").Hazard
+                                if CloudHazard != null:
+                                    var h_id = 9000 + world.arena.hazards.size() + int(b.x) + int(b.y)
+                                    var cloud = CloudHazard.new(h_id, b.x, b.y, 100.0, "poison_cloud", 10.0)
+                                    cloud.set_meta("duration", 5.0)
+                                    world.arena.hazards.append(cloud)
+
     var is_illusion = false
     if "is_illusion" in my_ball:
         is_illusion = my_ball.is_illusion

@@ -666,6 +666,17 @@ class Action:
                                         if other.hp <= 0:
                                             other.alive = False
 
+                            # Spawn poison cloud
+                            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                                try:
+                                    from arena.procedural_arena import Hazard
+                                    h_id = 9000 + len(self.world.arena.hazards) + int(b.x) + int(b.y)
+                                    cloud = Hazard(id=h_id, x=b.x, y=b.y, radius=100.0, kind="poison_cloud", damage=10.0)
+                                    setattr(cloud, "duration", 5.0)
+                                    self.world.arena.hazards.append(cloud)
+                                except Exception:
+                                    pass
+
         if getattr(self.ball, "is_illusion", False):
             self.ball.illusion_timer -= delta
             if self.ball.illusion_timer <= 0:
