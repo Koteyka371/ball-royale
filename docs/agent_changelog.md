@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-389] Portal Gun Skill — *2026-07-01 16:42:42 UTC*
+
+A new skill for a Trickster ball that shoots two linked portals onto the arena ground, allowing the ball or its allies to instantly teleport across the map and ambush enemies.
+
+---
+
 ## [idea-405] New Skill: Reflector Shield — *2026-07-01 16:32:36 UTC*
 
 A skill that creates a temporary shield around the ball that reflects all incoming projectiles or physical damage back to the attacker for 3 seconds.

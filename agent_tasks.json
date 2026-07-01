@@ -6729,7 +6729,7 @@
     },
     {
       "id": "idea-389",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Portal Gun Skill",
@@ -11046,6 +11046,74 @@
         "src/ai/chain_lightning_ability.py",
         "src/ai/chain_lightning_ability.gd",
         "tests/test_chain_lightning_ability.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-641",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Time Dilation Zone",
+      "description": "An arena hazard or skill effect that creates a permanent slow-motion zone. Any entities entering the zone have their speed and cooldown reduction halved, while projectiles passing through it stay suspended for a set duration before resuming travel.",
+      "allowed_paths": [
+        "src/ai/time_dilation_zone.py",
+        "src/ai/time_dilation_zone.gd",
+        "tests/test_time_dilation_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-642",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dodgeball Mode",
+      "description": "Balls are divided into two teams on opposite sides of a center line. Players cannot cross the line but can throw hazards and boosters.",
+      "allowed_paths": [
+        "src/ai/dodgeball.py",
+        "src/ai/dodgeball.gd",
+        "tests/test_dodgeball.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-643",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Swap Skill",
+      "description": "A skill where the ball immediately swaps places with a targeted ally or enemy, causing confusion and transferring any negative status effects (burn, poison) currently on the user to the swapped target.",
+      "allowed_paths": [
+        "src/ai/quantum_swap_skill.py",
+        "src/ai/quantum_swap_skill.gd",
+        "tests/test_quantum_swap_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-644",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Juggernaut Mode",
+      "description": "Similar to Boss Fight, but when the Juggernaut is killed, the player who dealt the final blow becomes the new Juggernaut.",
+      "allowed_paths": [
+        "src/ai/juggernaut.py",
+        "src/ai/juggernaut.gd",
+        "tests/test_juggernaut.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
