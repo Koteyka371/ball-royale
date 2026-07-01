@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-384] Meteor Shower Skill — *2026-07-01 14:28:46 UTC*
+
+A skill that rains down meteors on random enemy locations, creating a chaotic hazard zone.
+
+---
+
 ## [idea-388] Decoy Distraction Beacon — *2026-07-01 14:28:41 UTC*
 
 A new skill that deploys a stationary decoy beacon which draws enemy aggro and emits a continuous low-level heal to nearby allies before exploding.
