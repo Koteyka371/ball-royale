@@ -197,6 +197,24 @@ func generate():
         elif kind == "bumper":
             radius = rng.randf_range(30.0, 60.0)
             damage = 0.0
+            var s = get_random_spawn_point(radius)
+            var new_hazard = Hazard.new(i, s[0], s[1], radius, kind, damage)
+            if rng.randf() < 0.5:
+                var target = null
+                if hazards.size() > 0:
+                    target = hazards[rng.randi_range(0, hazards.size() - 1)]
+                if target != null:
+                    new_hazard.set_meta("target_hazard_id", target.id)
+                    new_hazard.set_meta("orbit_angle", rng.randf_range(0.0, PI * 2))
+                    new_hazard.set_meta("orbit_radius", target.radius + radius + rng.randf_range(10.0, 50.0))
+                    new_hazard.set_meta("orbit_speed", rng.randf_range(1.0, 3.0))
+            else:
+                var angle = rng.randf_range(0.0, PI * 2)
+                var speed = rng.randf_range(50.0, 150.0)
+                new_hazard.set_meta("vx", cos(angle) * speed)
+                new_hazard.set_meta("vy", sin(angle) * speed)
+            hazards.append(new_hazard)
+            continue
         elif kind == "quicksand":
             radius = rng.randf_range(40.0, 80.0)
             damage = 0.0
@@ -425,6 +443,30 @@ func update_zone(current_tick: int, delta: float) -> void:
                             h.set_meta("active", false)
                         if "active" in h:
                             h.active = false
+            elif "kind" in h and h.kind == "bumper":
+                if h.has_meta("target_hazard_id"):
+                    var t_id = h.get_meta("target_hazard_id")
+                    var target = null
+                    for th in hazards:
+                        if th.id == t_id:
+                            target = th
+                            break
+                    if target != null:
+                        var cur_angle = h.get_meta("orbit_angle") if h.has_meta("orbit_angle") else 0.0
+                        var o_speed = h.get_meta("orbit_speed") if h.has_meta("orbit_speed") else 1.0
+                        var o_rad = h.get_meta("orbit_radius") if h.has_meta("orbit_radius") else 50.0
+                        cur_angle += o_speed * delta
+                        h.set_meta("orbit_angle", cur_angle)
+                        h.x = target.x + cos(cur_angle) * o_rad
+                        h.y = target.y + sin(cur_angle) * o_rad
+                else:
+                    if h.has_meta("vx") and h.has_meta("vy"):
+                        h.x += h.get_meta("vx") * delta
+                        h.y += h.get_meta("vy") * delta
+                        if h.x < 0 or h.x > width:
+                            h.set_meta("vx", h.get_meta("vx") * -1.0)
+                        if h.y < 0 or h.y > height:
+                            h.set_meta("vy", h.get_meta("vy") * -1.0)
             elif "kind" in h and h.kind == "tornado":
                 if h.has_meta("duration"):
                     var dur = h.get_meta("duration") - delta

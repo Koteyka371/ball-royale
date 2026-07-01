@@ -1,3 +1,4 @@
+import math
 import random
 from dataclasses import dataclass
 from typing import List, Tuple
@@ -171,6 +172,29 @@ class ProceduralArena:
             elif kind == "bumper":
                 radius = random.uniform(30.0, 60.0)
                 damage = 0.0
+                hx, hy = self.get_random_spawn_point(radius)
+                new_hazard = Hazard(id=i, x=hx, y=hy, radius=radius, kind=kind, damage=damage)
+
+                # Make bumpers dynamic
+                if random.random() < 0.5:
+                    # Orbit another hazard
+                    target = None
+                    if len(self.hazards) > 0:
+                        target = random.choice(self.hazards)
+                    if target:
+                        setattr(new_hazard, "target_hazard_id", target.id)
+                        setattr(new_hazard, "orbit_angle", random.uniform(0, 3.14159 * 2))
+                        setattr(new_hazard, "orbit_radius", target.radius + radius + random.uniform(10.0, 50.0))
+                        setattr(new_hazard, "orbit_speed", random.uniform(1.0, 3.0))
+                else:
+                    # Linear moving path with wall bounce
+                    angle = random.uniform(0, 3.14159 * 2)
+                    speed = random.uniform(50.0, 150.0)
+                    setattr(new_hazard, "vx", math.cos(angle) * speed)
+                    setattr(new_hazard, "vy", math.sin(angle) * speed)
+
+                self.hazards.append(new_hazard)
+                continue
             else:
                 radius = 15.0
                 damage = 50.0
@@ -382,6 +406,23 @@ class ProceduralArena:
                         h.duration -= delta
                         if h.duration <= 0:
                             h.active = False
+                elif getattr(h, "kind", "") == "bumper":
+                    if hasattr(h, "target_hazard_id"):
+                        target = next((x for x in self.hazards if x.id == h.target_hazard_id), None)
+                        if target:
+                            h.orbit_angle += getattr(h, "orbit_speed", 1.0) * delta
+                                    h.x = target.x + math.cos(h.orbit_angle) * getattr(h, "orbit_radius", 50.0)
+                            h.y = target.y + math.sin(h.orbit_angle) * getattr(h, "orbit_radius", 50.0)
+                    else:
+                        if hasattr(h, "vx"):
+                            h.x += h.vx * delta
+                        if hasattr(h, "vy"):
+                            h.y += h.vy * delta
+
+                        if h.x < 0 or h.x > self.width:
+                            if hasattr(h, "vx"): h.vx *= -1
+                        if h.y < 0 or h.y > self.height:
+                            if hasattr(h, "vy"): h.vy *= -1
                 elif getattr(h, "kind", "") == "tornado":
                     if hasattr(h, "duration"):
                         h.duration -= delta
