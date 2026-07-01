@@ -4211,6 +4211,8 @@ class Action:
                     knockback_multiplier = 5.0
                 elif gm and getattr(gm, "name", "") == "Zero Gravity":
                     knockback_multiplier = 5.0
+                elif gm and getattr(gm, "name", "") == "Magnetic Collisions":
+                    knockback_multiplier = -0.5
 
                 self.ball.x += nx * overlap * knockback_multiplier
                 self.ball.y += ny * overlap * knockback_multiplier

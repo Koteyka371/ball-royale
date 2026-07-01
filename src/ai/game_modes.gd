@@ -4642,6 +4642,11 @@ class GuildVsGuildMode extends GameMode:
             gm.record_gvg_match(winner_guild, loser, winner_guild)
 
 
+class MagneticCollisionsMode extends GameMode:
+	func _init() -> void:
+		name = "Magnetic Collisions"
+		description = "Collisions pull entities together instead of pushing them apart, creating chaotic clusters of balls that can be targeted by AoE attacks."
+
 class ZeroGravityMode extends GameMode:
     func _init() -> void:
         name = "Zero Gravity"
@@ -4649,6 +4654,7 @@ class ZeroGravityMode extends GameMode:
 
 var GAME_MODES = {
     "zero_gravity": ZeroGravityMode.new(),
+    "magnetic_collisions": MagneticCollisionsMode.new(),
 	"day_night_mode": DayNightMode.new(),
 	"shifting_maze": ShiftingMazeMode.new(),
 

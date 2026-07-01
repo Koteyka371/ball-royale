@@ -6747,6 +6747,8 @@ func _resolve_collisions() -> bool:
                     knockback_multiplier = 5.0
                 elif "name" in self.world.game_mode and self.world.game_mode.name == "Zero Gravity":
                     knockback_multiplier = 5.0
+                elif "name" in self.world.game_mode and self.world.game_mode.name == "Magnetic Collisions":
+                    knockback_multiplier = -0.5
 
             self.ball.x += nx * overlap * knockback_multiplier
             self.ball.y += ny * overlap * knockback_multiplier
