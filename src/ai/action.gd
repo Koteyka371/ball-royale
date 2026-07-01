@@ -1898,6 +1898,27 @@ func execute(strategy: String, delta: float):
                         if self.has_method("_spawn_skill_particles"):
                             self._spawn_skill_particles("emp")
                         continue
+                    elif hazard.kind == "fire_ring":
+                        var dx = self.ball.x - hazard.x
+                        var dy = self.ball.y - hazard.y
+                        var dist = sqrt(dx*dx + dy*dy)
+                        var ring_thickness = 30.0
+                        if dist >= hazard.radius - ring_thickness and dist <= hazard.radius + ring_thickness:
+                            var hd = hazard.damage * delta
+                            var is_qs = false
+                            if self.ball.has_method("get_meta") and self.ball.has_meta("is_in_quicksand"):
+                                is_qs = self.ball.get_meta("is_in_quicksand")
+                            elif "is_in_quicksand" in self.ball:
+                                is_qs = self.ball.is_in_quicksand
+                            if is_qs:
+                                hd *= 2.0
+                            if self.ball.has_method("take_damage"):
+                                self.ball.take_damage(hd)
+                            elif "hp" in self.ball:
+                                self.ball.hp -= hd
+                                if self.ball.hp <= 0:
+                                    self.ball.alive = false
+                        continue
                     elif hazard.kind == "orbital_strike_active":
                         var hd = hazard.damage * delta
                         var is_qs = false
