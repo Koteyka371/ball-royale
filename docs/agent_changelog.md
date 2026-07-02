@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-415] Grappling Hook Mode — *2026-07-02 18:53:04 UTC*
+
+Balls can shoot a grappling hook to latch onto walls or other balls to swing around.
+
+---
+
 ## [idea-461] Low Gravity Anomaly Zone — *2026-07-02 18:38:44 UTC*
 
 Periodically, an anomaly zone spawns in the arena. Any balls entering it have their gravity removed (massively reduced friction) and bounce wildly off each other and walls with high elasticity. This causes unpredictable trajectories and forces players to rely purely on momentum or long-range attacks to score kills.
