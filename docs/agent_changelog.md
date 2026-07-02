@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-464] Wall bounce mechanic — *2026-07-02 19:00:12 UTC*
+
+Balls that get knocked back into a wall take additional damage based on their velocity.
+
+---
+
 ## [idea-415] Grappling Hook Mode — *2026-07-02 18:53:04 UTC*
 
 Balls can shoot a grappling hook to latch onto walls or other balls to swing around.

@@ -8006,7 +8006,7 @@
     },
     {
       "id": "idea-464",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Wall bounce mechanic",
@@ -12935,6 +12935,40 @@
         "src/ai/quantum_entanglement_tether.py",
         "src/ai/quantum_entanglement_tether.gd",
         "tests/test_quantum_entanglement_tether.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-752",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Safe Zone",
+      "description": "A battle royale classic mechanic: a circular safe zone slowly shrinks over time. Balls outside the safe zone take continuous damage. This forces players closer together and prevents stalling in the corners of the arena.",
+      "allowed_paths": [
+        "src/ai/shrinking_safe_zone.py",
+        "src/ai/shrinking_safe_zone.gd",
+        "tests/test_shrinking_safe_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-753",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncy Walls",
+      "description": "Add a new hazard or arena modifier where the arena walls become extremely bouncy. If a ball hits the wall at high speed, it ricochets with even more speed, making dodging harder and creating chaotic high-speed collisions.",
+      "allowed_paths": [
+        "src/ai/bouncy_walls.py",
+        "src/ai/bouncy_walls.gd",
+        "tests/test_bouncy_walls.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
