@@ -5821,6 +5821,64 @@ class MinefieldEventMode extends GameMode:
 						if world != null and world.has_method("add_event"):
 							world.add_event("mine_explosion", {"x": m["x"], "y": m["y"]})
 
+
+
+class StaminaSpeedMode extends GameMode:
+	func _init():
+		name = "Stamina Speed"
+		description = "Max stamina dictates base speed. Everyone starts with 200 max stamina but taking damage permanently reduces maximum stamina for the rest of the round."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		for b in balls:
+			if typeof(b) == TYPE_DICTIONARY:
+				b["max_stamina"] = 200.0
+				b["stamina"] = 200.0
+				b["base_speed"] = 200.0
+				b["speed"] = 200.0
+				b["prev_hp"] = b.get("hp", 100.0)
+			else:
+				b.set("max_stamina", 200.0)
+				b.set("stamina", 200.0)
+				b.set("base_speed", 200.0)
+				b.set("speed", 200.0)
+				b.set_meta("prev_hp", b.get("hp") if "hp" in b else 100.0)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		for b in balls:
+			var current_hp = 100.0
+			var prev_hp = 100.0
+			var max_stam = 200.0
+
+			if typeof(b) == TYPE_DICTIONARY:
+				current_hp = b.get("hp", 100.0)
+				prev_hp = b.get("prev_hp", current_hp)
+				max_stam = b.get("max_stamina", 200.0)
+
+				if current_hp < prev_hp:
+					var damage = prev_hp - current_hp
+					max_stam = max(10.0, max_stam - damage)
+					b["max_stamina"] = max_stam
+					b["stamina"] = min(b.get("stamina", max_stam), max_stam)
+
+				b["prev_hp"] = current_hp
+				b["base_speed"] = max_stam
+			else:
+				current_hp = b.get("hp") if "hp" in b else 100.0
+				prev_hp = b.get_meta("prev_hp") if b.has_meta("prev_hp") else current_hp
+				max_stam = b.get("max_stamina") if "max_stamina" in b else 200.0
+
+				if current_hp < prev_hp:
+					var damage = prev_hp - current_hp
+					max_stam = max(10.0, max_stam - damage)
+					b.set("max_stamina", max_stam)
+					var stam = b.get("stamina") if "stamina" in b else max_stam
+					b.set("stamina", min(stam, max_stam))
+
+				b.set_meta("prev_hp", current_hp)
+				b.set("base_speed", max_stam)
+
+
 var GAME_MODES = {
 
 
@@ -5831,6 +5889,7 @@ var GAME_MODES = {
     "magnetic_collisions": MagneticCollisionsMode.new(),
 	"day_night_mode": DayNightMode.new(),
 	"shifting_maze": ShiftingMazeMode.new(),
+	"stamina_speed": StaminaSpeedMode.new(),
 
 	"blackout": BlackoutMode.new(),
 	"dual_payload": DualPayloadMode.new(),
