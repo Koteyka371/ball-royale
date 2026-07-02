@@ -756,6 +756,112 @@ class BossFightMode(GameMode):
         return None
 
 
+
+class DualPayloadMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Dual Payload"
+        self.description = "Two payloads move towards the center, the team that destroys the enemy payload first wins."
+        self.payload_red = None
+        self.payload_blue = None
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        mid = len(valid_balls) // 2
+
+        red_team = []
+        blue_team = []
+
+        for i, b in enumerate(valid_balls):
+            if i < mid:
+                b.team = "Red"
+                red_team.append(b)
+            else:
+                b.team = "Blue"
+                blue_team.append(b)
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        if red_team:
+            self.payload_red = red_team[0]
+            self.payload_red.ball_type = "payload"
+            self.payload_red.is_payload = True
+            self.payload_red.speed = 10.0
+            self.payload_red.base_speed = 10.0
+            self.payload_red.damage = 0.0
+            self.payload_red.base_damage = 0.0
+            self.payload_red.max_hp = getattr(self.payload_red, "max_hp", 100.0) * 5.0
+            self.payload_red.hp = self.payload_red.max_hp
+            self.payload_red.x = 100.0
+            self.payload_red.y = arena_height / 2.0
+
+        if blue_team:
+            self.payload_blue = blue_team[0]
+            self.payload_blue.ball_type = "payload"
+            self.payload_blue.is_payload = True
+            self.payload_blue.speed = 10.0
+            self.payload_blue.base_speed = 10.0
+            self.payload_blue.damage = 0.0
+            self.payload_blue.base_damage = 0.0
+            self.payload_blue.max_hp = getattr(self.payload_blue, "max_hp", 100.0) * 5.0
+            self.payload_blue.hp = self.payload_blue.max_hp
+            self.payload_blue.x = arena_width - 100.0
+            self.payload_blue.y = arena_height / 2.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        center_x = arena_width / 2.0
+        center_y = arena_height / 2.0
+
+        import math
+
+        if self.payload_red and getattr(self.payload_red, "alive", False):
+            dx = center_x - getattr(self.payload_red, "x", 0)
+            dy = center_y - getattr(self.payload_red, "y", 0)
+            dist = math.hypot(dx, dy)
+            if dist > 5.0:
+                self.payload_red.x += (dx / dist) * getattr(self.payload_red, "speed", 10.0) * delta
+                self.payload_red.y += (dy / dist) * getattr(self.payload_red, "speed", 10.0) * delta
+
+        if self.payload_blue and getattr(self.payload_blue, "alive", False):
+            dx = center_x - getattr(self.payload_blue, "x", 0)
+            dy = center_y - getattr(self.payload_blue, "y", 0)
+            dist = math.hypot(dx, dy)
+            if dist > 5.0:
+                self.payload_blue.x += (dx / dist) * getattr(self.payload_blue, "speed", 10.0) * delta
+                self.payload_blue.y += (dy / dist) * getattr(self.payload_blue, "speed", 10.0) * delta
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        red_alive = self.payload_red and getattr(self.payload_red, "alive", False)
+        blue_alive = self.payload_blue and getattr(self.payload_blue, "alive", False)
+
+        if not red_alive and blue_alive:
+            return "Blue"
+        elif not blue_alive and red_alive:
+            return "Red"
+        elif not red_alive and not blue_alive:
+            return "Draw"
+
+        return None
+
+
 class EscortMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -4278,6 +4384,7 @@ GAME_MODES = {
     "modifier_zones": ModifierZonesMode(),
     "modifier_zones_safe_zone": ModifierZonesSafeZoneMode(),
     "draft_royale": DraftRoyaleMode(),
+    "dual_payload": DualPayloadMode(),
     "escort": EscortMode(),
     "tournament": TournamentMode(),
     "bumper_balls": BumperBallsMode(),
