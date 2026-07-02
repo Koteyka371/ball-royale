@@ -38,6 +38,19 @@ class CrowdSystem:
             self.last_kill_tick = latest_kill["tick"]
             self._handle_kill(latest_kill, tick, balls)
 
+        # Leading team chant (randomly during events if excitement is high)
+        if self.excitement_level >= 50.0 and tick % 200 == 0:
+            alive_teams = {}
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                    team = getattr(b, "team", getattr(b, "ball_type", ""))
+                    alive_teams[team] = alive_teams.get(team, 0) + 1
+            if alive_teams:
+                leading_team = max(alive_teams, key=alive_teams.get)
+                if alive_teams[leading_team] >= 2 and hasattr(self.world, 'add_event'):
+                    self.world.add_event("crowd_cheer", {"message": f"Let's go Team {leading_team}! Let's go!", "volume": 1.0})
+                    self.world.add_event("audio_event", {"sound": "team_chant", "volume": 0.8})
+
     def _handle_kill(self, kill_info: Dict, tick: int, balls: List[Any]):
         killer_id = kill_info.get("killer_id")
         victim_id = kill_info.get("victim_id")
@@ -54,7 +67,14 @@ class CrowdSystem:
         if streak >= 3:
             self.excitement_level += 20.0
             if hasattr(self.world, 'add_event'):
-                self.world.add_event("crowd_cheer", {"message": f"The crowd goes wild for Ball {killer_id}'s {streak}-kill streak!", "volume": 1.0 + (streak * 0.1)})
+                # Unique ball type chants
+                chant_msg = f"The crowd goes wild for Ball {killer_id}'s {streak}-kill streak!"
+                killer_obj = next((b for b in balls if getattr(b, "id", -1) == killer_id), None)
+                if killer_obj:
+                    k_type = getattr(killer_obj, "ball_type", "").capitalize()
+                    if k_type and k_type != "Spectator":
+                        chant_msg = f"{k_type}! {k_type}! " + chant_msg
+                self.world.add_event("crowd_cheer", {"message": chant_msg, "volume": 1.0 + (streak * 0.1)})
                 self.world.add_event("audio_event", {"sound": "epic_crowd_roar", "volume": 1.0})
 
         # Team Wipe / Comeback (checking team populations)
