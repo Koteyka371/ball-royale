@@ -532,6 +532,10 @@ class BattleRoyaleMode extends GameMode:
                 elif self.weather == "rain":
 			if "speed" in b: b.speed = base_spd * 0.8
 			if "damage" in b: b.damage = base_dmg
+			if "hp" in b:
+				var m_hp = 100.0
+				if "max_hp" in b: m_hp = b.max_hp
+				b.hp = min(m_hp, b.hp + 5.0 * delta)
 			var sk_r = ""
 			if "SKILL" in b:
 				sk_r = b.SKILL
