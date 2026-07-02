@@ -120,7 +120,7 @@ class ProceduralArena:
         # Generate hazards
         num_hazards = self.num_rooms * 2
         for i in range(num_hazards):
-            kind = random.choice(["spikes", "lava", "fake_booster", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "lightning_storm", "hidden_trap", "silence_booster", "freeze_booster", "switch", "magnet", "quicksand", "magnet_booster", "breakable_wall", "portal_gun_item", "wormhole", "clone_booster", "stealth_zone", "invert_booster", "reverse_gravity_booster", "stamina_drain_zone", "tether_trap"])
+            kind = random.choice(["spikes", "lava", "fake_booster", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "lightning_storm", "hidden_trap", "silence_booster", "freeze_booster", "switch", "magnet", "quicksand", "magnet_booster", "breakable_wall", "portal_gun_item", "wormhole", "clone_booster", "stealth_zone", "invert_booster", "reverse_gravity_booster", "stamina_drain_zone", "tether_trap", "slip_zone"])
             if kind == "switch":
                 radius = 20.0
                 damage = 0.0
@@ -170,6 +170,9 @@ class ProceduralArena:
                 radius = random.uniform(50.0, 100.0)
                 damage = 0.0
             elif kind == "stamina_drain_zone":
+                radius = random.uniform(40.0, 80.0)
+                damage = 0.0
+            elif kind == "slip_zone":
                 radius = random.uniform(40.0, 80.0)
                 damage = 0.0
             elif kind == "spinning_laser":
@@ -423,6 +426,15 @@ class ProceduralArena:
             import math
             # Process hazard-to-hazard combos
             if hasattr(self, "hazards"):
+                for hazard in self.hazards:
+                    if hazard.kind == "slip_zone":
+                        if not hasattr(hazard, "active_timer"):
+                            hazard.active_timer = 0.0
+                            hazard.active = True
+                        hazard.active_timer += delta
+                        if hazard.active_timer >= 5.0:
+                            hazard.active_timer = 0.0
+                            hazard.active = not hazard.active
                 for hazard in self.hazards:
                     if hazard.kind == "magnet":
                         for other_hazard in self.hazards:
