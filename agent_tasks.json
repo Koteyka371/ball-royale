@@ -7598,7 +7598,7 @@
     },
     {
       "id": "idea-440",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Asymmetric Maps",
@@ -12117,6 +12117,40 @@
         "src/ai/quantum_entanglement_mine.py",
         "src/ai/quantum_entanglement_mine.gd",
         "tests/test_quantum_entanglement_mine.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-704",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Orbital Strike Debris",
+      "description": "When an orbital strike finishes, spawn 3-5 temporary debris hazards around its impact zone. These slow down balls heavily as they navigate the crater area for the next 10 seconds, but give cover from projectiles.",
+      "allowed_paths": [
+        "src/ai/orbital_strike_debris.py",
+        "src/ai/orbital_strike_debris.gd",
+        "tests/test_orbital_strike_debris.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-705",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": " EMP Strike Variation",
+      "description": "Add a variant of the orbital strike (EMP Strike) that deals 0 damage but instantly drains all skill cooldowns and stamina of any ball caught inside the blast zone for 5 seconds.",
+      "allowed_paths": [
+        "src/ai/emp_strike_variation.py",
+        "src/ai/emp_strike_variation.gd",
+        "tests/test_emp_strike_variation.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-440] Asymmetric Maps — *2026-07-02 13:28:11 UTC*
+
+Introduce map layouts where defenders have positional advantages, like high ground or choke points, but limited resources, while attackers have open spawn areas with plenty of health packs.
+
+---
+
 ## [idea-414] Orbital Strike Warning UI Element — *2026-07-02 13:25:50 UTC*
 
 When an orbital strike hazard spawns, show a large, pulsating crosshair UI element and play a warning siren sound effect for the 3 seconds before it strikes, giving players a clearer cue to evacuate the massive area.
