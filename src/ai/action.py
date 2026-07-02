@@ -125,6 +125,28 @@ class Action:
                     if hasattr(self.world, "_deal_damage"):
                         self.world._deal_damage(attacker, target)
                     attacker.damage = old_dmg
+
+                    # Overload explosion
+                    import math
+                    explosion_radius = 80.0
+                    if hasattr(self.world, "balls"):
+                        for other in self.world.balls:
+                            if getattr(other, "alive", False) and getattr(other, "id", None) != getattr(target, "id", None):
+                                dx = getattr(other, "x", 0) - getattr(target, "x", 0)
+                                dy = getattr(other, "y", 0) - getattr(target, "y", 0)
+                                dist = math.sqrt(dx*dx + dy*dy)
+                                if dist <= explosion_radius:
+                                    if hasattr(self.world, "_deal_damage"):
+                                        old_atk_dmg = getattr(target, "damage", 10.0)
+                                        target.damage = remainder_damage
+                                        self.world._deal_damage(target, other)
+                                        target.damage = old_atk_dmg
+                                    elif hasattr(other, "take_damage"):
+                                        other.take_damage(remainder_damage)
+                                    elif hasattr(other, "hp"):
+                                        other.hp -= remainder_damage
+                                        if other.hp <= 0:
+                                            other.alive = False
             else:
                 if hasattr(self.world, "_deal_damage"):
                     self.world._deal_damage(attacker, target)
@@ -296,6 +318,28 @@ class Action:
                                 if hasattr(self.world, "_deal_damage"):
                                     self.world._deal_damage(attacker, next_entity)
                                 attacker.damage = old_dmg
+
+                                # Overload explosion
+                                import math
+                                explosion_radius = 80.0
+                                if hasattr(self.world, "balls"):
+                                    for other in self.world.balls:
+                                        if getattr(other, "alive", False) and getattr(other, "id", None) != getattr(next_entity, "id", None):
+                                            dx = getattr(other, "x", 0) - getattr(next_entity, "x", 0)
+                                            dy = getattr(other, "y", 0) - getattr(next_entity, "y", 0)
+                                            dist = math.sqrt(dx*dx + dy*dy)
+                                            if dist <= explosion_radius:
+                                                if hasattr(self.world, "_deal_damage"):
+                                                    old_atk_dmg = getattr(next_entity, "damage", 10.0)
+                                                    next_entity.damage = remainder_damage
+                                                    self.world._deal_damage(next_entity, other)
+                                                    next_entity.damage = old_atk_dmg
+                                                elif hasattr(other, "take_damage"):
+                                                    other.take_damage(remainder_damage)
+                                                elif hasattr(other, "hp"):
+                                                    other.hp -= remainder_damage
+                                                    if other.hp <= 0:
+                                                        other.alive = False
                         else:
                             if hasattr(self.world, "_deal_damage"):
                                 self.world._deal_damage(attacker, next_entity)
@@ -355,6 +399,7 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        import math
         # Clear hazard state flags each tick before iterating over hazards
         if hasattr(self.ball, "_chrono_slow"):
             delattr(self.ball, "_chrono_slow")
@@ -1164,6 +1209,28 @@ class Action:
                                             self.ball.hp -= remainder_damage
                                             if self.ball.hp <= 0:
                                                 self.ball.alive = False
+
+                                        # Overload explosion
+                                        import math
+                                        explosion_radius = 80.0
+                                        if hasattr(self.world, "balls"):
+                                            for other in self.world.balls:
+                                                if getattr(other, "alive", False) and getattr(other, "id", None) != getattr(self.ball, "id", None):
+                                                    dx = getattr(other, "x", 0) - getattr(self.ball, "x", 0)
+                                                    dy = getattr(other, "y", 0) - getattr(self.ball, "y", 0)
+                                                    dist = math.sqrt(dx*dx + dy*dy)
+                                                    if dist <= explosion_radius:
+                                                        if hasattr(self.world, "_deal_damage"):
+                                                            old_atk_dmg = getattr(self.ball, "damage", 10.0)
+                                                            self.ball.damage = remainder_damage
+                                                            self.world._deal_damage(self.ball, other)
+                                                            self.ball.damage = old_atk_dmg
+                                                        elif hasattr(other, "take_damage"):
+                                                            other.take_damage(remainder_damage)
+                                                        elif hasattr(other, "hp"):
+                                                            other.hp -= remainder_damage
+                                                            if other.hp <= 0:
+                                                                other.alive = False
                                 else:
                                     if hasattr(self.ball, "take_damage"):
                                         self.ball.take_damage(hazard.damage * 2.0 if getattr(self.ball, "is_in_quicksand", False) else hazard.damage)
