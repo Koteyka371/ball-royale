@@ -120,7 +120,7 @@ class ProceduralArena:
         # Generate hazards
         num_hazards = self.num_rooms * 2
         for i in range(num_hazards):
-            kind = random.choice(["spikes", "lava", "fake_booster", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "lightning_storm", "hidden_trap", "silence_booster", "freeze_booster", "switch", "magnet", "quicksand", "magnet_booster", "breakable_wall", "portal_gun_item", "wormhole", "clone_booster", "stealth_zone", "invert_booster", "stamina_drain_zone"])
+            kind = random.choice(["spikes", "lava", "fake_booster", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "lightning_storm", "hidden_trap", "silence_booster", "freeze_booster", "switch", "magnet", "quicksand", "magnet_booster", "breakable_wall", "portal_gun_item", "wormhole", "clone_booster", "stealth_zone", "invert_booster", "stamina_drain_zone", "water_hazard"])
             if kind == "switch":
                 radius = 20.0
                 damage = 0.0
@@ -565,6 +565,11 @@ class ProceduralArena:
                         if hasattr(h, "vx"): h.vx *= -1
                     if h.y < 0 or h.y > self.height:
                         if hasattr(h, "vy"): h.vy *= -1
+                elif getattr(h, "kind", "") == "water_hazard":
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0:
+                            h.active = False
                 elif getattr(h, "kind", "") == "fire_ring" or getattr(h, "kind", "") == "poison_nova":
                     if hasattr(h, "duration"):
                         h.duration -= delta

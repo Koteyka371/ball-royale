@@ -435,6 +435,14 @@ class BattleRoyaleMode(GameMode):
                     mud_pit = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=60.0, kind="quicksand", damage=0.0)
                     setattr(mud_pit, 'duration', 15.0)
                     world.arena.hazards.append(mud_pit)
+                if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                    from arena.procedural_arena import Hazard
+                    # Flood a low area to create a water hazard
+                    x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                    y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                    water = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=80.0, kind="water_hazard", damage=0.0)
+                    setattr(water, 'duration', 20.0)
+                    world.arena.hazards.append(water)
                 if season_num == 3:
                     if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
                         from arena.procedural_arena import Hazard

@@ -1516,6 +1516,16 @@ class Action:
                             if getattr(self.ball, "quicksand_debuff_timer", 0.0) > 0:
                                 self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.3
                                 self.ball.quicksand_debuff_timer -= delta
+                    elif hazard.kind == "water_hazard":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            b_type = getattr(self.ball, "ball_type", "")
+                            # Aquatic or floating entities are immune to the slow
+                            is_aquatic = b_type in ["water_elemental", "aquatic", "hovercraft", "drone"]
+                            if not is_aquatic and getattr(self.ball, "_is_wind_riding", False) == False:
+                                self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.2
 
                             self.ball.is_in_quicksand = True
                     elif hazard.kind == "sinkhole":

@@ -2300,6 +2300,23 @@ func execute(strategy: String, delta: float):
                         else:
                             self.ball.quicksand_debuff_timer = debuff_timer
                             self.ball.is_in_quicksand = true
+                elif hazard.kind == "water_hazard":
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    if dist_sq < hazard.radius * hazard.radius:
+                        var b_type = self.ball.ball_type if "ball_type" in self.ball else ""
+                        var is_aquatic = b_type in ["water_elemental", "aquatic", "hovercraft", "drone"]
+
+                        var is_wind_riding = false
+                        if self.ball.has_meta("_is_wind_riding"):
+                            is_wind_riding = self.ball.get_meta("_is_wind_riding")
+                        elif "_is_wind_riding" in self.ball:
+                            is_wind_riding = self.ball._is_wind_riding
+
+                        if not is_aquatic and not is_wind_riding:
+                            var base_spd = self.ball.base_speed if "base_speed" in self.ball else 100.0
+                            self.ball.speed = base_spd * 0.2
                 elif hazard.kind == "sinkhole":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
