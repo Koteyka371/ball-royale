@@ -1641,6 +1641,19 @@ class Action:
                                 push_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 50.0 * delta
                                 self.ball.x += nx * push_strength
                                 self.ball.y += ny * push_strength
+                    elif hazard.kind in ["pull_zone", "push_zone"]:
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius and dist_sq > 0.0001:
+                            dist = math.sqrt(dist_sq)
+                            nx, ny = dx / dist, dy / dist
+                            force_strength = (hazard.radius / max(10.0, dist)) * 100.0 * delta
+                            force_strength = min(force_strength, dist * 0.5)
+                            if hazard.kind == "push_zone":
+                                nx, ny = -nx, -ny
+                            self.ball.x += nx * force_strength
+                            self.ball.y += ny * force_strength
                     elif hazard.kind == "gravity_well":
                         # Cosmetics: gravity anomaly already implemented
                         dx = hazard.x - self.ball.x

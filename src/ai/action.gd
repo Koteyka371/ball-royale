@@ -2446,6 +2446,25 @@ func execute(strategy: String, delta: float):
                             var push_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 50.0 * delta
                             self.ball.x += nx * push_strength
                             self.ball.y += ny * push_strength
+                elif hazard.kind == "pull_zone" or hazard.kind == "push_zone":
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    if dist_sq < hazard.radius * hazard.radius and dist_sq > 0.0001:
+                        var dist = sqrt(dist_sq)
+                        var nx = dx / dist
+                        var ny = dy / dist
+                        var min_dist = 10.0
+                        if dist > min_dist:
+                            min_dist = dist
+                        var force_strength = (hazard.radius / min_dist) * 100.0 * delta
+                        if force_strength > dist * 0.5:
+                            force_strength = dist * 0.5
+                        if hazard.kind == "push_zone":
+                            nx = -nx
+                            ny = -ny
+                        self.ball.x += nx * force_strength
+                        self.ball.y += ny * force_strength
                 elif hazard.kind == "gravity_well":
                     # Cosmetics: gravity anomaly already implemented
                     var dx = hazard.x - self.ball.x

@@ -191,6 +191,10 @@ func generate():
             kind = "stealth_zone"
         elif r < 0.9997:
             kind = "stamina_drain_zone"
+        elif r < 0.9998:
+            kind = "pull_zone"
+        elif r < 0.9999:
+            kind = "push_zone"
         else:
             kind = "switch"
 
@@ -277,6 +281,9 @@ func generate():
             damage = 0.0
         elif kind == "tether_trap":
             radius = rng.randf_range(50.0, 100.0)
+            damage = 0.0
+        elif kind == "pull_zone" or kind == "push_zone":
+            radius = rng.randf_range(60.0, 120.0)
             damage = 0.0
         elif kind == "stamina_drain_zone":
             radius = rng.randf_range(40.0, 80.0)

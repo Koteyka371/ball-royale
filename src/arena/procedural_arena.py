@@ -120,7 +120,7 @@ class ProceduralArena:
         # Generate hazards
         num_hazards = self.num_rooms * 2
         for i in range(num_hazards):
-            kind = random.choice(["spikes", "lava", "fake_booster", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "lightning_storm", "hidden_trap", "silence_booster", "freeze_booster", "switch", "magnet", "quicksand", "magnet_booster", "breakable_wall", "portal_gun_item", "wormhole", "clone_booster", "stealth_zone", "invert_booster", "reverse_gravity_booster", "stamina_drain_zone", "tether_trap"])
+            kind = random.choice(["spikes", "lava", "fake_booster", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "lightning_storm", "hidden_trap", "silence_booster", "freeze_booster", "switch", "magnet", "quicksand", "magnet_booster", "breakable_wall", "portal_gun_item", "wormhole", "clone_booster", "stealth_zone", "invert_booster", "reverse_gravity_booster", "stamina_drain_zone", "tether_trap", "pull_zone", "push_zone"])
             if kind == "switch":
                 radius = 20.0
                 damage = 0.0
@@ -232,6 +232,9 @@ class ProceduralArena:
                 setattr(new_hazard, "hp", 100.0)
                 setattr(new_hazard, "max_hp", 100.0)
                 setattr(new_hazard, "pull_speed", random.uniform(50.0, 150.0))
+            elif kind in ["pull_zone", "push_zone"]:
+                radius = random.uniform(60.0, 120.0)
+                damage = 0.0
             self.hazards.append(new_hazard)
 
         # Generate guaranteed paired portals
