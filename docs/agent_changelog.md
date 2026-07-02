@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-459] Energy Vampire Skill — *2026-07-02 20:08:12 UTC*
+
+A targeted skill that steals 30 stamina from an opponent and gives it to the user. Opponent is briefly slowed, and the user gets a brief speed burst from over-capped stamina.
+
+---
+
 ## [idea-476] Black Hole Hazard — *2026-07-02 20:04:41 UTC*
 
 A rare procedural arena event that spawns a massive black hole in the center of the map. It gradually pulls all entities and items towards its center while constantly shrinking the safe zone.
