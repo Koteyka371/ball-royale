@@ -675,6 +675,92 @@ func execute(strategy: String, delta: float):
     elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("_chrono_slow"):
         self.ball.erase("_chrono_slow")
 
+    # Glitch Zone mechanics
+    var glitch_timer = 0.0
+    var is_glitched = false
+
+    if self.ball.has_method("get_meta") and self.ball.has_meta("glitch_timer"):
+        glitch_timer = self.ball.get_meta("glitch_timer")
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("glitch_timer"):
+        glitch_timer = self.ball["glitch_timer"]
+    elif "glitch_timer" in self.ball:
+        glitch_timer = self.ball.glitch_timer
+
+    if glitch_timer > 0:
+        glitch_timer -= delta
+        if glitch_timer <= 0:
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("is_glitched", false)
+            elif typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["is_glitched"] = false
+            else:
+                self.ball.is_glitched = false
+
+        if self.ball.has_method("set_meta"):
+            self.ball.set_meta("glitch_timer", glitch_timer)
+        elif typeof(self.ball) == TYPE_DICTIONARY:
+            self.ball["glitch_timer"] = glitch_timer
+        else:
+            self.ball.glitch_timer = glitch_timer
+
+    if self.ball.has_method("get_meta") and self.ball.has_meta("is_glitched"):
+        is_glitched = self.ball.get_meta("is_glitched")
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("is_glitched"):
+        is_glitched = self.ball["is_glitched"]
+    elif "is_glitched" in self.ball:
+        is_glitched = self.ball.is_glitched
+
+    if is_glitched:
+        if randf() < 0.2:
+            var rvx = randf_range(-1.0, 1.0)
+            var rvy = randf_range(-1.0, 1.0)
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("_glitch_vx", rvx)
+                self.ball.set_meta("_glitch_vy", rvy)
+            elif typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["_glitch_vx"] = rvx
+                self.ball["_glitch_vy"] = rvy
+            else:
+                self.ball._glitch_vx = rvx
+                self.ball._glitch_vy = rvy
+
+        var gvx = 0.0
+        var gvy = 0.0
+        if self.ball.has_method("get_meta") and self.ball.has_meta("_glitch_vx"):
+            gvx = self.ball.get_meta("_glitch_vx")
+            gvy = self.ball.get_meta("_glitch_vy")
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("_glitch_vx"):
+            gvx = self.ball["_glitch_vx"]
+            gvy = self.ball["_glitch_vy"]
+        elif "_glitch_vx" in self.ball:
+            gvx = self.ball._glitch_vx
+            gvy = self.ball._glitch_vy
+
+        var speed = 2.0
+        if self.ball.has_method("get_meta") and self.ball.has_meta("speed"):
+            speed = self.ball.get_meta("speed")
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("speed"):
+            speed = self.ball["speed"]
+        elif "speed" in self.ball:
+            speed = self.ball.speed
+
+        if self.ball.has_method("set_meta"):
+            var cx = self.ball.get_meta("x") if self.ball.has_meta("x") else 0.0
+            var cy = self.ball.get_meta("y") if self.ball.has_meta("y") else 0.0
+            self.ball.set_meta("x", cx + gvx * speed * delta * 60.0)
+            self.ball.set_meta("y", cy + gvy * speed * delta * 60.0)
+        elif typeof(self.ball) == TYPE_DICTIONARY:
+            var cx = self.ball["x"] if self.ball.has("x") else 0.0
+            var cy = self.ball["y"] if self.ball.has("y") else 0.0
+            self.ball["x"] = cx + gvx * speed * delta * 60.0
+            self.ball["y"] = cy + gvy * speed * delta * 60.0
+        else:
+            self.ball.x += gvx * speed * delta * 60.0
+            self.ball.y += gvy * speed * delta * 60.0
+
+        if randf() < 0.5:
+            return
+
 
 	# Magnet passive: pull boosters and smaller entities
 	var btype = ""
@@ -2283,6 +2369,21 @@ func execute(strategy: String, delta: float):
                         if self.ball.has_method("set_meta"):
                             self.ball.set_meta("is_slipping", true)
 
+                elif hazard.kind == "glitch_zone":
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    var hr = hazard.get("radius") if typeof(hazard) == TYPE_DICTIONARY else hazard.radius
+                    if dist_sq < hr * hr:
+                        if self.ball.has_method("set_meta"):
+                            self.ball.set_meta("is_glitched", true)
+                            self.ball.set_meta("glitch_timer", 2.0)
+                        elif typeof(self.ball) == TYPE_DICTIONARY:
+                            self.ball["is_glitched"] = true
+                            self.ball["glitch_timer"] = 2.0
+                        else:
+                            self.ball.is_glitched = true
+                            self.ball.glitch_timer = 2.0
                 elif hazard.kind == "quicksand":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y

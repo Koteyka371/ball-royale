@@ -450,6 +450,26 @@ class Action:
             delattr(self.ball, "_chrono_slow")
 
         start_hp = getattr(self.ball, "hp", 100.0)
+
+        # Glitch Zone mechanics: randomize movement and optionally skip action
+        if getattr(self.ball, "glitch_timer", 0.0) > 0:
+            self.ball.glitch_timer -= delta
+            if self.ball.glitch_timer <= 0:
+                self.ball.is_glitched = False
+
+        if getattr(self.ball, "is_glitched", False):
+            import random
+            if random.random() < 0.2:
+                setattr(self.ball, "_glitch_vx", random.uniform(-1, 1))
+                setattr(self.ball, "_glitch_vy", random.uniform(-1, 1))
+
+            if hasattr(self.ball, "_glitch_vx") and hasattr(self.ball, "_glitch_vy"):
+                self.ball.x += getattr(self.ball, "_glitch_vx") * getattr(self.ball, "speed", 2.0) * delta * 60
+                self.ball.y += getattr(self.ball, "_glitch_vy") * getattr(self.ball, "speed", 2.0) * delta * 60
+
+            # Delay input processing by skipping logic with a 50% chance
+            if random.random() < 0.5:
+                return
         start_stun = getattr(self.ball, "stun_timer", 0.0)
         start_silence = getattr(self.ball, "silence_timer", 0.0)
 
@@ -1498,6 +1518,14 @@ class Action:
                             if not hasattr(self.ball, "is_slipping"):
                                 self.ball.is_slipping = True
 
+                    elif hazard.kind == "glitch_zone":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            if not getattr(self.ball, "is_glitched", False):
+                                self.ball.is_glitched = True
+                            self.ball.glitch_timer = 2.0  # reset timer while inside
                     elif hazard.kind == "quicksand":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y

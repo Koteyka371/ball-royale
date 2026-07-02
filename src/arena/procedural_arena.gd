@@ -179,6 +179,8 @@ func generate():
             kind = "bumper"
         elif r < 0.985:
             kind = "quicksand"
+        elif r < 0.987:
+            kind = "glitch_zone"
         elif r < 0.990:
             kind = "magnet_booster"
         elif r < 0.995:
@@ -242,6 +244,9 @@ func generate():
                 new_hazard.set_meta("vy", sin(angle) * speed)
             hazards.append(new_hazard)
             continue
+        elif kind == "glitch_zone":
+            radius = rng.randf_range(30.0, 60.0)
+            damage = 0.0
         elif kind == "quicksand":
             radius = rng.randf_range(40.0, 80.0)
             damage = 0.0
@@ -802,6 +807,9 @@ func update_zone(current_tick: int, delta: float) -> void:
                     h.damage = 0.0
                 elif randf() < 0.05:
                     h.kind = "portal_gun_item"
+                    h.damage = 0.0
+                elif randf() < 0.10:
+                    h.kind = "glitch_zone"
                     h.damage = 0.0
                 elif randf() < 0.15:
                     h.kind = "quicksand"
