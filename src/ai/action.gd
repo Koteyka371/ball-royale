@@ -1600,6 +1600,30 @@ func execute(strategy: String, delta: float):
                                             elif other.has_method("set_meta"):
                                                 other.set_meta("alive", false)
 
+                                        # Reward the owner for hitting enemies with a decoy explosion
+                                        var b_owner_id = -1
+                                        if "owner_id" in b:
+                                            b_owner_id = b.owner_id
+                                        elif b.has_method("get_meta") and b.has_meta("owner_id"):
+                                            b_owner_id = b.get_meta("owner_id")
+
+                                        if b_owner_id != -1:
+                                            for owner in world.balls:
+                                                var owner_id = -1
+                                                if "id" in owner:
+                                                    owner_id = owner.id
+                                                elif owner.has_method("get_meta") and owner.has_meta("id"):
+                                                    owner_id = owner.get_meta("id")
+
+                                                if owner_id == b_owner_id:
+                                                    if "score" in owner:
+                                                        owner.score += 5
+                                                    elif owner.has_method("get_meta") and owner.has_meta("score"):
+                                                        owner.set_meta("score", owner.get_meta("score") + 5)
+                                                    elif owner.has_method("set_meta"):
+                                                        owner.set_meta("score", 5)
+                                                    break
+
                         if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
                             if world.arena.has_method("get"):
                                 var ScriptType = load("res://src/arena/procedural_arena.gd")
