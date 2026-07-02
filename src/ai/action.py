@@ -4168,7 +4168,12 @@ class Action:
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "stamina_booster":
-                    self.ball.stamina = getattr(self.ball, "max_stamina", 100.0)
+                    current_stamina = getattr(self.ball, "stamina", 0.0)
+                    max_stamina = getattr(self.ball, "max_stamina", 100.0)
+                    if current_stamina >= max_stamina:
+                        self.ball.speed_boost_timer = getattr(self.ball, "speed_boost_timer", 0.0) + 3.0
+
+                    self.ball.stamina = max_stamina
                     self.ball.infinite_stamina_timer = 5.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
