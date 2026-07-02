@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-437] Grappling Hook — *2026-07-02 17:47:38 UTC*
+
+Add a new ability to allow balls to grapple and pull themselves towards walls.
+
+---
+
 ## [idea-457] Weather Predictor Drone — *2026-07-02 17:47:33 UTC*
 
 A deployable item that scans the sky and warns the team 10 seconds before a weather change happens.
