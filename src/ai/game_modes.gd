@@ -5126,7 +5126,82 @@ class GeometricZoneMode extends GameMode:
 						b.hp = 0
 						b.killer = "Geometric Zone"
 
+
+class BodySwapMode extends GameMode:
+	var swap_timer: float = 0.0
+	var swap_interval: float = 10.0
+
+	func _init() -> void:
+		name = "Body Swap"
+		description = "Periodically swaps player controls/positions to add confusion."
+
+	func setup(world, balls: Array) -> void:
+		if not "dead_balls" in world:
+			world.dead_balls = []
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if not "dead_balls" in world:
+			world.dead_balls = []
+
+		for b in balls:
+			var alive = false
+			if "alive" in b: alive = b.alive
+			elif b.has_method("get_meta") and b.has_meta("alive"): alive = b.get_meta("alive")
+
+			if not alive:
+				if not b in world.dead_balls:
+					if "time_since_death" in b: b.time_since_death = 0.0
+					elif b.has_method("set_meta"): b.set_meta("time_since_death", 0.0)
+					world.dead_balls.append(b)
+				else:
+					if "time_since_death" in b: b.time_since_death += delta
+					elif b.has_method("set_meta") and b.has_meta("time_since_death"):
+						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+
+		swap_timer += delta
+		if swap_timer >= swap_interval:
+			swap_timer = 0.0
+			var alive_balls = []
+			for b in balls:
+				var alive = false
+				if "alive" in b: alive = b.alive
+				elif b.has_method("get_meta") and b.has_meta("alive"): alive = b.get_meta("alive")
+				if alive:
+					alive_balls.append(b)
+
+			if alive_balls.size() >= 2:
+				alive_balls.shuffle()
+				var i = 0
+				while i < alive_balls.size() - 1:
+					var b1 = alive_balls[i]
+					var b2 = alive_balls[i+1]
+
+					var temp_x = b1.x
+					var temp_y = b1.y
+					b1.x = b2.x
+					b1.y = b2.y
+					b2.x = temp_x
+					b2.y = temp_y
+
+					var vx1 = 0.0; var vy1 = 0.0
+					var vx2 = 0.0; var vy2 = 0.0
+					if "vx" in b1: vx1 = b1.vx; vy1 = b1.vy
+					elif b1.has_method("get_meta") and b1.has_meta("vx"): vx1 = b1.get_meta("vx"); vy1 = b1.get_meta("vy")
+					if "vx" in b2: vx2 = b2.vx; vy2 = b2.vy
+					elif b2.has_method("get_meta") and b2.has_meta("vx"): vx2 = b2.get_meta("vx"); vy2 = b2.get_meta("vy")
+
+					if "vx" in b1: b1.vx = vx2; b1.vy = vy2
+					elif b1.has_method("set_meta"): b1.set_meta("vx", vx2); b1.set_meta("vy", vy2)
+
+					if "vx" in b2: b2.vx = vx1; b2.vy = vy1
+					elif b2.has_method("set_meta"): b2.set_meta("vx", vx1); b2.set_meta("vy", vy1)
+
+					if world.has_method("add_event"):
+						world.add_event("body_swap", {"type": "body_swap", "message": "Body Swap! Players swap places!"})
+					i += 2
+
 var GAME_MODES = {
+
 	"geometric_zone": GeometricZoneMode.new(),
     "mirror_walls": MirrorWallsMode.new(),
     "zero_gravity": ZeroGravityMode.new(),
@@ -5176,5 +5251,6 @@ var GAME_MODES = {
     "mirror_match": MirrorMatchMode.new(),
 	"clone_chaos": CloneChaosMode.new(),
     "supernova": SupernovaMode.new(),
-	"echolocation": EcholocationMode.new()
+	"echolocation": EcholocationMode.new(),
+	"body_swap": BodySwapMode.new()
 }
