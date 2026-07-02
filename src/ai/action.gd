@@ -1503,6 +1503,45 @@ func execute(strategy: String, delta: float):
             if "damage" in my_ball:
                 my_ball.damage *= 0.5
 
+        var burst_timer = 0.0
+        if my_ball.has_method("has_meta") and my_ball.has_meta("stamina_speed_burst_timer"):
+            burst_timer = my_ball.get_meta("stamina_speed_burst_timer")
+        elif "stamina_speed_burst_timer" in my_ball:
+            burst_timer = my_ball.stamina_speed_burst_timer
+
+        if burst_timer > 0.0:
+            if my_ball.has_method("set_meta"):
+                my_ball.set_meta("stamina_speed_burst_timer", burst_timer - delta)
+            elif "stamina_speed_burst_timer" in my_ball:
+                my_ball.stamina_speed_burst_timer = burst_timer - delta
+
+            if "speed" in my_ball:
+                var b_speed = 2.0
+                if my_ball.has_method("has_meta") and my_ball.has_meta("base_speed"):
+                    b_speed = my_ball.get_meta("base_speed")
+                elif "base_speed" in my_ball:
+                    b_speed = my_ball.base_speed
+
+                var can_burst = true
+                var s_timer = 0.0
+                var sl_timer = 0.0
+
+                if my_ball.has_method("has_meta") and my_ball.has_meta("stutter_timer"):
+                    s_timer = my_ball.get_meta("stutter_timer")
+                elif "stutter_timer" in my_ball:
+                    s_timer = float(my_ball.stutter_timer)
+
+                if my_ball.has_method("has_meta") and my_ball.has_meta("slow_timer"):
+                    sl_timer = my_ball.get_meta("slow_timer")
+                elif "slow_timer" in my_ball:
+                    sl_timer = float(my_ball.slow_timer)
+
+                if s_timer > 0.0 or sl_timer > 0.0:
+                    can_burst = false
+
+                if can_burst:
+                    my_ball.speed = b_speed * 1.5
+
         var st_timer = 0.0
         if "stutter_timer" in my_ball:
             st_timer = float(my_ball.stutter_timer)
@@ -7373,6 +7412,60 @@ func _use_skill():
 
             if self.has_method("_spawn_skill_particles"):
                 self._spawn_skill_particles("repel_burst")
+        elif skill_name == "stamina_steal":
+            if self.has_method("_spawn_skill_particles"):
+                self._spawn_skill_particles("stamina_steal")
+            var enemies = _get_enemies()
+            if enemies.size() > 0:
+                var target = null
+                var min_dist_sq = INF
+                for e in enemies:
+                    var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                    if dist_sq < min_dist_sq:
+                        min_dist_sq = dist_sq
+                        target = e
+
+                var target_stamina = 0.0
+                if target.has_method("has_meta") and target.has_meta("stamina"):
+                    target_stamina = target.get_meta("stamina")
+                elif "stamina" in target:
+                    target_stamina = target.stamina
+
+                var steal_amount = min(30.0, target_stamina)
+                var new_target_stamina = target_stamina - steal_amount
+
+                if target.has_method("set_meta"):
+                    target.set_meta("stamina", new_target_stamina)
+                    target.set_meta("slow_timer", 2.0)
+                else:
+                    target.stamina = new_target_stamina
+                    target.slow_timer = 2.0
+
+                var my_stamina = 100.0
+                if self.ball.has_method("has_meta") and self.ball.has_meta("stamina"):
+                    my_stamina = self.ball.get_meta("stamina")
+                elif "stamina" in self.ball:
+                    my_stamina = self.ball.stamina
+
+                var my_max = 100.0
+                if self.ball.has_method("has_meta") and self.ball.has_meta("max_stamina"):
+                    my_max = self.ball.get_meta("max_stamina")
+                elif "max_stamina" in self.ball:
+                    my_max = self.ball.max_stamina
+
+                var new_my_stamina = min(my_max, my_stamina + 30.0)
+
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("stamina", new_my_stamina)
+                else:
+                    self.ball.stamina = new_my_stamina
+
+                if my_stamina + 30.0 > my_max:
+                    if self.ball.has_method("set_meta"):
+                        self.ball.set_meta("stamina_speed_burst_timer", 2.0)
+                    else:
+                        self.ball.stamina_speed_burst_timer = 2.0
+
         elif skill_name == "stamina_dash":
             _spawn_skill_particles("dash")
             var st = 0.0
