@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-426] Supply Drops in Moving Safe Zone — *2026-07-02 13:30:29 UTC*
+
+Periodically spawn high-value supply drops (boosters, healing springs, strong weapons) slightly outside or on the edge of the moving safe zone, forcing players to risk taking damage for a chance at powerful gear to dominate late game.
+
+---
+
 ## [idea-441] Stamina Drain Field — *2026-07-02 13:29:08 UTC*
 
 A hazard that constantly drains stamina of players standing inside it, discouraging camping.

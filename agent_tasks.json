@@ -7360,7 +7360,7 @@
     },
     {
       "id": "idea-426",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Supply Drops in Moving Safe Zone",
@@ -12185,6 +12185,40 @@
         "src/ai/sabotage_the_springs.py",
         "src/ai/sabotage_the_springs.gd",
         "tests/test_sabotage_the_springs.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-708",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Ricochet Shield",
+      "description": "A temporary buff where colliding with a projectile reflects it back at the attacker.",
+      "allowed_paths": [
+        "src/ai/ricochet_shield.py",
+        "src/ai/ricochet_shield.gd",
+        "tests/test_ricochet_shield.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-709",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Boots",
+      "description": "A passive item that makes the ball immune to pull forces like black holes and magnets.",
+      "allowed_paths": [
+        "src/ai/gravity_boots.py",
+        "src/ai/gravity_boots.gd",
+        "tests/test_gravity_boots.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
