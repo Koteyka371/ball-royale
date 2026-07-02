@@ -801,6 +801,114 @@
                 ctx.stroke();
             }
 
+            // Draw hazards
+            if (frame.hazards) {
+                frame.hazards.forEach(hazard => {
+                    if (hazard.kind === "orbital_strike") {
+                        const pulseScale = 1.0 + 0.1 * Math.sin(currentFrameIndex * 0.2);
+                        const radius = hazard.radius * pulseScale;
+
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.arc(hazard.x, hazard.y, radius, 0, Math.PI * 2);
+                        ctx.fillStyle = "rgba(255, 0, 0, 0.15)";
+                        ctx.fill();
+
+                        // Crosshair
+                        ctx.beginPath();
+                        ctx.moveTo(hazard.x - radius, hazard.y);
+                        ctx.lineTo(hazard.x + radius, hazard.y);
+                        ctx.moveTo(hazard.x, hazard.y - radius);
+                        ctx.lineTo(hazard.x, hazard.y + radius);
+                        ctx.moveTo(hazard.x + radius, hazard.y);
+                        ctx.arc(hazard.x, hazard.y, radius, 0, Math.PI * 2);
+
+                        ctx.strokeStyle = "rgba(255, 0, 0, 0.8)";
+                        ctx.lineWidth = 4 * pulseScale;
+                        ctx.shadowColor = "red";
+                        ctx.shadowBlur = 15;
+                        ctx.stroke();
+                        ctx.restore();
+
+                        // Play siren sound using AudioContext if not already playing for this strike
+                        if (window.AudioContext || window.webkitAudioContext) {
+                            if (!window.activeSirens) window.activeSirens = new Map();
+                            const ctxAudio = window.audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+                            window.audioCtx = ctxAudio;
+
+                            // Only play if the simulation is currently advancing
+                            if (isPlaying && !window.activeSirens.has(hazard.id)) {
+                                const osc = ctxAudio.createOscillator();
+                                const gain = ctxAudio.createGain();
+                                osc.type = 'sine';
+
+                                // Siren frequency modulation (looped over 3s)
+                                osc.frequency.setValueAtTime(600, ctxAudio.currentTime);
+                                for (let i = 0; i < 3; i++) {
+                                    osc.frequency.linearRampToValueAtTime(800, ctxAudio.currentTime + i + 0.5);
+                                    osc.frequency.linearRampToValueAtTime(600, ctxAudio.currentTime + i + 1.0);
+                                }
+
+                                gain.gain.setValueAtTime(0.05, ctxAudio.currentTime);
+                                osc.connect(gain);
+                                gain.connect(ctxAudio.destination);
+
+                                osc.start();
+                                // Store the oscillator and gain to stop later, set auto-stop after 3s as fallback
+                                osc.stop(ctxAudio.currentTime + 3.0);
+
+                                window.activeSirens.set(hazard.id, osc);
+                            }
+                        }
+                    } else if (hazard.kind === "orbital_strike_active") {
+                        // Cleanup siren if it exists
+                        if (window.activeSirens && window.activeSirens.has(hazard.id)) {
+                            try {
+                                window.activeSirens.get(hazard.id).stop();
+                            } catch (e) {}
+                            window.activeSirens.delete(hazard.id);
+                        }
+
+                        // Draw strike explosion
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.arc(hazard.x, hazard.y, hazard.radius, 0, Math.PI * 2);
+                        const grad = ctx.createRadialGradient(hazard.x, hazard.y, 0, hazard.x, hazard.y, hazard.radius);
+                        grad.addColorStop(0, "rgba(255, 255, 255, 1)");
+                        grad.addColorStop(0.2, "rgba(255, 200, 0, 0.8)");
+                        grad.addColorStop(1, "rgba(255, 0, 0, 0)");
+                        ctx.fillStyle = grad;
+                        ctx.fill();
+                        ctx.restore();
+                    } else {
+                        // General hazard drawing
+                        ctx.beginPath();
+                        ctx.arc(hazard.x, hazard.y, hazard.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = "rgba(200, 50, 50, 0.2)";
+                        ctx.strokeStyle = "rgba(200, 50, 50, 0.6)";
+                        ctx.lineWidth = 2;
+                        ctx.fill();
+                        ctx.stroke();
+                    }
+                });
+            }
+
+            // Clean up any stale sirens if hazard is gone or simulation paused
+            if (!isPlaying && window.activeSirens) {
+                window.activeSirens.forEach((osc, id) => {
+                    try { osc.stop(); } catch(e) {}
+                });
+                window.activeSirens.clear();
+            } else if (window.activeSirens && frame.hazards) {
+                const currentHazardIds = new Set(frame.hazards.map(h => h.id));
+                window.activeSirens.forEach((osc, id) => {
+                    if (!currentHazardIds.has(id)) {
+                        try { osc.stop(); } catch(e) {}
+                        window.activeSirens.delete(id);
+                    }
+                });
+            }
+
             // Draw boosters
             frame.boosters.forEach(bo => {
                 ctx.beginPath();

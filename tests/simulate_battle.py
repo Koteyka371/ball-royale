@@ -558,10 +558,22 @@ class BattleSimulation:
                             "y": round(bo.y, 1),
                             "kind": bo.kind
                         })
+                frame_hazards = []
+                if hasattr(self.arena, "hazards"):
+                    for h in self.arena.hazards:
+                        if getattr(h, "active", True):
+                            frame_hazards.append({
+                                "id": h.id,
+                                "x": round(h.x, 1),
+                                "y": round(h.y, 1),
+                                "radius": round(h.radius, 1),
+                                "kind": h.kind
+                            })
                 self.history.append({
                     "tick": self.tick,
                     "balls": frame_balls,
-                    "boosters": frame_boosters
+                    "boosters": frame_boosters,
+                    "hazards": frame_hazards
                 })
 
         elapsed = time.time() - start
