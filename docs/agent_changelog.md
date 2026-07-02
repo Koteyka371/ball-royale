@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-393] Pinball Mechanics Mode — *2026-07-02 14:17:41 UTC*
+
+Introduces pinball flippers and bumpers around the arena that randomly activate or can be triggered, drastically changing the trajectory and momentum of balls.
+
+---
+
 ## [idea-433] Payload Mutator — *2026-07-02 14:07:17 UTC*
 
 A game mode where the payload periodically pulses out healing to defenders and damage to attackers.
