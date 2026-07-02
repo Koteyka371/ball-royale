@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-436] Repulsion Field Hazard — *2026-07-02 13:43:27 UTC*
+
+Introduce a 'repulsion_field' hazard that dynamically pushes players away. Unlike the gravity_well or magnet which attract balls, the repulsion field pushes entities outward. This can create fun zone-control dynamics where players can use the field as a barrier or get unexpectedly launched out of a safe zone.
+
+---
+
 ## [idea-387] Magnetic Grapple — *2026-07-02 13:40:26 UTC*
 
 An ability that allows the player or AI ball to shoot a magnetic tether at an enemy, pulling themselves quickly towards the target to close the gap for melee attacks.
