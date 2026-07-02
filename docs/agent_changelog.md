@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-435] Hazard Interaction Combos — *2026-07-02 13:06:27 UTC*
+
+Allow specific hazards to interact with each other for combo effects. For example, if a 'magnet' hazard pulls an 'explosive_barrel' or a 'flare', it creates a massive clustered explosion or area-of-effect zone. This introduces a strategic depth where players can trick enemies into pulling explosives towards them.
+
+---
+
 ## [idea-428] Interactive Crowd Hazards — *2026-07-02 12:57:15 UTC*
 
 Expand the crowd system so that if the crowd's excitement drops too low (boring match), they start throwing hazards into the arena, such as temporary walls, slow fields, or mini-bombs, forcing players to engage and play more aggressively to appease the crowd.

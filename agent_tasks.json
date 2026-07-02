@@ -7513,7 +7513,7 @@
     },
     {
       "id": "idea-435",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Hazard Interaction Combos",
@@ -11981,6 +11981,40 @@
         "src/ai/reflect_shield_overcharge.py",
         "src/ai/reflect_shield_overcharge.gd",
         "tests/test_reflect_shield_overcharge.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-696",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Crowd Betting System",
+      "description": "Allow the crowd to place bets on which team or player will win. If the underdog wins, the crowd's excitement spikes significantly more, and the winning team gets a huge prestige bonus.",
+      "allowed_paths": [
+        "src/ai/crowd_betting.py",
+        "src/ai/crowd_betting.gd",
+        "tests/test_crowd_betting.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-697",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Interactive Streamer Mode",
+      "description": "Integrate Twitch or similar platforms where actual viewers can type commands to throw specific hazards or power-ups into the arena, directly mapping real-world crowd interactions to the in-game crowd system.",
+      "allowed_paths": [
+        "src/ai/interactive_streamer.py",
+        "src/ai/interactive_streamer.gd",
+        "tests/test_interactive_streamer.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
