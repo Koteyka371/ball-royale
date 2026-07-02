@@ -1033,10 +1033,11 @@ class EscortMode extends GameMode:
     var payload
     var goal_x: float = 900.0
     var goal_y: float = 500.0
+    var timer: float = 180.0
 
     func _init() -> void:
         name = "Escort Mode"
-        description = "One team defends a payload moving towards a goal. The other tries to destroy it."
+        description = "One team defends an invulnerable payload moving towards a goal. The other tries to delay it until time runs out."
 
     func setup(world, balls: Array) -> void:
         super.setup(world, balls)
@@ -1067,22 +1068,23 @@ class EscortMode extends GameMode:
             payload = defenders[0]
             if typeof(payload) == TYPE_DICTIONARY:
                 payload["ball_type"] = "payload"
-                payload["hp"] = 2000.0
-                payload["base_hp"] = 2000.0
+                payload["is_invulnerable"] = true
                 payload["speed"] = 0.5
                 payload["damage"] = 0.0
                 payload["x"] = 100.0
                 payload["y"] = 500.0
             else:
                 payload.ball_type = "payload"
-                payload.hp = 2000.0
-                payload.base_hp = 2000.0
+                payload.is_invulnerable = true
                 payload.speed = 0.5
                 payload.damage = 0.0
                 payload.x = 100.0
                 payload.y = 500.0
 
     func tick(world, balls: Array, delta: float = 0.016) -> void:
+        if timer > 0.0:
+            timer -= delta
+
         if payload != null:
             var is_alive = payload.get("alive", false) if typeof(payload) == TYPE_DICTIONARY else payload.alive
             if is_alive:
@@ -1110,21 +1112,7 @@ class EscortMode extends GameMode:
         var dy = goal_y - py
         var dist = sqrt(dx * dx + dy * dy)
 
-        var is_dead = false
-        if typeof(payload) == TYPE_DICTIONARY:
-            if payload.has("hp") and payload["hp"] <= 0:
-                is_dead = true
-            if payload.has("alive") and not payload["alive"]:
-                is_dead = true
-        else:
-            if payload.hp <= 0:
-                is_dead = true
-            if not payload.alive:
-                is_dead = true
-
-        if is_dead:
-            if typeof(payload) == TYPE_DICTIONARY: payload["alive"] = false
-            else: payload.alive = false
+        if timer <= 0.0:
             return "Attackers"
 
         if dist < 10.0:

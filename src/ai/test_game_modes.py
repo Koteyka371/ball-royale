@@ -363,6 +363,7 @@ def test_escort_mode():
     assert len(balls) == 2
     payload = mode.payload
     assert getattr(payload, "ball_type") == "payload"
+    assert getattr(payload, "is_invulnerable", False) is True
     assert balls[0].team == "Defenders"
     assert balls[1].team == "Attackers"
 
@@ -377,10 +378,10 @@ def test_escort_mode():
     payload.y = mode.goal_y
     assert mode.check_winner(world, balls) == "Defenders"
 
-    # Payload destroyed
+    # Time runs out
     payload.x = 100.0
     payload.y = 500.0
-    payload.hp = 0
+    mode.timer = 0.0
     assert mode.check_winner(world, balls) == "Attackers"
 
 def test_pitch_black_mode():
