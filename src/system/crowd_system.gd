@@ -6,6 +6,10 @@ var max_excitement = 100.0
 var team_alive_counts = {}
 var last_kill_tick = 0
 var kill_streak = {}
+var active_vote = null
+var vote_timer = 0
+var votes = {}
+var vote_cooldown = 0
 
 func _init(p_world):
     world = p_world
@@ -15,6 +19,7 @@ func tick(balls: Array, kill_log: Array, current_tick: int):
     _check_events(balls, kill_log, current_tick)
     _throw_buffs_if_needed(balls, current_tick)
     _throw_hazards_if_bored(balls, current_tick)
+    _process_votes(balls, current_tick)
 
 func _update_excitement(current_tick: int):
     if excitement_level > 0:
@@ -228,3 +233,119 @@ func _throw_hazards_if_bored(balls: Array, current_tick: int):
             })
             world.add_event("crowd_throw", {"message": "The crowd boos and throws a hazard into the arena!"})
             excitement_level += 5.0
+
+func _process_votes(balls: Array, current_tick: int):
+    if vote_cooldown > 0:
+        vote_cooldown -= 1
+
+    if active_vote == null:
+        if vote_cooldown == 0 and excitement_level >= 30.0 and randf() < 0.001:
+            _start_vote(balls)
+        return
+
+    vote_timer -= 1
+
+    if randf() < 0.05:
+        _simulate_spectator_vote()
+
+    if vote_timer <= 0:
+        _resolve_vote(balls)
+
+func _start_vote(balls: Array):
+    var vote_types = [
+        {"type": "spawn_hazard", "options": ["lava_pit", "spike_trap", "poison_cloud"]},
+        {"type": "player_buff", "options": ["speed", "damage", "shield"]}
+    ]
+    var chosen_vote = vote_types[randi() % vote_types.size()]
+
+    active_vote = {
+        "type": chosen_vote["type"],
+        "options": chosen_vote["options"]
+    }
+
+    votes = {}
+    for opt in chosen_vote["options"]:
+        votes[opt] = 0
+
+    vote_timer = 200
+
+    if world != null and world.has_method("add_event"):
+        var options_str = ""
+        for i in range(chosen_vote["options"].size()):
+            options_str += chosen_vote["options"][i]
+            if i < chosen_vote["options"].size() - 1:
+                options_str += ", "
+
+        world.add_event("vote_started", {
+            "message": "A crowd vote has started for: " + chosen_vote["type"] + "! Options: " + options_str
+        })
+        world.add_event("audio_event", {"sound": "vote_start_chime", "volume": 1.0})
+
+func _simulate_spectator_vote():
+    if active_vote == null or votes.is_empty():
+        return
+
+    var options = votes.keys()
+    if options.size() > 0:
+        var chosen = options[randi() % options.size()]
+        votes[chosen] += 1
+
+func _resolve_vote(balls: Array):
+    if active_vote == null or votes.is_empty():
+        active_vote = null
+        return
+
+    var winning_option = ""
+    var max_votes = -1
+
+    for opt in votes.keys():
+        if votes[opt] > max_votes:
+            max_votes = votes[opt]
+            winning_option = opt
+
+    var vote_type = active_vote["type"]
+
+    if world != null and world.has_method("add_event"):
+        world.add_event("vote_ended", {
+            "message": "The crowd has spoken! The winner is " + winning_option + " with " + str(max_votes) + " votes!"
+        })
+        world.add_event("audio_event", {"sound": "vote_end_cheer", "volume": 1.0})
+
+    var alive_balls = []
+    for b in balls:
+        if typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("alive") and b.get("ball_type") != "spectator":
+            alive_balls.append(b)
+        elif typeof(b) == TYPE_DICTIONARY and b.has("alive") and b["alive"] and b.get("ball_type") != "spectator":
+            alive_balls.append(b)
+
+    if not alive_balls.is_empty():
+        var target = alive_balls[randi() % alive_balls.size()]
+
+        var t_x = 0.0
+        var t_y = 0.0
+        if typeof(target) == TYPE_OBJECT and target.has_method("get"):
+            t_x = float(target.get("x")) if target.get("x") != null else 0.0
+            t_y = float(target.get("y")) if target.get("y") != null else 0.0
+        elif typeof(target) == TYPE_DICTIONARY:
+            t_x = float(target.get("x", 0.0))
+            t_y = float(target.get("y", 0.0))
+
+        if vote_type == "spawn_hazard":
+            if world != null and world.has_method("add_event"):
+                world.add_event("spawn_hazard", {
+                    "x": t_x,
+                    "y": t_y,
+                    "kind": winning_option
+                })
+        elif vote_type == "player_buff":
+            if world != null and world.has_method("add_event"):
+                world.add_event("spawn_booster", {
+                    "x": t_x,
+                    "y": t_y,
+                    "kind": winning_option,
+                    "value": 50.0
+                })
+
+    active_vote = null
+    votes.clear()
+    vote_cooldown = 1000
