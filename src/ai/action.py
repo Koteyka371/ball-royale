@@ -664,22 +664,7 @@ class Action:
                 self.ball.alive = False
                 self.ball.hp = 0
 
-        # Magnet Tether Movement Logic
-        magnet_tether_timer = getattr(self.ball, "magnet_tether_timer", 0.0)
-        if magnet_tether_timer > 0:
-            target = getattr(self.ball, "magnet_tether_target", None)
-            if target and getattr(target, "alive", True):
-                import math as _math
-                dx = target.x - self.ball.x
-                dy = target.y - self.ball.y
-                dist = _math.hypot(dx, dy)
-                if dist > 0:
-                    tether_speed = getattr(self.ball, "speed", 2.0) * 3.0
-                    self.ball.vx = (dx / dist) * tether_speed
-                    self.ball.vy = (dy / dist) * tether_speed
-                    self.ball.x += self.ball.vx * delta
-                    self.ball.y += self.ball.vy * delta
-            self.ball.magnet_tether_timer = magnet_tether_timer - delta
+
 
         # Confusion timer logic
         if getattr(self.ball, "confusion_timer", 0.0) > 0:
@@ -5379,6 +5364,25 @@ class Action:
                                             owner.damage = old_dmg
         if hasattr(self.ball, "weather_control_timer") and self.ball.weather_control_timer > 0:
             self.ball.weather_control_timer -= delta
+
+        # Magnet Tether Movement Logic
+        magnet_tether_timer = getattr(self.ball, "magnet_tether_timer", 0.0)
+        if magnet_tether_timer > 0:
+            target = getattr(self.ball, "magnet_tether_target", None)
+            if target and getattr(target, "alive", True):
+                import math as _math
+                dx = target.x - self.ball.x
+                dy = target.y - self.ball.y
+                dist = _math.hypot(dx, dy)
+                if dist > 0:
+                    tether_speed = getattr(self.ball, "speed", 2.0) * 3.0
+                    if not hasattr(self.ball, "vx"): self.ball.vx = 0
+                    if not hasattr(self.ball, "vy"): self.ball.vy = 0
+                    self.ball.vx = (dx / dist) * tether_speed
+                    self.ball.vy = (dy / dist) * tether_speed
+                    self.ball.x += self.ball.vx * delta
+                    self.ball.y += self.ball.vy * delta
+            self.ball.magnet_tether_timer = magnet_tether_timer - delta
 
         if hasattr(self.ball, "infinite_stamina_timer") and self.ball.infinite_stamina_timer > 0:
             self.ball.infinite_stamina_timer -= delta
