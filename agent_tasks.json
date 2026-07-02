@@ -7394,7 +7394,7 @@
     },
     {
       "id": "idea-428",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Interactive Crowd Hazards",
@@ -11930,6 +11930,57 @@
         "src/ai/tornado_combos.py",
         "src/ai/tornado_combos.gd",
         "tests/test_tornado_combos.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-693",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Payload Speed Boost",
+      "description": "The payload moves faster when more teammates are near it.",
+      "allowed_paths": [
+        "src/ai/payload_speed_boost.py",
+        "src/ai/payload_speed_boost.gd",
+        "tests/test_payload_speed_boost.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-694",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Payload Healing Aura",
+      "description": "Payloads constantly heal nearby teammates to encourage sticking together.",
+      "allowed_paths": [
+        "src/ai/payload_healing_aura.py",
+        "src/ai/payload_healing_aura.gd",
+        "tests/test_payload_healing_aura.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-695",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reflect Shield Overcharge Mode",
+      "description": "A game mode where reflect shields have 300% capacity but passively drain the owner's stamina while active. If the shield breaks, the explosion radius and damage are doubled.",
+      "allowed_paths": [
+        "src/ai/reflect_shield_overcharge.py",
+        "src/ai/reflect_shield_overcharge.gd",
+        "tests/test_reflect_shield_overcharge.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

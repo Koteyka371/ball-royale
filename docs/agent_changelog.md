@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-428] Interactive Crowd Hazards — *2026-07-02 12:57:15 UTC*
+
+Expand the crowd system so that if the crowd's excitement drops too low (boring match), they start throwing hazards into the arena, such as temporary walls, slow fields, or mini-bombs, forcing players to engage and play more aggressively to appease the crowd.
+
+---
+
 ## [idea-431] Shield Overload Explosion — *2026-07-02 12:55:42 UTC*
 
 If a reflect shield takes damage exceeding its maximum capacity in a single hit, the remaining damage causes an overload explosion that deals AoE damage to everyone nearby, including the shield owner.
