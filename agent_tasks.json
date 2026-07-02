@@ -11476,6 +11476,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-666",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncing Laser Hazards",
+      "description": "Adds a new moving hazard to the procedural arena: a slow-moving, concentrated laser beam that continuously bounces off the arena walls. Instead of static hitboxes, this hazard creates moving damage zones that balls must kite around or carefully dash through.",
+      "allowed_paths": [
+        "src/arena/bouncing_laser_hazards.py",
+        "src/arena/bouncing_laser_hazards.gd",
+        "tests/test_bouncing_laser_hazards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
