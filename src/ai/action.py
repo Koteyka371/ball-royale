@@ -1747,6 +1747,16 @@ class Action:
                             hazard_damage = hazard.damage * delta
                             if getattr(self.ball, "is_in_quicksand", False):
                                 hazard_damage *= 2.0
+
+                            # Check if under an orbital shield dome
+                            shielded = False
+                            for dome in self.world.arena.hazards:
+                                if dome.kind == "orbital_shield_dome":
+                                    if _math.hypot(self.ball.x - dome.x, self.ball.y - dome.y) <= getattr(dome, "radius", 300.0):
+                                        shielded = True
+                                        break
+                            if shielded:
+                                hazard_damage *= 0.1
                             if hasattr(self.ball, "take_damage"):
                                 self.ball.take_damage(hazard_damage)
                             elif hasattr(self.ball, "hp"):
@@ -1778,6 +1788,16 @@ class Action:
                             hazard_damage = hazard.damage * delta
                             if getattr(self.ball, "is_in_quicksand", False):
                                 hazard_damage *= 2.0
+
+                            # Check if under an orbital shield dome
+                            shielded = False
+                            for dome in self.world.arena.hazards:
+                                if dome.kind == "orbital_shield_dome":
+                                    if _math.hypot(self.ball.x - dome.x, self.ball.y - dome.y) <= getattr(dome, "radius", 300.0):
+                                        shielded = True
+                                        break
+                            if shielded:
+                                hazard_damage *= 0.1
                             if hasattr(self.ball, "take_damage"):
                                 self.ball.take_damage(hazard_damage)
                             elif hasattr(self.ball, "hp"):
@@ -4755,6 +4775,22 @@ class Action:
                 self.ball.reflect_shield_capacity = float('inf')  # Reflects all damage
                 if hasattr(self, "_spawn_skill_particles"):
                     self._spawn_skill_particles("shield")
+            elif skill_name == "orbital_shield":
+                import random
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    trap_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
+                    try:
+                        from arena.procedural_arena import Hazard
+                    except ImportError:
+                        Hazard = type('Hazard', (), {}) # dummy
+
+                    self.ball.orbital_shield_active = True
+                    self.ball.orbital_shield_timer = 10.0
+
+                    dome = Hazard(id=trap_id, x=self.ball.x, y=self.ball.y, radius=300.0, kind="orbital_shield_dome", damage=0.0)
+                    setattr(dome, 'duration', 10.0)
+                    self.world.arena.hazards.append(dome)
+
             elif skill_name == "target_strong":
 
 
@@ -5079,6 +5115,11 @@ class Action:
                 self.ball.speed = base_s * 1.5
 
     def _update_skill_timer(self, delta: float) -> None:
+        if hasattr(self.ball, "orbital_shield_timer") and self.ball.orbital_shield_timer > 0:
+            self.ball.orbital_shield_timer -= delta
+            if self.ball.orbital_shield_timer <= 0:
+                self.ball.orbital_shield_active = False
+
         if hasattr(self.ball, "invert_timer") and self.ball.invert_timer > 0:
             self.ball.invert_timer -= delta
             if self.ball.invert_timer < 0:
