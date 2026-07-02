@@ -491,7 +491,55 @@ class ThunderstormArena extends ProceduralArena:
 				surviving_hazards.append(h)
 		hazards = surviving_hazards
 
+
+class PinballArena extends ProceduralArena:
+    func generate() -> void:
+        rooms.clear()
+        corridors.clear()
+        hazards.clear()
+        var w = width
+        var h = height
+        var cx = w / 2.0
+        var cy = h / 2.0
+
+        rooms.append(ProceduralArena.Room.new(cx - 300.0, cy - 300.0, 600.0, 600.0))
+        rooms.append(ProceduralArena.Room.new(50.0, cy - 100.0, 150.0, 400.0))
+        rooms.append(ProceduralArena.Room.new(w - 200.0, cy - 100.0, 150.0, 400.0))
+
+        corridors.append(ProceduralArena.Corridor.new(200.0, cy + 100.0, cx - 300.0 - 200.0, 100.0))
+        corridors.append(ProceduralArena.Corridor.new(cx + 300.0, cy + 100.0, w - 200.0 - (cx + 300.0), 100.0))
+
+        for i in range(12):
+            var bx = cx + randf_range(-250.0, 250.0)
+            var by = cy + randf_range(-250.0, 250.0)
+            hazards.append(ProceduralArena.Hazard.new(hazards.size(), bx, by, 30.0, "bumper", 0.0))
+
+        var f_left = ProceduralArena.Hazard.new(hazards.size(), cx - 150.0, cy + 200.0, 50.0, "pinball_flipper", 10.0)
+        f_left.set_meta("flipper_side", "left")
+        f_left.set_meta("flip_timer", 0.0)
+        hazards.append(f_left)
+
+        var f_right = ProceduralArena.Hazard.new(hazards.size(), cx + 150.0, cy + 200.0, 50.0, "pinball_flipper", 10.0)
+        f_right.set_meta("flipper_side", "right")
+        f_right.set_meta("flip_timer", 0.0)
+        hazards.append(f_right)
+
+    func update_zone(current_tick: int, delta: float) -> void:
+        super.update_zone(current_tick, delta)
+        for h in hazards:
+            if h.kind == "pinball_flipper":
+                var ft = 0.0
+                if h.has_meta("flip_timer"):
+                    ft = h.get_meta("flip_timer")
+
+                if ft > 0:
+                    h.set_meta("flip_timer", ft - delta)
+                else:
+                    if randf() < 0.05:
+                        h.set_meta("flip_timer", 0.5)
+
 const ARENAS = [
+
 	"thunderstorm",
 	"thick_fog",
 	"black_hole",
@@ -542,7 +590,8 @@ const ARENAS = [
     "ambush",
     "physics_chain_reactions",
     "target_strong",
-    "day_night"
+    "day_night",
+    "pinball"
 ]
 
 

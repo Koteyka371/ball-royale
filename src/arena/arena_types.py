@@ -1340,7 +1340,61 @@ class SiegeArena(ProceduralArena):
         self.hazards.append(Hazard(id=h_id+1, x=cx + 150, y=350, radius=30.0, kind="bumper", damage=0.0))
 
 
+
+class PinballArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central room
+        self.rooms.append(Room(cx - 300, cy - 300, 600, 600))
+
+        # Side rooms
+        self.rooms.append(Room(50, cy - 100, 150, 400))
+        self.rooms.append(Room(w - 200, cy - 100, 150, 400))
+
+        # Corridors
+        self.corridors.append(Corridor(200, cy + 100, cx - 300 - 200, 100))
+        self.corridors.append(Corridor(cx + 300, cy + 100, w - 200 - (cx + 300), 100))
+
+        import random
+        import math
+
+        # Place Bumpers
+        for i in range(12):
+            bx = cx + random.uniform(-250, 250)
+            by = cy + random.uniform(-250, 250)
+            b = Hazard(id=len(self.hazards), x=bx, y=by, radius=30.0, kind="bumper", damage=0.0)
+            self.hazards.append(b)
+
+        # Place Flippers (left and right)
+        f_left = Hazard(id=len(self.hazards), x=cx - 150, y=cy + 200, radius=50.0, kind="pinball_flipper", damage=10.0)
+        setattr(f_left, "flipper_side", "left")
+        setattr(f_left, "flip_timer", 0.0)
+        self.hazards.append(f_left)
+
+        f_right = Hazard(id=len(self.hazards), x=cx + 150, y=cy + 200, radius=50.0, kind="pinball_flipper", damage=10.0)
+        setattr(f_right, "flipper_side", "right")
+        setattr(f_right, "flip_timer", 0.0)
+        self.hazards.append(f_right)
+
+    def update_zone(self, current_tick: int, delta: float):
+        super().update_zone(current_tick, delta)
+        import random
+        for h in self.hazards:
+            if getattr(h, "kind", "") == "pinball_flipper":
+                ft = getattr(h, "flip_timer", 0.0)
+                if ft > 0:
+                    setattr(h, "flip_timer", ft - delta)
+                else:
+                    if random.random() < 0.05: # Randomly flip
+                        setattr(h, "flip_timer", 0.5)
+
 ARENAS = {
+
     "siege": SiegeArena,
     "thunderstorm": ThunderstormArena,
     "thick_fog": ThickFogArena,
@@ -1392,7 +1446,8 @@ ARENAS = {
     "finals_1v1": Finals1v1Arena,
     "team_wipes": TeamWipesArena,
     "target_strong": TargetStrongArena,
-    "day_night": DayNightArena
+    "day_night": DayNightArena,
+    "pinball": PinballArena
 }
 
 class SummerArena(ProceduralArena):

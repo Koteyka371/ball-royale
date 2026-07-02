@@ -2148,7 +2148,40 @@ class Action:
                                 self.ball.y += ny * 20.0
                                 # Trigger some logic if needed
                             continue
+
+                        elif hazard.kind == "pinball_flipper":
+                            dx = self.ball.x - hazard.x
+                            dy = self.ball.y - hazard.y
+                            dist2 = dx*dx + dy*dy
+                            dist = math.sqrt(dist2) if dist2 > 0 else 0.0001
+
+                            b_rad = getattr(self.ball, "radius", 10.0)
+                            if dist < (b_rad + getattr(hazard, "radius", 50.0)):
+                                ft = getattr(hazard, "flip_timer", 0.0)
+                                if ft > 0:
+                                    side = getattr(hazard, "flipper_side", "left")
+                                    # Flipper hits hard upwards and slightly inwards
+                                    if side == "left":
+                                        nx, ny = 0.5, -0.8
+                                    else:
+                                        nx, ny = -0.5, -0.8
+
+                                    flip_strength = 1500.0 * delta
+                                    self.ball.x += nx * flip_strength
+                                    self.ball.y += ny * flip_strength
+
+                                    if not hasattr(self.ball, "vx"): self.ball.vx = 0.0
+                                    if not hasattr(self.ball, "vy"): self.ball.vy = 0.0
+                                    self.ball.vx += nx * 1000.0
+                                    self.ball.vy += ny * 1000.0
+                                else:
+                                    # Regular collision
+                                    nx = dx / dist
+                                    ny = dy / dist
+                                    self.ball.x += nx * 50.0 * delta
+                                    self.ball.y += ny * 50.0 * delta
                         elif hazard.kind == "bumper":
+
                             dx = self.ball.x - hazard.x
                             dy = self.ball.y - hazard.y
                             dist2 = dx*dx + dy*dy
