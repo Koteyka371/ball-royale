@@ -4540,7 +4540,57 @@ class TugOfWarMode(GameMode):
         return None
 
 
+class CrowdInteractionMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Crowd Interaction"
+        self.description = "Spectators vote on events, such as which hazard spawns next or which player gets a buff."
+        self.vote_timer = 5.0
+        self.vote_interval = 5.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        # Determine if anyone is alive
+        alive_balls = [b for b in balls if getattr(b, "alive", False)]
+        if not alive_balls:
+            return
+
+        self.vote_timer -= delta
+        if self.vote_timer <= 0:
+            self.vote_timer = self.vote_interval
+
+            import random
+            event_type = random.choice(["spawn_hazard", "buff_player", "spawn_item"])
+
+            if event_type == "spawn_hazard":
+                if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    try:
+                        from arena.procedural_arena import Hazard
+                        hx = random.uniform(100, getattr(world.arena, "width", 1000) - 100)
+                        hy = random.uniform(100, getattr(world.arena, "height", 1000) - 100)
+                        hr = random.uniform(30, 80)
+                        h = Hazard(id=f"crowd_hazard_{random.randint(0, 999999)}", x=hx, y=hy, radius=hr, kind="damage", damage=10.0)
+                        world.arena.hazards.append(h)
+                    except ImportError:
+                        pass
+                if hasattr(world, "add_event"):
+                    world.add_event("crowd_vote", {"type": "crowd_vote", "message": "The crowd voted to spawn a hazard!"})
+
+            elif event_type == "buff_player":
+                target = random.choice(alive_balls)
+                target.speed = getattr(target, "speed", 200.0) * 1.5
+                if hasattr(world, "add_event"):
+                    world.add_event("crowd_vote", {"type": "crowd_vote", "message": f"The crowd voted to buff a player!"})
+
+            elif event_type == "spawn_item":
+                # Simulated item spawn
+                if hasattr(world, "add_event"):
+                    world.add_event("crowd_vote", {"type": "crowd_vote", "message": "The crowd voted to spawn an item!"})
+
+
 GAME_MODES = {
+    "crowd_interaction": CrowdInteractionMode(),
 
     "geometric_zone": GeometricZoneMode(),
     "mirror_walls": MirrorWallsMode(),

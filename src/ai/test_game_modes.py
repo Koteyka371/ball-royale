@@ -590,3 +590,37 @@ def test_pinball_mode():
     assert hasattr(world.arena, "hazards")
     assert len(world.arena.hazards) >= 20
     assert any(h.kind == "bumper" for h in world.arena.hazards)
+
+def test_crowd_interaction_mode():
+    from ai.game_modes import CrowdInteractionMode
+    mode = CrowdInteractionMode()
+
+    class MockArena:
+        def __init__(self):
+            self.hazards = []
+
+    class MockWorld:
+        def __init__(self):
+            self.arena = MockArena()
+            self.events = []
+
+        def add_event(self, type_str, payload):
+            self.events.append((type_str, payload))
+
+    class MockBall:
+        def __init__(self):
+            self.hp = 100
+            self.max_hp = 100
+            self.alive = True
+
+    world = MockWorld()
+    b1 = MockBall()
+    mode.setup(world, [b1])
+
+    # Tick until a vote happens
+    mode.vote_timer = 0.1
+    mode.tick(world, [b1], delta=0.2)
+
+    # Check that an event was broadcast
+    assert len(world.events) > 0
+    assert world.events[0][0] == "crowd_vote"

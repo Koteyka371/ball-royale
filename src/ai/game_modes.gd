@@ -5585,6 +5585,7 @@ class TugOfWarMode extends GameMode:
 
 
 var GAME_MODES = {
+	"crowd_interaction": CrowdInteractionMode.new(),
 
 	"geometric_zone": GeometricZoneMode.new(),
     "mirror_walls": MirrorWallsMode.new(),
@@ -5640,3 +5641,62 @@ var GAME_MODES = {
 	"echolocation": EcholocationMode.new(),
 	"body_swap": BodySwapMode.new()
 }
+
+class CrowdInteractionMode extends GameMode:
+	var vote_timer = 5.0
+	var vote_interval = 5.0
+
+	func _init():
+		name = "Crowd Interaction"
+		description = "Spectators vote on events, such as which hazard spawns next or which player gets a buff."
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+
+		var alive_balls = []
+		for b in balls:
+			if b.has("alive") and b.alive:
+				alive_balls.append(b)
+			elif b.has_method("get") and b.get("alive"):
+				alive_balls.append(b)
+
+		if alive_balls.size() == 0:
+			return
+
+		vote_timer -= delta
+		if vote_timer <= 0:
+			vote_timer = vote_interval
+
+			var events = ["spawn_hazard", "buff_player", "spawn_item"]
+			var event_type = events[randi() % events.size()]
+
+			if event_type == "spawn_hazard":
+				if world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+					var hx = randf_range(100, 900)
+					var hy = randf_range(100, 900)
+					var hr = randf_range(30, 80)
+					var h = {"id": "crowd_hazard_" + str(randi()), "x": hx, "y": hy, "radius": hr, "kind": "damage", "damage": 10.0}
+					world.arena.hazards.append(h)
+				elif world.has("arena") and typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+					var hx = randf_range(100, 900)
+					var hy = randf_range(100, 900)
+					var hr = randf_range(30, 80)
+					# Simulate a dictionary hazard for GDScript tests/simulations where full objects aren't available
+					var h = {"id": "crowd_hazard_" + str(randi()), "x": hx, "y": hy, "radius": hr, "kind": "damage", "damage": 10.0}
+					world.arena.hazards.append(h)
+				if world.has_method("add_event"):
+					world.add_event("crowd_vote", {"type": "crowd_vote", "message": "The crowd voted to spawn a hazard!"})
+
+			elif event_type == "buff_player":
+				var target = alive_balls[randi() % alive_balls.size()]
+				if typeof(target) == TYPE_DICTIONARY:
+					if target.has("speed"):
+						target.speed *= 1.5
+				else:
+					target.speed *= 1.5
+				if world.has_method("add_event"):
+					world.add_event("crowd_vote", {"type": "crowd_vote", "message": "The crowd voted to buff a player!"})
+
+			elif event_type == "spawn_item":
+				if world.has_method("add_event"):
+					world.add_event("crowd_vote", {"type": "crowd_vote", "message": "The crowd voted to spawn an item!"})
