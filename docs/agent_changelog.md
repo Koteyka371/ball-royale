@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-409] Nemesis Tracking UI — *2026-07-02 10:52:29 UTC*
+
+Add a UI screen to view current nemeses and their kill counts.
+
+---
+
 ## [idea-346] One-Way Teleporters — *2026-07-02 02:09:12 UTC*
 
 Introduce a variation of teleporters that are strictly one-way. They randomly spawn and change destinations periodically, offering risky escape routes but potentially trapping balls in difficult areas.
