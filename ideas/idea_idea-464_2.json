@@ -1,0 +1,4 @@
+{
+  "title": "Spiked Walls Game Mode",
+  "description": "A new mutator/game mode where the arena walls are lined with spikes. Hitting a wall doesn't just do scaling velocity damage, but also applies a bleeding effect that drains HP slowly over time until the player stops moving."
+}
