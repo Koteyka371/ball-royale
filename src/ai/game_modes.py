@@ -363,6 +363,12 @@ class BattleRoyaleMode(GameMode):
         if hasattr(world, "arena"):
             world.arena.is_foggy = (self.weather in ["fog", "snow", "blizzard"])
             world.arena.is_raining = (self.weather in ["rain", "thunderstorm"])
+
+            if world.arena.is_raining:
+                world.arena.rain_duration = getattr(world.arena, "rain_duration", 0.0) + delta
+            else:
+                world.arena.rain_duration = 0.0
+
             world.arena.is_sandstorming = (self.weather == "sandstorm")
             world.arena.is_snowing = (self.weather in ["snow", "blizzard"])
             world.arena.is_heatwave = (self.weather == "heatwave")
@@ -415,6 +421,17 @@ class BattleRoyaleMode(GameMode):
                     world.arena.hazards.append(ice)
 
             elif self.weather == "rain":
+                # Flood mechanics
+                if getattr(world.arena, "rain_duration", 0.0) > 5.0:
+                    if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
+                        from arena.procedural_arena import Hazard
+                        # Spawn water hazard
+                        x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                        y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                        water = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=80.0, kind="water", damage=0.0)
+                        setattr(water, 'duration', 20.0)
+                        world.arena.hazards.append(water)
+
                 if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
                     from arena.procedural_arena import Hazard
                     # Spawn mud pit
@@ -1417,6 +1434,12 @@ class WeatherChaosMode(GameMode):
         if hasattr(world, "arena"):
             world.arena.is_foggy = (self.weather in ["fog", "snow", "blizzard"])
             world.arena.is_raining = (self.weather in ["rain", "thunderstorm"])
+
+            if world.arena.is_raining:
+                world.arena.rain_duration = getattr(world.arena, "rain_duration", 0.0) + delta
+            else:
+                world.arena.rain_duration = 0.0
+
             world.arena.is_sandstorming = (self.weather == "sandstorm")
             world.arena.is_snowing = (self.weather in ["snow", "blizzard"])
             world.arena.is_heatwave = (self.weather == "heatwave")
@@ -1471,6 +1494,17 @@ class WeatherChaosMode(GameMode):
                     world.arena.hazards.append(ice)
 
             elif self.weather == "rain":
+                # Flood mechanics
+                if getattr(world.arena, "rain_duration", 0.0) > 5.0:
+                    if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
+                        from arena.procedural_arena import Hazard
+                        # Spawn water hazard
+                        x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                        y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                        water = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=80.0, kind="water", damage=0.0)
+                        setattr(water, 'duration', 20.0)
+                        world.arena.hazards.append(water)
+
                 if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
                     from arena.procedural_arena import Hazard
                     # Spawn mud pit

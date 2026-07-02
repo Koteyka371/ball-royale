@@ -1507,6 +1507,17 @@ class Action:
                                 self.ball.quicksand_debuff_timer -= delta
 
                             self.ball.is_in_quicksand = True
+
+                    elif hazard.kind == "water":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            if getattr(self.ball, "ball_type", "") not in ["water_elemental", "hover", "ghost", "spectator"]:
+                                self.ball.speed = getattr(self.ball, "base_speed", 100.0) * 0.4
+                                if hasattr(self.ball, "dash_timer"):
+                                    # disable dash in water
+                                    self.ball.dash_timer = max(getattr(self.ball, "dash_timer", 0), 1.0)
                     elif hazard.kind == "sinkhole":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
