@@ -4688,6 +4688,37 @@ class MinefieldEventMode(GameMode):
                         if hasattr(world, "add_event"):
                             world.add_event("mine_explosion", {"x": m["x"], "y": m["y"]})
 
+
+
+class StaminaSpeedMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Stamina Speed"
+        self.description = "Max stamina dictates base speed. Everyone starts with 200 max stamina but taking damage permanently reduces maximum stamina for the rest of the round."
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        for b in balls:
+            b.max_stamina = 200.0
+            b.stamina = 200.0
+            b.base_speed = 200.0
+            if hasattr(b, 'speed'):
+                b.speed = 200.0
+            setattr(b, 'prev_hp', getattr(b, 'hp', 100.0))
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        for b in balls:
+            current_hp = getattr(b, 'hp', 100.0)
+            prev_hp = getattr(b, 'prev_hp', current_hp)
+            if current_hp < prev_hp:
+                damage = prev_hp - current_hp
+                b.max_stamina = max(10.0, getattr(b, 'max_stamina', 200.0) - damage)
+                b.stamina = min(getattr(b, 'stamina', b.max_stamina), b.max_stamina)
+
+            b.prev_hp = current_hp
+            b.base_speed = getattr(b, 'max_stamina', 200.0)
+
+
 GAME_MODES = {
 
 
@@ -4698,6 +4729,7 @@ GAME_MODES = {
     "magnetic_collisions": MagneticCollisionsMode(),
     "day_night_mode": DayNightMode(),
     "shifting_maze": ShiftingMazeMode(),
+    "stamina_speed": StaminaSpeedMode(),
 
     "blackout": BlackoutMode(),
     "windstorm": WindstormMode(),
