@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-452] Conveyor Belt Mechanics — *2026-07-02 17:20:46 UTC*
+
+Introduce directional conveyor belts on some arenas that continuously push balls, items, and hazards in a specific direction, creating dynamic zones and testing positional control algorithms.
+
+---
+
 ## [idea-383] Weather-Specific Minions — *2026-07-02 17:14:39 UTC*
 
 Add new entity types or minions that only spawn during specific weather conditions, providing dynamic environmental challenges.

@@ -7802,7 +7802,7 @@
     },
     {
       "id": "idea-452",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Conveyor Belt Mechanics",
@@ -12748,6 +12748,40 @@
         "src/arena/invisible_walls_arena.py",
         "src/arena/invisible_walls_arena.gd",
         "tests/test_invisible_walls_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-741",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Interactive Weather Alters",
+      "description": "Add control nodes (alters) to the center of the arena that players can capture. Capturing an alter allows a team to instantly change the current weather to their team's advantage (e.g., a Swamp team changing it to Rain to boost their stats). This creates mini-objectives around controlling the environment.",
+      "allowed_paths": [
+        "src/ai/interactive_alters.py",
+        "src/ai/interactive_alters.gd",
+        "tests/test_interactive_alters.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-742",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather-Specific Boss Monsters",
+      "description": "Introduce mega-minions or 'Bosses' that only spawn during rare extreme weather events (e.g., a Lightning Elemental during a Thunderstorm, or a Frost Titan during a Blizzard). Defeating them drops powerful, unique boosters that cannot be acquired otherwise, giving players a major incentive to risk fighting in dangerous weather conditions.",
+      "allowed_paths": [
+        "src/ai/specific_boss_monsters.py",
+        "src/ai/specific_boss_monsters.gd",
+        "tests/test_specific_boss_monsters.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
