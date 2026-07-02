@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-461] Low Gravity Anomaly Zone — *2026-07-02 18:38:44 UTC*
+
+Periodically, an anomaly zone spawns in the arena. Any balls entering it have their gravity removed (massively reduced friction) and bounce wildly off each other and walls with high elasticity. This causes unpredictable trajectories and forces players to rely purely on momentum or long-range attacks to score kills.
+
+---
+
 ## [idea-465] Eclipse Random Event — *2026-07-02 18:38:40 UTC*
 
 A rare procedural event where an eclipse occurs regardless of the current phase in DayNightArena. During the eclipse, ALL balls lose their perception radius down to an extreme minimum (like 20 units) and global damage across the board is doubled, leading to chaotic close-quarter ambushes.
