@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-358] Tornado Skill — *2026-07-02 12:54:08 UTC*
+
+A new skill that creates a local tornado hazard that pulls nearby balls towards it and applies wind physics.
+
+---
+
 ## [idea-429] Healing Rain Weather — *2026-07-02 12:37:57 UTC*
 
 A new weather event where gentle rain gradually restores HP to all balls.

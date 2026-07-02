@@ -512,7 +512,7 @@
         "Tests pass"
       ],
       "title": "Implement PERCEPTION skill",
-      "description": "Create PERCEPTION skill: \u0412\u043e\u0441\u043f\u0440\u0438\u044f\u0442\u0438\u0435"
+      "description": "Create PERCEPTION skill: Восприятие"
     },
     {
       "id": "auto-implement-emotion-skill",
@@ -528,7 +528,7 @@
         "Tests pass"
       ],
       "title": "Implement EMOTION skill",
-      "description": "Create EMOTION skill: \u042d\u043c\u043e\u0446\u0438\u0438"
+      "description": "Create EMOTION skill: Эмоции"
     },
     {
       "id": "auto-implement-decision-skill",
@@ -544,7 +544,7 @@
         "Tests pass"
       ],
       "title": "Implement DECISION skill",
-      "description": "Create DECISION skill: \u0420\u0435\u0448\u0435\u043d\u0438\u0435"
+      "description": "Create DECISION skill: Решение"
     },
     {
       "id": "auto-implement-action-skill",
@@ -560,10 +560,10 @@
         "Tests pass"
       ],
       "title": "Implement ACTION skill",
-      "description": "Create ACTION skill: \u0414\u0435\u0439\u0441\u0442\u0432\u0438\u0435"
+      "description": "Create ACTION skill: Действие"
     },
     {
-      "id": "auto-implement-**target-strong**-\u2014-\u0430\u0442\u0430\u043a\u0443\u0435\u0442-\u0441\u0430\u043c\u043e\u0433\u043e-\u0441\u0438\u043b\u044c\u043d",
+      "id": "auto-implement-**target-strong**-—-атакует-самого-сильн",
       "status": "done",
       "area": "skills",
       "risk": "medium",
@@ -575,11 +575,11 @@
         "Feature works",
         "Tests pass"
       ],
-      "title": "Implement **Target Strong** \u2014 \u0430\u0442\u0430\u043a\u0443\u0435\u0442 \u0441\u0430\u043c\u043e\u0433\u043e \u0441\u0438\u043b\u044c\u043d\u043e\u0433\u043e skill",
-      "description": "Create **Target Strong** \u2014 \u0430\u0442\u0430\u043a\u0443\u0435\u0442 \u0441\u0430\u043c\u043e\u0433\u043e \u0441\u0438\u043b\u044c\u043d\u043e\u0433\u043e skill: \u0434\u043b\u044f Tank"
+      "title": "Implement **Target Strong** — атакует самого сильного skill",
+      "description": "Create **Target Strong** — атакует самого сильного skill: для Tank"
     },
     {
-      "id": "auto-implement-**kite**-\u2014-\u0434\u0435\u0440\u0436\u0438\u0442-\u0434\u0438\u0441\u0442\u0430\u043d\u0446\u0438\u044e,-\u0430\u0442\u0430\u043a\u0443\u0435\u0442-\u043f\u0440\u0438",
+      "id": "auto-implement-**kite**-—-держит-дистанцию,-атакует-при",
       "status": "done",
       "area": "skills",
       "risk": "medium",
@@ -591,11 +591,11 @@
         "Feature works",
         "Tests pass"
       ],
-      "title": "Implement **Kite** \u2014 \u0434\u0435\u0440\u0436\u0438\u0442 \u0434\u0438\u0441\u0442\u0430\u043d\u0446\u0438\u044e, \u0430\u0442\u0430\u043a\u0443\u0435\u0442 \u043f\u0440\u0438 \u043f\u0440\u0438\u0431\u043b\u0438\u0436\u0435\u043d\u0438\u0438 skill",
-      "description": "Create **Kite** \u2014 \u0434\u0435\u0440\u0436\u0438\u0442 \u0434\u0438\u0441\u0442\u0430\u043d\u0446\u0438\u044e, \u0430\u0442\u0430\u043a\u0443\u0435\u0442 \u043f\u0440\u0438 \u043f\u0440\u0438\u0431\u043b\u0438\u0436\u0435\u043d\u0438\u0438 skill: \u0434\u043b\u044f Sniper"
+      "title": "Implement **Kite** — держит дистанцию, атакует при приближении skill",
+      "description": "Create **Kite** — держит дистанцию, атакует при приближении skill: для Sniper"
     },
     {
-      "id": "auto-implement-**flank**-\u2014-\u043e\u0431\u0445\u043e\u0434\u0438\u0442-\u0441\u0437\u0430\u0434\u0438-\u0434\u043b\u044f-\u0443\u0434\u0430\u0440\u0430-skil",
+      "id": "auto-implement-**flank**-—-обходит-сзади-для-удара-skil",
       "status": "done",
       "area": "skills",
       "risk": "medium",
@@ -607,11 +607,11 @@
         "Feature works",
         "Tests pass"
       ],
-      "title": "Implement **Flank** \u2014 \u043e\u0431\u0445\u043e\u0434\u0438\u0442 \u0441\u0437\u0430\u0434\u0438 \u0434\u043b\u044f \u0443\u0434\u0430\u0440\u0430 skill",
-      "description": "Create **Flank** \u2014 \u043e\u0431\u0445\u043e\u0434\u0438\u0442 \u0441\u0437\u0430\u0434\u0438 \u0434\u043b\u044f \u0443\u0434\u0430\u0440\u0430 skill: \u0434\u043b\u044f Ninja"
+      "title": "Implement **Flank** — обходит сзади для удара skill",
+      "description": "Create **Flank** — обходит сзади для удара skill: для Ninja"
     },
     {
-      "id": "auto-implement-spectator-mode-(\u043d\u0430\u0431\u043b\u044e\u0434\u0430\u0442\u0435\u043b\u044c)-game-mode",
+      "id": "auto-implement-spectator-mode-(наблюдатель)-game-mode",
       "status": "done",
       "area": "modes",
       "risk": "medium",
@@ -623,11 +623,11 @@
         "Feature works",
         "Tests pass"
       ],
-      "title": "Implement Spectator Mode (\u041d\u0430\u0431\u043b\u044e\u0434\u0430\u0442\u0435\u043b\u044c) game mode",
-      "description": "Create Spectator Mode (\u041d\u0430\u0431\u043b\u044e\u0434\u0430\u0442\u0435\u043b\u044c) with full rules and mechanics"
+      "title": "Implement Spectator Mode (Наблюдатель) game mode",
+      "description": "Create Spectator Mode (Наблюдатель) with full rules and mechanics"
     },
     {
-      "id": "auto-implement-coach-mode-(\u0442\u0440\u0435\u043d\u0435\u0440)-game-mode",
+      "id": "auto-implement-coach-mode-(тренер)-game-mode",
       "status": "done",
       "area": "modes",
       "risk": "medium",
@@ -639,8 +639,8 @@
         "Feature works",
         "Tests pass"
       ],
-      "title": "Implement Coach Mode (\u0422\u0440\u0435\u043d\u0435\u0440) game mode",
-      "description": "Create Coach Mode (\u0422\u0440\u0435\u043d\u0435\u0440) with full rules and mechanics"
+      "title": "Implement Coach Mode (Тренер) game mode",
+      "description": "Create Coach Mode (Тренер) with full rules and mechanics"
     },
     {
       "id": "idea-feature-033",
@@ -801,7 +801,7 @@
       "description": "Implement Procedural Arenas with unique mechanics"
     },
     {
-      "id": "auto-implement-**ball-genetics**-\u2014-balls-reproduce-afte",
+      "id": "auto-implement-**ball-genetics**-—-balls-reproduce-afte",
       "status": "done",
       "area": "skills",
       "risk": "medium",
@@ -813,11 +813,11 @@
         "Feature works",
         "Tests pass"
       ],
-      "title": "Implement **Ball Genetics** \u2014 Balls reproduce after surviving N battles. Offspring inherit traits skill",
-      "description": "Create **Ball Genetics** \u2014 Balls reproduce after surviving N battles. Offspring inherit traits skill: speed, damage, color"
+      "title": "Implement **Ball Genetics** — Balls reproduce after surviving N battles. Offspring inherit traits skill",
+      "description": "Create **Ball Genetics** — Balls reproduce after surviving N battles. Offspring inherit traits skill: speed, damage, color"
     },
     {
-      "id": "auto-implement-**neural-ball**-\u2014-a-ball-controlled-by-a",
+      "id": "auto-implement-**neural-ball**-—-a-ball-controlled-by-a",
       "status": "done",
       "area": "skills",
       "risk": "medium",
@@ -829,11 +829,11 @@
         "Feature works",
         "Tests pass"
       ],
-      "title": "Implement **Neural Ball** \u2014 A ball controlled by a simple neural network skill",
-      "description": "Create **Neural Ball** \u2014 A ball controlled by a simple neural network skill: numpy, no external libs"
+      "title": "Implement **Neural Ball** — A ball controlled by a simple neural network skill",
+      "description": "Create **Neural Ball** — A ball controlled by a simple neural network skill: numpy, no external libs"
     },
     {
-      "id": "auto-implement-**ball-relationships**-\u2014-balls-remember-",
+      "id": "auto-implement-**ball-relationships**-—-balls-remember-",
       "status": "done",
       "area": "skills",
       "risk": "medium",
@@ -845,8 +845,8 @@
         "Feature works",
         "Tests pass"
       ],
-      "title": "Implement **Ball Relationships** \u2014 Balls remember each other. Rivalry skill",
-      "description": "Create **Ball Relationships** \u2014 Balls remember each other. Rivalry skill: attacked me before \u2192 attack on sight"
+      "title": "Implement **Ball Relationships** — Balls remember each other. Rivalry skill",
+      "description": "Create **Ball Relationships** — Balls remember each other. Rivalry skill: attacked me before → attack on sight"
     },
     {
       "id": "add-particle-effects",
@@ -6201,7 +6201,7 @@
     },
     {
       "id": "idea-358",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Tornado Skill",
@@ -7585,7 +7585,7 @@
       "area": "innovation",
       "risk": "medium",
       "title": "Tug-of-War Mode",
-      "description": "Introduce a mode where a single payload is centered. Both teams fight to push/pull the payload to the opposing team\u2019s goal.",
+      "description": "Introduce a mode where a single payload is centered. Both teams fight to push/pull the payload to the opposing team’s goal.",
       "allowed_paths": [
         "src/ai/tug_of_war.py",
         "src/ai/tug_of_war.gd",
@@ -11794,6 +11794,74 @@
         "src/ai/capture_the_point_king_of_the_hill_variant.py",
         "src/ai/capture_the_point_king_of_the_hill_variant.gd",
         "tests/test_capture_the_point_king_of_the_hill_variant.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-685",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Invisibility Booster",
+      "description": "A booster that renders a ball temporarily invisible to AI tracking and opponent targeting, giving them a stealth advantage for a short duration.",
+      "allowed_paths": [
+        "src/ai/invisibility_booster.py",
+        "src/ai/invisibility_booster.gd",
+        "tests/test_invisibility_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-686",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Lightning Hazard",
+      "description": "A new weather event or procedural hazard that shoots chain lightning between nearby balls, damaging them and forcing them to spread out.",
+      "allowed_paths": [
+        "src/arena/chain_lightning.py",
+        "src/arena/chain_lightning.gd",
+        "tests/test_chain_lightning.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-687",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Safe Zone Hazard",
+      "description": "A hazard that acts like a typical Battle Royale shrinking circle. Balls taking damage outside the shrinking radius.",
+      "allowed_paths": [
+        "src/arena/shrinking_safe_zone.py",
+        "src/arena/shrinking_safe_zone.gd",
+        "tests/test_shrinking_safe_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-688",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sniper Laser Tripwire",
+      "description": "A deployable thin hazard line. When an enemy crosses it, they take significant instant damage and their movement speed is halved for 5 seconds.",
+      "allowed_paths": [
+        "src/ai/sniper_laser_tripwire.py",
+        "src/ai/sniper_laser_tripwire.gd",
+        "tests/test_sniper_laser_tripwire.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
