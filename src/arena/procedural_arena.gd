@@ -593,6 +593,14 @@ func update_zone(current_tick: int, delta: float) -> void:
                         h.set_meta("active", false)
                         if "active" in h:
                             h.active = false
+            elif "kind" in h and h.kind == "weather_scanner":
+                if h.has_meta("duration"):
+                    var dur = h.get_meta("duration") - delta
+                    h.set_meta("duration", dur)
+                    if dur <= 0:
+                        h.set_meta("active", false)
+                        if "active" in h:
+                            h.active = false
             elif "kind" in h and h.kind == "orbital_strike":
                 if h.has_meta("duration"):
                     var dur = h.get_meta("duration") - delta

@@ -244,6 +244,8 @@ class BattleRoyaleMode(GameMode):
         self.is_dark_phase = False
         self.weather = "clear"
         self.weather_timer = 0.0
+        self.next_weather = "clear"
+        self.weather_warning_issued = False
         self.supply_drop_timer = 0.0
         import random
         self.random = random
@@ -305,7 +307,7 @@ class BattleRoyaleMode(GameMode):
                         self.ball_type = "booster"
                         self.active = True
 
-                booster_kinds = ["speed_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "shadow_booster"]
+                booster_kinds = ["speed_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "shadow_booster", "weather_scanner_item"]
                 chosen_kind = rnd.choice(booster_kinds)
                 b_id = 9000 + len(world.boosters) + rnd.randint(0, 1000)
                 b_x = rnd.uniform(100, arena_width - 100)
@@ -1403,6 +1405,8 @@ class WeatherChaosMode(GameMode):
         self.description = "Weather conditions change throughout the match, affecting stats."
         self.weather = "clear"
         self.weather_timer = 0.0
+        self.next_weather = "clear"
+        self.weather_warning_issued = False
         import random
         self.random = random
 
@@ -1461,13 +1465,26 @@ class WeatherChaosMode(GameMode):
                     self.wind_dy = rnd.uniform(-50.0, 50.0)
         else:
             self.weather_timer += delta
+
+            warning_threshold = 0.0
+            if self.weather_timer >= warning_threshold and not getattr(self, "weather_warning_issued", False):
+                if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    scanners = [h for h in world.arena.hazards if getattr(h, "kind", "") == "weather_scanner" and getattr(h, "active", True)]
+                    if scanners:
+                        next_w = getattr(self, "next_weather", "unknown")
+                        if hasattr(world, "add_event"):
+                            world.add_event("weather_warning", {"type": "weather_warning", "message": f"Scanner warns: {next_w.upper()} incoming in 10s!"})
+                        self.weather_warning_issued = True
+
             if self.weather_timer > 10.0:
                 self.weather_timer = 0.0
                 weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm"]
                 import random
                 rnd = getattr(self, "random", random)
                 old_weather = self.weather
-                self.weather = rnd.choice(weathers)
+                self.weather = getattr(self, "next_weather", rnd.choice(weathers))
+                self.next_weather = rnd.choice(weathers)
+                self.weather_warning_issued = False
 
                 if old_weather != self.weather and hasattr(world, "add_event"):
                     world.add_event("weather_change", {"weather": self.weather})
