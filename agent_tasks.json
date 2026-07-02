@@ -13110,6 +13110,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-762",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Storm Conduit Hazard",
+      "description": "A new static hazard that becomes active during magnetic storms...",
+      "allowed_paths": [
+        "src/arena/storm_conduit.py",
+        "src/arena/storm_conduit.gd",
+        "tests/test_storm_conduit.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-763",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Grounding Boots Booster",
+      "description": "An item that protects entities from chain damage...",
+      "allowed_paths": [
+        "src/ai/grounding_boots_booster.py",
+        "src/ai/grounding_boots_booster.gd",
+        "tests/test_grounding_boots_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
