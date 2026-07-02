@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-433] Payload Mutator — *2026-07-02 14:07:17 UTC*
+
+A game mode where the payload periodically pulses out healing to defenders and damage to attackers.
+
+---
+
 ## [idea-430] Sponsor System — *2026-07-02 13:45:22 UTC*
 
 Players can pick a 'Sponsor' before a match begins. Depending on the sponsor chosen, they receive different types of buffs (e.g., speed, health, damage) at specific intervals or under certain conditions (e.g., when they get a double kill). Sponsors could also have drawbacks, such as reduced max HP for increased damage, adding strategic depth.
