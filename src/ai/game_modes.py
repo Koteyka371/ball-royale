@@ -4208,6 +4208,111 @@ class GeometricZoneMode(GameMode):
                         b.hp = 0
                         b.killer = "Geometric Zone"
 
+
+class SupplyDropMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Supply Drop"
+        self.description = "Periodically spawns supply drops containing powerful temporary boosters."
+        self.spawn_timer = 0.0
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "boosters"):
+            world.boosters = []
+        self.spawn_timer = 0.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        if not hasattr(world, "boosters"):
+            world.boosters = []
+
+        # Decrement booster timers
+        for b in balls:
+            if getattr(b, "speed_booster_timer", 0) > 0:
+                b.speed_booster_timer -= delta
+                if b.speed_booster_timer <= 0:
+                    b.speed_booster_timer = 0
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
+            if getattr(b, "damage_booster_timer", 0) > 0:
+                b.damage_booster_timer -= delta
+                if b.damage_booster_timer <= 0:
+                    b.damage_booster_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+
+
+        self.spawn_timer += delta
+        if self.spawn_timer >= 10.0:
+            self.spawn_timer = 0.0
+
+            import random
+            arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+            arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+            x = random.uniform(100, arena_width - 100)
+            y = random.uniform(100, arena_height - 100)
+
+            booster_types = ["invincibility", "speed", "damage"]
+            chosen_type = random.choice(booster_types)
+
+            b_id = getattr(world, "next_id", random.randint(10000, 99999))
+            if hasattr(world, "next_id"):
+                world.next_id += 1
+
+            booster = {
+                "id": b_id,
+                "x": x,
+                "y": y,
+                "ball_type": "booster",
+                "active": True,
+                "radius": 20.0,
+                "supply_drop_type": chosen_type
+            }
+            world.boosters.append(booster)
+
+            if hasattr(world, "add_event"):
+                world.add_event("supply_drop", {"message": f"A {chosen_type} supply drop has landed!"})
+
+        # Handle booster collection
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            to_remove = []
+            for booster in world.boosters:
+                if isinstance(booster, dict) and booster.get("active") and booster.get("supply_drop_type"):
+                    bx, by = booster.get("x", 0), booster.get("y", 0)
+                    dist = ((b.x - bx)**2 + (b.y - by)**2)**0.5
+
+                    if dist < getattr(b, "radius", 10.0) + booster.get("radius", 20.0):
+                        # Apply effect
+                        b_type = booster.get("supply_drop_type")
+                        if b_type == "invincibility":
+                            b.immunity_timer = 5.0
+                        elif b_type == "speed":
+                            b.speed_booster_timer = 5.0
+                            if hasattr(b, "base_speed"):
+                                b.speed = b.base_speed * 2.0
+                        elif b_type == "damage":
+                            b.damage_booster_timer = 5.0
+                            if hasattr(b, "base_damage"):
+                                b.damage = b.base_damage * 2.0
+
+                        booster["active"] = False
+                        to_remove.append(booster)
+
+                        if hasattr(world, "add_event"):
+                            world.add_event("supply_collected", {"message": f"{getattr(b, 'ball_type', 'A player').capitalize()} collected {b_type}!"})
+
+            for booster in to_remove:
+                if booster in world.boosters:
+                    world.boosters.remove(booster)
+
+
 GAME_MODES = {
     "geometric_zone": GeometricZoneMode(),
     "mirror_walls": MirrorWallsMode(),
@@ -4257,7 +4362,8 @@ GAME_MODES = {
     "mirror_match": MirrorMatchMode(),
     "clone_chaos": CloneChaosMode(),
     "supernova": SupernovaMode(),
-    "echolocation": EcholocationMode()
+    "echolocation": EcholocationMode(),
+    "supply_drop": SupplyDropMode()
 }
 
 try:

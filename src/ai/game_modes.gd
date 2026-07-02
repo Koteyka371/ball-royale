@@ -5126,6 +5126,178 @@ class GeometricZoneMode extends GameMode:
 						b.hp = 0
 						b.killer = "Geometric Zone"
 
+
+class SupplyDropMode extends GameMode:
+    var spawn_timer = 0.0
+
+    func _init():
+        name = "Supply Drop"
+        description = "Periodically spawns supply drops containing powerful temporary boosters."
+        spawn_timer = 0.0
+
+    func setup(world, balls):
+        super.setup(world, balls)
+        if not "boosters" in world:
+            world.boosters = []
+        spawn_timer = 0.0
+
+    func tick(world, balls, delta: float = 0.016) -> void:
+        super.tick(world, balls, delta)
+
+        if not "boosters" in world:
+            world.boosters = []
+
+        # Decrement booster timers
+        for b in balls:
+            if "speed_booster_timer" in b and b.speed_booster_timer > 0:
+                b.speed_booster_timer -= delta
+                if b.speed_booster_timer <= 0:
+                    b.speed_booster_timer = 0
+                    if "base_speed" in b:
+                        b.speed = b.base_speed
+            elif b.has_method("get_meta") and b.has_meta("speed_booster_timer") and b.get_meta("speed_booster_timer") > 0:
+                var new_val = b.get_meta("speed_booster_timer") - delta
+                if new_val <= 0:
+                    b.set_meta("speed_booster_timer", 0)
+                    var base = 100.0
+                    if "base_speed" in b: base = b.base_speed
+                    elif b.has_meta("base_speed"): base = b.get_meta("base_speed")
+                    if "speed" in b: b.speed = base
+                else:
+                    b.set_meta("speed_booster_timer", new_val)
+
+            if "damage_booster_timer" in b and b.damage_booster_timer > 0:
+                b.damage_booster_timer -= delta
+                if b.damage_booster_timer <= 0:
+                    b.damage_booster_timer = 0
+                    if "base_damage" in b:
+                        b.damage = b.base_damage
+            elif b.has_method("get_meta") and b.has_meta("damage_booster_timer") and b.get_meta("damage_booster_timer") > 0:
+                var new_val = b.get_meta("damage_booster_timer") - delta
+                if new_val <= 0:
+                    b.set_meta("damage_booster_timer", 0)
+                    var base = 10.0
+                    if "base_damage" in b: base = b.base_damage
+                    elif b.has_meta("base_damage"): base = b.get_meta("base_damage")
+                    if "damage" in b: b.damage = base
+                else:
+                    b.set_meta("damage_booster_timer", new_val)
+
+
+        spawn_timer += delta
+        if spawn_timer >= 10.0:
+            spawn_timer = 0.0
+
+            var arena_width = 1000.0
+            var arena_height = 1000.0
+            if "arena" in world and world.arena != null:
+                if "width" in world.arena: arena_width = world.arena.width
+                if "height" in world.arena: arena_height = world.arena.height
+
+            var x = randf_range(100.0, arena_width - 100.0)
+            var y = randf_range(100.0, arena_height - 100.0)
+
+            var booster_types = ["invincibility", "speed", "damage"]
+            var chosen_type = booster_types[randi() % booster_types.size()]
+
+            var b_id = randi() % 90000 + 10000
+            if "next_id" in world:
+                b_id = world.next_id
+                world.next_id += 1
+
+            var booster = {
+                "id": b_id,
+                "x": x,
+                "y": y,
+                "ball_type": "booster",
+                "active": true,
+                "radius": 20.0,
+                "supply_drop_type": chosen_type
+            }
+            world.boosters.append(booster)
+
+            if world.has_method("add_event"):
+                world.add_event("supply_drop", {"message": "A " + str(chosen_type) + " supply drop has landed!"})
+
+        # Handle booster collection
+        for b in balls:
+            var alive = false
+            if "alive" in b:
+                alive = b.alive
+            elif b.has_method("get_meta") and b.has_meta("alive"):
+                alive = b.get_meta("alive")
+
+            var b_type = null
+            if "ball_type" in b:
+                b_type = b.ball_type
+            elif b.has_method("get_meta") and b.has_meta("ball_type"):
+                b_type = b.get_meta("ball_type")
+
+            if not alive or b_type == "spectator":
+                continue
+
+            var to_remove = []
+            for booster in world.boosters:
+                if typeof(booster) == TYPE_DICTIONARY and booster.has("active") and booster.get("active") == true and booster.has("supply_drop_type"):
+                    var bx = booster.get("x")
+                    var by = booster.get("y")
+
+                    var b_x = 0.0
+                    var b_y = 0.0
+                    if "x" in b: b_x = b.x
+                    elif "position" in b: b_x = b.position.x
+
+                    if "y" in b: b_y = b.y
+                    elif "position" in b: b_y = b.position.y
+
+                    var dist = sqrt(pow(b_x - bx, 2) + pow(b_y - by, 2))
+
+                    var b_rad = 10.0
+                    if "radius" in b: b_rad = b.radius
+
+                    if dist < b_rad + booster.get("radius"):
+                        var drop_type = booster.get("supply_drop_type")
+                        if drop_type == "invincibility":
+                            if "immunity_timer" in b:
+                                b.immunity_timer = 5.0
+                            elif b.has_method("set_meta"):
+                                b.set_meta("immunity_timer", 5.0)
+                        elif drop_type == "speed":
+                            if "speed_booster_timer" in b:
+                                b.speed_booster_timer = 5.0
+                            elif b.has_method("set_meta"):
+                                b.set_meta("speed_booster_timer", 5.0)
+
+                            var base_speed = 100.0
+                            if "base_speed" in b: base_speed = b.base_speed
+                            elif b.has_method("get_meta") and b.has_meta("base_speed"): base_speed = b.get_meta("base_speed")
+
+                            if "speed" in b:
+                                b.speed = base_speed * 2.0
+                        elif drop_type == "damage":
+                            if "damage_booster_timer" in b:
+                                b.damage_booster_timer = 5.0
+                            elif b.has_method("set_meta"):
+                                b.set_meta("damage_booster_timer", 5.0)
+
+                            var base_damage = 10.0
+                            if "base_damage" in b: base_damage = b.base_damage
+                            elif b.has_method("get_meta") and b.has_meta("base_damage"): base_damage = b.get_meta("base_damage")
+
+                            if "damage" in b:
+                                b.damage = base_damage * 2.0
+
+                        booster["active"] = false
+                        to_remove.append(booster)
+
+                        if world.has_method("add_event"):
+                            var p_type = b_type if b_type != null else "A player"
+                            world.add_event("supply_collected", {"message": str(p_type).capitalize() + " collected " + str(drop_type) + "!"})
+
+            for booster in to_remove:
+                world.boosters.erase(booster)
+
+
 var GAME_MODES = {
 	"geometric_zone": GeometricZoneMode.new(),
     "mirror_walls": MirrorWallsMode.new(),
@@ -5176,5 +5348,6 @@ var GAME_MODES = {
     "mirror_match": MirrorMatchMode.new(),
 	"clone_chaos": CloneChaosMode.new(),
     "supernova": SupernovaMode.new(),
-	"echolocation": EcholocationMode.new()
+	"echolocation": EcholocationMode.new(),
+    "supply_drop": SupplyDropMode.new()
 }

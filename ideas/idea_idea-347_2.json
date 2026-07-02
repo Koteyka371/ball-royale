@@ -1,0 +1,4 @@
+{
+    "title": "Shrinking Geometric Zones",
+    "description": "Instead of a simple circular shrinking safe zone, the safe zone can split into multiple smaller zones or take on different geometric shapes (triangles, rectangles) to change combat dynamics."
+}
