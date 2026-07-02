@@ -2549,6 +2549,9 @@ class Action:
 
             drain_mult = 2.0 if is_heatwave else 1.0
             regen_mult = 0.5 if is_heatwave else 1.0
+            gm = getattr(self.world, "game_mode", None)
+            if gm and getattr(gm, "name", "") == "Stamina Regen modifier":
+                regen_mult *= 2.0
 
             if getattr(self.ball, "is_dashing", False):
                 if getattr(self.ball, "infinite_stamina_timer", 0.0) <= 0:
@@ -5866,6 +5869,9 @@ class Action:
 
         drain_mult = 2.0 if is_heatwave else 1.0
         regen_mult = 0.5 if is_heatwave else 1.0
+        gm = getattr(self.world, "game_mode", None)
+        if gm and getattr(gm, "name", "") == "Stamina Regen modifier":
+            regen_mult *= 2.0
 
         if getattr(self.ball, "is_dashing", False):
             self.ball.stamina = max(0.0, getattr(self.ball, "stamina", 0.0) - (50.0 * drain_mult) * delta)

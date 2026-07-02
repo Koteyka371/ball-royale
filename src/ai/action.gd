@@ -3829,6 +3829,26 @@ func execute(strategy: String, delta: float):
 
         var drain_mult = 2.0 if is_heatwave else 1.0
         var regen_mult = 0.5 if is_heatwave else 1.0
+        var gm = null
+        if typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("world"):
+            if typeof(my_ball.world) == TYPE_DICTIONARY and my_ball.world.has("game_mode"):
+                gm = my_ball.world.game_mode
+            elif typeof(my_ball.world) == TYPE_OBJECT and "game_mode" in my_ball.world:
+                gm = my_ball.world.game_mode
+        elif "world" in self and self.world != null:
+            if typeof(self.world) == TYPE_DICTIONARY and self.world.has("game_mode"):
+                gm = self.world.game_mode
+            elif typeof(self.world) == TYPE_OBJECT and "game_mode" in self.world:
+                gm = self.world.game_mode
+
+        if gm != null:
+            var gm_name = ""
+            if typeof(gm) == TYPE_DICTIONARY and gm.has("name"):
+                gm_name = gm.name
+            elif typeof(gm) == TYPE_OBJECT and "name" in gm:
+                gm_name = gm.name
+            if gm_name == "Stamina Regen modifier":
+                regen_mult *= 2.0
 
         if is_dash:
             if infinite_stamina <= 0:
