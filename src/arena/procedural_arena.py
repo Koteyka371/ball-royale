@@ -1,5 +1,6 @@
 import math
 import random
+import math
 from dataclasses import dataclass
 from typing import List, Tuple
 
@@ -120,7 +121,7 @@ class ProceduralArena:
         # Generate hazards
         num_hazards = self.num_rooms * 2
         for i in range(num_hazards):
-            kind = random.choice(["spikes", "lava", "fake_booster", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "lightning_storm", "hidden_trap", "silence_booster", "switch", "magnet", "quicksand", "magnet_booster", "breakable_wall", "portal_gun_item", "wormhole", "clone_booster"])
+            kind = random.choice(["spikes", "lava", "fake_booster", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "lightning_storm", "hidden_trap", "silence_booster", "switch", "magnet", "quicksand", "magnet_booster", "breakable_wall", "portal_gun_item", "wormhole", "clone_booster", "tether_trap"])
             if kind == "switch":
                 radius = 20.0
                 damage = 0.0
@@ -172,6 +173,14 @@ class ProceduralArena:
             elif kind == "temporal_rift":
                 radius = random.uniform(60.0, 100.0)
                 damage = 0.0
+            elif kind == "tether_trap":
+                radius = 50.0
+                damage = 9999.0
+
+
+
+
+
             elif kind == "magnet":
                 radius = random.uniform(25.0, 45.0)
                 damage = 0.0
@@ -214,6 +223,26 @@ class ProceduralArena:
             new_hazard = Hazard(id=i, x=hx, y=hy, radius=radius, kind=kind, damage=damage)
             if kind == "temporal_rift":
                 new_hazard.time_scale = random.choice([0.5, 1.5, 2.0])
+            elif kind == "tether_trap":
+                setattr(new_hazard, "pull_radius", 300.0)
+                setattr(new_hazard, "pull_strength", 50.0)
+                setattr(new_hazard, "tether_ids", [])
+
+                # Create tether points
+                num_tethers = random.randint(2, 4)
+                for _ in range(num_tethers):
+                    t_id = len(self.hazards) + random.randint(20000, 30000)
+                    angle = random.uniform(0, 2 * math.pi)
+                    dist = random.uniform(80.0, 150.0)
+                    tx = new_hazard.x + math.cos(angle) * dist
+                    ty = new_hazard.y + math.sin(angle) * dist
+
+                    t_point = Hazard(id=t_id, x=tx, y=ty, radius=15.0, kind="tether_point", damage=0.0)
+                    setattr(t_point, "hp", 100.0)
+                    setattr(t_point, "max_hp", 100.0)
+                    setattr(t_point, "trap_id", new_hazard.id)
+                    new_hazard.tether_ids.append(t_id)
+                    self.hazards.append(t_point)
             elif kind == "magnet":
                 setattr(new_hazard, "polarity", random.choice([1, -1]))
             self.hazards.append(new_hazard)

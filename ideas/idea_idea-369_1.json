@@ -1,0 +1,4 @@
+{
+  "title": "Shrinking Tether Trap",
+  "description": "A variant of the tether trap where the pull radius dynamically expands over time, forcing players to prioritize destroying its tether points before the entire arena is covered."
+}

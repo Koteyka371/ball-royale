@@ -1471,6 +1471,35 @@ class Action:
                                 pull_strength = min(pull_strength, dist * 0.5) # Prevent overshooting
                                 self.ball.x += nx * pull_strength
                                 self.ball.y += ny * pull_strength
+
+                        elif hazard.kind == "tether_trap":
+                            # Check if tethers are still alive
+                            active_tethers = 0
+                            if hasattr(hazard, "tether_ids") and hazard.tether_ids and hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                                for th in self.world.arena.hazards:
+                                    if getattr(th, "kind", "") == "tether_point" and th.id in hazard.tether_ids and getattr(th, "hp", 0.0) > 0:
+                                        active_tethers += 1
+
+                            if active_tethers > 0:
+                                dx = hazard.x - self.ball.x
+                                dy = hazard.y - self.ball.y
+                                dist = math.hypot(dx, dy)
+
+                                # Kill if it reaches the center
+                                if dist < hazard.radius:
+                                    self.ball.alive = False
+                                    self.ball.hp = 0.0
+
+                                # Pull slowly
+                                pull_radius = getattr(hazard, "pull_radius", 300.0)
+                                if dist < pull_radius and dist > 0:
+                                    pull_strength = getattr(hazard, "pull_strength", 50.0)
+                                    self.ball.x += (dx / dist) * pull_strength * delta
+                                    self.ball.y += (dy / dist) * pull_strength * delta
+                                    self.ball.vx += (dx / dist) * pull_strength * delta
+                                    self.ball.vy += (dy / dist) * pull_strength * delta
+                        elif hazard.kind == "tether_point":
+                            pass # Can be targeted by AI or hit by things
                     elif hazard.kind in ("black_hole", "tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm"):
                         # Only update global state once per frame using the tick counter
                         current_tick = getattr(self.world, "tick", 0)

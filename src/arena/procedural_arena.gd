@@ -172,7 +172,7 @@ func generate():
         elif r < 0.96:
             kind = "magnet"
         elif r < 0.98:
-            kind = "bumper"
+            kind = "tether_trap" if rng.randf() > 0.5 else "bumper"
         elif r < 0.985:
             kind = "quicksand"
         elif r < 0.990:
@@ -200,6 +200,31 @@ func generate():
         elif kind == "hidden_trap":
             radius = rng.randf_range(20.0, 35.0)
             damage = 15.0
+        elif kind == "tether_trap":
+            radius = 50.0
+            damage = 9999.0
+            var new_hazard = ProceduralArena.Hazard.new(i, spawn_pt[0], spawn_pt[1], radius, kind, damage)
+            new_hazard.set_meta("pull_radius", 300.0)
+            new_hazard.set_meta("pull_strength", 50.0)
+            var t_ids = []
+
+            var num_tethers = rng.randi_range(2, 4)
+            for t_idx in range(num_tethers):
+                var t_id = hazards.size() + rng.randi_range(20000, 30000)
+                var angle = rng.randf_range(0.0, 2.0 * PI)
+                var dist = rng.randf_range(80.0, 150.0)
+                var tx = new_hazard.x + cos(angle) * dist
+                var ty = new_hazard.y + sin(angle) * dist
+
+                var t_point = ProceduralArena.Hazard.new(t_id, tx, ty, 15.0, "tether_point", 0.0)
+                t_point.set_meta("hp", 100.0)
+                t_point.set_meta("max_hp", 100.0)
+                t_point.set_meta("trap_id", new_hazard.id)
+                t_ids.append(t_id)
+                hazards.append(t_point)
+            new_hazard.set_meta("tether_ids", t_ids)
+            hazards.append(new_hazard)
+            continue
         elif kind == "magnet":
             radius = rng.randf_range(25.0, 45.0)
             damage = 0.0
