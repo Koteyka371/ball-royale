@@ -770,7 +770,7 @@ class Action:
             self.ball._is_wind_riding = False
             is_wind_riding = False
 
-            if wind_dx != 0.0 or wind_dy != 0.0:
+            if (wind_dx != 0.0 or wind_dy != 0.0) and getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
                 ball_type = getattr(self.ball, "BALL_TYPE", getattr(self.ball, "ball_type", None))
                 if ball_type in ["scout", "drone", "swarm", "ninja", "assassin", "phantom", "rogue"]:
                     if getattr(self.ball, "stamina", 0.0) >= 10.0:
@@ -788,7 +788,7 @@ class Action:
                 pass # Fog has no friction effect, snow has speed change
             wind_dx = getattr(self.world.arena, "wind_dx", 0.0)
             wind_dy = getattr(self.world.arena, "wind_dy", 0.0)
-            if wind_dx != 0.0 or wind_dy != 0.0:
+            if (wind_dx != 0.0 or wind_dy != 0.0) and getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
                 self.ball.x += wind_dx * delta
                 self.ball.y += wind_dy * delta
 
@@ -1642,7 +1642,7 @@ class Action:
                                     if self.ball.hp <= 0:
                                         self.ball.alive = False
 
-                            if dist_sq > 0.0001:
+                            if dist_sq > 0.0001 and getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
                                 dist = math.sqrt(dist_sq)
                                 nx, ny = dx / dist, dy / dist
                                 pull_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 50.0 * delta
@@ -4101,6 +4101,14 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "anchor_booster":
+                    self.ball.anchor_booster_timer = 10.0
+                    self.ball.speed = getattr(self.ball, "base_speed", 2.0) * 0.5
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "stamina_booster":
                     self.ball.stamina = getattr(self.ball, "max_stamina", 100.0)
                     self.ball.infinite_stamina_timer = 5.0
@@ -4584,7 +4592,7 @@ class Action:
                     target_hazard = None
                     min_dist_sq = 22500.0  # Range 150
                     for h in hazards:
-                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster"]:
+                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "anchor_booster"]:
                             dx = h.x - self.ball.x
                             dy = h.y - self.ball.y
                             dist_sq = dx*dx + dy*dy
@@ -5478,6 +5486,13 @@ class Action:
             self.ball.invert_timer -= delta
             if self.ball.invert_timer < 0:
                 self.ball.invert_timer = 0.0
+        if hasattr(self.ball, "anchor_booster_timer") and self.ball.anchor_booster_timer > 0:
+            self.ball.anchor_booster_timer -= delta
+            if self.ball.anchor_booster_timer < 0:
+                self.ball.anchor_booster_timer = 0.0
+                if getattr(self.ball, "speed", 0.0) < getattr(self.ball, "base_speed", 2.0):
+                    self.ball.speed = getattr(self.ball, "base_speed", 2.0)
+
         if hasattr(self.ball, "reverse_gravity_booster_timer") and self.ball.reverse_gravity_booster_timer > 0:
             self.ball.reverse_gravity_booster_timer -= delta
             if self.ball.reverse_gravity_booster_timer < 0:
@@ -5504,7 +5519,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "reverse_gravity_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "reverse_gravity_booster", "anchor_booster"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math

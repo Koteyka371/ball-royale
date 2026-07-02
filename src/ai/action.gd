@@ -7964,7 +7964,7 @@ func _use_skill():
                     elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
                     elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
 
-                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "reverse_gravity_booster"]:
+                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "reverse_gravity_booster", "anchor_booster"]:
                         var hx = 0.0
                         var hy = 0.0
                         if "x" in h: hx = h.x
@@ -8849,7 +8849,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "reverse_gravity_booster"]
+                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "reverse_gravity_booster", "anchor_booster"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y
