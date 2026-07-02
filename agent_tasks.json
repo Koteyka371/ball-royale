@@ -12634,6 +12634,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-734",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Meteor Shower Event",
+      "description": "A random weather event where meteors fall from the sky, damaging balls and destroying terrain in the arena.",
+      "allowed_paths": [
+        "src/ai/meteor_shower.py",
+        "src/ai/meteor_shower.gd",
+        "tests/test_meteor_shower.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
