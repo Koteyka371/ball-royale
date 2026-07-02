@@ -13076,6 +13076,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-760",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Ghost Mode Booster",
+      "description": "A temporary power-up that makes the ball phase through walls and become immune to non-energy projectiles for 5 seconds. However, attacking breaks the ghost mode early, creating a strategic choice for positioning versus offense.",
+      "allowed_paths": [
+        "src/ai/ghost_booster.py",
+        "src/ai/ghost_booster.gd",
+        "tests/test_ghost_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }

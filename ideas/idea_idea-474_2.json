@@ -1,4 +1,0 @@
-{
-  "title": "Game Mode: Freeze Tag",
-  "description": "Players can freeze enemies upon collision. Frozen enemies cannot move or attack until an ally collides with them to unfreeze them. The game ends when one team is completely frozen."
-}

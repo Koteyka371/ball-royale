@@ -1,4 +1,0 @@
-{
-  "title": "Stamina Drain Hazard Pulse",
-  "description": "Hazard zones that currently drain stamina will occasionally pulse, applying a 1-second silence effect if the entity caught within them has zero stamina."
-}
