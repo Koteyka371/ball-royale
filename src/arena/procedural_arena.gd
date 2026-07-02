@@ -536,6 +536,24 @@ func update_zone(current_tick: int, delta: float) -> void:
             if safe_zone_radius <= 50.0:
                 safe_zone_radius = 50.0
         else:
+            if current_tick % 300 == 0:
+                var angle = randf_range(0, PI * 2)
+                var drop_dist = safe_zone_radius + randf_range(-20.0, 100.0)
+                var cx = safe_zone_center.x if typeof(safe_zone_center) == TYPE_VECTOR2 else safe_zone_center[0]
+                var cy = safe_zone_center.y if typeof(safe_zone_center) == TYPE_VECTOR2 else safe_zone_center[1]
+                var sx = cx + cos(angle) * drop_dist
+                var sy = cy + sin(angle) * drop_dist
+
+                sx = max(50.0, min(width - 50.0, sx))
+                sy = max(50.0, min(height - 50.0, sy))
+
+                var item_kinds = ["healing_spring", "damage_link", "emp_burst", "nemesis_booster", "stamina_booster", "vision_booster"]
+                var item_kind = item_kinds[randi() % item_kinds.size()]
+
+                var item_id = 9000 + hazards.size() + (randi() % 1000)
+                var drop = Hazard.new(item_id, sx, sy, 20.0, item_kind, 0.0)
+                hazards.append(drop)
+
             if current_tick % 120 == 0:
                 if has_method("_trigger_event"):
                     var event_types = ["meteor_shower", "gravity_shift", "orbital_strike"]
@@ -547,12 +565,12 @@ func update_zone(current_tick: int, delta: float) -> void:
                         for i in range(10):
                             var h_x = randf_range(50.0, width - 50.0)
                             var h_y = randf_range(50.0, height - 50.0)
-                            var m_haz = preload("res://src/arena/procedural_arena.gd").Hazard.new(hazards.size() + (randi() % 9000) + 1000, h_x, h_y, 30.0, "meteor", 200.0)
+                            var m_haz = Hazard.new(hazards.size() + (randi() % 9000) + 1000, h_x, h_y, 30.0, "meteor", 200.0)
                             m_haz.target_radius = 30.0
                             m_haz.set_meta("duration", 5.0)
                             hazards.append(m_haz)
                     elif event_type == "gravity_shift":
-                        var gw = preload("res://src/arena/procedural_arena.gd").Hazard.new(hazards.size() + (randi() % 9000) + 1000, width/2, height/2, width/2, "gravity_well", 10.0)
+                        var gw = Hazard.new(hazards.size() + (randi() % 9000) + 1000, width/2, height/2, width/2, "gravity_well", 10.0)
                         gw.set_meta("duration", 10.0)
                         hazards.append(gw)
 

@@ -459,6 +459,28 @@ class ProceduralArena:
                 if self.safe_zone_radius <= 50.0:
                     self.safe_zone_radius = 50.0
             else:
+                # Spawn supply drop on the edge of the safe zone periodically
+                if current_tick % 300 == 0:
+                    import random
+                    import math
+                    angle = random.uniform(0, math.pi * 2)
+                    # Spawn slightly outside or on the edge (e.g. radius to radius + 100)
+                    drop_dist = self.safe_zone_radius + random.uniform(-20.0, 100.0)
+                    cx, cy = self.safe_zone_center
+                    sx = cx + math.cos(angle) * drop_dist
+                    sy = cy + math.sin(angle) * drop_dist
+
+                    # Clamp to arena bounds
+                    sx = max(50.0, min(self.width - 50.0, sx))
+                    sy = max(50.0, min(self.height - 50.0, sy))
+
+                    item_kind = random.choice(["healing_spring", "damage_link", "emp_burst", "nemesis_booster", "stamina_booster", "vision_booster"])
+
+                    item_id = 9000 + len(self.hazards) + random.randint(0, 1000)
+                    drop = Hazard(id=item_id, x=sx, y=sy, radius=20.0, kind=item_kind, damage=0.0)
+
+                    self.hazards.append(drop)
+
                 if current_tick % 120 == 0:
                     import random
                     if hasattr(self, "_trigger_event"):
