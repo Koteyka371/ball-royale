@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-371] Stealth Grass Patches — *2026-07-02 11:06:12 UTC*
+
+Introduce stealth zones (like tall grass) where balls entering the zone become invisible to enemies and lose their lock-on capabilities unless an enemy enters the same stealth patch.
+
+---
+
 ## [idea-409] Nemesis Tracking UI — *2026-07-02 10:52:29 UTC*
 
 Add a UI screen to view current nemeses and their kill counts.

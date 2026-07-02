@@ -6423,7 +6423,7 @@
     },
     {
       "id": "idea-371",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Stealth Grass Patches",
@@ -11488,6 +11488,40 @@
         "src/arena/bouncing_laser_hazards.py",
         "src/arena/bouncing_laser_hazards.gd",
         "tests/test_bouncing_laser_hazards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-667",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Nemesis Leaderboard and Rewards",
+      "description": "Expand the nemesis system to include a global leaderboard displaying the most notorious rivalries. Players who defeat their nemeses during special timed events could earn unique cosmetics, titles, and bonus prestige tokens.",
+      "allowed_paths": [
+        "src/ai/nemesis_leaderboard_and_rewards.py",
+        "src/ai/nemesis_leaderboard_and_rewards.gd",
+        "tests/test_nemesis_leaderboard_and_rewards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-668",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Nemesis Bounties",
+      "description": "Introduce a bounty system where players can place bounties on their nemeses using prestige tokens. If another player or AI defeats a bounty target, they receive a portion of the tokens, while the player who placed the bounty gets a temporary buff.",
+      "allowed_paths": [
+        "src/ai/nemesis_bounties.py",
+        "src/ai/nemesis_bounties.gd",
+        "tests/test_nemesis_bounties.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
