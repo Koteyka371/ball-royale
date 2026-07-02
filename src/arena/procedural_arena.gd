@@ -155,6 +155,8 @@ func generate():
             kind = "decoy_item"
         elif r < 0.42:
             kind = "clone_booster"
+        elif r < 0.43:
+            kind = "invert_booster"
         elif r < 0.44:
             kind = "portal_gun_item"
         elif r < 0.45:
@@ -254,7 +256,7 @@ func generate():
         elif kind == "link_booster":
             radius = 15.0
             damage = 0.0
-        elif kind == "stamina_booster" or kind == "weather_booster" or kind == "magnet_booster" or kind == "clone_booster":
+        elif kind == "stamina_booster" or kind == "weather_booster" or kind == "magnet_booster" or kind == "clone_booster" or kind == "invert_booster":
             radius = 15.0
             damage = 0.0
         elif kind == "stealth_zone":
