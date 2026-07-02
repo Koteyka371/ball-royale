@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-453] Chain Dash Skill — *2026-07-02 14:45:10 UTC*
+
+A variant of dash where if an enemy is killed during the dash, the cooldown is instantly reset.
+
+---
+
 ## [idea-369] New hazard: Black Hole Trap — *2026-07-02 14:41:56 UTC*
 
 A rare procedural trap that slowly pulls players in, instantly killing them if they reach the center, but can be disabled by destroying its tether points.

@@ -7819,7 +7819,7 @@
     },
     {
       "id": "idea-453",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chain Dash Skill",
@@ -12458,6 +12458,23 @@
         "src/ai/chain_reaction_decoys.py",
         "src/ai/chain_reaction_decoys.gd",
         "tests/test_chain_reaction_decoys.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-724",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Phase Shift Skill",
+      "description": "A temporary ability that allows a ball to become intangible for 3 seconds. While intangible, they take no damage and can pass through walls and hazards, but they also cannot attack or collect items.",
+      "allowed_paths": [
+        "src/ai/phase_shift_skill.py",
+        "src/ai/phase_shift_skill.gd",
+        "tests/test_phase_shift_skill.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
