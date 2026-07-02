@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-419] Decoy Explosion Damage — *2026-07-02 14:25:43 UTC*
+
+Make the decoy explode upon its timer expiring or when destroyed, dealing AoE damage to nearby enemies and rewarding players who strategically place them near clusters.
+
+---
+
 ## [idea-393] Pinball Mechanics Mode — *2026-07-02 14:17:41 UTC*
 
 Introduces pinball flippers and bumpers around the arena that randomly activate or can be triggered, drastically changing the trajectory and momentum of balls.

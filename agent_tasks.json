@@ -7241,7 +7241,7 @@
     },
     {
       "id": "idea-419",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Explosion Damage",
@@ -12390,6 +12390,40 @@
         "src/ai/escort_diverging_paths.py",
         "src/ai/escort_diverging_paths.gd",
         "tests/test_escort_diverging_paths.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-720",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Lightning",
+      "description": "A new skill or hazard that hits a primary target and bounces to nearby targets, dealing less damage with each bounce.",
+      "allowed_paths": [
+        "src/ai/chain_lightning.py",
+        "src/ai/chain_lightning.gd",
+        "tests/test_chain_lightning.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-721",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Bomb",
+      "description": "A throwable or placeable bomb that sucks nearby balls towards it before exploding for massive damage.",
+      "allowed_paths": [
+        "src/ai/black_hole_bomb.py",
+        "src/ai/black_hole_bomb.gd",
+        "tests/test_black_hole_bomb.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
