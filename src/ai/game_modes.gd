@@ -4909,7 +4909,225 @@ class MirrorWallsMode extends GameMode:
     func tick(world: Variant, balls: Array, delta: float = 0.016) -> void:
         super.tick(world, balls, delta)
 
+
+class GeometricZoneMode extends GameMode:
+	var collapse_triggered = false
+	var zone_x = 500.0
+	var zone_y = 500.0
+	var zone_radius = 500.0
+	var min_zone_radius = 50.0
+	var shrink_rate = 15.0
+	var outside_damage_per_second = 20.0
+	var zone_target_x = 500.0
+	var zone_target_y = 500.0
+
+	var shape_timer = 0.0
+	var current_shape = "circle"
+	var shapes = ["circle", "rectangle", "triangle", "split"]
+	var split_zones = []
+	var rng = RandomNumberGenerator.new()
+
+	func _init():
+		super._init()
+		rng.randomize()
+		name = "Geometric Zone"
+		description = "The safe zone shrinks into varied geometric shapes or splits temporarily to disrupt camping."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		collapse_triggered = false
+
+		var arena_width = 1000
+		var arena_height = 1000
+		if "arena" in world and world.arena:
+			if "width" in world.arena: arena_width = world.arena.width
+			if "height" in world.arena: arena_height = world.arena.height
+
+		zone_x = arena_width / 2.0
+		zone_y = arena_height / 2.0
+		zone_target_x = zone_x
+		zone_target_y = zone_y
+		zone_radius = min(arena_width, arena_height) / 2.0
+		min_zone_radius = 50.0
+
+		current_shape = shapes[rng.randi() % 3]
+
+		var valid_balls = []
+		for b in balls:
+			var b_type = b.ball_type if "ball_type" in b else null
+			if b_type != "spectator":
+				valid_balls.append(b)
+
+		for i in range(valid_balls.size()):
+			var b = valid_balls[i]
+			if i >= 20:
+				b.ball_type = "spectator"
+				b.alive = false
+			else:
+				b.team = b.ball_type
+
+		if not ("dead_balls" in world):
+			world.dead_balls = []
+
+	func sign_tri(p1x, p1y, p2x, p2y, p3x, p3y):
+		return (p1x - p3x) * (p2y - p3y) - (p2x - p3x) * (p1y - p3y)
+
+	func is_inside_zone(b_x, b_y, cx, cy, radius, shape):
+		if shape == "circle":
+			var dx = b_x - cx
+			var dy = b_y - cy
+			return sqrt(dx*dx + dy*dy) <= radius
+		elif shape == "rectangle":
+			var dx = abs(b_x - cx)
+			var dy = abs(b_y - cy)
+			return dx <= radius and dy <= radius
+		elif shape == "triangle":
+			var v0x = cx
+			var v0y = cy - radius
+			var v1x = cx - radius * 0.866
+			var v1y = cy + radius * 0.5
+			var v2x = cx + radius * 0.866
+			var v2y = cy + radius * 0.5
+
+			var d1 = sign_tri(b_x, b_y, v0x, v0y, v1x, v1y)
+			var d2 = sign_tri(b_x, b_y, v1x, v1y, v2x, v2y)
+			var d3 = sign_tri(b_x, b_y, v2x, v2y, v0x, v0y)
+
+			var has_neg = (d1 < 0) or (d2 < 0) or (d3 < 0)
+			var has_pos = (d1 > 0) or (d2 > 0) or (d3 > 0)
+			return not (has_neg and has_pos)
+		return true
+
+	func tick(world, balls, delta=0.016):
+		if not ("dead_balls" in world):
+			world.dead_balls = []
+
+		for b in balls:
+			if not (b.alive if "alive" in b else false):
+				if not (b in world.dead_balls):
+					b.time_since_death = 0.0
+					world.dead_balls.append(b)
+				else:
+					b.time_since_death += delta
+
+		shape_timer += delta
+		if shape_timer > 15.0:
+			shape_timer = 0.0
+			current_shape = shapes[rng.randi() % shapes.size()]
+			if current_shape == "split":
+				var offset = max(100.0, zone_radius * 0.5)
+				split_zones = [
+					{"x": zone_x - offset, "y": zone_y, "radius": zone_radius * 0.6},
+					{"x": zone_x + offset, "y": zone_y, "radius": zone_radius * 0.6}
+				]
+			if "add_event" in world and world.has_method("add_event"):
+				world.add_event("zone_shape_change", {"type": "zone_shape_change", "message": "The zone shifts to " + current_shape + "!"})
+
+		var dx = zone_target_x - zone_x
+		var dy = zone_target_y - zone_y
+		var dist = sqrt(dx*dx + dy*dy)
+		if dist > 5.0:
+			var move_speed = 10.0
+			zone_x += (dx / dist) * move_speed * delta
+			zone_y += (dy / dist) * move_speed * delta
+		else:
+			var arena_width = 1000
+			var arena_height = 1000
+			if "arena" in world and world.arena:
+				if "width" in world.arena: arena_width = world.arena.width
+				if "height" in world.arena: arena_height = world.arena.height
+			var buffer = max(100.0, zone_radius * 0.5)
+			zone_target_x = rng.randf_range(buffer, arena_width - buffer)
+			zone_target_y = rng.randf_range(buffer, arena_height - buffer)
+
+		if zone_radius > min_zone_radius:
+			zone_radius -= shrink_rate * delta
+			if zone_radius <= min_zone_radius:
+				zone_radius = min_zone_radius
+				if not collapse_triggered:
+					collapse_triggered = true
+					if "add_event" in world and world.has_method("add_event"):
+						world.add_event("collapse_event", {"type": "collapse_event", "message": "COLLAPSE EVENT! The zone collapses!"})
+		elif collapse_triggered:
+			if zone_radius > 0:
+				zone_radius -= shrink_rate * delta
+				if zone_radius < 0:
+					zone_radius = 0.0
+
+			for b in balls:
+				if (b.alive if "alive" in b else false) and (b.ball_type if "ball_type" in b else null) != "spectator":
+					var b_dx = zone_x - b.x
+					var b_dy = zone_y - b.y
+					var b_dist = sqrt(b_dx*b_dx + b_dy*b_dy)
+					if b_dist > 0:
+						var pull_strength = 2000.0
+						if not ("vx" in b): b.vx = 0.0
+						if not ("vy" in b): b.vy = 0.0
+						b.vx += (b_dx / b_dist) * pull_strength * delta
+						b.vy += (b_dy / b_dist) * pull_strength * delta
+
+		if current_shape == "split":
+			for i in range(split_zones.size()):
+				split_zones[i]["radius"] -= shrink_rate * 0.6 * delta
+				if split_zones[i]["radius"] < 20.0:
+					split_zones[i]["radius"] = 20.0
+
+		if "arena" in world and world.arena and "danger_grid" in world.arena:
+			var current_tick = world.current_tick if "current_tick" in world else 0
+			var last_tick = get_meta("last_danger_tick") if has_meta("last_danger_tick") else -1
+			if current_tick != last_tick:
+				set_meta("last_danger_tick", current_tick)
+				if current_tick % 10 == 0:
+					world.arena.danger_grid.clear()
+
+					var grid_w = int(world.arena.width / 100) + 1 if "width" in world.arena else 11
+					var grid_h = int(world.arena.height / 100) + 1 if "height" in world.arena else 11
+
+					for i in range(grid_w):
+						for j in range(grid_h):
+							var cx = i * 100 + 50
+							var cy = j * 100 + 50
+							var key = Vector2(i, j)
+
+							var safe = false
+							if current_shape == "split":
+								for sz in split_zones:
+									if is_inside_zone(cx, cy, sz["x"], sz["y"], sz["radius"], "circle"):
+										safe = true
+										break
+							else:
+								if is_inside_zone(cx, cy, zone_x, zone_y, zone_radius, current_shape):
+									safe = true
+
+							if not safe:
+								var current = 0.0
+								if world.arena.danger_grid.has(key):
+									current = world.arena.danger_grid[key]
+								world.arena.danger_grid[key] = current + (outside_damage_per_second / 10.0)
+
+		var mult = 10.0 if collapse_triggered else 1.0
+		var damage_this_tick = outside_damage_per_second * mult * delta
+		for b in balls:
+			if (b.alive if "alive" in b else false) and (b.ball_type if "ball_type" in b else null) != "spectator":
+				var safe = false
+				if current_shape == "split":
+					for sz in split_zones:
+						if is_inside_zone(b.x, b.y, sz["x"], sz["y"], sz["radius"], "circle"):
+							safe = true
+							break
+				else:
+					if is_inside_zone(b.x, b.y, zone_x, zone_y, zone_radius, current_shape):
+						safe = true
+
+				if not safe:
+					b.hp -= damage_this_tick
+					if b.hp <= 0:
+						b.alive = false
+						b.hp = 0
+						b.killer = "Geometric Zone"
+
 var GAME_MODES = {
+	"geometric_zone": GeometricZoneMode.new(),
     "mirror_walls": MirrorWallsMode.new(),
     "zero_gravity": ZeroGravityMode.new(),
     "magnetic_collisions": MagneticCollisionsMode.new(),
