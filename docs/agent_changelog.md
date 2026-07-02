@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-445] Dynamic Crowd Chants — *2026-07-02 16:46:08 UTC*
+
+Add specific text-based or audio-based crowd chants depending on the leading team, recognizing dominant strategies or unique ball types (e.g. chanting 'Assassin! Assassin!' when a stealth ball goes on a killing spree).
+
+---
+
 ## [idea-455] Magnetic Boots Item — *2026-07-02 16:46:04 UTC*
 
 An item that temporarily increases a ball's friction and weight, making them immune to external displacement forces like wind, earthquakes, and gravity wells, at the cost of reduced movement speed.
