@@ -1,0 +1,4 @@
+{
+  "title": "Weather Control Booster",
+  "description": "A rare booster item that, upon pickup, allows the entity to forcefully override the arena's current weather state (e.g. from Clear to Thunderstorm) for 15 seconds, giving elemental classes a tactical advantage."
+}

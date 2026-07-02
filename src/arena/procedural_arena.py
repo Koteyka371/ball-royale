@@ -120,9 +120,12 @@ class ProceduralArena:
         # Generate hazards
         num_hazards = self.num_rooms * 2
         for i in range(num_hazards):
-            kind = random.choice(["spikes", "lava", "fake_booster", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "lightning_storm", "hidden_trap", "silence_booster", "switch", "magnet", "quicksand", "magnet_booster", "breakable_wall", "portal_gun_item", "wormhole", "clone_booster", "stealth_zone", "invert_booster"])
+            kind = random.choice(["spikes", "lava", "fake_booster", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "lightning_storm", "hidden_trap", "silence_booster", "switch", "magnet", "quicksand", "magnet_booster", "breakable_wall", "portal_gun_item", "wormhole", "clone_booster", "stealth_zone", "invert_booster", "decoy_spawner"])
             if kind == "switch":
                 radius = 20.0
+                damage = 0.0
+            elif kind == "decoy_spawner":
+                radius = 30.0
                 damage = 0.0
             if kind == "spikes":
                 radius = random.uniform(15.0, 30.0)
@@ -175,6 +178,9 @@ class ProceduralArena:
             elif kind == "temporal_rift":
                 radius = random.uniform(60.0, 100.0)
                 damage = 0.0
+            elif kind == "decoy_spawner":
+                radius = random.uniform(20.0, 40.0)
+                damage = 0.0
             elif kind == "magnet":
                 radius = random.uniform(25.0, 45.0)
                 damage = 0.0
@@ -217,6 +223,8 @@ class ProceduralArena:
             new_hazard = Hazard(id=i, x=hx, y=hy, radius=radius, kind=kind, damage=damage)
             if kind == "temporal_rift":
                 new_hazard.time_scale = random.choice([0.5, 1.5, 2.0])
+            elif kind == "decoy_spawner":
+                setattr(new_hazard, "spawn_timer", 0.0)
             elif kind == "magnet":
                 setattr(new_hazard, "polarity", random.choice([1, -1]))
             self.hazards.append(new_hazard)
@@ -620,6 +628,9 @@ class ProceduralArena:
                     damage = 0.0
                 elif random.random() < 0.05:
                     kind = "portal_gun_item"
+                    damage = 0.0
+                elif random.random() < 0.05:
+                    kind = "decoy_spawner"
                     damage = 0.0
                 elif random.random() < 0.15:
                     kind = "quicksand"

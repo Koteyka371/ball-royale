@@ -187,6 +187,8 @@ func generate():
             kind = "lightning_storm"
         elif r < 0.9995:
             kind = "stealth_zone"
+        elif r < 0.9997:
+            kind = "decoy_spawner"
         else:
             kind = "switch"
 
@@ -262,6 +264,9 @@ func generate():
         elif kind == "stealth_zone":
             radius = randf_range(40.0, 80.0)
             damage = 0.0
+        elif kind == "decoy_spawner":
+            radius = randf_range(20.0, 40.0)
+            damage = 0.0
         elif kind == "tornado":
             radius = rng.randf_range(30.0, 60.0)
             damage = 15.0
@@ -276,7 +281,10 @@ func generate():
             damage = 50.0
 
         var spawn_pt = get_random_spawn_point(radius)
-        hazards.append(ProceduralArena.Hazard.new(i, spawn_pt[0], spawn_pt[1], radius, kind, damage))
+        var nh = ProceduralArena.Hazard.new(i, spawn_pt[0], spawn_pt[1], radius, kind, damage)
+        if kind == "decoy_spawner":
+            nh.set_meta("spawn_timer", 0.0)
+        hazards.append(nh)
 
     # Generate guaranteed paired portals
     var num_portals = max(1, num_rooms / 2)

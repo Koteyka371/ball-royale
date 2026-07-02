@@ -1881,6 +1881,24 @@ class Action:
                                 self.ball.hp -= hazard_damage
                                 if self.ball.hp <= 0:
                                     self.ball.alive = False
+                        elif hazard.kind == "decoy_spawner":
+                            hazard.spawn_timer = getattr(hazard, "spawn_timer", 0.0) - delta
+                            if hazard.spawn_timer <= 0:
+                                hazard.spawn_timer = 2.0
+                                import copy, random
+                                decoy = copy.copy(self.ball)
+                                decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                                if hasattr(self.world, "next_id"): self.world.next_id += 1
+                                decoy.hp = getattr(self.ball, "max_hp", 100) * 0.1
+                                decoy.max_hp = decoy.hp
+                                decoy.damage = 0
+                                decoy.is_decoy = True
+                                decoy.decoy_timer = 3.0
+                                decoy.x, decoy.y = hazard.x, hazard.y
+                                decoy.vx = random.uniform(-300, 300)
+                                decoy.vy = random.uniform(-300, 300)
+                                decoy.speed = 300.0
+                                self.world.balls.append(decoy)
                             continue
                         elif hazard.kind == "chrono_anomaly":
                             # Slows down action timers drastically

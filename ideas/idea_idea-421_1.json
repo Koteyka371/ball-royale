@@ -1,0 +1,4 @@
+{
+  "title": "Bouncy Bullet Mechanic",
+  "description": "Introduce a new 'bouncy' trait for specific ball types (like Trickster) where their primary attacks or projectiles bounce off arena walls once before expiring, adding geometry-based skill shots."
+}

@@ -2738,6 +2738,40 @@ func execute(strategy: String, delta: float):
                             self.ball.hp -= hd
                             if self.ball.hp <= 0:
                                 self.ball.alive = false
+                    elif hazard.kind == "decoy_spawner":
+                        var st = 0.0
+                        if hazard.has_meta("spawn_timer"):
+                            st = hazard.get_meta("spawn_timer")
+                        st -= delta
+                        hazard.set_meta("spawn_timer", st)
+                        if st <= 0:
+                            hazard.set_meta("spawn_timer", 2.0)
+                            if "balls" in self.world:
+                                var decoy = null
+                                if self.ball.has_method("duplicate"): decoy = self.ball.duplicate()
+                                elif typeof(self.ball) == TYPE_DICTIONARY: decoy = self.ball.duplicate()
+                                if decoy != null:
+                                    if "id" in decoy: decoy.id = randi() % 90000 + 10000
+                                    if "hp" in decoy and "max_hp" in decoy:
+                                        decoy.max_hp = float(self.ball.max_hp) * 0.1
+                                        decoy.hp = decoy.max_hp
+                                    if "damage" in decoy: decoy.damage = 0.0
+                                    if "x" in decoy: decoy.x = hazard.x
+                                    if "y" in decoy: decoy.y = hazard.y
+                                    if "vx" in decoy: decoy.vx = randf_range(-300.0, 300.0)
+                                    if "vy" in decoy: decoy.vy = randf_range(-300.0, 300.0)
+                                    if "speed" in decoy: decoy.speed = 300.0
+                                    if decoy.has_method("set_meta"):
+                                        decoy.set_meta("is_decoy", true)
+                                        decoy.set_meta("decoy_timer", 3.0)
+                                        decoy.set_meta("skill_timer", 9999.0)
+                                        decoy.set_meta("attack_timer", 9999.0)
+                                    elif typeof(decoy) == TYPE_DICTIONARY:
+                                        decoy["is_decoy"] = true
+                                        decoy["decoy_timer"] = 3.0
+                                        decoy["skill_timer"] = 9999.0
+                                        decoy["attack_timer"] = 9999.0
+                                    self.world.balls.append(decoy)
                     elif hazard.kind == "chrono_anomaly":
                         var speed_mult = 0.2
                         if self.ball.has_method("set_meta"):
