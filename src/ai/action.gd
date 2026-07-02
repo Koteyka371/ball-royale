@@ -57,6 +57,24 @@ func _attempt_damage(attacker, target) -> void:
 	if pm != null and pm.has_method("is_nemesis") and attacker_type != "" and target_type != "":
 		is_nemesis_active = pm.is_nemesis(attacker_type, target_type)
 
+	var target_es = false
+	if "energy_shield_active" in target and target.energy_shield_active:
+		target_es = true
+	elif target.has_method("has_meta") and target.has_meta("energy_shield_active") and target.get_meta("energy_shield_active"):
+		target_es = true
+
+	if target_es:
+		var dmg = 10.0
+		if "damage" in attacker: dmg = float(attacker.damage)
+		if attacker.has_method("take_damage"):
+			attacker.take_damage(dmg * 0.5)
+		elif "hp" in attacker:
+			if typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("set_meta"):
+				attacker.set_meta("hp", attacker.hp - dmg * 0.5)
+			else:
+				attacker.hp -= dmg * 0.5
+		return
+
 	var old_hp = 0.0
 	if "hp" in target: old_hp = float(target.hp)
 	var original_damage = 10.0
@@ -6626,7 +6644,14 @@ func _use_skill():
         self.ball.use_skill()
         _spawn_skill_particles(skill_name)
 
-        if skill_name == "command":
+        if skill_name == "energy_shield":
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("energy_shield_active", true)
+                self.ball.set_meta("energy_shield_timer", 3.0)
+            else:
+                self.ball.energy_shield_active = true
+                self.ball.energy_shield_timer = 3.0
+        elif skill_name == "command":
             if self.ball.has_method("set_meta"):
                 self.ball.set_meta("team_message", {"type": "buff_command", "radius": 200})
             elif "team_message" in self.ball:
@@ -8802,6 +8827,27 @@ func _apply_friendly_aura(delta: float):
 
 
 func _update_skill_timer(delta: float):
+
+    var es_timer = 0.0
+    if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("energy_shield_timer"):
+        es_timer = float(self.ball.get_meta("energy_shield_timer"))
+    elif "energy_shield_timer" in self.ball:
+        es_timer = float(self.ball.energy_shield_timer)
+
+    if es_timer > 0.0:
+        es_timer -= delta
+        if es_timer <= 0.0:
+            if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                self.ball.set_meta("energy_shield_active", false)
+                self.ball.set_meta("energy_shield_timer", 0.0)
+            else:
+                self.ball.energy_shield_active = false
+                self.ball.energy_shield_timer = 0.0
+        else:
+            if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                self.ball.set_meta("energy_shield_timer", es_timer)
+            else:
+                self.ball.energy_shield_timer = es_timer
 
     var m_tether_timer = 0.0
     if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("magnet_tether_timer"):

@@ -47,6 +47,12 @@ class Action:
         if pm and hasattr(pm, "is_nemesis") and getattr(attacker, "ball_type", None) and getattr(target, "ball_type", None):
             is_nemesis_active = pm.is_nemesis(attacker.ball_type, target.ball_type)
 
+        if getattr(target, "energy_shield_active", False):
+            if hasattr(attacker, "take_damage"):
+                attacker.take_damage(getattr(attacker, "damage", 10.0) * 0.5)
+            elif hasattr(attacker, "hp"):
+                attacker.hp -= getattr(attacker, "damage", 10.0) * 0.5
+            return
         old_hp = getattr(target, "hp", 0.0)
         original_damage = getattr(attacker, "damage", 10.0)
 
@@ -4238,7 +4244,10 @@ class Action:
             self.ball.damage = self.ball.base_damage
 
 
-            if skill_name == "command":
+            if skill_name == "energy_shield":
+                self.ball.energy_shield_active = True
+                self.ball.energy_shield_timer = 3.0
+            elif skill_name == "command":
                 self.ball.team_message = {"type": "buff_command", "radius": 200}
             elif skill_name == "meteor_strike":
                 enemies = self._get_enemies()
@@ -5529,6 +5538,11 @@ class Action:
                 self.ball.speed = base_s * 1.5
 
     def _update_skill_timer(self, delta: float) -> None:
+        if hasattr(self.ball, "energy_shield_timer") and self.ball.energy_shield_timer > 0:
+            self.ball.energy_shield_timer -= delta
+            if self.ball.energy_shield_timer <= 0:
+                self.ball.energy_shield_active = False
+
         if hasattr(self.ball, "orbital_shield_timer") and self.ball.orbital_shield_timer > 0:
             self.ball.orbital_shield_timer -= delta
             if self.ball.orbital_shield_timer <= 0:
