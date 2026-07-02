@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-369] New hazard: Black Hole Trap — *2026-07-02 14:41:56 UTC*
+
+A rare procedural trap that slowly pulls players in, instantly killing them if they reach the center, but can be disabled by destroying its tether points.
+
+---
+
 ## [idea-419] Decoy Explosion Damage — *2026-07-02 14:25:43 UTC*
 
 Make the decoy explode upon its timer expiring or when destroyed, dealing AoE damage to nearby enemies and rewarding players who strategically place them near clusters.

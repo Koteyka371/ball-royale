@@ -6389,7 +6389,7 @@
     },
     {
       "id": "idea-369",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "New hazard: Black Hole Trap",
@@ -12424,6 +12424,40 @@
         "src/ai/black_hole_bomb.py",
         "src/ai/black_hole_bomb.gd",
         "tests/test_black_hole_bomb.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-722",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Remote Detonation",
+      "description": "Allow players to manually trigger their decoy explosions by activating their decoy skill again while it's already active.",
+      "allowed_paths": [
+        "src/ai/decoy_remote_detonation.py",
+        "src/ai/decoy_remote_detonation.gd",
+        "tests/test_decoy_remote_detonation.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-723",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Reaction Decoys",
+      "description": "If a decoy explosion hits another allied decoy, it causes a chain reaction, exploding the second decoy with increased radius and damage.",
+      "allowed_paths": [
+        "src/ai/chain_reaction_decoys.py",
+        "src/ai/chain_reaction_decoys.gd",
+        "tests/test_chain_reaction_decoys.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
