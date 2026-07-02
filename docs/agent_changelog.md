@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-399] Stormcaller Trait — *2026-07-02 12:24:12 UTC*
+
+A new passive trait for balls that empowers their elemental attacks based on the current weather. During rain or thunderstorms, 'lightning_strike' and 'elemental_burst' deal 50% more damage and chain to one additional target. During fog, the skills have a larger AOE radius.
+
+---
+
 ## [idea-408] Orbital Shield Utility Skill — *2026-07-02 12:24:08 UTC*
 
 Add a new utility skill 'Orbital Shield' that creates a localized 300-radius dome that significantly reduces incoming damage from area effects like meteors and orbital strikes, providing an anchor point for teams during chaotic events.
