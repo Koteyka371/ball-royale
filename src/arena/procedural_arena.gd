@@ -149,8 +149,10 @@ func generate():
         var kind = "spikes"
         if r < 0.25:
             kind = "lava"
-        elif r < 0.35:
+        elif r < 0.30:
             kind = "fake_booster"
+        elif r < 0.35:
+            kind = "holographic_booster"
         elif r < 0.4:
             kind = "decoy_item"
         elif r < 0.42:
@@ -205,6 +207,9 @@ func generate():
         elif kind == "proximity_trap":
             radius = rng.randf_range(20.0, 40.0)
             damage = 30.0
+        elif kind == "holographic_booster":
+            radius = 15.0
+            damage = 25.0
         elif kind == "hidden_trap":
             radius = rng.randf_range(20.0, 35.0)
             damage = 15.0

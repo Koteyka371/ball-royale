@@ -4010,12 +4010,16 @@ class Action:
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
-                elif getattr(nearest, "kind", None) == "fake_booster":
+                elif getattr(nearest, "kind", None) in ["fake_booster", "holographic_booster"]:
                     import math
                     import random
                     explosion_radius = getattr(nearest, "radius", 15.0) * 3
                     dmg = getattr(nearest, "damage", 50.0)
                     stun_dur = getattr(nearest, "stun_duration", 2.0)
+                    if getattr(nearest, "kind", None) == "holographic_booster":
+                        stun_dur = 2.0 # Confused/stunned debuff
+                        dmg = getattr(nearest, "damage", 25.0) # Different base damage
+
                     if hasattr(self.world, "balls"):
                         for b in self.world.balls:
                             bx = getattr(b, "x", 0)
@@ -4027,7 +4031,11 @@ class Action:
                             if math.sqrt(dx*dx + dy*dy) <= explosion_radius:
                                 if hasattr(b, "take_damage"):
                                     b.take_damage(dmg)
-                                b.stun_timer = stun_dur
+                                b.stun_timer = max(getattr(b, "stun_timer", 0.0), stun_dur)
+                                b.is_stunned = True
+                                if getattr(nearest, "kind", None) == "holographic_booster":
+                                    b.is_confused = True
+                                    b.confuse_timer = stun_dur
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
@@ -4934,7 +4942,7 @@ class Action:
                         h_dist = math.sqrt(hx*hx + hy*hy)
                         if h_dist <= explosion_radius + getattr(hazard, "radius", 0):
                             if hasattr(hazard, "kind"):
-                                if hazard.kind in ["spikes", "fake_booster"]:
+                                if hazard.kind in ["spikes", "fake_booster", "holographic_booster"]:
                                     hazards_to_remove.append(hazard)
                                 elif hazard.kind in ["lava", "poison_cloud"] and getattr(hazard, "active", True):
                                     # Trigger secondary explosion: larger radius, hazard-specific effect
@@ -5015,7 +5023,7 @@ class Action:
                         hy = getattr(hazard, "y", 0) - getattr(self.ball, "y", 0)
                         h_dist = math.sqrt(hx*hx + hy*hy)
                         if h_dist <= pound_radius + getattr(hazard, "radius", 0):
-                            if hasattr(hazard, "kind") and hazard.kind in ["spikes", "fake_booster"]:
+                            if hasattr(hazard, "kind") and hazard.kind in ["spikes", "fake_booster", "holographic_booster"]:
                                 hazards_to_remove.append(hazard)
 
                     for h in hazards_to_remove:

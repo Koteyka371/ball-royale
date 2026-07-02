@@ -6190,7 +6190,7 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
-            elif "kind" in nearest and nearest.kind == "fake_booster":
+            elif "kind" in nearest and (nearest.kind == "fake_booster" or nearest.kind == "holographic_booster"):
                 var explosion_radius = 45.0
                 if "radius" in nearest:
                     explosion_radius = nearest.radius * 3
@@ -6198,6 +6198,10 @@ func _collect_booster(delta: float):
                 if "damage" in nearest: dmg = nearest.damage
                 var stun_dur = 2.0
                 if "stun_duration" in nearest: stun_dur = nearest.stun_duration
+
+                if nearest.kind == "holographic_booster":
+                    stun_dur = 2.0
+                    dmg = nearest.damage if "damage" in nearest else 25.0
 
                 if self.world != null and "balls" in self.world:
                     for b in self.world.balls:
@@ -6220,7 +6224,11 @@ func _collect_booster(delta: float):
                             if b.has_method("set_meta"):
                                 b.set_meta("stun_timer", stun_dur)
                             else:
-                                b.stun_timer = stun_dur
+                                b.stun_timer = max(b.stun_timer if "stun_timer" in b else 0.0, stun_dur)
+                                b.is_stunned = true
+                                if nearest.kind == "holographic_booster":
+                                    b.is_confused = true
+                                    b.confuse_timer = stun_dur
 
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
@@ -7023,7 +7031,7 @@ func _use_skill():
                         var h_dist = sqrt(hx*hx + hy*hy)
                         if h_dist <= explosion_radius + hazard.radius:
                             if "kind" in hazard:
-                                if hazard.kind == "spikes" or hazard.kind == "fake_booster":
+                                if hazard.kind == "spikes" or hazard.kind == "fake_booster" or hazard.kind == "holographic_booster":
                                     hazards_to_remove.append(hazard)
                                 elif (hazard.kind == "lava" or hazard.kind == "poison_cloud") and hazard.active:
                                     explosion_radius = 200.0
@@ -7741,7 +7749,7 @@ func _use_skill():
                         var hy = hazard.y - self.ball.y
                         var h_dist = sqrt(hx*hx + hy*hy)
                         if h_dist <= pound_radius + (hazard.radius if "radius" in hazard else 0):
-                            if "kind" in hazard and (hazard.kind == "spikes" or hazard.kind == "fake_booster"):
+                            if "kind" in hazard and (hazard.kind == "spikes" or hazard.kind == "fake_booster" or hazard.kind == "holographic_booster"):
                                 hazards_to_remove.append(hazard)
 
                     for h in hazards_to_remove:
