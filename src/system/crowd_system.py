@@ -9,12 +9,17 @@ class CrowdSystem:
         self.team_alive_counts = {}
         self.last_kill_tick = 0
         self.kill_streak = {}
+        self.active_vote = None
+        self.vote_timer = 0
+        self.votes = {}
+        self.vote_cooldown = 0
 
     def tick(self, balls: List[Any], kill_log: List[Dict[str, Any]], tick: int):
         self._update_excitement(tick)
         self._check_events(balls, kill_log, tick)
         self._throw_buffs_if_needed(balls, tick)
         self._throw_hazards_if_bored(balls, tick)
+        self._process_votes(balls, tick)
 
     def _update_excitement(self, tick: int):
         # Decay excitement slowly
@@ -127,3 +132,95 @@ class CrowdSystem:
                 })
                 self.world.add_event("crowd_throw", {"message": "The crowd boos and throws a hazard into the arena!"})
                 self.excitement_level += 5.0
+
+    def _process_votes(self, balls: List[Any], tick: int):
+        if self.vote_cooldown > 0:
+            self.vote_cooldown -= 1
+
+        if self.active_vote is None:
+            # 1 in 1000 chance per tick to start a vote if excitement is decent
+            if self.vote_cooldown == 0 and self.excitement_level >= 30.0 and random.random() < 0.001:
+                self._start_vote(balls)
+            return
+
+        # Handle active vote
+        self.vote_timer -= 1
+
+        # Simulate spectators casting votes
+        if random.random() < 0.05:  # Random spectator votes
+            self._simulate_spectator_vote()
+
+        if self.vote_timer <= 0:
+            self._resolve_vote(balls)
+
+    def _start_vote(self, balls: List[Any]):
+        vote_types = [
+            {"type": "spawn_hazard", "options": ["lava_pit", "spike_trap", "poison_cloud"]},
+            {"type": "player_buff", "options": ["speed", "damage", "shield"]}
+        ]
+        chosen_vote = random.choice(vote_types)
+
+        self.active_vote = {
+            "type": chosen_vote["type"],
+            "options": chosen_vote["options"]
+        }
+        self.votes = {opt: 0 for opt in chosen_vote["options"]}
+        self.vote_timer = 200  # Lasts 200 ticks
+
+        if hasattr(self.world, 'add_event'):
+            self.world.add_event("vote_started", {
+                "message": f"A crowd vote has started for: {chosen_vote['type']}! Options: {', '.join(chosen_vote['options'])}"
+            })
+            self.world.add_event("audio_event", {"sound": "vote_start_chime", "volume": 1.0})
+
+    def _simulate_spectator_vote(self):
+        if not self.active_vote or not self.votes:
+            return
+
+        # Pick a random option to vote for
+        options = list(self.votes.keys())
+        chosen = random.choice(options)
+        self.votes[chosen] += 1
+
+    def _resolve_vote(self, balls: List[Any]):
+        if not self.active_vote or not self.votes:
+            self.active_vote = None
+            return
+
+        # Find winner
+        winner = max(self.votes.items(), key=lambda x: x[1])
+        winning_option = winner[0]
+        vote_type = self.active_vote["type"]
+
+        if hasattr(self.world, 'add_event'):
+            self.world.add_event("vote_ended", {
+                "message": f"The crowd has spoken! The winner is {winning_option} with {winner[1]} votes!"
+            })
+            self.world.add_event("audio_event", {"sound": "vote_end_cheer", "volume": 1.0})
+
+        # Apply the result
+        alive_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator"]
+
+        if alive_balls:
+            if vote_type == "spawn_hazard":
+                target = random.choice(alive_balls)
+                if hasattr(self.world, 'add_event'):
+                    self.world.add_event("spawn_hazard", {
+                        "x": getattr(target, "x", 0),
+                        "y": getattr(target, "y", 0),
+                        "kind": winning_option
+                    })
+            elif vote_type == "player_buff":
+                # Give buff to a random player (or lowest hp)
+                target = random.choice(alive_balls)
+                if hasattr(self.world, 'add_event'):
+                    self.world.add_event("spawn_booster", {
+                        "x": getattr(target, "x", 0),
+                        "y": getattr(target, "y", 0),
+                        "kind": winning_option,
+                        "value": 50.0
+                    })
+
+        self.active_vote = None
+        self.votes = {}
+        self.vote_cooldown = 1000  # Long cooldown before next vote
