@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-430] Sponsor System — *2026-07-02 13:45:22 UTC*
+
+Players can pick a 'Sponsor' before a match begins. Depending on the sponsor chosen, they receive different types of buffs (e.g., speed, health, damage) at specific intervals or under certain conditions (e.g., when they get a double kill). Sponsors could also have drawbacks, such as reduced max HP for increased damage, adding strategic depth.
+
+---
+
 ## [idea-436] Repulsion Field Hazard — *2026-07-02 13:43:27 UTC*
 
 Introduce a 'repulsion_field' hazard that dynamically pushes players away. Unlike the gravity_well or magnet which attract balls, the repulsion field pushes entities outward. This can create fun zone-control dynamics where players can use the field as a barrier or get unexpectedly launched out of a safe zone.

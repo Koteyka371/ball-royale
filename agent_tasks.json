@@ -7428,7 +7428,7 @@
     },
     {
       "id": "idea-430",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sponsor System",
@@ -12287,6 +12287,40 @@
         "src/ai/kinetic_rebounder_module.py",
         "src/ai/kinetic_rebounder_module.gd",
         "tests/test_kinetic_rebounder_module.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-714",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Safe Zones with Moving Centers",
+      "description": "Instead of a static shrinking circle, the center of the safe zone drifts around the map while shrinking, forcing players to constantly adapt their positioning.",
+      "allowed_paths": [
+        "src/ai/shrinking_safe_zones_with_moving_centers.py",
+        "src/ai/shrinking_safe_zones_with_moving_centers.gd",
+        "tests/test_shrinking_safe_zones_with_moving_centers.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-715",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Slime Trails",
+      "description": "Players leave behind a temporary trail of slime that slows down any opponents that cross it, giving evasive players a strong kiting tool.",
+      "allowed_paths": [
+        "src/ai/slime_trails.py",
+        "src/ai/slime_trails.gd",
+        "tests/test_slime_trails.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
