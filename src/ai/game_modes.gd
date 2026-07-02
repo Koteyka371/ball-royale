@@ -5674,7 +5674,96 @@ class TugOfWarMode extends GameMode:
 		return null
 
 
+
+class MinefieldEventMode extends GameMode:
+	var event_timer: float = 0.0
+	var event_active: bool = false
+	var event_duration: float = 0.0
+	var mines: Array = []
+
+	func _init() -> void:
+		name = "Minefield Event"
+		description = "A random event where multiple mines appear, detonating on contact."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if not event_active:
+			event_timer += delta
+
+		if not event_active and event_timer > 20.0:
+			if randf() < 0.2:  # 20% chance every 20 seconds to trigger
+				event_active = true
+				event_duration = 15.0
+				event_timer = 0.0
+				mines = []
+				# Spawn some mines
+				var num_mines = (randi() % 6) + 5 # 5 to 10 mines
+				for i in range(num_mines):
+					mines.append({
+						"x": 100.0 + randf() * 600.0,
+						"y": 100.0 + randf() * 400.0,
+						"radius": 15.0,
+						"damage": 50.0,
+						"active": true,
+						"visible": randf() > 0.5
+					})
+				if world != null and world.has_method("add_event"):
+					world.add_event("minefield_event", {"message": "MINEFIELD EVENT! Watch your step!"})
+			else:
+				event_timer = 0.0
+
+		if event_active:
+			event_duration -= delta
+			if event_duration <= 0:
+				event_active = false
+				event_timer = 0.0
+				mines = []
+				if world != null and world.has_method("add_event"):
+					world.add_event("minefield_event_ended", {"message": "Minefield cleared!"})
+
+			for b in balls:
+				var alive = false
+				if typeof(b) == TYPE_DICTIONARY:
+					alive = b.get("alive", false)
+				else:
+					alive = b.alive
+
+				if not alive:
+					continue
+
+				var bx = 0.0
+				var by = 0.0
+				var bradius = 0.0
+
+				if typeof(b) == TYPE_DICTIONARY:
+					bx = b.get("x", 0.0)
+					by = b.get("y", 0.0)
+					bradius = b.get("radius", 0.0)
+				else:
+					bx = b.x
+					by = b.y
+					bradius = b.radius
+
+				for m in mines:
+					if not m["active"]:
+						continue
+					var dx = bx - m["x"]
+					var dy = by - m["y"]
+					var dist = sqrt(dx * dx + dy * dy)
+					if dist < bradius + m["radius"]:
+						m["active"] = false
+						if typeof(b) == TYPE_DICTIONARY:
+							if b.has("hp"):
+								b["hp"] -= m["damage"]
+						else:
+							if b.has_method("take_damage"):
+								b.take_damage(m["damage"])
+							elif "hp" in b:
+								b.hp -= m["damage"]
+						if world != null and world.has_method("add_event"):
+							world.add_event("mine_explosion", {"x": m["x"], "y": m["y"]})
+
 var GAME_MODES = {
+
 
 	"geometric_zone": GeometricZoneMode.new(),
     "mirror_walls": MirrorWallsMode.new(),
@@ -5702,6 +5791,7 @@ var GAME_MODES = {
 	"dynamic_hazards": DynamicHazardsMode.new(),
 	"custom_match": CustomMatchMode.new(),
 	"reverse_event": ReverseEventMode.new(),
+	"minefield_event": MinefieldEventMode.new(),
     "weather_chaos": WeatherChaosMode.new(),
     "domination": DominationMode.new(),
     "black_hole": BlackHoleMode.new(),
