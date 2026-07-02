@@ -651,6 +651,7 @@ class ProceduralArena:
                 is_temporal_rift = random.random() < 0.1
                 is_gravity_well = random.random() < 0.2
                 is_reverse_gravity = random.random() < 0.1
+                is_repulsion_field = random.random() < 0.1
                 if random.random() < 0.1:
                     kind = "drone_item"
                     damage = 0.0
@@ -702,6 +703,9 @@ class ProceduralArena:
                         damage = 0.0
                     elif is_reverse_gravity:
                         kind = "reverse_gravity"
+                        damage = 0.0
+                    elif is_repulsion_field:
+                        kind = "repulsion_field"
                         damage = 0.0
                     elif is_gravity_well:
                         kind = "gravity_well"
