@@ -1575,7 +1575,7 @@ class Action:
                                     pull_strength = min(pull_strength, dist * 0.5) # Prevent overshooting the center
                                 self.ball.x += nx * pull_strength
                                 self.ball.y += ny * pull_strength
-                    elif hazard.kind == "repulsion_field":
+                    elif hazard.kind in ("repulsion_field", "push_zone"):
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
                         dist_sq = dx * dx + dy * dy
@@ -1622,7 +1622,7 @@ class Action:
                                 push_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 50.0 * delta
                                 self.ball.x += nx * push_strength
                                 self.ball.y += ny * push_strength
-                    elif hazard.kind == "gravity_well":
+                    elif hazard.kind in ("gravity_well", "pull_zone"):
                         # Cosmetics: gravity anomaly already implemented
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y

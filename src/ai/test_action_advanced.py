@@ -634,7 +634,7 @@ def test_decoy_explosion_explosive():
     assert enemy.hp == 70.0
 
 def test_decoy_explosion_reward():
-    from src.ai.action import Action
+    from ai.action import Action
     world = MockWorld()
     owner = MockBall(x=0, y=0)
     owner.id = 111

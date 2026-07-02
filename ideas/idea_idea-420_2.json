@@ -1,0 +1,4 @@
+{
+  "title": "Magnetic Boots Item",
+  "description": "A passive item that allows players to walk unhindered through 'pull_zone', 'push_zone', 'gravity_well', and 'repulsion_field' hazards, giving them a tactical advantage in zones with high gravitational distortion."
+}
