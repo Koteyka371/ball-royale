@@ -35,6 +35,40 @@ func _check_events(balls: Array, kill_log: Array, current_tick: int):
         last_kill_tick = latest_kill["tick"]
         _handle_kill(latest_kill, current_tick, balls)
 
+    if excitement_level >= 50.0 and current_tick % 200 == 0:
+        var alive_teams = {}
+        for b in balls:
+            if typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("alive"):
+                if b.get("ball_type") != "spectator":
+                    var team = b.get("team")
+                    if team == null or team == "":
+                        team = b.get("ball_type")
+                    if alive_teams.has(team):
+                        alive_teams[team] += 1
+                    else:
+                        alive_teams[team] = 1
+            elif typeof(b) == TYPE_DICTIONARY and b.has("alive") and b["alive"]:
+                if b.get("ball_type") != "spectator":
+                    var team = b.get("team")
+                    if team == null or team == "":
+                        team = b.get("ball_type")
+                    if alive_teams.has(team):
+                        alive_teams[team] += 1
+                    else:
+                        alive_teams[team] = 1
+
+        if not alive_teams.is_empty():
+            var leading_team = ""
+            var max_count = -1
+            for t in alive_teams.keys():
+                if alive_teams[t] > max_count:
+                    max_count = alive_teams[t]
+                    leading_team = t
+
+            if max_count >= 2 and world != null and world.has_method("add_event"):
+                world.add_event("crowd_cheer", {"message": "Let's go Team %s! Let's go!" % leading_team, "volume": 1.0})
+                world.add_event("audio_event", {"sound": "team_chant", "volume": 0.8})
+
 func _handle_kill(kill_info: Dictionary, current_tick: int, balls: Array):
     if not kill_info.has("killer_id"):
         return
@@ -51,7 +85,30 @@ func _handle_kill(kill_info: Dictionary, current_tick: int, balls: Array):
     if streak >= 3:
         excitement_level += 20.0
         if world != null and world.has_method("add_event"):
-            world.add_event("crowd_cheer", {"message": "The crowd goes wild for Ball %s's %d-kill streak!" % [str(killer_id), streak], "volume": 1.0 + (streak * 0.1)})
+            var chant_msg = "The crowd goes wild for Ball %s's %d-kill streak!" % [str(killer_id), streak]
+            var killer_obj = null
+            for b in balls:
+                var b_id = -1
+                if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+                    b_id = b.get("id")
+                elif typeof(b) == TYPE_DICTIONARY and b.has("id"):
+                    b_id = b["id"]
+                if str(b_id) == str(killer_id):
+                    killer_obj = b
+                    break
+
+            if killer_obj != null:
+                var k_type = ""
+                if typeof(killer_obj) == TYPE_OBJECT and killer_obj.has_method("get"):
+                    k_type = killer_obj.get("ball_type")
+                elif typeof(killer_obj) == TYPE_DICTIONARY:
+                    k_type = killer_obj.get("ball_type", "")
+
+                if k_type != null and k_type != "" and k_type != "spectator":
+                    k_type = k_type.capitalize()
+                    chant_msg = "%s! %s! %s" % [k_type, k_type, chant_msg]
+
+            world.add_event("crowd_cheer", {"message": chant_msg, "volume": 1.0 + (streak * 0.1)})
             world.add_event("audio_event", {"sound": "epic_crowd_roar", "volume": 1.0})
 
     var alive_teams = {}
