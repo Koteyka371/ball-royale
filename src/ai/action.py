@@ -520,6 +520,21 @@ class Action:
                 self.world.arena.hazards.append(trap)
                 self.ball.inventory.remove("placeable_trap")
 
+        # Weather Scanner deployment
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "weather_scanner" in self.ball.inventory:
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                try:
+                    from arena.procedural_arena import Hazard
+                    scanner_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
+                    scanner = Hazard(scanner_id, self.ball.x, self.ball.y, 15.0, "weather_scanner", 0.0)
+                    setattr(scanner, 'duration', 30.0)
+                    setattr(scanner, 'owner_id', getattr(self.ball, 'id', None))
+                    setattr(scanner, 'team', getattr(self.ball, 'team', None))
+                    self.world.arena.hazards.append(scanner)
+                    self.ball.inventory.remove("weather_scanner")
+                except ImportError:
+                    pass
+
         # Deploy a small trap which pulls nearby enemies in and deals continuous damage when triggered
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "placeable_trap_booster" in self.ball.inventory:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -4080,6 +4095,15 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "magnet_booster":
                     self.ball.pull_booster_timer = 5.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "weather_scanner_item":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("weather_scanner")
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)

@@ -974,6 +974,19 @@ func execute(strategy: String, delta: float):
 
 	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
+		if inv.has("weather_scanner"):
+			if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+				var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
+				var scanner = ProceduralArenaScript.Hazard.new(self.world.arena.hazards.size() + (randi() % 10000), self.ball.x, self.ball.y, 15.0, "weather_scanner", 0.0)
+				scanner.set_meta("duration", 30.0)
+				if "id" in self.ball: scanner.set_meta("owner_id", self.ball.id)
+				if "team" in self.ball: scanner.set_meta("team", self.ball.team)
+				self.world.arena.hazards.append(scanner)
+				inv.erase("weather_scanner")
+				self.ball.set_meta("inventory", inv)
+
+	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
+		var inv = self.ball.get_meta("inventory")
 		if inv.has("placeable_trap_booster"):
 			if world != null and "arena" in world and "hazards" in world.arena:
 				var arena = world.arena
@@ -6357,6 +6370,20 @@ func _collect_booster(delta: float):
                     self.ball.set_meta("pull_booster_timer", 5.0)
                 else:
                     self.ball.pull_booster_timer = 5.0
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "weather_scanner_item":
+                if not self.ball.has_meta("inventory"):
+                    self.ball.set_meta("inventory", [])
+                var inv = self.ball.get_meta("inventory")
+                inv.append("weather_scanner")
+                self.ball.set_meta("inventory", inv)
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:

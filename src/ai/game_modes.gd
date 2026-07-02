@@ -398,7 +398,7 @@ class BattleRoyaleMode extends GameMode:
                     if "height" in world.arena: arena_height = world.arena.height
 
                 rng.randomize()
-                var booster_kinds = ["speed_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "shadow_booster"]
+                var booster_kinds = ["speed_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "shadow_booster", "weather_scanner_item"]
                 var chosen_kind = booster_kinds[rng.randi() % booster_kinds.size()]
                 var b_id = 9000 + world.boosters.size() + (rng.randi() % 1000)
                 var b_x = rng.randf_range(100, arena_width - 100)
@@ -1796,6 +1796,8 @@ class WeatherChaosMode extends GameMode:
 	var weather_timer: float = 0.0
 
 	func _init() -> void:
+		set_meta("next_weather", "clear")
+		set_meta("weather_warning_issued", false)
 		name = "Weather Chaos"
 		description = "Weather conditions change throughout the match, affecting stats."
 
@@ -1862,11 +1864,35 @@ class WeatherChaosMode extends GameMode:
 						set_meta("wind_dy", (randf() * 100.0) - 50.0)
 		else:
 			weather_timer += delta
+
+			var warning_threshold = 0.0
+			var warning_issued = false
+			if has_meta("weather_warning_issued"):
+				warning_issued = get_meta("weather_warning_issued")
+			if weather_timer >= warning_threshold and not warning_issued:
+				if world != null and "arena" in world and "hazards" in world.arena:
+					var scanners = []
+					for h in world.arena.hazards:
+						var k = h.kind if "kind" in h else ""
+						var a = h.active if "active" in h else true
+						if k == "weather_scanner" and a:
+							scanners.append(h)
+					if scanners.size() > 0:
+						var next_w = "unknown"
+						if has_meta("next_weather"): next_w = get_meta("next_weather")
+						if world != null and world.has_method("add_event"):
+							world.add_event("weather_warning", {"type": "weather_warning", "message": "Scanner warns: " + next_w.to_upper() + " incoming in 10s!"})
+						set_meta("weather_warning_issued", true)
+
 			if weather_timer > 10.0:
 				weather_timer = 0.0
 				var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm"]
 				var old_weather = weather
-				weather = weathers[randi() % weathers.size()]
+				if not has_meta("next_weather"):
+					set_meta("next_weather", weathers[randi() % weathers.size()])
+				weather = get_meta("next_weather")
+				set_meta("next_weather", weathers[randi() % weathers.size()])
+				set_meta("weather_warning_issued", false)
 				if old_weather != weather and world != null and world.has_method("add_event"):
 					world.add_event("weather_change", {"weather": weather})
 				if weather == "wind":
