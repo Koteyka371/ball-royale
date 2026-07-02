@@ -1,3 +1,4 @@
+from arena import arena_types as ArenaTypes
 from typing import List, Optional, Any
 
 class GameMode:
@@ -4719,10 +4720,56 @@ class StaminaSpeedMode(GameMode):
             b.base_speed = getattr(b, 'max_stamina', 200.0)
 
 
+
+class FactoryMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Factory"
+        self.description = "Conveyor belts push you around!"
+        self.points_for_kill = 10
+        self.arena = ArenaTypes.FactoryArena()
+
+    def update(self, world, delta):
+        super().update(world, delta)
+
+        if not hasattr(self.arena, "hazards"):
+            return
+
+        conveyors = [h for h in self.arena.hazards if getattr(h, "kind", "") == "conveyor_belt"]
+        if not conveyors:
+            return
+
+        for c in conveyors:
+            if hasattr(world, "items"):
+                for item in world.items:
+                    dx = c.x - getattr(item, "x", 0)
+                    dy = c.y - getattr(item, "y", 0)
+                    if dx*dx + dy*dy < c.radius * c.radius:
+                        item.x = getattr(item, "x", 0) + c.direction_vector[0] * c.speed_magnitude * delta
+                        item.y = getattr(item, "y", 0) + c.direction_vector[1] * c.speed_magnitude * delta
+
+            for h in self.arena.hazards:
+                if h is c or getattr(h, "kind", "") == "conveyor_belt":
+                    continue
+                dx = c.x - getattr(h, "x", 0)
+                dy = c.y - getattr(h, "y", 0)
+                if dx*dx + dy*dy < c.radius * c.radius:
+                    h.x = getattr(h, "x", 0) + c.direction_vector[0] * c.speed_magnitude * delta
+                    h.y = getattr(h, "y", 0) + c.direction_vector[1] * c.speed_magnitude * delta
+
+            if hasattr(world, "balls"):
+                for b in world.balls:
+                    dx = c.x - getattr(b, "x", 0)
+                    dy = c.y - getattr(b, "y", 0)
+                    if dx*dx + dy*dy < c.radius * c.radius:
+                        b.x = getattr(b, "x", 0) + c.direction_vector[0] * c.speed_magnitude * delta
+                        b.y = getattr(b, "y", 0) + c.direction_vector[1] * c.speed_magnitude * delta
+
 GAME_MODES = {
 
 
     "geometric_zone": GeometricZoneMode(),
+    "factory": FactoryMode(),
     "mirror_walls": MirrorWallsMode(),
     "stamina_regen": StaminaRegenMode(),
     "zero_gravity": ZeroGravityMode(),

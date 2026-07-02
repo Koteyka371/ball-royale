@@ -5879,10 +5879,60 @@ class StaminaSpeedMode extends GameMode:
 				b.set("base_speed", max_stam)
 
 
+
+class FactoryMode extends GameMode:
+	func _init():
+		super._init()
+		self.name = "Factory"
+		self.description = "Conveyor belts push you around!"
+		self.points_for_kill = 10
+		self.arena = ArenaTypes.FactoryArena.new()
+
+	func update(world, delta: float):
+		super.update(world, delta)
+
+		if not "arena" in world or not world.arena or not "hazards" in world.arena:
+			return
+
+		var conveyors = []
+		for h in world.arena.hazards:
+			if h.kind == "conveyor_belt":
+				conveyors.append(h)
+
+		if conveyors.size() == 0:
+			return
+
+		for c in conveyors:
+			if "items" in world:
+				for item in world.items:
+					var dx = c.x - item.x
+					var dy = c.y - item.y
+					if dx*dx + dy*dy < c.radius * c.radius:
+						item.x += c.direction_vector[0] * c.speed_magnitude * delta
+						item.y += c.direction_vector[1] * c.speed_magnitude * delta
+
+			for h in world.arena.hazards:
+				if h == c or h.kind == "conveyor_belt":
+					continue
+				var dx = c.x - h.x
+				var dy = c.y - h.y
+				if dx*dx + dy*dy < c.radius * c.radius:
+					h.x += c.direction_vector[0] * c.speed_magnitude * delta
+					h.y += c.direction_vector[1] * c.speed_magnitude * delta
+
+			if "balls" in world:
+				for b in world.balls:
+					var dx = c.x - b.x
+					var dy = c.y - b.y
+					if dx*dx + dy*dy < c.radius * c.radius:
+						b.x += c.direction_vector[0] * c.speed_magnitude * delta
+						b.y += c.direction_vector[1] * c.speed_magnitude * delta
+
 var GAME_MODES = {
 
 
 	"geometric_zone": GeometricZoneMode.new(),
+	"factory": FactoryMode.new(),
     "mirror_walls": MirrorWallsMode.new(),
     "stamina_regen": StaminaRegenMode.new(),
     "zero_gravity": ZeroGravityMode.new(),

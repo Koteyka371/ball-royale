@@ -48,6 +48,40 @@ class ConveyorBelt extends ProceduralArena.Hazard:
         direction_vector = _dir_vec
         speed_magnitude = _speed
 
+class FactoryArena extends ProceduralArena:
+	func generate():
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+
+		var w = self.width
+		var h = self.height
+		var cx = w / 2.0
+		var cy = h / 2.0
+
+		# Central assembly line
+		rooms.append(ProceduralArena.Room.new(w * 0.1, h * 0.3, w * 0.8, h * 0.4))
+
+		# Top and bottom side rooms
+		rooms.append(ProceduralArena.Room.new(w * 0.3, h * 0.1, w * 0.4, h * 0.2))
+		rooms.append(ProceduralArena.Room.new(w * 0.3, h * 0.7, w * 0.4, h * 0.2))
+
+		# Corridors connecting side rooms to main assembly
+		corridors.append(ProceduralArena.Corridor.new(cx, h * 0.2, 100, h * 0.2))
+		corridors.append(ProceduralArena.Corridor.new(cx, h * 0.6, 100, h * 0.2))
+
+		# Add conveyor belts in a loop or lines
+
+		# Top line moving right
+		hazards.append(ConveyorBelt.new(0, w*0.3, h*0.4, 60.0, 0.0, [1.0, 0.0], 200.0))
+		hazards.append(ConveyorBelt.new(1, w*0.5, h*0.4, 60.0, 0.0, [1.0, 0.0], 200.0))
+		hazards.append(ConveyorBelt.new(2, w*0.7, h*0.4, 60.0, 0.0, [1.0, 0.0], 200.0))
+
+		# Bottom line moving left
+		hazards.append(ConveyorBelt.new(3, w*0.7, h*0.6, 60.0, 0.0, [-1.0, 0.0], 200.0))
+		hazards.append(ConveyorBelt.new(4, w*0.5, h*0.6, 60.0, 0.0, [-1.0, 0.0], 200.0))
+		hazards.append(ConveyorBelt.new(5, w*0.3, h*0.6, 60.0, 0.0, [-1.0, 0.0], 200.0))
+
 
 class FunnyFailsArena extends ProceduralArena:
 	func generate():
