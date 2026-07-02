@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-454] Stamina Pool Modifier — *2026-07-02 14:58:48 UTC*
+
+A game mode modifier where stamina regenerates twice as fast, allowing more frequent use of stamina-based skills.
+
+---
+
 ## [idea-453] Chain Dash Skill — *2026-07-02 14:45:10 UTC*
 
 A variant of dash where if an enemy is killed during the dash, the cooldown is instantly reset.

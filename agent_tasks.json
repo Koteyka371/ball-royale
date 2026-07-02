@@ -7836,7 +7836,7 @@
     },
     {
       "id": "idea-454",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Stamina Pool Modifier",
@@ -12475,6 +12475,40 @@
         "src/ai/phase_shift_skill.py",
         "src/ai/phase_shift_skill.gd",
         "tests/test_phase_shift_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-725",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncy dash variant",
+      "description": "Dash that bounces off walls.",
+      "allowed_paths": [
+        "src/ai/bouncy_dash_variant.py",
+        "src/ai/bouncy_dash_variant.gd",
+        "tests/test_bouncy_dash_variant.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-726",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Teleporting dash",
+      "description": "Instead of dashing, teleport to target.",
+      "allowed_paths": [
+        "src/ai/teleporting_dash.py",
+        "src/ai/teleporting_dash.gd",
+        "tests/test_teleporting_dash.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
