@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-473] Decoy Mirror Positions — *2026-07-02 22:19:44 UTC*
+
+Trickster's 'deploy_decoy' skill now creates two decoys simultaneously that symmetrically orbit the caster or mirror the caster's movements, making it significantly harder for the AI to track the real Trickster.
+
+---
+
 ## [idea-459] Energy Vampire Skill — *2026-07-02 20:08:12 UTC*
 
 A targeted skill that steals 30 stamina from an opponent and gives it to the user. Opponent is briefly slowed, and the user gets a brief speed burst from over-capped stamina.
