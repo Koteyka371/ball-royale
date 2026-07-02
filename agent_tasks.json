@@ -7496,7 +7496,7 @@
     },
     {
       "id": "idea-434",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Reverse Escort",
@@ -11862,6 +11862,74 @@
         "src/ai/sniper_laser_tripwire.py",
         "src/ai/sniper_laser_tripwire.gd",
         "tests/test_sniper_laser_tripwire.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-689",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Speed Cap Mode",
+      "description": "As the game progresses, the maximum speed cap for all entities decreases steadily, forcing players into more strategic and confined maneuvering.",
+      "allowed_paths": [
+        "src/ai/shrinking_speed_cap.py",
+        "src/ai/shrinking_speed_cap.gd",
+        "tests/test_shrinking_speed_cap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-690",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Influences Tornadoes",
+      "description": "In 'Thunderstorm' weather, tornadoes naturally move faster around the arena and have an increased tangential pull radius.",
+      "allowed_paths": [
+        "src/ai/influences_tornadoes.py",
+        "src/ai/influences_tornadoes.gd",
+        "tests/test_influences_tornadoes.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-691",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Random Item Re-roll Mode",
+      "description": "Periodically, all active items and boosters in the arena randomly transform into different item types, keeping players constantly adapting.",
+      "allowed_paths": [
+        "src/ai/random_item_re_roll.py",
+        "src/ai/random_item_re_roll.gd",
+        "tests/test_random_item_re_roll.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-692",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tornado Combos",
+      "description": "If a fire or poison hazard intersects with a tornado hazard, it becomes a 'Firenado' or 'Poison Tornado' that applies the respective DOT effects to pulled targets.",
+      "allowed_paths": [
+        "src/ai/tornado_combos.py",
+        "src/ai/tornado_combos.gd",
+        "tests/test_tornado_combos.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

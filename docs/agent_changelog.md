@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-434] Reverse Escort — *2026-07-02 12:55:37 UTC*
+
+Two payloads move towards the center, the team that destroys the enemy payload first wins.
+
+---
+
 ## [idea-432] Reverse Controls Event — *2026-07-02 12:54:12 UTC*
 
 Periodically swap player controls to add confusion.
