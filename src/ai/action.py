@@ -2168,6 +2168,12 @@ class Action:
                                 if self.ball.hp > self.ball.max_hp:
                                     self.ball.hp = self.ball.max_hp
                             continue
+                        elif hazard.kind == "stamina_drain_zone":
+                            # Drain stamina when standing inside
+                            if hasattr(self.ball, "stamina"):
+                                drain_rate = 30.0 * delta
+                                self.ball.stamina = max(0.0, self.ball.stamina - drain_rate)
+                            continue
                         elif hazard.kind == "vampiric_puddle":
                             hazard_damage = hazard.damage * delta
                             if hasattr(self.ball, "take_damage"):

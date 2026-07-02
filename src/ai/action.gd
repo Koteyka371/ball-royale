@@ -3115,6 +3115,14 @@ func execute(strategy: String, delta: float):
                             if self.ball.hp > self.ball.max_hp:
                                 self.ball.hp = self.ball.max_hp
                         continue
+                    elif hazard.kind == "stamina_drain_zone":
+                        if "stamina" in self.ball:
+                            var stam = self.ball.stamina
+                            self.ball.stamina = max(0.0, stam - 30.0 * delta)
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("stamina"):
+                            var stam = self.ball.get_meta("stamina")
+                            self.ball.set_meta("stamina", max(0.0, stam - 30.0 * delta))
+                        continue
                     elif hazard.kind == "vampiric_puddle":
                         var hazard_damage = hazard.damage * delta
                         if self.ball.has_method("take_damage"):
