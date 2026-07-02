@@ -1336,9 +1336,59 @@ class EscortMode extends GameMode:
                 payload.x = 100.0
                 payload.y = 500.0
 
+    var pulse_timer: float = 0.0
+
     func tick(world, balls: Array, delta: float = 0.016) -> void:
         if timer > 0.0:
             timer -= delta
+
+        pulse_timer += delta
+        if pulse_timer >= 5.0:
+            pulse_timer = 0.0
+            if payload != null:
+                var px = payload.get("x") if typeof(payload) == TYPE_DICTIONARY else payload.x
+                var py = payload.get("y") if typeof(payload) == TYPE_DICTIONARY else payload.y
+
+                for b in balls:
+                    if typeof(b) == TYPE_DICTIONARY and b.has("id") and typeof(payload) == TYPE_DICTIONARY and payload.has("id") and b["id"] == payload["id"]:
+                        continue
+                    if typeof(b) == TYPE_OBJECT and typeof(payload) == TYPE_OBJECT and b == payload:
+                        continue
+                    var balive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+                    if not balive:
+                        continue
+                    var btype = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+                    if btype == "spectator":
+                        continue
+
+                    var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+                    var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+
+                    var bdx = bx - px
+                    var bdy = by - py
+                    var bdist = sqrt(bdx*bdx + bdy*bdy)
+
+                    if bdist <= 300.0:
+                        var bteam = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
+                        if bteam == "Defenders":
+                            var bmax_hp = b.get("max_hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("max_hp")
+                            var bhp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("hp")
+                            var new_hp = min(bmax_hp, bhp + 20.0)
+                            if typeof(b) == TYPE_DICTIONARY:
+                                b["hp"] = new_hp
+                            else:
+                                b.set("hp", new_hp)
+                        elif bteam == "Attackers":
+                            var bhp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("hp")
+                            var new_hp = max(0.0, bhp - 20.0)
+                            if typeof(b) == TYPE_DICTIONARY:
+                                b["hp"] = new_hp
+                                if new_hp <= 0:
+                                    b["alive"] = false
+                            else:
+                                b.set("hp", new_hp)
+                                if new_hp <= 0:
+                                    b.set("alive", false)
 
         if payload != null:
             var is_alive = payload.get("alive", false) if typeof(payload) == TYPE_DICTIONARY else payload.alive

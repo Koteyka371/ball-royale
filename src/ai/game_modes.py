@@ -958,6 +958,32 @@ class EscortMode(GameMode):
         if getattr(self, "timer", 0) > 0:
             self.timer -= delta
 
+        if not hasattr(self, "pulse_timer"):
+            self.pulse_timer = 0.0
+
+        self.pulse_timer += delta
+        if self.pulse_timer >= 5.0:
+            self.pulse_timer = 0.0
+            if self.payload and getattr(self.payload, "alive", False):
+                for b in balls:
+                    if b == self.payload or not getattr(b, "alive", False):
+                        continue
+                    if getattr(b, "ball_type", None) == "spectator":
+                        continue
+
+                    import math
+                    dx = getattr(b, "x", 0) - getattr(self.payload, "x", 0)
+                    dy = getattr(b, "y", 0) - getattr(self.payload, "y", 0)
+                    dist = math.hypot(dx, dy)
+
+                    if dist <= 300.0:
+                        if getattr(b, "team", "") == "Defenders":
+                            b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + 20.0)
+                        elif getattr(b, "team", "") == "Attackers":
+                            b.hp = max(0.0, getattr(b, "hp", 100.0) - 20.0)
+                            if b.hp <= 0:
+                                b.alive = False
+
         if self.payload and getattr(self.payload, "alive", False):
             import math
             dx = self.goal_x - getattr(self.payload, "x", 0)
