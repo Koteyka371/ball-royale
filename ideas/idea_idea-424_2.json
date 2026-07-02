@@ -1,4 +1,0 @@
-{
-  "title": "Mirror Image Decoys",
-  "description": "The deploy_decoy ability creates two decoys instead of one. The extra decoy behaves similarly but takes double damage. If both decoys explode simultaneously, their explosion radiuses combine for a massive blast."
-}

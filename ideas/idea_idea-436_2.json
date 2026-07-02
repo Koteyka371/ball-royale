@@ -1,4 +1,0 @@
-{
-  "title": "Shrinking Safe Zones with Moving Centers",
-  "description": "Instead of a static shrinking circle, the center of the safe zone drifts around the map while shrinking, forcing players to constantly adapt their positioning."
-}

@@ -12326,6 +12326,41 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-716",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Underground Tunnel Network",
+      "description": "Procedural arenas can spawn underground tunnels, allowing balls to temporarily travel underneath obstacles. While underground, balls are invisible and cannot be targeted, but can only emerge at specific tunnel exits.",
+      "allowed_paths": [
+        "src/ai/underground_tunnel_network.py",
+        "src/ai/underground_tunnel_network.gd",
+        "tests/test_underground_tunnel_network.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-717",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild Wars System",
+      "description": "Players can join or create guilds. Guilds can compete in guild vs guild battles to earn guild points. Points are used to upgrade guild level, which unlocks exclusive buffs, banners, and special cosmetics for all members.",
+      "allowed_paths": [
+        "src/ui/guild_wars.py",
+        "src/ui/guild_wars.gd",
+        "src/ai/guild_wars.py",
+        "tests/test_guild_wars.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }

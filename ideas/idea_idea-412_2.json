@@ -1,4 +1,0 @@
-{
-  "title": "Bumper Cars Mutator",
-  "description": "A physics-based mutator where collisions between balls deal minimal damage but apply massive knockback. The arena gradually shrinks towards a central spike pit, turning the game into a chaotic sumo-style knockout match where positioning is key."
-}
