@@ -4756,28 +4756,61 @@ class Action:
             elif skill_name == "grapple":
                 self._spawn_skill_particles("grapple")
 
-                # Find the closest wall
                 arena_width = getattr(self.world.arena, "width", 1000) if hasattr(self.world, "arena") and self.world.arena else getattr(self.world, "width", 1000)
                 arena_height = getattr(self.world.arena, "height", 1000) if hasattr(self.world, "arena") and self.world.arena else getattr(self.world, "height", 1000)
+                pull_dist = 200.0
 
+                # Find all entities (balls, items, hazards) that can be grappled
+                grapple_targets = []
+                if hasattr(self.world, "balls"):
+                    for b in self.world.balls:
+                        if b != self.ball and getattr(b, "alive", True):
+                            dist_sq = (b.x - self.ball.x)**2 + (b.y - self.ball.y)**2
+                            grapple_targets.append(("ball", b, dist_sq))
+                if hasattr(self.world, "items"):
+                    for i in self.world.items:
+                        dist_sq = (i.x - self.ball.x)**2 + (i.y - self.ball.y)**2
+                        grapple_targets.append(("item", i, dist_sq))
+                if hasattr(self.world, "arena") and self.world.arena and hasattr(self.world.arena, "hazards"):
+                    for h in self.world.arena.hazards:
+                        dist_sq = (h.x - self.ball.x)**2 + (h.y - self.ball.y)**2
+                        grapple_targets.append(("hazard", h, dist_sq))
+
+                closest_target = None
+                closest_target_dist_sq = float('inf')
+                for t_type, t, dist_sq in grapple_targets:
+                    if dist_sq < closest_target_dist_sq:
+                        closest_target = t
+                        closest_target_dist_sq = dist_sq
+
+                # Wall distances
                 dists = {
                     "left": self.ball.x,
                     "right": arena_width - self.ball.x,
                     "top": self.ball.y,
                     "bottom": arena_height - self.ball.y
                 }
-
                 closest_wall = min(dists, key=dists.get)
-                pull_dist = 200.0
+                closest_wall_dist = dists[closest_wall]
 
-                if closest_wall == "left":
-                    self.ball.x = max(0.0, self.ball.x - pull_dist)
-                elif closest_wall == "right":
-                    self.ball.x = min(float(arena_width), self.ball.x + pull_dist)
-                elif closest_wall == "top":
-                    self.ball.y = max(0.0, self.ball.y - pull_dist)
-                elif closest_wall == "bottom":
-                    self.ball.y = min(float(arena_height), self.ball.y + pull_dist)
+                # Decide whether to grapple to wall or target based on distance
+                if closest_target and closest_target_dist_sq < (closest_wall_dist ** 2):
+                    # Grapple to target
+                    dist = math.sqrt(closest_target_dist_sq)
+                    if dist > 0.0001:
+                        # Pull ball towards target
+                        self.ball.x += ((closest_target.x - self.ball.x) / dist) * pull_dist
+                        self.ball.y += ((closest_target.y - self.ball.y) / dist) * pull_dist
+                else:
+                    # Grapple to wall
+                    if closest_wall == "left":
+                        self.ball.x = max(0.0, self.ball.x - pull_dist)
+                    elif closest_wall == "right":
+                        self.ball.x = min(float(arena_width), self.ball.x + pull_dist)
+                    elif closest_wall == "top":
+                        self.ball.y = max(0.0, self.ball.y - pull_dist)
+                    elif closest_wall == "bottom":
+                        self.ball.y = min(float(arena_height), self.ball.y + pull_dist)
 
                 self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
 

@@ -7382,6 +7382,36 @@ func _use_skill():
 
             if "height" in self.world and not ("arena" in self.world and self.world.arena != null):
                 arena_height = float(self.world.height)
+            var pull_dist = 200.0
+
+            var closest_target = null
+            var closest_target_dist_sq = 1e9
+
+            if "balls" in self.world:
+                for b in self.world.balls:
+                    if b != self.ball:
+                        var is_alive = true
+                        if "alive" in b: is_alive = b.alive
+                        elif b.has_method("has_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+                        if is_alive:
+                            var dist_sq = (b.x - self.ball.x) * (b.x - self.ball.x) + (b.y - self.ball.y) * (b.y - self.ball.y)
+                            if dist_sq < closest_target_dist_sq:
+                                closest_target = b
+                                closest_target_dist_sq = dist_sq
+
+            if "items" in self.world:
+                for i in self.world.items:
+                    var dist_sq = (i.x - self.ball.x) * (i.x - self.ball.x) + (i.y - self.ball.y) * (i.y - self.ball.y)
+                    if dist_sq < closest_target_dist_sq:
+                        closest_target = i
+                        closest_target_dist_sq = dist_sq
+
+            if "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+                for h in self.world.arena.hazards:
+                    var dist_sq = (h.x - self.ball.x) * (h.x - self.ball.x) + (h.y - self.ball.y) * (h.y - self.ball.y)
+                    if dist_sq < closest_target_dist_sq:
+                        closest_target = h
+                        closest_target_dist_sq = dist_sq
 
             var dist_left = self.ball.x
             var dist_right = arena_width - self.ball.x
@@ -7389,16 +7419,23 @@ func _use_skill():
             var dist_bottom = arena_height - self.ball.y
 
             var min_dist = min(min(dist_left, dist_right), min(dist_top, dist_bottom))
-            var pull_dist = 200.0
 
-            if min_dist == dist_left:
-                self.ball.x = max(0.0, self.ball.x - pull_dist)
-            elif min_dist == dist_right:
-                self.ball.x = min(arena_width, self.ball.x + pull_dist)
-            elif min_dist == dist_top:
-                self.ball.y = max(0.0, self.ball.y - pull_dist)
-            elif min_dist == dist_bottom:
-                self.ball.y = min(arena_height, self.ball.y + pull_dist)
+            if closest_target != null and closest_target_dist_sq < (min_dist * min_dist):
+                var dist = sqrt(closest_target_dist_sq)
+                if dist > 0.0001:
+                    self.ball.x += ((closest_target.x - self.ball.x) / dist) * pull_dist
+                    self.ball.y += ((closest_target.y - self.ball.y) / dist) * pull_dist
+                    self.ball.x = max(0.0, min(arena_width, self.ball.x))
+                    self.ball.y = max(0.0, min(arena_height, self.ball.y))
+            else:
+                if min_dist == dist_left:
+                    self.ball.x = max(0.0, self.ball.x - pull_dist)
+                elif min_dist == dist_right:
+                    self.ball.x = min(arena_width, self.ball.x + pull_dist)
+                elif min_dist == dist_top:
+                    self.ball.y = max(0.0, self.ball.y - pull_dist)
+                elif min_dist == dist_bottom:
+                    self.ball.y = min(arena_height, self.ball.y + pull_dist)
 
             if "skill_cooldown" in self.ball:
                 self.ball.skill_timer = self.ball.skill_cooldown
@@ -8316,7 +8353,7 @@ func _spawn_skill_particles(skill_name: String = ""):
             particles["lifetime"] = 0.5
         elif skill_name == "chaos_link":
             var all_balls = []
-            if self.world.has("balls"):
+            if "balls" in self.world:
                 for b in self.world.balls:
                     var is_alive = true
                     if "alive" in b: is_alive = b.alive
@@ -8340,7 +8377,7 @@ func _spawn_skill_particles(skill_name: String = ""):
                         self._spawn_directed_particles(self.ball, target_cl, "chaos_link")
         elif skill_name == "health_link":
             var allies_hl = []
-            if self.world.has("balls"):
+            if "balls" in self.world:
                 for b in self.world.balls:
                     var is_alive = true
                     if "alive" in b: is_alive = b.alive
