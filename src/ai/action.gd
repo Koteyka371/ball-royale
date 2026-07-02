@@ -1341,6 +1341,15 @@ func execute(strategy: String, delta: float):
                         elif b.has_method("get_meta") and b.has_meta("id"):
                             b_id = b.get_meta("id")
 
+                        var has_volatile = false
+                        if "traits" in b and typeof(b.traits) == TYPE_ARRAY and b.traits.has("volatile_decoy"):
+                            has_volatile = true
+                        elif b.has_method("get_meta") and b.has_meta("traits") and typeof(b.get_meta("traits")) == TYPE_ARRAY and b.get_meta("traits").has("volatile_decoy"):
+                            has_volatile = true
+
+                        var radius = 150.0 if has_volatile else 100.0
+                        var explosion_damage = 80.0 if has_volatile else 30.0
+
                         for other in world.balls:
                             var other_alive = false
                             if "alive" in other:
@@ -1362,9 +1371,9 @@ func execute(strategy: String, delta: float):
                                 var dx = other.x - b.x
                                 var dy = other.y - b.y
                                 var dist = sqrt(dx*dx + dy*dy)
-                                if dist <= 100.0:
+                                if dist <= radius:
                                     if "hp" in other:
-                                        other.hp -= 30.0
+                                        other.hp -= explosion_damage
 
                                         var rng = RandomNumberGenerator.new()
                                         rng.randomize()
