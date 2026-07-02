@@ -1033,6 +1033,192 @@ class SurvivalMode extends GameMode:
 
 
 
+
+class DualPayloadMode extends GameMode:
+	var payload_red
+	var payload_blue
+
+	func _init() -> void:
+		name = "Dual Payload"
+		description = "Two payloads move towards the center, the team that destroys the enemy payload first wins."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if not "dead_balls" in world:
+			world.dead_balls = []
+
+		var valid_balls = []
+		for b in balls:
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.get("ball_type", "") != "spectator":
+					valid_balls.append(b)
+			else:
+				if b.get("ball_type") != "spectator":
+					valid_balls.append(b)
+
+		var mid = valid_balls.size() / 2
+		var red_team = []
+		var blue_team = []
+
+		for i in range(valid_balls.size()):
+			var b = valid_balls[i]
+			if i < mid:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["team"] = "Red"
+				else:
+					b.set("team", "Red")
+				red_team.append(b)
+			else:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["team"] = "Blue"
+				else:
+					b.set("team", "Blue")
+				blue_team.append(b)
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if "arena" in world and world.arena:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				arena_width = world.arena.get("width", 1000.0)
+				arena_height = world.arena.get("height", 1000.0)
+			else:
+				arena_width = world.arena.get("width")
+				arena_height = world.arena.get("height")
+
+		if red_team.size() > 0:
+			payload_red = red_team[0]
+			if typeof(payload_red) == TYPE_DICTIONARY:
+				payload_red["ball_type"] = "payload"
+				payload_red["is_payload"] = true
+				payload_red["speed"] = 10.0
+				payload_red["base_speed"] = 10.0
+				payload_red["damage"] = 0.0
+				payload_red["base_damage"] = 0.0
+				payload_red["max_hp"] = payload_red.get("max_hp", 100.0) * 5.0
+				payload_red["hp"] = payload_red["max_hp"]
+				payload_red["x"] = 100.0
+				payload_red["y"] = arena_height / 2.0
+			else:
+				payload_red.set("ball_type", "payload")
+				payload_red.set("is_payload", true)
+				payload_red.set("speed", 10.0)
+				payload_red.set("base_speed", 10.0)
+				payload_red.set("damage", 0.0)
+				payload_red.set("base_damage", 0.0)
+				payload_red.set("max_hp", payload_red.get("max_hp") * 5.0 if payload_red.get("max_hp") else 500.0)
+				payload_red.set("hp", payload_red.get("max_hp"))
+				payload_red.set("x", 100.0)
+				payload_red.set("y", arena_height / 2.0)
+
+		if blue_team.size() > 0:
+			payload_blue = blue_team[0]
+			if typeof(payload_blue) == TYPE_DICTIONARY:
+				payload_blue["ball_type"] = "payload"
+				payload_blue["is_payload"] = true
+				payload_blue["speed"] = 10.0
+				payload_blue["base_speed"] = 10.0
+				payload_blue["damage"] = 0.0
+				payload_blue["base_damage"] = 0.0
+				payload_blue["max_hp"] = payload_blue.get("max_hp", 100.0) * 5.0
+				payload_blue["hp"] = payload_blue["max_hp"]
+				payload_blue["x"] = arena_width - 100.0
+				payload_blue["y"] = arena_height / 2.0
+			else:
+				payload_blue.set("ball_type", "payload")
+				payload_blue.set("is_payload", true)
+				payload_blue.set("speed", 10.0)
+				payload_blue.set("base_speed", 10.0)
+				payload_blue.set("damage", 0.0)
+				payload_blue.set("base_damage", 0.0)
+				payload_blue.set("max_hp", payload_blue.get("max_hp") * 5.0 if payload_blue.get("max_hp") else 500.0)
+				payload_blue.set("hp", payload_blue.get("max_hp"))
+				payload_blue.set("x", arena_width - 100.0)
+				payload_blue.set("y", arena_height / 2.0)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if not "dead_balls" in world:
+			world.dead_balls = []
+
+		for b in balls:
+			var alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+			if not alive:
+				if not world.dead_balls.has(b):
+					if typeof(b) == TYPE_DICTIONARY:
+						b["time_since_death"] = 0.0
+					else:
+						b.set("time_since_death", 0.0)
+					world.dead_balls.append(b)
+				else:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["time_since_death"] = b.get("time_since_death", 0.0) + delta
+					else:
+						b.set("time_since_death", b.get("time_since_death") + delta if b.get("time_since_death") else delta)
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if "arena" in world and world.arena:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				arena_width = world.arena.get("width", 1000.0)
+				arena_height = world.arena.get("height", 1000.0)
+			else:
+				arena_width = world.arena.get("width")
+				arena_height = world.arena.get("height")
+
+		var center_x = arena_width / 2.0
+		var center_y = arena_height / 2.0
+
+		if payload_red:
+			var red_alive = payload_red.get("alive", false) if typeof(payload_red) == TYPE_DICTIONARY else payload_red.get("alive")
+			if red_alive:
+				var red_x = payload_red.get("x", 0.0) if typeof(payload_red) == TYPE_DICTIONARY else payload_red.get("x")
+				var red_y = payload_red.get("y", 0.0) if typeof(payload_red) == TYPE_DICTIONARY else payload_red.get("y")
+				var dx = center_x - red_x
+				var dy = center_y - red_y
+				var dist = sqrt(dx*dx + dy*dy)
+				if dist > 5.0:
+					var speed = payload_red.get("speed", 10.0) if typeof(payload_red) == TYPE_DICTIONARY else payload_red.get("speed")
+					if typeof(payload_red) == TYPE_DICTIONARY:
+						payload_red["x"] += (dx / dist) * speed * delta
+						payload_red["y"] += (dy / dist) * speed * delta
+					else:
+						payload_red.set("x", red_x + (dx / dist) * speed * delta)
+						payload_red.set("y", red_y + (dy / dist) * speed * delta)
+
+		if payload_blue:
+			var blue_alive = payload_blue.get("alive", false) if typeof(payload_blue) == TYPE_DICTIONARY else payload_blue.get("alive")
+			if blue_alive:
+				var blue_x = payload_blue.get("x", 0.0) if typeof(payload_blue) == TYPE_DICTIONARY else payload_blue.get("x")
+				var blue_y = payload_blue.get("y", 0.0) if typeof(payload_blue) == TYPE_DICTIONARY else payload_blue.get("y")
+				var dx = center_x - blue_x
+				var dy = center_y - blue_y
+				var dist = sqrt(dx*dx + dy*dy)
+				if dist > 5.0:
+					var speed = payload_blue.get("speed", 10.0) if typeof(payload_blue) == TYPE_DICTIONARY else payload_blue.get("speed")
+					if typeof(payload_blue) == TYPE_DICTIONARY:
+						payload_blue["x"] += (dx / dist) * speed * delta
+						payload_blue["y"] += (dy / dist) * speed * delta
+					else:
+						payload_blue.set("x", blue_x + (dx / dist) * speed * delta)
+						payload_blue.set("y", blue_y + (dy / dist) * speed * delta)
+
+	func check_winner(world, balls: Array):
+		var red_alive = false
+		if payload_red:
+			red_alive = payload_red.get("alive", false) if typeof(payload_red) == TYPE_DICTIONARY else payload_red.get("alive")
+		var blue_alive = false
+		if payload_blue:
+			blue_alive = payload_blue.get("alive", false) if typeof(payload_blue) == TYPE_DICTIONARY else payload_blue.get("alive")
+
+		if not red_alive and blue_alive:
+			return "Blue"
+		elif not blue_alive and red_alive:
+			return "Red"
+		elif not red_alive and not blue_alive:
+			return "Draw"
+
+		return null
+
+
 class EscortMode extends GameMode:
     var payload
     var goal_x: float = 900.0
@@ -5127,6 +5313,7 @@ var GAME_MODES = {
 	"shifting_maze": ShiftingMazeMode.new(),
 
 	"blackout": BlackoutMode.new(),
+	"dual_payload": DualPayloadMode.new(),
 	"escort": EscortMode.new(),
 	"windstorm": WindstormMode.new(),
 	"modifier_zones": ModifierZonesMode.new(),
