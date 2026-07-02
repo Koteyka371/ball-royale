@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-425] Randomized Safe Zone Shrink Shapes — *2026-07-02 12:08:23 UTC*
+
+Instead of a simple circular shrinking zone, the safe zone can shrink into varied geometric shapes (like a rectangle or a triangle) or even split into two smaller temporary safe zones before merging back. This disrupts camping strategies and keeps players constantly repositioning.
+
+---
+
 ## [idea-401] Mirror Image Powerup — *2026-07-02 12:08:19 UTC*
 
 A booster that creates 3 temporary decoys of the ball, all mimicking its movement but dealing no damage, to confuse enemies.
