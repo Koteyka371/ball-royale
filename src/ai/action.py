@@ -829,16 +829,20 @@ class Action:
                             b._decoy_exploded = True
                             b.alive = False
                             b.hp = 0
+                            has_volatile = hasattr(b, "traits") and "volatile_decoy" in b.traits
+                            radius = 150.0 if has_volatile else 100.0
+                            explosion_damage = 80.0 if has_volatile else 30.0
+
                             for other in self.world.balls:
                                 if getattr(other, "alive", False) and getattr(other, "team", getattr(b, "team", "")) != getattr(b, "team", "") and getattr(other, "id", None) != getattr(b, "id", None):
                                     dx = other.x - b.x
                                     dy = other.y - b.y
                                     dist = math.sqrt(dx*dx + dy*dy)
-                                    if dist <= 100.0:
+                                    if dist <= radius:
                                         if getattr(b, "decoy_type", "") == "stun_trap":
                                             other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 5.0
                                         else:
-                                            other.hp -= 30.0
+                                            other.hp -= explosion_damage
                                             other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 2.0
 
                                         import random
