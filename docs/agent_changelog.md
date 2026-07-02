@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-376] Anti-Gravity Hazard — *2026-07-02 23:25:48 UTC*
+
+An arena hazard zone that periodically turns on, causing any balls inside to lose traction, reducing their turn rate to near zero and making them drift in their current direction.
+
+---
+
 ## [idea-456] Chain Lightning Modifier — *2026-07-02 22:24:40 UTC*
 
 A new weather event or arena modifier where any damage dealt to an entity has a chance to chain to nearby entities within a small radius, encouraging players to maintain spatial separation.
