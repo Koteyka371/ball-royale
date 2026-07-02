@@ -43,10 +43,45 @@ func _handle_kill(kill_info: Dictionary, current_tick: int, balls: Array):
 
     var streak = kill_streak[killer_id]
 
+    var killer = null
+    for b in balls:
+        var b_id = -1
+        if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+            b_id = b.get("id")
+        elif typeof(b) == TYPE_DICTIONARY and b.has("id"):
+            b_id = b["id"]
+
+        if str(b_id) == str(killer_id):
+            killer = b
+            break
+
     if streak >= 3:
         excitement_level += 20.0
+
+        var killer_type = "unknown"
+        if killer != null:
+            if typeof(killer) == TYPE_OBJECT and killer.has_method("get"):
+                killer_type = killer.get("ball_type") if killer.get("ball_type") != null else "unknown"
+            elif typeof(killer) == TYPE_DICTIONARY:
+                killer_type = killer.get("ball_type", "unknown")
+
+        var chant_msg = ""
+        var k_type_lower = killer_type.to_lower()
+        if k_type_lower == "assassin":
+            chant_msg = "The crowd chants: 'Assassin! Assassin!' for Ball %s's %d-kill streak!" % [str(killer_id), streak]
+        elif k_type_lower == "berserker":
+            chant_msg = "The crowd roars: 'Blood for the Berserker!' after Ball %s's %d-kill streak!" % [str(killer_id), streak]
+        elif k_type_lower == "sniper":
+            chant_msg = "The crowd cheers: 'One shot, one kill!' for Sniper Ball %s's %d-kill streak!" % [str(killer_id), streak]
+        elif k_type_lower == "vampire":
+            chant_msg = "The crowd chants: 'Drain them dry!' for Vampire Ball %s's %d-kill streak!" % [str(killer_id), streak]
+        elif k_type_lower == "ninja":
+            chant_msg = "The crowd whispers: 'Unseen death...' for Ninja Ball %s's %d-kill streak!" % [str(killer_id), streak]
+        else:
+            chant_msg = "The crowd goes wild for %s Ball %s's %d-kill streak!" % [killer_type.capitalize(), str(killer_id), streak]
+
         if world != null and world.has_method("add_event"):
-            world.add_event("crowd_cheer", {"message": "The crowd goes wild for Ball %s's %d-kill streak!" % [str(killer_id), streak], "volume": 1.0 + (streak * 0.1)})
+            world.add_event("crowd_cheer", {"message": chant_msg, "volume": 1.0 + (streak * 0.1)})
             world.add_event("audio_event", {"sound": "epic_crowd_roar", "volume": 1.0})
 
     var alive_teams = {}
@@ -69,18 +104,6 @@ func _handle_kill(kill_info: Dictionary, current_tick: int, balls: Array):
                     alive_teams[team] += 1
                 else:
                     alive_teams[team] = 1
-
-    var killer = null
-    for b in balls:
-        var b_id = -1
-        if typeof(b) == TYPE_OBJECT and b.has_method("get"):
-            b_id = b.get("id")
-        elif typeof(b) == TYPE_DICTIONARY and b.has("id"):
-            b_id = b["id"]
-
-        if str(b_id) == str(killer_id):
-            killer = b
-            break
 
     if killer != null:
         var killer_team = ""

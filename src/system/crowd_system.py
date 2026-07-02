@@ -45,11 +45,29 @@ class CrowdSystem:
 
         streak = self.kill_streak[killer_id]
 
+        killer = next((b for b in balls if getattr(b, "id", -1) == killer_id), None)
+
         # Epic Kill
         if streak >= 3:
             self.excitement_level += 20.0
+
+            killer_type = getattr(killer, "ball_type", "unknown").capitalize() if killer else "Player"
+
+            if killer_type.lower() == "assassin":
+                chant_msg = f"The crowd chants: 'Assassin! Assassin!' for Ball {killer_id}'s {streak}-kill streak!"
+            elif killer_type.lower() == "berserker":
+                chant_msg = f"The crowd roars: 'Blood for the Berserker!' after Ball {killer_id}'s {streak}-kill streak!"
+            elif killer_type.lower() == "sniper":
+                chant_msg = f"The crowd cheers: 'One shot, one kill!' for Sniper Ball {killer_id}'s {streak}-kill streak!"
+            elif killer_type.lower() == "vampire":
+                chant_msg = f"The crowd chants: 'Drain them dry!' for Vampire Ball {killer_id}'s {streak}-kill streak!"
+            elif killer_type.lower() == "ninja":
+                chant_msg = f"The crowd whispers: 'Unseen death...' for Ninja Ball {killer_id}'s {streak}-kill streak!"
+            else:
+                chant_msg = f"The crowd goes wild for {killer_type} Ball {killer_id}'s {streak}-kill streak!"
+
             if hasattr(self.world, 'add_event'):
-                self.world.add_event("crowd_cheer", {"message": f"The crowd goes wild for Ball {killer_id}'s {streak}-kill streak!", "volume": 1.0 + (streak * 0.1)})
+                self.world.add_event("crowd_cheer", {"message": chant_msg, "volume": 1.0 + (streak * 0.1)})
                 self.world.add_event("audio_event", {"sound": "epic_crowd_roar", "volume": 1.0})
 
         # Team Wipe / Comeback (checking team populations)
@@ -60,7 +78,6 @@ class CrowdSystem:
                 alive_teams[team] = alive_teams.get(team, 0) + 1
 
         # Comeback detection: killer's team is heavily outnumbered
-        killer = next((b for b in balls if getattr(b, "id", -1) == killer_id), None)
         if killer:
             killer_team = getattr(killer, "team", getattr(killer, "ball_type", ""))
             killer_team_count = alive_teams.get(killer_team, 0)
