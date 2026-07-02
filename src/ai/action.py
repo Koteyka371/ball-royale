@@ -1527,8 +1527,8 @@ class Action:
                             hazard.last_updated_tick = current_tick
                             if not hasattr(hazard, "vx"):
 
-                                import random; hazard.vx = random.uniform(-100.0, 100.0) if hazard.kind in ("tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm") else random.uniform(-10.0, 10.0)
-                                hazard.vy = random.uniform(-100.0, 100.0) if hazard.kind in ("tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm") else random.uniform(-10.0, 10.0)
+                                import random; hazard.vx = random.uniform(-100.0, 100.0) if hazard.kind in ("tornado", "local_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm") else random.uniform(-10.0, 10.0)
+                                hazard.vy = random.uniform(-100.0, 100.0) if hazard.kind in ("tornado", "local_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm") else random.uniform(-10.0, 10.0)
                             if not hasattr(hazard, "lifetime"):
                                 hazard.lifetime = 0.0
                             hazard.lifetime += delta
@@ -1541,7 +1541,7 @@ class Action:
                                     hazard.vy *= -1
 
                             # Pull balls once per frame
-                            if hazard.kind in ("black_hole", "tornado"):
+                            if hazard.kind in ("black_hole", "tornado", "local_tornado"):
                                 for b in getattr(self.world, "balls", []):
                                     if getattr(b, "alive", False):
                                         bdx = hazard.x - b.x
@@ -1555,9 +1555,15 @@ class Action:
                                                 pull_strength = (hazard.radius * 2.0 / max(10.0, bdist)) * 80.0 * delta * lifetime_mult
                                                 b.x += bnx * pull_strength
                                                 b.y += bny * pull_strength
+                                                if hazard.kind in ("tornado", "local_tornado"):
+                                                    # Wind physics: tangential orbital pull
+                                                    tx, ty = -bny, bnx
+                                                    orbital_strength = pull_strength * 1.5
+                                                    b.x += tx * orbital_strength
+                                                    b.y += ty * orbital_strength
 
                             # Pull boosters once per frame
-                            if hazard.kind in ("black_hole", "tornado") and hasattr(self.world, "boosters"):
+                            if hazard.kind in ("black_hole", "tornado", "local_tornado") and hasattr(self.world, "boosters"):
                                 for b in self.world.boosters:
                                     bdx = hazard.x - b.x
                                     bdy = hazard.y - b.y
@@ -1569,9 +1575,15 @@ class Action:
                                         bpull_strength = (hazard.radius * 2.0 / max(10.0, bdist)) * 50.0 * delta * lifetime_mult
                                         b.x += bnx * bpull_strength
                                         b.y += bny * bpull_strength
+                                        if hazard.kind in ("tornado", "local_tornado"):
+                                            # Wind physics: tangential orbital pull
+                                            tx, ty = -bny, bnx
+                                            orbital_strength = bpull_strength * 1.5
+                                            b.x += tx * orbital_strength
+                                            b.y += ty * orbital_strength
 
                         # Ball specific logic
-                        if hazard.kind in ("black_hole", "tornado"):
+                        if hazard.kind in ("black_hole", "tornado", "local_tornado"):
                             dx = hazard.x - self.ball.x
                             dy = hazard.y - self.ball.y
                             dist_sq = dx * dx + dy * dy
@@ -1582,6 +1594,12 @@ class Action:
                                 pull_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 50.0 * delta * lifetime_mult
                                 self.ball.x += nx * pull_strength
                                 self.ball.y += ny * pull_strength
+                                if hazard.kind in ("tornado", "local_tornado"):
+                                    # Wind physics: tangential orbital pull
+                                    tx, ty = -ny, nx
+                                    orbital_strength = pull_strength * 1.5
+                                    self.ball.x += tx * orbital_strength
+                                    self.ball.y += ty * orbital_strength
 
             if hasattr(self.world.arena, "hazards"):
                 # Cleanup dead traps before checking collisions
@@ -1895,13 +1913,19 @@ class Action:
                             if hasattr(self.ball, "skill_timer") and self.ball.skill_timer > 0:
                                 self.ball.skill_timer += delta * (1.0 - speed_mult)
                             continue
-                        elif hazard.kind == "tornado":
+                        elif hazard.kind in ("tornado", "local_tornado"):
                             # Pull effect, launch, and damage
                             dx = hazard.x - self.ball.x
                             dy = hazard.y - self.ball.y
                             pull_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 200.0 * delta
-                            self.ball.x += (dx / max(0.1, dist)) * pull_strength
-                            self.ball.y += (dy / max(0.1, dist)) * pull_strength
+                            nx, ny = dx / max(0.1, dist), dy / max(0.1, dist)
+                            self.ball.x += nx * pull_strength
+                            self.ball.y += ny * pull_strength
+                            # Wind physics: tangential orbital pull
+                            tx, ty = -ny, nx
+                            orbital_strength = pull_strength * 1.5
+                            self.ball.x += tx * orbital_strength
+                            self.ball.y += ty * orbital_strength
 
                             # If close enough, launch them randomly, deal damage and reset movement
                             if dist < hazard.radius * 0.5:
@@ -4721,13 +4745,16 @@ class Action:
 
                     self.world.arena.hazards.append(trap)
 
-            elif skill_name == "tornado_skill":
+            elif skill_name in ("tornado_skill", "local_tornado"):
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     import random
                     trap_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
                     from arena.procedural_arena import Hazard  # type: ignore
-                    tornado = Hazard(trap_id, self.ball.x, self.ball.y, 40.0, "tornado", 20.0)
-                    setattr(tornado, 'duration', 5.0)
+                    radius = 80.0 if skill_name == "local_tornado" else 40.0
+                    duration = 8.0 if skill_name == "local_tornado" else 5.0
+
+                    tornado = Hazard(trap_id, self.ball.x, self.ball.y, radius, "local_tornado" if skill_name == "local_tornado" else "tornado", 20.0)
+                    setattr(tornado, 'duration', duration)
                     setattr(tornado, 'vx', random.uniform(-100.0, 100.0))
                     setattr(tornado, 'vy', random.uniform(-100.0, 100.0))
                     self.world.arena.hazards.append(tornado)
