@@ -7870,7 +7870,7 @@
     },
     {
       "id": "idea-456",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chain Lightning Modifier",
@@ -13088,6 +13088,23 @@
         "src/ai/ghost_booster.py",
         "src/ai/ghost_booster.gd",
         "tests/test_ghost_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-761",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Confusion Matrix",
+      "description": "Trickster's decoys now periodically swap positions with each other, further confusing enemies trying to track the real player.",
+      "allowed_paths": [
+        "src/ai/decoy_confusion_matrix.py",
+        "src/ai/decoy_confusion_matrix.gd",
+        "tests/test_decoy_confusion_matrix.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

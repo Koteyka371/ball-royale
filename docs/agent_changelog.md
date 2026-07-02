@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-456] Chain Lightning Modifier — *2026-07-02 22:24:40 UTC*
+
+A new weather event or arena modifier where any damage dealt to an entity has a chance to chain to nearby entities within a small radius, encouraging players to maintain spatial separation.
+
+---
+
 ## [idea-473] Decoy Mirror Positions — *2026-07-02 22:19:44 UTC*
 
 Trickster's 'deploy_decoy' skill now creates two decoys simultaneously that symmetrically orbit the caster or mirror the caster's movements, making it significantly harder for the AI to track the real Trickster.
