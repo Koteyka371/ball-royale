@@ -5992,6 +5992,291 @@ class FactoryMode extends GameMode:
 						b.x += c.direction_vector[0] * c.speed_magnitude * delta
 						b.y += c.direction_vector[1] * c.speed_magnitude * delta
 
+class HazardBilliardsMode extends GameMode:
+	func _init() -> void:
+		name = "Hazard Billiards"
+		description = "Every ball starts with a reflect shield and no standard attacks work. Players must push map hazards into each other to deal damage!"
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		for b in balls:
+			if typeof(b) == TYPE_DICTIONARY:
+				b["damage"] = 0.0
+				b["reflect_shield_active"] = true
+				b["reflect_shield_timer"] = 99999.0
+				b["reflect_shield_capacity"] = 99999.0
+				if not b.has("mutators"):
+					b["mutators"] = []
+				if not b["mutators"].has("hazard_billiards"):
+					b["mutators"].append("hazard_billiards")
+			else:
+				if "damage" in b: b.damage = 0.0
+				if b.has_method("set_meta"):
+					b.set_meta("reflect_shield_active", true)
+					b.set_meta("reflect_shield_timer", 99999.0)
+					b.set_meta("reflect_shield_capacity", 99999.0)
+
+					var mutators = b.get_meta("mutators") if b.has_meta("mutators") else []
+					if not mutators.has("hazard_billiards"):
+						mutators.append("hazard_billiards")
+					b.set_meta("mutators", mutators)
+				if "reflect_shield_active" in b: b.reflect_shield_active = true
+				if "reflect_shield_timer" in b: b.reflect_shield_timer = 99999.0
+				if "reflect_shield_capacity" in b: b.reflect_shield_capacity = 99999.0
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		for b in balls:
+			var alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.alive
+			if not alive: continue
+
+			if typeof(b) == TYPE_DICTIONARY:
+				b["reflect_shield_active"] = true
+				b["reflect_shield_timer"] = 99999.0
+				b["reflect_shield_capacity"] = 99999.0
+			else:
+				if b.has_method("set_meta"):
+					b.set_meta("reflect_shield_active", true)
+					b.set_meta("reflect_shield_timer", 99999.0)
+					b.set_meta("reflect_shield_capacity", 99999.0)
+				if "reflect_shield_active" in b: b.reflect_shield_active = true
+				if "reflect_shield_timer" in b: b.reflect_shield_timer = 99999.0
+				if "reflect_shield_capacity" in b: b.reflect_shield_capacity = 99999.0
+
+		var hazards = []
+		if "arena" in world and world.arena != null:
+			if "hazards" in world.arena:
+				hazards = world.arena.hazards
+
+		for i in range(hazards.size()):
+			var h1 = hazards[i]
+			var h1x = h1.get("x", 0.0) if typeof(h1) == TYPE_DICTIONARY else h1.x
+			var h1y = h1.get("y", 0.0) if typeof(h1) == TYPE_DICTIONARY else h1.y
+			var h1r = h1.get("radius", 10.0) if typeof(h1) == TYPE_DICTIONARY else h1.radius
+			var h1vx = h1.get("vx", 0.0) if typeof(h1) == TYPE_DICTIONARY else (h1.vx if "vx" in h1 else 0.0)
+			var h1vy = h1.get("vy", 0.0) if typeof(h1) == TYPE_DICTIONARY else (h1.vy if "vy" in h1 else 0.0)
+
+			for j in range(i + 1, hazards.size()):
+				var h2 = hazards[j]
+				var h2x = h2.get("x", 0.0) if typeof(h2) == TYPE_DICTIONARY else h2.x
+				var h2y = h2.get("y", 0.0) if typeof(h2) == TYPE_DICTIONARY else h2.y
+				var h2r = h2.get("radius", 10.0) if typeof(h2) == TYPE_DICTIONARY else h2.radius
+				var h2vx = h2.get("vx", 0.0) if typeof(h2) == TYPE_DICTIONARY else (h2.vx if "vx" in h2 else 0.0)
+				var h2vy = h2.get("vy", 0.0) if typeof(h2) == TYPE_DICTIONARY else (h2.vy if "vy" in h2 else 0.0)
+
+				var dx = h2x - h1x
+				var dy = h2y - h1y
+				var dist = sqrt(dx * dx + dy * dy)
+
+				if dist < h1r + h2r and dist > 0.0001:
+					var overlap = (h1r + h2r) - dist
+					var nx = dx / dist
+					var ny = dy / dist
+
+					var new_h1x = h1x - nx * (overlap / 2.0)
+					var new_h1y = h1y - ny * (overlap / 2.0)
+					var new_h2x = h2x + nx * (overlap / 2.0)
+					var new_h2y = h2y + ny * (overlap / 2.0)
+
+					if typeof(h1) == TYPE_DICTIONARY:
+						h1["x"] = new_h1x
+						h1["y"] = new_h1y
+					else:
+						h1.x = new_h1x
+						h1.y = new_h1y
+
+					if typeof(h2) == TYPE_DICTIONARY:
+						h2["x"] = new_h2x
+						h2["y"] = new_h2y
+					else:
+						h2.x = new_h2x
+						h2.y = new_h2y
+
+					var p = 2.0 * (h1vx * nx + h1vy * ny - h2vx * nx - h2vy * ny) / 2.0
+					var new_h1vx = h1vx - p * nx
+					var new_h1vy = h1vy - p * ny
+					var new_h2vx = h2vx + p * nx
+					var new_h2vy = h2vy + p * ny
+
+					if typeof(h1) == TYPE_DICTIONARY:
+						h1["vx"] = new_h1vx
+						h1["vy"] = new_h1vy
+					else:
+						if "vx" in h1: h1.vx = new_h1vx
+						elif h1.has_method("set"): h1.set("vx", new_h1vx)
+						if "vy" in h1: h1.vy = new_h1vy
+						elif h1.has_method("set"): h1.set("vy", new_h1vy)
+
+					if typeof(h2) == TYPE_DICTIONARY:
+						h2["vx"] = new_h2vx
+						h2["vy"] = new_h2vy
+					else:
+						if "vx" in h2: h2.vx = new_h2vx
+						elif h2.has_method("set"): h2.set("vx", new_h2vx)
+						if "vy" in h2: h2.vy = new_h2vy
+						elif h2.has_method("set"): h2.set("vy", new_h2vy)
+
+					var impact_speed = abs(p)
+					if impact_speed > 100.0:
+						for b in balls:
+							var alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.alive
+							if not alive: continue
+
+							var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x
+							var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.y
+
+							var bdx = bx - h1x
+							var bdy = by - h1y
+							var bdist = sqrt(bdx * bdx + bdy * bdy)
+
+							if bdist < h1r + h2r + 100.0:
+								if typeof(b) == TYPE_DICTIONARY:
+									b["reflect_shield_active"] = false
+								else:
+									if b.has_method("set_meta"): b.set_meta("reflect_shield_active", false)
+									if "reflect_shield_active" in b: b.reflect_shield_active = false
+
+								var damage = (impact_speed / 100.0) * 20.0
+								if typeof(b) == TYPE_DICTIONARY:
+									if b.has("hp"): b["hp"] -= damage
+								else:
+									if b.has_method("take_damage"): b.take_damage(damage)
+									elif "hp" in b: b.hp -= damage
+
+								if typeof(b) == TYPE_DICTIONARY:
+									b["reflect_shield_active"] = true
+								else:
+									if b.has_method("set_meta"): b.set_meta("reflect_shield_active", true)
+									if "reflect_shield_active" in b: b.reflect_shield_active = true
+
+								if world != null and world.has_method("add_event"):
+									world.add_event("explosion", {"x": h1x, "y": h1y, "radius": h1r + h2r + 100.0, "damage": damage})
+
+		for b in balls:
+			var alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.alive
+			if not alive: continue
+
+			var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x
+			var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.y
+			var br = b.get("radius", 10.0) if typeof(b) == TYPE_DICTIONARY else b.radius
+
+			var base_speed = b.get("base_speed", 200.0) if typeof(b) == TYPE_DICTIONARY else (b.base_speed if "base_speed" in b else 200.0)
+
+			for h in hazards:
+				var hx = h.get("x", 0.0) if typeof(h) == TYPE_DICTIONARY else h.x
+				var hy = h.get("y", 0.0) if typeof(h) == TYPE_DICTIONARY else h.y
+				var hr = h.get("radius", 10.0) if typeof(h) == TYPE_DICTIONARY else h.radius
+
+				var dx = hx - bx
+				var dy = hy - by
+				var dist = sqrt(dx * dx + dy * dy)
+
+				if dist < br + hr and dist > 0.0001:
+					var overlap = (br + hr) - dist
+					var nx = dx / dist
+					var ny = dy / dist
+
+					var new_hx = hx + nx * overlap
+					var new_hy = hy + ny * overlap
+
+					if typeof(h) == TYPE_DICTIONARY:
+						h["x"] = new_hx
+						h["y"] = new_hy
+					else:
+						h.x = new_hx
+						h.y = new_hy
+
+					var push_speed = base_speed
+					var h_vx = h.get("vx", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.vx if "vx" in h else 0.0)
+					var h_vy = h.get("vy", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.vy if "vy" in h else 0.0)
+
+					var new_vx = h_vx + nx * push_speed * delta * 5.0
+					var new_vy = h_vy + ny * push_speed * delta * 5.0
+
+					if typeof(h) == TYPE_DICTIONARY:
+						h["vx"] = new_vx
+						h["vy"] = new_vy
+					else:
+						if "vx" in h: h.vx = new_vx
+						elif h.has_method("set"): h.set("vx", new_vx)
+						if "vy" in h: h.vy = new_vy
+						elif h.has_method("set"): h.set("vy", new_vy)
+
+		for h in hazards:
+			var hvx = h.get("vx", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.vx if "vx" in h else 0.0)
+			var hvy = h.get("vy", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.vy if "vy" in h else 0.0)
+
+			if abs(hvx) > 0.1 or abs(hvy) > 0.1:
+				var hx = h.get("x", 0.0) if typeof(h) == TYPE_DICTIONARY else h.x
+				var hy = h.get("y", 0.0) if typeof(h) == TYPE_DICTIONARY else h.y
+
+				var new_hx = hx + hvx * delta
+				var new_hy = hy + hvy * delta
+
+				if typeof(h) == TYPE_DICTIONARY:
+					h["x"] = new_hx
+					h["y"] = new_hy
+					h["vx"] = hvx * 0.95
+					h["vy"] = hvy * 0.95
+				else:
+					h.x = new_hx
+					h.y = new_hy
+					if "vx" in h: h.vx = hvx * 0.95
+					elif h.has_method("set"): h.set("vx", hvx * 0.95)
+					if "vy" in h: h.vy = hvy * 0.95
+					elif h.has_method("set"): h.set("vy", hvy * 0.95)
+
+				var speed = sqrt(hvx * hvx + hvy * hvy)
+				if speed > 50.0:
+					for b in balls:
+						var alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.alive
+						if not alive: continue
+
+						var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x
+						var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.y
+						var br = b.get("radius", 10.0) if typeof(b) == TYPE_DICTIONARY else b.radius
+
+						var hr = h.get("radius", 10.0) if typeof(h) == TYPE_DICTIONARY else h.radius
+
+						var dx = bx - new_hx
+						var dy = by - new_hy
+						var dist = sqrt(dx * dx + dy * dy)
+
+						if dist < br + hr and dist > 0.0001:
+							var damage = (speed / 100.0) * 15.0
+
+							if typeof(b) == TYPE_DICTIONARY:
+								b["reflect_shield_active"] = false
+							else:
+								if b.has_method("set_meta"): b.set_meta("reflect_shield_active", false)
+								if "reflect_shield_active" in b: b.reflect_shield_active = false
+
+							if typeof(b) == TYPE_DICTIONARY:
+								if b.has("hp"): b["hp"] -= damage
+							else:
+								if b.has_method("take_damage"): b.take_damage(damage)
+								elif "hp" in b: b.hp -= damage
+
+							if typeof(b) == TYPE_DICTIONARY:
+								b["reflect_shield_active"] = true
+							else:
+								if b.has_method("set_meta"): b.set_meta("reflect_shield_active", true)
+								if "reflect_shield_active" in b: b.reflect_shield_active = true
+
+							var nx = dx / dist
+							var ny = dy / dist
+							var new_vx = hvx * -0.5
+							var new_vy = hvy * -0.5
+
+							if typeof(h) == TYPE_DICTIONARY:
+								h["vx"] = new_vx
+								h["vy"] = new_vy
+							else:
+								if "vx" in h: h.vx = new_vx
+								elif h.has_method("set"): h.set("vx", new_vx)
+								if "vy" in h: h.vy = new_vy
+								elif h.has_method("set"): h.set("vy", new_vy)
+
+
 var GAME_MODES = {
 
 
@@ -6051,5 +6336,6 @@ var GAME_MODES = {
 	"clone_chaos": CloneChaosMode.new(),
     "supernova": SupernovaMode.new(),
 	"echolocation": EcholocationMode.new(),
-	"body_swap": BodySwapMode.new()
+	"body_swap": BodySwapMode.new(),
+	"hazard_billiards": HazardBilliardsMode.new()
 }

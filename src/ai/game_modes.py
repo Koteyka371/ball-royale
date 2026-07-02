@@ -4842,6 +4842,182 @@ class FactoryMode(GameMode):
                         b.x = getattr(b, "x", 0) + c.direction_vector[0] * c.speed_magnitude * delta
                         b.y = getattr(b, "y", 0) + c.direction_vector[1] * c.speed_magnitude * delta
 
+class HazardBilliardsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Hazard Billiards"
+        self.description = "Every ball starts with a reflect shield and no standard attacks work. Players must push map hazards into each other to deal damage!"
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        for b in balls:
+            b.damage = 0.0
+            b.reflect_shield_active = True
+            b.reflect_shield_timer = 99999.0
+            b.reflect_shield_capacity = 99999.0
+
+            if not hasattr(b, "mutators"):
+                b.mutators = []
+            if "hazard_billiards" not in b.mutators:
+                b.mutators.append("hazard_billiards")
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        import math
+
+        # Keep reflect shield alive
+        for b in balls:
+            if not getattr(b, "alive", False): continue
+            b.reflect_shield_active = True
+            b.reflect_shield_timer = 99999.0
+            b.reflect_shield_capacity = 99999.0
+
+        if not hasattr(world, "arena") or not world.arena:
+            return
+
+        hazards = getattr(world.arena, "hazards", [])
+
+        # Hazard vs Hazard collisions
+        for i, h1 in enumerate(hazards):
+            h1x = getattr(h1, "x", 0)
+            h1y = getattr(h1, "y", 0)
+            h1r = getattr(h1, "radius", 10.0)
+            h1vx = getattr(h1, "vx", 0)
+            h1vy = getattr(h1, "vy", 0)
+
+            for j in range(i + 1, len(hazards)):
+                h2 = hazards[j]
+                h2x = getattr(h2, "x", 0)
+                h2y = getattr(h2, "y", 0)
+                h2r = getattr(h2, "radius", 10.0)
+                h2vx = getattr(h2, "vx", 0)
+                h2vy = getattr(h2, "vy", 0)
+
+                dx = h2x - h1x
+                dy = h2y - h1y
+                dist = math.hypot(dx, dy)
+
+                if dist < h1r + h2r and dist > 0.0001:
+                    # They collided. If they are moving fast enough, maybe cause an explosion or damage nearby balls?
+                    # For now, just elastic bounce.
+                    overlap = (h1r + h2r) - dist
+                    nx = dx / dist
+                    ny = dy / dist
+
+                    h1.x = h1x - nx * (overlap / 2)
+                    h1.y = h1y - ny * (overlap / 2)
+                    h2.x = h2x + nx * (overlap / 2)
+                    h2.y = h2y + ny * (overlap / 2)
+
+                    # Exchange velocity along normal
+                    p = 2 * (h1vx * nx + h1vy * ny - h2vx * nx - h2vy * ny) / 2
+
+                    setattr(h1, "vx", h1vx - p * nx)
+                    setattr(h1, "vy", h1vy - p * ny)
+                    setattr(h2, "vx", h2vx + p * nx)
+                    setattr(h2, "vy", h2vy + p * ny)
+
+                    # If high impact, explode and damage nearby balls
+                    impact_speed = abs(p)
+                    if impact_speed > 100.0:
+                        for b in balls:
+                            if not getattr(b, "alive", False): continue
+                            bdx = getattr(b, "x", 0) - h1x
+                            bdy = getattr(b, "y", 0) - h1y
+                            bdist = math.hypot(bdx, bdy)
+                            if bdist < h1r + h2r + 100.0:
+                                b.reflect_shield_active = False # bypass
+                                damage = (impact_speed / 100.0) * 20.0
+                                if hasattr(b, "take_damage"):
+                                    b.take_damage(damage)
+                                elif hasattr(b, "hp"):
+                                    b.hp -= damage
+                                b.reflect_shield_active = True
+
+                                # Add explosion event
+                                if hasattr(world, "add_event"):
+                                    world.add_event("explosion", {"x": h1x, "y": h1y, "radius": h1r + h2r + 100.0, "damage": damage})
+
+        # Ball pushes Hazard
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            bx = getattr(b, "x", 0)
+            by = getattr(b, "y", 0)
+            br = getattr(b, "radius", 10.0)
+
+            # Simple assumption: ball's previous position to infer velocity, or just use direction to hazard
+
+            for h in hazards:
+                hx = getattr(h, "x", 0)
+                hy = getattr(h, "y", 0)
+                hr = getattr(h, "radius", 10.0)
+
+                dx = hx - bx
+                dy = hy - by
+                dist = math.hypot(dx, dy)
+
+                if dist < br + hr and dist > 0.0001:
+                    # Ball pushes hazard
+                    overlap = (br + hr) - dist
+                    nx = dx / dist
+                    ny = dy / dist
+
+                    # Move hazard
+                    h.x = hx + nx * overlap
+                    h.y = hy + ny * overlap
+
+                    # Give hazard velocity (pushes it outward)
+                    # We can use ball's base_speed or a constant push speed
+                    push_speed = getattr(b, "base_speed", 200.0)
+                    setattr(h, "vx", getattr(h, "vx", 0) + nx * push_speed * delta * 5.0)
+                    setattr(h, "vy", getattr(h, "vy", 0) + ny * push_speed * delta * 5.0)
+
+        # Hazard movement and collision with balls
+        for h in hazards:
+            hvx = getattr(h, "vx", 0)
+            hvy = getattr(h, "vy", 0)
+
+            # Apply velocity
+            if abs(hvx) > 0.1 or abs(hvy) > 0.1:
+                h.x = getattr(h, "x", 0) + hvx * delta
+                h.y = getattr(h, "y", 0) + hvy * delta
+
+                # Friction
+                setattr(h, "vx", hvx * 0.95)
+                setattr(h, "vy", hvy * 0.95)
+
+                speed = math.hypot(hvx, hvy)
+                if speed > 50.0: # If hazard is moving fast enough
+                    for b in balls:
+                        if not getattr(b, "alive", False):
+                            continue
+
+                        dx = getattr(b, "x", 0) - getattr(h, "x", 0)
+                        dy = getattr(b, "y", 0) - getattr(h, "y", 0)
+                        dist = math.hypot(dx, dy)
+
+                        if dist < getattr(b, "radius", 10.0) + getattr(h, "radius", 10.0) and dist > 0.0001:
+                            # Fast moving hazard hits ball -> deal damage bypassing reflect shield!
+                            damage = (speed / 100.0) * 15.0
+
+                            # Temporarily remove reflect shield to deal damage
+                            b.reflect_shield_active = False
+
+                            if hasattr(b, "take_damage"):
+                                b.take_damage(damage)
+                            elif hasattr(b, "hp"):
+                                b.hp -= damage
+
+                            b.reflect_shield_active = True
+
+                            # Bounce hazard
+                            nx = dx / dist
+                            ny = dy / dist
+                            setattr(h, "vx", hvx * -0.5)
+                            setattr(h, "vy", hvy * -0.5)
+
+
 GAME_MODES = {
 
 
@@ -4900,7 +5076,8 @@ GAME_MODES = {
     "clone_chaos": CloneChaosMode(),
     "supernova": SupernovaMode(),
     "echolocation": EcholocationMode(),
-    "body_swap": BodySwapMode()
+    "body_swap": BodySwapMode(),
+    "hazard_billiards": HazardBilliardsMode()
 }
 
 try:
