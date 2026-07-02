@@ -7292,7 +7292,7 @@
     },
     {
       "id": "idea-422",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Escort the Payload Mode",
@@ -11607,6 +11607,176 @@
         "src/ai/gravity_inversion_booster.py",
         "src/ai/gravity_inversion_booster.gd",
         "tests/test_gravity_inversion_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-674",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Terrain interactions with elements",
+      "description": "When elemental attacks like elemental burst hit certain terrains (e.g. water puddles or ice), they trigger secondary effects such as extending the radius or freezing enemies.",
+      "allowed_paths": [
+        "src/ai/terrain_interactions_with_elements.py",
+        "src/ai/terrain_interactions_with_elements.gd",
+        "tests/test_terrain_interactions_with_elements.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-675",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Entanglement Link",
+      "description": "A new utility skill that connects two allied balls via quantum entanglement. When one takes damage, it's shared equally, but they both gain increased movement speed and stamina regeneration as long as they stay within a certain radius of each other.",
+      "allowed_paths": [
+        "src/ai/quantum_entanglement_link.py",
+        "src/ai/quantum_entanglement_link.gd",
+        "tests/test_quantum_entanglement_link.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-676",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Swap Ability",
+      "description": "An ability that allows the player to swap places with one of their active decoys, confusing enemies and escaping dangerous situations.",
+      "allowed_paths": [
+        "src/ai/decoy_swap_ability.py",
+        "src/ai/decoy_swap_ability.gd",
+        "tests/test_decoy_swap_ability.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-677",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Portal Relay Mode",
+      "description": "A mode where two pairs of interconnected portals periodically spawn and swap positions, allowing players to instantly traverse the map but also throwing unexpected hazards through the rifts.",
+      "allowed_paths": [
+        "src/ai/portal_relay.py",
+        "src/ai/portal_relay.gd",
+        "tests/test_portal_relay.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-678",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Overcharge Aura",
+      "description": "While a decoy is active, it emits an aura that grants slightly increased speed and stamina regeneration to allies within a certain radius, providing a buffing utility before it explodes or is destroyed.",
+      "allowed_paths": [
+        "src/ai/decoy_overcharge_aura.py",
+        "src/ai/decoy_overcharge_aura.gd",
+        "tests/test_decoy_overcharge_aura.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-679",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Floor Grid",
+      "description": "Instead of a smooth circular shrinking zone, the arena is made of hexagonal tiles that independently glow red and fall away, reducing the safe map area into fragmented islands that players must jump between.",
+      "allowed_paths": [
+        "src/ai/shrinking_floor_grid.py",
+        "src/ai/shrinking_floor_grid.gd",
+        "tests/test_shrinking_floor_grid.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-680",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Seismic Shockwave Modulator",
+      "description": "A deployable hazard that acts like a thumper from Dune. It periodically sends out a seismic pulse that temporarily disables enemy skills in a wide radius and draws aggro from neutral environmental entities like tornados.",
+      "allowed_paths": [
+        "src/ai/seismic_shockwave_modulator.py",
+        "src/ai/seismic_shockwave_modulator.gd",
+        "tests/test_seismic_shockwave_modulator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-681",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Explosive Decoys",
+      "description": "A new mutator where decoys explode upon expiration or death, dealing area-of-effect damage to nearby enemies.",
+      "allowed_paths": [
+        "src/ai/explosive_decoys.py",
+        "src/ai/explosive_decoys.gd",
+        "tests/test_explosive_decoys.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-682",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirror Image Decoys",
+      "description": "The deploy_decoy ability creates two decoys instead of one. The extra decoy behaves similarly but takes double damage. If both decoys explode simultaneously, their explosion radiuses combine for a massive blast.",
+      "allowed_paths": [
+        "src/ai/mirror_image_decoys.py",
+        "src/ai/mirror_image_decoys.gd",
+        "tests/test_mirror_image_decoys.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-683",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bumper Cars Mutator",
+      "description": "A physics-based mutator where collisions between balls deal minimal damage but apply massive knockback. The arena gradually shrinks towards a central spike pit, turning the game into a chaotic sumo-style knockout match where positioning is key.",
+      "allowed_paths": [
+        "src/ai/bumper_cars_mutator.py",
+        "src/ai/bumper_cars_mutator.gd",
+        "tests/test_bumper_cars_mutator.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
