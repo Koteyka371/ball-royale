@@ -354,7 +354,7 @@ class BattleRoyaleMode(GameMode):
             self.weather_timer += delta
             if self.weather_timer > 15.0:
                 self.weather_timer = 0.0
-                weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard"]
+                weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm"]
                 rnd = getattr(self, "random", __import__("random"))
                 old_weather = self.weather
                 self.weather = rnd.choice(weathers)
@@ -1432,7 +1432,7 @@ class WeatherChaosMode(GameMode):
             self.weather_timer += delta
             if self.weather_timer > 10.0:
                 self.weather_timer = 0.0
-                weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard"]
+                weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm"]
                 import random
                 rnd = getattr(self, "random", random)
                 old_weather = self.weather
@@ -1710,6 +1710,31 @@ class WeatherChaosMode(GameMode):
                     # Struck by lightning!
                     b.hp = getattr(b, "hp", 100) - 20
                 b.attack_accuracy = 0.5
+            elif self.weather == "magnetic_storm":
+                # Assign polarity if not present
+                if not hasattr(b, "polarity"):
+                    import random
+                    b.polarity = random.choice([1, -1])
+                b.cosmetic = "magnet_plus" if b.polarity == 1 else "magnet_minus"
+
+                # Magnetic forces
+                if hasattr(world, "balls"):
+                    for other in world.balls:
+                        if other != b and getattr(other, "alive", False) and hasattr(other, "polarity") and hasattr(b, "x") and hasattr(b, "y") and hasattr(other, "x") and hasattr(other, "y"):
+                            import math
+                            dx = other.x - b.x
+                            dy = other.y - b.y
+                            dist = math.sqrt(dx*dx + dy*dy)
+                            if 0 < dist < 300:
+                                force_mag = 500.0 / (dist + 10.0)
+                                if b.polarity != other.polarity:
+                                    # Attract
+                                    b.x += (dx/dist) * force_mag * delta
+                                    b.y += (dy/dist) * force_mag * delta
+                                else:
+                                    # Repel
+                                    b.x -= (dx/dist) * force_mag * delta
+                                    b.y -= (dy/dist) * force_mag * delta
             elif self.weather == "heatwave":
                 b.cosmetic = "sunglasses"
                 b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.7
