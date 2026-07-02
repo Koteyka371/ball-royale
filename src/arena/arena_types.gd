@@ -633,12 +633,25 @@ class DayNightArena extends ProceduralArena:
     var is_night = false
     var day_night_timer = 0.0
     var phase_duration = 10.0
+    var is_eclipse = false
+    var eclipse_timer = 0.0
+    var time_until_eclipse = 30.0
 
     func _init(size: float = 2000.0, seed_val = null):
         super(size, 5, seed_val)
+        if rng != null:
+            time_until_eclipse = rng.randf_range(20.0, 40.0)
+        else:
+            time_until_eclipse = randf_range(20.0, 40.0)
 
     func generate():
         super.generate()
+        is_eclipse = false
+        eclipse_timer = 0.0
+        if rng != null:
+            time_until_eclipse = rng.randf_range(20.0, 40.0)
+        else:
+            time_until_eclipse = randf_range(20.0, 40.0)
 
     func update_zone(current_tick: int, delta: float) -> void:
         super.update_zone(current_tick, delta)
@@ -646,6 +659,20 @@ class DayNightArena extends ProceduralArena:
         if day_night_timer >= phase_duration:
             day_night_timer = 0.0
             is_night = not is_night
+
+        if is_eclipse:
+            eclipse_timer -= delta
+            if eclipse_timer <= 0:
+                is_eclipse = false
+                if rng != null:
+                    time_until_eclipse = rng.randf_range(20.0, 40.0)
+                else:
+                    time_until_eclipse = randf_range(20.0, 40.0)
+        else:
+            time_until_eclipse -= delta
+            if time_until_eclipse <= 0:
+                is_eclipse = true
+                eclipse_timer = 10.0
 
 class ThickFogArena extends ProceduralArena:
 	var is_foggy = false

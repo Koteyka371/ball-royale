@@ -22,7 +22,9 @@ func scan() -> Dictionary:
         if "cosmetic" in self.ball and str(self.ball.cosmetic).to_lower().replace(" ", "_") == "night_vision_goggles":
             has_night_vision = true
 
-        if self.world.arena.is_night:
+        if "is_eclipse" in self.world.arena and self.world.arena.is_eclipse:
+            perception_radius = min(perception_radius, 20.0)
+        elif self.world.arena.is_night:
             if not has_night_vision:
                 perception_radius = min(perception_radius, 100.0)
         else:

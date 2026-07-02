@@ -1274,9 +1274,23 @@ class DayNightArena(ProceduralArena):
         self.is_night = False
         self.day_night_timer = 0.0
         self.phase_duration = 10.0
+        self.is_eclipse = False
+        self.eclipse_timer = 0.0
+        if hasattr(self, 'rng'):
+            self.time_until_eclipse = self.rng.uniform(20.0, 40.0)
+        else:
+            import random
+            self.time_until_eclipse = random.uniform(20.0, 40.0)
 
     def generate(self):
         super().generate()
+        self.is_eclipse = False
+        self.eclipse_timer = 0.0
+        if hasattr(self, 'rng'):
+            self.time_until_eclipse = self.rng.uniform(20.0, 40.0)
+        else:
+            import random
+            self.time_until_eclipse = random.uniform(20.0, 40.0)
 
     def update_zone(self, current_tick: int, delta: float):
         super().update_zone(current_tick, delta)
@@ -1284,6 +1298,21 @@ class DayNightArena(ProceduralArena):
         if self.day_night_timer >= self.phase_duration:
             self.day_night_timer = 0.0
             self.is_night = not self.is_night
+
+        if self.is_eclipse:
+            self.eclipse_timer -= delta
+            if self.eclipse_timer <= 0:
+                self.is_eclipse = False
+                if hasattr(self, 'rng'):
+                    self.time_until_eclipse = self.rng.uniform(20.0, 40.0)
+                else:
+                    import random
+                    self.time_until_eclipse = random.uniform(20.0, 40.0)
+        else:
+            self.time_until_eclipse -= delta
+            if self.time_until_eclipse <= 0:
+                self.is_eclipse = True
+                self.eclipse_timer = 10.0
 
 class ThickFogArena(ProceduralArena):
     def __init__(self, arena_size: float = 2000.0, seed: int | None = None):

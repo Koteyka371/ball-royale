@@ -43,7 +43,9 @@ class Perception:
             if str(getattr(self.ball, "cosmetic", "")).lower().replace(" ", "_") == "night_vision_goggles":
                 has_night_vision = True
 
-            if has_flare_vision:
+            if getattr(self.world.arena, "is_eclipse", False):
+                perception_radius = min(perception_radius, 20.0)
+            elif has_flare_vision:
                 perception_radius = max(perception_radius, 2000.0)
             elif self.world.arena.is_night:
                 if not has_night_vision:
