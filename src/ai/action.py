@@ -3665,30 +3665,33 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                 elif getattr(nearest, "kind", None) == "clone_booster":
                     import copy
+                    import math
                     if hasattr(self.world, "balls"):
-                        clone = copy.copy(self.ball)
-                        clone.id = getattr(self.world, "next_id", __import__('random').randint(10000, 99999))
-                        if hasattr(self.world, "next_id"):
-                            self.world.next_id += 1
+                        for i in range(3):
+                            clone = copy.copy(self.ball)
+                            clone.id = getattr(self.world, "next_id", __import__('random').randint(10000, 99999))
+                            if hasattr(self.world, "next_id"):
+                                self.world.next_id += 1
 
-                        clone.hp = getattr(self.ball, "max_hp", 100)
-                        clone.max_hp = clone.hp
-                        clone.damage = 0
-                        clone.speed = getattr(self.ball, "speed", 2.0)
-                        clone.owner_id = getattr(self.ball, "id", None)
-                        clone.is_decoy = True
-                        clone.decoy_timer = 5.0
-                        clone.skill_timer = 9999.0
-                        clone.attack_timer = 9999.0
-                        clone.SKILL = None
-                        clone.skill = None
-                        clone.active_skill = None
+                            clone.hp = getattr(self.ball, "max_hp", 100)
+                            clone.max_hp = clone.hp
+                            clone.damage = 0
+                            clone.speed = getattr(self.ball, "speed", 2.0)
+                            clone.owner_id = getattr(self.ball, "id", None)
+                            clone.is_decoy = True
+                            clone.decoy_timer = 5.0
+                            clone.skill_timer = 9999.0
+                            clone.attack_timer = 9999.0
+                            clone.SKILL = None
+                            clone.skill = None
+                            clone.active_skill = None
 
-                        # Add a small offset so they don't spawn exactly on top of each other
-                        clone.x += 10
-                        clone.y += 10
+                            # Distribute the 3 clones around the ball
+                            angle = i * (2 * math.pi / 3)
+                            clone.x += math.cos(angle) * 15
+                            clone.y += math.sin(angle) * 15
 
-                        self.world.balls.append(clone)
+                            self.world.balls.append(clone)
 
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
