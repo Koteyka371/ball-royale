@@ -506,6 +506,24 @@ class Action:
                 self.world.arena.hazards.append(p2)
                 self.ball.inventory.remove("portal_gun")
 
+        # Max HP draining hazard logic
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            for hazard in self.world.arena.hazards:
+                if getattr(hazard, "kind", "") == "vampiric_puddle":
+                    dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
+                    if dist <= getattr(hazard, "radius", 0.0) + getattr(self.ball, "radius", 10.0):
+                        # Shrink max HP by 5 per second
+                        drain_rate = getattr(hazard, "damage", 5.0)
+                        old_max = getattr(self.ball, "max_hp", 100.0)
+                        # We don't want max_hp to go below a certain threshold like 10
+                        new_max = max(10.0, old_max - drain_rate * delta)
+                        self.ball.max_hp = new_max
+                        if getattr(self.ball, "hp", 100.0) > new_max:
+                            self.ball.hp = new_max
+
+                        # Set a flag to easily revert or track if needed
+                        self.ball._vampiric_drained = True
+
         # Temporal rift logic to modify local delta
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for hazard in self.world.arena.hazards:

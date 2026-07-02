@@ -944,6 +944,29 @@ func execute(strategy: String, delta: float):
 				if "original_team" in self.ball:
 					self.ball.team = self.ball.original_team
 
+	# Max HP draining hazard logic
+	if world != null and "arena" in world and "hazards" in world.arena:
+		for hazard in world.arena.hazards:
+			if hazard.get("kind") == "vampiric_puddle":
+				var my_rad = 10.0
+				if "radius" in self.ball:
+					my_rad = float(self.ball.radius)
+				var dist = sqrt((self.ball.x - hazard.x) * (self.ball.x - hazard.x) + (self.ball.y - hazard.y) * (self.ball.y - hazard.y))
+				if dist <= hazard.get("radius", 0.0) + my_rad:
+					var drain_rate = hazard.get("damage", 5.0)
+					var old_max = self.ball.max_hp if "max_hp" in self.ball else 100.0
+					var new_max = max(10.0, old_max - drain_rate * delta)
+					if typeof(self.ball) == TYPE_DICTIONARY:
+						self.ball["max_hp"] = new_max
+						if self.ball.get("hp", 100.0) > new_max:
+							self.ball["hp"] = new_max
+						self.ball["_vampiric_drained"] = true
+					else:
+						self.ball.max_hp = new_max
+						if "hp" in self.ball and self.ball.hp > new_max:
+							self.ball.hp = new_max
+						self.ball.set_meta("_vampiric_drained", true)
+
 	# Temporal rift logic to modify local delta
 	if world != null and "arena" in world and "hazards" in world.arena:
 		for hazard in world.arena.hazards:
