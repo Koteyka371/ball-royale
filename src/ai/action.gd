@@ -261,17 +261,54 @@ func _attempt_damage(attacker, target) -> void:
 				if pm.is_nemesis(target_type, attacker_type):
 					base_xp *= 2.0
 			self._award_xp(attacker, base_xp, self.world)
-	if new_hp <= 0 and old_hp > 0 and pm != null and pm.has_method("add_kill"):
-		pm.add_kill(attacker_type, target_type)
-		if pm.is_nemesis(target_type, attacker_type):
-			if "kills" in attacker:
-				attacker.kills += 1
-			if "charge_level" in attacker:
-				attacker.charge_level = min(100.0, float(attacker.charge_level) + 20.0)
-			elif attacker.has_method("set_meta"):
-				var cl = 0.0
-				if attacker.has_meta("charge_level"): cl = float(attacker.get_meta("charge_level"))
-				attacker.set_meta("charge_level", min(100.0, cl + 20.0))
+	if new_hp <= 0 and old_hp > 0:
+		if pm != null and pm.has_method("add_kill"):
+			pm.add_kill(attacker_type, target_type)
+			if pm.is_nemesis(target_type, attacker_type):
+				if "kills" in attacker:
+					attacker.kills += 1
+				if "charge_level" in attacker:
+					attacker.charge_level = min(100.0, float(attacker.charge_level) + 20.0)
+				elif attacker.has_method("set_meta"):
+					var cl = 0.0
+					if attacker.has_meta("charge_level"): cl = float(attacker.get_meta("charge_level"))
+					attacker.set_meta("charge_level", min(100.0, cl + 20.0))
+
+		if "kills" in attacker:
+			attacker.kills += 1
+		elif attacker.has_method("set_meta"):
+			var kills = attacker.get_meta("kills") if attacker.has_meta("kills") else 0
+			attacker.set_meta("kills", kills + 1)
+
+		if "charge_level" in attacker:
+			attacker.charge_level = min(100.0, float(attacker.charge_level) + 20.0)
+		elif attacker.has_method("set_meta"):
+			var cl = 0.0
+			if attacker.has_meta("charge_level"): cl = float(attacker.get_meta("charge_level"))
+			attacker.set_meta("charge_level", min(100.0, cl + 20.0))
+
+		var sponsor = ""
+		if "sponsor" in attacker:
+			sponsor = attacker.sponsor
+		elif attacker.has_method("get_meta") and attacker.has_meta("sponsor"):
+			sponsor = attacker.get_meta("sponsor")
+
+		if sponsor == "aggressor":
+			if "damage" in attacker: attacker.damage *= 1.1
+			if "base_damage" in attacker: attacker.base_damage *= 1.1
+			elif attacker.has_method("set_meta") and attacker.has_meta("base_damage"):
+				attacker.set_meta("base_damage", float(attacker.get_meta("base_damage")) * 1.1)
+		elif sponsor == "vampiric":
+			var k = attacker.kills if "kills" in attacker else (attacker.get_meta("kills") if attacker.has_method("get_meta") and attacker.has_meta("kills") else 0)
+			if int(k) % 2 == 0:
+				var max_h = attacker.max_hp if "max_hp" in attacker else 100.0
+				if "hp" in attacker: attacker.hp = min(max_h, attacker.hp + 20)
+		elif sponsor == "juggernaut":
+			var k = attacker.kills if "kills" in attacker else (attacker.get_meta("kills") if attacker.has_method("get_meta") and attacker.has_meta("kills") else 0)
+			if int(k) % 3 == 0:
+				if "max_hp" in attacker:
+					attacker.max_hp *= 1.15
+					if "hp" in attacker: attacker.hp += attacker.max_hp * 0.15
 
 		var arena = world.call("get_arena") if world != null and world.has_method("get_arena") else null
 		if arena != null and "items" in arena:

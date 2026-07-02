@@ -183,11 +183,28 @@ class Action:
                     if pm.is_nemesis(target.ball_type, attacker.ball_type):
                         base_xp *= 2.0
                 self._award_xp(attacker, base_xp, self.world)
-        if new_hp <= 0 and old_hp > 0 and pm and hasattr(pm, "add_kill"):
-            pm.add_kill(attacker.ball_type, target.ball_type)
-            if pm.is_nemesis(target.ball_type, attacker.ball_type):
-                if hasattr(attacker, "kills"):
-                    attacker.kills += 1
+        if new_hp <= 0 and old_hp > 0:
+            if pm and hasattr(pm, "add_kill"):
+                pm.add_kill(attacker.ball_type, target.ball_type)
+                if pm.is_nemesis(target.ball_type, attacker.ball_type):
+                    if hasattr(attacker, "charge_level"):
+                        attacker.charge_level = min(100.0, getattr(attacker, "charge_level", 0.0) + 20.0)
+
+            if hasattr(attacker, "kills"):
+                attacker.kills += 1
+            else:
+                attacker.kills = 1
+
+            if hasattr(attacker, "sponsor"):
+                if attacker.sponsor == "aggressor":
+                    attacker.damage = getattr(attacker, "damage", 10.0) * 1.1
+                    if hasattr(attacker, "base_damage"):
+                        attacker.base_damage *= 1.1
+                elif attacker.sponsor == "vampiric" and getattr(attacker, "kills", 0) % 2 == 0:
+                    attacker.hp = min(getattr(attacker, "max_hp", 100.0), getattr(attacker, "hp", 100.0) + 20)
+                elif attacker.sponsor == "juggernaut" and getattr(attacker, "kills", 0) % 3 == 0:
+                    attacker.max_hp = getattr(attacker, "max_hp", 100.0) * 1.15
+                    attacker.hp = getattr(attacker, "hp", 100.0) + getattr(attacker, "max_hp", 100.0) * 0.15
                 if hasattr(attacker, "charge_level"):
                     attacker.charge_level = min(100.0, getattr(attacker, "charge_level", 0.0) + 20.0)
 
