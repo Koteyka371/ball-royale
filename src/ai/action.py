@@ -372,6 +372,33 @@ class Action:
                         self.ball.is_in_quicksand = True
                         break
 
+        # Magnet passive: pull boosters and smaller entities
+        if getattr(self.ball, "BALL_TYPE", "") == "magnet":
+            pull_radius = 150.0
+            pull_strength = 60.0
+            if hasattr(self.world, "boosters"):
+                for b in self.world.boosters:
+                    dx = self.ball.x - b.x
+                    dy = self.ball.y - b.y
+                    dist_sq = dx**2 + dy**2
+                    if dist_sq > 0 and dist_sq < pull_radius**2:
+                        dist = dist_sq**0.5
+                        b.x += (dx / dist) * pull_strength * delta
+                        b.y += (dy / dist) * pull_strength * delta
+
+            if hasattr(self.world, "balls"):
+                for other in self.world.balls:
+                    if other.id != self.ball.id and getattr(other, "radius", 10) < getattr(self.ball, "radius", 15):
+                        dx = self.ball.x - other.x
+                        dy = self.ball.y - other.y
+                        dist_sq = dx**2 + dy**2
+                        if dist_sq > 0 and dist_sq < pull_radius**2:
+                            dist = dist_sq**0.5
+                            if not hasattr(other, "vx"): other.vx = 0
+                            if not hasattr(other, "vy"): other.vy = 0
+                            other.vx += (dx / dist) * pull_strength * 2 * delta
+                            other.vy += (dy / dist) * pull_strength * 2 * delta
+
         if getattr(self.ball, "silence_timer", 0.0) > 0:
             self.ball.silence_timer -= delta
             if self.ball.silence_timer < 0:
@@ -4320,6 +4347,33 @@ class Action:
                         setattr(target_hazard, "duration", 10.0)
                         setattr(target_hazard, "owner_id", getattr(self.ball, "id", None))
                         self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
+            elif skill_name == "repel_burst":
+                self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 10.0)
+                push_radius = 200.0
+                push_force = 400.0
+                if hasattr(self.world, "boosters"):
+                    for b in self.world.boosters:
+                        dx = b.x - self.ball.x
+                        dy = b.y - self.ball.y
+                        dist_sq = dx**2 + dy**2
+                        if dist_sq > 0 and dist_sq < push_radius**2:
+                            dist = dist_sq**0.5
+                            b.x += (dx / dist) * 50
+                            b.y += (dy / dist) * 50
+                if hasattr(self.world, "balls"):
+                    for other in self.world.balls:
+                        if other.id != self.ball.id:
+                            dx = other.x - self.ball.x
+                            dy = other.y - self.ball.y
+                            dist_sq = dx**2 + dy**2
+                            if dist_sq > 0 and dist_sq < push_radius**2:
+                                dist = dist_sq**0.5
+                                if not hasattr(other, "vx"): other.vx = 0
+                                if not hasattr(other, "vy"): other.vy = 0
+                                other.vx += (dx / dist) * push_force
+                                other.vy += (dy / dist) * push_force
+                if hasattr(self, "_spawn_skill_particles"):
+                    self._spawn_skill_particles("repel_burst")
             elif skill_name == "stamina_dash":
                 self._spawn_skill_particles("dash")
                 stamina = getattr(self.ball, "stamina", 0.0)
