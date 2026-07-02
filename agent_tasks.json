@@ -7887,7 +7887,7 @@
     },
     {
       "id": "idea-457",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather Predictor Drone",
@@ -12782,6 +12782,23 @@
         "src/ai/specific_boss_monsters.py",
         "src/ai/specific_boss_monsters.gd",
         "tests/test_specific_boss_monsters.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-743",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Time Pickup",
+      "description": "An item that, when picked up, rewinds the player's position and health back to where they were 3 seconds ago, offering a get-out-of-jail-free card.",
+      "allowed_paths": [
+        "src/ai/reverse_time_pickup.py",
+        "src/ai/reverse_time_pickup.gd",
+        "tests/test_reverse_time_pickup.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
