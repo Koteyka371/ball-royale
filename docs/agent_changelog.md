@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-469] Reflective Energy Shields — *2026-07-02 18:35:18 UTC*
+
+A new skill where a ball can activate an energy shield that doesn't just absorb damage, but reflects 50% of the incoming damage back to the attacker as a projectile for 3 seconds. Adds a skill-testing timing element against high burst-damage enemies.
+
+---
+
 ## [idea-427] Mirror Match Game Mode — *2026-07-02 18:20:07 UTC*
 
 A new game mode where every ball starts with a reflect shield and no standard attacks work. Players must push map hazards or environmental objects into each other to deal damage, rewarding positional play and strategic bounces.

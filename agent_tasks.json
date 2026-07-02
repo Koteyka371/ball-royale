@@ -8091,7 +8091,7 @@
     },
     {
       "id": "idea-469",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Reflective Energy Shields",
@@ -12850,6 +12850,23 @@
         "src/ai/black_hole.py",
         "src/ai/black_hole.gd",
         "tests/test_black_hole.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-747",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Maps Arena",
+      "description": "An arena type where the physical map boundaries slowly shrink inwards over time, pushing all balls towards a centralized final showdown.",
+      "allowed_paths": [
+        "src/arena/shrinking_maps_arena.py",
+        "src/arena/shrinking_maps_arena.gd",
+        "tests/test_shrinking_maps_arena.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
