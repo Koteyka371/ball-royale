@@ -1,5 +1,7 @@
 extends RefCounted
 
+const InteractiveCrowdHazards = preload("res://src/arena/interactive_crowd_hazards.gd")
+
 var world
 var excitement_level = 0.0
 var max_excitement = 100.0
@@ -193,38 +195,4 @@ func _throw_buffs_if_needed(balls: Array, current_tick: int):
             excitement_level -= 10.0
 
 func _throw_hazards_if_bored(balls: Array, current_tick: int):
-    if excitement_level >= 20.0:
-        return
-
-    if randf() < 0.01:
-        var alive_balls = []
-        for b in balls:
-            if typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("alive") and b.get("ball_type") != "spectator":
-                alive_balls.append(b)
-            elif typeof(b) == TYPE_DICTIONARY and b.has("alive") and b["alive"] and b.get("ball_type") != "spectator":
-                alive_balls.append(b)
-
-        if alive_balls.is_empty():
-            return
-
-        var target_ball = alive_balls[randi() % alive_balls.size()]
-        var hazard_kinds = ["temporary_wall", "slow_field", "mini_bomb"]
-        var hazard_kind = hazard_kinds[randi() % hazard_kinds.size()]
-
-        if world != null and world.has_method("add_event"):
-            var b_x = 0.0
-            var b_y = 0.0
-            if typeof(target_ball) == TYPE_OBJECT and target_ball.has_method("get"):
-                b_x = float(target_ball.get("x")) if target_ball.get("x") != null else 0.0
-                b_y = float(target_ball.get("y")) if target_ball.get("y") != null else 0.0
-            elif typeof(target_ball) == TYPE_DICTIONARY:
-                b_x = float(target_ball.get("x", 0.0))
-                b_y = float(target_ball.get("y", 0.0))
-
-            world.add_event("spawn_hazard", {
-                "x": b_x + (randf() * 100.0 - 50.0),
-                "y": b_y + (randf() * 100.0 - 50.0),
-                "kind": hazard_kind
-            })
-            world.add_event("crowd_throw", {"message": "The crowd boos and throws a hazard into the arena!"})
-            excitement_level += 5.0
+    excitement_level = InteractiveCrowdHazards.process_boredom(excitement_level, balls, world)

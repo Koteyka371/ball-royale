@@ -108,22 +108,5 @@ class CrowdSystem:
                 self.excitement_level -= 10.0  # Consumes excitement
 
     def _throw_hazards_if_bored(self, balls: List[Any], tick: int):
-        if self.excitement_level >= 20.0:
-            return
-
-        if random.random() < 0.01:
-            alive_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator"]
-            if not alive_balls:
-                return
-
-            target_ball = random.choice(alive_balls)
-            hazard_kind = random.choice(["temporary_wall", "slow_field", "mini_bomb"])
-
-            if hasattr(self.world, 'add_event'):
-                self.world.add_event("spawn_hazard", {
-                    "x": getattr(target_ball, "x", 0) + random.uniform(-50, 50),
-                    "y": getattr(target_ball, "y", 0) + random.uniform(-50, 50),
-                    "kind": hazard_kind
-                })
-                self.world.add_event("crowd_throw", {"message": "The crowd boos and throws a hazard into the arena!"})
-                self.excitement_level += 5.0
+        from arena.interactive_crowd_hazards import InteractiveCrowdHazards
+        self.excitement_level = InteractiveCrowdHazards.process_boredom(self.excitement_level, balls, self.world)

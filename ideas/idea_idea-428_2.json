@@ -1,4 +1,4 @@
 {
-    "title": "Interactive Streamer Mode",
-    "description": "Integrate Twitch or similar platforms where actual viewers can type commands to throw specific hazards or power-ups into the arena, directly mapping real-world crowd interactions to the in-game crowd system."
+  "title": "Bounty Hunter Mode",
+  "description": "A new game mode where the player with the highest kill streak is marked as the 'Bounty'. Their position is constantly revealed to all players, but their stats are slightly boosted. Killing the Bounty grants significant bonus XP and a rare booster drop."
 }

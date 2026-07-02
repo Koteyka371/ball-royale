@@ -1,4 +1,4 @@
 {
-    "title": "Crowd Betting System",
-    "description": "Allow the crowd to place bets on which team or player will win. If the underdog wins, the crowd's excitement spikes significantly more, and the winning team gets a huge prestige bonus."
+  "title": "Dynamic Weather Mutator",
+  "description": "Introduce dynamic weather effects that periodically change during a match, such as 'Blizzard' (reduces base speed of all balls and decreases visibility range), 'Heatwave' (increases all cooldowns but increases max speed), and 'Thunderstorm' (randomly strikes the arena with temporary shock hazards)."
 }
