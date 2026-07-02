@@ -231,6 +231,7 @@ class BattleRoyaleMode(GameMode):
         self.is_dark_phase = False
         self.weather = "clear"
         self.weather_timer = 0.0
+        self.supply_drop_timer = 0.0
         import random
         self.random = random
 
@@ -270,6 +271,50 @@ class BattleRoyaleMode(GameMode):
             if getattr(b, "alive", False) and getattr(b, "weather_control_timer", 0.0) > 0:
                 controller = b
                 break
+
+        # Supply Drop Logic
+        self.supply_drop_timer += delta
+        if self.supply_drop_timer >= 15.0:
+            self.supply_drop_timer = 0.0
+            if hasattr(world, "boosters"):
+                arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+                arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+                rnd = getattr(self, "random", __import__("random"))
+
+                # Mock entity for booster
+                class Booster:
+                    def __init__(self, id, x, y, kind):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.kind = kind
+                        self.radius = 15.0
+                        self.ball_type = "booster"
+                        self.active = True
+
+                booster_kinds = ["speed_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "shadow_booster"]
+                chosen_kind = rnd.choice(booster_kinds)
+                b_id = 9000 + len(world.boosters) + rnd.randint(0, 1000)
+                b_x = rnd.uniform(100, arena_width - 100)
+                b_y = rnd.uniform(100, arena_height - 100)
+                new_booster = Booster(b_id, b_x, b_y, chosen_kind)
+                world.boosters.append(new_booster)
+
+                # Also add as a hazard for collision if needed
+                if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    class HazardBooster:
+                        def __init__(self, id, x, y, radius, kind, damage):
+                            self.id = id
+                            self.x = x
+                            self.y = y
+                            self.radius = radius
+                            self.kind = kind
+                            self.damage = damage
+                            self.active = True
+                    world.arena.hazards.append(HazardBooster(b_id, b_x, b_y, 15.0, chosen_kind, 0.0))
+
+                if hasattr(world, "add_event"):
+                    world.add_event("supply_drop", {"message": f"A {chosen_kind} supply drop has appeared!"})
 
         if controller:
             self.weather_timer = 0.0

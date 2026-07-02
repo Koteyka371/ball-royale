@@ -311,6 +311,8 @@ class BattleRoyaleMode extends GameMode:
     var is_dark_phase: bool = false
     var weather_timer: float = 0.0
     var weather: String = "clear"
+    var supply_drop_timer: float = 0.0
+    var rng = RandomNumberGenerator.new()
 
     func _init() -> void:
         name = "Battle Royale"
@@ -364,6 +366,49 @@ class BattleRoyaleMode extends GameMode:
                         b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
 
         dark_phase_timer += delta
+
+        supply_drop_timer += delta
+        if supply_drop_timer >= 15.0:
+            supply_drop_timer = 0.0
+            if "boosters" in world:
+                var arena_width = 1000
+                var arena_height = 1000
+                if "arena" in world and world.arena:
+                    if "width" in world.arena: arena_width = world.arena.width
+                    if "height" in world.arena: arena_height = world.arena.height
+
+                rng.randomize()
+                var booster_kinds = ["speed_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "shadow_booster"]
+                var chosen_kind = booster_kinds[rng.randi() % booster_kinds.size()]
+                var b_id = 9000 + world.boosters.size() + (rng.randi() % 1000)
+                var b_x = rng.randf_range(100, arena_width - 100)
+                var b_y = rng.randf_range(100, arena_height - 100)
+
+                var new_booster = {
+                    "id": b_id,
+                    "x": b_x,
+                    "y": b_y,
+                    "kind": chosen_kind,
+                    "radius": 15.0,
+                    "ball_type": "booster",
+                    "active": true
+                }
+                world.boosters.append(new_booster)
+
+                if "arena" in world and world.arena and "hazards" in world.arena:
+                    var h = {
+                        "id": b_id,
+                        "x": b_x,
+                        "y": b_y,
+                        "radius": 15.0,
+                        "kind": chosen_kind,
+                        "damage": 0.0,
+                        "active": true
+                    }
+                    world.arena.hazards.append(h)
+
+                if "add_event" in world and world.has_method("add_event"):
+                    world.add_event("supply_drop", {"message": "A " + chosen_kind + " supply drop has appeared!"})
 
         # Weather logic
         if not "weather_timer" in self:
