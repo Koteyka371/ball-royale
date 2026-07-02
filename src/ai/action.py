@@ -784,7 +784,7 @@ class Action:
                 pass # Fog has no friction effect, snow has speed change
             wind_dx = getattr(self.world.arena, "wind_dx", 0.0)
             wind_dy = getattr(self.world.arena, "wind_dy", 0.0)
-            if wind_dx != 0.0 or wind_dy != 0.0:
+            if (wind_dx != 0.0 or wind_dy != 0.0) and getattr(self.ball, "weight_booster_timer", 0.0) <= 0:
                 self.ball.x += wind_dx * delta
                 self.ball.y += wind_dy * delta
 
@@ -1552,7 +1552,7 @@ class Action:
                         if dist_sq < hazard.radius * hazard.radius:
                             self.ball.x += hazard.direction_vector[0] * hazard.speed_magnitude * delta
                             self.ball.y += hazard.direction_vector[1] * hazard.speed_magnitude * delta
-                    elif hazard.kind == "magnet":
+                    elif hazard.kind == "magnet" and getattr(self.ball, "weight_booster_timer", 0.0) <= 0:
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
                         dist_sq = dx * dx + dy * dy
@@ -1678,14 +1678,16 @@ class Action:
                                                 bdist = math.sqrt(bdist_sq)
                                                 bnx, bny = bdx / bdist, bdy / bdist
                                                 pull_strength = (hazard.radius * 2.0 / max(10.0, bdist)) * 80.0 * delta * lifetime_mult
-                                                b.x += bnx * pull_strength
-                                                b.y += bny * pull_strength
+                                                if getattr(b, "weight_booster_timer", 0.0) <= 0:
+                                                    b.x += bnx * pull_strength
+                                                    b.y += bny * pull_strength
                                                 if hazard.kind in ("tornado", "local_tornado"):
                                                     # Wind physics: tangential orbital pull
                                                     tx, ty = -bny, bnx
                                                     orbital_strength = pull_strength * 1.5
-                                                    b.x += tx * orbital_strength
-                                                    b.y += ty * orbital_strength
+                                                    if getattr(b, "weight_booster_timer", 0.0) <= 0:
+                                                        b.x += tx * orbital_strength
+                                                        b.y += ty * orbital_strength
 
                             # Pull boosters once per frame
                             if hazard.kind in ("black_hole", "tornado", "local_tornado") and hasattr(self.world, "boosters"):
@@ -1709,6 +1711,8 @@ class Action:
 
                         # Ball specific logic
                         if hazard.kind in ("black_hole", "tornado", "local_tornado"):
+                            if getattr(self.ball, "weight_booster_timer", 0.0) > 0:
+                                continue
                             dx = hazard.x - self.ball.x
                             dy = hazard.y - self.ball.y
                             dist_sq = dx * dx + dy * dy
@@ -3977,6 +3981,19 @@ class Action:
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
+                elif getattr(nearest, "kind", None) == "weight_booster":
+                    self.ball.weight_booster_timer = 15.0
+                    if not getattr(self.ball, "weight_booster_applied", False):
+                        if not hasattr(self.ball, "base_speed"):
+                            self.ball.base_speed = getattr(self.ball, "speed", 2.0)
+                        self.ball.base_speed *= 0.5
+                        self.ball.speed = self.ball.base_speed
+                        self.ball.weight_booster_applied = True
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "freeze_booster":
                     duration = getattr(nearest, "duration", 3.0)
                     if hasattr(self.world, "balls"):
@@ -5408,7 +5425,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "weight_booster"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math
@@ -5421,7 +5438,7 @@ class Action:
 
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for hazard in self.world.arena.hazards:
-                if getattr(hazard, "kind", "") == "pull_trap":
+                if getattr(hazard, "kind", "") == "pull_trap" and getattr(self.ball, "weight_booster_timer", 0.0) <= 0:
                     if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 10000: # 100 range to trigger the trap pull
@@ -5574,6 +5591,16 @@ class Action:
             self.ball.shadow_booster_timer -= delta
             if self.ball.shadow_booster_timer < 0:
                 self.ball.shadow_booster_timer = 0.0
+
+        if hasattr(self.ball, "weight_booster_timer") and self.ball.weight_booster_timer > 0:
+            self.ball.weight_booster_timer -= delta
+            if self.ball.weight_booster_timer <= 0:
+                self.ball.weight_booster_timer = 0.0
+                if getattr(self.ball, "weight_booster_applied", False):
+                    if hasattr(self.ball, "base_speed"):
+                        self.ball.base_speed *= 2.0
+                        self.ball.speed = self.ball.base_speed
+                    self.ball.weight_booster_applied = False
 
         if hasattr(self.ball, "vision_booster_timer") and self.ball.vision_booster_timer > 0:
             self.ball.vision_booster_timer -= delta

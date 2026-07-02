@@ -2413,6 +2413,8 @@ func execute(strategy: String, delta: float):
                             self.ball.y += ny * push_strength
                 elif hazard.kind == "gravity_well":
                     # Cosmetics: gravity anomaly already implemented
+                    if my_ball.get("weight_booster_timer", 0.0) > 0:
+                        continue
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
                     var dist_sq = dx * dx + dy * dy

@@ -263,7 +263,7 @@ func generate():
         elif kind == "link_booster":
             radius = 15.0
             damage = 0.0
-        elif kind == "stamina_booster" or kind == "weather_booster" or kind == "magnet_booster" or kind == "clone_booster" or kind == "invert_booster" or kind == "freeze_booster":
+        elif kind == "stamina_booster" or kind == "weather_booster" or kind == "magnet_booster" or kind == "clone_booster" or kind == "invert_booster" or kind == "freeze_booster" or kind == "weight_booster":
             radius = 15.0
             damage = 0.0
         elif kind == "stealth_zone":
