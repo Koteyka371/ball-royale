@@ -4635,6 +4635,9 @@ class Action:
                 self.ball.stamina = 0.0
                 dash_dist = max(100.0, stamina * 2.0)
                 enemies = self._get_enemies()
+
+                enemies_before = {id(e): getattr(e, "hp", 1.0) for e in enemies}
+
                 if enemies:
                     target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
                     dx = target.x - self.ball.x
@@ -4648,6 +4651,7 @@ class Action:
                     self.ball.x += math.cos(angle) * dash_dist
                     self.ball.y += math.sin(angle) * dash_dist
 
+                killed_enemy = False
                 for enemy in self._get_enemies():
                     if (enemy.x - self.ball.x)**2 + (enemy.y - self.ball.y)**2 < (getattr(self.ball, "radius", 10.0) + getattr(enemy, "radius", 10.0) + 20)**2:
                         dmg = getattr(self.ball, "damage", 10.0) * 3.0
@@ -4655,6 +4659,9 @@ class Action:
                             enemy.take_damage(dmg)
                         elif hasattr(enemy, "hp"):
                             enemy.hp -= dmg
+
+                        if getattr(enemy, "hp", 1.0) <= 0 and enemies_before.get(id(enemy), 1.0) > 0:
+                            killed_enemy = True
 
                         kb_dx = enemy.x - self.ball.x
                         kb_dy = enemy.y - self.ball.y
@@ -4664,12 +4671,19 @@ class Action:
                             enemy.x += (kb_dx / kb_dist) * kb_force
                             enemy.y += (kb_dy / kb_dist) * kb_force
 
+                if killed_enemy:
+                    self.ball.skill_timer = 0.0
+
             elif skill_name == "dash":
                 self._spawn_skill_particles("dash")
 
                 dash_range_mult = getattr(self.ball, "dash_range_mult", 1.0)
                 dash_dist = 100.0 * dash_range_mult
                 enemies = self._get_enemies()
+
+                # Keep track of enemies alive before dash using object ids or id()
+                enemies_before = {id(e): getattr(e, "hp", 1.0) for e in enemies}
+
                 if enemies:
                     target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
                     dx = target.x - self.ball.x
@@ -4682,6 +4696,32 @@ class Action:
                     angle = random.uniform(0, 2 * math.pi)
                     self.ball.x += math.cos(angle) * dash_dist
                     self.ball.y += math.sin(angle) * dash_dist
+
+                # Deal damage to enemies we pass through or land on
+                killed_enemy = False
+                for enemy in self._get_enemies():
+                    if (enemy.x - self.ball.x)**2 + (enemy.y - self.ball.y)**2 < (getattr(self.ball, "radius", 10.0) + getattr(enemy, "radius", 10.0) + 20)**2:
+                        dmg = getattr(self.ball, "damage", 10.0) * 2.0
+                        if hasattr(enemy, "take_damage"):
+                            enemy.take_damage(dmg)
+                        elif hasattr(enemy, "hp"):
+                            enemy.hp -= dmg
+
+                        # Check if enemy died
+                        if getattr(enemy, "hp", 1.0) <= 0 and enemies_before.get(id(enemy), 1.0) > 0:
+                            killed_enemy = True
+
+                        kb_dx = enemy.x - self.ball.x
+                        kb_dy = enemy.y - self.ball.y
+                        kb_dist = math.sqrt(kb_dx*kb_dx + kb_dy*kb_dy)
+                        if kb_dist > 0.0001:
+                            kb_force = 50.0
+                            enemy.x += (kb_dx / kb_dist) * kb_force
+                            enemy.y += (kb_dy / kb_dist) * kb_force
+
+                # Reset cooldown if an enemy was killed during the dash
+                if killed_enemy:
+                    self.ball.skill_timer = 0.0
 
 
             elif skill_name == "lightning_strike":

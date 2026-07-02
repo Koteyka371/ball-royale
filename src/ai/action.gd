@@ -7153,6 +7153,13 @@ func _use_skill():
 
             var dash_dist = max(100.0, st * 2.0)
             var enemies = _get_enemies()
+            var enemies_before = {}
+            for e in enemies:
+                if "hp" in e:
+                    enemies_before[e] = e.hp
+                elif e.has_method("has_meta") and e.has_meta("hp"):
+                    enemies_before[e] = e.get_meta("hp")
+
             if enemies.size() > 0:
                 var target = null
                 var min_dist_sq = INF
@@ -7172,6 +7179,7 @@ func _use_skill():
                 self.ball.x += cos(angle) * dash_dist
                 self.ball.y += sin(angle) * dash_dist
 
+            var killed_enemy = false
             for e in _get_enemies():
                 var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
                 var my_radius = 10.0
@@ -7188,8 +7196,22 @@ func _use_skill():
 
                     if e.has_method("take_damage"):
                         e.take_damage(dmg)
-                    elif "hp" in e:
-                        e.hp -= dmg
+                    else:
+                        var e_hp = 1.0
+                        if "hp" in e: e_hp = e.hp
+                        elif e.has_method("has_meta") and e.has_meta("hp"): e_hp = e.get_meta("hp")
+
+                        var new_hp = e_hp - dmg
+                        if "hp" in e:
+                            e.hp = new_hp
+                        elif e.has_method("set_meta"):
+                            e.set_meta("hp", new_hp)
+
+                    var check_hp = 1.0
+                    if "hp" in e: check_hp = e.hp
+                    elif e.has_method("has_meta") and e.has_meta("hp"): check_hp = e.get_meta("hp")
+                    if check_hp <= 0 and enemies_before.has(e) and enemies_before[e] > 0:
+                        killed_enemy = true
 
                     var kb_dx = e.x - self.ball.x
                     var kb_dy = e.y - self.ball.y
@@ -7199,6 +7221,12 @@ func _use_skill():
                         e.x += (kb_dx / kb_dist) * kb_force
                         e.y += (kb_dy / kb_dist) * kb_force
 
+            if killed_enemy:
+                if "skill_timer" in self.ball:
+                    self.ball.skill_timer = 0.0
+                elif self.ball.has_method("set_meta"):
+                    self.ball.set_meta("skill_timer", 0.0)
+
         elif skill_name == "dash":
             _spawn_skill_particles("dash")
             var dash_range_mult = 1.0
@@ -7207,6 +7235,13 @@ func _use_skill():
             var dash_dist = 100.0 * dash_range_mult
 
             var enemies = _get_enemies()
+            var enemies_before = {}
+            for e in enemies:
+                if "hp" in e:
+                    enemies_before[e] = e.hp
+                elif e.has_method("has_meta") and e.has_meta("hp"):
+                    enemies_before[e] = e.get_meta("hp")
+
             if enemies.size() > 0:
                 var target = null
                 var min_dist_sq = INF
@@ -7225,6 +7260,54 @@ func _use_skill():
                 var angle = randf() * PI * 2.0
                 self.ball.x += cos(angle) * dash_dist
                 self.ball.y += sin(angle) * dash_dist
+
+            var killed_enemy = false
+            for e in _get_enemies():
+                var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                var my_radius = 10.0
+                if "radius" in self.ball: my_radius = self.ball.radius
+                elif self.ball.has_method("has_meta") and self.ball.has_meta("radius"): my_radius = self.ball.get_meta("radius")
+                var e_radius = 10.0
+                if "radius" in e: e_radius = e.radius
+                elif e.has_method("has_meta") and e.has_meta("radius"): e_radius = e.get_meta("radius")
+
+                if dist_sq < pow(my_radius + e_radius + 20.0, 2):
+                    var dmg = 20.0
+                    if "damage" in self.ball: dmg = self.ball.damage * 2.0
+                    elif self.ball.has_method("has_meta") and self.ball.has_meta("damage"): dmg = self.ball.get_meta("damage") * 2.0
+
+                    if e.has_method("take_damage"):
+                        e.take_damage(dmg)
+                    else:
+                        var e_hp = 1.0
+                        if "hp" in e: e_hp = e.hp
+                        elif e.has_method("has_meta") and e.has_meta("hp"): e_hp = e.get_meta("hp")
+
+                        var new_hp = e_hp - dmg
+                        if "hp" in e:
+                            e.hp = new_hp
+                        elif e.has_method("set_meta"):
+                            e.set_meta("hp", new_hp)
+
+                    var check_hp = 1.0
+                    if "hp" in e: check_hp = e.hp
+                    elif e.has_method("has_meta") and e.has_meta("hp"): check_hp = e.get_meta("hp")
+                    if check_hp <= 0 and enemies_before.has(e) and enemies_before[e] > 0:
+                        killed_enemy = true
+
+                    var kb_dx = e.x - self.ball.x
+                    var kb_dy = e.y - self.ball.y
+                    var kb_dist = sqrt(pow(kb_dx, 2) + pow(kb_dy, 2))
+                    if kb_dist > 0.0001:
+                        var kb_force = 50.0
+                        e.x += (kb_dx / kb_dist) * kb_force
+                        e.y += (kb_dy / kb_dist) * kb_force
+
+            if killed_enemy:
+                if "skill_timer" in self.ball:
+                    self.ball.skill_timer = 0.0
+                elif self.ball.has_method("set_meta"):
+                    self.ball.set_meta("skill_timer", 0.0)
 
 
         elif skill_name == "lightning_strike":
