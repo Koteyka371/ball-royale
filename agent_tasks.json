@@ -6627,7 +6627,7 @@
     },
     {
       "id": "idea-383",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather-Specific Minions",
@@ -12646,6 +12646,108 @@
         "src/ai/meteor_shower.py",
         "src/ai/meteor_shower.gd",
         "tests/test_meteor_shower.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-735",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weapon Drop Mode",
+      "description": "Players start without any attacks. Weapons randomly drop around the map, and players must collect them to deal damage.",
+      "allowed_paths": [
+        "src/ai/weapon_drop.py",
+        "src/ai/weapon_drop.gd",
+        "tests/test_weapon_drop.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-736",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chant-driven Boosters",
+      "description": "If a team's chant lasts for a consecutive amount of time due to high excitement and dominance, players on that team get a temporary 'Adrenaline' buff boosting their speed.",
+      "allowed_paths": [
+        "src/ai/chant_driven_boosters.py",
+        "src/ai/chant_driven_boosters.gd",
+        "tests/test_chant_driven_boosters.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-737",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Entanglement Booster",
+      "description": "An item that pairs the collector with the closest enemy. Any damage taken by either ball is shared between both, creating new strategic dilemmas.",
+      "allowed_paths": [
+        "src/ai/quantum_entanglement_booster.py",
+        "src/ai/quantum_entanglement_booster.gd",
+        "tests/test_quantum_entanglement_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-738",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Interactive Crowd Signs",
+      "description": "Spectators (crowd) can hold up dynamic virtual signs (using UI text popups around the arena edges) supporting specific balls, and these signs get larger if that ball is performing well.",
+      "allowed_paths": [
+        "src/ai/interactive_crowd_signs.py",
+        "src/ai/interactive_crowd_signs.gd",
+        "tests/test_interactive_crowd_signs.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-739",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bumper Car Arena Mode",
+      "description": "A game mode where balls deal zero direct damage. Instead, balls bounce off each other with massively increased knockback, and the only way to eliminate opponents is to push them into outer hazard zones.",
+      "allowed_paths": [
+        "src/arena/bumper_car_arena.py",
+        "src/arena/bumper_car_arena.gd",
+        "tests/test_bumper_car_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-740",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Invisible Walls Arena",
+      "description": "The arena contains several invisible walls that only become temporarily visible when a player or attack collides with them.",
+      "allowed_paths": [
+        "src/arena/invisible_walls_arena.py",
+        "src/arena/invisible_walls_arena.gd",
+        "tests/test_invisible_walls_arena.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

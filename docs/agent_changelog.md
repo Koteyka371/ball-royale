@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-383] Weather-Specific Minions — *2026-07-02 17:14:39 UTC*
+
+Add new entity types or minions that only spawn during specific weather conditions, providing dynamic environmental challenges.
+
+---
+
 ## [idea-445] Dynamic Crowd Chants — *2026-07-02 16:46:08 UTC*
 
 Add specific text-based or audio-based crowd chants depending on the leading team, recognizing dominant strategies or unique ball types (e.g. chanting 'Assassin! Assassin!' when a stealth ball goes on a killing spree).
