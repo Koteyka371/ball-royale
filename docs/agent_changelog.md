@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-460] Adrenaline Rush Mode — *2026-07-02 16:46:00 UTC*
+
+A new gamemode where maximum stamina dictates base speed. Everyone starts with 200 max stamina but taking damage permanently reduces maximum stamina for the rest of the round.
+
+---
+
 ## [idea-443] Magnetize Weather Event — *2026-07-02 15:33:14 UTC*
 
 Introduce a 'magnetic storm' weather event that randomly assigns positive or negative polarities to balls. Balls with opposite polarities are slowly pulled towards each other, while balls with the same polarity are pushed apart, disrupting formations and forcing repositioning.
