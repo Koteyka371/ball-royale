@@ -4370,68 +4370,6 @@ class BodySwapMode(GameMode):
                     if hasattr(world, "add_event"):
                         world.add_event("body_swap", {"type": "body_swap", "message": "Body Swap! Players swap places!"})
 
-GAME_MODES = {
-
-    "geometric_zone": GeometricZoneMode(),
-    "mirror_walls": MirrorWallsMode(),
-    "zero_gravity": ZeroGravityMode(),
-    "magnetic_collisions": MagneticCollisionsMode(),
-    "day_night_mode": DayNightMode(),
-    "shifting_maze": ShiftingMazeMode(),
-
-    "blackout": BlackoutMode(),
-    "windstorm": WindstormMode(),
-    "modifier_zones": ModifierZonesMode(),
-    "modifier_zones_safe_zone": ModifierZonesSafeZoneMode(),
-    "draft_royale": DraftRoyaleMode(),
-    "dual_payload": DualPayloadMode(),
-    "tug_of_war": TugOfWarMode(),
-    "escort": EscortMode(),
-    "tournament": TournamentMode(),
-    "bumper_balls": BumperBallsMode(),
-    "pinball": PinballMode(),
-    "portal_node": PortalNodeMode(),
-    "memory_traps": MemoryTrapsMode(),
-    "pitch_black": PitchBlackMode(),
-    "vision_reduced": VisionReducedMode(),
-    "emp_burst": EMPBurstMode(),
-    "dynamic_hazards": DynamicHazardsMode(),
-    "custom_match": CustomMatchMode(),
-    "reverse_event": ReverseEventMode(),
-    "weather_chaos": WeatherChaosMode(),
-    "domination": DominationMode(),
-    "black_hole": BlackHoleMode(),
-    "gravity_well": GravityWellMode(),
-    "king_of_the_hill": KingOfTheHillMode(),
-    "moving_zone": MovingZoneMode(),
-    "vampire_royale": VampireRoyaleMode(),
-    "battle_royale": BattleRoyaleMode(),
-    "team_deathmatch": TeamDeathmatchMode(),
-    "zombie_infection": ZombieInfectionMode(),
-    "boss_fight": BossFightMode(),
-    "vip_defense": VIPDefenseMode(),
-    "survival": SurvivalMode(),
-    "toxic_environment": ToxicEnvironmentMode(),
-    "capture_the_flag": CaptureTheFlagMode(),
-    "evolutionary_simulation": EvolutionarySimulationMode(),
-    "shrinking_danger_zone": ShrinkingDangerZoneMode(),
-    "safe_zone": SafeZoneMode(),
-    "moving_safe_zone": MovingSafeZoneMode(),
-    "bounty_hunt": BountyHuntMode(),
-    "earthquake": EarthquakeMode(),
-    "mirror_match": MirrorMatchMode(),
-    "clone_chaos": CloneChaosMode(),
-    "supernova": SupernovaMode(),
-    "echolocation": EcholocationMode(),
-    "body_swap": BodySwapMode()
-}
-
-try:
-    from ai.interactive_training import InteractiveTrainingMode
-    GAME_MODES["interactive_training"] = InteractiveTrainingMode()
-except ImportError:
-    pass
-
 class TugOfWarMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -4555,3 +4493,66 @@ class TugOfWarMode(GameMode):
                 return "Draw"
 
         return None
+
+
+GAME_MODES = {
+
+    "geometric_zone": GeometricZoneMode(),
+    "mirror_walls": MirrorWallsMode(),
+    "zero_gravity": ZeroGravityMode(),
+    "magnetic_collisions": MagneticCollisionsMode(),
+    "day_night_mode": DayNightMode(),
+    "shifting_maze": ShiftingMazeMode(),
+
+    "blackout": BlackoutMode(),
+    "windstorm": WindstormMode(),
+    "modifier_zones": ModifierZonesMode(),
+    "modifier_zones_safe_zone": ModifierZonesSafeZoneMode(),
+    "draft_royale": DraftRoyaleMode(),
+    "dual_payload": DualPayloadMode(),
+    "tug_of_war": TugOfWarMode(),
+    "escort": EscortMode(),
+    "tournament": TournamentMode(),
+    "bumper_balls": BumperBallsMode(),
+    "pinball": PinballMode(),
+    "portal_node": PortalNodeMode(),
+    "memory_traps": MemoryTrapsMode(),
+    "pitch_black": PitchBlackMode(),
+    "vision_reduced": VisionReducedMode(),
+    "emp_burst": EMPBurstMode(),
+    "dynamic_hazards": DynamicHazardsMode(),
+    "custom_match": CustomMatchMode(),
+    "reverse_event": ReverseEventMode(),
+    "weather_chaos": WeatherChaosMode(),
+    "domination": DominationMode(),
+    "black_hole": BlackHoleMode(),
+    "gravity_well": GravityWellMode(),
+    "king_of_the_hill": KingOfTheHillMode(),
+    "moving_zone": MovingZoneMode(),
+    "vampire_royale": VampireRoyaleMode(),
+    "battle_royale": BattleRoyaleMode(),
+    "team_deathmatch": TeamDeathmatchMode(),
+    "zombie_infection": ZombieInfectionMode(),
+    "boss_fight": BossFightMode(),
+    "vip_defense": VIPDefenseMode(),
+    "survival": SurvivalMode(),
+    "toxic_environment": ToxicEnvironmentMode(),
+    "capture_the_flag": CaptureTheFlagMode(),
+    "evolutionary_simulation": EvolutionarySimulationMode(),
+    "shrinking_danger_zone": ShrinkingDangerZoneMode(),
+    "safe_zone": SafeZoneMode(),
+    "moving_safe_zone": MovingSafeZoneMode(),
+    "bounty_hunt": BountyHuntMode(),
+    "earthquake": EarthquakeMode(),
+    "mirror_match": MirrorMatchMode(),
+    "clone_chaos": CloneChaosMode(),
+    "supernova": SupernovaMode(),
+    "echolocation": EcholocationMode(),
+    "body_swap": BodySwapMode()
+}
+
+try:
+    from ai.interactive_training import InteractiveTrainingMode
+    GAME_MODES["interactive_training"] = InteractiveTrainingMode()
+except ImportError:
+    pass
