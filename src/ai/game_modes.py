@@ -4160,6 +4160,13 @@ class MagneticCollisionsMode(GameMode):
         self.name = "Magnetic Collisions"
         self.description = "Collisions pull entities together instead of pushing them apart, creating chaotic clusters of balls that can be targeted by AoE attacks."
 
+
+class StaminaRegenMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Stamina Regen modifier"
+        self.description = "A game mode modifier where stamina regenerates twice as fast, allowing more frequent use of stamina-based skills."
+
 class ZeroGravityMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -4594,6 +4601,7 @@ GAME_MODES = {
 
     "geometric_zone": GeometricZoneMode(),
     "mirror_walls": MirrorWallsMode(),
+    "stamina_regen": StaminaRegenMode(),
     "zero_gravity": ZeroGravityMode(),
     "magnetic_collisions": MagneticCollisionsMode(),
     "day_night_mode": DayNightMode(),
