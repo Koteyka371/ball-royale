@@ -2207,14 +2207,14 @@ func execute(strategy: String, delta: float):
                             var pull_strength = (hazard.radius * 2.0 / min_dist) * 50.0 * delta
                             self.ball.x += nx * pull_strength
                             self.ball.y += ny * pull_strength
-                elif hazard.kind in ["black_hole", "tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm"]:
+                elif hazard.kind in ["black_hole", "tornado", "local_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm"]:
                     var current_tick = 0
                     if "tick" in self.world:
                         current_tick = self.world.tick
                     if not hazard.has_meta("last_updated_tick") or hazard.get_meta("last_updated_tick") != current_tick:
                         hazard.set_meta("last_updated_tick", current_tick)
                         if not hazard.has_meta("vx"):
-                            if hazard.kind in ["tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm"]:
+                            if hazard.kind in ["tornado", "local_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm"]:
                                 hazard.set_meta("vx", randf_range(-100.0, 100.0))
                                 hazard.set_meta("vy", randf_range(-100.0, 100.0))
                             else:
@@ -2232,7 +2232,7 @@ func execute(strategy: String, delta: float):
                         if hazard.y < 100 or hazard.y > self.world.arena.height - 100:
                             hazard.set_meta("vy", -hvy)
 
-                        if hazard.kind in ["black_hole", "tornado"] and "boosters" in self.world:
+                        if hazard.kind in ["black_hole", "tornado", "local_tornado"] and "boosters" in self.world:
                             for b in self.world.boosters:
                                 var bdx = hazard.x - b.x
                                 var bdy = hazard.y - b.y
@@ -2250,8 +2250,14 @@ func execute(strategy: String, delta: float):
                                     var bpull_strength = (hazard.radius * 2.0 / bmin_dist) * 50.0 * delta * lifetime_mult
                                     b.x += bnx * bpull_strength
                                     b.y += bny * bpull_strength
+                                    if hazard.kind in ["tornado", "local_tornado"]:
+                                        var tx = -bny
+                                        var ty = bnx
+                                        var orbital_strength = bpull_strength * 1.5
+                                        b.x += tx * orbital_strength
+                                        b.y += ty * orbital_strength
 
-                    if hazard.kind in ["black_hole", "tornado"]:
+                    if hazard.kind in ["black_hole", "tornado", "local_tornado"]:
                         var dx = hazard.x - self.ball.x
                         var dy = hazard.y - self.ball.y
                         var dist_sq = dx * dx + dy * dy
@@ -2268,6 +2274,12 @@ func execute(strategy: String, delta: float):
                             var pull_strength = (hazard.radius * 2.0 / min_dist) * 50.0 * delta * lifetime_mult
                             self.ball.x += nx * pull_strength
                             self.ball.y += ny * pull_strength
+                            if hazard.kind in ["tornado", "local_tornado"]:
+                                var tx = -ny
+                                var ty = nx
+                                var orbital_strength = pull_strength * 1.5
+                                self.ball.x += tx * orbital_strength
+                                self.ball.y += ty * orbital_strength
 
         if "hazards" in self.world.arena:
             var alive_hazards = []
@@ -2749,13 +2761,20 @@ func execute(strategy: String, delta: float):
                             self.ball.attack_timer += delta * (1.0 - speed_mult)
                         if "skill_timer" in self.ball and self.ball.skill_timer > 0:
                             self.ball.skill_timer += delta * (1.0 - speed_mult)
-                    elif hazard.kind == "tornado":
+                    elif hazard.kind in ["tornado", "local_tornado"]:
                         var dx = hazard.x - self.ball.x
                         var dy = hazard.y - self.ball.y
                         var md = max(0.1, dist)
                         var pull_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 200.0 * delta
-                        self.ball.x += (dx / md) * pull_strength
-                        self.ball.y += (dy / md) * pull_strength
+                        var nx = dx / md
+                        var ny = dy / md
+                        self.ball.x += nx * pull_strength
+                        self.ball.y += ny * pull_strength
+                        var tx = -ny
+                        var ty = nx
+                        var orbital_strength = pull_strength * 1.5
+                        self.ball.x += tx * orbital_strength
+                        self.ball.y += ty * orbital_strength
 
                         if dist < hazard.radius * 0.5:
                             if "vx" in self.ball: self.ball.vx = 0
@@ -6677,12 +6696,15 @@ func _use_skill():
                     if mag > 0.0001:
                         self.ball.x += (out_x/mag) * 80.0
                         self.ball.y += (out_y/mag) * 80.0
-        elif skill_name == "tornado_skill":
+        elif skill_name == "tornado_skill" or skill_name == "local_tornado":
             if "arena" in self.world and "hazards" in self.world.arena:
                 var trap_id = self.world.arena.hazards.size() + (randi() % 9000 + 1000)
                 var ProceduralArena = load("res://src/arena/procedural_arena.gd")
-                var tornado = ProceduralArena.Hazard.new(trap_id, self.ball.x, self.ball.y, 40.0, "tornado", 20.0)
-                tornado.set_meta("duration", 5.0)
+                var radius = 80.0 if skill_name == "local_tornado" else 40.0
+                var duration = 8.0 if skill_name == "local_tornado" else 5.0
+                var kind = "local_tornado" if skill_name == "local_tornado" else "tornado"
+                var tornado = ProceduralArena.Hazard.new(trap_id, self.ball.x, self.ball.y, radius, kind, 20.0)
+                tornado.set_meta("duration", duration)
                 tornado.set_meta("vx", randf_range(-100.0, 100.0))
                 tornado.set_meta("vy", randf_range(-100.0, 100.0))
                 self.world.arena.hazards.append(tornado)
