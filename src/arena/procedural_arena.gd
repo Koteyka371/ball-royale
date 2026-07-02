@@ -275,6 +275,9 @@ func generate():
         elif kind == "lightning_storm":
             radius = rng.randf_range(30.0, 60.0)
             damage = 0.0
+        elif kind == "tether_trap":
+            radius = rng.randf_range(50.0, 100.0)
+            damage = 0.0
         elif kind == "stamina_drain_zone":
             radius = rng.randf_range(40.0, 80.0)
             damage = 0.0

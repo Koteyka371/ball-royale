@@ -1849,6 +1849,7 @@ class Action:
                         elif hazard.kind == "poison_nova":
                             dx = self.ball.x - hazard.x
                             dy = self.ball.y - hazard.y
+                            import math
                             dist = math.hypot(dx, dy)
                             nova_thickness = 40.0
                             if hazard.radius - nova_thickness <= dist <= hazard.radius + nova_thickness:
@@ -1868,6 +1869,7 @@ class Action:
                         elif hazard.kind == "fire_ring":
                             dx = self.ball.x - hazard.x
                             dy = self.ball.y - hazard.y
+                            import math
                             dist = math.hypot(dx, dy)
                             ring_thickness = 30.0
                             if hazard.radius - ring_thickness <= dist <= hazard.radius + ring_thickness:
@@ -1906,6 +1908,7 @@ class Action:
                             dx = self.ball.x - hazard.x
                             dy = self.ball.y - hazard.y
                             # Need math
+                            import math
                             dist = math.hypot(dx, dy)
                             if dist > 0.0001:
                                 nx = dx / dist
@@ -2123,6 +2126,7 @@ class Action:
                             # Clamp position manually
                             dx = self.ball.x - hazard.x
                             dy = self.ball.y - hazard.y
+                            import math
                             dist = math.hypot(dx, dy)
                             if dist < (self.ball.radius + hazard.radius) and dist > 0:
                                 nx, ny = dx / dist, dy / dist
@@ -2138,6 +2142,7 @@ class Action:
                         elif hazard.kind == "bounce_pad":
                             dx = self.ball.x - hazard.x
                             dy = self.ball.y - hazard.y
+                            import math
                             dist = math.hypot(dx, dy)
                             if dist < (self.ball.radius + hazard.radius) and dist > 0.0001:
                                 nx, ny = dx / dist, dy / dist
@@ -2225,6 +2230,25 @@ class Action:
                                 self.ball.hp += heal_amount
                                 if self.ball.hp > self.ball.max_hp:
                                     self.ball.hp = self.ball.max_hp
+                            continue
+                        elif hazard.kind == "tether_trap":
+                            dx = hazard.x - self.ball.x
+                            dy = hazard.y - self.ball.y
+                            import math
+                            dist = math.hypot(dx, dy)
+                            if dist < 10.0:
+                                self.ball.hp = 0.0
+                                self.ball.alive = False
+                            else:
+                                pull_speed = getattr(hazard, "pull_speed", 100.0)
+                                self.ball.x += (dx / dist) * pull_speed * delta
+                                self.ball.y += (dy / dist) * pull_speed * delta
+
+                            # Bump to break it
+                            if hasattr(hazard, "hp"):
+                                hazard.hp -= getattr(self.ball, "damage", 10.0) * delta * 5.0
+                                if hazard.hp <= 0:
+                                    hazard.active = False
                             continue
                         elif hazard.kind == "stamina_drain_zone":
                             # Drain stamina when standing inside
@@ -5446,7 +5470,8 @@ class Action:
                 import math as _math
                 dx = target.x - self.ball.x
                 dy = target.y - self.ball.y
-                dist = _math.hypot(dx, dy)
+                import math
+                dist = math.hypot(dx, dy)
                 if dist > 0:
                     tether_speed = getattr(self.ball, "speed", 2.0) * 3.0
                     if not hasattr(self.ball, "vx"): self.ball.vx = 0

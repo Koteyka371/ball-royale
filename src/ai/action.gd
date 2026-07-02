@@ -3224,6 +3224,43 @@ func execute(strategy: String, delta: float):
                             if self.ball.hp > self.ball.max_hp:
                                 self.ball.hp = self.ball.max_hp
                         continue
+                    elif hazard.kind == "tether_trap":
+                        var dx = hazard.x - self.ball.x
+                        var dy = hazard.y - self.ball.y
+                        var dist = sqrt(dx * dx + dy * dy)
+                        if dist < 10.0:
+                            if "hp" in self.ball:
+                                self.ball.hp = 0.0
+                            if "alive" in self.ball:
+                                self.ball.alive = false
+                        elif dist > 0.0001:
+                            var pull_speed = 100.0
+                            if hazard.has_method("has_meta") and hazard.has_meta("pull_speed"):
+                                pull_speed = hazard.get_meta("pull_speed")
+                            elif "pull_speed" in hazard:
+                                pull_speed = hazard.pull_speed
+                            self.ball.x += (dx / dist) * pull_speed * delta
+                            self.ball.y += (dy / dist) * pull_speed * delta
+
+                        # bump to break it
+                        var b_dmg = 10.0
+                        if "damage" in self.ball:
+                            b_dmg = self.ball.damage
+                        if hazard.has_method("has_meta") and hazard.has_meta("hp"):
+                            var new_hp = hazard.get_meta("hp") - b_dmg * delta * 5.0
+                            hazard.set_meta("hp", new_hp)
+                            if new_hp <= 0:
+                                if "active" in hazard:
+                                    hazard.active = false
+                                if hazard.has_method("set_meta"):
+                                    hazard.set_meta("active", false)
+                        elif "hp" in hazard:
+                            hazard.hp -= b_dmg * delta * 5.0
+                            if hazard.hp <= 0:
+                                hazard.active = false
+                                if hazard.has_method("set_meta"):
+                                    hazard.set_meta("active", false)
+                        continue
                     elif hazard.kind == "stamina_drain_zone":
                         if "stamina" in self.ball:
                             var stam = self.ball.stamina
