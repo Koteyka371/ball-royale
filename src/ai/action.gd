@@ -2534,6 +2534,21 @@ func execute(strategy: String, delta: float):
                             is_qs = self.ball.is_in_quicksand
                         if is_qs:
                             hd *= 2.0
+
+                        var shielded = false
+                        for dome in arena.hazards:
+                            if dome.kind == "orbital_shield_dome":
+                                var dist = sqrt((self.ball.x - dome.x)*(self.ball.x - dome.x) + (self.ball.y - dome.y)*(self.ball.y - dome.y))
+                                var r = 300.0
+                                if "radius" in dome:
+                                    r = dome.radius
+                                if dist <= r:
+                                    shielded = true
+                                    break
+
+                        if shielded:
+                            hd *= 0.1
+
                         if self.ball.has_method("take_damage"):
                             self.ball.take_damage(hd)
                         elif "hp" in self.ball:
@@ -2569,6 +2584,21 @@ func execute(strategy: String, delta: float):
                             is_qs = self.ball.is_in_quicksand
                         if is_qs:
                             hd *= 2.0
+
+                        var shielded = false
+                        for dome in arena.hazards:
+                            if dome.kind == "orbital_shield_dome":
+                                var dist = sqrt((self.ball.x - dome.x)*(self.ball.x - dome.x) + (self.ball.y - dome.y)*(self.ball.y - dome.y))
+                                var r = 300.0
+                                if "radius" in dome:
+                                    r = dome.radius
+                                if dist <= r:
+                                    shielded = true
+                                    break
+
+                        if shielded:
+                            hd *= 0.1
+
                         if self.ball.has_method("take_damage"):
                             self.ball.take_damage(hd)
                         elif "hp" in self.ball:
@@ -7322,6 +7352,20 @@ func _use_skill():
                 self.ball.skill_timer = self.ball.skill_cooldown
             else:
                 self.ball.skill_timer = 5.0
+
+        elif skill_name == "orbital_shield":
+            var trap_id = len(arena.hazards) + (randi() % 9000 + 1000)
+
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("orbital_shield_active", true)
+                self.ball.set_meta("orbital_shield_timer", 10.0)
+            else:
+                self.ball.orbital_shield_active = true
+                self.ball.orbital_shield_timer = 10.0
+
+            var dome = ProceduralArenaScript.Hazard.new(trap_id, self.ball.x, self.ball.y, 300.0, "orbital_shield_dome", 0.0)
+            dome.set_meta("duration", 10.0)
+            arena.hazards.append(dome)
 
         elif skill_name == "target_strong":
             var enemies = _get_enemies()
