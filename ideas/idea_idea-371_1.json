@@ -1,0 +1,4 @@
+{
+  "title": "Shrinking Safe Zone Modifiers",
+  "description": "The shrinking safe zone can apply randomly selected modifiers to balls outside of it instead of just damage, like slowly draining stamina, reversing controls, or forcing constant bouncing."
+}
