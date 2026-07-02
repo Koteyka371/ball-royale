@@ -1,12 +1,9 @@
-1.  **Add `invert_booster` to Procedural Generation**
-    *   Update `src/arena/procedural_arena.py` and `src/arena/procedural_arena.gd` to include `invert_booster` in random hazard selection.
-    *   Update `src/arena/test_procedural_arena.py` to allow the new `invert_booster`.
-2.  **Add Booster Collection Logic in Python (`src/ai/action.py`)**
-    *   In `_update_skill_timer`, decrement `invert_timer`.
-    *   In `_collect_booster`, when collecting an `invert_booster`, find all balls on the opposing team and set their `invert_timer` to 5.0 seconds. Remove the collected booster from the arena hazards and boosters list.
-    *   In movement logic (`_chase`, `_flee`, `_escort`, `_hide_behind`, `_group_attack`, etc., wherever `step = speed * delta * 60.0` or similar is calculated for direct movement), check if `invert_timer > 0`. If so, negate `step` (`step = -step`).
-3.  **Add Booster Collection Logic in GDScript (`src/ai/action.gd`)**
-    *   Replicate the Python logic in `action.gd`. Decrement `invert_timer`, apply to enemies on collection, and invert `step` in movement functions.
-4.  **Complete pre-commit steps to ensure proper testing, verification, review, and reflection are done.**
-5.  **Submit changes**
-    *   Commit changes and submit PR for `idea-395`.
+1. **Understand Task**: Create hazards that slowly shrink the safe playable area over time, similar to a battle royale zone. This logic exists in game_modes but not generically inside the procedural generation.
+2. **Analysis**: We've modified `procedural_arena.py` and `procedural_arena.gd` to include a new hazard type `shrinking_zone` that uses `randf_range`/`random.uniform` to set initial radius, min radius, and shrink rate.
+3. **Execution**: We added `shrinking_zone` into the generation table, and handled its ticking properly inside both python and gdscript.
+4. **Interaction**: We updated `action.py` and `action.gd` to process damage if players are outside of the `shrinking_zone`'s current radius. (Similar to Battle Royale logic).
+5. **Testing**: We patched `test_procedural_arena.py` to include `shrinking_zone` in the hardcoded assertions of test passes.
+6. **IDEAS INBOX**: We successfully implemented the two required files `idea_idea-418_1.json` and `idea_idea-418_2.json`.
+7. **Verification**: `PYTHONPATH=src pytest` passes, meaning python tests are green. Godot scripts have been updated symmetrically.
+8. **Pre-commit**: Complete pre-commit steps to ensure proper testing, verification, review, and reflection are done.
+9. **Submission**: Submit via the `submit` tool to the origin repository on the branch `idea-418`.

@@ -120,7 +120,7 @@ class ProceduralArena:
         # Generate hazards
         num_hazards = self.num_rooms * 2
         for i in range(num_hazards):
-            kind = random.choice(["spikes", "lava", "fake_booster", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "lightning_storm", "hidden_trap", "silence_booster", "switch", "magnet", "quicksand", "magnet_booster", "breakable_wall", "portal_gun_item", "wormhole", "clone_booster", "stealth_zone", "invert_booster"])
+            kind = random.choice(["spikes", "lava", "fake_booster", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "lightning_storm", "hidden_trap", "silence_booster", "switch", "magnet", "quicksand", "magnet_booster", "breakable_wall", "portal_gun_item", "wormhole", "clone_booster", "stealth_zone", "invert_booster", "shrinking_zone"])
             if kind == "switch":
                 radius = 20.0
                 damage = 0.0
@@ -154,6 +154,9 @@ class ProceduralArena:
             elif kind == "stealth_zone":
                 radius = random.uniform(40.0, 80.0)
                 damage = 0.0
+            elif kind == "shrinking_zone":
+                radius = random.uniform(100.0, 200.0)
+                damage = 15.0
             elif kind == "breakable_wall":
                 radius = random.uniform(30.0, 60.0)
                 damage = 0.0
@@ -219,6 +222,9 @@ class ProceduralArena:
                 new_hazard.time_scale = random.choice([0.5, 1.5, 2.0])
             elif kind == "magnet":
                 setattr(new_hazard, "polarity", random.choice([1, -1]))
+            elif kind == "shrinking_zone":
+                setattr(new_hazard, "shrink_rate", random.uniform(2.0, 10.0))
+                setattr(new_hazard, "min_radius", random.uniform(20.0, 50.0))
             self.hazards.append(new_hazard)
 
         # Generate guaranteed paired portals
@@ -504,6 +510,13 @@ class ProceduralArena:
                         else:
                             shrink_rate = getattr(h, "shrink_rate", 50.0)
                             h.radius = max(0.0, h.radius - shrink_rate * delta)
+                elif getattr(h, "kind", "") == "shrinking_zone":
+                    shrink_rate = getattr(h, "shrink_rate", 5.0)
+                    min_radius = getattr(h, "min_radius", 20.0)
+                    if h.radius > min_radius:
+                        h.radius -= shrink_rate * delta
+                        if h.radius < min_radius:
+                            h.radius = min_radius
                 elif getattr(h, "kind", "") == "orbital_strike_active":
                     if hasattr(h, "duration"):
                         h.duration -= delta
@@ -627,6 +640,9 @@ class ProceduralArena:
                 elif random.random() < 0.10:
                     kind = "sinkhole"
                     damage = 5.0
+                elif random.random() < 0.10:
+                    kind = "shrinking_zone"
+                    damage = 15.0
                 else:
                     if is_temporal_rift:
                         kind = "temporal_rift"

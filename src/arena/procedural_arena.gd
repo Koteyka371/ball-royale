@@ -185,8 +185,10 @@ func generate():
             kind = "tornado"
         elif r < 0.999:
             kind = "lightning_storm"
-        elif r < 0.9995:
+        elif r < 0.9990:
             kind = "stealth_zone"
+        elif r < 0.9995:
+            kind = "shrinking_zone"
         else:
             kind = "switch"
 
@@ -209,6 +211,14 @@ func generate():
             damage = 0.0
             var new_hazard = ProceduralArena.Hazard.new(i, spawn_pt[0], spawn_pt[1], radius, kind, damage)
             new_hazard.set_meta("polarity", 1 if rng.randf() > 0.5 else -1)
+            hazards.append(new_hazard)
+            continue
+        elif kind == "shrinking_zone":
+            radius = rng.randf_range(100.0, 200.0)
+            damage = 15.0
+            var new_hazard = ProceduralArena.Hazard.new(i, spawn_pt[0], spawn_pt[1], radius, kind, damage)
+            new_hazard.set_meta("shrink_rate", randf_range(2.0, 10.0))
+            new_hazard.set_meta("min_radius", randf_range(20.0, 50.0))
             hazards.append(new_hazard)
             continue
 
@@ -262,6 +272,9 @@ func generate():
         elif kind == "stealth_zone":
             radius = randf_range(40.0, 80.0)
             damage = 0.0
+        elif kind == "shrinking_zone":
+            radius = randf_range(100.0, 200.0)
+            damage = 15.0
         elif kind == "tornado":
             radius = rng.randf_range(30.0, 60.0)
             damage = 15.0
@@ -504,6 +517,24 @@ func update_zone(current_tick: int, delta: float) -> void:
                         h.kind = "orbital_strike_active"
                         h.set_meta("duration", 0.5)
                         h.damage = 1000.0
+            elif "kind" in h and h.kind == "shrinking_zone":
+                var shrink_rate = 5.0
+                var min_radius = 20.0
+                if h.has_meta("shrink_rate"): shrink_rate = h.get_meta("shrink_rate")
+                if h.has_meta("min_radius"): min_radius = h.get_meta("min_radius")
+                if h.radius > min_radius:
+                    h.radius -= shrink_rate * delta
+                    if h.radius < min_radius:
+                        h.radius = min_radius
+            elif "kind" in h and h.kind == "shrinking_zone":
+                var shrink_rate = 5.0
+                var min_radius = 20.0
+                if h.has_meta("shrink_rate"): shrink_rate = h.get_meta("shrink_rate")
+                if h.has_meta("min_radius"): min_radius = h.get_meta("min_radius")
+                if h.radius > min_radius:
+                    h.radius -= shrink_rate * delta
+                    if h.radius < min_radius:
+                        h.radius = min_radius
             elif "kind" in h and h.kind == "lightning_strike":
                 if h.has_meta("duration"):
                     var dur = h.get_meta("duration") - delta
