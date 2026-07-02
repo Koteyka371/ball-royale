@@ -6454,13 +6454,25 @@ func _collect_booster(delta: float):
                         self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "stamina_booster":
                 var max_stam = 100.0
+                var current_stam = 0.0
                 if self.ball.has_method("get_meta") and self.ball.has_meta("max_stamina"): max_stam = self.ball.get_meta("max_stamina")
                 elif "max_stamina" in self.ball: max_stam = self.ball.max_stamina
 
+                if self.ball.has_method("get_meta") and self.ball.has_meta("stamina"): current_stam = self.ball.get_meta("stamina")
+                elif "stamina" in self.ball: current_stam = self.ball.stamina
+
                 if self.ball.has_method("set_meta"):
+                    if current_stam >= max_stam:
+                        var cur_speed = 0.0
+                        if self.ball.has_meta("speed_boost_timer"): cur_speed = self.ball.get_meta("speed_boost_timer")
+                        self.ball.set_meta("speed_boost_timer", cur_speed + 3.0)
                     self.ball.set_meta("stamina", max_stam)
                     self.ball.set_meta("infinite_stamina_timer", 5.0)
                 else:
+                    if current_stam >= max_stam:
+                        var cur_speed = 0.0
+                        if "speed_boost_timer" in self.ball: cur_speed = self.ball.speed_boost_timer
+                        self.ball.speed_boost_timer = cur_speed + 3.0
                     self.ball.stamina = max_stam
                     self.ball.infinite_stamina_timer = 5.0
 
