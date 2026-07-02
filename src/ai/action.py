@@ -889,6 +889,10 @@ class Action:
             self.ball.speed = self.ball.base_speed
             self.ball.damage = getattr(self.ball, "base_damage", 10.0)
 
+        # Apply global eclipse effect across all strategies early in the tick
+        if hasattr(self.world, "arena") and getattr(self.world.arena, "is_eclipse", False):
+            self.ball.damage = getattr(self.ball, "damage", 10.0) * 2.0
+
         stamina = getattr(self.ball, "stamina", 100.0)
         max_stamina = getattr(self.ball, "max_stamina", 100.0)
         is_exhausted = getattr(self.ball, "is_exhausted", False)
@@ -5517,6 +5521,17 @@ class Action:
                     self.ball.damage = base_d * day_multiplier * 1.2
                 else:
                     self.ball.damage = base_d * day_multiplier
+            # Check for global eclipse inside the not is_dashing block so it isn't overwritten later
+            if hasattr(self.world, "arena") and getattr(self.world.arena, "is_eclipse", False):
+                self.ball.damage = getattr(self.ball, "damage", base_d) * 2.0
+
+
+
+
+
+
+
+
 
         # Necromancer minion speed synergy
         if getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower() == 'necromancer':

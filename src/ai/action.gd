@@ -1437,6 +1437,11 @@ func execute(strategy: String, delta: float):
             if "damage" in my_ball:
                 my_ball.damage = my_ball.get_meta("base_damage")
 
+        # Apply global eclipse effect across all strategies early in the tick
+        if self.world != null and "arena" in self.world and "is_eclipse" in self.world.arena and self.world.arena.is_eclipse:
+            if "damage" in my_ball:
+                my_ball.damage *= 2.0
+
         var cur_stamina = 100.0
         if my_ball.has_meta("stamina"): cur_stamina = my_ball.get_meta("stamina")
         var cur_max_stamina = 100.0
