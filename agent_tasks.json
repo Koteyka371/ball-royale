@@ -6695,7 +6695,7 @@
     },
     {
       "id": "idea-387",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Magnetic Grapple",
@@ -12219,6 +12219,40 @@
         "src/ai/gravity_boots.py",
         "src/ai/gravity_boots.gd",
         "tests/test_gravity_boots.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-710",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Zone Tracking Missiles",
+      "description": "Add a new booster that fires homing missiles towards the safe zone center, damaging enemies clustered there.",
+      "allowed_paths": [
+        "src/ai/zone_tracking_missiles.py",
+        "src/ai/zone_tracking_missiles.gd",
+        "tests/test_zone_tracking_missiles.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-711",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Blackout Weather Event",
+      "description": "Add a periodic blackout event where the arena is fully dark, and balls rely purely on short-range vision.",
+      "allowed_paths": [
+        "src/ai/blackout.py",
+        "src/ai/blackout.gd",
+        "tests/test_blackout.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

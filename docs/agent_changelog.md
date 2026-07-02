@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-387] Magnetic Grapple — *2026-07-02 13:40:26 UTC*
+
+An ability that allows the player or AI ball to shoot a magnetic tether at an enemy, pulling themselves quickly towards the target to close the gap for melee attacks.
+
+---
+
 ## [idea-426] Supply Drops in Moving Safe Zone — *2026-07-02 13:30:29 UTC*
 
 Periodically spawn high-value supply drops (boosters, healing springs, strong weapons) slightly outside or on the edge of the moving safe zone, forcing players to risk taking damage for a chance at powerful gear to dominate late game.
