@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-432] Reverse Controls Event — *2026-07-02 12:54:12 UTC*
+
+Periodically swap player controls to add confusion.
+
+---
+
 ## [idea-358] Tornado Skill — *2026-07-02 12:54:08 UTC*
 
 A new skill that creates a local tornado hazard that pulls nearby balls towards it and applies wind physics.
