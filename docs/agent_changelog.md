@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-455] Magnetic Boots Item — *2026-07-02 16:46:04 UTC*
+
+An item that temporarily increases a ball's friction and weight, making them immune to external displacement forces like wind, earthquakes, and gravity wells, at the cost of reduced movement speed.
+
+---
+
 ## [idea-460] Adrenaline Rush Mode — *2026-07-02 16:46:00 UTC*
 
 A new gamemode where maximum stamina dictates base speed. Everyone starts with 200 max stamina but taking damage permanently reduces maximum stamina for the rest of the round.
