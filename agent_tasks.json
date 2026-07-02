@@ -7564,7 +7564,7 @@
     },
     {
       "id": "idea-438",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Minefield Event",
@@ -12509,6 +12509,23 @@
         "src/ai/teleporting_dash.py",
         "src/ai/teleporting_dash.gd",
         "tests/test_teleporting_dash.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-727",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Skill Re-roll Item",
+      "description": "A rare booster item that drops occasionally which randomly re-rolls the ball's current unique skill for another one until the end of the round.",
+      "allowed_paths": [
+        "src/ai/skill_re_roll_item.py",
+        "src/ai/skill_re_roll_item.gd",
+        "tests/test_skill_re_roll_item.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
