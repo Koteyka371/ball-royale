@@ -5962,6 +5962,19 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "reverse_gravity_booster":
+                if "reverse_gravity_booster_timer" in self.ball:
+                    self.ball.reverse_gravity_booster_timer = 5.0
+                else:
+                    self.ball.set_meta("reverse_gravity_booster_timer", 5.0)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var h_idx = self.world.arena.hazards.find(nearest)
+                    if h_idx >= 0:
+                        self.world.arena.hazards.remove_at(h_idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx >= 0:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "decoy_item":
                 var decoy = null
                 if typeof(self.ball) == TYPE_DICTIONARY:
@@ -7909,7 +7922,7 @@ func _use_skill():
                     elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
                     elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
 
-                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster"]:
+                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "reverse_gravity_booster"]:
                         var hx = 0.0
                         var hy = 0.0
                         if "x" in h: hx = h.x
@@ -8730,6 +8743,35 @@ func _update_skill_timer(delta: float):
         elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("magnet_tether_timer", m_tether_timer)
 
     var n_timer = 0.0
+    var rg_timer = 0.0
+    if "reverse_gravity_booster_timer" in self.ball:
+        rg_timer = float(self.ball.reverse_gravity_booster_timer)
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("reverse_gravity_booster_timer"):
+        rg_timer = float(self.ball.get_meta("reverse_gravity_booster_timer"))
+
+    if rg_timer > 0:
+        rg_timer -= delta
+        if rg_timer < 0:
+            rg_timer = 0.0
+        else:
+            if self.world != null and "balls" in self.world:
+                for other in self.world.balls:
+                    if other.id != self.ball.id:
+                        var dist_sq = (other.x - self.ball.x) * (other.x - self.ball.x) + (other.y - self.ball.y) * (other.y - self.ball.y)
+                        if dist_sq > 0 and dist_sq < 22500: # 150 range
+                            var dist = sqrt(dist_sq)
+                            if dist > 0.0001:
+                                var nx = (other.x - self.ball.x) / dist
+                                var ny = (other.y - self.ball.y) / dist
+                                var push_strength = 200.0 * delta
+                                other.x += nx * push_strength
+                                other.y += ny * push_strength
+
+        if "reverse_gravity_booster_timer" in self.ball:
+            self.ball.reverse_gravity_booster_timer = rg_timer
+        else:
+            self.ball.set_meta("reverse_gravity_booster_timer", rg_timer)
+
     if "nemesis_booster_timer" in self.ball:
         n_timer = float(self.ball.nemesis_booster_timer)
     elif self.ball.has_method("get_meta") and self.ball.has_meta("nemesis_booster_timer"):
@@ -8765,7 +8807,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster"]
+                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "reverse_gravity_booster"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y
