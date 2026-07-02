@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-431] Shield Overload Explosion — *2026-07-02 12:55:42 UTC*
+
+If a reflect shield takes damage exceeding its maximum capacity in a single hit, the remaining damage causes an overload explosion that deals AoE damage to everyone nearby, including the shield owner.
+
+---
+
 ## [idea-434] Reverse Escort — *2026-07-02 12:55:37 UTC*
 
 Two payloads move towards the center, the team that destroys the enemy payload first wins.
