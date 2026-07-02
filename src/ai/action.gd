@@ -348,7 +348,12 @@ func _attempt_damage(attacker, target) -> void:
 							if is_active:
 								var dist_sq = pow(h.x - current_target.x, 2) + pow(h.y - current_target.y, 2)
 								if dist_sq < chain_range_sq:
-									nearby.append({"dist": dist_sq, "entity": h, "type": "hazard"})
+									var t_var = ""
+									if typeof(h) == TYPE_OBJECT and h.has_meta("trap_variant"): t_var = h.get_meta("trap_variant")
+									if t_var == "emp_trap":
+										nearby.append({"dist": -999999.0 + dist_sq, "entity": h, "type": "hazard"})
+									else:
+										nearby.append({"dist": dist_sq, "entity": h, "type": "hazard"})
 					for b in boosters:
 						if not hit_entities.has(b):
 							var dist_sq = pow(b.x - current_target.x, 2) + pow(b.y - current_target.y, 2)
@@ -495,6 +500,62 @@ func _attempt_damage(attacker, target) -> void:
 						if self.world != null and self.world.has_method("_deal_damage"):
 							self.world._deal_damage(attacker, next_entity)
 					elif e_type == "hazard" or e_type == "item" or e_type == "booster":
+						var n_t_var = ""
+						if typeof(next_entity) == TYPE_OBJECT and next_entity.has_meta("trap_variant"): n_t_var = next_entity.get_meta("trap_variant")
+
+						if n_t_var == "emp_trap":
+							var charge = 0.0
+							if next_entity.has_meta("emp_charge"): charge = next_entity.get_meta("emp_charge")
+							charge += current_damage
+							next_entity.set_meta("emp_charge", charge)
+
+							if charge >= 50.0:
+								if "active" in next_entity: next_entity.active = false
+								elif next_entity.has_method("set_meta"): next_entity.set_meta("active", false)
+
+								if self.world != null and "balls" in self.world:
+									for b in self.world.balls:
+										var b_alive = false
+										if "alive" in b: b_alive = b.alive
+										elif typeof(b) == TYPE_OBJECT and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+										var owner_id = null
+										if next_entity.has_meta("owner_id"): owner_id = next_entity.get_meta("owner_id")
+
+										var b_id = null
+										if "id" in b: b_id = b.id
+
+										if b_alive and b_id != owner_id:
+											var dist_burst = sqrt(pow(b.x - next_entity.x, 2) + pow(b.y - next_entity.y, 2))
+											if dist_burst <= 200.0:
+												if b.has_method("set_meta"): b.set_meta("is_emped", true)
+												if b.has_method("set_meta"): b.set_meta("emp_timer", 4.0)
+
+												var current_silence = 0.0
+												if "silence_timer" in b: current_silence = b.silence_timer
+												elif b.has_method("get_meta") and b.has_meta("silence_timer"): current_silence = b.get_meta("silence_timer")
+
+												var max_s = max(current_silence, 3.0)
+												if "silence_timer" in b: b.silence_timer = max_s
+												elif b.has_method("set_meta"): b.set_meta("silence_timer", max_s)
+
+												var current_skill = 0.0
+												if "skill_timer" in b: current_skill = b.skill_timer
+												elif b.has_method("get_meta") and b.has_meta("skill_timer"): current_skill = b.get_meta("skill_timer")
+
+												var max_sk = max(current_skill, 3.0)
+												if "skill_timer" in b: b.skill_timer = max_sk
+												elif b.has_method("set_meta"): b.set_meta("skill_timer", max_sk)
+
+												var base_sp = 100.0
+												if "base_speed" in b: base_sp = b.base_speed
+												elif b.has_method("get_meta") and b.has_meta("base_speed"): base_sp = b.get_meta("base_speed")
+
+												if "speed" in b: b.speed = base_sp * 0.5
+												elif b.has_method("set_meta"): b.set_meta("speed", base_sp * 0.5)
+
+												if b.has_method("set_meta"): b.set_meta("is_scrambled", true)
+												if b.has_method("set_meta"): b.set_meta("scramble_timer", 3.0)
 						var n_kind = ""
 						if typeof(next_entity) == TYPE_DICTIONARY and next_entity.has("kind"): n_kind = next_entity["kind"]
 						elif typeof(next_entity) == TYPE_OBJECT and next_entity.has_meta("kind"): n_kind = next_entity.get_meta("kind")

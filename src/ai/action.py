@@ -244,7 +244,11 @@ class Action:
                         if h not in hit_entities and getattr(h, "active", True):
                             dist_sq = (h.x - current_target.x)**2 + (h.y - current_target.y)**2
                             if dist_sq < chain_range_sq:
-                                nearby_entities.append((dist_sq, h, "hazard"))
+                                # Attract lightning to emp_trap
+                                if getattr(h, "trap_variant", "") == "emp_trap":
+                                    nearby_entities.append((-999999 + dist_sq, h, "hazard")) # High priority
+                                else:
+                                    nearby_entities.append((dist_sq, h, "hazard"))
                     for b in boosters:
                         if b not in hit_entities:
                             dist_sq = (b.x - current_target.x)**2 + (b.y - current_target.y)**2
@@ -344,7 +348,27 @@ class Action:
                             if hasattr(self.world, "_deal_damage"):
                                 self.world._deal_damage(attacker, next_entity)
                     elif e_type in ("hazard", "item", "booster"):
-                        if getattr(next_entity, "kind", next_entity.get("kind", "") if isinstance(next_entity, dict) else "") == "material":
+                        if getattr(next_entity, "trap_variant", "") == "emp_trap":
+                            # Absorb damage and charge
+                            charge = getattr(next_entity, "emp_charge", 0.0) + current_damage
+                            setattr(next_entity, "emp_charge", charge)
+                            if charge >= 50.0:
+                                # Trigger EMP burst
+                                setattr(next_entity, "active", False)
+                                if hasattr(self.world, "balls"):
+                                    for b in self.world.balls:
+                                        if getattr(b, "alive", True) and getattr(b, "id", None) != getattr(next_entity, "owner_id", None):
+                                            dist_burst = ((b.x - next_entity.x)**2 + (b.y - next_entity.y)**2)**0.5
+                                            if dist_burst <= 200.0:
+                                                b.is_emped = True
+                                                b.emp_timer = 4.0
+                                                b.silence_timer = max(getattr(b, "silence_timer", 0.0), 3.0)
+                                                if hasattr(b, "skill_timer"):
+                                                    b.skill_timer = max(getattr(b, "skill_timer", 0.0), 3.0)
+                                                b.speed = getattr(b, "base_speed", 100.0) * 0.5
+                                                b.is_scrambled = True
+                                                b.scramble_timer = 3.0
+                        elif getattr(next_entity, "kind", next_entity.get("kind", "") if isinstance(next_entity, dict) else "") == "material":
                             if getattr(next_entity, "active", next_entity.get("active", False) if isinstance(next_entity, dict) else False):
                                 if hasattr(next_entity, "active"): next_entity.active = False
                                 elif isinstance(next_entity, dict): next_entity["active"] = False
@@ -467,7 +491,7 @@ class Action:
                 trap_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
                 trap = Hazard(trap_id, self.ball.x, self.ball.y, 20.0, "trap", 0.0)
 
-                trap_type = random.choice(["mine", "freeze", "black_hole", "swap"])
+                trap_type = random.choice(["mine", "freeze", "black_hole", "swap", "emp_trap"])
                 setattr(trap, 'duration', 10.0)
                 setattr(trap, 'trap_variant', trap_type)
                 setattr(trap, 'owner_id', getattr(self.ball, 'id', None))
@@ -1730,6 +1754,11 @@ class Action:
 
                                         if hasattr(self.ball, "damage_multiplier") and self.ball.damage_multiplier > 1.0:
                                             self.ball.damage_multiplier = 1.0
+                                elif trap_variant == "emp_trap":
+                                    # Absorbs electrical damage, then explodes
+                                    # Handled in chain lightning logic; but when stepped on normally, just slow slightly or do nothing until charged
+                                    self.ball.x = old_x
+                                    self.ball.y = old_y
                                 elif trap_variant == "mine":
                                     # Mine: large damage
                                     if hasattr(self.ball, "take_damage"):
