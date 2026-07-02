@@ -410,6 +410,46 @@ class ProceduralArena:
 
     def update_zone(self, current_tick: int, delta: float):
         if current_tick != self.last_tick:
+            import math
+            # Process hazard-to-hazard combos
+            if hasattr(self, "hazards"):
+                for hazard in self.hazards:
+                    if hazard.kind == "magnet":
+                        for other_hazard in self.hazards:
+                            if hazard.id == other_hazard.id:
+                                continue
+                            if other_hazard.kind in ("explosive_barrel", "flare"):
+                                hx_diff = hazard.x - other_hazard.x
+                                hy_diff = hazard.y - other_hazard.y
+                                hdist_sq = hx_diff * hx_diff + hy_diff * hy_diff
+                                eff_rad = hazard.radius * 3.0
+
+                                if 0.0001 < hdist_sq < eff_rad * eff_rad:
+                                    hdist = math.sqrt(hdist_sq)
+                                    hnx = hx_diff / hdist
+                                    hny = hy_diff / hdist
+                                    pull_strength = (eff_rad / max(10.0, hdist)) * 150.0 * delta
+                                    pull_strength = min(pull_strength, hdist * 0.5)
+
+                                    other_hazard.x += hnx * pull_strength
+                                    other_hazard.y += hny * pull_strength
+
+                                    if hdist < hazard.radius + getattr(other_hazard, "radius", 10.0):
+                                        if other_hazard.kind == "explosive_barrel":
+                                            if not getattr(other_hazard, "is_exploded", False):
+                                                other_hazard.is_exploded = True
+                                                other_hazard.radius = getattr(other_hazard, "radius", 50.0) * 3.0
+                                                other_hazard.damage = getattr(other_hazard, "damage", 50.0) * 2.0
+                                        elif other_hazard.kind == "flare":
+                                            if getattr(other_hazard, "active", True):
+                                                other_hazard.active = False
+                                                other_hazard.duration = 0.0
+                                                hazard.kind = "fire_zone"
+                                                hazard.radius = getattr(hazard, "radius", 50.0) * 2.0
+                                                hazard.damage = getattr(hazard, "damage", 10.0) * 3.0
+                                                if not hasattr(hazard, "duration"):
+                                                    hazard.duration = 10.0
+
             self.last_tick = current_tick
             if self.safe_zone_radius > 50.0:
                 self.safe_zone_radius -= 10.0 * delta

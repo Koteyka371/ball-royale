@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Entanglement Hazard",
+  "description": "A new hazard that links two balls together. When one ball takes damage, the other takes 50% of that damage. If one ball dashes, the other is pulled slightly in that direction. The link breaks after 10 seconds or if they move far enough away from each other."
+}
