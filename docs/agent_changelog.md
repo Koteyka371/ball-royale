@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-414] Orbital Strike Warning UI Element — *2026-07-02 13:25:50 UTC*
+
+When an orbital strike hazard spawns, show a large, pulsating crosshair UI element and play a warning siren sound effect for the 3 seconds before it strikes, giving players a clearer cue to evacuate the massive area.
+
+---
+
 ## [idea-347] Supply Drops — *2026-07-02 13:19:52 UTC*
 
 Periodically spawn supply drops in the arena that contain powerful but temporary boosters, such as invincibility, super speed, or explosive rounds, to create focal points for combat.

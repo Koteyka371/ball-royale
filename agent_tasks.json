@@ -7155,7 +7155,7 @@
     },
     {
       "id": "idea-414",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Orbital Strike Warning UI Element",
@@ -12066,6 +12066,57 @@
         "src/ai/payload_bomb.py",
         "src/ai/payload_bomb.gd",
         "tests/test_payload_bomb.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-701",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Solar Flare Weather Event",
+      "description": "Periodically, the arena suffers an extreme solar flare that disables all deployed hazards and traps and prevents active skills from regenerating for 5 seconds.",
+      "allowed_paths": [
+        "src/ai/solar_flare.py",
+        "src/ai/solar_flare.gd",
+        "tests/test_solar_flare.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-702",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Platforms",
+      "description": "Introduce platforms in the procedural arena that slowly move. Balls standing on them are carried across the map, allowing for strategic repositioning.",
+      "allowed_paths": [
+        "src/ai/dynamic_platforms.py",
+        "src/ai/dynamic_platforms.gd",
+        "tests/test_dynamic_platforms.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-703",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Entanglement Mine",
+      "description": "A hazard trap that links two enemies who walk near it. Any damage dealt to one is mirrored onto the other, and if one moves too far from the other, they are yanked violently back together.",
+      "allowed_paths": [
+        "src/ai/quantum_entanglement_mine.py",
+        "src/ai/quantum_entanglement_mine.gd",
+        "tests/test_quantum_entanglement_mine.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
