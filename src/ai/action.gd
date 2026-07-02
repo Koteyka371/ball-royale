@@ -3094,7 +3094,49 @@ func execute(strategy: String, delta: float):
                                 self.ball.vx = nx * 1000.0
                                 self.ball.vy = ny * 1000.0
                         continue
+
+                    elif hazard.kind == "pinball_flipper":
+                        var dx = self.ball.x - hazard.x
+                        var dy = self.ball.y - hazard.y
+                        var d = sqrt(dx*dx + dy*dy)
+                        if d < 0.0001: d = 0.0001
+
+                        var b_rad = 10.0
+                        if "radius" in self.ball:
+                            b_rad = self.ball.radius
+
+                        if d < (b_rad + hazard.radius):
+                            var ft = 0.0
+                            if hazard.has_meta("flip_timer"):
+                                ft = hazard.get_meta("flip_timer")
+
+                            if ft > 0:
+                                var side = "left"
+                                if hazard.has_meta("flipper_side"):
+                                    side = hazard.get_meta("flipper_side")
+
+                                var nx = 0.5
+                                var ny = -0.8
+                                if side == "right":
+                                    nx = -0.5
+                                    ny = -0.8
+
+                                var flip_strength = 1500.0 * delta
+                                self.ball.x += nx * flip_strength
+                                self.ball.y += ny * flip_strength
+
+                                if not "vx" in self.ball: self.ball.vx = 0.0
+                                if not "vy" in self.ball: self.ball.vy = 0.0
+                                self.ball.vx += nx * 1000.0
+                                self.ball.vy += ny * 1000.0
+                            else:
+                                var nx = dx / d
+                                var ny = dy / d
+                                self.ball.x += nx * 50.0 * delta
+                                self.ball.y += ny * 50.0 * delta
+
                     elif hazard.kind == "bumper":
+
                         var dx = self.ball.x - hazard.x
                         var dy = self.ball.y - hazard.y
                         var d = sqrt(dx*dx + dy*dy)
