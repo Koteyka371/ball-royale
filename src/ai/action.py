@@ -1038,6 +1038,11 @@ class Action:
         if getattr(self.ball, "stutter_timer", 0.0) > 0.0:
             self.ball.speed = 0.01  # almost stopped to simulate pause
 
+        if getattr(self.ball, "stamina_speed_burst_timer", 0.0) > 0.0:
+            self.ball.stamina_speed_burst_timer -= delta
+            if getattr(self.ball, "stutter_timer", 0.0) <= 0.0 and getattr(self.ball, "slow_timer", 0.0) <= 0.0:
+                self.ball.speed = getattr(self.ball, "base_speed", 2.0) * 1.5
+
         if getattr(self.ball, "is_hologram", False):
             self.ball.hologram_timer -= delta
             if self.ball.hologram_timer <= 0:
@@ -4745,6 +4750,23 @@ class Action:
                                 other.vy += (dy / dist) * push_force
                 if hasattr(self, "_spawn_skill_particles"):
                     self._spawn_skill_particles("repel_burst")
+            elif skill_name == "stamina_steal":
+                self._spawn_skill_particles("stamina_steal")
+                enemies = self._get_enemies()
+                if enemies:
+                    target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                    target_stamina = getattr(target, "stamina", 0.0)
+                    steal_amount = min(30.0, target_stamina)
+                    target.stamina = target_stamina - steal_amount
+
+                    target.slow_timer = 2.0
+
+                    my_stamina = getattr(self.ball, "stamina", 100.0)
+                    my_max = getattr(self.ball, "max_stamina", 100.0)
+                    self.ball.stamina = min(my_max, my_stamina + 30.0)
+
+                    if my_stamina + 30.0 > my_max:
+                        self.ball.stamina_speed_burst_timer = 2.0
             elif skill_name == "stamina_dash":
                 self._spawn_skill_particles("dash")
                 stamina = getattr(self.ball, "stamina", 0.0)
@@ -5556,7 +5578,8 @@ class Action:
                 # 2 extra types: Speed boost
                 self.ball.speed = base_s * 1.1
             else:
-                self.ball.speed = base_s
+                if getattr(self.ball, "stamina_speed_burst_timer", 0.0) <= 0.0:
+                    self.ball.speed = base_s
 
             if stack_count >= 3:
                 # 3 extra types: Damage boost
