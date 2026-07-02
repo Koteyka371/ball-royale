@@ -3782,6 +3782,21 @@ func execute(strategy: String, delta: float):
 
             if speed > 500 and not is_mirror_walls:
                 var dmg = speed * 0.05
+
+                var was_knocked_back = false
+                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("_knockback_timer") and float(self.ball["_knockback_timer"]) > 0.0:
+                    was_knocked_back = true
+                    self.ball["_knockback_timer"] = 0.0
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("_knockback_timer") and float(self.ball.get_meta("_knockback_timer")) > 0.0:
+                    was_knocked_back = true
+                    self.ball.set_meta("_knockback_timer", 0.0)
+                elif typeof(self.ball) == TYPE_OBJECT and "_knockback_timer" in self.ball and float(self.ball._knockback_timer) > 0.0:
+                    was_knocked_back = true
+                    self.ball._knockback_timer = 0.0
+
+                if was_knocked_back:
+                    dmg += speed * 0.1
+
                 if self.ball.has_method("take_damage"):
                     self.ball.take_damage(dmg)
                 elif "hp" in self.ball:
@@ -3804,6 +3819,19 @@ func execute(strategy: String, delta: float):
 
     _apply_friendly_aura(delta)
     _update_skill_timer(delta)
+
+    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("_knockback_timer"):
+        var kt = float(self.ball["_knockback_timer"])
+        if kt > 0.0:
+            self.ball["_knockback_timer"] = max(0.0, kt - delta)
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("_knockback_timer"):
+        var kt = float(self.ball.get_meta("_knockback_timer"))
+        if kt > 0.0:
+            self.ball.set_meta("_knockback_timer", max(0.0, kt - delta))
+    elif typeof(self.ball) == TYPE_OBJECT and "_knockback_timer" in self.ball:
+        var kt = float(self.ball._knockback_timer)
+        if kt > 0.0:
+            self.ball._knockback_timer = max(0.0, kt - delta)
 
     if delta > 0:
         var dx = self.ball.x - old_x
@@ -8532,6 +8560,12 @@ func _resolve_collisions() -> bool:
 
             self.ball.x += nx * overlap * knockback_multiplier
             self.ball.y += ny * overlap * knockback_multiplier
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["_knockback_timer"] = 0.5
+            elif self.ball.has_method("set_meta"):
+                self.ball.set_meta("_knockback_timer", 0.5)
+            elif "hp" in self.ball:
+                self.ball._knockback_timer = 0.5
             bounced = true
 
     return bounced

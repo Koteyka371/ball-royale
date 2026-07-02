@@ -2526,6 +2526,12 @@ class Action:
 
                 if speed > 500 and not is_mirror_walls:
                     damage = speed * 0.05
+
+                    # Apply additional damage based on velocity if the ball was recently knocked back
+                    if getattr(self.ball, "_knockback_timer", 0.0) > 0.0:
+                        damage += speed * 0.1
+                        self.ball._knockback_timer = 0.0
+
                     if hasattr(self.ball, "take_damage"):
                         self.ball.take_damage(damage)
                     elif hasattr(self.ball, "hp"):
@@ -2543,6 +2549,11 @@ class Action:
             self._trigger_ripple_effect()
 
         self._apply_friendly_aura(delta)
+
+        # Decrement knockback timer
+        kt = getattr(self.ball, "_knockback_timer", 0.0)
+        if kt > 0:
+            self.ball._knockback_timer = max(0.0, kt - delta)
         self._update_skill_timer(delta)
 
         if delta > 0:
@@ -5349,6 +5360,10 @@ class Action:
 
                 self.ball.x += nx * overlap * knockback_multiplier
                 self.ball.y += ny * overlap * knockback_multiplier
+
+                # Flag the ball as having received a knockback collision recently (timer)
+                setattr(self.ball, "_knockback_timer", 0.5)
+
                 bounced = True
 
                 gm = getattr(self.world, "game_mode", None)

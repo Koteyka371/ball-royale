@@ -1,0 +1,4 @@
+{
+  "title": "Wall Bounce Combos",
+  "description": "If a player manages to knock an opponent into a wall multiple times in quick succession (or hit multiple walls with one knockback), the wall damage multiplier significantly increases, and the attacking player gets a temporary speed boost."
+}
