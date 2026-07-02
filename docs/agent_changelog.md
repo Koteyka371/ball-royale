@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-412] Shrinking Health Hazard — *2026-07-02 12:24:04 UTC*
+
+A hazard that slowly shrinks the maximum health of nearby players over time.
+
+---
+
 ## [idea-424] Decoy Explosion — *2026-07-02 12:24:00 UTC*
 
 A new passive for the deploy_decoy ability where the decoy violently explodes upon being destroyed or when its timer runs out, damaging nearby enemies.
