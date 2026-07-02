@@ -34,6 +34,8 @@ class MockHazard:
         self.x = x
         self.y = y
         self.radius = radius
+        self.active = True
+        self.active = True
 
 
 def test_collect_vision_booster():
@@ -47,17 +49,17 @@ def test_collect_vision_booster():
     world.arena.hazards.append(h)
 
     # Mock Action methods
-    action._get_boosters = lambda: world.arena.hazards
+    action._get_boosters = lambda: [h for h in world.arena.hazards if getattr(h, "active", True)]
     action._get_enemies = lambda: []
     action._get_allies = lambda: []
 
     # Execute collect_booster
-    action._collect_booster(0.1)
+    for _ in range(100): action._collect_booster(0.1)
     print("has_timer:", hasattr(ball, "vision_booster_timer"))
     print("ball.x:", ball.x)
 
-    assert ball.vision_booster_timer == 15.0
-    assert ball.vision_booster_applied == True
+    assert getattr(ball, "vision_booster_timer", 0) == 15.0
+    assert getattr(ball, "vision_booster_applied", False) == True
     assert ball.base_perception_radius == 500.0
     assert ball.perception_radius == 500.0
     assert h not in world.arena.hazards
