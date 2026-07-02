@@ -1,0 +1,4 @@
+{
+  "title": "Shrinking Floor Grid",
+  "description": "Instead of a smooth circular shrinking zone, the arena is made of hexagonal tiles that independently glow red and fall away, reducing the safe map area into fragmented islands that players must jump between."
+}

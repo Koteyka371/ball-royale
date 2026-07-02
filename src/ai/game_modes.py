@@ -4009,7 +4009,207 @@ class MirrorWallsMode(GameMode):
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
 
+
+class GeometricZoneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.collapse_triggered = False
+        self.name = "Geometric Zone"
+        self.description = "The safe zone shrinks into varied geometric shapes or splits temporarily to disrupt camping."
+        self.zone_x = 500.0
+        self.zone_y = 500.0
+        self.zone_radius = 500.0
+        self.min_zone_radius = 50.0
+        self.shrink_rate = 15.0
+        self.outside_damage_per_second = 20.0
+        self.zone_target_x = 500.0
+        self.zone_target_y = 500.0
+
+        self.shape_timer = 0.0
+        self.current_shape = "circle"
+        self.shapes = ["circle", "rectangle", "triangle", "split"]
+
+        self.split_zones = []
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.world = world
+        self.collapse_triggered = False
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.zone_x = arena_width / 2.0
+        self.zone_y = arena_height / 2.0
+        self.zone_target_x = self.zone_x
+        self.zone_target_y = self.zone_y
+        self.zone_radius = min(arena_width, arena_height) / 2.0
+        self.min_zone_radius = 50.0
+
+        import random
+        self.current_shape = random.choice(["circle", "rectangle", "triangle"])
+
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        for i, b in enumerate(valid_balls):
+            if i >= 20:
+                b.ball_type = "spectator"
+                b.alive = False
+            else:
+                b.team = b.ball_type
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+    def is_inside_zone(self, x, y, cx, cy, radius, shape):
+        import math
+        if shape == "circle":
+            dx = x - cx
+            dy = y - cy
+            return math.sqrt(dx*dx + dy*dy) <= radius
+        elif shape == "rectangle":
+            dx = abs(x - cx)
+            dy = abs(y - cy)
+            return dx <= radius and dy <= radius
+        elif shape == "triangle":
+            v0x, v0y = cx, cy - radius
+            v1x, v1y = cx - radius * 0.866, cy + radius * 0.5
+            v2x, v2y = cx + radius * 0.866, cy + radius * 0.5
+
+            def sign(p1x, p1y, p2x, p2y, p3x, p3y):
+                return (p1x - p3x) * (p2y - p3y) - (p2x - p3x) * (p1y - p3y)
+
+            d1 = sign(x, y, v0x, v0y, v1x, v1y)
+            d2 = sign(x, y, v1x, v1y, v2x, v2y)
+            d3 = sign(x, y, v2x, v2y, v0x, v0y)
+
+            has_neg = (d1 < 0) or (d2 < 0) or (d3 < 0)
+            has_pos = (d1 > 0) or (d2 > 0) or (d3 > 0)
+            return not (has_neg and has_pos)
+        return True
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        import random
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+
+        self.shape_timer += delta
+        if self.shape_timer > 15.0:
+            self.shape_timer = 0.0
+            old_shape = self.current_shape
+            self.current_shape = random.choice(["circle", "rectangle", "triangle", "split"])
+            if self.current_shape == "split":
+                offset = max(100.0, self.zone_radius * 0.5)
+                self.split_zones = [
+                    {"x": self.zone_x - offset, "y": self.zone_y, "radius": self.zone_radius * 0.6},
+                    {"x": self.zone_x + offset, "y": self.zone_y, "radius": self.zone_radius * 0.6}
+                ]
+
+            if hasattr(world, "add_event"):
+                world.add_event("zone_shape_change", {"type": "zone_shape_change", "message": f"The zone shifts to {self.current_shape}!"})
+
+        dx = self.zone_target_x - self.zone_x
+        dy = self.zone_target_y - self.zone_y
+        dist = math.sqrt(dx*dx + dy*dy)
+        if dist > 5.0:
+            move_speed = 10.0
+            self.zone_x += (dx / dist) * move_speed * delta
+            self.zone_y += (dy / dist) * move_speed * delta
+        else:
+            arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+            arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+            buffer = max(100.0, self.zone_radius * 0.5)
+            self.zone_target_x = random.uniform(buffer, arena_width - buffer)
+            self.zone_target_y = random.uniform(buffer, arena_height - buffer)
+
+        if self.zone_radius > self.min_zone_radius:
+            self.zone_radius -= self.shrink_rate * delta
+            if self.zone_radius <= self.min_zone_radius:
+                self.zone_radius = self.min_zone_radius
+                if not self.collapse_triggered:
+                    self.collapse_triggered = True
+                    if hasattr(world, "add_event"):
+                        world.add_event("collapse_event", {"type": "collapse_event", "message": "COLLAPSE EVENT! The zone collapses!"})
+        elif getattr(self, "collapse_triggered", False):
+            if self.zone_radius > 0:
+                self.zone_radius -= self.shrink_rate * delta
+                if self.zone_radius < 0:
+                    self.zone_radius = 0.0
+
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                    b_dx = self.zone_x - b.x
+                    b_dy = self.zone_y - b.y
+                    b_dist = math.sqrt(b_dx*b_dx + b_dy*b_dy)
+                    if b_dist > 0:
+                        pull_strength = 2000.0
+                        if not hasattr(b, "vx"): b.vx = 0.0
+                        if not hasattr(b, "vy"): b.vy = 0.0
+                        b.vx += (b_dx / b_dist) * pull_strength * delta
+                        b.vy += (b_dy / b_dist) * pull_strength * delta
+
+        if self.current_shape == "split":
+            for i in range(len(self.split_zones)):
+                sz = self.split_zones[i]
+                sz["radius"] -= self.shrink_rate * 0.6 * delta
+                if sz["radius"] < 20.0:
+                    sz["radius"] = 20.0
+
+        if hasattr(world, "arena") and hasattr(world.arena, "danger_grid"):
+            if getattr(self, "_last_danger_tick", -1) != getattr(world, "current_tick", 0):
+                self._last_danger_tick = getattr(world, "current_tick", 0)
+                if self._last_danger_tick % 10 == 0:
+                    world.arena.danger_grid.clear()
+
+                    grid_w = int(getattr(world.arena, "width", 1000) // 100) + 1
+                    grid_h = int(getattr(world.arena, "height", 1000) // 100) + 1
+                    for i in range(grid_w):
+                        for j in range(grid_h):
+                            cx = i * 100 + 50
+                            cy = j * 100 + 50
+
+                            safe = False
+                            if self.current_shape == "split":
+                                for sz in self.split_zones:
+                                    if self.is_inside_zone(cx, cy, sz["x"], sz["y"], sz["radius"], "circle"):
+                                        safe = True
+                                        break
+                            else:
+                                if self.is_inside_zone(cx, cy, self.zone_x, self.zone_y, self.zone_radius, self.current_shape):
+                                    safe = True
+
+                            if not safe:
+                                world.arena.danger_grid[(i, j)] = world.arena.danger_grid.get((i, j), 0.0) + (self.outside_damage_per_second / 10.0)
+
+        damage_this_tick = self.outside_damage_per_second * (10.0 if getattr(self, 'collapse_triggered', False) else 1.0) * delta
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                safe = False
+                if self.current_shape == "split":
+                    for sz in self.split_zones:
+                        if self.is_inside_zone(b.x, b.y, sz["x"], sz["y"], sz["radius"], "circle"):
+                            safe = True
+                            break
+                else:
+                    if self.is_inside_zone(b.x, b.y, self.zone_x, self.zone_y, self.zone_radius, self.current_shape):
+                        safe = True
+
+                if not safe:
+                    b.hp -= damage_this_tick
+                    if b.hp <= 0:
+                        b.alive = False
+                        b.hp = 0
+                        b.killer = "Geometric Zone"
+
 GAME_MODES = {
+    "geometric_zone": GeometricZoneMode(),
     "mirror_walls": MirrorWallsMode(),
     "zero_gravity": ZeroGravityMode(),
     "magnetic_collisions": MagneticCollisionsMode(),
