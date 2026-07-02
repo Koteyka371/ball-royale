@@ -7649,7 +7649,7 @@
     },
     {
       "id": "idea-443",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Magnetize Weather Event",
@@ -12577,6 +12577,58 @@
         "src/ai/player_bribery_mechanism.py",
         "src/ai/player_bribery_mechanism.gd",
         "tests/test_player_bribery_mechanism.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-731",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounty Reward System",
+      "description": "When a Bounty Hunter successfully defeats a target marked as a bounty, they instantly receive a full health restore and a temporary speed boost.",
+      "allowed_paths": [
+        "src/ai/bounty_reward.py",
+        "src/ai/bounty_reward.gd",
+        "tests/test_bounty_reward.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-732",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Laser Tripwire",
+      "description": "A tripwire that shoots a powerful laser beam when a player crosses it.",
+      "allowed_paths": [
+        "src/ai/laser_tripwire.py",
+        "src/ai/laser_tripwire.gd",
+        "tests/test_laser_tripwire.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-733",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounty Hunter Tracking UI",
+      "description": "Add a special UI indicator that points the Bounty Hunter towards their marked target, even if they are out of normal vision range.",
+      "allowed_paths": [
+        "src/ui/bounty_hunter_tracking_ui.py",
+        "src/ui/bounty_hunter_tracking_ui.gd",
+        "src/ai/bounty_hunter_tracking_ui.py",
+        "tests/test_bounty_hunter_tracking_ui.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

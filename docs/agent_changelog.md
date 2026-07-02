@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-443] Magnetize Weather Event — *2026-07-02 15:33:14 UTC*
+
+Introduce a 'magnetic storm' weather event that randomly assigns positive or negative polarities to balls. Balls with opposite polarities are slowly pulled towards each other, while balls with the same polarity are pushed apart, disrupting formations and forcing repositioning.
+
+---
+
 ## [idea-413] Reverse Gravity Booster — *2026-07-02 15:27:42 UTC*
 
 A booster that reverses the gravity for a short time for players that touch it.
