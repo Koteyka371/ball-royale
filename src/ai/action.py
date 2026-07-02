@@ -4340,13 +4340,30 @@ class Action:
 
             elif skill_name == "lightning_strike":
                 enemies = self._get_enemies()
+
+                is_raining = hasattr(self.world, "arena") and getattr(self.world.arena, "is_raining", False)
+                if not is_raining and hasattr(self.world, "game_mode") and getattr(self.world.game_mode, "weather", "") in ["rain", "thunderstorm"]:
+                    is_raining = True
+
+                is_foggy = hasattr(self.world, "arena") and getattr(self.world.arena, "is_foggy", False)
+                if not is_foggy and hasattr(self.world, "game_mode") and getattr(self.world.game_mode, "weather", "") in ["fog", "snow", "blizzard"]:
+                    is_foggy = True
+
                 if enemies:
                     # Find closest enemy
                     target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
                     dist = math.sqrt((target.x - self.ball.x)**2 + (target.y - self.ball.y)**2)
-                    if dist <= 200.0:
+
+                    strike_range = 200.0
+                    if is_foggy:
+                        strike_range *= 1.5
+
+                    if dist <= strike_range:
                         # Initial strike
                         base_dmg = getattr(self.ball, "damage", 24.0)
+                        if is_raining:
+                            base_dmg *= 1.5
+
                         if hasattr(target, "take_damage"):
                             target.take_damage(base_dmg)
                         elif hasattr(target, "hp"):
@@ -4361,19 +4378,28 @@ class Action:
                         hit_entities = [self.ball, target]
                         current_target = target
                         chain_damage = base_dmg * 1.5
+
+                        max_jumps = 3
+                        if is_raining:
+                            max_jumps += 1
+
                         jumps = 0
 
-                        while jumps < 3:
+                        while jumps < max_jumps:
                             nearby_entities = []
+                            chain_range = 150.0
+                            if is_foggy:
+                                chain_range *= 1.5
+
                             for e in enemies:
                                 if e not in hit_entities:
                                     d_sq = (e.x - current_target.x)**2 + (e.y - current_target.y)**2
-                                    if d_sq <= 150.0**2:
+                                    if d_sq <= chain_range**2:
                                         nearby_entities.append((d_sq, e, "enemy"))
                             for h in hazards:
                                 if h not in hit_entities and getattr(h, "active", True):
                                     d_sq = (h.x - current_target.x)**2 + (h.y - current_target.y)**2
-                                    if d_sq <= 150.0**2:
+                                    if d_sq <= chain_range**2:
                                         nearby_entities.append((d_sq, h, "hazard"))
 
                             if not nearby_entities:
@@ -4418,21 +4444,61 @@ class Action:
                 base_burst_dmg = 20 * chain_bonus
 
                 is_raining = hasattr(self.world, "arena") and getattr(self.world.arena, "is_raining", False)
+                if not is_raining and hasattr(self.world, "game_mode") and getattr(self.world.game_mode, "weather", "") in ["rain", "thunderstorm"]:
+                    is_raining = True
+
+                is_foggy = hasattr(self.world, "arena") and getattr(self.world.arena, "is_foggy", False)
+                if not is_foggy and hasattr(self.world, "game_mode") and getattr(self.world.game_mode, "weather", "") in ["fog", "snow", "blizzard"]:
+                    is_foggy = True
+
                 if is_raining:
+                    burst_radius *= 1.5
+                    base_burst_dmg *= 1.5
+
+                if is_foggy:
                     burst_radius *= 1.5
 
                 if enemies:
-                    for enemy in enemies:
-                        dx = enemy.x - self.ball.x
-                        dy = enemy.y - self.ball.y
-                        dist = math.sqrt(dx*dx + dy*dy)
-                        if dist <= burst_radius:
-                            if hasattr(enemy, "take_damage"):
-                                enemy.take_damage(base_burst_dmg)
-                            if is_raining:
+                    # Raining also makes elemental_burst chain to 1 additional target
+                    if is_raining:
+                        # Find primary targets hit by burst
+                        primary_hits = []
+                        for enemy in enemies:
+                            dx = enemy.x - self.ball.x
+                            dy = enemy.y - self.ball.y
+                            dist = math.sqrt(dx*dx + dy*dy)
+                            if dist <= burst_radius:
+                                if hasattr(enemy, "take_damage"):
+                                    enemy.take_damage(base_burst_dmg)
                                 if not getattr(enemy, "is_stunned", False):
                                     enemy.is_stunned = True
                                     enemy.stun_timer = max(getattr(enemy, "stun_timer", 0.0), 2.0)
+                                primary_hits.append(enemy)
+
+                        # Chain from each primary hit
+                        hit_entities = [self.ball] + primary_hits
+                        for primary in primary_hits:
+                            for enemy in enemies:
+                                if enemy not in hit_entities:
+                                    dx = enemy.x - primary.x
+                                    dy = enemy.y - primary.y
+                                    dist = math.sqrt(dx*dx + dy*dy)
+                                    if dist <= burst_radius:
+                                        if hasattr(enemy, "take_damage"):
+                                            enemy.take_damage(base_burst_dmg * 0.5)
+                                        if not getattr(enemy, "is_stunned", False):
+                                            enemy.is_stunned = True
+                                            enemy.stun_timer = max(getattr(enemy, "stun_timer", 0.0), 1.0)
+                                        hit_entities.append(enemy)
+                                        break # Chain to one additional target
+                    else:
+                        for enemy in enemies:
+                            dx = enemy.x - self.ball.x
+                            dy = enemy.y - self.ball.y
+                            dist = math.sqrt(dx*dx + dy*dy)
+                            if dist <= burst_radius:
+                                if hasattr(enemy, "take_damage"):
+                                    enemy.take_damage(base_burst_dmg)
             elif skill_name == "silence_aura":
                 enemies = self._get_enemies()
                 if enemies:

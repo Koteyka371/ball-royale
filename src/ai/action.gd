@@ -6732,6 +6732,37 @@ func _use_skill():
 
         elif skill_name == "lightning_strike":
             var enemies = _get_enemies()
+
+            var is_raining = false
+            if "arena" in self.world and self.world.arena != null:
+                if "is_raining" in self.world.arena:
+                    is_raining = self.world.arena.is_raining
+                elif self.world.arena.has_method("has_meta") and self.world.arena.has_meta("is_raining"):
+                    is_raining = self.world.arena.get_meta("is_raining")
+            if not is_raining and "game_mode" in self.world and self.world.game_mode != null:
+                var weather = ""
+                if "weather" in self.world.game_mode:
+                    weather = self.world.game_mode.weather
+                elif self.world.game_mode.has_method("has_meta") and self.world.game_mode.has_meta("weather"):
+                    weather = self.world.game_mode.get_meta("weather")
+                if weather in ["rain", "thunderstorm"]:
+                    is_raining = true
+
+            var is_foggy = false
+            if "arena" in self.world and self.world.arena != null:
+                if "is_foggy" in self.world.arena:
+                    is_foggy = self.world.arena.is_foggy
+                elif self.world.arena.has_method("has_meta") and self.world.arena.has_meta("is_foggy"):
+                    is_foggy = self.world.arena.get_meta("is_foggy")
+            if not is_foggy and "game_mode" in self.world and self.world.game_mode != null:
+                var weather = ""
+                if "weather" in self.world.game_mode:
+                    weather = self.world.game_mode.weather
+                elif self.world.game_mode.has_method("has_meta") and self.world.game_mode.has_meta("weather"):
+                    weather = self.world.game_mode.get_meta("weather")
+                if weather in ["fog", "snow", "blizzard"]:
+                    is_foggy = true
+
             if enemies.size() > 0:
                 var target = null
                 var min_dist_sq = INF
@@ -6742,12 +6773,19 @@ func _use_skill():
                         target = e
 
                 var dist = sqrt(min_dist_sq)
-                if dist <= 200.0:
+                var strike_range = 200.0
+                if is_foggy:
+                    strike_range *= 1.5
+
+                if dist <= strike_range:
                     var dmg = 24.0
                     if "damage" in self.ball:
                         dmg = self.ball.damage
                     elif self.ball.has_method("has_meta") and self.ball.has_meta("damage"):
                         dmg = self.ball.get_meta("damage")
+
+                    if is_raining:
+                        dmg *= 1.5
 
                     if target.has_method("take_damage"):
                         target.take_damage(dmg)
@@ -6766,23 +6804,35 @@ func _use_skill():
                     hit_entities.append(target)
                     var current_target = target
                     var chain_damage = dmg * 1.5
+
+                    var max_jumps = 3
+                    if is_raining:
+                        max_jumps += 1
+
                     var jumps = 0
 
-                    while jumps < 3:
+                    while jumps < max_jumps:
                         var nearby_entities = []
+                        var chain_range = 150.0
+                        if is_foggy:
+                            chain_range *= 1.5
+
                         for e in enemies:
-                            if not hit_entities.has(e):
+                            if hit_entities.find(e) == -1:
                                 var d_sq = pow(e.x - current_target.x, 2) + pow(e.y - current_target.y, 2)
-                                if d_sq <= 22500.0:
-                                    nearby_entities.append({"dist": d_sq, "entity": e, "type": "enemy"})
+                                if d_sq <= chain_range * chain_range:
+                                    nearby_entities.append({"d_sq": d_sq, "entity": e, "type": "enemy"})
                         for h in hazards:
-                            if not hit_entities.has(h):
-                                var is_active = true
-                                if "active" in h: is_active = h.active
-                                if is_active:
+                            if hit_entities.find(h) == -1:
+                                var h_active = true
+                                if "active" in h:
+                                    h_active = h.active
+                                elif h.has_method("has_meta") and h.has_meta("active"):
+                                    h_active = h.get_meta("active")
+                                if h_active:
                                     var d_sq = pow(h.x - current_target.x, 2) + pow(h.y - current_target.y, 2)
-                                    if d_sq <= 22500.0:
-                                        nearby_entities.append({"dist": d_sq, "entity": h, "type": "hazard"})
+                                    if d_sq <= chain_range * chain_range:
+                                        nearby_entities.append({"d_sq": d_sq, "entity": h, "type": "hazard"})
 
                         if nearby_entities.size() == 0:
                             break
@@ -6848,39 +6898,140 @@ func _use_skill():
                     is_raining = self.world.arena.is_raining
                 elif self.world.arena.has_method("has_meta") and self.world.arena.has_meta("is_raining"):
                     is_raining = self.world.arena.get_meta("is_raining")
+            if not is_raining and "game_mode" in self.world and self.world.game_mode != null:
+                var weather = ""
+                if "weather" in self.world.game_mode:
+                    weather = self.world.game_mode.weather
+                elif self.world.game_mode.has_method("has_meta") and self.world.game_mode.has_meta("weather"):
+                    weather = self.world.game_mode.get_meta("weather")
+                if weather in ["rain", "thunderstorm"]:
+                    is_raining = true
+
+            var is_foggy = false
+            if "arena" in self.world and self.world.arena != null:
+                if "is_foggy" in self.world.arena:
+                    is_foggy = self.world.arena.is_foggy
+                elif self.world.arena.has_method("has_meta") and self.world.arena.has_meta("is_foggy"):
+                    is_foggy = self.world.arena.get_meta("is_foggy")
+            if not is_foggy and "game_mode" in self.world and self.world.game_mode != null:
+                var weather = ""
+                if "weather" in self.world.game_mode:
+                    weather = self.world.game_mode.weather
+                elif self.world.game_mode.has_method("has_meta") and self.world.game_mode.has_meta("weather"):
+                    weather = self.world.game_mode.get_meta("weather")
+                if weather in ["fog", "snow", "blizzard"]:
+                    is_foggy = true
 
             if is_raining:
                 burst_radius *= 1.5
+                base_burst_dmg *= 1.5
 
-            for enemy in enemies:
-                var dx = enemy.x - self.ball.x
-                var dy = enemy.y - self.ball.y
-                if sqrt(dx*dx + dy*dy) <= burst_radius:
-                    if enemy.has_method("take_damage"):
-                        enemy.take_damage(base_burst_dmg)
-                    if is_raining:
-                        var is_stunned = false
-                        if "is_stunned" in enemy:
-                            is_stunned = enemy.is_stunned
-                        elif enemy.has_method("has_meta") and enemy.has_meta("is_stunned"):
-                            is_stunned = enemy.get_meta("is_stunned")
+            if is_foggy:
+                burst_radius *= 1.5
 
-                        if not is_stunned:
+            if enemies.size() > 0:
+                if is_raining:
+                    var primary_hits = []
+                    for enemy in enemies:
+                        var dx = enemy.x - self.ball.x
+                        var dy = enemy.y - self.ball.y
+                        var dist = sqrt(dx*dx + dy*dy)
+                        if dist <= burst_radius:
+                            if enemy.has_method("take_damage"):
+                                enemy.take_damage(base_burst_dmg)
+                            var e_stunned = false
                             if "is_stunned" in enemy:
-                                enemy.is_stunned = true
-                            elif enemy.has_method("set_meta"):
-                                enemy.set_meta("is_stunned", true)
+                                e_stunned = enemy.is_stunned
+                            elif enemy.has_method("has_meta") and enemy.has_meta("is_stunned"):
+                                e_stunned = enemy.get_meta("is_stunned")
+                            if not e_stunned:
+                                if "is_stunned" in enemy:
+                                    enemy.is_stunned = true
+                                else:
+                                    enemy.set_meta("is_stunned", true)
+                                var e_stun_timer = 0.0
+                                if "stun_timer" in enemy:
+                                    e_stun_timer = enemy.stun_timer
+                                elif enemy.has_method("has_meta") and enemy.has_meta("stun_timer"):
+                                    e_stun_timer = enemy.get_meta("stun_timer")
+                                e_stun_timer = max(e_stun_timer, 2.0)
+                                if "stun_timer" in enemy:
+                                    enemy.stun_timer = e_stun_timer
+                                else:
+                                    enemy.set_meta("stun_timer", e_stun_timer)
+                            primary_hits.append(enemy)
 
-                            var current_stun_timer = 0.0
-                            if "stun_timer" in enemy:
-                                current_stun_timer = enemy.stun_timer
-                            elif enemy.has_method("has_meta") and enemy.has_meta("stun_timer"):
-                                current_stun_timer = enemy.get_meta("stun_timer")
+                    var hit_entities = []
+                    hit_entities.append(self.ball)
+                    for ph in primary_hits:
+                        hit_entities.append(ph)
 
-                            if "stun_timer" in enemy:
-                                enemy.stun_timer = max(current_stun_timer, 2.0)
-                            elif enemy.has_method("set_meta"):
-                                enemy.set_meta("stun_timer", max(current_stun_timer, 2.0))
+                    for primary in primary_hits:
+                        for enemy in enemies:
+                            if hit_entities.find(enemy) == -1:
+                                var dx = enemy.x - primary.x
+                                var dy = enemy.y - primary.y
+                                var dist = sqrt(dx*dx + dy*dy)
+                                if dist <= burst_radius:
+                                    if enemy.has_method("take_damage"):
+                                        enemy.take_damage(base_burst_dmg * 0.5)
+                                    var e_stunned = false
+                                    if "is_stunned" in enemy:
+                                        e_stunned = enemy.is_stunned
+                                    elif enemy.has_method("has_meta") and enemy.has_meta("is_stunned"):
+                                        e_stunned = enemy.get_meta("is_stunned")
+                                    if not e_stunned:
+                                        if "is_stunned" in enemy:
+                                            enemy.is_stunned = true
+                                        else:
+                                            enemy.set_meta("is_stunned", true)
+                                        var e_stun_timer = 0.0
+                                        if "stun_timer" in enemy:
+                                            e_stun_timer = enemy.stun_timer
+                                        elif enemy.has_method("has_meta") and enemy.has_meta("stun_timer"):
+                                            e_stun_timer = enemy.get_meta("stun_timer")
+                                        e_stun_timer = max(e_stun_timer, 1.0)
+                                        if "stun_timer" in enemy:
+                                            enemy.stun_timer = e_stun_timer
+                                        else:
+                                            enemy.set_meta("stun_timer", e_stun_timer)
+                                    hit_entities.append(enemy)
+                                    break
+                else:
+                    for enemy in enemies:
+                        var dx = enemy.x - self.ball.x
+                        var dy = enemy.y - self.ball.y
+                        var dist = sqrt(dx*dx + dy*dy)
+                        if dist <= burst_radius:
+                            if enemy.has_method("take_damage"):
+                                enemy.take_damage(base_burst_dmg)
+                            var arena_raining = false
+                            if self.world != null and "arena" in self.world and self.world.arena != null:
+                                if "is_raining" in self.world.arena:
+                                    arena_raining = self.world.arena.is_raining
+                                elif self.world.arena.has_method("has_meta") and self.world.arena.has_meta("is_raining"):
+                                    arena_raining = self.world.arena.get_meta("is_raining")
+                            if arena_raining:
+                                var e_stunned = false
+                                if "is_stunned" in enemy:
+                                    e_stunned = enemy.is_stunned
+                                elif enemy.has_method("has_meta") and enemy.has_meta("is_stunned"):
+                                    e_stunned = enemy.get_meta("is_stunned")
+                                if not e_stunned:
+                                    if "is_stunned" in enemy:
+                                        enemy.is_stunned = true
+                                    else:
+                                        enemy.set_meta("is_stunned", true)
+                                    var e_stun_timer = 0.0
+                                    if "stun_timer" in enemy:
+                                        e_stun_timer = enemy.stun_timer
+                                    elif enemy.has_method("has_meta") and enemy.has_meta("stun_timer"):
+                                        e_stun_timer = enemy.get_meta("stun_timer")
+                                    e_stun_timer = max(e_stun_timer, 2.0)
+                                    if "stun_timer" in enemy:
+                                        enemy.stun_timer = e_stun_timer
+                                    else:
+                                        enemy.set_meta("stun_timer", e_stun_timer)
         elif skill_name == "silence_aura":
             var enemies = _get_enemies() if has_method("_get_enemies") else []
             if enemies.size() == 0 and "balls" in self.world:
