@@ -1,0 +1,4 @@
+{
+  "title": "Sticky Bomb Powerup",
+  "description": "A booster that attaches a delayed explosive to the player's ball. When they collide with another ball, the bomb transfers to them. After a 5 second timer, it explodes, dealing massive damage to the ball it's currently attached to."
+}

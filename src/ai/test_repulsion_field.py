@@ -1,0 +1,53 @@
+from ai.action import Action
+from arena.procedural_arena import ProceduralArena, Hazard
+
+class DummyBall:
+    def __init__(self, x, y, radius):
+        self.x = x
+        self.y = y
+        self.radius = radius
+        self.hp = 100.0
+        self.alive = True
+        # For idle execution noise
+        self.base_speed = 0.0
+        self.speed = 0.0
+
+class DummyWorld:
+    def __init__(self):
+        self.arena = ProceduralArena(2000.0, 0)
+        self.tick = 0
+        self.boosters = []
+        self.game_mode = {}
+
+def test_repulsion_field_push():
+    world = DummyWorld()
+    world.arena.hazards = [
+        Hazard(id=1, x=1000.0, y=1000.0, radius=200.0, kind="repulsion_field", damage=0.0)
+    ]
+
+    ball = DummyBall(x=1050.0, y=1050.0, radius=10.0)
+    action = Action(ball, world)
+
+    initial_dist = ((ball.x - 1000.0)**2 + (ball.y - 1000.0)**2)**0.5
+
+    for _ in range(10):
+        action.execute("idle", 0.1)
+
+    final_dist = ((ball.x - 1000.0)**2 + (ball.y - 1000.0)**2)**0.5
+
+    assert final_dist > initial_dist
+
+
+def test_repulsion_field_damage():
+    world = DummyWorld()
+    world.arena.hazards = [
+        Hazard(id=1, x=1000.0, y=1000.0, radius=200.0, kind="repulsion_field", damage=10.0)
+    ]
+
+    ball = DummyBall(x=1050.0, y=1050.0, radius=10.0)
+    action = Action(ball, world)
+
+    assert ball.hp == 100.0
+    action.execute("idle", 0.1)
+
+    assert ball.hp < 100.0

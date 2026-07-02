@@ -1564,6 +1564,27 @@ class Action:
                                 push_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 50.0 * delta
                                 self.ball.x += nx * push_strength
                                 self.ball.y += ny * push_strength
+                    elif hazard.kind == "repulsion_field":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            if getattr(hazard, "damage", 0.0) > 0.0:
+                                hazard_damage = hazard.damage * delta
+                                if getattr(self.ball, "is_in_quicksand", False):
+                                    hazard_damage *= 2.0
+                                if hasattr(self.ball, "hp"):
+                                    self.ball.hp -= hazard_damage
+                                    if self.ball.hp <= 0:
+                                        self.ball.alive = False
+
+                            if dist_sq > 0.0001:
+                                dist = math.sqrt(dist_sq)
+                                nx, ny = -dx / dist, -dy / dist
+                                push_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 50.0 * delta
+                                self.ball.x += nx * push_strength
+                                self.ball.y += ny * push_strength
+
                     elif hazard.kind == "gravity_well":
                         # Cosmetics: gravity anomaly already implemented
                         dx = hazard.x - self.ball.x
