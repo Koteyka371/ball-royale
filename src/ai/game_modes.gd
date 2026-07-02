@@ -4909,6 +4909,68 @@ class MirrorWallsMode extends GameMode:
     func tick(world: Variant, balls: Array, delta: float = 0.016) -> void:
         super.tick(world, balls, delta)
 
+
+
+class SupplyDropSafeZoneMode extends MovingSafeZoneMode:
+	var drop_timer: float = 0.0
+
+	func _init() -> void:
+		super()
+		name = "Supply Drop Safe Zone"
+		description = "Periodically spawns high-value supply drops on the edge of the moving safe zone."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		drop_timer = 0.0
+		if not "boosters" in world:
+			world.boosters = []
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		if not "boosters" in world:
+			world.boosters = []
+
+		drop_timer += delta
+		if drop_timer >= 10.0:
+			drop_timer = 0.0
+			# Use a deterministically seeded random based on current tick or time if needed,
+			# but avoiding randomize() per tick prevents lockstep desync.
+			var rng = RandomNumberGenerator.new()
+			var tick_val = 0
+			if "tick" in world:
+				tick_val = world.tick
+			rng.seed = hash(str(zone_radius) + str(tick_val))
+
+			var angle = rng.randf_range(0, 2 * PI)
+			var r = zone_radius + rng.randf_range(-10, 50)
+			var nx = zone_x + r * cos(angle)
+			var ny = zone_y + r * sin(angle)
+
+			var b_id = rng.randi_range(10000, 99999)
+			if rng.randf() < 0.5 and "arena" in world and world.arena != null and "hazards" in world.arena:
+				var HazardClass = null # We use a mock dictionary structure if Hazard isn't available
+				var puddle = {
+					"id": b_id,
+					"x": nx,
+					"y": ny,
+					"radius": 40.0,
+					"kind": "healing_spring",
+					"damage": -10.0,
+					"duration": 15.0
+				}
+				world.arena.hazards.append(puddle)
+			else:
+				world.boosters.append({
+					"id": b_id,
+					"x": nx,
+					"y": ny,
+					"ball_type": "booster",
+					"active": true,
+					"is_immunity": true,
+					"radius": 15.0
+				})
+
 var GAME_MODES = {
     "mirror_walls": MirrorWallsMode.new(),
     "zero_gravity": ZeroGravityMode.new(),
@@ -4953,6 +5015,7 @@ var GAME_MODES = {
     "shrinking_danger_zone": ShrinkingDangerZoneMode.new(),
     "safe_zone": SafeZoneMode.new(),
     "moving_safe_zone": MovingSafeZoneMode.new(),
+	"supply_drop_safe_zone": SupplyDropSafeZoneMode.new(),
     "bounty_hunt": BountyHuntMode.new(),
     "earthquake": EarthquakeMode.new(),
     "mirror_match": MirrorMatchMode.new(),

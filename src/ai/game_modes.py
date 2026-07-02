@@ -4009,6 +4009,58 @@ class MirrorWallsMode(GameMode):
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
 
+
+
+class SupplyDropSafeZoneMode(MovingSafeZoneMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Supply Drop Safe Zone"
+        self.description = "Periodically spawns high-value supply drops on the edge of the moving safe zone."
+        self.drop_timer = 0.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.drop_timer = 0.0
+        if not hasattr(world, "boosters"):
+            world.boosters = []
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math
+        import random
+
+        if not hasattr(world, "boosters"):
+            world.boosters = []
+
+        self.drop_timer += delta
+        if self.drop_timer >= 10.0:
+            self.drop_timer = 0.0
+
+            angle = random.uniform(0, 2 * math.pi)
+            r = self.zone_radius + random.uniform(-10, 50)
+            x = self.zone_x + r * math.cos(angle)
+            y = self.zone_y + r * math.sin(angle)
+
+            if random.random() < 0.5 and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                from arena.procedural_arena import Hazard
+                h_id = len(world.arena.hazards) + random.randint(1000, 9999)
+                puddle = Hazard(id=h_id, x=x, y=y, radius=40.0, kind="healing_spring", damage=-10.0)
+                setattr(puddle, 'duration', 15.0)
+                world.arena.hazards.append(puddle)
+            else:
+                b_id = getattr(world, "next_id", random.randint(10000, 99999))
+                if hasattr(world, "next_id"):
+                    world.next_id += 1
+                world.boosters.append({
+                    "id": b_id,
+                    "x": x,
+                    "y": y,
+                    "ball_type": "booster",
+                    "active": True,
+                    "is_immunity": True,
+                    "radius": 15.0
+                })
+
 GAME_MODES = {
     "mirror_walls": MirrorWallsMode(),
     "zero_gravity": ZeroGravityMode(),
@@ -4052,6 +4104,7 @@ GAME_MODES = {
     "shrinking_danger_zone": ShrinkingDangerZoneMode(),
     "safe_zone": SafeZoneMode(),
     "moving_safe_zone": MovingSafeZoneMode(),
+    "supply_drop_safe_zone": SupplyDropSafeZoneMode(),
     "bounty_hunt": BountyHuntMode(),
     "earthquake": EarthquakeMode(),
     "mirror_match": MirrorMatchMode(),
