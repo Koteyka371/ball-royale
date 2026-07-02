@@ -7615,7 +7615,7 @@
     },
     {
       "id": "idea-441",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Stamina Drain Field",
@@ -12151,6 +12151,40 @@
         "src/ai/emp_strike_variation.py",
         "src/ai/emp_strike_variation.gd",
         "tests/test_emp_strike_variation.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-706",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Breach Charges",
+      "description": "Attackers can pick up 'Breach Charges' that temporarily destroy bumpers or walls in choke points, allowing for alternative entry vectors against entrenched defenders.",
+      "allowed_paths": [
+        "src/ai/breach_charges.py",
+        "src/ai/breach_charges.gd",
+        "tests/test_breach_charges.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-707",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sabotage the Springs Mode",
+      "description": "In Siege mode, attackers can choose to capture and permanently destroy defender healing springs instead of using them, shifting the balance of resources as the game progresses and creating new strategic choices.",
+      "allowed_paths": [
+        "src/ai/sabotage_the_springs.py",
+        "src/ai/sabotage_the_springs.gd",
+        "tests/test_sabotage_the_springs.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
