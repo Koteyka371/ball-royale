@@ -1687,7 +1687,7 @@ class Action:
                                 pull_strength = min(pull_strength, dist * 0.5) # Prevent overshooting
                                 self.ball.x += nx * pull_strength
                                 self.ball.y += ny * pull_strength
-                    elif hazard.kind in ("black_hole", "tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm"):
+                    elif hazard.kind in ("black_hole", "massive_black_hole", "tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm"):
                         # Only update global state once per frame using the tick counter
                         current_tick = getattr(self.world, "tick", 0)
                         if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
@@ -1708,13 +1708,13 @@ class Action:
                                     hazard.vy *= -1
 
                             # Pull balls once per frame
-                            if hazard.kind in ("black_hole", "tornado", "local_tornado"):
+                            if hazard.kind in ("black_hole", "massive_black_hole", "tornado", "local_tornado"):
                                 for b in getattr(self.world, "balls", []):
                                     if getattr(b, "alive", False):
                                         bdx = hazard.x - b.x
                                         bdy = hazard.y - b.y
                                         bdist_sq = bdx * bdx + bdy * bdy
-                                        lifetime_mult = 1.0 + (getattr(hazard, "lifetime", 0.0) / 10.0) if hazard.kind == "black_hole" else 1.0
+                                        lifetime_mult = 1.0 + (getattr(hazard, "lifetime", 0.0) / 10.0) if hazard.kind in ("black_hole", "massive_black_hole") else 1.0
                                         if bdist_sq < hazard.radius * hazard.radius * 4 * lifetime_mult: # Effective pull range
                                             if bdist_sq > 0.0001:
                                                 bdist = math.sqrt(bdist_sq)
@@ -1730,13 +1730,13 @@ class Action:
                                                     b.y += ty * orbital_strength
 
                             # Pull boosters once per frame
-                            if hazard.kind in ("black_hole", "tornado", "local_tornado") and hasattr(self.world, "boosters"):
+                            if hazard.kind in ("black_hole", "massive_black_hole", "tornado", "local_tornado") and hasattr(self.world, "boosters"):
                                 for b in self.world.boosters:
                                     bdx = hazard.x - b.x
                                     bdy = hazard.y - b.y
                                     bdist_sq = bdx * bdx + bdy * bdy
                                     if bdist_sq > 0.0001:
-                                        lifetime_mult = 1.0 + (getattr(hazard, "lifetime", 0.0) / 10.0) if hazard.kind == "black_hole" else 1.0
+                                        lifetime_mult = 1.0 + (getattr(hazard, "lifetime", 0.0) / 10.0) if hazard.kind in ("black_hole", "massive_black_hole") else 1.0
                                         bdist = math.sqrt(bdist_sq)
                                         bnx, bny = bdx / bdist, bdy / bdist
                                         bpull_strength = (hazard.radius * 2.0 / max(10.0, bdist)) * 50.0 * delta * lifetime_mult
@@ -1750,12 +1750,12 @@ class Action:
                                             b.y += ty * orbital_strength
 
                         # Ball specific logic
-                        if hazard.kind in ("black_hole", "tornado", "local_tornado"):
+                        if hazard.kind in ("black_hole", "massive_black_hole", "tornado", "local_tornado"):
                             dx = hazard.x - self.ball.x
                             dy = hazard.y - self.ball.y
                             dist_sq = dx * dx + dy * dy
                             if dist_sq > 0.0001:
-                                lifetime_mult = 1.0 + (getattr(hazard, "lifetime", 0.0) / 10.0) if hazard.kind == "black_hole" else 1.0
+                                lifetime_mult = 1.0 + (getattr(hazard, "lifetime", 0.0) / 10.0) if hazard.kind in ("black_hole", "massive_black_hole") else 1.0
                                 dist = math.sqrt(dist_sq)
                                 nx, ny = dx / dist, dy / dist
                                 pull_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 50.0 * delta * lifetime_mult

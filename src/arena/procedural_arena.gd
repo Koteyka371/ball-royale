@@ -534,8 +534,19 @@ func update_zone(current_tick: int, delta: float) -> void:
                                                 if hazard.has("damage"): hazard["damage"] = hazard["damage"] * 3.0
                                                 if not hazard.has("duration"): hazard["duration"] = 10.0
         last_tick = current_tick
+
+        var has_mbh = false
+        if "hazards" in self:
+            for h in hazards:
+                if h.kind == "massive_black_hole":
+                    has_mbh = true
+                    break
+
         if safe_zone_radius > 50.0:
-            safe_zone_radius -= 10.0 * delta
+            if has_mbh:
+                safe_zone_radius -= 50.0 * delta
+            else:
+                safe_zone_radius -= 10.0 * delta
             if safe_zone_radius <= 50.0:
                 safe_zone_radius = 50.0
         else:
@@ -559,7 +570,7 @@ func update_zone(current_tick: int, delta: float) -> void:
 
             if current_tick % 120 == 0:
                 if has_method("_trigger_event"):
-                    var event_types = ["meteor_shower", "gravity_shift", "orbital_strike"]
+                    var event_types = ["meteor_shower", "gravity_shift", "orbital_strike", "massive_black_hole_event"]
                     call("_trigger_event", event_types[randi() % event_types.size()], current_tick)
                 else:
                     var event_types = ["meteor_shower", "gravity_shift"]
@@ -764,7 +775,7 @@ func update_zone(current_tick: int, delta: float) -> void:
                     new_hazards.append(h)
             hazards = new_hazards
 
-            var event_types = ["meteor_shower", "gravity_shift", "moving_walls", "orbital_strike", "fire_ring", "anomaly_zone", "none"]
+            var event_types = ["meteor_shower", "gravity_shift", "moving_walls", "orbital_strike", "fire_ring", "anomaly_zone", "massive_black_hole_event", "none"]
             var event_type = event_types[randi() % event_types.size()]
             if event_type != "none":
                 _trigger_event(event_type, current_tick)
@@ -1229,6 +1240,13 @@ func _trigger_event(event_type: String, current_tick: int) -> void:
         zone.target_radius = 400.0
         zone.set_meta("duration", 10.0)
         hazards.append(zone)
+    elif event_type == "massive_black_hole_event":
+        var h_id = 9000 + hazards.size()
+        var mbh = ProceduralArena.Hazard.new(h_id, width/2, height/2, 100.0, "massive_black_hole", 10.0)
+        mbh.target_radius = 500.0
+        mbh.set_meta("duration", 20.0)
+        mbh.set_meta("pull_strength", 100.0)
+        hazards.append(mbh)
     elif event_type == "gravity_shift":
         var h_id = 3000 + hazards.size()
         var gw = ProceduralArena.Hazard.new(h_id, width/2, height/2, width/2, "gravity_well", 0.0)
