@@ -497,6 +497,9 @@ class ProceduralArena:
                             h.kind = "orbital_strike_active"
                             h.duration = 0.5
                             h.damage = 1000.0
+                            h.ui_pulse = False
+                            h.show_crosshair = False
+                            h.ui_pulse = False
                 elif getattr(h, "kind", "") == "lightning_strike":
                     if hasattr(h, "duration"):
                         h.duration -= delta
@@ -703,7 +706,12 @@ class ProceduralArena:
             strike = Hazard(id=h_id, x=self.width/2, y=self.height/2, radius=400.0, kind="orbital_strike", damage=0.0)
             strike.target_radius = 400.0
             setattr(strike, "duration", 3.0)
+            setattr(strike, "ui_pulse", True)
+            setattr(strike, "show_crosshair", True)
             self.hazards.append(strike)
+            if hasattr(self, "world") and self.world and hasattr(self.world, "add_event"):
+                self.world.add_event("audio_event", {"sound": "siren_warning", "volume": 1.0})
+                self.world.add_event("weather_warning", {"type": "weather_warning", "message": "WARNING: ORBITAL STRIKE IMMINENT!"})
         elif event_type == "meteor_shower":
             # Spawn multiple small, high-damage hazards quickly
             num_meteors = random.randint(5, 15)

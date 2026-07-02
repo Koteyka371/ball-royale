@@ -575,6 +575,9 @@ func update_zone(current_tick: int, delta: float) -> void:
                         h.kind = "orbital_strike_active"
                         h.set_meta("duration", 0.5)
                         h.damage = 1000.0
+                        h.set_meta("ui_pulse", false)
+                        h.set_meta("show_crosshair", false)
+                        h.set_meta("ui_pulse", false)
             elif "kind" in h and h.kind == "lightning_strike":
                 if h.has_meta("duration"):
                     var dur = h.get_meta("duration") - delta
@@ -1172,7 +1175,12 @@ func _trigger_event(event_type: String, current_tick: int) -> void:
         var strike = ProceduralArena.Hazard.new(h_id, width/2, height/2, 400.0, "orbital_strike", 0.0)
         strike.target_radius = 400.0
         strike.set_meta("duration", 3.0)
+        strike.set_meta("ui_pulse", true)
+        strike.set_meta("show_crosshair", true)
         hazards.append(strike)
+        if "world" in self and self.world != null and self.world.has_method("add_event"):
+            self.world.add_event("audio_event", {"sound": "siren_warning", "volume": 1.0})
+            self.world.add_event("weather_warning", {"type": "weather_warning", "message": "WARNING: ORBITAL STRIKE IMMINENT!"})
     elif event_type == "meteor_shower":
         var num_meteors = (randi() % 11) + 5
         for i in range(num_meteors):
