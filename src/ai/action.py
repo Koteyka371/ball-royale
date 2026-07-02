@@ -830,9 +830,22 @@ class Action:
                     self.ball._is_wind_riding = False
 
         # Zero gravity processing (friction)
+        in_anomaly_zone = False
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            for hazard in self.world.arena.hazards:
+                if getattr(hazard, "kind", "") == "anomaly_zone" and getattr(hazard, "active", True):
+                    dx = hazard.x - self.ball.x
+                    dy = hazard.y - self.ball.y
+                    if (dx*dx + dy*dy) <= getattr(hazard, "radius", 0)**2:
+                        in_anomaly_zone = True
+                        break
+        self.ball.in_anomaly_zone = in_anomaly_zone
+
         gm = getattr(self.world, "game_mode", None)
         is_zero_gravity = False
-        if gm:
+        if in_anomaly_zone:
+            is_zero_gravity = True
+        elif gm:
             if getattr(gm, "name", "") == "Zero Gravity":
                 is_zero_gravity = True
             elif getattr(gm, "name", "") == "Custom Match":
@@ -5353,7 +5366,10 @@ class Action:
 
                 knockback_multiplier = 1.0
                 gm = getattr(self.world, "game_mode", None)
-                if gm and getattr(gm, "name", "") == "Bumper Balls":
+                in_anomaly_zone = getattr(self.ball, "in_anomaly_zone", False)
+                if in_anomaly_zone:
+                    knockback_multiplier = 5.0
+                elif gm and getattr(gm, "name", "") == "Bumper Balls":
                     knockback_multiplier = 5.0
                 elif gm and getattr(gm, "name", "") == "Zero Gravity":
                     knockback_multiplier = 5.0
