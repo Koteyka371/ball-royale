@@ -287,6 +287,98 @@ func _attempt_damage(attacker, target) -> void:
 			if self.world != null and self.world.has_method("_deal_damage"):
 				self.world._deal_damage(attacker, target)
 
+		var weather = ""
+		if self.world != null and "game_mode" in self.world and self.world.game_mode != null and "weather" in self.world.game_mode:
+			weather = str(self.world.game_mode.weather)
+		if weather == "magnetic_storm":
+			var chain_radius = 100.0
+			var chain_chance = 0.5
+			if randf() < chain_chance:
+				var chain_damage = original_damage * 0.5
+				var nearby_entities = []
+
+				var tx = 0.0
+				var ty = 0.0
+				if "x" in target: tx = float(target.x)
+				elif target.has_method("get_meta"): tx = float(target.get_meta("x"))
+				if "y" in target: ty = float(target.y)
+				elif target.has_method("get_meta"): ty = float(target.get_meta("y"))
+
+				var target_id = null
+				if "id" in target: target_id = target.id
+				elif target.has_method("get_meta") and target.has_meta("id"): target_id = target.get_meta("id")
+
+				var attacker_id = null
+				if "id" in attacker: attacker_id = attacker.id
+				elif attacker.has_method("get_meta") and attacker.has_meta("id"): attacker_id = attacker.get_meta("id")
+
+				if "balls" in self.world:
+					for b in self.world.balls:
+						var b_alive = false
+						if "alive" in b and b.alive: b_alive = true
+						elif b.has_method("get_meta") and b.has_meta("alive") and b.get_meta("alive"): b_alive = true
+
+						var b_id = null
+						if "id" in b: b_id = b.id
+						elif b.has_method("get_meta") and b.has_meta("id"): b_id = b.get_meta("id")
+
+						if b_alive and b_id != target_id and b_id != attacker_id:
+							var bx = 0.0
+							var by = 0.0
+							if "x" in b: bx = float(b.x)
+							elif b.has_method("get_meta"): bx = float(b.get_meta("x"))
+							if "y" in b: by = float(b.y)
+							elif b.has_method("get_meta"): by = float(b.get_meta("y"))
+
+							var d_sq = (bx - tx)*(bx - tx) + (by - ty)*(by - ty)
+							if d_sq <= chain_radius * chain_radius:
+								nearby_entities.append({"d_sq": d_sq, "entity": b})
+
+				if "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+					for h in self.world.arena.hazards:
+						var h_active = true
+						if "active" in h: h_active = bool(h.active)
+						elif h.has_method("get_meta") and h.has_meta("active"): h_active = bool(h.get_meta("active"))
+
+						var h_id = null
+						if "id" in h: h_id = h.id
+						elif h.has_method("get_meta") and h.has_meta("id"): h_id = h.get_meta("id")
+
+						if h_active and h_id != target_id:
+							var hx = 0.0
+							var hy = 0.0
+							if "x" in h: hx = float(h.x)
+							elif h.has_method("get_meta"): hx = float(h.get_meta("x"))
+							if "y" in h: hy = float(h.y)
+							elif h.has_method("get_meta"): hy = float(h.get_meta("y"))
+
+							var d_sq = (hx - tx)*(hx - tx) + (hy - ty)*(hy - ty)
+							if d_sq <= chain_radius * chain_radius:
+								nearby_entities.append({"d_sq": d_sq, "entity": h})
+
+				if nearby_entities.size() > 0:
+					var closest_ent = nearby_entities[0]
+					for i in range(1, nearby_entities.size()):
+						if nearby_entities[i].d_sq < closest_ent.d_sq:
+							closest_ent = nearby_entities[i]
+
+					var next_target = closest_ent.entity
+					var old_dmg = original_damage
+					if "damage" in attacker: attacker.damage = chain_damage
+
+					if self.world != null and self.world.has_method("_deal_damage"):
+						self.world._deal_damage(attacker, next_target)
+					elif "hp" in next_target:
+						if typeof(next_target) != TYPE_DICTIONARY and next_target.has_method("set_meta"):
+							next_target.set_meta("hp", float(next_target.hp) - chain_damage)
+						else:
+							next_target.hp -= chain_damage
+
+					if "damage" in attacker: attacker.damage = old_dmg
+
+					if self.has_method("_spawn_skill_particles"):
+						self._spawn_skill_particles("lightning")
+
 		if (is_nemesis_active or b_type_attacker == "bounty_hunter") and "damage" in attacker:
 			attacker.damage = original_damage
 

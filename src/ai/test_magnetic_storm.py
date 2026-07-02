@@ -76,3 +76,50 @@ def test_magnetic_storm_assigns_polarity():
     assert hasattr(b1, "polarity")
     assert b1.polarity in [1, -1]
     assert b1.cosmetic in ["magnet_plus", "magnet_minus"]
+
+def test_magnetic_storm_chain_damage():
+    from ai.action import Action
+
+    class MockWorldChain:
+        def __init__(self):
+            self.arena = None
+            self.balls = []
+            self.game_mode = type('GameMode', (), {'weather': 'magnetic_storm'})()
+
+        def _deal_damage(self, attacker, target):
+            if hasattr(target, "hp"):
+                target.hp -= getattr(attacker, "damage", 10.0)
+
+    class MockBallChain:
+        def __init__(self, id, x, y, hp=100.0, team="A", ball_type="basic"):
+            self.id = id
+            self.x = x
+            self.y = y
+            self.hp = hp
+            self.team = team
+            self.ball_type = ball_type
+            self.alive = True
+            self.damage = 20.0
+
+    world = MockWorldChain()
+    b1 = MockBallChain(1, 100, 100, team="A")
+    b2 = MockBallChain(2, 120, 100, team="B")
+    b3 = MockBallChain(3, 140, 100, team="B")
+
+    world.balls = [b1, b2, b3]
+
+    # Force chain randomness to be 100%
+    import random
+    original_random = random.random
+    random.random = lambda: 0.0
+
+    try:
+        action = Action(b1, world)
+        action._attempt_damage(b1, b2)
+
+        # Original damage 20
+        # Chain damage 10
+        assert b2.hp == 80.0
+        assert b3.hp == 90.0
+    finally:
+        random.random = original_random
