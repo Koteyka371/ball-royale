@@ -4216,7 +4216,56 @@ class GeometricZoneMode(GameMode):
                         b.hp = 0
                         b.killer = "Geometric Zone"
 
+
+class BodySwapMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Body Swap"
+        self.description = "Periodically swaps player controls/positions to add confusion."
+        self.swap_timer = 0.0
+        self.swap_interval = 10.0
+
+    def setup(self, world, balls):
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+    def tick(self, world, balls, delta=0.016):
+        import random
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+
+        self.swap_timer += delta
+        if self.swap_timer >= self.swap_interval:
+            self.swap_timer = 0.0
+            alive_balls = [b for b in balls if getattr(b, "alive", False)]
+            if len(alive_balls) >= 2:
+                random.shuffle(alive_balls)
+                for i in range(0, len(alive_balls) - 1, 2):
+                    b1 = alive_balls[i]
+                    b2 = alive_balls[i+1]
+
+                    # Swap positions and velocities
+                    b1.x, b2.x = b2.x, b1.x
+                    b1.y, b2.y = b2.y, b1.y
+
+                    vx1, vy1 = getattr(b1, "vx", 0.0), getattr(b1, "vy", 0.0)
+                    vx2, vy2 = getattr(b2, "vx", 0.0), getattr(b2, "vy", 0.0)
+                    b1.vx, b1.vy = vx2, vy2
+                    b2.vx, b2.vy = vx1, vy1
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("body_swap", {"type": "body_swap", "message": "Body Swap! Players swap places!"})
+
 GAME_MODES = {
+
     "geometric_zone": GeometricZoneMode(),
     "mirror_walls": MirrorWallsMode(),
     "zero_gravity": ZeroGravityMode(),
@@ -4265,7 +4314,8 @@ GAME_MODES = {
     "mirror_match": MirrorMatchMode(),
     "clone_chaos": CloneChaosMode(),
     "supernova": SupernovaMode(),
-    "echolocation": EcholocationMode()
+    "echolocation": EcholocationMode(),
+    "body_swap": BodySwapMode()
 }
 
 try:
