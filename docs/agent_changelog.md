@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-423] Bounty Hunter Classes — *2026-07-02 15:27:38 UTC*
+
+Introduce a new ball class called 'Bounty Hunter' that deals double damage to balls marked as bounties or high-threat targets in specific game modes.
+
+---
+
 ## [idea-438] Minefield Event — *2026-07-02 15:06:47 UTC*
 
 A random event where multiple invisible or visible mines appear, detonating on contact.

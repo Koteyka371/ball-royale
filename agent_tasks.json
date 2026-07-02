@@ -7309,7 +7309,7 @@
     },
     {
       "id": "idea-423",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bounty Hunter Classes",
@@ -12526,6 +12526,57 @@
         "src/ai/skill_re_roll_item.py",
         "src/ai/skill_re_roll_item.gd",
         "tests/test_skill_re_roll_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-728",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Echo Clones Mode",
+      "description": "Every few seconds, a trail of static clones is left behind every ball. If an enemy touches a clone, it detonates and deals damage.",
+      "allowed_paths": [
+        "src/ai/echo_clones.py",
+        "src/ai/echo_clones.gd",
+        "tests/test_echo_clones.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-729",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Interactive Twitch Integration",
+      "description": "Allow real spectators via Twitch or YouTube chat to vote on the crowd events in real-time by typing keywords into chat, bypassing the simulated probability-based voting system.",
+      "allowed_paths": [
+        "src/ai/interactive_twitch_integration.py",
+        "src/ai/interactive_twitch_integration.gd",
+        "tests/test_interactive_twitch_integration.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-730",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Player Bribery Mechanism",
+      "description": "Players can use a currency earned during matches to 'bribe' the crowd system, either instantly ending an ongoing vote they dislike or slightly skewing the result toward a favorable outcome.",
+      "allowed_paths": [
+        "src/ai/player_bribery_mechanism.py",
+        "src/ai/player_bribery_mechanism.gd",
+        "tests/test_player_bribery_mechanism.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
