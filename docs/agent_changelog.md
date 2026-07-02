@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-413] Reverse Gravity Booster — *2026-07-02 15:27:42 UTC*
+
+A booster that reverses the gravity for a short time for players that touch it.
+
+---
+
 ## [idea-423] Bounty Hunter Classes — *2026-07-02 15:27:38 UTC*
 
 Introduce a new ball class called 'Bounty Hunter' that deals double damage to balls marked as bounties or high-threat targets in specific game modes.
