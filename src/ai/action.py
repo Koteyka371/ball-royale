@@ -944,6 +944,15 @@ class Action:
                                         if other.hp <= 0:
                                             other.alive = False
 
+                                        # Reward the owner for hitting enemies with a decoy explosion
+                                        if getattr(b, "owner_id", None) is not None:
+                                            # We just hit 'other'
+                                            owner = next((o for o in self.world.balls if getattr(o, "id", None) == getattr(b, "owner_id", None)), None)
+                                            if owner is not None:
+                                                if not hasattr(owner, "score"):
+                                                    owner.score = 0
+                                                owner.score += 5  # Give points for a successful decoy trap
+
                             # Spawn poison cloud
                             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                                 try:
