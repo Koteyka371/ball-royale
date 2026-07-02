@@ -5807,6 +5807,39 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "freeze_booster":
+                var fduration = 3.0
+                if "duration" in nearest: fduration = nearest.duration
+                if self.world != null and "balls" in self.world:
+                    for other_ball in self.world.balls:
+                        var same_team = false
+                        if "team" in other_ball and "team" in self.ball and other_ball.team == self.ball.team:
+                            same_team = true
+                        var alive = true
+                        if "alive" in other_ball: alive = other_ball.alive
+                        if not same_team and alive:
+                            var current_stun = 0.0
+                            if "stun_timer" in other_ball: current_stun = other_ball.stun_timer
+                            elif other_ball.has_method("get_meta") and other_ball.has_meta("stun_timer"): current_stun = other_ball.get_meta("stun_timer")
+                            var new_stun = max(current_stun, fduration)
+                            if "stun_timer" in other_ball: other_ball.stun_timer = new_stun
+                            elif other_ball.has_method("set_meta"): other_ball.set_meta("stun_timer", new_stun)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    for h in self.world.arena.hazards:
+                        if h != nearest:
+                            var current_frozen = 0.0
+                            if "frozen_timer" in h: current_frozen = h.frozen_timer
+                            elif h.has_method("get_meta") and h.has_meta("frozen_timer"): current_frozen = h.get_meta("frozen_timer")
+                            var new_frozen = max(current_frozen, fduration)
+                            if "frozen_timer" in h: h.frozen_timer = new_frozen
+                            elif h.has_method("set_meta"): h.set_meta("frozen_timer", new_frozen)
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "emp_item":
                 if self.world != null and "balls" in self.world:
                     for other_ball in self.world.balls:
@@ -7446,7 +7479,7 @@ func _use_skill():
                     elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
                     elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
 
-                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster"]:
+                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster"]:
                         var hx = 0.0
                         var hy = 0.0
                         if "x" in h: hx = h.x
@@ -8250,7 +8283,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster"]
+                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y

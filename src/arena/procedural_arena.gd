@@ -161,6 +161,8 @@ func generate():
             kind = "portal_gun_item"
         elif r < 0.45:
             kind = "silence_booster"
+        elif r < 0.46:
+            kind = "freeze_booster"
         elif r < 0.5:
             kind = "stamina_booster"
         elif r < 0.55:
@@ -253,10 +255,13 @@ func generate():
         elif kind == "silence_booster":
             radius = 15.0
             damage = 0.0
+        elif kind == "freeze_booster":
+            radius = 15.0
+            damage = 0.0
         elif kind == "link_booster":
             radius = 15.0
             damage = 0.0
-        elif kind == "stamina_booster" or kind == "weather_booster" or kind == "magnet_booster" or kind == "clone_booster" or kind == "invert_booster":
+        elif kind == "stamina_booster" or kind == "weather_booster" or kind == "magnet_booster" or kind == "clone_booster" or kind == "invert_booster" or kind == "freeze_booster":
             radius = 15.0
             damage = 0.0
         elif kind == "stealth_zone":
@@ -690,6 +695,9 @@ func update_zone(current_tick: int, delta: float) -> void:
                     h.damage = 0.0
                 elif randf() < 0.05:
                     h.kind = "silence_booster"
+                    h.damage = 0.0
+                elif randf() < 0.05:
+                    h.kind = "freeze_booster"
                     h.damage = 0.0
                 elif randf() < 0.10:
                     h.kind = "placeable_trap_item"
