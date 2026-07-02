@@ -2525,7 +2525,7 @@ func execute(strategy: String, delta: float):
                             var pull_strength = (hazard.radius * 2.0 / min_dist) * 50.0 * delta
                             self.ball.x += nx * pull_strength
                             self.ball.y += ny * pull_strength
-                elif hazard.kind in ["black_hole", "tornado", "local_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm"]:
+                elif hazard.kind in ["black_hole", "massive_black_hole", "tornado", "local_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm"]:
                     var current_tick = 0
                     if "tick" in self.world:
                         current_tick = self.world.tick
@@ -2550,7 +2550,7 @@ func execute(strategy: String, delta: float):
                         if hazard.y < 100 or hazard.y > self.world.arena.height - 100:
                             hazard.set_meta("vy", -hvy)
 
-                        if hazard.kind in ["black_hole", "tornado", "local_tornado"] and "boosters" in self.world:
+                        if hazard.kind in ["black_hole", "massive_black_hole", "tornado", "local_tornado"] and "boosters" in self.world:
                             for b in self.world.boosters:
                                 var bdx = hazard.x - b.x
                                 var bdy = hazard.y - b.y
@@ -2563,7 +2563,7 @@ func execute(strategy: String, delta: float):
                                     if bdist > bmin_dist:
                                         bmin_dist = bdist
                                     var lifetime_mult = 1.0
-                                    if hazard.kind == "black_hole" and hazard.has_meta("lifetime"):
+                                    if hazard.kind in ["black_hole", "massive_black_hole"] and hazard.has_meta("lifetime"):
                                         lifetime_mult = 1.0 + (hazard.get_meta("lifetime") / 10.0)
                                     var bpull_strength = (hazard.radius * 2.0 / bmin_dist) * 50.0 * delta * lifetime_mult
                                     b.x += bnx * bpull_strength
@@ -2575,13 +2575,13 @@ func execute(strategy: String, delta: float):
                                         b.x += tx * orbital_strength
                                         b.y += ty * orbital_strength
 
-                    if hazard.kind in ["black_hole", "tornado", "local_tornado"]:
+                    if hazard.kind in ["black_hole", "massive_black_hole", "tornado", "local_tornado"]:
                         var dx = hazard.x - self.ball.x
                         var dy = hazard.y - self.ball.y
                         var dist_sq = dx * dx + dy * dy
                         if dist_sq > 0.0001:
                             var lifetime_mult = 1.0
-                            if hazard.kind == "black_hole" and hazard.has_meta("lifetime"):
+                            if hazard.kind in ["black_hole", "massive_black_hole"] and hazard.has_meta("lifetime"):
                                 lifetime_mult = 1.0 + (hazard.get_meta("lifetime") / 10.0)
                             var dist = sqrt(dist_sq)
                             var nx = dx / dist

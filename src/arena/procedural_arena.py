@@ -461,8 +461,14 @@ class ProceduralArena:
                                                     hazard.duration = 10.0
 
             self.last_tick = current_tick
+
+            # Massive Black Hole Event logic
+            has_mbh = any(h.kind == "massive_black_hole" for h in getattr(self, "hazards", []))
             if self.safe_zone_radius > 50.0:
-                self.safe_zone_radius -= 10.0 * delta
+                if has_mbh:
+                    self.safe_zone_radius -= 50.0 * delta
+                else:
+                    self.safe_zone_radius -= 10.0 * delta
                 if self.safe_zone_radius <= 50.0:
                     self.safe_zone_radius = 50.0
             else:
@@ -491,7 +497,7 @@ class ProceduralArena:
                 if current_tick % 120 == 0:
                     import random
                     if hasattr(self, "_trigger_event"):
-                        self._trigger_event(random.choice(["meteor_shower", "gravity_shift", "orbital_strike"]), current_tick)
+                        self._trigger_event(random.choice(["meteor_shower", "gravity_shift", "orbital_strike", "massive_black_hole_event"]), current_tick)
                     else:
                         event_type = random.choice(["meteor_shower", "gravity_shift"])
                         if event_type == "meteor_shower":
@@ -510,6 +516,13 @@ class ProceduralArena:
                             zone.target_radius = 400.0
                             setattr(zone, "duration", 10.0)
                             self.hazards.append(zone)
+                        elif event_type == "massive_black_hole_event":
+                            h_id = 9000 + len(self.hazards)
+                            mbh = Hazard(id=h_id, x=self.width/2, y=self.height/2, radius=100.0, kind="massive_black_hole", damage=10.0)
+                            mbh.target_radius = 500.0
+                            setattr(mbh, "duration", 20.0)
+                            setattr(mbh, "pull_strength", 100.0)
+                            self.hazards.append(mbh)
                         elif event_type == "gravity_shift":
 
                             gw = Hazard(id=len(self.hazards) + random.randint(3000, 9999), x=self.width/2, y=self.height/2, radius=self.width/2, kind="gravity_well", damage=10.0)
@@ -653,7 +666,7 @@ class ProceduralArena:
             self.hazards = [h for h in self.hazards if h.id < 1000]
 
             # Periodically trigger random arena-wide events
-            event_type = random.choice(["meteor_shower", "gravity_shift", "moving_walls", "orbital_strike", "fire_ring", "anomaly_zone", "none"])
+            event_type = random.choice(["meteor_shower", "gravity_shift", "moving_walls", "orbital_strike", "fire_ring", "anomaly_zone", "massive_black_hole_event", "none"])
             if event_type != "none":
                 self._trigger_event(event_type, current_tick)
 
@@ -768,6 +781,13 @@ class ProceduralArena:
             zone.target_radius = 400.0
             setattr(zone, "duration", 10.0)
             self.hazards.append(zone)
+        elif event_type == "massive_black_hole_event":
+            h_id = 9000 + len(self.hazards)
+            mbh = Hazard(id=h_id, x=self.width/2, y=self.height/2, radius=100.0, kind="massive_black_hole", damage=10.0)
+            mbh.target_radius = 500.0
+            setattr(mbh, "duration", 20.0)
+            setattr(mbh, "pull_strength", 100.0)
+            self.hazards.append(mbh)
         elif event_type == "gravity_shift":
             # Add a massive gravity well in the center
             h_id = 3000 + len(self.hazards)
