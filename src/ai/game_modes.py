@@ -4597,7 +4597,74 @@ class TugOfWarMode(GameMode):
         return None
 
 
+
+class MinefieldEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Minefield Event"
+        self.description = "A random event where multiple mines appear, detonating on contact."
+        self.event_timer = 0.0
+        self.event_active = False
+        self.event_duration = 0.0
+        self.mines = []
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        import math
+        import random
+
+        if not self.event_active:
+            self.event_timer += delta
+
+        if not self.event_active and self.event_timer > 20.0:
+            if random.random() < 0.2:  # 20% chance every 20 seconds to trigger
+                self.event_active = True
+                self.event_duration = 15.0
+                self.event_timer = 0.0
+                self.mines = []
+                # Spawn some mines
+                for _ in range(random.randint(5, 10)):
+                    self.mines.append({
+                        "x": random.uniform(100, 700),
+                        "y": random.uniform(100, 500),
+                        "radius": 15,
+                        "damage": 50,
+                        "active": True,
+                        "visible": random.choice([True, False])
+                    })
+                if hasattr(world, "add_event"):
+                    world.add_event("minefield_event", {"message": "MINEFIELD EVENT! Watch your step!"})
+            else:
+                self.event_timer = 0.0
+
+        if self.event_active:
+            self.event_duration -= delta
+            if self.event_duration <= 0:
+                self.event_active = False
+                self.event_timer = 0.0
+                self.mines = []
+                if hasattr(world, "add_event"):
+                    world.add_event("minefield_event_ended", {"message": "Minefield cleared!"})
+
+            for b in balls:
+                if not getattr(b, "alive", False):
+                    continue
+                for m in self.mines:
+                    if not m["active"]:
+                        continue
+                    dx = b.x - m["x"]
+                    dy = b.y - m["y"]
+                    dist = math.hypot(dx, dy)
+                    if dist < b.radius + m["radius"]:
+                        m["active"] = False
+                        if hasattr(b, "take_damage"):
+                            b.take_damage(m["damage"])
+                        elif hasattr(b, "hp"):
+                            b.hp -= m["damage"]
+                        if hasattr(world, "add_event"):
+                            world.add_event("mine_explosion", {"x": m["x"], "y": m["y"]})
+
 GAME_MODES = {
+
 
     "geometric_zone": GeometricZoneMode(),
     "mirror_walls": MirrorWallsMode(),
@@ -4626,6 +4693,7 @@ GAME_MODES = {
     "dynamic_hazards": DynamicHazardsMode(),
     "custom_match": CustomMatchMode(),
     "reverse_event": ReverseEventMode(),
+    "minefield_event": MinefieldEventMode(),
     "weather_chaos": WeatherChaosMode(),
     "domination": DominationMode(),
     "black_hole": BlackHoleMode(),
