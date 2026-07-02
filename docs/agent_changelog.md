@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-408] Orbital Shield Utility Skill — *2026-07-02 12:24:08 UTC*
+
+Add a new utility skill 'Orbital Shield' that creates a localized 300-radius dome that significantly reduces incoming damage from area effects like meteors and orbital strikes, providing an anchor point for teams during chaotic events.
+
+---
+
 ## [idea-412] Shrinking Health Hazard — *2026-07-02 12:24:04 UTC*
 
 A hazard that slowly shrinks the maximum health of nearby players over time.
