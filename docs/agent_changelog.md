@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-427] Mirror Match Game Mode — *2026-07-02 18:20:07 UTC*
+
+A new game mode where every ball starts with a reflect shield and no standard attacks work. Players must push map hazards or environmental objects into each other to deal damage, rewarding positional play and strategic bounces.
+
+---
+
 ## [idea-437] Grappling Hook — *2026-07-02 17:47:38 UTC*
 
 Add a new ability to allow balls to grapple and pull themselves towards walls.

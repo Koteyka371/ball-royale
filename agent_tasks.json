@@ -7377,7 +7377,7 @@
     },
     {
       "id": "idea-427",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mirror Match Game Mode",
@@ -12799,6 +12799,57 @@
         "src/ai/reverse_time_pickup.py",
         "src/ai/reverse_time_pickup.gd",
         "tests/test_reverse_time_pickup.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-744",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Time Stop Relic",
+      "description": "An ancient relic that, when collected, completely pauses time for all enemies and hazards for 3 seconds, allowing the user to reposition or escape.",
+      "allowed_paths": [
+        "src/ai/time_stop_relic.py",
+        "src/ai/time_stop_relic.gd",
+        "tests/test_time_stop_relic.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-745",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Generator",
+      "description": "A rare collectable item that deploys a massive gravity well which pulls all entities towards the center and explodes after a short delay.",
+      "allowed_paths": [
+        "src/ai/black_hole_generator.py",
+        "src/ai/black_hole_generator.gd",
+        "tests/test_black_hole_generator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-746",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole mode",
+      "description": "A new mode where a black hole in the center slowly grows and pulls players inwards.",
+      "allowed_paths": [
+        "src/ai/black_hole.py",
+        "src/ai/black_hole.gd",
+        "tests/test_black_hole.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
