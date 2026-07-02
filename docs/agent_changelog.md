@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-439] Tug-of-War Mode — *2026-07-02 13:11:30 UTC*
+
+Introduce a mode where a single payload is centered. Both teams fight to push/pull the payload to the opposing team’s goal.
+
+---
+
 ## [idea-435] Hazard Interaction Combos — *2026-07-02 13:06:27 UTC*
 
 Allow specific hazards to interact with each other for combo effects. For example, if a 'magnet' hazard pulls an 'explosive_barrel' or a 'flare', it creates a massive clustered explosion or area-of-effect zone. This introduces a strategic depth where players can trick enemies into pulling explosives towards them.

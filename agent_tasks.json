@@ -7581,7 +7581,7 @@
     },
     {
       "id": "idea-439",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Tug-of-War Mode",
@@ -12015,6 +12015,23 @@
         "src/ai/interactive_streamer.py",
         "src/ai/interactive_streamer.gd",
         "tests/test_interactive_streamer.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-698",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Hologram Projector",
+      "description": "A consumable item that spawns 3 fragile holograms of the player that run in different directions to confuse enemies. The holograms vanish immediately if they take any damage.",
+      "allowed_paths": [
+        "src/ai/decoy_hologram_projector.py",
+        "src/ai/decoy_hologram_projector.gd",
+        "tests/test_decoy_hologram_projector.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
