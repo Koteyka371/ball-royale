@@ -336,11 +336,42 @@ func _attempt_damage(attacker, target) -> void:
 
 				while jump_count < 3:
 					var nearby = []
-					for e in enemies:
-						if not hit_entities.has(e):
-							var dist_sq = pow(e.x - current_target.x, 2) + pow(e.y - current_target.y, 2)
-							if dist_sq < chain_range_sq:
-								nearby.append({"dist": dist_sq, "entity": e, "type": "enemy"})
+
+					var emp_trap_found = null
+					var min_emp_dist = 9999999.0
+					for h in hazards:
+						var h_kind = ""
+						if "kind" in h: h_kind = h.kind
+						elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): h_kind = h.kind
+						elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): h_kind = h.get_meta("kind")
+
+						var h_active = true
+						if "active" in h: h_active = h.active
+						elif typeof(h) == TYPE_DICTIONARY and h.has("active"): h_active = h.active
+						elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("active"): h_active = h.get_meta("active")
+
+						if h_kind == "emp_trap" and h_active:
+							var h_x = 0.0
+							var h_y = 0.0
+							if typeof(h) == TYPE_DICTIONARY:
+								h_x = h.get("x", 0.0)
+								h_y = h.get("y", 0.0)
+							else:
+								h_x = h.x
+								h_y = h.y
+							var d_sq = (h_x - current_target.x)*(h_x - current_target.x) + (h_y - current_target.y)*(h_y - current_target.y)
+							if d_sq <= chain_range_sq and d_sq < min_emp_dist:
+								emp_trap_found = h
+								min_emp_dist = d_sq
+
+					if emp_trap_found != null:
+						nearby.append({"dist": 0, "entity": emp_trap_found, "type": "emp_trap"})
+					else:
+						for e in enemies:
+							if not hit_entities.has(e):
+								var dist_sq = pow(e.x - current_target.x, 2) + pow(e.y - current_target.y, 2)
+								if dist_sq < chain_range_sq:
+									nearby.append({"dist": dist_sq, "entity": e, "type": "enemy"})
 					for h in hazards:
 						if not hit_entities.has(h):
 							var is_active = true
@@ -494,6 +525,18 @@ func _attempt_damage(attacker, target) -> void:
 					else:
 						if self.world != null and self.world.has_method("_deal_damage"):
 							self.world._deal_damage(attacker, next_entity)
+					elif e_type == "emp_trap":
+						var charge = 0.0
+						if "charge" in next_entity: charge = float(next_entity.charge)
+						elif typeof(next_entity) == TYPE_DICTIONARY and next_entity.has("charge"): charge = float(next_entity.charge)
+						elif next_entity.has_method("has_meta") and next_entity.has_meta("charge"): charge = float(next_entity.get_meta("charge"))
+
+						if "charge" in next_entity: next_entity.charge = charge + current_damage
+						elif typeof(next_entity) == TYPE_DICTIONARY: next_entity["charge"] = charge + current_damage
+						elif next_entity.has_method("set_meta"): next_entity.set_meta("charge", charge + current_damage)
+
+						current_damage = 0.0
+						break
 					elif e_type == "hazard" or e_type == "item" or e_type == "booster":
 						var n_kind = ""
 						if typeof(next_entity) == TYPE_DICTIONARY and next_entity.has("kind"): n_kind = next_entity["kind"]
@@ -555,6 +598,53 @@ func execute(strategy: String, delta: float):
     elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("_chrono_slow"):
         self.ball.erase("_chrono_slow")
 
+
+	# EMP Trap Logic
+	if "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+		var hazards_to_remove_emp = []
+		for h in self.world.arena.hazards:
+			var h_kind = ""
+			if "kind" in h: h_kind = h.kind
+			elif h.has_method("has_meta") and h.has_meta("kind"): h_kind = h.get_meta("kind")
+
+			var h_active = true
+			if "active" in h: h_active = h.active
+			elif h.has_method("has_meta") and h.has_meta("active"): h_active = h.get_meta("active")
+
+			if h_kind == "emp_trap" and h_active:
+				var charge = 0.0
+				if "charge" in h: charge = float(h.charge)
+				elif h.has_method("has_meta") and h.has_meta("charge"): charge = float(h.get_meta("charge"))
+
+				if charge >= 100.0:
+					var radius = 150.0
+					if "radius" in h: radius = h.radius
+					elif h.has_method("has_meta") and h.has_meta("radius"): radius = h.get_meta("radius")
+
+					var enemies = _get_enemies()
+					for enemy in enemies:
+						var dx = enemy.x - h.x
+						var dy = enemy.y - h.y
+						if dx*dx + dy*dy <= radius*radius:
+							if "silence_timer" in enemy:
+								enemy.silence_timer = max(float(enemy.silence_timer), 3.0)
+							elif enemy.has_method("set_meta"):
+								var c_s = 0.0
+								if enemy.has_meta("silence_timer"): c_s = enemy.get_meta("silence_timer")
+								enemy.set_meta("silence_timer", max(c_s, 3.0))
+
+							if enemy.has_method("set_meta"):
+								enemy.set_meta("_chrono_slow", 0.5)
+							elif typeof(enemy) == TYPE_DICTIONARY:
+								enemy["_chrono_slow"] = 0.5
+
+					if "active" in h: h.active = false
+					elif h.has_method("set_meta"): h.set_meta("active", false)
+					hazards_to_remove_emp.append(h)
+
+		for h in hazards_to_remove_emp:
+			if h in self.world.arena.hazards:
+				self.world.arena.hazards.erase(h)
 
 	# Magnet passive: pull boosters and smaller entities
 	var btype = ""
@@ -7097,6 +7187,25 @@ func _use_skill():
                     strike_range *= 1.5
 
                 if dist <= strike_range:
+                    var emp_trap_found = null
+                    if "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+                        for h in self.world.arena.hazards:
+                            var h_kind = ""
+                            if "kind" in h: h_kind = h.kind
+                            elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): h_kind = h.kind
+                            elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): h_kind = h.get_meta("kind")
+                            var h_active = true
+                            if "active" in h: h_active = h.active
+                            elif typeof(h) == TYPE_DICTIONARY and h.has("active"): h_active = h.active
+                            elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("active"): h_active = h.get_meta("active")
+                            if h_kind == "emp_trap" and h_active:
+                                var h_x = h.x if "x" in h else h.get("x", 0.0)
+                                var h_y = h.y if "y" in h else h.get("y", 0.0)
+                                var h_dist = sqrt((h_x - self.ball.x)*(h_x - self.ball.x) + (h_y - self.ball.y)*(h_y - self.ball.y))
+                                if h_dist <= strike_range:
+                                    emp_trap_found = h
+                                    break
+
                     var dmg = 24.0
                     if "damage" in self.ball:
                         dmg = self.ball.damage
@@ -7106,10 +7215,22 @@ func _use_skill():
                     if is_raining:
                         dmg *= 1.5
 
-                    if target.has_method("take_damage"):
-                        target.take_damage(dmg)
-                    elif "hp" in target:
-                        target.hp -= dmg
+                    if emp_trap_found != null:
+                        var charge = 0.0
+                        if "charge" in emp_trap_found: charge = float(emp_trap_found.charge)
+                        elif typeof(emp_trap_found) == TYPE_DICTIONARY and emp_trap_found.has("charge"): charge = float(emp_trap_found.charge)
+                        elif typeof(emp_trap_found) == TYPE_OBJECT and emp_trap_found.has_method("has_meta") and emp_trap_found.has_meta("charge"): charge = float(emp_trap_found.get_meta("charge"))
+
+                        if "charge" in emp_trap_found: emp_trap_found.charge = charge + dmg
+                        elif typeof(emp_trap_found) == TYPE_DICTIONARY: emp_trap_found["charge"] = charge + dmg
+                        elif typeof(emp_trap_found) == TYPE_OBJECT and emp_trap_found.has_method("set_meta"): emp_trap_found.set_meta("charge", charge + dmg)
+
+                        target = emp_trap_found
+                    else:
+                        if target.has_method("take_damage"):
+                            target.take_damage(dmg)
+                        elif "hp" in target:
+                            target.hp -= dmg
 
                     if self.has_method("_spawn_skill_particles"):
                         self._spawn_skill_particles("lightning")

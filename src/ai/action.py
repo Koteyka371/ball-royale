@@ -235,11 +235,25 @@ class Action:
 
                 while jump_count < 3:
                     nearby_entities = []
-                    for e in enemies:
-                        if e not in hit_entities:
-                            dist_sq = (e.x - current_target.x)**2 + (e.y - current_target.y)**2
-                            if dist_sq < chain_range_sq:
-                                nearby_entities.append((dist_sq, e, "enemy"))
+
+                    # Check for EMP traps first to attract chain lightning
+                    emp_trap_found = None
+                    min_emp_dist = float('inf')
+                    for h in hazards:
+                        if getattr(h, "kind", "") == "emp_trap" and getattr(h, "active", True):
+                            dist_sq = (h.x - current_target.x)**2 + (h.y - current_target.y)**2
+                            if dist_sq < chain_range_sq and dist_sq < min_emp_dist:
+                                emp_trap_found = h
+                                min_emp_dist = dist_sq
+
+                    if emp_trap_found:
+                        nearby_entities.append((0, emp_trap_found, "emp_trap")) # Prioritize
+                    else:
+                        for e in enemies:
+                            if e not in hit_entities:
+                                dist_sq = (e.x - current_target.x)**2 + (e.y - current_target.y)**2
+                                if dist_sq < chain_range_sq:
+                                    nearby_entities.append((dist_sq, e, "enemy"))
                     for h in hazards:
                         if h not in hit_entities and getattr(h, "active", True):
                             dist_sq = (h.x - current_target.x)**2 + (h.y - current_target.y)**2
@@ -343,6 +357,11 @@ class Action:
                         else:
                             if hasattr(self.world, "_deal_damage"):
                                 self.world._deal_damage(attacker, next_entity)
+                    elif e_type == "emp_trap":
+                        next_entity.charge = getattr(next_entity, "charge", 0.0) + current_damage
+                        current_damage = 0 # Absorbed
+                        # Doesn't jump further after being absorbed
+                        break
                     elif e_type in ("hazard", "item", "booster"):
                         if getattr(next_entity, "kind", next_entity.get("kind", "") if isinstance(next_entity, dict) else "") == "material":
                             if getattr(next_entity, "active", next_entity.get("active", False) if isinstance(next_entity, dict) else False):
@@ -416,6 +435,48 @@ class Action:
                     if dist_sq < h.radius**2:
                         self.ball.is_in_quicksand = True
                         break
+
+        # EMP Trap Logic
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            hazards_to_remove = []
+            for h in self.world.arena.hazards:
+                if getattr(h, "kind", "") == "emp_trap" and getattr(h, "active", True):
+                    # Attract chain lightning (handled in chain lightning logic)
+
+                    # Absorb electrical skills
+                    # (this is done in the electrical skills by finding the emp trap)
+
+                    # Charge up
+                    if not hasattr(h, "charge"):
+                        h.charge = 0.0
+
+                    if h.charge >= 100.0:
+                        # Unleash EMP Burst
+                        import math
+                        explosion_radius = getattr(h, "radius", 150.0)
+
+                        enemies = [b for b in getattr(self.world, "balls", []) if getattr(b, "team", "") != getattr(self.ball, "team", "") and getattr(b, "alive", True)]
+
+                        for enemy in enemies:
+                            dx = enemy.x - h.x
+                            dy = enemy.y - h.y
+                            if dx*dx + dy*dy <= explosion_radius*explosion_radius:
+                                # Silence and slow
+                                enemy.silence_timer = max(getattr(enemy, "silence_timer", 0.0), 3.0)
+                                enemy._chrono_slow = 0.5  # 50% slow
+                                enemy.slow_timer = 3.0 # Set a timer if needed
+
+                        # Apply particle effect if supported
+                        if hasattr(self, "_spawn_skill_particles"):
+                            self._spawn_skill_particles("emp_burst")
+
+                        # Mark for removal
+                        h.active = False
+                        hazards_to_remove.append(h)
+
+            for h in hazards_to_remove:
+                if h in self.world.arena.hazards:
+                    self.world.arena.hazards.remove(h)
 
         # Magnet passive: pull boosters and smaller entities
         if getattr(self.ball, "BALL_TYPE", "") == "magnet":
@@ -4612,15 +4673,30 @@ class Action:
                         strike_range *= 1.5
 
                     if dist <= strike_range:
-                        # Initial strike
+                        # Check for EMP trap
+                        emp_trap_found = None
+                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                            for h in self.world.arena.hazards:
+                                if getattr(h, "kind", "") == "emp_trap" and getattr(h, "active", True):
+                                    h_dist = math.sqrt((h.x - self.ball.x)**2 + (h.y - self.ball.y)**2)
+                                    if h_dist <= strike_range:
+                                        emp_trap_found = h
+                                        break
+
                         base_dmg = getattr(self.ball, "damage", 24.0)
                         if is_raining:
                             base_dmg *= 1.5
 
-                        if hasattr(target, "take_damage"):
-                            target.take_damage(base_dmg)
-                        elif hasattr(target, "hp"):
-                            target.hp -= base_dmg
+                        if emp_trap_found:
+                            emp_trap_found.charge = getattr(emp_trap_found, "charge", 0.0) + base_dmg
+                            # Target is the trap now for chain logic
+                            target = emp_trap_found
+                        else:
+                            # Initial strike
+                            if hasattr(target, "take_damage"):
+                                target.take_damage(base_dmg)
+                            elif hasattr(target, "hp"):
+                                target.hp -= base_dmg
                         if hasattr(self, "_spawn_skill_particles"):
                             self._spawn_skill_particles("lightning")
 
