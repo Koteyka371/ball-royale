@@ -950,6 +950,27 @@ class Action:
             if self.ball.decoy_timer <= 0:
                 self.ball.alive = False
                 self.ball.hp = 0
+            else:
+                owner_id = getattr(self.ball, "owner_id", None)
+                if owner_id is not None and hasattr(self.world, "balls"):
+                    owner = next((b for b in self.world.balls if getattr(b, "id", None) == owner_id and getattr(b, "alive", True)), None)
+                    if owner:
+                        if getattr(self.ball, "is_orbiting", False):
+                            import math
+                            # Orbit speed
+                            orbit_speed = getattr(self.ball, "speed", 4.0) * 0.5
+                            self.ball.orbit_angle = getattr(self.ball, "orbit_angle", 0.0) + orbit_speed * delta
+                            radius = 30.0
+                            self.ball.x = owner.x + math.cos(self.ball.orbit_angle) * radius
+                            self.ball.y = owner.y + math.sin(self.ball.orbit_angle) * radius
+                        elif getattr(self.ball, "is_mirroring", False):
+                            import math
+                            # Orbit opposite side
+                            orbit_speed = getattr(self.ball, "speed", 4.0) * 0.5
+                            self.ball.orbit_angle = getattr(self.ball, "orbit_angle", math.pi) + orbit_speed * delta
+                            radius = 30.0
+                            self.ball.x = owner.x + math.cos(self.ball.orbit_angle) * radius
+                            self.ball.y = owner.y + math.sin(self.ball.orbit_angle) * radius
 
         # Global decoy explosion check
         if hasattr(self.world, "balls"):
@@ -4232,6 +4253,7 @@ class Action:
 
     def _use_skill(self) -> None:
         import random
+        import math
         if getattr(self.ball, "silence_timer", 0.0) > 0:
             return
         skill_timer = getattr(self.ball, "skill_timer", 0.0)
@@ -4499,35 +4521,51 @@ class Action:
                     decoy.has_swapped = True
                     self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 4.0)
                 elif hasattr(self.world, "balls"):
-                    decoy = copy.copy(self.ball)
-                    decoy.owner_id = getattr(self.ball, "id", None)
-                    decoy.has_swapped = False
-                    self.ball.skill_timer = 0.5
-                    decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
-                    if hasattr(self.world, "next_id"):
-                        self.world.next_id += 1
+                    import random
+                    import math
 
-                    decoy.hp = getattr(self.ball, "max_hp", 100) * 0.1
-                    decoy.max_hp = decoy.hp
-                    decoy.damage = 0
-                    decoy.speed = 0.0
-                    decoy.skill_timer = 9999.0
-                    decoy.attack_timer = 9999.0
-                    decoy.is_decoy = True
-                    decoy.decoy_timer = 5.0
-                    decoy.SKILL = None
-                    decoy.skill = None
-                    decoy.active_skill = None
-                    if getattr(self.ball, "ball_type", "") == "trickster":
-                        import random
-                        if random.random() < 0.5:
-                            decoy.decoy_type = "stun_trap"
+                    # Create two decoys
+                    for i in range(2):
+                        decoy = copy.copy(self.ball)
+                        decoy.owner_id = getattr(self.ball, "id", None)
+                        decoy.has_swapped = False
+                        self.ball.skill_timer = 0.5
+                        decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                        if hasattr(self.world, "next_id"):
+                            self.world.next_id += 1
+
+                        decoy.hp = getattr(self.ball, "max_hp", 100) * 0.1
+                        decoy.max_hp = decoy.hp
+                        decoy.damage = 0
+                        decoy.speed = getattr(self.ball, "speed", 4.0) # Match speed so it can mirror/orbit
+                        decoy.skill_timer = 9999.0
+                        decoy.attack_timer = 9999.0
+                        decoy.is_decoy = True
+                        decoy.decoy_timer = 5.0
+                        decoy.SKILL = None
+                        decoy.skill = None
+                        decoy.active_skill = None
+
+                        # Orbit / Mirror state setup
+                        decoy.is_orbiting = True if i == 0 else False
+                        decoy.is_mirroring = True if i == 1 else False
+                        decoy.orbit_angle = 0.0 if i == 0 else math.pi
+
+                        # Initial displacement
+                        offset_x = math.cos(decoy.orbit_angle) * 30.0
+                        offset_y = math.sin(decoy.orbit_angle) * 30.0
+                        decoy.x += offset_x
+                        decoy.y += offset_y
+
+                        if getattr(self.ball, "ball_type", "") == "trickster":
+                            if random.random() < 0.5:
+                                decoy.decoy_type = "stun_trap"
+                            else:
+                                decoy.decoy_type = "explosive"
                         else:
                             decoy.decoy_type = "explosive"
-                    else:
-                        decoy.decoy_type = "explosive"
 
-                    self.world.balls.append(decoy)
+                        self.world.balls.append(decoy)
 
             elif skill_name == "mimic_clone":
                 import copy
@@ -5303,8 +5341,7 @@ class Action:
                     self.world.arena.hazards.append(dome)
 
             elif skill_name == "target_strong":
-
-
+                import math
                 enemies = self._get_enemies()
                 if enemies:
                     target = self._find_strongest_enemy_deterministic(enemies)
