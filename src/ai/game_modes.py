@@ -382,6 +382,36 @@ class BattleRoyaleMode(GameMode):
             if not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
 
+            if self.weather == "sandstorm":
+                if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                    from ai.ball_types_swarm import Swarm
+                    minion = Swarm(ball_id="sand_minion_"+str(getattr(self, "random", __import__("random")).randint(1000,9999)), x=getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0), y=getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0))
+                    minion.team = "Sandstorm"
+                    minion.ball_type = "sand_minion"
+                    minion.hp = 30.0
+                    minion.max_hp = 30.0
+                    minion.speed = 120.0
+                    minion.damage = 10.0
+                    if not hasattr(world, "balls"): world.balls = []
+                    world.balls.append(minion)
+                    if hasattr(world, "add_event"):
+                        world.add_event("minion_spawn", {"type": "minion_spawn", "message": "A Sand Minion emerged from the storm!"})
+
+            if self.weather == "fog":
+                if getattr(self, "random", __import__("random")).random() < 0.02 * delta:
+                    from ai.ball_types_phantom import Phantom
+                    minion = Phantom(ball_id="fog_phantom_"+str(getattr(self, "random", __import__("random")).randint(1000,9999)), x=getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0), y=getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0))
+                    minion.team = "Fog"
+                    minion.ball_type = "fog_minion"
+                    minion.hp = 40.0
+                    minion.max_hp = 40.0
+                    minion.speed = 90.0
+                    minion.damage = 15.0
+                    if not hasattr(world, "balls"): world.balls = []
+                    world.balls.append(minion)
+                    if hasattr(world, "add_event"):
+                        world.add_event("minion_spawn", {"type": "minion_spawn", "message": "A Fog Phantom materialized!"})
+
             if self.weather == "wind":
                 if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
                     from arena.procedural_arena import Hazard
@@ -1463,6 +1493,36 @@ class WeatherChaosMode(GameMode):
 
             if not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
+
+            if self.weather == "sandstorm":
+                if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                    from ai.ball_types_swarm import Swarm
+                    minion = Swarm(ball_id="sand_minion_"+str(getattr(self, "random", __import__("random")).randint(1000,9999)), x=getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0), y=getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0))
+                    minion.team = "Sandstorm"
+                    minion.ball_type = "sand_minion"
+                    minion.hp = 30.0
+                    minion.max_hp = 30.0
+                    minion.speed = 120.0
+                    minion.damage = 10.0
+                    if not hasattr(world, "balls"): world.balls = []
+                    world.balls.append(minion)
+                    if hasattr(world, "add_event"):
+                        world.add_event("minion_spawn", {"type": "minion_spawn", "message": "A Sand Minion emerged from the storm!"})
+
+            if self.weather == "fog":
+                if getattr(self, "random", __import__("random")).random() < 0.02 * delta:
+                    from ai.ball_types_phantom import Phantom
+                    minion = Phantom(ball_id="fog_phantom_"+str(getattr(self, "random", __import__("random")).randint(1000,9999)), x=getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0), y=getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0))
+                    minion.team = "Fog"
+                    minion.ball_type = "fog_minion"
+                    minion.hp = 40.0
+                    minion.max_hp = 40.0
+                    minion.speed = 90.0
+                    minion.damage = 15.0
+                    if not hasattr(world, "balls"): world.balls = []
+                    world.balls.append(minion)
+                    if hasattr(world, "add_event"):
+                        world.add_event("minion_spawn", {"type": "minion_spawn", "message": "A Fog Phantom materialized!"})
 
             if self.weather == "wind":
                 if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
