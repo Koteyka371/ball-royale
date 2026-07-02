@@ -6933,7 +6933,7 @@
     },
     {
       "id": "idea-401",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mirror Image Powerup",
@@ -11573,6 +11573,40 @@
         "src/ai/decoy_mirrors.py",
         "src/ai/decoy_mirrors.gd",
         "tests/test_decoy_mirrors.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-672",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Friendly Fire Hazard",
+      "description": "A hazard that when stepped on causes all friendly fire damage to be reflected back onto the attacker for 5 seconds.",
+      "allowed_paths": [
+        "src/arena/friendly_fire.py",
+        "src/arena/friendly_fire.gd",
+        "tests/test_friendly_fire.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-673",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Inversion Booster",
+      "description": "A booster that temporarily flips gravity for all enemy balls, making them stick to walls and ceilings.",
+      "allowed_paths": [
+        "src/ai/gravity_inversion_booster.py",
+        "src/ai/gravity_inversion_booster.gd",
+        "tests/test_gravity_inversion_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

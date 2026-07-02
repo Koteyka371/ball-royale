@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-401] Mirror Image Powerup — *2026-07-02 12:08:19 UTC*
+
+A booster that creates 3 temporary decoys of the ball, all mimicking its movement but dealing no damage, to confuse enemies.
+
+---
+
 ## [idea-395] Reverse Controls Trap — *2026-07-02 12:00:36 UTC*
 
 A booster or hazard that randomly spawns and, if stepped on, temporarily inverts the movement controls of all balls on the opposing team, creating a chaotic environment and allowing for clutch offensive plays.
