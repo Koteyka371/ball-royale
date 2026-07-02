@@ -6916,7 +6916,7 @@
     },
     {
       "id": "idea-400",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Lightning Rod Trap",
@@ -12032,6 +12032,40 @@
         "src/ai/decoy_hologram_projector.py",
         "src/ai/decoy_hologram_projector.gd",
         "tests/test_decoy_hologram_projector.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-699",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Tug of War Mode",
+      "description": "Like Tug of War, but the payload moves AWAY from the team that has more players nearby. Teams must zone out enemies and avoid getting too close to the payload to push it towards the enemy goal.",
+      "allowed_paths": [
+        "src/ai/reverse_tug_of_war.py",
+        "src/ai/reverse_tug_of_war.gd",
+        "tests/test_reverse_tug_of_war.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-700",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Payload Bomb Mode",
+      "description": "A single payload starts in the center with a ticking timer. If it reaches an enemy goal before time runs out, it explodes and deals massive damage to the enemy team's core. If the timer runs out while it's in the middle, it explodes and kills players nearby.",
+      "allowed_paths": [
+        "src/ai/payload_bomb.py",
+        "src/ai/payload_bomb.gd",
+        "tests/test_payload_bomb.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-400] Lightning Rod Trap — *2026-07-02 13:19:47 UTC*
+
+A deployable hazard trap that attracts all chain lightning strikes and electrical skills within its radius, safely absorbing the damage while charging up. Once fully charged, it unleashes an EMP burst that silences and slows all nearby enemies.
+
+---
+
 ## [idea-439] Tug-of-War Mode — *2026-07-02 13:11:30 UTC*
 
 Introduce a mode where a single payload is centered. Both teams fight to push/pull the payload to the opposing team’s goal.
