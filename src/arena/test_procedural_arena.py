@@ -32,3 +32,14 @@ def test_hazard_generation():
         assert hazard.radius > 0
         assert hazard.damage > 0 or hazard.kind in ["healing_spring", "placeable_trap_item", "portal_gun_item", "decoy_item", "breakable_wall", "portal", "teleporter", "one_way_teleporter", "swap_portal", "flare", "crater", "bumper", "temporal_rift", "link_booster", "stamina_booster", "silence_booster", "freeze_booster", "drone_item", "stealth_drone_item", "shadow_booster", "switch", "magnet", "temporal_rift", "quicksand", "sinkhole", "damage_link", "weather_booster", "magnet_booster", "fire_ring", "wormhole", "clone_booster", "stealth_zone", "invert_booster"]
         assert arena.is_point_inside(hazard.x, hazard.y, 0)
+
+def test_siege_arena():
+    from arena.arena_types import SiegeArena
+    arena = SiegeArena(arena_size=2000.0)
+    arena.generate()
+    assert len(arena.rooms) == 2
+    assert len(arena.corridors) == 2
+
+    hazards_types = [h.kind for h in arena.hazards]
+    assert "healing_spring" in hazards_types
+    assert "bumper" in hazards_types
