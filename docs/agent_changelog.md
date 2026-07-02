@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-429] Healing Rain Weather — *2026-07-02 12:37:57 UTC*
+
+A new weather event where gentle rain gradually restores HP to all balls.
+
+---
+
 ## [idea-422] Escort the Payload Mode — *2026-07-02 12:34:57 UTC*
 
 A game mode where one team must escort an invulnerable but slow-moving 'payload' ball to the enemy base, while the other team tries to delay it until the timer runs out.

@@ -7411,7 +7411,7 @@
     },
     {
       "id": "idea-429",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Healing Rain Weather",
@@ -11777,6 +11777,23 @@
         "src/ai/bumper_cars_mutator.py",
         "src/ai/bumper_cars_mutator.gd",
         "tests/test_bumper_cars_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-684",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Capture the Point (King of the Hill variant)",
+      "description": "Multiple control points spawn around the arena. Teams must stand inside the control points to capture them and accumulate points. The points periodically change locations. The team that reaches the target score first wins.",
+      "allowed_paths": [
+        "src/ai/capture_the_point_king_of_the_hill_variant.py",
+        "src/ai/capture_the_point_king_of_the_hill_variant.gd",
+        "tests/test_capture_the_point_king_of_the_hill_variant.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
