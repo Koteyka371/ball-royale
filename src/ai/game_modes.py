@@ -757,10 +757,11 @@ class EscortMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Escort Mode"
-        self.description = "One team defends a payload moving towards a goal. The other tries to destroy it."
+        self.description = "One team defends an invulnerable payload moving towards a goal. The other tries to delay it until time runs out."
         self.payload = None
         self.goal_x = 900.0
         self.goal_y = 500.0
+        self.timer = 180.0
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -780,14 +781,16 @@ class EscortMode(GameMode):
         if defenders:
             self.payload = defenders[0]
             self.payload.ball_type = "payload"
-            self.payload.hp = 2000.0
-            self.payload.base_hp = 2000.0
+            self.payload.is_invulnerable = True
             self.payload.speed = 0.5
             self.payload.damage = 0.0
             self.payload.x = 100.0
             self.payload.y = 500.0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+
+        if getattr(self, "timer", 0) > 0:
+            self.timer -= delta
 
         if self.payload and getattr(self.payload, "alive", False):
             import math
@@ -806,8 +809,7 @@ class EscortMode(GameMode):
         dx = self.goal_x - getattr(self.payload, "x", 0)
         dy = self.goal_y - getattr(self.payload, "y", 0)
 
-        if getattr(self.payload, "hp", 0) <= 0 or not getattr(self.payload, "alive", True):
-            self.payload.alive = False
+        if getattr(self, "timer", 0) <= 0:
             return "Attackers"
 
         if math.hypot(dx, dy) < 10.0:

@@ -1,0 +1,4 @@
+{
+  "title": "Juggernaut Mode",
+  "description": "One player is randomly chosen to be the Juggernaut at the start of the match, gaining massive stat boosts (HP, damage, size) but no health regeneration. The other players must team up to defeat the Juggernaut. The player who deals the killing blow becomes the next Juggernaut. The player who survives the longest as the Juggernaut wins."
+}
