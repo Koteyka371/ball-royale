@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-347] Supply Drops — *2026-07-02 13:19:52 UTC*
+
+Periodically spawn supply drops in the arena that contain powerful but temporary boosters, such as invincibility, super speed, or explosive rounds, to create focal points for combat.
+
+---
+
 ## [idea-400] Lightning Rod Trap — *2026-07-02 13:19:47 UTC*
 
 A deployable hazard trap that attracts all chain lightning strikes and electrical skills within its radius, safely absorbing the damage while charging up. Once fully charged, it unleashes an EMP burst that silences and slows all nearby enemies.
