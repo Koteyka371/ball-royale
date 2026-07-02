@@ -1356,11 +1356,33 @@ func execute(strategy: String, delta: float):
                         my_ball["_is_wind_riding"] = true
                 # Flag already reset at top of block
 
+    var in_anomaly_zone = false
+    if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+        for h in world.arena.hazards:
+            var h_kind = h.kind if "kind" in h else (h.get_meta("kind") if h.has_method("has_meta") and h.has_meta("kind") else "")
+            if h_kind == "anomaly_zone":
+                var hx = h.x if "x" in h else h.get_meta("x")
+                var hy = h.y if "y" in h else h.get_meta("y")
+                var hr = h.radius if "radius" in h else h.get_meta("radius")
+                var active = h.active if "active" in h else (h.get_meta("active") if h.has_method("has_meta") and h.has_meta("active") else true)
+                if active:
+                    var dx = hx - my_ball.x
+                    var dy = hy - my_ball.y
+                    if dx*dx + dy*dy <= hr*hr:
+                        in_anomaly_zone = true
+                        break
+    if typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("set_meta"):
+        my_ball.set_meta("in_anomaly_zone", in_anomaly_zone)
+    elif typeof(my_ball) == TYPE_DICTIONARY:
+        my_ball["in_anomaly_zone"] = in_anomaly_zone
+
     var gm = null
     if world != null and "game_mode" in world:
         gm = world.game_mode
     var is_zero_gravity = false
-    if gm != null:
+    if in_anomaly_zone:
+        is_zero_gravity = true
+    elif gm != null:
         if gm.name == "Zero Gravity":
             is_zero_gravity = true
         elif gm.name == "Custom Match" and gm.get("mutators_active") == true and "zero_gravity" in gm.get("mutators", []):
@@ -8522,7 +8544,15 @@ func _resolve_collisions() -> bool:
             var ny = dy / dist
 
             var knockback_multiplier = 1.0
-            if self.world != null and "game_mode" in self.world and self.world.game_mode != null:
+            var in_anomaly_zone = false
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("in_anomaly_zone"):
+                in_anomaly_zone = self.ball.get_meta("in_anomaly_zone")
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("in_anomaly_zone"):
+                in_anomaly_zone = self.ball["in_anomaly_zone"]
+
+            if in_anomaly_zone:
+                knockback_multiplier = 5.0
+            elif self.world != null and "game_mode" in self.world and self.world.game_mode != null:
                 if "name" in self.world.game_mode and self.world.game_mode.name == "Bumper Balls":
                     knockback_multiplier = 5.0
                 elif "name" in self.world.game_mode and self.world.game_mode.name == "Zero Gravity":

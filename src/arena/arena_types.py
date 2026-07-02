@@ -1021,9 +1021,9 @@ class BattleRoyaleShrinkingZoneArena(ProceduralArena):
                 if current_tick % 120 == 0:
                     import random
                     if hasattr(self, "_trigger_event"):
-                        self._trigger_event(random.choice(["meteor_shower", "gravity_shift", "orbital_strike"]), current_tick)
+                        self._trigger_event(random.choice(["meteor_shower", "gravity_shift", "orbital_strike", "anomaly_zone"]), current_tick)
                     else:
-                        event_type = random.choice(["meteor_shower", "gravity_shift"])
+                        event_type = random.choice(["meteor_shower", "gravity_shift", "anomaly_zone"])
                         if event_type == "meteor_shower":
                             for _ in range(10):
                                 x = random.uniform(50, self.width - 50)
@@ -1034,6 +1034,10 @@ class BattleRoyaleShrinkingZoneArena(ProceduralArena):
                                 m.target_radius = 30.0
                                 setattr(m, "duration", 5.0)
                                 self.hazards.append(m)
+                        elif event_type == "anomaly_zone":
+                            zone = Hazard(id=len(self.hazards) + random.randint(3000, 9999), x=self.width/2, y=self.height/2, radius=self.width/2, kind="anomaly_zone", damage=0.0)
+                            setattr(zone, "duration", 10.0)
+                            self.hazards.append(zone)
                         elif event_type == "gravity_shift":
 
                             gw = Hazard(id=len(self.hazards) + random.randint(3000, 9999), x=self.width/2, y=self.height/2, radius=self.width/2, kind="gravity_well", damage=10.0)

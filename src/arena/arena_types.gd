@@ -265,10 +265,10 @@ class BattleRoyaleShrinkingZoneArena extends ProceduralArena:
             else:
                 if current_tick % 120 == 0:
                     if has_method("_trigger_event"):
-                        var event_types = ["meteor_shower", "gravity_shift", "orbital_strike"]
+                        var event_types = ["meteor_shower", "gravity_shift", "orbital_strike", "anomaly_zone"]
                         call("_trigger_event", event_types[randi() % event_types.size()], current_tick)
                     else:
-                        var event_types = ["meteor_shower", "gravity_shift"]
+                        var event_types = ["meteor_shower", "gravity_shift", "anomaly_zone"]
                         var event_type = event_types[randi() % event_types.size()]
                         if event_type == "meteor_shower":
                             for i in range(10):
@@ -278,6 +278,10 @@ class BattleRoyaleShrinkingZoneArena extends ProceduralArena:
                                 m_haz.target_radius = 30.0
                                 m_haz.set_meta("duration", 5.0)
                                 hazards.append(m_haz)
+                        elif event_type == "anomaly_zone":
+                            var zone = preload("res://src/arena/procedural_arena.gd").Hazard.new(hazards.size() + (randi() % 9000) + 1000, width/2, height/2, width/2, "anomaly_zone", 0.0)
+                            zone.set_meta("duration", 10.0)
+                            hazards.append(zone)
                         elif event_type == "gravity_shift":
                             var gw = preload("res://src/arena/procedural_arena.gd").Hazard.new(hazards.size() + (randi() % 9000) + 1000, width/2, height/2, width/2, "gravity_well", 10.0)
                             gw.set_meta("duration", 10.0)

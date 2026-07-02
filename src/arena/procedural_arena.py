@@ -504,6 +504,12 @@ class ProceduralArena:
                                 m.target_radius = 30.0
                                 setattr(m, "duration", 5.0)
                                 self.hazards.append(m)
+                        elif event_type == "anomaly_zone":
+                            h_id = 6000 + len(self.hazards)
+                            zone = Hazard(id=h_id, x=self.width/2, y=self.height/2, radius=400.0, kind="anomaly_zone", damage=0.0)
+                            zone.target_radius = 400.0
+                            setattr(zone, "duration", 10.0)
+                            self.hazards.append(zone)
                         elif event_type == "gravity_shift":
 
                             gw = Hazard(id=len(self.hazards) + random.randint(3000, 9999), x=self.width/2, y=self.height/2, radius=self.width/2, kind="gravity_well", damage=10.0)
@@ -647,7 +653,7 @@ class ProceduralArena:
             self.hazards = [h for h in self.hazards if h.id < 1000]
 
             # Periodically trigger random arena-wide events
-            event_type = random.choice(["meteor_shower", "gravity_shift", "moving_walls", "orbital_strike", "fire_ring", "none"])
+            event_type = random.choice(["meteor_shower", "gravity_shift", "moving_walls", "orbital_strike", "fire_ring", "anomaly_zone", "none"])
             if event_type != "none":
                 self._trigger_event(event_type, current_tick)
 
@@ -756,6 +762,12 @@ class ProceduralArena:
                 meteor.target_radius = 30.0
                 setattr(meteor, "duration", 5.0)
                 self.hazards.append(meteor)
+        elif event_type == "anomaly_zone":
+            h_id = 6000 + len(self.hazards)
+            zone = Hazard(id=h_id, x=self.width/2, y=self.height/2, radius=400.0, kind="anomaly_zone", damage=0.0)
+            zone.target_radius = 400.0
+            setattr(zone, "duration", 10.0)
+            self.hazards.append(zone)
         elif event_type == "gravity_shift":
             # Add a massive gravity well in the center
             h_id = 3000 + len(self.hazards)

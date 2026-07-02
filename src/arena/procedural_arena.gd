@@ -572,6 +572,12 @@ func update_zone(current_tick: int, delta: float) -> void:
                             m_haz.target_radius = 30.0
                             m_haz.set_meta("duration", 5.0)
                             hazards.append(m_haz)
+                    elif event_type == "anomaly_zone":
+                        var h_id = 6000 + hazards.size()
+                        var zone = Hazard.new(h_id, width/2, height/2, 400.0, "anomaly_zone", 0.0)
+                        zone.target_radius = 400.0
+                        zone.set_meta("duration", 10.0)
+                        hazards.append(zone)
                     elif event_type == "gravity_shift":
                         var gw = Hazard.new(hazards.size() + (randi() % 9000) + 1000, width/2, height/2, width/2, "gravity_well", 10.0)
                         gw.set_meta("duration", 10.0)
@@ -758,7 +764,7 @@ func update_zone(current_tick: int, delta: float) -> void:
                     new_hazards.append(h)
             hazards = new_hazards
 
-            var event_types = ["meteor_shower", "gravity_shift", "moving_walls", "orbital_strike", "fire_ring", "none"]
+            var event_types = ["meteor_shower", "gravity_shift", "moving_walls", "orbital_strike", "fire_ring", "anomaly_zone", "none"]
             var event_type = event_types[randi() % event_types.size()]
             if event_type != "none":
                 _trigger_event(event_type, current_tick)
@@ -1217,6 +1223,12 @@ func _trigger_event(event_type: String, current_tick: int) -> void:
             meteor.target_radius = 30.0
             meteor.set_meta("duration", 5.0)
             hazards.append(meteor)
+    elif event_type == "anomaly_zone":
+        var h_id = 6000 + hazards.size()
+        var zone = ProceduralArena.Hazard.new(h_id, width/2, height/2, 400.0, "anomaly_zone", 0.0)
+        zone.target_radius = 400.0
+        zone.set_meta("duration", 10.0)
+        hazards.append(zone)
     elif event_type == "gravity_shift":
         var h_id = 3000 + hazards.size()
         var gw = ProceduralArena.Hazard.new(h_id, width/2, height/2, width/2, "gravity_well", 0.0)
