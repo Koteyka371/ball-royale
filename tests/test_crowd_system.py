@@ -96,3 +96,27 @@ def test_crowd_team_wipe():
     # Check if team wipe event was fired
     assert any(e[0] == "crowd_cheer" and "is wiped out!" in e[1]["message"] for e in world.events)
     assert any(e[0] == "audio_event" and e[1]["sound"] == "team_wipe_gasp" for e in world.events)
+
+def test_crowd_throw_hazard():
+    world = MockWorld()
+    crowd = CrowdSystem(world)
+
+    import random
+    random.seed(42)
+
+    # Set excitement very low to simulate boring match
+    crowd.excitement_level = 10.0
+
+    balls = [
+        MockBall(1, "A", 100, 100),
+        MockBall(2, "B", 100, 100)
+    ]
+
+    for i in range(1000):
+        crowd.tick(balls, [], i)
+        if any(e[0] == "spawn_hazard" for e in world.events):
+            break
+
+    assert any(e[0] == "spawn_hazard" for e in world.events)
+    assert any(e[0] == "crowd_throw" and "boos" in e[1]["message"] for e in world.events)
+    assert crowd.excitement_level > 10.0
