@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-424] Decoy Explosion — *2026-07-02 12:24:00 UTC*
+
+A new passive for the deploy_decoy ability where the decoy violently explodes upon being destroyed or when its timer runs out, damaging nearby enemies.
+
+---
+
 ## [idea-425] Randomized Safe Zone Shrink Shapes — *2026-07-02 12:08:23 UTC*
 
 Instead of a simple circular shrinking zone, the safe zone can shrink into varied geometric shapes (like a rectangle or a triangle) or even split into two smaller temporary safe zones before merging back. This disrupts camping strategies and keeps players constantly repositioning.
