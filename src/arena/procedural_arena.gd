@@ -459,6 +459,72 @@ func clamp_position(x: float, y: float, radius: float) -> Array:
 
 func update_zone(current_tick: int, delta: float) -> void:
     if current_tick != last_tick:
+        if "hazards" in self:
+            for hazard in hazards:
+                if hazard.kind == "magnet":
+                    for other_hazard in hazards:
+                        var h_id = hazard.get_instance_id() if typeof(hazard) == TYPE_OBJECT else hash(hazard)
+                        var oh_id = other_hazard.get_instance_id() if typeof(other_hazard) == TYPE_OBJECT else hash(other_hazard)
+                        if h_id == oh_id:
+                            continue
+                        if other_hazard.kind == "explosive_barrel" or other_hazard.kind == "flare":
+                            var hx_diff = hazard.x - other_hazard.x
+                            var hy_diff = hazard.y - other_hazard.y
+                            var hdist_sq = hx_diff * hx_diff + hy_diff * hy_diff
+                            var eff_rad = hazard.radius * 3.0
+                            if hdist_sq > 0.0001 and hdist_sq < eff_rad * eff_rad:
+                                var hdist = sqrt(hdist_sq)
+                                var hnx = hx_diff / hdist
+                                var hny = hy_diff / hdist
+                                var h_min_dist = hdist
+                                if h_min_dist < 10.0:
+                                    h_min_dist = 10.0
+                                var pull_strength = (eff_rad / h_min_dist) * 150.0 * delta
+                                pull_strength = min(pull_strength, hdist * 0.5)
+
+                                other_hazard.x += hnx * pull_strength
+                                other_hazard.y += hny * pull_strength
+
+                                var other_rad = other_hazard.radius if "radius" in other_hazard else 10.0
+                                if hdist < hazard.radius + other_rad:
+                                    if other_hazard.kind == "explosive_barrel":
+                                        var is_exploded = other_hazard.is_exploded if "is_exploded" in other_hazard else false
+                                        if not is_exploded:
+                                            if typeof(other_hazard) == TYPE_OBJECT and not other_hazard is Dictionary:
+                                                if other_hazard.has_method("set_meta"):
+                                                    other_hazard.set("is_exploded", true)
+                                                    if "radius" in other_hazard:
+                                                        other_hazard.radius = other_hazard.radius * 3.0
+                                                    if "damage" in other_hazard:
+                                                        other_hazard.damage = other_hazard.damage * 2.0
+                                            else:
+                                                other_hazard["is_exploded"] = true
+                                                if other_hazard.has("radius"):
+                                                    other_hazard["radius"] = other_hazard["radius"] * 3.0
+                                                if other_hazard.has("damage"):
+                                                    other_hazard["damage"] = other_hazard["damage"] * 2.0
+                                    elif other_hazard.kind == "flare":
+                                        var is_active = other_hazard.active if "active" in other_hazard else true
+                                        if is_active:
+                                            if typeof(other_hazard) == TYPE_OBJECT and not other_hazard is Dictionary:
+                                                if other_hazard.has_method("set_meta"):
+                                                    other_hazard.set("active", false)
+                                                    other_hazard.set("duration", 0.0)
+                                            else:
+                                                other_hazard["active"] = false
+                                                other_hazard["duration"] = 0.0
+
+                                            if typeof(hazard) == TYPE_OBJECT and not hazard is Dictionary:
+                                                if hazard.has_method("set_meta"):
+                                                    hazard.set("kind", "fire_zone")
+                                                    if "radius" in hazard: hazard.radius = hazard.radius * 2.0
+                                                    if "damage" in hazard: hazard.damage = hazard.damage * 3.0
+                                                    if not "duration" in hazard: hazard.set("duration", 10.0)
+                                            else:
+                                                hazard["kind"] = "fire_zone"
+                                                if hazard.has("radius"): hazard["radius"] = hazard["radius"] * 2.0
+                                                if hazard.has("damage"): hazard["damage"] = hazard["damage"] * 3.0
+                                                if not hazard.has("duration"): hazard["duration"] = 10.0
         last_tick = current_tick
         if safe_zone_radius > 50.0:
             safe_zone_radius -= 10.0 * delta
