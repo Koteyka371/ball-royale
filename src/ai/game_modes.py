@@ -3800,7 +3800,7 @@ class EarthquakeMode(GameMode):
             else:
                 # Apply random impulses
                 for b in balls:
-                    if getattr(b, "hp", 0) > 0:
+                    if getattr(b, "hp", 0) > 0 and getattr(b, "anchor_booster_timer", 0.0) <= 0:
                         b.x += random.uniform(-50.0, 50.0) * delta
                         b.y += random.uniform(-50.0, 50.0) * delta
                         if hasattr(b, "vx"):
