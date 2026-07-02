@@ -3369,6 +3369,19 @@ func execute(strategy: String, delta: float):
         var dy = self.ball.y - old_y
 
         var n_timer = 0.0
+        if "invert_timer" in self.ball:
+            var inv_t = float(self.ball.invert_timer)
+            if inv_t > 0:
+                inv_t -= delta
+                if inv_t < 0: inv_t = 0.0
+                self.ball.invert_timer = inv_t
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("invert_timer"):
+            var inv_t = float(self.ball.get_meta("invert_timer"))
+            if inv_t > 0:
+                inv_t -= delta
+                if inv_t < 0: inv_t = 0.0
+                self.ball.set_meta("invert_timer", inv_t)
+
         if "nemesis_booster_timer" in self.ball:
             n_timer = float(self.ball.nemesis_booster_timer)
         elif self.ball.has_method("get_meta") and self.ball.has_meta("nemesis_booster_timer"):
@@ -4273,6 +4286,11 @@ func _group_attack(delta: float):
                 var speed = 2.0
                 if "speed" in self.ball: speed = float(self.ball.speed)
                 var step = speed * delta * 60.0
+                var inv_t = 0.0
+                if "invert_timer" in self.ball: inv_t = float(self.ball.invert_timer)
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("invert_timer"): inv_t = float(self.ball.get_meta("invert_timer"))
+                if inv_t > 0.0:
+                    step = -step
 
                 self.ball.x += nx * min(step, dist)
                 self.ball.y += ny * min(step, dist)
@@ -4513,6 +4531,11 @@ func _flank(delta: float):
                 ny = boid_vec[1]
 
                 var step = speed * delta * 60.0
+                var inv_t = 0.0
+                if "invert_timer" in self.ball: inv_t = float(self.ball.invert_timer)
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("invert_timer"): inv_t = float(self.ball.get_meta("invert_timer"))
+                if inv_t > 0.0:
+                    step = -step
                 self.ball.x += nx * min(step, dist)
                 self.ball.y += ny * min(step, dist)
 
@@ -4682,6 +4705,11 @@ func _chase_target(target, delta: float):
         var speed = 2.0
         if "speed" in ball: speed = ball.speed
         var step = speed * delta * 60.0
+                var inv_t = 0.0
+                if "invert_timer" in self.ball: inv_t = float(self.ball.invert_timer)
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("invert_timer"): inv_t = float(self.ball.get_meta("invert_timer"))
+                if inv_t > 0.0:
+                    step = -step
 
         ball.x += nx * step
         ball.y += ny * step
@@ -4870,6 +4898,11 @@ func _chase(delta: float):
     var speed = 2.0
     if "speed" in self.ball: speed = self.ball.speed
     var step = speed * delta * 60.0
+                var inv_t = 0.0
+                if "invert_timer" in self.ball: inv_t = float(self.ball.invert_timer)
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("invert_timer"): inv_t = float(self.ball.get_meta("invert_timer"))
+                if inv_t > 0.0:
+                    step = -step
 
     self.ball.x += comb_nx * step
     self.ball.y += comb_ny * step
@@ -5374,6 +5407,11 @@ func _defend(delta: float):
                 var speed = 2.0
                 if "speed" in self.ball: speed = self.ball.speed
                 var step = speed * delta * 60.0
+                var inv_t = 0.0
+                if "invert_timer" in self.ball: inv_t = float(self.ball.invert_timer)
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("invert_timer"): inv_t = float(self.ball.get_meta("invert_timer"))
+                if inv_t > 0.0:
+                    step = -step
                 self.ball.x += nx * min(step, dist)
                 self.ball.y += ny * min(step, dist)
 
@@ -5595,6 +5633,23 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "invert_booster":
+                if self.world != null and "balls" in self.world:
+                    for other in self.world.balls:
+                        var my_team = -2
+                        if "team" in self.ball: my_team = self.ball.team
+                        var other_team = -1
+                        if "team" in other: other_team = other.team
+                        if other_team != my_team and other.get("hp", 0) > 0:
+                            if "invert_timer" in other:
+                                other.invert_timer = 5.0
+                            elif other.has_method("set_meta"):
+                                other.set_meta("invert_timer", 5.0)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    if self.world.arena.hazards.has(nearest):
+                        self.world.arena.hazards.erase(nearest)
+                if self.world != null and "boosters" in self.world and self.world.boosters.has(nearest):
+                    self.world.boosters.erase(nearest)
             elif "kind" in nearest and nearest.kind == "nemesis_booster":
                 self.ball.set_meta("nemesis_booster_timer", 5.0)
                 if "nemesis_booster_timer" in self.ball:
@@ -7966,7 +8021,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster"]
+                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y
@@ -8505,6 +8560,11 @@ func _kite(delta: float):
                 ny = boid_vec[1]
 
                 var step: float = b_speed * delta * 60.0
+                var inv_t = 0.0
+                if "invert_timer" in self.ball: inv_t = float(self.ball.invert_timer)
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("invert_timer"): inv_t = float(self.ball.get_meta("invert_timer"))
+                if inv_t > 0.0:
+                    step = -step
                 if actual_dist < b_attack_range * kite_ratio:
                     self.ball.x += nx * step
                     self.ball.y += ny * step
@@ -8684,6 +8744,11 @@ func _escort(delta: float) -> void:
         if "speed" in ball:
             b_speed = ball.speed
         var step = b_speed * delta * 60.0
+        var inv_t = 0.0
+        if "invert_timer" in ball: inv_t = float(ball.invert_timer)
+        elif ball.has_method("get_meta") and ball.has_meta("invert_timer"): inv_t = float(ball.get_meta("invert_timer"))
+        if inv_t > 0.0:
+            step = -step
 
         ball.x += nx * min(step, dist - 40.0)
         ball.y += ny * min(step, dist - 40.0)
@@ -8798,6 +8863,11 @@ func _intercept(delta: float) -> void:
         if "speed" in ball:
             b_speed = ball.speed
         var step = b_speed * delta * 60.0
+        var inv_t = 0.0
+        if "invert_timer" in ball: inv_t = float(ball.invert_timer)
+        elif ball.has_method("get_meta") and ball.has_meta("invert_timer"): inv_t = float(ball.get_meta("invert_timer"))
+        if inv_t > 0.0:
+            step = -step
 
         ball.x += nx * step
         ball.y += ny * step
@@ -8916,6 +8986,11 @@ func _hide_behind(delta: float):
             speed = ball.speed
 
         var step = speed * delta * 60.0
+                var inv_t = 0.0
+                if "invert_timer" in self.ball: inv_t = float(self.ball.invert_timer)
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("invert_timer"): inv_t = float(self.ball.get_meta("invert_timer"))
+                if inv_t > 0.0:
+                    step = -step
 
         ball.x += nx_m * min(step, dist_m)
         ball.y += ny_m * min(step, dist_m)
@@ -8957,6 +9032,11 @@ func _ricochet_attack(delta: float):
 			var b_speed = 2.0
 			if "speed" in self.ball: b_speed = self.ball.speed
 			var step = b_speed * delta * 60.0
+        var inv_t = 0.0
+        if "invert_timer" in ball: inv_t = float(ball.invert_timer)
+        elif ball.has_method("get_meta") and ball.has_meta("invert_timer"): inv_t = float(ball.get_meta("invert_timer"))
+        if inv_t > 0.0:
+            step = -step
 			self.ball.x += nx * min(step, b_dist)
 			self.ball.y += ny * min(step, b_dist)
 
