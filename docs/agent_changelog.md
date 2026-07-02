@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-395] Reverse Controls Trap — *2026-07-02 12:00:36 UTC*
+
+A booster or hazard that randomly spawns and, if stepped on, temporarily inverts the movement controls of all balls on the opposing team, creating a chaotic environment and allowing for clutch offensive plays.
+
+---
+
 ## [idea-371] Stealth Grass Patches — *2026-07-02 11:06:12 UTC*
 
 Introduce stealth zones (like tall grass) where balls entering the zone become invisible to enemies and lose their lock-on capabilities unless an enemy enters the same stealth patch.
