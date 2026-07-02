@@ -1911,6 +1911,44 @@ class WeatherChaosMode extends GameMode:
 			if not "hazards" in world.arena:
 				world.arena.hazards = []
 
+			if weather == "sandstorm":
+				if randf() < 0.05 * delta:
+					var BallClass = load("res://src/ai/ball_types_swarm.gd")
+					if BallClass:
+						var minion = BallClass.new("sand_minion_" + str(randi() % 9000 + 1000), randf_range(100.0, world.arena.width - 100.0), randf_range(100.0, world.arena.height - 100.0))
+						minion.team = "Sandstorm"
+						minion.ball_type = "sand_minion"
+						minion.hp = 30.0
+						if not "max_hp" in minion:
+							minion.set_meta("max_hp", 30.0)
+						else:
+							minion.max_hp = 30.0
+						minion.speed = 120.0
+						minion.damage = 10.0
+						if not "balls" in world: world.balls = []
+						world.balls.append(minion)
+						if world.has_method("add_event"):
+							world.add_event("minion_spawn", {"type": "minion_spawn", "message": "A Sand Minion emerged from the storm!"})
+
+			if weather == "fog":
+				if randf() < 0.02 * delta:
+					var BallClass = load("res://src/ai/ball_types_phantom.gd")
+					if BallClass:
+						var minion = BallClass.new("fog_phantom_" + str(randi() % 9000 + 1000), randf_range(100.0, world.arena.width - 100.0), randf_range(100.0, world.arena.height - 100.0))
+						minion.team = "Fog"
+						minion.ball_type = "fog_minion"
+						minion.hp = 40.0
+						if not "max_hp" in minion:
+							minion.set_meta("max_hp", 40.0)
+						else:
+							minion.max_hp = 40.0
+						minion.speed = 90.0
+						minion.damage = 15.0
+						if not "balls" in world: world.balls = []
+						world.balls.append(minion)
+						if world.has_method("add_event"):
+							world.add_event("minion_spawn", {"type": "minion_spawn", "message": "A Fog Phantom materialized!"})
+
 			if weather == "wind":
 				if randf() < 0.1 * delta:
 					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
