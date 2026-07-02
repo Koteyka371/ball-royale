@@ -3262,30 +3262,65 @@ class DynamicHazardsMode extends GameMode:
 		super.tick(world, balls, delta)
 
 		spawn_timer += delta
-		if spawn_timer >= 5.0:
+		var max_hazards = 15
+		if spawn_timer >= 3.0:
 			spawn_timer = 0.0
 
-			var x = 0.0 if rng.randf() < 0.5 else world.arena.width
-			var y = rng.randf_range(0.0, world.arena.height)
-			var vx = rng.randf_range(50.0, 150.0) if x == 0.0 else rng.randf_range(-150.0, -50.0)
-			var vy = rng.randf_range(-50.0, 50.0)
+			var active_dynamic = 0
+			for h in world.arena.hazards:
+				if h.has_method("has_meta") and h.has_meta("vx") and h.has_meta("vy"):
+					active_dynamic += 1
 
-			var ProceduralArena = load("res://src/arena/procedural_arena.gd")
-			var new_hazard = ProceduralArena.Hazard.new(world.arena.hazards.size() + rng.randi_range(1000, 9999), x, y, 40.0, "lava", 25.0)
+			if active_dynamic < max_hazards:
+				var x = 0.0 if rng.randf() < 0.5 else world.arena.width
+				var y = rng.randf_range(0.0, world.arena.height)
+				var vx = rng.randf_range(50.0, 200.0) if x == 0.0 else rng.randf_range(-200.0, -50.0)
+				var vy = rng.randf_range(-50.0, 50.0)
 
-			if new_hazard.has_method("set_meta"):
-				new_hazard.set_meta("vx", vx)
-				new_hazard.set_meta("vy", vy)
+				var types = [
+					{"kind": "lava", "damage": 25.0, "radius": 40.0},
+					{"kind": "spikes", "damage": 15.0, "radius": 30.0},
+					{"kind": "ice_patch", "damage": 5.0, "radius": 50.0},
+					{"kind": "poison_cloud", "damage": 10.0, "radius": 45.0}
+				]
+				var h_type = types[rng.randi() % types.size()]
 
-			world.arena.hazards.append(new_hazard)
+				var current_tick = world.get("current_tick") if "current_tick" in world else 0
+				var time_factor = 1.0 + (current_tick / 60.0) / 100.0
+				var radius_mult = min(2.0, time_factor)
+				var damage_mult = min(3.0, time_factor)
+
+				var base_radius = h_type["radius"] * radius_mult
+				var ProceduralArena = load("res://src/arena/procedural_arena.gd")
+				var new_hazard = ProceduralArena.Hazard.new(
+					world.arena.hazards.size() + rng.randi_range(1000, 9999),
+					x, y, base_radius,
+					h_type["kind"], h_type["damage"] * damage_mult
+				)
+
+				if new_hazard.has_method("set_meta"):
+					new_hazard.set_meta("vx", vx)
+					new_hazard.set_meta("vy", vy)
+					new_hazard.set_meta("base_radius", base_radius)
+
+				world.arena.hazards.append(new_hazard)
 
 		var hazards_to_keep = []
+		var current_tick = world.get("current_tick") if "current_tick" in world else 0
+		var current_time = current_tick * delta
+
 		for hazard in world.arena.hazards:
 			if hazard.has_method("has_meta") and hazard.has_meta("vx") and hazard.has_meta("vy"):
 				hazard.x += hazard.get_meta("vx") * delta
 				hazard.y += hazard.get_meta("vy") * delta
 
-				if not (hazard.x < -100 or hazard.x > world.arena.width + 100 or hazard.y < -100 or hazard.y > world.arena.height + 100):
+				if hazard.has_meta("base_radius"):
+					hazard.radius = hazard.get_meta("base_radius") + sin(current_time * 2.0) * 5.0
+					hazard.target_radius = hazard.radius
+
+				var margin = 200.0
+				if hazard.x >= -margin and hazard.x <= world.arena.width + margin and \
+				   hazard.y >= -margin and hazard.y <= world.arena.height + margin:
 					hazards_to_keep.append(hazard)
 			else:
 				hazards_to_keep.append(hazard)

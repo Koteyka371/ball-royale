@@ -2589,32 +2589,67 @@ class DynamicHazardsMode(GameMode):
         super().tick(world, balls, delta)
 
         self.spawn_timer += delta
-        if self.spawn_timer >= 5.0:
+        # Keep maximum active hazards bounded to prevent infinite lag
+        max_hazards = 15
+
+        if self.spawn_timer >= 3.0:
             self.spawn_timer = 0.0
 
             import random
             from arena.arena_types import Hazard
 
-            x = 0.0 if random.random() < 0.5 else world.arena.width
-            y = random.uniform(0, world.arena.height)
-            vx = random.uniform(50, 150) if x == 0.0 else random.uniform(-150, -50)
-            vy = random.uniform(-50, 50)
+            active_dynamic_hazards = [h for h in world.arena.hazards if hasattr(h, 'vx') and hasattr(h, 'vy')]
+            if len(active_dynamic_hazards) < max_hazards:
+                x = 0.0 if random.random() < 0.5 else world.arena.width
+                y = random.uniform(0, world.arena.height)
+                vx = random.uniform(50, 200) if x == 0.0 else random.uniform(-200, -50)
+                vy = random.uniform(-50, 50)
 
-            new_hazard = Hazard(id=len(world.arena.hazards) + random.randint(1000, 9999),
-                                x=x, y=y, radius=40.0, kind="lava", damage=25.0)
-            new_hazard.vx = vx
-            new_hazard.vy = vy
+                hazard_type = random.choice([
+                    ("lava", 25.0, 40.0),
+                    ("spikes", 15.0, 30.0),
+                    ("ice_patch", 5.0, 50.0),
+                    ("poison_cloud", 10.0, 45.0)
+                ])
 
-            world.arena.hazards.append(new_hazard)
+                # Severity increases over time (using current_tick / 60.0 to approx seconds)
+                time_factor = 1.0 + (getattr(world, "current_tick", 0) / 60.0) / 100.0
+                radius_mult = min(2.0, time_factor)
+                damage_mult = min(3.0, time_factor)
 
-        for hazard in list(world.arena.hazards):
+                kind, base_damage, base_radius = hazard_type
+
+                new_hazard = Hazard(id=len(world.arena.hazards) + random.randint(1000, 9999),
+                                    x=x, y=y, radius=base_radius * radius_mult,
+                                    kind=kind, damage=base_damage * damage_mult)
+                new_hazard.vx = vx
+                new_hazard.vy = vy
+                # Track original size for breathing effect
+                new_hazard.base_radius = base_radius * radius_mult
+
+                world.arena.hazards.append(new_hazard)
+
+        import math
+        current_time = getattr(world, "current_tick", 0) * delta
+        surviving_hazards = []
+        for hazard in world.arena.hazards:
             if hasattr(hazard, 'vx') and hasattr(hazard, 'vy'):
                 hazard.x += hazard.vx * delta
                 hazard.y += hazard.vy * delta
 
-                if (hazard.x < -100 or hazard.x > world.arena.width + 100 or
-                    hazard.y < -100 or hazard.y > world.arena.height + 100):
-                    world.arena.hazards.remove(hazard)
+                # Change severity / pulsate radius
+                if hasattr(hazard, 'base_radius'):
+                    hazard.radius = hazard.base_radius + math.sin(current_time * 2.0) * 5.0
+                    hazard.target_radius = hazard.radius
+
+                # Remove if out of bounds (with margin)
+                margin = 200.0
+                if (-margin <= hazard.x <= world.arena.width + margin and
+                    -margin <= hazard.y <= world.arena.height + margin):
+                    surviving_hazards.append(hazard)
+            else:
+                surviving_hazards.append(hazard)
+        world.arena.hazards = surviving_hazards
 
 
 class PortalNodeMode(GameMode):
