@@ -14,6 +14,7 @@ class CrowdSystem:
         self._update_excitement(tick)
         self._check_events(balls, kill_log, tick)
         self._throw_buffs_if_needed(balls, tick)
+        self._throw_hazards_if_bored(balls, tick)
 
     def _update_excitement(self, tick: int):
         # Decay excitement slowly
@@ -105,3 +106,24 @@ class CrowdSystem:
                 })
                 self.world.add_event("crowd_throw", {"message": "The crowd throws a speed pad to help a struggling player!"})
                 self.excitement_level -= 10.0  # Consumes excitement
+
+    def _throw_hazards_if_bored(self, balls: List[Any], tick: int):
+        if self.excitement_level >= 20.0:
+            return
+
+        if random.random() < 0.01:
+            alive_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator"]
+            if not alive_balls:
+                return
+
+            target_ball = random.choice(alive_balls)
+            hazard_kind = random.choice(["temporary_wall", "slow_field", "mini_bomb"])
+
+            if hasattr(self.world, 'add_event'):
+                self.world.add_event("spawn_hazard", {
+                    "x": getattr(target_ball, "x", 0) + random.uniform(-50, 50),
+                    "y": getattr(target_ball, "y", 0) + random.uniform(-50, 50),
+                    "kind": hazard_kind
+                })
+                self.world.add_event("crowd_throw", {"message": "The crowd boos and throws a hazard into the arena!"})
+                self.excitement_level += 5.0
