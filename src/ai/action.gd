@@ -6105,6 +6105,14 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var bidx = self.world.boosters.find(nearest)
+                    if bidx != -1:
+                        self.world.boosters.remove_at(bidx)
+                if "active" in nearest:
+                    nearest.active = false
+                elif nearest.has_method("set_meta"):
+                    nearest.set_meta("active", false)
             elif "kind" in nearest and nearest.kind == "reverse_gravity_booster":
                 if "reverse_gravity_booster_timer" in self.ball:
                     self.ball.reverse_gravity_booster_timer = 5.0
@@ -6153,6 +6161,14 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var bidx = self.world.boosters.find(nearest)
+                    if bidx != -1:
+                        self.world.boosters.remove_at(bidx)
+                if "active" in nearest:
+                    nearest.active = false
+                elif nearest.has_method("set_meta"):
+                    nearest.set_meta("active", false)
             elif "kind" in nearest and nearest.kind == "stealth_drone_item":
                 if self.ball.has_method("set_meta"):
                     self.ball.set_meta("has_stealth_drone", true)
@@ -6195,6 +6211,14 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var bidx = self.world.boosters.find(nearest)
+                    if bidx != -1:
+                        self.world.boosters.remove_at(bidx)
+                if "active" in nearest:
+                    nearest.active = false
+                elif nearest.has_method("set_meta"):
+                    nearest.set_meta("active", false)
             elif "kind" in nearest and nearest.kind == "invert_booster":
                 if self.world != null and "balls" in self.world:
                     for other in self.world.balls:
@@ -6274,6 +6298,14 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
                 if self.world != null and "boosters" in self.world:
+                    var bidx = self.world.boosters.find(nearest)
+                    if bidx != -1:
+                        self.world.boosters.remove_at(bidx)
+                if "active" in nearest:
+                    nearest.active = false
+                elif nearest.has_method("set_meta"):
+                    nearest.set_meta("active", false)
+                if self.world != null and "boosters" in self.world:
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
@@ -6288,6 +6320,14 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var bidx = self.world.boosters.find(nearest)
+                    if bidx != -1:
+                        self.world.boosters.remove_at(bidx)
+                if "active" in nearest:
+                    nearest.active = false
+                elif nearest.has_method("set_meta"):
+                    nearest.set_meta("active", false)
             elif "kind" in nearest and nearest.kind == "silence_booster":
                 if self.world != null and "balls" in self.world:
                     for other_ball in self.world.balls:
@@ -6307,6 +6347,14 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var bidx = self.world.boosters.find(nearest)
+                    if bidx != -1:
+                        self.world.boosters.remove_at(bidx)
+                if "active" in nearest:
+                    nearest.active = false
+                elif nearest.has_method("set_meta"):
+                    nearest.set_meta("active", false)
             elif "kind" in nearest and nearest.kind == "freeze_booster":
                 var fduration = 3.0
                 if "duration" in nearest: fduration = nearest.duration
@@ -6359,6 +6407,14 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var bidx = self.world.boosters.find(nearest)
+                    if bidx != -1:
+                        self.world.boosters.remove_at(bidx)
+                if "active" in nearest:
+                    nearest.active = false
+                elif nearest.has_method("set_meta"):
+                    nearest.set_meta("active", false)
             elif "kind" in nearest and nearest.kind == "zone_immunity":
                 var dur = 5.0
                 if "duration" in nearest: dur = nearest.duration
@@ -6367,6 +6423,14 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var bidx = self.world.boosters.find(nearest)
+                    if bidx != -1:
+                        self.world.boosters.remove_at(bidx)
+                if "active" in nearest:
+                    nearest.active = false
+                elif nearest.has_method("set_meta"):
+                    nearest.set_meta("active", false)
             elif "kind" in nearest and nearest.kind == "placeable_trap_item":
                 if not self.ball.has_meta("inventory"):
                     self.ball.set_meta("inventory", [])
@@ -6377,6 +6441,14 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var bidx = self.world.boosters.find(nearest)
+                    if bidx != -1:
+                        self.world.boosters.remove_at(bidx)
+                if "active" in nearest:
+                    nearest.active = false
+                elif nearest.has_method("set_meta"):
+                    nearest.set_meta("active", false)
             elif "kind" in nearest and nearest.kind == "exit_portal_item":
                 if not self.ball.has_meta("inventory"):
                     self.ball.set_meta("inventory", [])
@@ -6387,6 +6459,14 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var bidx = self.world.boosters.find(nearest)
+                    if bidx != -1:
+                        self.world.boosters.remove_at(bidx)
+                if "active" in nearest:
+                    nearest.active = false
+                elif nearest.has_method("set_meta"):
+                    nearest.set_meta("active", false)
             elif "kind" in nearest and nearest.kind == "position_swap_item":
                 if not self.ball.has_meta("inventory"):
                     self.ball.set_meta("inventory", [])
@@ -6397,6 +6477,14 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var bidx = self.world.boosters.find(nearest)
+                    if bidx != -1:
+                        self.world.boosters.remove_at(bidx)
+                if "active" in nearest:
+                    nearest.active = false
+                elif nearest.has_method("set_meta"):
+                    nearest.set_meta("active", false)
             elif "kind" in nearest and nearest.kind == "portal_gun_item":
                 if not self.ball.has_meta("inventory"):
                     self.ball.set_meta("inventory", [])
@@ -6407,6 +6495,14 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var bidx = self.world.boosters.find(nearest)
+                    if bidx != -1:
+                        self.world.boosters.remove_at(bidx)
+                if "active" in nearest:
+                    nearest.active = false
+                elif nearest.has_method("set_meta"):
+                    nearest.set_meta("active", false)
             elif "kind" in nearest and nearest.kind == "fake_booster":
                 var explosion_radius = 45.0
                 if "radius" in nearest:
@@ -6443,6 +6539,14 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var bidx = self.world.boosters.find(nearest)
+                    if bidx != -1:
+                        self.world.boosters.remove_at(bidx)
+                if "active" in nearest:
+                    nearest.active = false
+                elif nearest.has_method("set_meta"):
+                    nearest.set_meta("active", false)
             elif "kind" in nearest and nearest.kind == "weather_booster":
                 if self.ball.has_method("set_meta"):
                     self.ball.set_meta("weather_control_timer", 10.0)
@@ -6453,6 +6557,14 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var bidx = self.world.boosters.find(nearest)
+                    if bidx != -1:
+                        self.world.boosters.remove_at(bidx)
+                if "active" in nearest:
+                    nearest.active = false
+                elif nearest.has_method("set_meta"):
+                    nearest.set_meta("active", false)
             elif "kind" in nearest and nearest.kind == "magnet_booster":
                 if self.ball.has_method("set_meta"):
                     self.ball.set_meta("pull_booster_timer", 5.0)
@@ -6462,6 +6574,14 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var bidx = self.world.boosters.find(nearest)
+                    if bidx != -1:
+                        self.world.boosters.remove_at(bidx)
+                if "active" in nearest:
+                    nearest.active = false
+                elif nearest.has_method("set_meta"):
+                    nearest.set_meta("active", false)
                 if self.world != null and "boosters" in self.world:
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
@@ -6477,6 +6597,14 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var bidx = self.world.boosters.find(nearest)
+                    if bidx != -1:
+                        self.world.boosters.remove_at(bidx)
+                if "active" in nearest:
+                    nearest.active = false
+                elif nearest.has_method("set_meta"):
+                    nearest.set_meta("active", false)
                 if self.world != null and "boosters" in self.world:
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
@@ -6498,6 +6626,14 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
                 if self.world != null and "boosters" in self.world:
+                    var bidx = self.world.boosters.find(nearest)
+                    if bidx != -1:
+                        self.world.boosters.remove_at(bidx)
+                if "active" in nearest:
+                    nearest.active = false
+                elif nearest.has_method("set_meta"):
+                    nearest.set_meta("active", false)
+                if self.world != null and "boosters" in self.world:
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
@@ -6511,6 +6647,14 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var bidx = self.world.boosters.find(nearest)
+                    if bidx != -1:
+                        self.world.boosters.remove_at(bidx)
+                if "active" in nearest:
+                    nearest.active = false
+                elif nearest.has_method("set_meta"):
+                    nearest.set_meta("active", false)
                 if self.world != null and "boosters" in self.world:
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
@@ -6560,6 +6704,14 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var bidx = self.world.boosters.find(nearest)
+                    if bidx != -1:
+                        self.world.boosters.remove_at(bidx)
+                if "active" in nearest:
+                    nearest.active = false
+                elif nearest.has_method("set_meta"):
+                    nearest.set_meta("active", false)
 
                 if self.world != null and "boosters" in self.world:
                     var idx = self.world.boosters.find(nearest)
@@ -6577,6 +6729,14 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var bidx = self.world.boosters.find(nearest)
+                    if bidx != -1:
+                        self.world.boosters.remove_at(bidx)
+                if "active" in nearest:
+                    nearest.active = false
+                elif nearest.has_method("set_meta"):
+                    nearest.set_meta("active", false)
             else:
                 if self.world != null and self.world.has_method("_collect_booster"):
                     self.world._collect_booster(self.ball, nearest)

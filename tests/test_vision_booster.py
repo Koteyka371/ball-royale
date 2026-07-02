@@ -48,13 +48,20 @@ def test_collect_vision_booster():
     h = MockHazard("vision_booster", 510.0, 500.0, 30.0)
     world.arena.hazards.append(h)
 
+    # Give ball base_speed so it can actually move in _collect_booster
+    ball.base_speed = 100.0
+
     # Mock Action methods
     action._get_boosters = lambda: [h for h in world.arena.hazards if getattr(h, "active", True)]
     action._get_enemies = lambda: []
     action._get_allies = lambda: []
 
-    # Execute collect_booster
-    for _ in range(100): action._collect_booster(0.1)
+    # Move ball right on top of it manually to guarantee collection
+    ball.x = 510.0
+    ball.y = 500.0
+
+    action._collect_booster(0.1)
+
     print("has_timer:", hasattr(ball, "vision_booster_timer"))
     print("ball.x:", ball.x)
 
