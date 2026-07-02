@@ -478,7 +478,7 @@ class BattleRoyaleMode extends GameMode:
             self.weather_timer += delta
             if self.weather_timer > 15.0:
                 self.weather_timer = 0.0
-                var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard"]
+                var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm"]
                 var old_weather = self.weather
                 self.weather = weathers[randi() % weathers.size()]
                 if old_weather != self.weather and world != null and world.has_method("add_event"):
@@ -1864,7 +1864,7 @@ class WeatherChaosMode extends GameMode:
 			weather_timer += delta
 			if weather_timer > 10.0:
 				weather_timer = 0.0
-				var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard"]
+				var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm"]
 				var old_weather = weather
 				weather = weathers[randi() % weathers.size()]
 				if old_weather != weather and world != null and world.has_method("add_event"):
@@ -2211,6 +2211,59 @@ class WeatherChaosMode extends GameMode:
 						if "hp" in b: b.hp -= 20
 					if b.has_method("set_meta"):
 						b.set_meta("attack_accuracy", 0.5)
+				elif weather == "magnetic_storm":
+					var pol = 1
+					if typeof(b) == TYPE_OBJECT:
+						if b.has_method("get_meta") and b.has_meta("polarity"):
+							pol = b.get_meta("polarity")
+						elif "polarity" in b:
+							pol = b.polarity
+						else:
+							pol = 1 if randf() > 0.5 else -1
+							b.set("polarity", pol)
+							if b.has_method("set_meta"): b.set_meta("polarity", pol)
+					elif typeof(b) == TYPE_DICTIONARY:
+						if b.has("polarity"):
+							pol = b["polarity"]
+						else:
+							pol = 1 if randf() > 0.5 else -1
+							b["polarity"] = pol
+
+					var cos = "magnet_plus" if pol == 1 else "magnet_minus"
+					if typeof(b) == TYPE_OBJECT: b.set("cosmetic", cos)
+					elif typeof(b) == TYPE_DICTIONARY: b["cosmetic"] = cos
+
+					if world != null and "balls" in world:
+						for other in world.balls:
+							if typeof(other) == TYPE_DICTIONARY: continue
+							if other != b and other.get("alive", false):
+								var has_pol = false
+								var o_pol = 1
+								if typeof(other) == TYPE_OBJECT:
+									if other.has_method("has_meta") and other.has_meta("polarity"):
+										has_pol = true
+										o_pol = other.get_meta("polarity")
+									elif "polarity" in other:
+										has_pol = true
+										o_pol = other.polarity
+
+								if has_pol:
+									var bx = b.get("x")
+									var by = b.get("y")
+									var ox = other.get("x")
+									var oy = other.get("y")
+									if bx != null and by != null and ox != null and oy != null:
+										var dx = ox - bx
+										var dy = oy - by
+										var dist = sqrt(dx*dx + dy*dy)
+										if dist > 0 and dist < 300:
+											var force_mag = 500.0 / (dist + 10.0)
+											if pol != o_pol:
+												b.set("x", bx + (dx/dist) * force_mag * delta)
+												b.set("y", by + (dy/dist) * force_mag * delta)
+											else:
+												b.set("x", bx - (dx/dist) * force_mag * delta)
+												b.set("y", by - (dy/dist) * force_mag * delta)
 				elif weather == "heatwave":
 					if typeof(b) == TYPE_OBJECT: b.set("cosmetic", "sunglasses")
 					elif typeof(b) == TYPE_DICTIONARY: b["cosmetic"] = "sunglasses"
