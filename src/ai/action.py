@@ -161,6 +161,40 @@ class Action:
                 if hasattr(self.world, "_deal_damage"):
                     self.world._deal_damage(attacker, target)
 
+            # Apply chain damage modifier if magnetic storm is active
+            if hasattr(self.world, "game_mode") and getattr(self.world.game_mode, "weather", "") == "magnetic_storm":
+                import math
+                chain_radius = 100.0
+                chain_chance = 0.5
+                if random.random() < chain_chance:
+                    chain_damage = original_damage * 0.5
+                    nearby_entities = []
+                    if hasattr(self.world, "balls"):
+                        for b in self.world.balls:
+                            if getattr(b, "alive", False) and getattr(b, "id", None) != getattr(target, "id", None) and getattr(b, "id", None) != getattr(attacker, "id", None):
+                                d_sq = (getattr(b, "x", 0) - getattr(target, "x", 0))**2 + (getattr(b, "y", 0) - getattr(target, "y", 0))**2
+                                if d_sq <= chain_radius**2:
+                                    nearby_entities.append((d_sq, b))
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        for h in self.world.arena.hazards:
+                            if getattr(h, "active", True) and getattr(h, "id", None) != getattr(target, "id", None):
+                                d_sq = (getattr(h, "x", 0) - getattr(target, "x", 0))**2 + (getattr(h, "y", 0) - getattr(target, "y", 0))**2
+                                if d_sq <= chain_radius**2:
+                                    nearby_entities.append((d_sq, h))
+
+                    if nearby_entities:
+                        nearby_entities.sort(key=lambda x: x[0])
+                        next_target = nearby_entities[0][1]
+                        old_dmg = getattr(attacker, "damage", original_damage)
+                        attacker.damage = chain_damage
+                        if hasattr(self.world, "_deal_damage"):
+                            self.world._deal_damage(attacker, next_target)
+                        elif hasattr(next_target, "hp"):
+                            next_target.hp -= chain_damage
+                        attacker.damage = old_dmg
+                        if hasattr(self, "_spawn_skill_particles"):
+                            self._spawn_skill_particles("lightning")
+
             if is_nemesis_active or b_type_attacker == "bounty_hunter":
                 attacker.damage = original_damage
 
