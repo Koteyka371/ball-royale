@@ -7370,6 +7370,41 @@ func _use_skill():
                 elif self.ball.has_method("set_meta"):
                     self.ball.set_meta("skill_timer", 0.0)
 
+        elif skill_name == "grapple":
+            _spawn_skill_particles("grapple")
+
+            var arena_width = 1000.0
+            var arena_height = 1000.0
+            if "arena" in self.world and self.world.arena != null:
+                if "width" in self.world.arena: arena_width = float(self.world.arena.width)
+                if "height" in self.world.arena: arena_height = float(self.world.arena.height)
+            elif "width" in self.world: arena_width = float(self.world.width)
+
+            if "height" in self.world and not ("arena" in self.world and self.world.arena != null):
+                arena_height = float(self.world.height)
+
+            var dist_left = self.ball.x
+            var dist_right = arena_width - self.ball.x
+            var dist_top = self.ball.y
+            var dist_bottom = arena_height - self.ball.y
+
+            var min_dist = min(min(dist_left, dist_right), min(dist_top, dist_bottom))
+            var pull_dist = 200.0
+
+            if min_dist == dist_left:
+                self.ball.x = max(0.0, self.ball.x - pull_dist)
+            elif min_dist == dist_right:
+                self.ball.x = min(arena_width, self.ball.x + pull_dist)
+            elif min_dist == dist_top:
+                self.ball.y = max(0.0, self.ball.y - pull_dist)
+            elif min_dist == dist_bottom:
+                self.ball.y = min(arena_height, self.ball.y + pull_dist)
+
+            if "skill_cooldown" in self.ball:
+                self.ball.skill_timer = self.ball.skill_cooldown
+            else:
+                self.ball.skill_timer = 5.0
+
         elif skill_name == "dash":
             _spawn_skill_particles("dash")
             var dash_range_mult = 1.0
@@ -8251,6 +8286,14 @@ func _spawn_skill_particles(skill_name: String = ""):
                 particles.color = Color(1.0, 0.3, 0.0, 0.9) # Fiery explosion
             particles.lifetime = 0.4 * (1.0 + (tier_multiplier - 1.0) * 0.2)
             particles.explosiveness = 1.0
+        elif skill_name == "grapple":
+            particles.amount = int(15 * tier_multiplier)
+            particles.spread = 15.0
+            particles.initial_velocity_min = 40.0
+            particles.initial_velocity_max = 90.0
+            particles.color = Color(0.6, 0.4, 0.2, 0.8) # Brownish trail
+            particles.lifetime = 0.4
+            particles.explosiveness = 0.6
         elif skill_name == "dash":
             particles.amount = int(20 * tier_multiplier)
             particles.spread = 20.0 * (1.0 + (tier_multiplier - 1.0) * 0.5)

@@ -4753,6 +4753,34 @@ class Action:
                 if killed_enemy:
                     self.ball.skill_timer = 0.0
 
+            elif skill_name == "grapple":
+                self._spawn_skill_particles("grapple")
+
+                # Find the closest wall
+                arena_width = getattr(self.world.arena, "width", 1000) if hasattr(self.world, "arena") and self.world.arena else getattr(self.world, "width", 1000)
+                arena_height = getattr(self.world.arena, "height", 1000) if hasattr(self.world, "arena") and self.world.arena else getattr(self.world, "height", 1000)
+
+                dists = {
+                    "left": self.ball.x,
+                    "right": arena_width - self.ball.x,
+                    "top": self.ball.y,
+                    "bottom": arena_height - self.ball.y
+                }
+
+                closest_wall = min(dists, key=dists.get)
+                pull_dist = 200.0
+
+                if closest_wall == "left":
+                    self.ball.x = max(0.0, self.ball.x - pull_dist)
+                elif closest_wall == "right":
+                    self.ball.x = min(float(arena_width), self.ball.x + pull_dist)
+                elif closest_wall == "top":
+                    self.ball.y = max(0.0, self.ball.y - pull_dist)
+                elif closest_wall == "bottom":
+                    self.ball.y = min(float(arena_height), self.ball.y + pull_dist)
+
+                self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
+
             elif skill_name == "dash":
                 self._spawn_skill_particles("dash")
 
