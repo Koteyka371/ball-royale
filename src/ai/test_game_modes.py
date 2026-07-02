@@ -590,3 +590,34 @@ def test_pinball_mode():
     assert hasattr(world.arena, "hazards")
     assert len(world.arena.hazards) >= 20
     assert any(h.kind == "bumper" for h in world.arena.hazards)
+
+def test_chain_reaction_mode():
+    import ai.game_modes as gm
+    mode = gm.GAME_MODES["chain_reaction"]
+    mode.chain_chance = 1.0 # Force chain for testing
+
+    world = type("Mock", (), {"balls": []})()
+    class MockBall:
+        def __init__(self, id, x, y):
+            self.id = id
+            self.x = x
+            self.y = y
+            self.hp = 100
+            self.alive = True
+            self.ball_type = "warrior"
+        def take_damage(self, amount, *args, **kwargs):
+            self.hp -= amount
+
+    b1 = MockBall(1, 0, 0)
+    b2 = MockBall(2, 50, 0)
+    b3 = MockBall(3, 300, 0)
+    world.balls = [b1, b2, b3]
+
+    mode.setup(world, world.balls)
+    mode.tick(world, world.balls, 0.016)
+
+    b1.take_damage(20)
+
+    assert b1.hp == 80
+    assert b2.hp == 90 # Took chained damage
+    assert b3.hp == 100 # Out of range

@@ -5821,6 +5821,70 @@ class MinefieldEventMode extends GameMode:
 						if world != null and world.has_method("add_event"):
 							world.add_event("mine_explosion", {"x": m["x"], "y": m["y"]})
 
+class ChainReactionMode extends GameMode:
+    var chain_radius = 150.0
+    var chain_chance = 0.5
+    var chain_multiplier = 0.5
+
+    func _init():
+        name = "Chain Reaction"
+        description = "Any damage dealt has a chance to chain to nearby entities."
+
+    func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
+        if not "dead_balls" in world:
+            world.dead_balls = []
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        if not "dead_balls" in world:
+            world.dead_balls = []
+
+        if not world.has_meta("_is_chaining"):
+            world.set_meta("_is_chaining", false)
+
+        for b in balls:
+            if not b.has_meta("prev_hp_chain"):
+                var chp = 100.0
+                if "hp" in b: chp = b.hp
+                b.set_meta("prev_hp_chain", chp)
+
+        if not world.get_meta("_is_chaining"):
+            var chains_to_apply = []
+            for b in balls:
+                var current_hp = 100.0
+                if "hp" in b: current_hp = b.hp
+                var prev_hp = b.get_meta("prev_hp_chain")
+
+                if current_hp < prev_hp:
+                    var damage_taken = prev_hp - current_hp
+                    if randf() < chain_chance:
+                        chains_to_apply.append({"ball": b, "damage": damage_taken * chain_multiplier})
+
+                b.set_meta("prev_hp_chain", current_hp)
+
+            if chains_to_apply.size() > 0:
+                world.set_meta("_is_chaining", true)
+                for chain_info in chains_to_apply:
+                    var b = chain_info.ball
+                    var chain_dmg = chain_info.damage
+                    if chain_dmg < 1.0:
+                        continue
+                    for other in balls:
+                        var is_alive = false
+                        if "alive" in other: is_alive = other.alive
+                        elif other.has_method("get_meta") and other.has_meta("alive"): is_alive = other.get_meta("alive")
+                        else: is_alive = true
+
+                        if other != b and is_alive:
+                            var dist_sq = (other.x - b.x)*(other.x - b.x) + (other.y - b.y)*(other.y - b.y)
+                            if dist_sq <= chain_radius * chain_radius:
+                                if other.has_method("take_damage"):
+                                    other.take_damage(chain_dmg)
+                                    var n_hp = 100.0
+                                    if "hp" in other: n_hp = other.hp
+                                    other.set_meta("prev_hp_chain", n_hp)
+                world.set_meta("_is_chaining", false)
+
 var GAME_MODES = {
 
 
@@ -5850,6 +5914,7 @@ var GAME_MODES = {
 	"emp_burst": EMPBurstMode.new(),
 	"dynamic_hazards": DynamicHazardsMode.new(),
 	"custom_match": CustomMatchMode.new(),
+	"chain_reaction": ChainReactionMode.new(),
 	"reverse_event": ReverseEventMode.new(),
 	"minefield_event": MinefieldEventMode.new(),
     "weather_chaos": WeatherChaosMode.new(),

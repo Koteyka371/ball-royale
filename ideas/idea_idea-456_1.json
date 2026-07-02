@@ -1,0 +1,4 @@
+{
+  "title": "Reverse Damage Zone",
+  "description": "A new arena hazard that inverses damage into healing for all entities inside it for a short duration."
+}

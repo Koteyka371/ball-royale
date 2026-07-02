@@ -4688,6 +4688,57 @@ class MinefieldEventMode(GameMode):
                         if hasattr(world, "add_event"):
                             world.add_event("mine_explosion", {"x": m["x"], "y": m["y"]})
 
+class ChainReactionMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Chain Reaction"
+        self.description = "Any damage dealt has a chance to chain to nearby entities."
+        import random
+        self.random = random
+        self.chain_radius = 150.0
+        self.chain_chance = 0.5
+        self.chain_multiplier = 0.5
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                if not hasattr(b, "_original_take_damage_chain"):
+                    b._original_take_damage_chain = getattr(b, "take_damage")
+
+                    def make_wrapper(ball):
+                        def take_damage_wrapper(amount, *args, **kwargs):
+                            ball._original_take_damage_chain(amount, *args, **kwargs)
+
+                            if getattr(world, "_is_chaining", False):
+                                return
+
+                            if self.random.random() < self.chain_chance:
+                                chain_dmg = amount * self.chain_multiplier
+                                if chain_dmg < 1.0:
+                                    return
+
+                                world._is_chaining = True
+
+                                if hasattr(world, "balls"):
+                                    for other in world.balls:
+                                        if other != ball and getattr(other, "alive", False):
+                                            dist_sq = (other.x - ball.x)**2 + (other.y - ball.y)**2
+                                            if dist_sq <= self.chain_radius**2:
+                                                if hasattr(other, "take_damage"):
+                                                    other.take_damage(chain_dmg, *args, **kwargs)
+
+                                world._is_chaining = False
+                        return take_damage_wrapper
+                    b.take_damage = make_wrapper(b)
+
 GAME_MODES = {
 
 
@@ -4717,6 +4768,7 @@ GAME_MODES = {
     "emp_burst": EMPBurstMode(),
     "dynamic_hazards": DynamicHazardsMode(),
     "custom_match": CustomMatchMode(),
+    "chain_reaction": ChainReactionMode(),
     "reverse_event": ReverseEventMode(),
     "minefield_event": MinefieldEventMode(),
     "weather_chaos": WeatherChaosMode(),
