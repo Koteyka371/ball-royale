@@ -8040,7 +8040,7 @@
     },
     {
       "id": "idea-466",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Stamina overload",
@@ -12969,6 +12969,74 @@
         "src/ai/bouncy_walls.py",
         "src/ai/bouncy_walls.gd",
         "tests/test_bouncy_walls.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-754",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Game Mode: Freeze Tag",
+      "description": "Players can freeze enemies upon collision. Frozen enemies cannot move or attack until an ally collides with them to unfreeze them. The game ends when one team is completely frozen.",
+      "allowed_paths": [
+        "src/ai/game_freeze_tag.py",
+        "src/ai/game_freeze_tag.gd",
+        "tests/test_game_freeze_tag.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-755",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Spiked Walls Game Mode",
+      "description": "A new mutator/game mode where the arena walls are lined with spikes. Hitting a wall doesn't just do scaling velocity damage, but also applies a bleeding effect that drains HP slowly over time until the player stops moving.",
+      "allowed_paths": [
+        "src/ai/spiked_walls_game.py",
+        "src/ai/spiked_walls_game.gd",
+        "tests/test_spiked_walls_game.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-756",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Wall Bounce Combos",
+      "description": "If a player manages to knock an opponent into a wall multiple times in quick succession (or hit multiple walls with one knockback), the wall damage multiplier significantly increases, and the attacking player gets a temporary speed boost.",
+      "allowed_paths": [
+        "src/ai/wall_bounce_combos.py",
+        "src/ai/wall_bounce_combos.gd",
+        "tests/test_wall_bounce_combos.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-757",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Random Event: Meteor Shower",
+      "description": "Periodically, shadows appear on the ground, growing in size. After a short delay, meteors strike those locations, leaving behind temporary lava puddles that deal damage over time to anyone stepping in them.",
+      "allowed_paths": [
+        "src/ai/random_meteor_shower.py",
+        "src/ai/random_meteor_shower.gd",
+        "tests/test_random_meteor_shower.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

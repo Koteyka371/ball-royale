@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-466] Stamina overload — *2026-07-02 19:49:06 UTC*
+
+If a ball picks up a stamina booster while already at max stamina, they get a temporary speed boost.
+
+---
+
 ## [idea-464] Wall bounce mechanic — *2026-07-02 19:00:12 UTC*
 
 Balls that get knocked back into a wall take additional damage based on their velocity.
