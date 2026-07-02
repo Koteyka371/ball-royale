@@ -9,6 +9,18 @@ class GameMode:
     def setup(self, world: Any, balls: List[Any]) -> None:
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
+        for b in balls:
+            if hasattr(b, "sponsor"):
+                if b.sponsor == "aggressor":
+                    b.max_hp = getattr(b, "max_hp", 100.0) * 0.8
+                    b.hp = min(getattr(b, "hp", 100.0), b.max_hp)
+                elif b.sponsor == "juggernaut":
+                    b.speed = getattr(b, "speed", 100.0) * 0.8
+                    if hasattr(b, "base_speed"):
+                        b.base_speed *= 0.8
+                elif b.sponsor == "vampiric":
+                    b.max_hp = getattr(b, "max_hp", 100.0) * 0.9
+                    b.hp = min(getattr(b, "hp", 100.0), b.max_hp)
         """Called at the start of the battle to initialize mode-specific rules/teams."""
 
         # Apply global season modifier
@@ -3265,6 +3277,18 @@ class BumperBallsMode(GameMode):
     def setup(self, world: Any, balls: List[Any]) -> None:
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
+        for b in balls:
+            if hasattr(b, "sponsor"):
+                if b.sponsor == "aggressor":
+                    b.max_hp = getattr(b, "max_hp", 100.0) * 0.8
+                    b.hp = min(getattr(b, "hp", 100.0), b.max_hp)
+                elif b.sponsor == "juggernaut":
+                    b.speed = getattr(b, "speed", 100.0) * 0.8
+                    if hasattr(b, "base_speed"):
+                        b.base_speed *= 0.8
+                elif b.sponsor == "vampiric":
+                    b.max_hp = getattr(b, "max_hp", 100.0) * 0.9
+                    b.hp = min(getattr(b, "hp", 100.0), b.max_hp)
         for b in balls:
             b.damage = 0.0
             # We can use a special flag or mutator to handle the knockback in action.py

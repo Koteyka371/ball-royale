@@ -10,6 +10,26 @@ class GameMode:
     func setup(world, balls: Array) -> void:
         if not "dead_balls" in world:
             world.dead_balls = []
+        for b in balls:
+            var sponsor = ""
+            if "sponsor" in b:
+                sponsor = b.sponsor
+            elif b.has_method("get_meta") and b.has_meta("sponsor"):
+                sponsor = b.get_meta("sponsor")
+
+            if sponsor == "aggressor":
+                if "max_hp" in b:
+                    b.max_hp *= 0.8
+                    if "hp" in b: b.hp = min(b.hp, b.max_hp)
+            elif sponsor == "juggernaut":
+                if "speed" in b: b.speed *= 0.8
+                if "base_speed" in b: b.base_speed *= 0.8
+                elif b.has_method("set_meta") and b.has_meta("base_speed"):
+                    b.set_meta("base_speed", float(b.get_meta("base_speed")) * 0.8)
+            elif sponsor == "vampiric":
+                if "max_hp" in b:
+                    b.max_hp *= 0.9
+                    if "hp" in b: b.hp = min(b.hp, b.max_hp)
 
         var season_num = 1
         if "leaderboard_manager" in world and world.leaderboard_manager != null:
@@ -4040,6 +4060,26 @@ class BumperBallsMode extends GameMode:
     func setup(world, balls: Array) -> void:
         if not "dead_balls" in world:
             world.dead_balls = []
+        for b in balls:
+            var sponsor = ""
+            if "sponsor" in b:
+                sponsor = b.sponsor
+            elif b.has_method("get_meta") and b.has_meta("sponsor"):
+                sponsor = b.get_meta("sponsor")
+
+            if sponsor == "aggressor":
+                if "max_hp" in b:
+                    b.max_hp *= 0.8
+                    if "hp" in b: b.hp = min(b.hp, b.max_hp)
+            elif sponsor == "juggernaut":
+                if "speed" in b: b.speed *= 0.8
+                if "base_speed" in b: b.base_speed *= 0.8
+                elif b.has_method("set_meta") and b.has_meta("base_speed"):
+                    b.set_meta("base_speed", float(b.get_meta("base_speed")) * 0.8)
+            elif sponsor == "vampiric":
+                if "max_hp" in b:
+                    b.max_hp *= 0.9
+                    if "hp" in b: b.hp = min(b.hp, b.max_hp)
         for b in balls:
             b.damage = 0.0
             if not b.has_meta("mutators"):
