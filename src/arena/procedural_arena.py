@@ -291,6 +291,19 @@ class ProceduralArena:
             self.hazards.append(w1)
             self.hazards.append(w2)
 
+
+        # Generate random one-way teleporters
+        num_oneway_teleporters = max(1, self.num_rooms // 2)
+        for t in range(num_oneway_teleporters):
+            t_id = len(self.hazards) + 6500 + t
+            tx, ty = self.get_random_spawn_point(25.0)
+            target_x, target_y = self.get_random_spawn_point(25.0)
+            teleporter = Hazard(id=t_id, x=tx, y=ty, radius=25.0, kind="one_way_teleporter", damage=0.0)
+            teleporter.target_x = target_x
+            teleporter.target_y = target_y
+            setattr(teleporter, "change_timer", 5.0)
+            self.hazards.append(teleporter)
+
         # Generate random teleporter pads
         num_teleporters = max(2, self.num_rooms)
 
@@ -459,6 +472,13 @@ class ProceduralArena:
                             if hasattr(h, "vx"): h.vx *= -1
                         if h.y < 0 or h.y > self.height:
                             if hasattr(h, "vy"): h.vy *= -1
+
+                elif getattr(h, "kind", "") == "one_way_teleporter":
+                    if hasattr(h, "change_timer"):
+                        h.change_timer -= delta
+                        if h.change_timer <= 0:
+                            h.change_timer = 5.0
+                            h.target_x, h.target_y = self.get_random_spawn_point(25.0)
                 elif getattr(h, "kind", "") == "tornado":
                     if hasattr(h, "duration"):
                         h.duration -= delta

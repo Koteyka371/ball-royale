@@ -1,6 +1,6 @@
 import pytest
-from src.ai.action import Action
-from src.ai.game_modes import MirrorWallsMode
+from ai.action import Action
+from ai.game_modes import MirrorWallsMode
 
 class MockGameMode:
     def __init__(self, name="Normal"):
@@ -33,7 +33,7 @@ def test_no_damage_in_mirror_walls():
 
     # Run execute. Should hit the wall because x=10 and vx=-1000 and radius=15. wait, x-vx*delta?
     # No, execute runs _clamp_position and checks bounced_wall
-    ball.x = 0  # this will trigger clamp and bounced_wall
+    ball.x = -100  # this will trigger clamp and bounced_wall
     action.execute("idle", 1.0)
 
     assert ball.hp == 100
@@ -44,7 +44,7 @@ def test_damage_in_normal_mode():
     ball = MockBall()
     action = Action(ball, world)
 
-    ball.x = 0
+    ball.x = -100
     action.execute("idle", 1.0)
 
     assert ball.hp < 100

@@ -1,0 +1,4 @@
+{
+  "title": "Bouncing Laser Hazards",
+  "description": "Adds a new moving hazard to the procedural arena: a slow-moving, concentrated laser beam that continuously bounces off the arena walls. Instead of static hitboxes, this hazard creates moving damage zones that balls must kite around or carefully dash through."
+}

@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Trap Items",
+  "description": "Introduces a collectable trap item that deploys a highly visible decoy resembling a valuable booster (e.g., healing or stamina). When an opposing ball touches the decoy, it explodes, dealing moderate area-of-effect damage and temporarily slowing the victim."
+}

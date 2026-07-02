@@ -147,6 +147,9 @@ def test_weather_control_booster():
         is_heatwave = False
         wind_dx = 0.0
         wind_dy = 0.0
+        width = 1000
+        height = 1000
+        hazards = []
 
     class MockWorld:
         arena = MockArena()

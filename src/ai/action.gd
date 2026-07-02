@@ -1754,7 +1754,7 @@ func execute(strategy: String, delta: float):
                                             self.ball.set_meta("last_teleport_tick", current_tick)
                                         if entity_to_swap.has_method("set_meta"):
                                             entity_to_swap.set_meta("last_teleport_tick", current_tick)
-                elif hazard.kind == "portal" or hazard.kind == "teleporter" or hazard.kind == "wormhole":
+                elif hazard.kind == "portal" or hazard.kind == "teleporter" or hazard.kind == "one_way_teleporter" or hazard.kind == "wormhole":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
                     var dist_sq = dx * dx + dy * dy
@@ -1802,7 +1802,7 @@ func execute(strategy: String, delta: float):
 
                                     self.ball.set_meta("last_teleport_tick", current_tick)
                                     return
-                            if hazard.kind == "teleporter":
+                            if hazard.kind == "teleporter" or hazard.kind == "one_way_teleporter":
                                 if hazard.has_meta("target_x") and hazard.has_meta("target_y"):
                                     self.ball.x = hazard.get_meta("target_x")
                                     self.ball.y = hazard.get_meta("target_y")
@@ -2103,14 +2103,14 @@ func execute(strategy: String, delta: float):
                             var pull_strength = (hazard.radius * 2.0 / min_dist) * 50.0 * delta
                             self.ball.x += nx * pull_strength
                             self.ball.y += ny * pull_strength
-                elif hazard.kind in ["black_hole", "tornado", "portal", "teleporter", "swap_portal", "lightning_storm"]:
+                elif hazard.kind in ["black_hole", "tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm"]:
                     var current_tick = 0
                     if "tick" in self.world:
                         current_tick = self.world.tick
                     if not hazard.has_meta("last_updated_tick") or hazard.get_meta("last_updated_tick") != current_tick:
                         hazard.set_meta("last_updated_tick", current_tick)
                         if not hazard.has_meta("vx"):
-                            if hazard.kind in ["tornado", "portal", "teleporter", "swap_portal", "lightning_storm"]:
+                            if hazard.kind in ["tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm"]:
                                 hazard.set_meta("vx", randf_range(-100.0, 100.0))
                                 hazard.set_meta("vy", randf_range(-100.0, 100.0))
                             else:
