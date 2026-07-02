@@ -1307,7 +1307,41 @@ class ThunderstormArena(ProceduralArena):
                 surviving_hazards.append(h)
         self.hazards = surviving_hazards
 
+class SiegeArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Attacker Spawn Area (Large, open, plenty of health)
+        self.rooms.append(Room(50, h - 400, w - 100, 350))
+
+        # Defender Fortress (High ground/elevated, small, choke points)
+        # Main fortress room
+        self.rooms.append(Room(cx - 150, 50, 300, 300))
+
+        # Chokepoint corridors leading to fortress
+        self.corridors.append(Corridor(cx - 250, 350, 200, h - 400 - 350)) # Left ramp
+        self.corridors.append(Corridor(cx + 50, 350, 200, h - 400 - 350)) # Right ramp
+
+        # Add healing springs in attacker spawn
+        for i in range(4):
+            x = 100 + i * (w - 200) / 3
+            y = h - 200
+            h_id = len(self.hazards)
+            heal = Hazard(id=h_id, x=x, y=y, radius=40.0, kind="healing_spring", damage=-20.0)
+            self.hazards.append(heal)
+
+        # Add some defensive structures (like walls/bumpers) near the choke points for defenders
+        h_id = len(self.hazards)
+        self.hazards.append(Hazard(id=h_id, x=cx - 150, y=350, radius=30.0, kind="bumper", damage=0.0))
+        self.hazards.append(Hazard(id=h_id+1, x=cx + 150, y=350, radius=30.0, kind="bumper", damage=0.0))
+
+
 ARENAS = {
+    "siege": SiegeArena,
     "thunderstorm": ThunderstormArena,
     "thick_fog": ThickFogArena,
     "black_hole": BlackHoleArena,
