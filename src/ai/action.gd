@@ -128,6 +128,28 @@ func _attempt_damage(attacker, target) -> void:
 			if "damage" in attacker:
 				attacker.damage = original_damage * 1.2
 
+		var b_type_attacker = ""
+		if "ball_type" in attacker:
+			b_type_attacker = str(attacker.ball_type).to_lower()
+		elif attacker.has_method("get_meta") and attacker.has_meta("ball_type"):
+			b_type_attacker = str(attacker.get_meta("ball_type")).to_lower()
+
+		var target_is_bounty = false
+		if "is_bounty" in target and target.is_bounty:
+			target_is_bounty = true
+		elif target.has_method("get_meta") and target.has_meta("is_bounty") and target.get_meta("is_bounty"):
+			target_is_bounty = true
+
+		var target_high_threat = false
+		if "high_threat" in target and target.high_threat:
+			target_high_threat = true
+		elif target.has_method("get_meta") and target.has_meta("high_threat") and target.get_meta("high_threat"):
+			target_high_threat = true
+
+		if b_type_attacker == "bounty_hunter" and (target_is_bounty or target_high_threat):
+			if "damage" in attacker:
+				attacker.damage = original_damage * 2.0
+
 		var has_ricochet = false
 		if "ricochet_barrier_timer" in target and target.ricochet_barrier_timer > 0.0:
 			has_ricochet = true
@@ -247,7 +269,7 @@ func _attempt_damage(attacker, target) -> void:
 			if self.world != null and self.world.has_method("_deal_damage"):
 				self.world._deal_damage(attacker, target)
 
-		if is_nemesis_active and "damage" in attacker:
+		if (is_nemesis_active or b_type_attacker == "bounty_hunter") and "damage" in attacker:
 			attacker.damage = original_damage
 
 	var new_hp = 0.0

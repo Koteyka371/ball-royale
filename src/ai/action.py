@@ -77,6 +77,10 @@ class Action:
             if is_nemesis_active:
                 attacker.damage = original_damage * 1.2
 
+            b_type_attacker = getattr(attacker, 'ball_type', getattr(attacker.__class__, 'BALL_TYPE', '')).lower()
+            if b_type_attacker == 'bounty_hunter' and (getattr(target, 'is_bounty', False) or getattr(target, 'high_threat', False)):
+                attacker.damage = original_damage * 2.0
+
             has_ricochet = getattr(target, "ricochet_barrier_timer", 0.0) > 0.0
             has_reflect_shield = getattr(target, "reflect_shield_active", False)
             # Note: in Python tests reflect_shield_timer might not be set.
@@ -151,7 +155,7 @@ class Action:
                 if hasattr(self.world, "_deal_damage"):
                     self.world._deal_damage(attacker, target)
 
-            if is_nemesis_active:
+            if is_nemesis_active or b_type_attacker == "bounty_hunter":
                 attacker.damage = original_damage
 
         new_hp = getattr(target, "hp", 0.0)
