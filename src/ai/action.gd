@@ -470,6 +470,78 @@ func execute(strategy: String, delta: float):
         self.ball.erase("_chrono_slow")
 
 
+	# Magnet passive: pull boosters and smaller entities
+	var btype = ""
+	if "BALL_TYPE" in self.ball: btype = self.ball.BALL_TYPE
+	elif "ball_type" in self.ball: btype = self.ball.ball_type
+
+	if btype == "magnet":
+		var pull_radius = 150.0
+		var pull_strength = 60.0
+		if "boosters" in self.world:
+			for b in self.world.boosters:
+				var b_x = 0.0
+				var b_y = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					b_x = b.get("x", 0.0)
+					b_y = b.get("y", 0.0)
+				else:
+					b_x = b.x
+					b_y = b.y
+
+				var dx = self.ball.x - b_x
+				var dy = self.ball.y - b_y
+				var dist_sq = dx*dx + dy*dy
+				if dist_sq > 0 and dist_sq < pull_radius*pull_radius:
+					var dist = sqrt(dist_sq)
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] += (dx / dist) * pull_strength * delta
+						b["y"] += (dy / dist) * pull_strength * delta
+					else:
+						b.x += (dx / dist) * pull_strength * delta
+						b.y += (dy / dist) * pull_strength * delta
+
+		if "balls" in self.world:
+			for other in self.world.balls:
+				if other.id != self.ball.id:
+					var other_rad = 10.0
+					if "radius" in other: other_rad = other.radius
+					var self_rad = 15.0
+					if "radius" in self.ball: self_rad = self.ball.radius
+
+					if other_rad < self_rad:
+						var dx = self.ball.x - other.x
+						var dy = self.ball.y - other.y
+						var dist_sq = dx*dx + dy*dy
+						if dist_sq > 0 and dist_sq < pull_radius*pull_radius:
+							var dist = sqrt(dist_sq)
+							if not ("vx" in other):
+								if other.has_method("set_meta"): other.set_meta("vx", 0.0)
+								elif typeof(other) == TYPE_DICTIONARY: other["vx"] = 0.0
+								else: other.vx = 0.0
+							if not ("vy" in other):
+								if other.has_method("set_meta"): other.set_meta("vy", 0.0)
+								elif typeof(other) == TYPE_DICTIONARY: other["vy"] = 0.0
+								else: other.vy = 0.0
+
+							var vx = 0.0
+							if "vx" in other: vx = other.vx
+							elif typeof(other) == TYPE_DICTIONARY: vx = other.get("vx", 0.0)
+
+							var vy = 0.0
+							if "vy" in other: vy = other.vy
+							elif typeof(other) == TYPE_DICTIONARY: vy = other.get("vy", 0.0)
+
+							vx += (dx / dist) * pull_strength * 2.0 * delta
+							vy += (dy / dist) * pull_strength * 2.0 * delta
+
+							if typeof(other) == TYPE_DICTIONARY:
+								other["vx"] = vx
+								other["vy"] = vy
+							else:
+								other.vx = vx
+								other.vy = vy
+
 	var is_mimic_clone = false
 	if self.ball.has_method("get_meta") and self.ball.get_meta("is_mimic_clone"): is_mimic_clone = true
 	elif "is_mimic_clone" in self.ball and self.ball.is_mimic_clone: is_mimic_clone = true
@@ -6641,6 +6713,73 @@ func _use_skill():
                         if arena.has_method("queue_redraw"):
                             arena.call("queue_redraw")
 
+        elif skill_name == "repel_burst":
+            if "skill_cooldown" in self.ball:
+                self.ball.skill_timer = self.ball.skill_cooldown
+            else:
+                self.ball.skill_timer = 10.0
+
+            var push_radius = 200.0
+            var push_force = 400.0
+            if "boosters" in self.world:
+                for b in self.world.boosters:
+                    var b_x = 0.0
+                    var b_y = 0.0
+                    if typeof(b) == TYPE_DICTIONARY:
+                        b_x = b.get("x", 0.0)
+                        b_y = b.get("y", 0.0)
+                    else:
+                        b_x = b.x
+                        b_y = b.y
+
+                    var dx = b_x - self.ball.x
+                    var dy = b_y - self.ball.y
+                    var dist_sq = dx*dx + dy*dy
+                    if dist_sq > 0 and dist_sq < push_radius*push_radius:
+                        var dist = sqrt(dist_sq)
+                        if typeof(b) == TYPE_DICTIONARY:
+                            b["x"] += (dx / dist) * 50.0
+                            b["y"] += (dy / dist) * 50.0
+                        else:
+                            b.x += (dx / dist) * 50.0
+                            b.y += (dy / dist) * 50.0
+            if "balls" in self.world:
+                for other in self.world.balls:
+                    if other.id != self.ball.id:
+                        var dx = other.x - self.ball.x
+                        var dy = other.y - self.ball.y
+                        var dist_sq = dx*dx + dy*dy
+                        if dist_sq > 0 and dist_sq < push_radius*push_radius:
+                            var dist = sqrt(dist_sq)
+                            if not ("vx" in other):
+                                if other.has_method("set_meta"): other.set_meta("vx", 0.0)
+                                elif typeof(other) == TYPE_DICTIONARY: other["vx"] = 0.0
+                                else: other.vx = 0.0
+                            if not ("vy" in other):
+                                if other.has_method("set_meta"): other.set_meta("vy", 0.0)
+                                elif typeof(other) == TYPE_DICTIONARY: other["vy"] = 0.0
+                                else: other.vy = 0.0
+
+                            var vx = 0.0
+                            if "vx" in other: vx = other.vx
+                            elif typeof(other) == TYPE_DICTIONARY: vx = other.get("vx", 0.0)
+
+                            var vy = 0.0
+                            if "vy" in other: vy = other.vy
+                            elif typeof(other) == TYPE_DICTIONARY: vy = other.get("vy", 0.0)
+
+                            vx += (dx / dist) * push_force
+                            vy += (dy / dist) * push_force
+
+                            if typeof(other) == TYPE_DICTIONARY:
+                                other["vx"] = vx
+                                other["vy"] = vy
+                            else:
+                                other.vx = vx
+                                other.vy = vy
+
+            if self.has_method("_spawn_skill_particles"):
+                self._spawn_skill_particles("repel_burst")
         elif skill_name == "stamina_dash":
             _spawn_skill_particles("dash")
             var st = 0.0
@@ -7379,6 +7518,10 @@ func _spawn_skill_particles(skill_name: String = ""):
             particles.lifetime = 0.3 * (1.0 + (tier_multiplier - 1.0) * 0.2)
             particles.explosiveness = 0.5
             # Could orient opposite to velocity if we had it, but spread and low life is fine
+        elif skill_name == "repel_burst":
+            particles["color"] = "purple"
+            particles["speed"] = 400.0
+            particles["lifetime"] = 0.5
         elif skill_name == "chaos_link":
             var all_balls = []
             if self.world.has("balls"):
