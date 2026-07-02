@@ -8424,6 +8424,58 @@ func _apply_friendly_aura(delta: float):
 
 
 func _update_skill_timer(delta: float):
+
+    var m_tether_timer = 0.0
+    if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("magnet_tether_timer"):
+        m_tether_timer = self.ball.get_meta("magnet_tether_timer")
+    elif "magnet_tether_timer" in self.ball:
+        m_tether_timer = self.ball.magnet_tether_timer
+
+    if m_tether_timer > 0:
+        var target = null
+        if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("magnet_tether_target"):
+            target = self.ball.get_meta("magnet_tether_target")
+        elif "magnet_tether_target" in self.ball:
+            target = self.ball.magnet_tether_target
+
+        var is_target_alive = true
+        if target:
+            if typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("alive"): is_target_alive = target.get_meta("alive")
+            elif "alive" in target: is_target_alive = target.alive
+
+        if target and is_target_alive:
+            var tx = target.get_meta("x") if typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("x") else target.x if "x" in target else 0.0
+            var ty = target.get_meta("y") if typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("y") else target.y if "y" in target else 0.0
+            var bx = self.ball.get_meta("x") if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("x") else self.ball.x if "x" in self.ball else 0.0
+            var by = self.ball.get_meta("y") if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("y") else self.ball.y if "y" in self.ball else 0.0
+
+            var dx = tx - bx
+            var dy = ty - by
+            var dist = sqrt(dx*dx + dy*dy)
+            if dist > 0:
+                var tether_speed = 2.0 * 3.0
+                if "speed" in self.ball:
+                    tether_speed = self.ball.speed * 3.0
+
+                var nvx = (dx / dist) * tether_speed
+                var nvy = (dy / dist) * tether_speed
+
+                if "vx" in self.ball: self.ball.vx = nvx
+                elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("vx", nvx)
+
+                if "vy" in self.ball: self.ball.vy = nvy
+                elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("vy", nvy)
+
+                if "x" in self.ball: self.ball.x += nvx * delta
+                elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta") and self.ball.has_meta("x"): self.ball.set_meta("x", self.ball.get_meta("x") + nvx * delta)
+
+                if "y" in self.ball: self.ball.y += nvy * delta
+                elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta") and self.ball.has_meta("y"): self.ball.set_meta("y", self.ball.get_meta("y") + nvy * delta)
+
+        m_tether_timer -= delta
+        if "magnet_tether_timer" in self.ball: self.ball.magnet_tether_timer = m_tether_timer
+        elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("magnet_tether_timer", m_tether_timer)
+
     var n_timer = 0.0
     if "nemesis_booster_timer" in self.ball:
         n_timer = float(self.ball.nemesis_booster_timer)
