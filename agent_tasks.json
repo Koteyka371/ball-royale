@@ -8210,7 +8210,7 @@
     },
     {
       "id": "idea-476",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Hazard",
@@ -13037,6 +13037,40 @@
         "src/ai/random_meteor_shower.py",
         "src/ai/random_meteor_shower.gd",
         "tests/test_random_meteor_shower.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-758",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Speed Booster Overdrive",
+      "description": "When an entity picks up multiple speed boosters sequentially, rather than simply refreshing the timer, it gains 'Speed Overdrive' which makes it immune to all slow and freeze effects while the overdrive lasts.",
+      "allowed_paths": [
+        "src/ai/speed_booster_overdrive.py",
+        "src/ai/speed_booster_overdrive.gd",
+        "tests/test_speed_booster_overdrive.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-759",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Stamina Drain Hazard Pulse",
+      "description": "Hazard zones that currently drain stamina will occasionally pulse, applying a 1-second silence effect if the entity caught within them has zero stamina.",
+      "allowed_paths": [
+        "src/arena/stamina_drain_pulse.py",
+        "src/arena/stamina_drain_pulse.gd",
+        "tests/test_stamina_drain_pulse.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

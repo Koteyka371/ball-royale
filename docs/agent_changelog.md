@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-476] Black Hole Hazard — *2026-07-02 20:04:41 UTC*
+
+A rare procedural arena event that spawns a massive black hole in the center of the map. It gradually pulls all entities and items towards its center while constantly shrinking the safe zone.
+
+---
+
 ## [idea-466] Stamina overload — *2026-07-02 19:49:06 UTC*
 
 If a ball picks up a stamina booster while already at max stamina, they get a temporary speed boost.
