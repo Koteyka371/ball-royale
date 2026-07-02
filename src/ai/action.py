@@ -1580,6 +1580,18 @@ class Action:
                                         # Important: After a teleport, we must prevent the rest of the tick from adding `speed * delta` based on random boid rules
                                         return
                                 self.ball.last_teleport_tick = current_tick
+                    elif hazard.kind == "slip_zone":
+                        if getattr(hazard, "active", True):
+                            dx = hazard.x - self.ball.x
+                            dy = hazard.y - self.ball.y
+                            dist_sq = dx * dx + dy * dy
+                            if dist_sq < hazard.radius * hazard.radius:
+                                if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+                                    self.ball.x += self.ball.vx * delta
+                                    self.ball.y += self.ball.vy * delta
+                                self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.01
+                                if not hasattr(self.ball, "is_slipping"):
+                                    self.ball.is_slipping = True
                     elif hazard.kind == "ice_patch":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y

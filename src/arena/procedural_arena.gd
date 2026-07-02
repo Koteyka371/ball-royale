@@ -191,6 +191,8 @@ func generate():
             kind = "stealth_zone"
         elif r < 0.9997:
             kind = "stamina_drain_zone"
+        elif r < 0.9998:
+            kind = "slip_zone"
         else:
             kind = "switch"
 
@@ -279,6 +281,9 @@ func generate():
             radius = rng.randf_range(50.0, 100.0)
             damage = 0.0
         elif kind == "stamina_drain_zone":
+            radius = rng.randf_range(40.0, 80.0)
+            damage = 0.0
+        elif kind == "slip_zone":
             radius = rng.randf_range(40.0, 80.0)
             damage = 0.0
         elif kind == "spinning_laser":
@@ -468,6 +473,30 @@ func clamp_position(x: float, y: float, radius: float) -> Array:
 func update_zone(current_tick: int, delta: float) -> void:
     if current_tick != last_tick:
         if "hazards" in self:
+            for hazard in hazards:
+                if hazard.kind == "slip_zone":
+                    if not "active_timer" in hazard:
+                        if hazard.has_method("set_meta"):
+                            hazard.set_meta("active_timer", 0.0)
+                            hazard.set_meta("active", true)
+                        else:
+                            hazard.active_timer = 0.0
+                            hazard.active = true
+
+                    var timer = hazard.get_meta("active_timer") if hazard.has_method("get_meta") and hazard.has_meta("active_timer") else hazard.get("active_timer")
+                    timer += delta
+                    if timer >= 5.0:
+                        timer = 0.0
+                        var active = hazard.get_meta("active") if hazard.has_method("get_meta") and hazard.has_meta("active") else hazard.get("active")
+                        if hazard.has_method("set_meta"):
+                            hazard.set_meta("active", not active)
+                        else:
+                            hazard.active = not active
+
+                    if hazard.has_method("set_meta"):
+                        hazard.set_meta("active_timer", timer)
+                    else:
+                        hazard.active_timer = timer
             for hazard in hazards:
                 if hazard.kind == "magnet":
                     for other_hazard in hazards:
