@@ -44,6 +44,38 @@ class ConveyorBelt(Hazard):
         self.direction_vector = direction_vector
         self.speed_magnitude = speed_magnitude
 
+class FactoryArena(ProceduralArena):
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+
+        w, h = self.width, self.height
+        cx, cy = w/2, h/2
+
+        # Central assembly line
+        self.rooms.append(Room(w * 0.1, h * 0.3, w * 0.8, h * 0.4))
+
+        # Top and bottom side rooms
+        self.rooms.append(Room(w * 0.3, h * 0.1, w * 0.4, h * 0.2))
+        self.rooms.append(Room(w * 0.3, h * 0.7, w * 0.4, h * 0.2))
+
+        # Corridors connecting side rooms to main assembly
+        self.corridors.append(Corridor(x=cx, y=h * 0.2, width=100, height=h * 0.2))
+        self.corridors.append(Corridor(x=cx, y=h * 0.6, width=100, height=h * 0.2))
+
+        # Add conveyor belts in a loop or lines
+
+        # Top line moving right
+        self.hazards.append(ConveyorBelt(id=0, x=w*0.3, y=h*0.4, radius=60.0, damage=0.0, direction_vector=(1.0, 0.0), speed_magnitude=200.0))
+        self.hazards.append(ConveyorBelt(id=1, x=w*0.5, y=h*0.4, radius=60.0, damage=0.0, direction_vector=(1.0, 0.0), speed_magnitude=200.0))
+        self.hazards.append(ConveyorBelt(id=2, x=w*0.7, y=h*0.4, radius=60.0, damage=0.0, direction_vector=(1.0, 0.0), speed_magnitude=200.0))
+
+        # Bottom line moving left
+        self.hazards.append(ConveyorBelt(id=3, x=w*0.7, y=h*0.6, radius=60.0, damage=0.0, direction_vector=(-1.0, 0.0), speed_magnitude=200.0))
+        self.hazards.append(ConveyorBelt(id=4, x=w*0.5, y=h*0.6, radius=60.0, damage=0.0, direction_vector=(-1.0, 0.0), speed_magnitude=200.0))
+        self.hazards.append(ConveyorBelt(id=5, x=w*0.3, y=h*0.6, radius=60.0, damage=0.0, direction_vector=(-1.0, 0.0), speed_magnitude=200.0))
+
 class CrossArena(ProceduralArena):
     def generate(self):
         self.rooms.clear()
