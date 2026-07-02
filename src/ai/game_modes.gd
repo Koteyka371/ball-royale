@@ -1033,6 +1033,7 @@ class EscortMode extends GameMode:
     var payload
     var goal_x: float = 900.0
     var goal_y: float = 500.0
+    var pulse_timer: float = 0.0
 
     func _init() -> void:
         name = "Escort Mode"
@@ -1083,6 +1084,7 @@ class EscortMode extends GameMode:
                 payload.y = 500.0
 
     func tick(world, balls: Array, delta: float = 0.016) -> void:
+        pulse_timer += delta
         if payload != null:
             var is_alive = payload.get("alive", false) if typeof(payload) == TYPE_DICTIONARY else payload.alive
             if is_alive:
@@ -1099,6 +1101,43 @@ class EscortMode extends GameMode:
                     else:
                         payload.x += (dx / dist) * spd
                         payload.y += (dy / dist) * spd
+
+        if pulse_timer >= 5.0:
+            pulse_timer -= 5.0
+            if payload != null:
+                var is_alive = payload.get("alive", false) if typeof(payload) == TYPE_DICTIONARY else payload.alive
+                if is_alive:
+                    var px = payload.get("x", 0) if typeof(payload) == TYPE_DICTIONARY else payload.x
+                    var py = payload.get("y", 0) if typeof(payload) == TYPE_DICTIONARY else payload.y
+                    for b in balls:
+                        var b_is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.alive
+                        var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else b.ball_type
+                        var is_same_payload = false
+                        if typeof(b) == typeof(payload) and str(b) == str(payload):
+                            is_same_payload = true
+
+                        if b_is_alive and not is_same_payload and b_type != "spectator":
+                            var bx = b.get("x", 0) if typeof(b) == TYPE_DICTIONARY else b.x
+                            var by = b.get("y", 0) if typeof(b) == TYPE_DICTIONARY else b.y
+                            var b_dist = sqrt((px - bx) * (px - bx) + (py - by) * (py - by))
+                            if b_dist <= 150.0:
+                                var team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.team
+                                var base_hp = b.get("base_hp", 100) if typeof(b) == TYPE_DICTIONARY else b.base_hp
+                                var hp = b.get("hp", 100) if typeof(b) == TYPE_DICTIONARY else b.hp
+                                if team == "Defenders":
+                                    if typeof(b) == TYPE_DICTIONARY:
+                                        b["hp"] = min(base_hp, hp + 20)
+                                    else:
+                                        b.hp = min(base_hp, hp + 20)
+                                elif team == "Attackers":
+                                    if typeof(b) == TYPE_DICTIONARY:
+                                        b["hp"] -= 20
+                                        if b["hp"] <= 0:
+                                            b["alive"] = false
+                                    else:
+                                        b.hp -= 20
+                                        if b.hp <= 0:
+                                            b.alive = false
 
     func check_winner(world, balls: Array):
         if payload == null:

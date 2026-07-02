@@ -761,6 +761,7 @@ class EscortMode(GameMode):
         self.payload = None
         self.goal_x = 900.0
         self.goal_y = 500.0
+        self.pulse_timer = 0.0
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -789,6 +790,8 @@ class EscortMode(GameMode):
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
 
+        self.pulse_timer += delta
+
         if self.payload and getattr(self.payload, "alive", False):
             import math
             dx = self.goal_x - getattr(self.payload, "x", 0)
@@ -797,6 +800,25 @@ class EscortMode(GameMode):
             if dist > 0:
                 self.payload.x += (dx / dist) * getattr(self.payload, "speed", 0.5)
                 self.payload.y += (dy / dist) * getattr(self.payload, "speed", 0.5)
+
+        if self.pulse_timer >= 5.0:
+            self.pulse_timer -= 5.0
+            if self.payload and getattr(self.payload, "alive", False):
+                import math
+                px = getattr(self.payload, "x", 0)
+                py = getattr(self.payload, "y", 0)
+                for b in balls:
+                    if getattr(b, "alive", False) and b != self.payload and getattr(b, "ball_type", None) != "spectator":
+                        bx = getattr(b, "x", 0)
+                        by = getattr(b, "y", 0)
+                        b_dist = math.hypot(px - bx, py - by)
+                        if b_dist <= 150.0:
+                            if getattr(b, "team", "") == "Defenders":
+                                b.hp = min(getattr(b, "base_hp", 100), getattr(b, "hp", 100) + 20)
+                            elif getattr(b, "team", "") == "Attackers":
+                                b.hp -= 20
+                                if b.hp <= 0:
+                                    b.alive = False
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         if not self.payload:

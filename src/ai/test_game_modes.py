@@ -589,3 +589,76 @@ def test_pinball_mode():
     assert hasattr(world.arena, "hazards")
     assert len(world.arena.hazards) >= 20
     assert any(h.kind == "bumper" for h in world.arena.hazards)
+
+def test_escort_mode_pulse():
+    from ai.game_modes import EscortMode
+
+    class MockWorld:
+        pass
+
+    class MockBall:
+        def __init__(self, x, y):
+            self.x = x
+            self.y = y
+            self.ball_type = "normal"
+            self.hp = 100
+            self.base_hp = 100
+            self.alive = True
+            self.team = "Attackers"
+
+    mode = EscortMode()
+    world = MockWorld()
+    balls = [
+        MockBall(x=50, y=50), # payload
+        MockBall(x=100, y=500), # nearby defender
+        MockBall(x=100, y=500), # nearby attacker
+        MockBall(x=800, y=500), # far attacker
+    ]
+    mode.setup(world, balls)
+    payload = mode.payload
+
+    # We setup the balls to correct teams after setup
+    balls[1].team = "Defenders"
+    balls[1].hp = 50
+    balls[1].base_hp = 100
+    balls[1].x = 110 # Close to payload
+    balls[1].y = 500
+    balls[1].alive = True
+
+    balls[2].team = "Attackers"
+    balls[2].hp = 100
+    balls[2].x = 110 # Close to payload
+    balls[2].y = 500
+    balls[2].alive = True
+
+    balls[3].team = "Attackers"
+    balls[3].hp = 100
+    balls[3].x = 800 # Far from payload
+    balls[3].y = 500
+    balls[3].alive = True
+
+    # Move them close to where payload will be after tick
+    balls[1].x = 100
+    balls[1].y = 500
+    balls[2].x = 100
+    balls[2].y = 500
+    balls[3].x = 800
+    balls[3].y = 500
+
+    # Fast forward time to trigger pulse. Pulse triggers at 5.0, so with delta 0.01 we need 501 ticks
+    for _ in range(501):
+        mode.tick(world, balls, delta=0.01)
+        # Update balls to follow payload so they stay in range
+        balls[1].x = mode.payload.x
+        balls[1].y = mode.payload.y
+        balls[2].x = mode.payload.x
+        balls[2].y = mode.payload.y
+
+    # Defender should be healed
+    assert balls[1].hp > 50
+
+    # Close attacker should be damaged
+    assert balls[2].hp < 100
+
+    # Far attacker should be unaffected
+    assert balls[3].hp == 100
