@@ -344,6 +344,19 @@ func generate():
             hazards.append(w1)
             hazards.append(w2)
 
+
+    # Generate random one-way teleporters
+    var num_oneway_teleporters = max(1, num_rooms / 2)
+    for t in range(num_oneway_teleporters):
+        var t_id = hazards.size() + 6500 + t
+        var tx_pt = get_random_spawn_point(25.0)
+        var target_pt = get_random_spawn_point(25.0)
+        var teleporter = ProceduralArena.Hazard.new(t_id, tx_pt[0], tx_pt[1], 25.0, "one_way_teleporter", 0.0)
+        teleporter.set_meta("target_x", target_pt[0])
+        teleporter.set_meta("target_y", target_pt[1])
+        teleporter.set_meta("change_timer", 5.0)
+        hazards.append(teleporter)
+
     # Generate random teleporter pads
     var num_teleporters = max(2, num_rooms)
     if num_teleporters % 2 != 0:
@@ -517,6 +530,16 @@ func update_zone(current_tick: int, delta: float) -> void:
                             h.set_meta("vx", h.get_meta("vx") * -1.0)
                         if h.y < 0 or h.y > height:
                             h.set_meta("vy", h.get_meta("vy") * -1.0)
+
+            elif "kind" in h and h.kind == "one_way_teleporter":
+                if h.has_meta("change_timer"):
+                    var ct = h.get_meta("change_timer") - delta
+                    if ct <= 0:
+                        ct = 5.0
+                        var new_target = get_random_spawn_point(25.0)
+                        h.set_meta("target_x", new_target[0])
+                        h.set_meta("target_y", new_target[1])
+                    h.set_meta("change_timer", ct)
             elif "kind" in h and h.kind in ["tornado", "lightning_storm"]:
                 if h.has_meta("duration"):
                     var dur = h.get_meta("duration") - delta
