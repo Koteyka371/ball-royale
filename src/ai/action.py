@@ -2483,6 +2483,40 @@ class Action:
 
     def _get_enemies_internal(self) -> list:
         perception_radius = self._get_perception_radius()
+
+        # Check stealth zones
+        my_stealth_zones = []
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            for h in self.world.arena.hazards:
+                if getattr(h, "kind", "") == "stealth_zone":
+                    dx = h.x - self.ball.x
+                    dy = h.y - self.ball.y
+                    if dx*dx + dy*dy <= h.radius*h.radius:
+                        my_stealth_zones.append(h)
+
+        def is_visible(enemy) -> bool:
+            enemy_stealth_zones = []
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                for h in self.world.arena.hazards:
+                    if getattr(h, "kind", "") == "stealth_zone":
+                        dx = h.x - getattr(enemy, "x", 0)
+                        dy = h.y - getattr(enemy, "y", 0)
+                        if dx*dx + dy*dy <= h.radius*h.radius:
+                            enemy_stealth_zones.append(h)
+
+            # If enemy is in stealth zone, they are hidden unless I am in the SAME stealth zone
+            if enemy_stealth_zones:
+                for h in my_stealth_zones:
+                    if h in enemy_stealth_zones:
+                        return True
+                return False
+
+            # Enemy is not in stealth zone, so they are visible to me EXCEPT if I am in a stealth zone
+            if my_stealth_zones:
+                return False
+
+            return True
+
         enemies = []
         if hasattr(self.world, "get_nearby_entities"):
             entities = self.world.get_nearby_entities(self.ball, perception_radius)
@@ -2491,23 +2525,14 @@ class Action:
             else:
                 enemies = [e for e in entities if getattr(e, "ball_type", None) != self.ball.ball_type and getattr(e, "ball_type", None) != "spectator" and getattr(e, "alive", True)]
 
-        if hasattr(self.world, "balls"):
+        # If entities weren't retrieved properly by get_nearby_entities, retrieve them manually
+        if not enemies and hasattr(self.world, "balls"):
             for b in self.world.balls:
-                if getattr(b, "is_decoy", False) and getattr(b, "alive", True) and b not in enemies:
-                    if getattr(b, "ball_type", None) != self.ball.ball_type:
-                        dx = getattr(b, "x", 0) - self.ball.x
-                        dy = getattr(b, "y", 0) - self.ball.y
-                        if dx*dx + dy*dy <= perception_radius*perception_radius:
-                            enemies.append(b)
-
-        if hasattr(self.world, "balls"):
-            for b in self.world.balls:
-                if getattr(b, "is_illusion", False) and getattr(b, "alive", True) and b not in enemies:
-                    if getattr(b, "team", getattr(b, "ball_type", "")) != getattr(self.ball, "team", getattr(self.ball, "ball_type", "")):
-                        dx = getattr(b, "x", 0) - self.ball.x
-                        dy = getattr(b, "y", 0) - self.ball.y
-                        if dx*dx + dy*dy <= perception_radius*perception_radius:
-                            enemies.append(b)
+                if getattr(b, "ball_type", None) != getattr(self.ball, "ball_type", None) and getattr(b, "ball_type", None) != "spectator" and getattr(b, "alive", True) and not getattr(b, "is_decoy", False) and not getattr(b, "is_illusion", False):
+                    dx = getattr(b, "x", 0) - getattr(self.ball, "x", 0)
+                    dy = getattr(b, "y", 0) - self.ball.y
+                    if dx*dx + dy*dy <= perception_radius*perception_radius:
+                        enemies.append(b)
 
         if hasattr(self.world, "balls"):
             for b in self.world.balls:
@@ -2527,6 +2552,14 @@ class Action:
                         if dx*dx + dy*dy <= perception_radius*perception_radius:
                             enemies.append(b)
 
+        if hasattr(self.world, "balls"):
+            for b in self.world.balls:
+                if getattr(b, "is_decoy", False) and getattr(b, "alive", True) and b not in enemies:
+                    if getattr(b, "ball_type", None) != self.ball.ball_type:
+                        dx = getattr(b, "x", 0) - self.ball.x
+                        dy = getattr(b, "y", 0) - self.ball.y
+                        if dx*dx + dy*dy <= perception_radius*perception_radius:
+                            enemies.append(b)
 
         # Include flares as high-priority enemies if they are within perception radius
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -2542,7 +2575,11 @@ class Action:
                     if dx*dx + dy*dy <= perception_radius*perception_radius:
                         enemies.append(h)
 
+        # Filter enemies by visibility
+        enemies = [e for e in enemies if is_visible(e)]
+
         return enemies
+
 
     def _get_allies(self) -> list:
         if getattr(self.ball, "is_confused", False):

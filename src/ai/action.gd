@@ -3665,6 +3665,19 @@ func _get_enemies() -> Array:
 func _get_enemies_internal() -> Array:
     var perception_radius = self._get_perception_radius()
 
+    var my_stealth_zones = []
+    if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+        for h in self.world.arena.hazards:
+            var h_kind = h.kind if "kind" in h else (h.get_meta("kind") if h.has_method("has_meta") and h.has_meta("kind") else "")
+            if h_kind == "stealth_zone":
+                var hx = h.x if "x" in h else h.get_meta("x")
+                var hy = h.y if "y" in h else h.get_meta("y")
+                var hr = h.radius if "radius" in h else h.get_meta("radius")
+                var dx = hx - self.ball.x
+                var dy = hy - self.ball.y
+                if dx*dx + dy*dy <= hr*hr:
+                    my_stealth_zones.append(h)
+
     var enemies = []
     if self.world != null and self.world.has_method("get_nearby_entities"):
         var entities = self.world.get_nearby_entities(self.ball, perception_radius)
@@ -3681,181 +3694,67 @@ func _get_enemies_internal() -> Array:
                     if e_type != b_type and e_type != "spectator":
                         enemies.append(e)
 
-    if self.world != null and "balls" in self.world:
+    if enemies.size() == 0 and self.world != null and "balls" in self.world:
         for b in self.world.balls:
-            var is_decoy = false
-            if b.has_method("has_meta") and b.has_meta("is_decoy") and b.get_meta("is_decoy"):
-                is_decoy = true
-            elif typeof(b) == TYPE_DICTIONARY and b.has("is_decoy") and b["is_decoy"]:
-                is_decoy = true
-
-            var is_alive = true
-            if "alive" in b:
-                is_alive = b.alive
-            elif typeof(b) == TYPE_DICTIONARY and b.has("alive"):
-                is_alive = b["alive"]
-
-            if is_decoy and is_alive:
-                var is_enemy = false
-                var b_type = null
-                var my_type = null
-
-                if "ball_type" in b:
-                    b_type = b.ball_type
-                elif typeof(b) == TYPE_DICTIONARY and b.has("ball_type"):
-                    b_type = b["ball_type"]
-
-                if "ball_type" in self.ball:
-                    my_type = self.ball.ball_type
-                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"):
-                    my_type = self.ball["ball_type"]
-
-                if b_type != null and my_type != null and b_type != my_type:
-                    is_enemy = true
-
-                var already_in = false
-                for e in enemies:
-                    if typeof(e) == typeof(b):
-                        if typeof(e) == TYPE_DICTIONARY and e.has("id") and b.has("id") and e.id == b.id:
-                            already_in = true
-                            break
-                        elif typeof(e) == TYPE_OBJECT and e == b:
-                            already_in = true
-                            break
-
-                if is_enemy and not already_in:
-                    var bx = null
-                    var by = null
-                    if "x" in b and "y" in b:
-                        bx = b.x
-                        by = b.y
-                    elif typeof(b) == TYPE_DICTIONARY:
-                        if b.has("x"): bx = b["x"]
-                        if b.has("y"): by = b["y"]
-
-                    if bx != null and by != null:
-                        var dx = bx - self.ball.x
-                        var dy = by - self.ball.y
-                        if dx*dx + dy*dy <= perception_radius*perception_radius:
-                            enemies.append(b)
-
-
-    if self.world != null and "balls" in self.world:
-        for b in self.world.balls:
-            var is_illusion = false
-            if b.has_method("has_meta") and b.has_meta("is_illusion") and b.get_meta("is_illusion"):
-                is_illusion = true
-            elif typeof(b) == TYPE_DICTIONARY and b.has("is_illusion") and b["is_illusion"]:
-                is_illusion = true
-
-            var is_alive = true
-            if "alive" in b:
-                is_alive = b.alive
-            elif typeof(b) == TYPE_DICTIONARY and b.has("alive"):
-                is_alive = b["alive"]
-
-            if is_illusion and is_alive:
-                var is_enemy = false
-                var b_team = ""
-                var my_team = ""
-
-                if "team" in b:
-                    b_team = b.team
-                elif typeof(b) == TYPE_DICTIONARY and b.has("team"):
-                    b_team = b["team"]
-                elif "ball_type" in b:
-                    b_team = b.ball_type
-                elif typeof(b) == TYPE_DICTIONARY and b.has("ball_type"):
-                    b_team = b["ball_type"]
-
-                if "team" in self.ball:
-                    my_team = self.ball.team
-                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"):
-                    my_team = self.ball["team"]
-                elif "ball_type" in self.ball:
-                    my_team = self.ball.ball_type
-                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"):
-                    my_team = self.ball["ball_type"]
-
-                if b_team != "" and my_team != "" and b_team != my_team:
-                    is_enemy = true
-
-                var already_in = false
-                for e in enemies:
-                    if typeof(e) == typeof(b):
-                        # Simple check by reference or dict ID
-                        if typeof(e) == TYPE_DICTIONARY and e.has("id") and typeof(b) == TYPE_DICTIONARY and b.has("id") and e["id"] == b["id"]:
-                            already_in = true
-                            break
-                        elif typeof(e) == TYPE_OBJECT and e == b:
-                            already_in = true
-                            break
-
-                if is_enemy and not already_in:
-                    var bpos_x = b.get("position").x if b.get("position") != null else b.get("x")
-                    var bpos_y = b.get("position").y if b.get("position") != null else b.get("y")
-                    var dx = bpos_x - self.ball.x
-                    var dy = bpos_y - self.ball.y
+            var is_decoy = b.is_decoy if "is_decoy" in b else (b.get_meta("is_decoy") if b.has_method("has_meta") and b.has_meta("is_decoy") else false)
+            var is_illusion = b.is_illusion if "is_illusion" in b else (b.get_meta("is_illusion") if b.has_method("has_meta") and b.has_meta("is_illusion") else false)
+            var alive = b.alive if "alive" in b else (b.get_meta("alive") if b.has_method("has_meta") and b.has_meta("alive") else true)
+            if alive and not is_decoy and not is_illusion:
+                var e_type = b.ball_type if "ball_type" in b else (b.get_ball_type() if b.has_method("get_ball_type") else "")
+                var my_type = self.ball.ball_type if "ball_type" in self.ball else (self.ball.get_ball_type() if self.ball.has_method("get_ball_type") else "")
+                if e_type != my_type and e_type != "spectator":
+                    var bx = b.x if "x" in b else b.get_meta("x")
+                    var by = b.y if "y" in b else b.get_meta("y")
+                    var dx = bx - self.ball.x
+                    var dy = by - self.ball.y
                     if dx*dx + dy*dy <= perception_radius*perception_radius:
                         enemies.append(b)
 
     if self.world != null and "balls" in self.world:
         for b in self.world.balls:
             var is_decoy = false
-            if b.has_method("has_meta") and b.has_meta("is_decoy") and b.get_meta("is_decoy"):
-                is_decoy = true
-            elif typeof(b) == TYPE_DICTIONARY and b.has("is_decoy") and b["is_decoy"]:
-                is_decoy = true
-
+            if "is_decoy" in b:
+                is_decoy = b.is_decoy
+            elif b.has_method("has_meta") and b.has_meta("is_decoy"):
+                is_decoy = b.get_meta("is_decoy")
             var is_alive = true
             if "alive" in b:
                 is_alive = b.alive
-            elif typeof(b) == TYPE_DICTIONARY and b.has("alive"):
-                is_alive = b["alive"]
+            elif b.has_method("has_meta") and b.has_meta("alive"):
+                is_alive = b.get_meta("alive")
+            if is_decoy and is_alive and not enemies.has(b):
+                var e_type = b.ball_type if "ball_type" in b else (b.get_ball_type() if b.has_method("get_ball_type") else "")
+                var my_type = self.ball.ball_type if "ball_type" in self.ball else (self.ball.get_ball_type() if self.ball.has_method("get_ball_type") else "")
+                if e_type != my_type:
+                    var bx = b.x if "x" in b else b.get_meta("x")
+                    var by = b.y if "y" in b else b.get_meta("y")
+                    var dx = bx - self.ball.x
+                    var dy = by - self.ball.y
+                    if dx*dx + dy*dy <= perception_radius*perception_radius:
+                        enemies.append(b)
 
-            if is_decoy and is_alive:
-                var is_enemy = false
-                var b_type = null
-                var my_type = null
-
-                if "ball_type" in b:
-                    b_type = b.ball_type
-                elif typeof(b) == TYPE_DICTIONARY and b.has("ball_type"):
-                    b_type = b["ball_type"]
-
-                if "ball_type" in self.ball:
-                    my_type = self.ball.ball_type
-                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"):
-                    my_type = self.ball["ball_type"]
-
-                if b_type != null and my_type != null and b_type != my_type:
-                    is_enemy = true
-
-                var already_in = false
-                for e in enemies:
-                    if typeof(e) == typeof(b):
-                        if typeof(e) == TYPE_DICTIONARY and e.has("id") and b.has("id") and e.id == b.id:
-                            already_in = true
-                            break
-                        elif typeof(e) == TYPE_OBJECT and e == b:
-                            already_in = true
-                            break
-
-                if is_enemy and not already_in:
-                    var bx = null
-                    var by = null
-                    if "x" in b and "y" in b:
-                        bx = b.x
-                        by = b.y
-                    elif typeof(b) == TYPE_DICTIONARY:
-                        if b.has("x"): bx = b["x"]
-                        if b.has("y"): by = b["y"]
-
-                    if bx != null and by != null:
-                        var dx = bx - self.ball.x
-                        var dy = by - self.ball.y
-                        if dx*dx + dy*dy <= perception_radius*perception_radius:
-                            enemies.append(b)
+    if self.world != null and "balls" in self.world:
+        for b in self.world.balls:
+            var is_illusion = false
+            if "is_illusion" in b:
+                is_illusion = b.is_illusion
+            elif b.has_method("has_meta") and b.has_meta("is_illusion"):
+                is_illusion = b.get_meta("is_illusion")
+            var is_alive = true
+            if "alive" in b:
+                is_alive = b.alive
+            elif b.has_method("has_meta") and b.has_meta("alive"):
+                is_alive = b.get_meta("alive")
+            if is_illusion and is_alive and not enemies.has(b):
+                var b_team = b.team if "team" in b else (b.get_meta("team") if b.has_method("has_meta") and b.has_meta("team") else (b.ball_type if "ball_type" in b else ""))
+                var my_team = self.ball.team if "team" in self.ball else (self.ball.get_meta("team") if self.ball.has_method("has_meta") and self.ball.has_meta("team") else (self.ball.ball_type if "ball_type" in self.ball else ""))
+                if b_team != my_team:
+                    var bx = b.x if "x" in b else b.get_meta("x")
+                    var by = b.y if "y" in b else b.get_meta("y")
+                    var dx = bx - self.ball.x
+                    var dy = by - self.ball.y
+                    if dx*dx + dy*dy <= perception_radius*perception_radius:
+                        enemies.append(b)
 
     if self.world != null and "arena" in self.world and self.world.arena != null:
         var arena = self.world.arena
@@ -3882,23 +3781,44 @@ func _get_enemies_internal() -> Array:
                         if owner_id != null and my_id != null and owner_id == my_id:
                             continue
 
-                        var dx = h.x - self.ball.x
-                        var dy = h.y - self.ball.y
+                        var hx = h.x if "x" in h else h.get_meta("x")
+                        var hy = h.y if "y" in h else h.get_meta("y")
+                        var dx = hx - self.ball.x
+                        var dy = hy - self.ball.y
                         if dx*dx + dy*dy <= perception_radius*perception_radius:
                             enemies.append(h)
 
-    return enemies
+    var filtered_enemies = []
+    for e in enemies:
+        var enemy_stealth_zones = []
+        var ex = e.x if "x" in e else (e.get_meta("x") if e.has_method("has_meta") and e.has_meta("x") else 0)
+        var ey = e.y if "y" in e else (e.get_meta("y") if e.has_method("has_meta") and e.has_meta("y") else 0)
+        if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+            for h in self.world.arena.hazards:
+                var h_kind = h.kind if "kind" in h else (h.get_meta("kind") if h.has_method("has_meta") and h.has_meta("kind") else "")
+                if h_kind == "stealth_zone":
+                    var hx = h.x if "x" in h else h.get_meta("x")
+                    var hy = h.y if "y" in h else h.get_meta("y")
+                    var hr = h.radius if "radius" in h else h.get_meta("radius")
+                    var dx = hx - ex
+                    var dy = hy - ey
+                    if dx*dx + dy*dy <= hr*hr:
+                        enemy_stealth_zones.append(h)
 
-func _get_allies() -> Array:
-    var is_conf = false
-    if "is_confused" in self.ball:
-        is_conf = self.ball.is_confused
-    elif self.ball.has_method("has_meta") and self.ball.has_meta("is_confused"):
-        is_conf = self.ball.get_meta("is_confused")
+        var is_visible = true
+        if enemy_stealth_zones.size() > 0:
+            is_visible = false
+            for h in my_stealth_zones:
+                if enemy_stealth_zones.has(h):
+                    is_visible = true
+                    break
+        elif my_stealth_zones.size() > 0:
+            is_visible = false
 
-    if is_conf:
-        return _get_enemies_internal()
-    return _get_allies_internal()
+        if is_visible:
+            filtered_enemies.append(e)
+
+    return filtered_enemies
 
 func _get_allies_internal() -> Array:
     var perception_radius = self._get_perception_radius()

@@ -183,6 +183,8 @@ func generate():
             kind = "tornado"
         elif r < 0.999:
             kind = "lightning_storm"
+        elif r < 0.9995:
+            kind = "stealth_zone"
         else:
             kind = "switch"
 
@@ -254,6 +256,9 @@ func generate():
             damage = 0.0
         elif kind == "stamina_booster" or kind == "weather_booster" or kind == "magnet_booster" or kind == "clone_booster":
             radius = 15.0
+            damage = 0.0
+        elif kind == "stealth_zone":
+            radius = randf_range(40.0, 80.0)
             damage = 0.0
         elif kind == "tornado":
             radius = rng.randf_range(30.0, 60.0)
