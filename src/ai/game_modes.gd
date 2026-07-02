@@ -478,7 +478,7 @@ class BattleRoyaleMode extends GameMode:
             self.weather_timer += delta
             if self.weather_timer > 15.0:
                 self.weather_timer = 0.0
-                var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard"]
+                var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm"]
                 var old_weather = self.weather
                 self.weather = weathers[randi() % weathers.size()]
                 if old_weather != self.weather and world != null and world.has_method("add_event"):
@@ -1864,7 +1864,7 @@ class WeatherChaosMode extends GameMode:
 			weather_timer += delta
 			if weather_timer > 10.0:
 				weather_timer = 0.0
-				var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard"]
+				var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm"]
 				var old_weather = weather
 				weather = weathers[randi() % weathers.size()]
 				if old_weather != weather and world != null and world.has_method("add_event"):
@@ -2106,6 +2106,63 @@ class WeatherChaosMode extends GameMode:
 										decoy["SKILL"] = null
 										decoy["active_skill"] = null
 									world.balls.append(decoy)
+			elif weather == "magnetic_storm":
+				var is_dict = typeof(b) == TYPE_DICTIONARY
+				if is_dict:
+					b["cosmetic"] = "magnetized"
+				else:
+					b.set_meta("cosmetic", "magnetized")
+
+				var has_polarity = (is_dict and b.has("polarity")) or (!is_dict and b.has_meta("polarity"))
+
+				if !has_polarity or randf() < 0.05 * delta:
+					var new_pol = "positive" if randf() < 0.5 else "negative"
+					if is_dict:
+						b["polarity"] = new_pol
+					else:
+						b.set_meta("polarity", new_pol)
+
+				var alive = (is_dict and b.get("alive", false)) or (!is_dict and (b.get("alive") if "alive" in b else false))
+				if alive:
+					for other in balls:
+						if typeof(other) == TYPE_DICTIONARY and typeof(b) == TYPE_DICTIONARY and other.hash() == b.hash():
+							continue
+						if typeof(other) == TYPE_OBJECT and typeof(b) == TYPE_OBJECT and other == b:
+							continue
+
+						var other_alive = (typeof(other) == TYPE_DICTIONARY and other.get("alive", false)) or (typeof(other) == TYPE_OBJECT and (other.get("alive") if "alive" in other else false))
+						if not other_alive:
+							continue
+
+						var bx = b.get("x", 0.0) if is_dict else (b.x if "x" in b else 0.0)
+						var by = b.get("y", 0.0) if is_dict else (b.y if "y" in b else 0.0)
+						var ox = other.get("x", 0.0) if typeof(other) == TYPE_DICTIONARY else (other.x if "x" in other else 0.0)
+						var oy = other.get("y", 0.0) if typeof(other) == TYPE_DICTIONARY else (other.y if "y" in other else 0.0)
+
+						var dx = ox - bx
+						var dy = oy - by
+						var dist = sqrt(dx*dx + dy*dy)
+
+						if dist > 1.0 and dist < 300.0:
+							var other_pol = other.get("polarity", "positive") if typeof(other) == TYPE_DICTIONARY else (other.get_meta("polarity") if other.has_meta("polarity") else "positive")
+							var my_pol = b.get("polarity", "positive") if is_dict else (b.get_meta("polarity") if b.has_meta("polarity") else "positive")
+							var force = 1000.0 / dist
+
+							if my_pol != other_pol:
+								if is_dict:
+									if b.has("x"): b["x"] += (dx / dist) * force * delta
+									if b.has("y"): b["y"] += (dy / dist) * force * delta
+								else:
+									if "x" in b: b.x += (dx / dist) * force * delta
+									if "y" in b: b.y += (dy / dist) * force * delta
+							else:
+								if is_dict:
+									if b.has("x"): b["x"] -= (dx / dist) * force * delta
+									if b.has("y"): b["y"] -= (dy / dist) * force * delta
+								else:
+									if "x" in b: b.x -= (dx / dist) * force * delta
+									if "y" in b: b.y -= (dy / dist) * force * delta
+
 						if b.has_method("set_meta"): b.set_meta("mirage_timer", mt)
 						elif "mirage_timer" in b: b.mirage_timer = mt
 				elif weather == "blizzard":

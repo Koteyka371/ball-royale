@@ -211,3 +211,61 @@ def test_weather_mode_rain_vision():
     mode.tick(world, balls, 0.1)
 
     assert ball.perception_radius == 125.0 # 250 * 0.5
+
+def test_magnetic_storm_weather():
+    import ai.game_modes as gm
+    mode = gm.GAME_MODES["weather_chaos"]
+
+    class MockArena:
+        is_foggy = False
+        is_raining = False
+        is_sandstorming = False
+        is_snowing = False
+        is_heatwave = False
+        is_magnetic_storm = False
+        wind_dx = 0.0
+        wind_dy = 0.0
+        width = 1000
+        height = 1000
+        hazards = []
+
+    class MockWorld:
+        arena = MockArena()
+        dead_balls = []
+        def add_event(self, type, data):
+            pass
+
+    world = MockWorld()
+    world.leaderboard_manager = type("Mock", (), {"data": {"current_season": 4}})()
+
+    ball1 = MockBall(1, "warrior")
+    ball1.x = 100.0
+    ball1.y = 100.0
+    ball1.polarity = "positive"
+
+    ball2 = MockBall(2, "warrior")
+    ball2.x = 150.0
+    ball2.y = 100.0
+    ball2.polarity = "negative"
+
+    balls = [ball1, ball2]
+    mode.setup(world, balls)
+
+    mode.weather = "magnetic_storm"
+    mode.tick(world, balls, 1.0)
+
+    # Should attract
+    assert ball1.x > 100.0
+    assert ball2.x < 150.0
+
+    # Now set them to same polarity
+    ball1.x = 100.0
+    ball2.x = 150.0
+    ball1.polarity = "positive"
+    ball2.polarity = "positive"
+
+    mode.tick(world, balls, 1.0)
+
+    # Should repel
+    assert ball1.x < 100.0
+    assert ball2.x > 150.0

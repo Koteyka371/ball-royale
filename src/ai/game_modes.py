@@ -354,7 +354,7 @@ class BattleRoyaleMode(GameMode):
             self.weather_timer += delta
             if self.weather_timer > 15.0:
                 self.weather_timer = 0.0
-                weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard"]
+                weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm"]
                 rnd = getattr(self, "random", __import__("random"))
                 old_weather = self.weather
                 self.weather = rnd.choice(weathers)
@@ -378,6 +378,7 @@ class BattleRoyaleMode(GameMode):
             world.arena.is_sandstorming = (self.weather == "sandstorm")
             world.arena.is_snowing = (self.weather in ["snow", "blizzard"])
             world.arena.is_heatwave = (self.weather == "heatwave")
+            world.arena.is_magnetic_storm = (self.weather == "magnetic_storm")
 
             if not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
@@ -1432,7 +1433,7 @@ class WeatherChaosMode(GameMode):
             self.weather_timer += delta
             if self.weather_timer > 10.0:
                 self.weather_timer = 0.0
-                weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard"]
+                weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm"]
                 import random
                 rnd = getattr(self, "random", random)
                 old_weather = self.weather
@@ -1458,6 +1459,7 @@ class WeatherChaosMode(GameMode):
             world.arena.is_sandstorming = (self.weather == "sandstorm")
             world.arena.is_snowing = (self.weather in ["snow", "blizzard"])
             world.arena.is_heatwave = (self.weather == "heatwave")
+            world.arena.is_magnetic_storm = (self.weather == "magnetic_storm")
             world.arena.wind_dx = getattr(self, "wind_dx", 0.0) if self.weather == "wind" else 0.0
             world.arena.wind_dy = getattr(self, "wind_dy", 0.0) if self.weather == "wind" else 0.0
 
@@ -1622,6 +1624,36 @@ class WeatherChaosMode(GameMode):
                                 decoy.SKILL = None
                                 decoy.active_skill = None
                             world.balls.append(decoy)
+            elif self.weather == "magnetic_storm":
+                b.cosmetic = "magnetized"
+
+                # Assign polarity if not present or randomly flip sometimes
+                rnd = getattr(self, "random", __import__("random"))
+                if not hasattr(b, "polarity") or rnd.random() < 0.05 * delta:
+                    b.polarity = rnd.choice(["positive", "negative"])
+
+                # Magnetic forces
+                if getattr(b, "alive", False):
+                    import math
+                    for other in balls:
+                        if other is b or not getattr(other, "alive", False): continue
+
+                        dx = getattr(other, "x", 0) - getattr(b, "x", 0)
+                        dy = getattr(other, "y", 0) - getattr(b, "y", 0)
+                        dist = math.sqrt(dx*dx + dy*dy)
+
+                        if 1.0 < dist < 300.0:
+                            other_polarity = getattr(other, "polarity", "positive")
+                            force = 1000.0 / dist # 100 was too weak
+
+                            # Opposite attracts, same repels
+                            if getattr(b, "polarity", "positive") != other_polarity:
+                                if hasattr(b, "x"): b.x += (dx / dist) * force * delta
+                                if hasattr(b, "y"): b.y += (dy / dist) * force * delta
+                            else:
+                                if hasattr(b, "x"): b.x -= (dx / dist) * force * delta
+                                if hasattr(b, "y"): b.y -= (dy / dist) * force * delta
+
             elif self.weather == "blizzard":
                 b.cosmetic = "snow_goggles"
                 b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.4
