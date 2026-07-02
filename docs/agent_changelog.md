@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-465] Eclipse Random Event — *2026-07-02 18:38:40 UTC*
+
+A rare procedural event where an eclipse occurs regardless of the current phase in DayNightArena. During the eclipse, ALL balls lose their perception radius down to an extreme minimum (like 20 units) and global damage across the board is doubled, leading to chaotic close-quarter ambushes.
+
+---
+
 ## [idea-469] Reflective Energy Shields — *2026-07-02 18:35:18 UTC*
 
 A new skill where a ball can activate an energy shield that doesn't just absorb damage, but reflects 50% of the incoming damage back to the attacker as a projectile for 3 seconds. Adds a skill-testing timing element against high burst-damage enemies.

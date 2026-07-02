@@ -8023,7 +8023,7 @@
     },
     {
       "id": "idea-465",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Eclipse Random Event",
@@ -12867,6 +12867,23 @@
         "src/arena/shrinking_maps_arena.py",
         "src/arena/shrinking_maps_arena.gd",
         "tests/test_shrinking_maps_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-748",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Arena Edge Modifier",
+      "description": "A new arena hazard mode where the boundary of the arena slowly shrinks over time, dealing significant damage to anyone caught outside the safe zone.",
+      "allowed_paths": [
+        "src/arena/shrinking_arena_edge.py",
+        "src/arena/shrinking_arena_edge.gd",
+        "tests/test_shrinking_arena_edge.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
