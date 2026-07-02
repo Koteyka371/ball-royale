@@ -1,0 +1,4 @@
+{
+    "title": "Shrinking Safe Zone Hazard",
+    "description": "A hazard that acts like a typical Battle Royale shrinking circle. Balls taking damage outside the shrinking radius."
+}
