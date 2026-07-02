@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-346] One-Way Teleporters — *2026-07-02 02:09:12 UTC*
+
+Introduce a variation of teleporters that are strictly one-way. They randomly spawn and change destinations periodically, offering risky escape routes but potentially trapping balls in difficult areas.
+
+---
+
 ## [idea-306] Tornado Weather Effect — *2026-07-01 22:15:56 UTC*
 
 Add a tornado weather effect that spawns a small dynamic hazard that slowly moves around the map and sucks in balls that get too close, dealing damage and applying a dizzy effect (randomized controls) for a short duration.
