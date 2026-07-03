@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-497] New Gamemode: The Floor is Lava — *2026-07-03 15:55:55 UTC*
+
+In this mode, the entire arena floor slowly turns into lava starting from the edges. Safe zones are randomly generated platforms that appear for a limited time before submerging. Players must navigate between platforms using bounce pads and careful movement.
+
+---
+
 ## [idea-495] Clone Detonation Mode — *2026-07-03 15:45:16 UTC*
 
 Similar to Clone Chaos, but when a clone's HP drops to 0, it explodes dealing small area-of-effect damage. Players must navigate carefully to avoid triggering a chain reaction of exploding clones.

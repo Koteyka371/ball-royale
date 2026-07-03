@@ -8568,7 +8568,7 @@
     },
     {
       "id": "idea-497",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "New Gamemode: The Floor is Lava",
@@ -13736,6 +13736,108 @@
         "src/arena/collapsing_floor_panels_arena.py",
         "src/arena/collapsing_floor_panels_arena.gd",
         "tests/test_collapsing_floor_panels_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-799",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Summoner Support Ball",
+      "description": "A new ball type that focuses entirely on spawning tiny helper minions that collect resources and heal allies, but the ball itself has virtually no offensive capabilities.",
+      "allowed_paths": [
+        "src/ai/summoner_support_ball.py",
+        "src/ai/summoner_support_ball.gd",
+        "tests/test_summoner_support_ball.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-800",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Game Mode: The Floor is Lava (Dynamic)",
+      "description": "A battle royale mode where the safe zone shrinks constantly, and any area outside the safe zone turns into damaging lava rather than just applying storm damage, punishing displacement heavily.",
+      "allowed_paths": [
+        "src/ai/game_the_floor_is_lava_dynamic.py",
+        "src/ai/game_the_floor_is_lava_dynamic.gd",
+        "tests/test_game_the_floor_is_lava_dynamic.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-801",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Necromancer Soul Harvest",
+      "description": "When a Necromancer's elite minion dies, it leaves behind a 'soul fragment'. If the Necromancer collects it, they gain a permanent +2 max HP and a slight damage boost, creating a long-term scaling strategy for keeping minions alive.",
+      "allowed_paths": [
+        "src/ai/necromancer_soul_harvest.py",
+        "src/ai/necromancer_soul_harvest.gd",
+        "tests/test_necromancer_soul_harvest.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-802",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "New Loadout Item: Repulsor Shield",
+      "description": "A shield that charges over time. When fully charged, the first attack taken is negated and an AOE shockwave pushes all nearby enemies away.",
+      "allowed_paths": [
+        "src/ai/new_loadout_item_repulsor_shield.py",
+        "src/ai/new_loadout_item_repulsor_shield.gd",
+        "tests/test_new_loadout_item_repulsor_shield.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-803",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Safe Zone with Modifiers",
+      "description": "A battle royale mode where the shrinking safe zone periodically applies random buffs or debuffs to everyone inside, forcing players to adapt their strategies dynamically as the game progresses.",
+      "allowed_paths": [
+        "src/ai/shrinking_safe_zone_with_modifiers.py",
+        "src/ai/shrinking_safe_zone_with_modifiers.gd",
+        "tests/test_shrinking_safe_zone_with_modifiers.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-804",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Minion Sacrifice Ability",
+      "description": "Give the Necromancer an active ability to detonate their own minions on command. Elite minions would deal significantly more explosion damage and leave a larger poison cloud compared to standard minions.",
+      "allowed_paths": [
+        "src/ai/minion_sacrifice_ability.py",
+        "src/ai/minion_sacrifice_ability.gd",
+        "tests/test_minion_sacrifice_ability.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
