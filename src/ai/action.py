@@ -2160,6 +2160,58 @@ class Action:
                                         bh.duration = 3.0 # Short duration
                                         self.world.arena.hazards.append(bh)
                                     hazard.duration = 0.0 # Destroy trap
+                                elif trap_variant == "chain_lightning":
+                                    # Chain Lightning trap: zap the triggering ball and then jump to nearest enemy
+                                    if hasattr(self.world, "_deal_damage"):
+                                        temp_damage = getattr(hazard, "damage", 10.0)
+                                        if temp_damage <= 0:
+                                            temp_damage = 25.0
+                                        # Deal damage to current ball
+                                        hazard.damage = temp_damage
+                                        self.world._deal_damage(hazard, self.ball)
+
+                                        # Visual effect for zap
+                                        if hasattr(self.world, "events"):
+                                            self.world.events.append(('visual_effect', {'type': 'lightning', 'x': hazard.x, 'y': hazard.y, 'tx': self.ball.x, 'ty': self.ball.y}))
+                                            self.world.events.append(('visual_effect', {'type': 'explosion', 'x': self.ball.x, 'y': self.ball.y, 'radius': 15, 'color': 'yellow'}))
+
+                                        # Try to jump to nearest enemy
+                                        balls = getattr(self.world, "balls", getattr(self.world, "entities", []))
+
+                                        best_dist = 200.0 * 200.0 # Jump radius squared
+                                        nearest_enemy = None
+
+                                        owner_id = getattr(hazard, "owner_id", None)
+
+                                        for b in balls:
+                                            if b == self.ball or not getattr(b, "alive", True):
+                                                continue
+                                            # Don't jump to owner or their teammates
+                                            if owner_id is not None and getattr(b, "id", None) == owner_id:
+                                                continue
+
+                                            dist_sq = (b.x - self.ball.x)**2 + (b.y - self.ball.y)**2
+                                            if dist_sq < best_dist:
+                                                best_dist = dist_sq
+                                                nearest_enemy = b
+
+                                        if nearest_enemy:
+                                            # Spawn a new jumping trap at current target's position
+                                            import random
+                                            try:
+                                                from src.arena.procedural_arena import Hazard
+                                                new_trap = Hazard(x=nearest_enemy.x, y=nearest_enemy.y, radius=15.0, kind="trap", damage=max(5.0, temp_damage - 5.0))
+                                                new_trap.duration = 5.0
+                                                new_trap.trap_variant = "chain_lightning"
+                                                if owner_id is not None:
+                                                    new_trap.owner_id = owner_id
+                                                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                                                    new_trap.id = len(self.world.arena.hazards) + random.randint(1000, 9000)
+                                                    self.world.arena.hazards.append(new_trap)
+                                            except Exception:
+                                                pass
+
+                                    hazard.duration = 0.0 # Destroy trap
                                 elif trap_variant == "swap":
                                     owner_id = getattr(hazard, "owner_id", None)
                                     if owner_id is not None:
