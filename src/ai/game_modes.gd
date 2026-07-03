@@ -6617,8 +6617,193 @@ class BlackMarketMode extends GameMode:
                 b.set_meta("currency", bcurrency)
                 b.set_meta("purchase_cooldown", bpcooldown)
 
+class FloorIsLavaMode extends GameMode:
+	var lava_radius: float = 2000.0
+	var min_lava_radius: float = 0.0
+	var shrink_rate: float = 15.0
+	var platforms: Array = []
+	var platform_timer: float = 0.0
+	var bounce_pads: Array = []
+
+	func _init():
+		super._init()
+		name = "Floor Is Lava"
+		description = "The entire arena floor slowly turns into lava starting from the edges. Safe zones are randomly generated platforms that appear for a limited time before submerging. Players must navigate between platforms using bounce pads and careful movement."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world) == TYPE_DICTIONARY:
+			if world.has("arena") and world.arena != null:
+				arena_width = world.arena.get("width", 1000.0)
+				arena_height = world.arena.get("height", 1000.0)
+		else:
+			if world.get("arena"):
+				arena_width = world.arena.width
+				arena_height = world.arena.height
+
+		lava_radius = max(arena_width, arena_height)
+		platforms.clear()
+		bounce_pads.clear()
+		platform_timer = 0.0
+		_spawn_platform(world, arena_width/2.0, arena_height/2.0)
+
+	func _spawn_platform(world, p_x = null, p_y = null):
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world) == TYPE_DICTIONARY:
+			if world.has("arena") and world.arena != null:
+				arena_width = world.arena.get("width", 1000.0)
+				arena_height = world.arena.get("height", 1000.0)
+		else:
+			if world.get("arena"):
+				arena_width = world.arena.width
+				arena_height = world.arena.height
+
+		var x = p_x if p_x != null else randf_range(200.0, arena_width - 200.0)
+		var y = p_y if p_y != null else randf_range(200.0, arena_height - 200.0)
+
+		var radius = randf_range(100.0, 200.0)
+		var lifetime = randf_range(10.0, 20.0)
+
+		platforms.append({
+			"x": x,
+			"y": y,
+			"radius": radius,
+			"timer": lifetime
+		})
+
+		var angle = randf_range(0, 2 * PI)
+		var pad_x = x + (radius * 0.7) * cos(angle)
+		var pad_y = y + (radius * 0.7) * sin(angle)
+
+		bounce_pads.append({
+			"x": pad_x,
+			"y": pad_y,
+			"radius": 40.0,
+			"timer": lifetime
+		})
+
+	func tick(world, balls, delta = 0.016):
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world) == TYPE_DICTIONARY:
+			if world.has("arena") and world.arena != null:
+				arena_width = world.arena.get("width", 1000.0)
+				arena_height = world.arena.get("height", 1000.0)
+		else:
+			if world.get("arena") != null:
+				arena_width = world.arena.width
+				arena_height = world.arena.height
+
+		var center_x = arena_width / 2.0
+		var center_y = arena_height / 2.0
+
+		lava_radius = max(min_lava_radius, lava_radius - shrink_rate * delta)
+
+		platform_timer -= delta
+		if platform_timer <= 0:
+			_spawn_platform(world)
+			platform_timer = randf_range(5.0, 10.0)
+
+		var i = platforms.size() - 1
+		while i >= 0:
+			var p = platforms[i]
+			p["timer"] -= delta
+			if p["timer"] <= 0:
+				platforms.remove_at(i)
+			i -= 1
+
+		i = bounce_pads.size() - 1
+		while i >= 0:
+			var bp = bounce_pads[i]
+			bp["timer"] -= delta
+			if bp["timer"] <= 0:
+				bounce_pads.remove_at(i)
+			i -= 1
+
+		var hazards_array = null
+		if typeof(world) == TYPE_DICTIONARY:
+			if world.has("arena") and world.arena != null and typeof(world.arena) == TYPE_DICTIONARY:
+				if world.arena.has("hazards"):
+					hazards_array = world.arena.hazards
+		else:
+			if world.get("arena") != null:
+				hazards_array = world.arena.hazards
+
+		if hazards_array != null:
+			var j = hazards_array.size() - 1
+			while j >= 0:
+				var h = hazards_array[j]
+				var h_kind = ""
+				if typeof(h) == TYPE_DICTIONARY:
+					h_kind = h.get("kind", "")
+				else:
+					h_kind = h.get("kind")
+
+				if h_kind == "bounce_pad":
+					hazards_array.remove_at(j)
+				j -= 1
+
+			for idx in range(bounce_pads.size()):
+				var bp = bounce_pads[idx]
+				var arena_class = null
+				if ResourceLoader.exists("res://src/arena/procedural_arena.gd"):
+					arena_class = load("res://src/arena/procedural_arena.gd")
+				if arena_class != null and arena_class.const_defined("Hazard"):
+					var h = arena_class.Hazard.new(99000 + idx, bp["x"], bp["y"], bp["radius"], "bounce_pad", 0.0)
+					hazards_array.append(h)
+				else:
+					var h = {
+						"id": 99000 + idx,
+						"x": bp["x"],
+						"y": bp["y"],
+						"radius": bp["radius"],
+						"kind": "bounce_pad",
+						"damage": 0.0,
+						"active": true
+					}
+					hazards_array.append(h)
+
+		for b in balls:
+			var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.alive
+			var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else b.ball_type
+
+			if not is_alive or b_type == "spectator":
+				continue
+
+			var b_x = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x
+			var b_y = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.y
+
+			var dist_to_center = sqrt((b_x - center_x) * (b_x - center_x) + (b_y - center_y) * (b_y - center_y))
+			var in_lava = dist_to_center > lava_radius
+
+			var on_platform = false
+			for p in platforms:
+				var pd = sqrt((b_x - p["x"]) * (b_x - p["x"]) + (b_y - p["y"]) * (b_y - p["y"]))
+				if pd <= p["radius"]:
+					on_platform = true
+					break
+
+			if in_lava and not on_platform:
+				var hp = b.get("hp", 0.0) if typeof(b) == TYPE_DICTIONARY else b.hp
+				hp -= 20.0 * delta
+				hp = max(0, hp)
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b["hp"] = hp
+					if hp <= 0:
+						b["alive"] = false
+				else:
+					b.hp = hp
+					if hp <= 0:
+						b.alive = false
+
 var GAME_MODES = {
+
 	"black_market": BlackMarketMode.new(),
+	"floor_is_lava": FloorIsLavaMode.new(),
 
 
 	"geometric_zone": GeometricZoneMode.new(),

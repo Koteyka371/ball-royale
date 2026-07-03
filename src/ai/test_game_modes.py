@@ -621,3 +621,24 @@ def test_dynamic_hazards_mode():
     h.x = 2000 # Way out of bounds
     mode.tick(world, [], 0.016)
     assert len(world.arena.hazards) == 0
+
+def test_floor_is_lava_mode():
+    from ai.game_modes import FloorIsLavaMode
+    mode = FloorIsLavaMode()
+    world = MockWorld()
+    setattr(world, "arena", type("Arena", (), {"width": 1000, "height": 1000, "hazards": []})())
+
+    ball = MockBall(1)
+    ball.x = 900
+    ball.y = 900
+    ball.hp = 100
+
+    mode.setup(world, [ball])
+    assert len(mode.platforms) > 0
+    assert mode.lava_radius == 1000.0
+
+    mode.lava_radius = 500.0 # Force lava to shrink
+    mode.tick(world, [ball], delta=1.0)
+
+    # Ball is outside lava_radius (dist to center is ~565, lava_radius is 485), and outside center platform, so it takes damage
+    assert ball.hp < 100

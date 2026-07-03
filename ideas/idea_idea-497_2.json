@@ -1,0 +1,4 @@
+{
+  "title": "Game Mode: Reverse Floor is Lava",
+  "description": "Instead of the floor turning into lava starting from the edges, the center of the map becomes lava first and expands outwards, forcing players to eventually fight on the very edges of the arena."
+}
