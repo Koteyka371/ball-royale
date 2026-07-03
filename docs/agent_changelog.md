@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-494] Black Market Mode — *2026-07-03 14:58:26 UTC*
+
+Players start with basic stats and abilities, but collect currency scattered across the map to buy temporary or permanent upgrades from wandering Black Market nodes during the match. These nodes act like dynamic modifier zones, but require payment, making currency collection a key strategic objective.
+
+---
+
 ## [idea-492] Necromancer Minion Sacrifice Skill — *2026-07-03 14:50:17 UTC*
 
 Add a new active skill for the Necromancer ball called 'Corpse Explosion' where it can selectively sacrifice one of its active minions to deal significant area-of-effect damage to nearby enemies, while also temporarily applying a slow debuff to survivors caught in the blast radius.

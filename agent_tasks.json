@@ -8517,7 +8517,7 @@
     },
     {
       "id": "idea-494",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Market Mode",
@@ -13634,6 +13634,40 @@
         "src/ui/prestige_guild_perks.gd",
         "src/ai/prestige_guild_perks.py",
         "tests/test_prestige_guild_perks.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-793",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Vengeful Minions",
+      "description": "When a Necromancer dies, all of its active minions become enraged for 5 seconds. They gain 200% movement speed, 150% attack damage, but rapidly decay HP until they die.",
+      "allowed_paths": [
+        "src/ai/vengeful_minions.py",
+        "src/ai/vengeful_minions.gd",
+        "tests/test_vengeful_minions.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-794",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Necromancer Minion Synergy - Sacrificial Shield",
+      "description": "Give the Necromancer a passive ability where, if taking fatal damage, the damage is redirected to the nearest allied minion within range instead, killing the minion but saving the Necromancer.",
+      "allowed_paths": [
+        "src/ai/necromancer_minion_synergy_sacrificial_shield.py",
+        "src/ai/necromancer_minion_synergy_sacrificial_shield.gd",
+        "tests/test_necromancer_minion_synergy_sacrificial_shield.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
