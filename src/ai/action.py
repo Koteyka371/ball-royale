@@ -4675,6 +4675,22 @@ class Action:
 
                         # Clear history so we don't rewind repeatedly
                         ally.state_history = []
+            elif skill_name == "time_rewind_self":
+                history = getattr(self.ball, "state_history", [])
+                if history:
+                    past_state = history[0]
+                    self.ball.x = past_state["x"]
+                    self.ball.y = past_state["y"]
+                    if past_state["hp"] > getattr(self.ball, "hp", 0):
+                        self.ball.hp = past_state["hp"]
+
+                    self.ball.stun_timer = 0.0
+                    self.ball.silence_timer = 0.0
+                    self.ball.is_stunned = False
+                    if hasattr(self.ball, "poison_timer"):
+                        self.ball.poison_timer = 0.0
+
+                    self.ball.state_history = []
             elif skill_name == "magnet_tether":
                 enemies = self._get_enemies()
                 if enemies:
