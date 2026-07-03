@@ -3404,6 +3404,77 @@ class MirrorMatchMode(GameMode):
         if hasattr(world, "balls"):
             world.balls.extend(new_clones)
 
+
+class ExplodingClonesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Exploding Clones"
+        self.description = "Similar to Clone Chaos, but when a clone's HP drops to 0, it explodes dealing small area-of-effect damage."
+        self.clone_timer = 0.0
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        for b in balls:
+            b.skill = "clone"
+            b.active_skill = "clone"
+            b.SKILL = "clone"
+            b.skill_cooldown = 1.0
+            b.skill_timer = 0.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        self.clone_timer += delta
+        if self.clone_timer > 3.0:
+            self.clone_timer = 0.0
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "skill_timer", 0.0) <= 0:
+                    b.skill_timer = 1.0
+                    import copy
+                    import random
+                    num_clones = random.randint(1, 3)
+                    for _ in range(num_clones):
+                        clone = copy.copy(b)
+                        clone.id = getattr(world, "next_id", random.randint(10000, 99999))
+                        if hasattr(world, "next_id"):
+                            world.next_id += 1
+                        clone.x += random.uniform(-30, 30)
+                        clone.y += random.uniform(-30, 30)
+                        clone.hp = getattr(b, "hp", 100)
+                        clone.max_hp = getattr(b, "max_hp", 100)
+                        clone.team = getattr(b, "team", getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")))
+                        clone.is_exploding_clone = True
+                        clone.clone_owner = b.id
+                        clone.alive = True
+                        clone.speed = 0 # static copy
+                        clone.damage = 0 # they do no damage
+
+                        clone.skill_timer = 9999 # no skills
+                        clone.skill = None
+                        if hasattr(clone, "SKILL"):
+                            clone.SKILL = None
+                        if hasattr(clone, "active_skill"):
+                            clone.active_skill = None
+
+                        if hasattr(world, "balls"):
+                            world.balls.append(clone)
+
+        if hasattr(world, "balls"):
+            for b in world.balls:
+                if getattr(b, "is_exploding_clone", False) and not getattr(b, "alive", True) and not getattr(b, "has_exploded", False):
+                    b.has_exploded = True
+                    aoe_radius = 60.0
+                    aoe_damage = 25.0
+                    for other in world.balls:
+                        if other != b and getattr(other, "alive", False):
+                            dist_sq = (getattr(b, "x", 0) - getattr(other, "x", 0))**2 + (getattr(b, "y", 0) - getattr(other, "y", 0))**2
+                            if dist_sq <= aoe_radius**2:
+                                if hasattr(other, "hp"):
+                                    other.hp -= aoe_damage
+                                    if other.hp <= 0:
+                                        other.alive = False
+                    if hasattr(world, "add_event"):
+                        world.add_event("explosion", {"x": getattr(b, "x", 0), "y": getattr(b, "y", 0), "radius": aoe_radius})
+
 class CloneChaosMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -5504,6 +5575,7 @@ GAME_MODES = {
     "bounty_hunt": BountyHuntMode(),
     "earthquake": EarthquakeMode(),
     "mirror_match": MirrorMatchMode(),
+    "exploding_clones": ExplodingClonesMode(),
     "clone_chaos": CloneChaosMode(),
     "supernova": SupernovaMode(),
     "echolocation": EcholocationMode(),

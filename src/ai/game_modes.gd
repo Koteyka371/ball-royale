@@ -3969,6 +3969,101 @@ class MirrorMatchMode extends GameMode:
 			for c in new_clones:
 				world.balls.append(c)
 
+class ExplodingClonesMode extends GameMode:
+	var clone_timer = 0.0
+
+	func _init() -> void:
+		name = "Exploding Clones"
+		description = "Similar to Clone Chaos, but when a clone's HP drops to 0, it explodes dealing small area-of-effect damage."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		for b in balls:
+			if b.has_method("set_meta"):
+				b.set_meta("skill", "clone")
+				b.set_meta("active_skill", "clone")
+				b.set_meta("skill_cooldown", 1.0)
+				b.set_meta("skill_timer", 0.0)
+			if "skill" in b: b.skill = "clone"
+			if "active_skill" in b: b.active_skill = "clone"
+			if "skill_cooldown" in b: b.skill_cooldown = 1.0
+			if "skill_timer" in b: b.skill_timer = 0.0
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		clone_timer += delta
+		if clone_timer > 3.0:
+			clone_timer = 0.0
+			for b in balls:
+				var alive = true
+				if "alive" in b: alive = b.alive
+				var skill_timer = 0.0
+				if "skill_timer" in b: skill_timer = b.skill_timer
+				if alive and skill_timer <= 0:
+					if "skill_timer" in b: b.skill_timer = 1.0
+					var num_clones = randi() % 3 + 1
+					for i in range(num_clones):
+						if b.has_method("duplicate"):
+							var clone = b.duplicate()
+							var next_id = randi() % 90000 + 10000
+							if "next_id" in world:
+								next_id = world.next_id
+								world.next_id += 1
+							if "id" in clone: clone.id = next_id
+							if "x" in clone: clone.x += randf_range(-30.0, 30.0)
+							if "y" in clone: clone.y += randf_range(-30.0, 30.0)
+							if "hp" in b and "hp" in clone: clone.hp = b.hp
+							if "max_hp" in b and "max_hp" in clone: clone.max_hp = b.max_hp
+							if clone.has_method("set_meta"):
+								clone.set_meta("is_exploding_clone", true)
+								clone.set_meta("has_exploded", false)
+								if "id" in b: clone.set_meta("clone_owner", b.id)
+							if "alive" in clone: clone.alive = true
+							if "speed" in clone: clone.speed = 0.0
+							if "damage" in clone: clone.damage = 0.0
+							if "skill_timer" in clone: clone.skill_timer = 9999.0
+							if "skill" in clone: clone.skill = ""
+							if clone.has_method("set_meta"): clone.set_meta("skill", "")
+							if "balls" in world:
+								world.balls.append(clone)
+
+		if "balls" in world:
+			for b in world.balls:
+				var is_exploding_clone = false
+				if b.has_method("get_meta") and b.has_meta("is_exploding_clone"):
+					is_exploding_clone = b.get_meta("is_exploding_clone")
+				var has_exploded = false
+				if b.has_method("get_meta") and b.has_meta("has_exploded"):
+					has_exploded = b.get_meta("has_exploded")
+				var b_alive = true
+				if "alive" in b: b_alive = b.alive
+
+				if is_exploding_clone and not b_alive and not has_exploded:
+					if b.has_method("set_meta"): b.set_meta("has_exploded", true)
+					var aoe_radius = 60.0
+					var aoe_damage = 25.0
+					var bx = 0.0
+					var by = 0.0
+					if "x" in b: bx = b.x
+					if "y" in b: by = b.y
+					for other in world.balls:
+						if other != b:
+							var o_alive = false
+							if "alive" in other: o_alive = other.alive
+							if o_alive:
+								var ox = 0.0
+								var oy = 0.0
+								if "x" in other: ox = other.x
+								if "y" in other: oy = other.y
+								var dist_sq = pow(bx - ox, 2) + pow(by - oy, 2)
+								if dist_sq <= aoe_radius * aoe_radius:
+									if "hp" in other:
+										other.hp -= aoe_damage
+										if other.hp <= 0:
+											other.alive = false
+					if world.has_method("add_event"):
+						world.add_event("explosion", {"x": bx, "y": by, "radius": aoe_radius})
+
 class CloneChaosMode extends GameMode:
 	var clone_timer = 0.0
 
@@ -6607,6 +6702,7 @@ var GAME_MODES = {
     "bounty_hunt": BountyHuntMode.new(),
     "earthquake": EarthquakeMode.new(),
     "mirror_match": MirrorMatchMode.new(),
+	"exploding_clones": ExplodingClonesMode.new(),
 	"clone_chaos": CloneChaosMode.new(),
     "supernova": SupernovaMode.new(),
 	"echolocation": EcholocationMode.new(),

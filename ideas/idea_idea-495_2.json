@@ -1,0 +1,4 @@
+{
+  "title": "Shrink Ray Pickups",
+  "description": "Items spawned on the map that shoot a short-range beam when activated. Hit targets become physically smaller, take more damage, and deal less damage for 5 seconds."
+}
