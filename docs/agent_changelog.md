@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-417] Teleporting Decoy — *2026-07-03 12:03:52 UTC*
+
+Allow players to reactivate the decoy skill to instantly swap positions with their active decoy, providing superior mobility and evasion.
+
+---
+
 ## [idea-477] Reverse Time Ultimate — *2026-07-03 12:03:48 UTC*
 
 A support ultimate skill that records the positions, health, and statuses of all teammates over the last 3 seconds. When activated, it reverts all allies back to their state from 3 seconds ago, healing recent damage and placing them in a potentially better tactical position.
