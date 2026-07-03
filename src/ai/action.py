@@ -1123,6 +1123,10 @@ class Action:
             self.ball.speed *= 0.5
             self.ball.damage *= 0.5
 
+        if getattr(self.ball, "supercharge_timer", 0.0) > 0:
+            self.ball.speed *= 1.5
+            self.ball.damage *= 1.5
+
 # Handle minion decay
         if getattr(self.ball, "is_minion", False):
             # Check for elite minion evolution
@@ -2465,7 +2469,11 @@ class Action:
                                         self.ball.alive = False
                                 if hasattr(self, "_spawn_skill_particles"):
                                     self._spawn_skill_particles("lightning")
-                                self.ball.stutter_timer = 1.0 # Stun
+                                b_type = getattr(self.ball, "ball_type", getattr(type(self.ball), "BALL_TYPE", "")).lower()
+                                if b_type in ["drone", "juggernaut", "tank", "neural"]:
+                                    self.ball.supercharge_timer = 5.0
+                                else:
+                                    self.ball.stutter_timer = 1.0 # Stun
                             continue
                         elif hazard.kind == "breakable_wall":
                             # Clamp position manually
@@ -6173,6 +6181,14 @@ class Action:
             if hasattr(self.world, "arena") and getattr(self.world.arena, "is_eclipse", False):
                 self.ball.damage = getattr(self.ball, "damage", base_d) * 2.0
 
+            if getattr(self.ball, "is_exhausted", False):
+                self.ball.speed *= 0.5
+                self.ball.damage *= 0.5
+
+            if getattr(self.ball, "supercharge_timer", 0.0) > 0:
+                self.ball.speed *= 1.5
+                self.ball.damage *= 1.5
+
 
 
 
@@ -6192,6 +6208,17 @@ class Action:
                 self.ball.speed = base_s * 1.5
 
     def _update_skill_timer(self, delta: float) -> None:
+        if getattr(self.ball, "supercharge_timer", 0.0) > 0:
+            self.ball.supercharge_timer -= delta
+            drain_amount = 5.0 * delta
+            if hasattr(self.ball, "take_damage"):
+                self.ball.take_damage(drain_amount)
+            elif hasattr(self.ball, "hp"):
+                self.ball.hp -= drain_amount
+                if self.ball.hp <= 0:
+                    self.ball.alive = False
+            if self.ball.supercharge_timer < 0:
+                self.ball.supercharge_timer = 0.0
         if getattr(self.ball, "aura_booster_timer", 0.0) > 0:
             self.ball.aura_booster_timer -= delta
             if self.ball.aura_booster_timer < 0:
