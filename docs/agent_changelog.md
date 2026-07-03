@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-499] Lightning Storm Overload — *2026-07-03 18:30:10 UTC*
+
+During thunderstorms, lightning strikes not only deal damage but also supercharge robotic/metal ball types, granting them temporary speed and damage buffs at the cost of slow health drain.
+
+---
+
 ## [idea-515] Chain Reaction Clones — *2026-07-03 18:30:06 UTC*
 
 When a clone mine explodes, it causes any other friendly clones within its blast radius to also explode after a short delay, creating a cascading field of destruction.
