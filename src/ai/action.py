@@ -835,9 +835,16 @@ class Action:
         if hasattr(self.world, "arena") and hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
             cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
             ignores_mud = cosmetic == "mud_tires"
+            is_kite = cosmetic == "kite"
 
             wind_dx = getattr(self.world.arena, "wind_dx", 0.0)
             wind_dy = getattr(self.world.arena, "wind_dy", 0.0)
+
+            # Additional logic for Kite in Windstorm
+            if is_kite and hasattr(self.world, "game_mode") and getattr(self.world.game_mode, "weather", getattr(self.world.game_mode, "name", "").lower()) == "windstorm":
+                self.ball.speed = getattr(self.ball, "base_speed", 100.0) * 1.2
+                # Also increase jump distance implicitly by boosting movement speed / stamina speed
+                # or adding to jump velocity if possible.
             # Reset the flag every frame
             self.ball._is_wind_riding = False
             is_wind_riding = False
@@ -872,6 +879,16 @@ class Action:
                         # Extra speed and drain stamina
                         self.ball.x += wind_dx * delta * 1.5
                         self.ball.y += wind_dy * delta * 1.5
+                        # We don't drain stamina here because the later code in execute() regens stamina when idle
+                        # we can add a flag to mark that we are wind riding
+                        self.ball._is_wind_riding = True
+                    else:
+                        self.ball._is_wind_riding = False
+                elif getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") == "kite":
+                    stamina = getattr(self.ball, "stamina", 0.0)
+                    if stamina >= 10.0:
+                        self.ball.x += wind_dx * delta * 1.2
+                        self.ball.y += wind_dy * delta * 1.2
                         # We don't drain stamina here because the later code in execute() regens stamina when idle
                         # we can add a flag to mark that we are wind riding
                         self.ball._is_wind_riding = True

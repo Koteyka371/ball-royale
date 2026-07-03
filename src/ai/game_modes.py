@@ -3755,8 +3755,15 @@ class WindstormMode(GameMode):
                         b.vx = 0.0
                     if not hasattr(b, "vy"):
                         b.vy = 0.0
-                    b.vx += self.push_dir_x * self.push_strength * delta
-                    b.vy += self.push_dir_y * self.push_strength * delta
+                    # Kite logic
+                    is_kite = getattr(b, "cosmetic", "").lower().replace(" ", "_") == "kite"
+                    strength = self.push_strength
+                    if is_kite:
+                        b.speed = getattr(b, "base_speed", 100.0) * 1.5
+                        strength = self.push_strength * 1.5 # Increases jump distance / push force
+
+                    b.vx += self.push_dir_x * strength * delta
+                    b.vy += self.push_dir_y * strength * delta
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]

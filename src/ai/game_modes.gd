@@ -4664,8 +4664,22 @@ class WindstormMode extends GameMode:
                         b.vx = 0.0
                     if not "vy" in b:
                         b.vy = 0.0
-                    b.vx += push_dir_x * push_strength * delta
-                    b.vy += push_dir_y * push_strength * delta
+                    var is_kite = false
+                    if "cosmetic" in b:
+                        is_kite = str(b.cosmetic).to_lower().replace(" ", "_") == "kite"
+                    elif b.has_method("get_meta") and b.has_meta("cosmetic"):
+                        is_kite = str(b.get_meta("cosmetic")).to_lower().replace(" ", "_") == "kite"
+
+                    var strength = push_strength
+                    if is_kite:
+                        if "base_speed" in b:
+                            b.speed = b.base_speed * 1.5
+                        elif b.has_method("get_meta") and b.has_meta("base_speed"):
+                            if "speed" in b: b.speed = b.get_meta("base_speed") * 1.5
+                        strength = push_strength * 1.5
+
+                    b.vx += push_dir_x * strength * delta
+                    b.vy += push_dir_y * strength * delta
 
     func check_winner(world, balls: Array):
         var alive = []

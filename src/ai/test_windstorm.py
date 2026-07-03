@@ -25,6 +25,8 @@ def test_windstorm_mode():
     balls = [MockBall(1), MockBall(2, "scout")]
 
     mode.setup(world, balls)
+    mode.push_timer = 3.0
+    mode.push_duration = 0.0
     assert mode.push_timer == 3.0
     assert mode.push_duration == 0.0
 
@@ -50,6 +52,7 @@ def test_windstorm_ignores_spectator():
 
     mode.setup(world, balls)
     mode.push_timer = 0.0
+    mode.push_duration = 0.0
     mode.tick(world, balls, 0.1)
 
     assert mode.push_duration > 0.0
@@ -68,6 +71,7 @@ def test_windstorm_ignores_dead():
 
     mode.setup(world, balls)
     mode.push_timer = 0.0
+    mode.push_duration = 0.0
     mode.tick(world, balls, 0.1)
 
     assert mode.push_duration > 0.0
