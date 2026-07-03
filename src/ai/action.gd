@@ -7312,7 +7312,7 @@ func _use_skill():
                         if "id" in self.ball: self_id = self.ball.id
                         elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): self_id = self.ball.get_meta("id")
 
-                        if owner == self_id and not has_swapped and b_alive:
+                        if owner == self_id and b_alive:
                             var tx = self.ball.x
                             var ty = self.ball.y
                             self.ball.x = b.x
