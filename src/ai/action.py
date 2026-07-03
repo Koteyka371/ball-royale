@@ -1059,6 +1059,40 @@ class Action:
 
 # Handle minion decay
         if getattr(self.ball, "is_minion", False):
+            # Check for elite minion evolution
+            if not getattr(self.ball, "is_elite_minion", False):
+                if not hasattr(self.ball, "survival_time"):
+                    self.ball.survival_time = 0.0
+                self.ball.survival_time += delta
+                if self.ball.survival_time > 30.0 or getattr(self.ball, "kills", 0) >= 1:
+                    self.ball.is_elite_minion = True
+                    self.ball.max_hp *= 2.0
+                    self.ball.hp = self.ball.max_hp
+                    self.ball.damage *= 1.5
+                    if hasattr(self.ball, "base_damage"):
+                        self.ball.base_damage *= 1.5
+                    self.ball.ball_type = "elite_minion"
+                    if hasattr(self.world, "add_event"):
+                        self.world.add_event("minion_evolution", {"minion_id": self.ball.id})
+
+            if getattr(self.ball, "is_elite_minion", False):
+                # Autonomous ranged attack for elite minion
+                if not hasattr(self.ball, "ranged_attack_timer"):
+                    self.ball.ranged_attack_timer = 2.0
+                self.ball.ranged_attack_timer -= delta
+                if self.ball.ranged_attack_timer <= 0:
+                    self.ball.ranged_attack_timer = 2.0
+                    # Find a target
+                    enemies = [b for b in getattr(self.world, "balls", []) if getattr(b, "team", "") != getattr(self.ball, "team", "") and getattr(b, "alive", True)]
+                    if enemies:
+                        import math
+                        target = min(enemies, key=lambda b: math.hypot(b.x - self.ball.x, b.y - self.ball.y))
+                        if math.hypot(target.x - self.ball.x, target.y - self.ball.y) < 200:
+                            # Deal ranged damage
+                            target.hp -= self.ball.damage * 0.5
+                            if hasattr(self.world, "add_event"):
+                                self.world.add_event("ranged_attack", {"attacker_id": self.ball.id, "target_id": target.id})
+
             self.ball.hp -= 2.0 * delta  # Decay 2 HP per second
             if self.ball.hp <= 0:
                 self.ball.hp = 0
@@ -4617,9 +4651,12 @@ class Action:
                     minion.max_hp = minion.hp
                     minion.team = getattr(self.ball, "team", getattr(self.ball, "ball_type", getattr(self.ball, "BALL_TYPE", "")))
                     minion.is_minion = True
+                    minion.base_damage = getattr(self.ball, "base_damage", 10.0)
+                    minion.base_speed = getattr(self.ball, "base_speed", 2.0)
                     minion.minion_owner = self.ball.id
                     minion.alive = True
 
+                    minion.survival_time = 0.0
                     minion.skill_timer = 0
                     minion.skill = None
                     minion.SKILL = None

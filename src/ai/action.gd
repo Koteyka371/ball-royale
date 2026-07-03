@@ -1827,6 +1827,96 @@ func execute(strategy: String, delta: float):
     if self.ball.has_method("has_meta") and self.ball.has_meta("is_minion"):
         is_minion = self.ball.get_meta("is_minion")
     if is_minion:
+        # Check for elite minion evolution
+        var is_elite_minion = false
+        if self.ball.has_method("has_meta") and self.ball.has_meta("is_elite_minion"):
+            is_elite_minion = self.ball.get_meta("is_elite_minion")
+
+        if not is_elite_minion:
+            var survival_time = 0.0
+            if self.ball.has_method("has_meta") and self.ball.has_meta("survival_time"):
+                survival_time = self.ball.get_meta("survival_time")
+            survival_time += delta
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("survival_time", survival_time)
+
+            var kills = 0
+            if "kills" in self.ball:
+                kills = self.ball.kills
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("kills"):
+                kills = self.ball.get_meta("kills")
+
+            if survival_time > 30.0 or kills >= 1:
+                is_elite_minion = true
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("is_elite_minion", true)
+                var max_hp = 40.0
+                if "max_hp" in self.ball:
+                    self.ball.max_hp *= 2.0
+                    max_hp = self.ball.max_hp
+                self.ball.hp = max_hp
+                if "damage" in self.ball:
+                    self.ball.damage *= 1.5
+                if "base_damage" in self.ball:
+                    self.ball.base_damage *= 1.5
+                if "ball_type" in self.ball:
+                    self.ball.ball_type = "elite_minion"
+                if "add_event" in self.world:
+                    self.world.add_event("minion_evolution", {"minion_id": self.ball.id})
+
+        if is_elite_minion:
+            # Autonomous ranged attack for elite minion
+            var ranged_attack_timer = 2.0
+            if self.ball.has_method("has_meta") and self.ball.has_meta("ranged_attack_timer"):
+                ranged_attack_timer = self.ball.get_meta("ranged_attack_timer")
+            ranged_attack_timer -= delta
+            if ranged_attack_timer <= 0:
+                ranged_attack_timer = 2.0
+                var enemies = []
+                if "balls" in self.world:
+                    for b in self.world.balls:
+                        var b_team = ""
+                        if typeof(b) == TYPE_DICTIONARY and "team" in b: b_team = b.team
+                        elif "team" in b: b_team = b.team
+
+                        var my_team = ""
+                        if "team" in self.ball: my_team = self.ball.team
+
+                        var b_alive = true
+                        if typeof(b) == TYPE_DICTIONARY and "alive" in b: b_alive = b.alive
+                        elif "alive" in b: b_alive = b.alive
+
+                        if b_team != my_team and b_alive:
+                            enemies.append(b)
+                if enemies.size() > 0:
+                    var closest_enemy = enemies[0]
+                    var b_x = closest_enemy.x if typeof(closest_enemy) != TYPE_DICTIONARY else closest_enemy.x
+                    var b_y = closest_enemy.y if typeof(closest_enemy) != TYPE_DICTIONARY else closest_enemy.y
+                    var min_dist = sqrt(pow(b_x - self.ball.x, 2) + pow(b_y - self.ball.y, 2))
+
+                    for b in enemies:
+                        var ex = b.x if typeof(b) != TYPE_DICTIONARY else b.x
+                        var ey = b.y if typeof(b) != TYPE_DICTIONARY else b.y
+                        var dist = sqrt(pow(ex - self.ball.x, 2) + pow(ey - self.ball.y, 2))
+                        if dist < min_dist:
+                            min_dist = dist
+                            closest_enemy = b
+
+                    if min_dist < 200:
+                        var dmg = 5.0
+                        if "damage" in self.ball:
+                            dmg = self.ball.damage * 0.5
+                        if typeof(closest_enemy) == TYPE_DICTIONARY:
+                            closest_enemy.hp -= dmg
+                        else:
+                            closest_enemy.hp -= dmg
+                        if "add_event" in self.world:
+                            var c_id = closest_enemy.id if typeof(closest_enemy) != TYPE_DICTIONARY else closest_enemy.id
+                            self.world.add_event("ranged_attack", {"attacker_id": self.ball.id, "target_id": c_id})
+
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("ranged_attack_timer", ranged_attack_timer)
+
         self.ball.hp -= 2.0 * delta
         if self.ball.hp <= 0:
             self.ball.hp = 0
@@ -7388,6 +7478,14 @@ func _use_skill():
                     minion.set_meta("is_minion", true)
                     minion.set_meta("minion_owner", self.ball.id)
                 minion.alive = true
+                if "base_damage" in self.ball:
+                    minion.base_damage = self.ball.base_damage
+                else:
+                    minion.base_damage = 10.0
+                if "base_speed" in self.ball:
+                    minion.base_speed = self.ball.base_speed
+                else:
+                    minion.base_speed = 2.0
 
                 if "skill_timer" in minion: minion.skill_timer = 0.0
                 if "skill" in minion: minion.skill = ""
