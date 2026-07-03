@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-474] Dynamic Map Hazards Mode — *2026-07-03 12:42:28 UTC*
+
+Introduce a game mode where map hazards, such as spikes, fire, and ice traps, dynamically spawn, move, or change severity as the match progresses, forcing players to adapt not just to the safe zone but also to the ever-changing terrain.
+
+---
+
 ## [idea-470] Weather Predictor Item — *2026-07-03 12:42:24 UTC*
 
 An equippable module or booster that reveals the next weather event and its duration before it happens, giving players a strategic advantage to position themselves safely.
