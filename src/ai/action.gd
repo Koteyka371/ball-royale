@@ -866,6 +866,86 @@ func execute(strategy: String, delta: float):
     elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("_chrono_slow"):
         self.ball.erase("_chrono_slow")
 
+
+    var is_orbiting_accelerator = false
+    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("is_orbiting_accelerator"):
+        is_orbiting_accelerator = self.ball.get_meta("is_orbiting_accelerator")
+    elif "is_orbiting_accelerator" in self.ball:
+        is_orbiting_accelerator = self.ball.is_orbiting_accelerator
+
+    if is_orbiting_accelerator:
+        var hazard_x = self.ball.x
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("orbit_center_x"):
+            hazard_x = self.ball.get_meta("orbit_center_x")
+        elif "orbit_center_x" in self.ball:
+            hazard_x = self.ball.orbit_center_x
+
+        var hazard_y = self.ball.y
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("orbit_center_y"):
+            hazard_y = self.ball.get_meta("orbit_center_y")
+        elif "orbit_center_y" in self.ball:
+            hazard_y = self.ball.orbit_center_y
+
+        var orbit_radius = 50.0
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("orbit_radius"):
+            orbit_radius = self.ball.get_meta("orbit_radius")
+        elif "orbit_radius" in self.ball:
+            orbit_radius = self.ball.orbit_radius
+
+        var orbit_speed = 0.0
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("orbit_speed"):
+            orbit_speed = self.ball.get_meta("orbit_speed")
+        elif "orbit_speed" in self.ball:
+            orbit_speed = self.ball.orbit_speed
+
+        var orbit_angle = 0.0
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("orbit_angle"):
+            orbit_angle = self.ball.get_meta("orbit_angle")
+        elif "orbit_angle" in self.ball:
+            orbit_angle = self.ball.orbit_angle
+
+        orbit_speed += 10.0 * delta
+        orbit_angle += orbit_speed * delta
+
+        var new_x = hazard_x + cos(orbit_angle) * orbit_radius
+        var new_y = hazard_y + sin(orbit_angle) * orbit_radius
+
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+            self.ball.set_meta("orbit_speed", orbit_speed)
+            self.ball.set_meta("orbit_angle", orbit_angle)
+            self.ball.x = new_x
+            self.ball.y = new_y
+        else:
+            self.ball.orbit_speed = orbit_speed
+            self.ball.orbit_angle = orbit_angle
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["x"] = new_x
+                self.ball["y"] = new_y
+            else:
+                self.ball.x = new_x
+                self.ball.y = new_y
+
+        if orbit_speed > 30.0:
+            var eject_angle = randf() * 2.0 * PI
+            var eject_dist = 2000.0
+            var fly_tx = new_x + cos(eject_angle) * eject_dist
+            var fly_ty = new_y + sin(eject_angle) * eject_dist
+            var fly_t = max(0.5, eject_dist / 1500.0)
+
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                self.ball.set_meta("is_orbiting_accelerator", false)
+                self.ball.set_meta("is_flying", true)
+                self.ball.set_meta("fly_target_x", fly_tx)
+                self.ball.set_meta("fly_target_y", fly_ty)
+                self.ball.set_meta("fly_timer", fly_t)
+            else:
+                self.ball.is_orbiting_accelerator = false
+                self.ball.is_flying = true
+                self.ball.fly_target_x = fly_tx
+                self.ball.fly_target_y = fly_ty
+                self.ball.fly_timer = fly_t
+        return
+
     var is_flying = false
     if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("is_flying"):
         is_flying = self.ball.get_meta("is_flying")
@@ -3750,6 +3830,48 @@ func execute(strategy: String, delta: float):
                             elif "vx" in self.ball:
                                 self.ball.vx = nx * 1000.0
                                 self.ball.vy = ny * 1000.0
+                        continue
+
+
+                    elif hazard.kind == "orbital_accelerator":
+                        var dx = self.ball.x - hazard.x
+                        var dy = self.ball.y - hazard.y
+                        var d = sqrt(dx*dx + dy*dy)
+                        var b_rad = 10.0
+                        if "radius" in self.ball: b_rad = self.ball.radius
+
+                        var is_flying_c = false
+                        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("is_flying"):
+                            is_flying_c = self.ball.get_meta("is_flying")
+                        elif "is_flying" in self.ball:
+                            is_flying_c = self.ball.is_flying
+
+                        var is_orbiting_accel = false
+                        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("is_orbiting_accelerator"):
+                            is_orbiting_accel = self.ball.get_meta("is_orbiting_accelerator")
+                        elif "is_orbiting_accelerator" in self.ball:
+                            is_orbiting_accel = self.ball.is_orbiting_accelerator
+
+                        if d < (b_rad + hazard.radius) and not is_flying_c and not is_orbiting_accel:
+                            var ang = atan2(dy, dx)
+                            var base_speed = 200.0
+                            if "base_speed" in self.ball: base_speed = float(self.ball.base_speed)
+                            var orb_speed = base_speed / max(1.0, d)
+
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                self.ball.set_meta("is_orbiting_accelerator", true)
+                                self.ball.set_meta("orbit_center_x", hazard.x)
+                                self.ball.set_meta("orbit_center_y", hazard.y)
+                                self.ball.set_meta("orbit_radius", d)
+                                self.ball.set_meta("orbit_angle", ang)
+                                self.ball.set_meta("orbit_speed", orb_speed)
+                            else:
+                                self.ball.is_orbiting_accelerator = true
+                                self.ball.orbit_center_x = hazard.x
+                                self.ball.orbit_center_y = hazard.y
+                                self.ball.orbit_radius = d
+                                self.ball.orbit_angle = ang
+                                self.ball.orbit_speed = orb_speed
                         continue
 
                     elif hazard.kind == "pinball_flipper":

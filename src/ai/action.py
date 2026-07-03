@@ -522,6 +522,33 @@ class Action:
             delattr(self.ball, "_chrono_slow")
 
 
+
+        if getattr(self.ball, "is_orbiting_accelerator", False):
+            hazard_x = getattr(self.ball, "orbit_center_x", self.ball.x)
+            hazard_y = getattr(self.ball, "orbit_center_y", self.ball.y)
+            orbit_radius = getattr(self.ball, "orbit_radius", 50.0)
+
+            # Accelerate
+            self.ball.orbit_speed += 10.0 * delta
+            self.ball.orbit_angle += self.ball.orbit_speed * delta
+
+            self.ball.x = hazard_x + math.cos(self.ball.orbit_angle) * orbit_radius
+            self.ball.y = hazard_y + math.sin(self.ball.orbit_angle) * orbit_radius
+
+            # Eject after enough speed
+            if self.ball.orbit_speed > 30.0:
+                self.ball.is_orbiting_accelerator = False
+                self.ball.is_flying = True
+
+                # Random direction ejection
+                import random
+                eject_angle = random.uniform(0, 2 * math.pi)
+                eject_dist = 2000.0  # High speed/long distance
+                self.ball.fly_target_x = self.ball.x + math.cos(eject_angle) * eject_dist
+                self.ball.fly_target_y = self.ball.y + math.sin(eject_angle) * eject_dist
+                self.ball.fly_timer = max(0.5, eject_dist / 1500.0)
+            return
+
         if getattr(self.ball, "is_flying", False):
             fly_timer = getattr(self.ball, "fly_timer", 0.0)
             if fly_timer > 0:
@@ -2440,6 +2467,21 @@ class Action:
                                 self.ball.x += nx * 20.0
                                 self.ball.y += ny * 20.0
                                 # Trigger some logic if needed
+                            continue
+
+
+                        elif hazard.kind == "orbital_accelerator":
+                            dx = self.ball.x - hazard.x
+                            dy = self.ball.y - hazard.y
+                            import math
+                            dist = math.hypot(dx, dy)
+                            if dist < (getattr(self.ball, "radius", 10.0) + getattr(hazard, "radius", 30.0)) and not getattr(self.ball, "is_flying", False) and not getattr(self.ball, "is_orbiting_accelerator", False):
+                                self.ball.is_orbiting_accelerator = True
+                                self.ball.orbit_center_x = hazard.x
+                                self.ball.orbit_center_y = hazard.y
+                                self.ball.orbit_radius = dist
+                                self.ball.orbit_angle = math.atan2(dy, dx)
+                                self.ball.orbit_speed = getattr(self.ball, "base_speed", 200.0) / max(1.0, self.ball.orbit_radius)
                             continue
 
                         elif hazard.kind == "pinball_flipper":

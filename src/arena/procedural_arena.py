@@ -767,6 +767,9 @@ class ProceduralArena:
                 elif random.random() < 0.10:
                     kind = "sinkhole"
                     damage = 5.0
+                elif random.random() < 0.05:
+                    kind = "orbital_accelerator"
+                    damage = 0.0
                 else:
                     if is_temporal_rift:
                         kind = "temporal_rift"
