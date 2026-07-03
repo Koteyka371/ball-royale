@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-502] Magnetic Fields Game Mode — *2026-07-03 16:06:59 UTC*
+
+A game mode where invisible magnetic fields pull or push balls depending on their assigned polarities. Every 10 seconds, polarities randomly flip, causing sudden tactical shifts and chaotic collisions.
+
+---
+
 ## [idea-467] Gravitational Slingshot Hazard — *2026-07-03 16:06:55 UTC*
 
 Hazards that capture balls and rapidly accelerate them in an orbit before ejecting them at a high speed in a random direction.
