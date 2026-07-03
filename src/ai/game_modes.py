@@ -4924,6 +4924,69 @@ class TugOfWarMode(GameMode):
 
 
 
+class UnstablePortalsEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Unstable Portals Event"
+        self.description = "Unstable portals spawn randomly. They occasionally collapse, releasing a shockwave that damages and knocks back nearby players."
+        self.portals = []
+        self.spawn_timer = 0.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        import math
+        import random
+
+        self.spawn_timer += delta
+        if self.spawn_timer > 5.0:
+            self.spawn_timer = 0.0
+            if random.random() < 0.5:
+                arena_w = getattr(world.arena, "width", 800) if hasattr(world, "arena") else 800
+                arena_h = getattr(world.arena, "height", 600) if hasattr(world, "arena") else 600
+                self.portals.append({
+                    "x": random.uniform(100, arena_w - 100),
+                    "y": random.uniform(100, arena_h - 100),
+                    "timer": random.uniform(3.0, 7.0),
+                    "active": True
+                })
+                if hasattr(world, "add_event"):
+                    world.add_event("portal_spawn", {"message": "An unstable portal has appeared!"})
+
+        for p in self.portals:
+            if not p["active"]:
+                continue
+            p["timer"] -= delta
+            if p["timer"] <= 0:
+                p["active"] = False
+                if hasattr(world, "add_event"):
+                    world.add_event("portal_collapse", {"message": "A portal collapsed!", "x": p["x"], "y": p["y"]})
+                    world.add_event("explosion", {"x": p["x"], "y": p["y"], "radius": 150.0, "damage": 30.0})
+
+                arena_w = getattr(world.arena, "width", 800) if hasattr(world, "arena") else 800
+                arena_h = getattr(world.arena, "height", 600) if hasattr(world, "arena") else 600
+
+                for b in balls:
+                    if not getattr(b, "alive", False):
+                        continue
+                    dx = b.x - p["x"]
+                    dy = b.y - p["y"]
+                    dist = math.hypot(dx, dy)
+                    if dist < 150.0:
+                        damage = 30.0
+                        if hasattr(b, "take_damage"):
+                            b.take_damage(damage)
+                        elif hasattr(b, "hp"):
+                            b.hp -= damage
+
+                        if dist > 0.0001:
+                            nx = dx / dist
+                            ny = dy / dist
+                            knockback = 500.0 * (1.0 - dist / 150.0)
+                            b.x = max(0.0, min(arena_w, b.x + nx * knockback * delta))
+                            b.y = max(0.0, min(arena_h, b.y + ny * knockback * delta))
+
+        self.portals = [p for p in self.portals if p["active"]]
+
+
 class MinefieldEventMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -5809,6 +5872,7 @@ GAME_MODES = {
     "dynamic_hazards": DynamicHazardsMode(),
     "custom_match": CustomMatchMode(),
     "reverse_event": ReverseEventMode(),
+    "unstable_portals_event": UnstablePortalsEventMode(),
     "minefield_event": MinefieldEventMode(),
     "weather_chaos": WeatherChaosMode(),
     "domination": DominationMode(),

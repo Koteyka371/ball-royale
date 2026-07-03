@@ -5807,6 +5807,106 @@ class TugOfWarMode extends GameMode:
 
 
 
+class UnstablePortalsEventMode extends GameMode:
+	var portals: Array = []
+	var spawn_timer: float = 0.0
+
+	func _init() -> void:
+		name = "Unstable Portals Event"
+		description = "Unstable portals spawn randomly. They occasionally collapse, releasing a shockwave that damages and knocks back nearby players."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		spawn_timer += delta
+		if spawn_timer > 5.0:
+			spawn_timer = 0.0
+			if randf() < 0.5:
+				var arena_w = 800.0
+				var arena_h = 600.0
+				if world != null and "arena" in world:
+					if "width" in world.arena: arena_w = world.arena.width
+					if "height" in world.arena: arena_h = world.arena.height
+				portals.append({
+					"x": 100.0 + randf() * (arena_w - 200.0),
+					"y": 100.0 + randf() * (arena_h - 200.0),
+					"timer": 3.0 + randf() * 4.0,
+					"active": true
+				})
+				if world != null and world.has_method("add_event"):
+					world.add_event("portal_spawn", {"message": "An unstable portal has appeared!"})
+
+		for p in portals:
+			if not p["active"]:
+				continue
+			p["timer"] -= delta
+			if p["timer"] <= 0:
+				p["active"] = false
+				if world != null and world.has_method("add_event"):
+					world.add_event("portal_collapse", {"message": "A portal collapsed!", "x": p["x"], "y": p["y"]})
+					world.add_event("explosion", {"x": p["x"], "y": p["y"], "radius": 150.0, "damage": 30.0})
+
+				var arena_w = 800.0
+				var arena_h = 600.0
+				if world != null and "arena" in world:
+					if "width" in world.arena: arena_w = float(world.arena.width)
+					if "height" in world.arena: arena_h = float(world.arena.height)
+
+				for b in balls:
+					var alive = false
+					if typeof(b) == TYPE_DICTIONARY:
+						alive = b.get("alive", false)
+					else:
+						alive = b.alive
+
+					if not alive:
+						continue
+
+					var bx = 0.0
+					var by = 0.0
+
+					if typeof(b) == TYPE_DICTIONARY:
+						bx = float(b.get("x", 0.0))
+						by = float(b.get("y", 0.0))
+					else:
+						bx = float(b.x)
+						by = float(b.y)
+
+					var dx = bx - p["x"]
+					var dy = by - p["y"]
+					var dist = sqrt(dx * dx + dy * dy)
+
+					if dist < 150.0:
+						var damage = 30.0
+						if typeof(b) == TYPE_DICTIONARY:
+							if b.has("hp"):
+								b["hp"] -= damage
+						else:
+							if b.has_method("take_damage"):
+								b.take_damage(damage)
+							elif "hp" in b:
+								b.hp -= damage
+
+						if dist > 0.0001:
+							var nx = dx / dist
+							var ny = dy / dist
+							var knockback = 500.0 * (1.0 - dist / 150.0)
+
+							var new_x = max(0.0, min(arena_w, bx + nx * knockback * delta))
+							var new_y = max(0.0, min(arena_h, by + ny * knockback * delta))
+
+							if typeof(b) == TYPE_DICTIONARY:
+								b["x"] = new_x
+								b["y"] = new_y
+							else:
+								b.x = new_x
+								b.y = new_y
+
+		var new_portals = []
+		for p in portals:
+			if p["active"]:
+				new_portals.append(p)
+		portals = new_portals
+
+
 class MinefieldEventMode extends GameMode:
 	var event_timer: float = 0.0
 	var event_active: bool = false
@@ -6991,6 +7091,7 @@ var GAME_MODES = {
 	"dynamic_hazards": DynamicHazardsMode.new(),
 	"custom_match": CustomMatchMode.new(),
 	"reverse_event": ReverseEventMode.new(),
+	"unstable_portals_event": UnstablePortalsEventMode.new(),
 	"minefield_event": MinefieldEventMode.new(),
     "weather_chaos": WeatherChaosMode.new(),
     "domination": DominationMode.new(),
