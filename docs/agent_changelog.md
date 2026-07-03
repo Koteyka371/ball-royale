@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-482] Aura Disruption Ability — *2026-07-03 16:14:49 UTC*
+
+Introduce a new ability or item that disrupts enemy auras for a short duration. Balls caught in the disruption zone lose their stacking aura buffs and their aura radius is reduced to zero, making them temporarily vulnerable. This adds a counter-play mechanism to the stacking aura strategy.
+
+---
+
 ## [idea-502] Magnetic Fields Game Mode — *2026-07-03 16:06:59 UTC*
 
 A game mode where invisible magnetic fields pull or push balls depending on their assigned polarities. Every 10 seconds, polarities randomly flip, causing sudden tactical shifts and chaotic collisions.

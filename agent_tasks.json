@@ -8312,7 +8312,7 @@
     },
     {
       "id": "idea-482",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Aura Disruption Ability",
@@ -13872,6 +13872,57 @@
         "src/ai/new_item_hookshot.py",
         "src/ai/new_item_hookshot.gd",
         "tests/test_new_item_hookshot.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-807",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tether Hook",
+      "description": "An item that hooks onto enemies and pulls them together over time, dealing minor damage for the duration of the tether.",
+      "allowed_paths": [
+        "src/ai/tether_hook.py",
+        "src/ai/tether_hook.gd",
+        "tests/test_tether_hook.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-808",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncy Terrain",
+      "description": "A hazard zone that gives everyone inside bouncy physics, increasing their knockback taking and giving dramatically.",
+      "allowed_paths": [
+        "src/ai/bouncy_terrain.py",
+        "src/ai/bouncy_terrain.gd",
+        "tests/test_bouncy_terrain.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-809",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Time Distortion Zones",
+      "description": "Hazards that speed up or slow down time for entities within them. Fast zones increase movement and attack speed but drain stamina rapidly, while slow zones do the opposite.",
+      "allowed_paths": [
+        "src/ai/time_distortion_zones.py",
+        "src/ai/time_distortion_zones.gd",
+        "tests/test_time_distortion_zones.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
