@@ -4634,7 +4634,30 @@ class Action:
 
                     if hasattr(self.world, "balls"):
                         self.world.balls.append(minion)
+            elif skill_name == "corpse_explosion":
+                if hasattr(self.world, "balls"):
+                    minions = [b for b in self.world.balls if getattr(b, "ball_type", "") == "minion" and getattr(b, "team", "") == getattr(self.ball, "team", "")]
+                    if minions:
+                        target_minion = minions[0]
+                        target_minion.hp = 0
+                        target_minion.alive = False
+
+                        explosion_radius = 80.0
+                        explosion_damage = 45.0
+
+                        enemies = self._get_enemies()
+                        if enemies:
+                            for enemy in enemies:
+                                dx = getattr(enemy, "x", 0) - getattr(target_minion, "x", 0)
+                                dy = getattr(enemy, "y", 0) - getattr(target_minion, "y", 0)
+                                dist = (dx*dx + dy*dy)**0.5
+                                if dist <= explosion_radius:
+                                    if hasattr(enemy, "take_damage"):
+                                        enemy.take_damage(explosion_damage)
+                                    enemy.slow_timer = max(getattr(enemy, "slow_timer", 0), 2.0)
+
             elif skill_name == "raise_dead":
+
                 if hasattr(self.world, "dead_balls"):
                     recent_dead = [b for b in self.world.dead_balls if getattr(b, "time_since_death", 0) < 5.0 and getattr(b, "team", "") != getattr(self.ball, "team", "")]
                     if recent_dead:
