@@ -1466,14 +1466,14 @@ class WeatherChaosMode(GameMode):
         else:
             self.weather_timer += delta
 
-            warning_threshold = 0.0
+            warning_threshold = 7.0  # 3s warning
             if self.weather_timer >= warning_threshold and not getattr(self, "weather_warning_issued", False):
                 if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
                     scanners = [h for h in world.arena.hazards if getattr(h, "kind", "") == "weather_scanner" and getattr(h, "active", True)]
                     if scanners:
                         next_w = getattr(self, "next_weather", "unknown")
                         if hasattr(world, "add_event"):
-                            world.add_event("weather_warning", {"type": "weather_warning", "message": f"Scanner warns: {next_w.upper()} incoming in 10s!"})
+                            world.add_event("weather_warning", {"type": "weather_warning", "message": f"Scanner warns: {next_w.upper()} incoming in 3s!"})
                         self.weather_warning_issued = True
 
             if self.weather_timer > 10.0:

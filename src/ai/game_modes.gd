@@ -1865,7 +1865,7 @@ class WeatherChaosMode extends GameMode:
 		else:
 			weather_timer += delta
 
-			var warning_threshold = 0.0
+			var warning_threshold = 7.0 # 3s warning
 			var warning_issued = false
 			if has_meta("weather_warning_issued"):
 				warning_issued = get_meta("weather_warning_issued")
@@ -1881,7 +1881,7 @@ class WeatherChaosMode extends GameMode:
 						var next_w = "unknown"
 						if has_meta("next_weather"): next_w = get_meta("next_weather")
 						if world != null and world.has_method("add_event"):
-							world.add_event("weather_warning", {"type": "weather_warning", "message": "Scanner warns: " + next_w.to_upper() + " incoming in 10s!"})
+							world.add_event("weather_warning", {"type": "weather_warning", "message": "Scanner warns: " + next_w.to_upper() + " incoming in 3s!"})
 						set_meta("weather_warning_issued", true)
 
 			if weather_timer > 10.0:
