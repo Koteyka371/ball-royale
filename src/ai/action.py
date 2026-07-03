@@ -3315,6 +3315,9 @@ class Action:
                 dy = cy - self.ball.y
                 if math.sqrt(dx*dx + dy*dy) <= perception_radius:
                     boosters.append(c)
+
+
+
         return boosters
 
     def _flee(self, delta: float) -> None:
@@ -4326,6 +4329,13 @@ class Action:
 
                 elif getattr(nearest, "kind", None) == "disruptor_booster":
                     self.ball.disruptor_aura_timer = 5.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "aura_booster":
+                    self.ball.aura_booster_timer = 15.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
@@ -6014,6 +6024,11 @@ class Action:
 
         # Determine aura properties
         aura_radius = 150.0
+        aura_multiplier = 1.0
+        if getattr(self.ball, "aura_booster_timer", 0.0) > 0:
+            aura_radius = 500.0
+            aura_multiplier = 2.0
+
         if getattr(self.ball, "aura_disruption_timer", 0.0) > 0:
             aura_radius = 0.0
 
@@ -6041,7 +6056,7 @@ class Action:
         # Apply buffs based on stack count
         if stack_count >= 1:
             # 1 extra type: HP regen
-            self.ball.hp = min(getattr(self.ball, "hp", 100.0) + 2.0 * delta, getattr(self.ball, "max_hp", 100.0))
+            self.ball.hp = min(getattr(self.ball, "hp", 100.0) + (2.0 * aura_multiplier) * delta, getattr(self.ball, "max_hp", 100.0))
 
         # We don't want to make buffs permanent. So we just reset them if not in an aura
         is_dashing = getattr(self.ball, "is_dashing", False)
@@ -6052,14 +6067,14 @@ class Action:
         if not is_dashing and stutter <= 0.0:
             if stack_count >= 2:
                 # 2 extra types: Speed boost
-                self.ball.speed = base_s * 1.1
+                self.ball.speed = base_s * (1.0 + 0.1 * aura_multiplier)
             else:
                 if getattr(self.ball, "stamina_speed_burst_timer", 0.0) <= 0.0:
                     self.ball.speed = base_s
 
             if stack_count >= 3:
                 # 3 extra types: Damage boost
-                self.ball.damage = base_d * 1.2
+                self.ball.damage = base_d * (1.0 + 0.2 * aura_multiplier)
             else:
                 self.ball.damage = base_d
 
@@ -6116,6 +6131,11 @@ class Action:
                 self.ball.speed = base_s * 1.5
 
     def _update_skill_timer(self, delta: float) -> None:
+        if getattr(self.ball, "aura_booster_timer", 0.0) > 0:
+            self.ball.aura_booster_timer -= delta
+            if self.ball.aura_booster_timer < 0:
+                self.ball.aura_booster_timer = 0.0
+
         if getattr(self.ball, "disruptor_aura_timer", 0.0) > 0:
             self.ball.disruptor_aura_timer -= delta
             if self.ball.disruptor_aura_timer < 0:
@@ -6183,7 +6203,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "aura_booster"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math

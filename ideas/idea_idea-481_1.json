@@ -1,0 +1,4 @@
+{
+  "title": "Aura Disruption Bomb",
+  "description": "A throwable item or character skill that detonates in a large area, stripping the team aura buffs from all enemies caught in the blast and applying the aura_disruption_timer to them for 10 seconds, forcing teams to rely on individual skills rather than stacking benefits."
+}
