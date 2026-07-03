@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-495] Clone Detonation Mode — *2026-07-03 15:45:16 UTC*
+
+Similar to Clone Chaos, but when a clone's HP drops to 0, it explodes dealing small area-of-effect damage. Players must navigate carefully to avoid triggering a chain reaction of exploding clones.
+
+---
+
 ## [idea-488] Minion Evolution Mechanic — *2026-07-03 15:45:12 UTC*
 
 Introduce an evolution mechanic for minions created by the Necromancer. If a minion survives for more than 30 seconds or scores a killing blow, it transforms into an 'Elite Minion' with increased health, attack power, and an autonomous ranged attack.
