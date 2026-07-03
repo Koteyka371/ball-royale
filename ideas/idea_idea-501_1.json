@@ -1,4 +1,0 @@
-{
-    "title": "Weather-Adaptive Traits System",
-    "description": "Introduce a dynamic trait system where units gain temporary buffs or debuffs depending on the current weather and arena terrain. For instance, 'fire' units gain speed and damage in 'Lava' or 'Heatwave' conditions but suffer heavy penalties during 'Rain' or 'Blizzard'. 'Earth' or 'Rock' traits could gain defense in 'Dirt' arenas and remain unaffected by 'Sandstorm' damage."
-}

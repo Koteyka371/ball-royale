@@ -14421,6 +14421,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-839",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather-Adaptive Traits System",
+      "description": "Introduce a dynamic trait system where units gain temporary buffs or debuffs depending on the current weather and arena terrain. For instance, 'fire' units gain speed and damage in 'Lava' or 'Heatwave' conditions but suffer heavy penalties during 'Rain' or 'Blizzard'. 'Earth' or 'Rock' traits could gain defense in 'Dirt' arenas and remain unaffected by 'Sandstorm' damage.",
+      "allowed_paths": [
+        "src/ai/adaptive_traits.py",
+        "src/ai/adaptive_traits.gd",
+        "tests/test_adaptive_traits.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-840",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Terraforming Hazards",
+      "description": "Implement hazards that permanently alter the arena terrain. For example, a 'Meteor' hazard could leave behind a 'Crater' that slows movement, or an 'Ice Storm' could create permanent 'Ice Patches' that cause sliding mechanics. These terrain alterations would interact with weather, e.g., a crater filling up with water during 'Rain' to create a new 'Mud Pit'.",
+      "allowed_paths": [
+        "src/arena/dynamic_terraforming_hazards.py",
+        "src/arena/dynamic_terraforming_hazards.gd",
+        "tests/test_dynamic_terraforming_hazards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
