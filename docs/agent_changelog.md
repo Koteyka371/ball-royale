@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-490]  EMP Trap — *2026-07-03 17:09:44 UTC*
+
+A deployable trap that disables enemy perception radius for a short duration.
+
+---
+
 ## [idea-508] New 'Decoy' active skill for Trickster class — *2026-07-03 16:57:43 UTC*
 
 Add a skill for the Trickster class that drops a fake booster (like a decoy) which acts as a hazard to enemies. When an enemy tries to collect it, it explodes and deals damage, while also pushing them back. This would add more strategy and mind games to the combat.

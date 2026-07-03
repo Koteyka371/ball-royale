@@ -8449,7 +8449,7 @@
     },
     {
       "id": "idea-490",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": " EMP Trap",
@@ -13991,6 +13991,57 @@
         "src/ai/skill_tree_specializations.py",
         "src/ai/skill_tree_specializations.gd",
         "tests/test_skill_tree_specializations.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-814",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Seasonal Weather Variations",
+      "description": "Introduce weather events that spawn dynamically during matches in seasonal arenas. For instance, occasional blizzards in WinterArena that slow down ball movement, or localized heatwaves in SummerArena that drain stamina faster.",
+      "allowed_paths": [
+        "src/ai/seasonal_variations.py",
+        "src/ai/seasonal_variations.gd",
+        "tests/test_seasonal_variations.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-815",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Trickster Mirror Image Skill",
+      "description": "Add a new skill for Trickster that creates a visually identical clone of itself which mimics the Trickster's movements but deals no damage and explodes into confetti upon death, confusing enemies.",
+      "allowed_paths": [
+        "src/ai/trickster_mirror_image_skill.py",
+        "src/ai/trickster_mirror_image_skill.gd",
+        "tests/test_trickster_mirror_image_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-816",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Booster Trap Item",
+      "description": "Introduce a new inventory item called 'Booster Trap' that any ball can place on the ground. When picked up by an enemy, it applies a random negative status effect (like poison, freeze, or stun) instead of giving a buff.",
+      "allowed_paths": [
+        "src/arena/booster_trap_item.py",
+        "src/arena/booster_trap_item.gd",
+        "tests/test_booster_trap_item.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
