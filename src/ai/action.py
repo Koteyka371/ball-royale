@@ -4470,10 +4470,21 @@ class Action:
                             ny = getattr(nearest, "y", 0)
                             dx = bx - nx
                             dy = by - ny
-                            if math.sqrt(dx*dx + dy*dy) <= explosion_radius:
+                            dist = math.sqrt(dx*dx + dy*dy)
+                            if dist <= explosion_radius:
                                 if hasattr(b, "take_damage"):
                                     b.take_damage(dmg)
                                 b.stun_timer = stun_dur
+                                # Apply knockback using velocities if possible
+                                if dist > 0.0001:
+                                    knockback_force = 1500.0
+                                    if hasattr(b, "vx") and hasattr(b, "vy"):
+                                        b.vx += (dx / dist) * knockback_force
+                                        b.vy += (dy / dist) * knockback_force
+                                    else:
+                                        # Fallback but clamped
+                                        b.x += (dx / dist) * 15.0
+                                        b.y += (dy / dist) * 15.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
@@ -5546,6 +5557,7 @@ class Action:
                             self.damage = 50.0
                             self.stun_duration = 2.0
                             self.owner_id = owner_id
+                            self.active = True # Important for collection
                     fb = FakeBooster(self.ball.x, self.ball.y, getattr(self.ball, "id", None))
                     self.world.arena.hazards.append(fb)
                     self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
