@@ -6747,6 +6747,19 @@ func _collect_booster(delta: float):
                     self.ball.stealth_drone_timer = 15.0
                 elif "stealth_drone_timer" in self.ball:
                     self.ball.stealth_drone_timer = 15.0
+            elif "kind" in nearest and nearest.kind == "disruptor_booster":
+                if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("disruptor_aura_timer", 5.0)
+                else:
+                    self.ball["disruptor_aura_timer"] = 5.0
+                if "arena" in world and "hazards" in world.arena:
+                    var idx = world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        world.arena.hazards.remove_at(idx)
+                if "boosters" in world:
+                    var idx = world.boosters.find(nearest)
+                    if idx != -1:
+                        world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "vision_booster":
                 if self.ball.has_method("set_meta"):
                     self.ball.set_meta("vision_booster_timer", 15.0)
@@ -8946,7 +8959,7 @@ func _use_skill():
                     elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
                     elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
 
-                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "reverse_gravity_booster", "anchor_booster"]:
+                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster"]:
                         var hx = 0.0
                         var hy = 0.0
                         if "x" in h: hx = h.x
@@ -9590,6 +9603,13 @@ func _apply_friendly_aura(delta: float):
 
     # Determine aura properties
     var aura_radius = 150.0
+    var ad_timer = 0.0
+    if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("aura_disruption_timer"):
+        ad_timer = float(self.ball.get_meta("aura_disruption_timer"))
+    elif "aura_disruption_timer" in self.ball:
+        ad_timer = float(self.ball.aura_disruption_timer)
+    if ad_timer > 0.0:
+        aura_radius = 0.0
 
     # Check nearby friendly balls
     var nearby_friendlies = []
@@ -9751,6 +9771,66 @@ func _apply_friendly_aura(delta: float):
 
 
 func _update_skill_timer(delta: float):
+    var da_timer = 0.0
+    if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("disruptor_aura_timer"):
+        da_timer = float(self.ball.get_meta("disruptor_aura_timer"))
+    elif "disruptor_aura_timer" in self.ball:
+        da_timer = float(self.ball.disruptor_aura_timer)
+
+    if da_timer > 0.0:
+        da_timer -= delta
+        if da_timer < 0.0: da_timer = 0.0
+        if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+            self.ball.set_meta("disruptor_aura_timer", da_timer)
+        else:
+            self.ball["disruptor_aura_timer"] = da_timer
+
+        if "balls" in world:
+            var my_team = ""
+            if "team" in self.ball: my_team = self.ball.team
+            elif "ball_type" in self.ball: my_team = self.ball.ball_type
+
+            var my_id = -1
+            if "id" in self.ball: my_id = self.ball.id
+            elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("id"): my_id = self.ball.get_meta("id")
+
+            for other in world.balls:
+                var o_alive = true
+                if "alive" in other: o_alive = other.alive
+                elif typeof(other) != TYPE_DICTIONARY and other.has_method("has_meta") and other.has_meta("alive"): o_alive = other.get_meta("alive")
+
+                var o_id = -1
+                if "id" in other: o_id = other.id
+                elif typeof(other) != TYPE_DICTIONARY and other.has_method("has_meta") and other.has_meta("id"): o_id = other.get_meta("id")
+
+                if o_alive and o_id != my_id:
+                    var o_team = ""
+                    if "team" in other: o_team = other.team
+                    elif "ball_type" in other: o_team = other.ball_type
+
+                    if o_team != my_team:
+                        var dx = self.ball.x - other.x
+                        var dy = self.ball.y - other.y
+                        if (dx*dx + dy*dy) <= 22500.0:
+                            if typeof(other) != TYPE_DICTIONARY and other.has_method("set_meta"):
+                                other.set_meta("aura_disruption_timer", 0.5)
+                            else:
+                                other["aura_disruption_timer"] = 0.5
+
+    var ad_timer = 0.0
+    if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("aura_disruption_timer"):
+        ad_timer = float(self.ball.get_meta("aura_disruption_timer"))
+    elif "aura_disruption_timer" in self.ball:
+        ad_timer = float(self.ball.aura_disruption_timer)
+
+    if ad_timer > 0.0:
+        ad_timer -= delta
+        if ad_timer < 0.0: ad_timer = 0.0
+        if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+            self.ball.set_meta("aura_disruption_timer", ad_timer)
+        else:
+            self.ball["aura_disruption_timer"] = ad_timer
+
 
     var es_timer = 0.0
     if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("energy_shield_timer"):
