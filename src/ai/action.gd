@@ -3668,6 +3668,31 @@ func execute(strategy: String, delta: float):
                                 self.ball.hp -= dmg
                                 if self.ball.hp <= 0:
                                     self.ball.alive = false
+
+                            var b_type = ""
+                            if "ball_type" in self.ball:
+                                b_type = self.ball.ball_type
+                            elif self.ball.has_method("get_meta") and self.ball.has_meta("ball_type"):
+                                b_type = self.ball.get_meta("ball_type")
+
+                            if b_type in ["drone", "tank", "juggernaut", "bomber"]:
+                                if typeof(self.ball) == TYPE_DICTIONARY:
+                                    self.ball["supercharge_timer"] = 5.0
+                                    if not self.ball.has("is_supercharged") or not self.ball["is_supercharged"]:
+                                        self.ball["is_supercharged"] = true
+                                        if "speed" in self.ball:
+                                            self.ball["speed"] *= 1.5
+                                        if "damage" in self.ball:
+                                            self.ball["damage"] *= 1.5
+                                elif self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("supercharge_timer", 5.0)
+                                    if not self.ball.has_meta("is_supercharged") or not self.ball.get_meta("is_supercharged"):
+                                        self.ball.set_meta("is_supercharged", true)
+                                        if "speed" in self.ball:
+                                            self.ball.speed *= 1.5
+                                        if "damage" in self.ball:
+                                            self.ball.damage *= 1.5
+
                             if has_method("_spawn_particles"):
                                 _spawn_particles(self.ball.x, self.ball.y, "lightning")
                             if self.ball.has_method("set_meta"):
@@ -9751,6 +9776,54 @@ func _apply_friendly_aura(delta: float):
 
 
 func _update_skill_timer(delta: float):
+
+    var sc_timer = 0.0
+    var is_supercharged = false
+    if typeof(self.ball) == TYPE_DICTIONARY:
+        if self.ball.has("supercharge_timer"): sc_timer = float(self.ball["supercharge_timer"])
+        if self.ball.has("is_supercharged"): is_supercharged = bool(self.ball["is_supercharged"])
+    else:
+        if "supercharge_timer" in self.ball: sc_timer = float(self.ball.supercharge_timer)
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("supercharge_timer"): sc_timer = float(self.ball.get_meta("supercharge_timer"))
+        if "is_supercharged" in self.ball: is_supercharged = bool(self.ball.is_supercharged)
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("is_supercharged"): is_supercharged = bool(self.ball.get_meta("is_supercharged"))
+
+    if sc_timer > 0:
+        sc_timer -= delta
+
+        # Health drain
+        if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("take_damage"):
+            self.ball.take_damage(10.0 * delta)
+        else:
+            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("hp"):
+                self.ball["hp"] -= 10.0 * delta
+                if self.ball["hp"] <= 0:
+                    self.ball["alive"] = false
+            elif "hp" in self.ball:
+                self.ball.hp -= 10.0 * delta
+                if self.ball.hp <= 0:
+                    if "alive" in self.ball: self.ball.alive = false
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("alive", false)
+
+        if sc_timer <= 0:
+            sc_timer = 0.0
+            if is_supercharged:
+                is_supercharged = false
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    if self.ball.has("speed"): self.ball["speed"] /= 1.5
+                    if self.ball.has("damage"): self.ball["damage"] /= 1.5
+                else:
+                    if "speed" in self.ball: self.ball.speed /= 1.5
+                    if "damage" in self.ball: self.ball.damage /= 1.5
+
+        if typeof(self.ball) == TYPE_DICTIONARY:
+            self.ball["supercharge_timer"] = sc_timer
+            self.ball["is_supercharged"] = is_supercharged
+        elif self.ball.has_method("set_meta"):
+            if "supercharge_timer" in self.ball: self.ball.supercharge_timer = sc_timer
+            else: self.ball.set_meta("supercharge_timer", sc_timer)
+            if "is_supercharged" in self.ball: self.ball.is_supercharged = is_supercharged
+            else: self.ball.set_meta("is_supercharged", is_supercharged)
 
     var es_timer = 0.0
     if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("energy_shield_timer"):

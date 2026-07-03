@@ -2394,6 +2394,16 @@ class Action:
                                     self.ball.hp -= (hazard.damage * 2.0 if getattr(self.ball, "is_in_quicksand", False) else hazard.damage)
                                     if self.ball.hp <= 0:
                                         self.ball.alive = False
+
+                                # Supercharge robotic/metal ball types
+                                b_type = getattr(self.ball, "ball_type", getattr(type(self.ball), "BALL_TYPE", ""))
+                                if b_type in ["drone", "tank", "juggernaut", "bomber"]:
+                                    self.ball.supercharge_timer = 5.0
+                                    if not getattr(self.ball, "is_supercharged", False):
+                                        self.ball.is_supercharged = True
+                                        self.ball.speed = getattr(self.ball, "speed", 2.0) * 1.5
+                                        self.ball.damage = getattr(self.ball, "damage", 10.0) * 1.5
+
                                 if hasattr(self, "_spawn_skill_particles"):
                                     self._spawn_skill_particles("lightning")
                                 self.ball.stutter_timer = 1.0 # Stun
@@ -5994,6 +6004,22 @@ class Action:
                 self.ball.speed = base_s * 1.5
 
     def _update_skill_timer(self, delta: float) -> None:
+        if getattr(self.ball, "supercharge_timer", 0.0) > 0:
+            self.ball.supercharge_timer -= delta
+            if hasattr(self.ball, "take_damage"):
+                self.ball.take_damage(10.0 * delta)
+            elif hasattr(self.ball, "hp"):
+                self.ball.hp -= 10.0 * delta
+                if self.ball.hp <= 0:
+                    self.ball.alive = False
+
+            if self.ball.supercharge_timer <= 0:
+                self.ball.supercharge_timer = 0.0
+                if getattr(self.ball, "is_supercharged", False):
+                    self.ball.is_supercharged = False
+                    self.ball.speed = getattr(self.ball, "speed", 2.0) / 1.5
+                    self.ball.damage = getattr(self.ball, "damage", 10.0) / 1.5
+
         if hasattr(self.ball, "energy_shield_timer") and self.ball.energy_shield_timer > 0:
             self.ball.energy_shield_timer -= delta
             if self.ball.energy_shield_timer <= 0:

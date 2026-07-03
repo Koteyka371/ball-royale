@@ -1,0 +1,4 @@
+{
+    "title": "Chain Lightning Mutator",
+    "description": "During thunderstorms, lightning strikes also chain to nearby entities up to 3 bounces, spreading the supercharge buff or damage among clustered balls."
+}
