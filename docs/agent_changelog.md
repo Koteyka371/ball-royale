@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-481] Aura Field Resonator — *2026-07-03 17:22:43 UTC*
+
+A rare map item that, when picked up, drastically increases the aura radius and doubles the effects of the stacking aura for the team for 15 seconds. It encourages teams to contest specific areas of the map and rewards well-coordinated groups that can utilize the buff effectively.
+
+---
+
 ## [idea-510] Meteor Shower Mode — *2026-07-03 17:22:39 UTC*
 
 High damage hazards fall from the sky.
