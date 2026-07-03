@@ -95,7 +95,7 @@ class BallBrain:
         except Exception:
             # print(f"Error applying profile bonuses: {e}")
             pass
-        # Apply skin-based passive perks
+                # Apply skin-based passive perks
         skin = getattr(self.ball, "skin", "default")
         if skin == "veteran":
             self.ball.status_resistance = getattr(self.ball, "status_resistance", 0.0) + 0.02
@@ -103,6 +103,15 @@ class BallBrain:
             self.ball.has_aura = True
         elif skin == "elite":
             self.ball.speed = getattr(self.ball, "speed", 100.0) * 1.05
+        elif skin == "prestige_master":
+            self.ball.has_aura = True
+            self.ball.speed = getattr(self.ball, "speed", 100.0) * 1.08
+            self.ball.status_resistance = getattr(self.ball, "status_resistance", 0.0) + 0.05
+        elif skin == "prestige_grandmaster":
+            self.ball.has_aura = True
+            self.ball.speed = getattr(self.ball, "speed", 100.0) * 1.15
+            self.ball.status_resistance = getattr(self.ball, "status_resistance", 0.0) + 0.10
+            self.ball.damage = getattr(self.ball, "damage", 10.0) * 1.10
 
         self.perception_layer = Perception(self.ball, self.world)
 

@@ -141,6 +141,31 @@ func _init(ball_ref, world_ref):
             self.ball.set_meta("speed", current_speed * 1.05)
         elif "speed" in self.ball:
             self.ball.speed = current_speed * 1.05
+    elif skin == "prestige_master":
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+            self.ball.set_meta("has_aura", true)
+            var current_speed = self.ball.get_meta("speed") if self.ball.has_meta("speed") else 100.0
+            self.ball.set_meta("speed", current_speed * 1.08)
+            var current_res = self.ball.get_meta("status_resistance") if self.ball.has_meta("status_resistance") else 0.0
+            self.ball.set_meta("status_resistance", current_res + 0.05)
+        else:
+            if "has_aura" in self.ball: self.ball.has_aura = true
+            if "speed" in self.ball: self.ball.speed = self.ball.speed * 1.08
+            if "status_resistance" in self.ball: self.ball.status_resistance = self.ball.status_resistance + 0.05
+    elif skin == "prestige_grandmaster":
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+            self.ball.set_meta("has_aura", true)
+            var current_speed = self.ball.get_meta("speed") if self.ball.has_meta("speed") else 100.0
+            self.ball.set_meta("speed", current_speed * 1.15)
+            var current_res = self.ball.get_meta("status_resistance") if self.ball.has_meta("status_resistance") else 0.0
+            self.ball.set_meta("status_resistance", current_res + 0.10)
+            var current_dmg = self.ball.get_meta("damage") if self.ball.has_meta("damage") else 10.0
+            self.ball.set_meta("damage", current_dmg * 1.10)
+        else:
+            if "has_aura" in self.ball: self.ball.has_aura = true
+            if "speed" in self.ball: self.ball.speed = self.ball.speed * 1.15
+            if "status_resistance" in self.ball: self.ball.status_resistance = self.ball.status_resistance + 0.10
+            if "damage" in self.ball: self.ball.damage = self.ball.damage * 1.10
 
     self.perception_layer = Perception.new(self.ball, self.world)
 
