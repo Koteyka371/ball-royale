@@ -4624,12 +4624,19 @@ class Action:
                 import copy
                 active_decoys = [b for b in getattr(self.world, "balls", []) if getattr(b, "is_decoy", False) and getattr(b, "owner_id", None) == self.ball.id and getattr(b, "alive", True)]
                 if active_decoys:
-                    decoy = active_decoys[0]
-                    tx, ty = self.ball.x, self.ball.y
-                    self.ball.x, self.ball.y = decoy.x, decoy.y
-                    decoy.x, decoy.y = tx, ty
-                    decoy.has_swapped = True
-                    self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 4.0)
+                    has_swapped_any = any(getattr(d, "has_swapped", False) for d in active_decoys)
+                    if not has_swapped_any:
+                        decoy = active_decoys[0]
+                        tx, ty = self.ball.x, self.ball.y
+                        self.ball.x, self.ball.y = decoy.x, decoy.y
+                        decoy.x, decoy.y = tx, ty
+                        decoy.has_swapped = True
+                        self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 4.0)
+                    else:
+                        for d in active_decoys:
+                            d.hp = 0
+                            d.alive = False
+                        self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 4.0)
                 elif hasattr(self.world, "balls"):
                     import random
                     import math

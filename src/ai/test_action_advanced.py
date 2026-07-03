@@ -698,7 +698,8 @@ def test_deploy_decoy_multiple_swaps():
     ball.x, ball.y = 200, 200
     ball.skill_timer = 0.0 # Ready to swap again
 
-    # Second swap
+    # Second swap (now Detonation)
     action._use_skill()
-    assert ball.x == 100 and ball.y == 100 # It swaps with the first active decoy which is now at 100, 100
+    active_decoys = [b for b in world.balls if getattr(b, 'is_decoy', False) and getattr(b, 'alive', True)]
+    assert len(active_decoys) == 0 # Decoys are detonated
     assert ball.skill_timer > 0.0
