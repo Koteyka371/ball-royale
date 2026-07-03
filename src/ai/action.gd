@@ -7151,13 +7151,30 @@ func _collect_booster(delta: float):
 
                         var dx = bx - nx
                         var dy = by - ny
-                        if sqrt(dx*dx + dy*dy) <= explosion_radius:
+                        var dist = sqrt(dx*dx + dy*dy)
+                        if dist <= explosion_radius:
                             if b.has_method("take_damage"):
                                 b.take_damage(dmg)
                             if b.has_method("set_meta"):
                                 b.set_meta("stun_timer", stun_dur)
                             else:
                                 b.stun_timer = stun_dur
+                            # Apply knockback using velocity if possible
+                            if dist > 0.0001:
+                                var knockback_force = 1500.0
+                                if "vx" in b and "vy" in b:
+                                    b.vx += (dx / dist) * knockback_force
+                                    b.vy += (dy / dist) * knockback_force
+                                else:
+                                    # Fallback clamped
+                                    if "x" in b:
+                                        b.x += (dx / dist) * 15.0
+                                    elif b.has_method("set_meta") and b.has_meta("x"):
+                                        b.set_meta("x", b.get_meta("x") + (dx / dist) * 15.0)
+                                    if "y" in b:
+                                        b.y += (dy / dist) * 15.0
+                                    elif b.has_method("set_meta") and b.has_meta("y"):
+                                        b.set_meta("y", b.get_meta("y") + (dy / dist) * 15.0)
 
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
@@ -8919,6 +8936,7 @@ func _use_skill():
                 fb.radius = 15.0
                 fb.damage = 50.0
                 fb.stun_duration = 2.0
+                fb.active = true # Important for collection
                 if "id" in self.ball: fb.owner_id = self.ball.id
                 self.world.arena.hazards.append(fb)
 
