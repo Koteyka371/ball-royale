@@ -1,0 +1,4 @@
+{
+    "title": "Mud Puddles Hazard",
+    "description": "Introduce mud puddles as a new procedural hazard. Balls moving through a mud puddle will have their movement speed significantly reduced by 50% and their turn rate hindered, making them easy targets. Unlike tall grass, they remain fully visible, adding a different kind of positioning tradeoff to the arena."
+}
