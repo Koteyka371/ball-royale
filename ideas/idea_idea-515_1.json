@@ -1,0 +1,4 @@
+{
+  "title": "Black Hole Mine",
+  "description": "A variant of the clone mine that, instead of exploding instantly, creates a miniature black hole for 3 seconds. The black hole pulls nearby enemy balls towards its center, drastically slowing their movement. After the 3 seconds, it collapses, dealing moderate damage to all trapped enemies."
+}

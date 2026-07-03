@@ -831,7 +831,12 @@ class Action:
             aoe_damage = 30.0
             triggered = False
 
-            if hasattr(self.world, "balls"):
+            if getattr(self.ball, "clone_cascade_timer", -1.0) >= 0:
+                self.ball.clone_cascade_timer -= delta
+                if self.ball.clone_cascade_timer <= 0:
+                    triggered = True
+
+            if not triggered and hasattr(self.world, "balls"):
                 for e in self.world.balls:
                     if getattr(e, "alive", True) and getattr(e, "team", getattr(e, "ball_type", "")) != getattr(self.ball, "team", getattr(self.ball, "ball_type", "")):
                         dist_sq = (self.ball.x - getattr(e, "x", 0))**2 + (self.ball.y - getattr(e, "y", 0))**2
@@ -842,17 +847,22 @@ class Action:
             if triggered:
                 if hasattr(self.world, "balls"):
                     for b in self.world.balls:
-                        if getattr(b, "alive", True) and getattr(b, "team", getattr(b, "ball_type", "")) != getattr(self.ball, "team", getattr(self.ball, "ball_type", "")):
+                        if getattr(b, "alive", True):
+                            is_enemy = getattr(b, "team", getattr(b, "ball_type", "")) != getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
                             d_sq = (self.ball.x - getattr(b, "x", 0))**2 + (self.ball.y - getattr(b, "y", 0))**2
+
                             if d_sq <= aoe_radius**2:
-                                original_damage = getattr(self.ball, "damage", 0)
-                                self.ball.damage = aoe_damage
-                                self._attempt_damage(self.ball, b)
-                                self.ball.damage = original_damage
+                                if is_enemy:
+                                    original_damage = getattr(self.ball, "damage", 0)
+                                    self.ball.damage = aoe_damage
+                                    self._attempt_damage(self.ball, b)
+                                    self.ball.damage = original_damage
+                                elif getattr(b, "is_clone", False) and b is not self.ball:
+                                    if getattr(b, "clone_cascade_timer", -1.0) < 0:
+                                        b.clone_cascade_timer = 0.25
+
                 self.ball.alive = False
                 self.ball.hp = 0
-
-
 
         # Confusion timer logic
         if getattr(self.ball, "confusion_timer", 0.0) > 0:

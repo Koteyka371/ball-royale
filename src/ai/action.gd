@@ -1191,7 +1191,19 @@ func execute(strategy: String, delta: float):
 		var aoe_damage = 30.0
 		var triggered = false
 
-		if world != null and "balls" in world:
+		var cascade_timer = -1.0
+		if "clone_cascade_timer" in self.ball: cascade_timer = self.ball.clone_cascade_timer
+		elif self.ball.has_method("get_meta") and self.ball.has_meta("clone_cascade_timer"): cascade_timer = self.ball.get_meta("clone_cascade_timer")
+
+		if cascade_timer >= 0.0:
+			cascade_timer -= delta
+			if "clone_cascade_timer" in self.ball: self.ball.clone_cascade_timer = cascade_timer
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("clone_cascade_timer", cascade_timer)
+
+			if cascade_timer <= 0.0:
+				triggered = true
+
+		if not triggered and world != null and "balls" in world:
 			var my_team = ""
 			if "team" in self.ball: my_team = self.ball.team
 			elif "ball_type" in self.ball: my_team = self.ball.ball_type
@@ -1224,7 +1236,8 @@ func execute(strategy: String, delta: float):
 					if "team" in b: b_team = b.team
 					elif "ball_type" in b: b_team = b.ball_type
 
-					if b_alive and b_team != my_team:
+					if b_alive:
+						var is_enemy = b_team != my_team
 						var bx = 0.0
 						var by = 0.0
 						if "x" in b: bx = b.x
@@ -1234,11 +1247,25 @@ func execute(strategy: String, delta: float):
 
 						var d_sq = pow(self.ball.x - bx, 2) + pow(self.ball.y - by, 2)
 						if d_sq <= aoe_radius * aoe_radius:
-							var original_damage = 0.0
-							if "damage" in self.ball: original_damage = self.ball.damage
-							if "damage" in self.ball: self.ball.damage = aoe_damage
-							self._attempt_damage(self.ball, b)
-							if "damage" in self.ball: self.ball.damage = original_damage
+							if is_enemy:
+								var original_damage = 0.0
+								if "damage" in self.ball: original_damage = self.ball.damage
+								if "damage" in self.ball: self.ball.damage = aoe_damage
+								self._attempt_damage(self.ball, b)
+								if "damage" in self.ball: self.ball.damage = original_damage
+							else:
+								var is_b_clone = false
+								if b.has_method("get_meta") and b.get_meta("is_clone"): is_b_clone = true
+								elif "is_clone" in b and b.is_clone: is_b_clone = true
+
+								if is_b_clone and (typeof(b) != typeof(self.ball) or (typeof(b) == typeof(self.ball) and b != self.ball)):
+									var b_cascade = -1.0
+									if "clone_cascade_timer" in b: b_cascade = b.clone_cascade_timer
+									elif b.has_method("get_meta") and b.has_meta("clone_cascade_timer"): b_cascade = b.get_meta("clone_cascade_timer")
+
+									if b_cascade < 0.0:
+										if "clone_cascade_timer" in b: b.clone_cascade_timer = 0.25
+										elif b.has_method("set_meta"): b.set_meta("clone_cascade_timer", 0.25)
 
 				if "alive" in self.ball: self.ball.alive = false
 				if "hp" in self.ball: self.ball.hp = 0
