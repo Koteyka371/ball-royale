@@ -4498,6 +4498,13 @@ class Action:
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
+                elif getattr(nearest, "kind", None) == "bumper_booster":
+                    self.ball.bumper_booster_timer = 10.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "weather_booster":
                     self.ball.weather_control_timer = 10.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -6219,6 +6226,39 @@ class Action:
                                             owner.damage = getattr(hazard, "damage", 10.0) * delta
                                             self.world._deal_damage(owner, self.ball)
                                             owner.damage = old_dmg
+        bumper_booster_timer = getattr(self.ball, "bumper_booster_timer", 0.0)
+        if bumper_booster_timer > 0:
+            self.ball.bumper_booster_timer -= delta
+            if hasattr(self.world, "balls"):
+                my_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
+                for other in self.world.balls:
+                    if getattr(other, "alive", True) and getattr(other, "id", None) != getattr(self.ball, "id", None):
+                        other_team = getattr(other, "team", getattr(other, "ball_type", ""))
+                        if other_team != my_team:
+                            dx = other.x - self.ball.x
+                            dy = other.y - self.ball.y
+                            dist_sq = dx*dx + dy*dy
+                            b_rad = getattr(self.ball, "radius", 10.0)
+                            other_rad = getattr(other, "radius", 10.0)
+                            aura_radius = b_rad + other_rad + 10.0
+                            if dist_sq < aura_radius * aura_radius:
+                                import math as _math
+                                dist = _math.sqrt(dist_sq) if dist_sq > 0 else 0.0001
+                                nx = dx / dist
+                                ny = dy / dist
+
+                                import random as _rnd
+                                angle = _math.atan2(ny, nx) + _rnd.uniform(-0.5, 0.5)
+                                nx = _math.cos(angle)
+                                ny = _math.sin(angle)
+
+                                bounce_strength = 600.0 * delta
+                                other.x += nx * bounce_strength
+                                other.y += ny * bounce_strength
+
+                                other.vx = nx * 2000.0
+                                other.vy = ny * 2000.0
+
         if hasattr(self.ball, "weather_control_timer") and self.ball.weather_control_timer > 0:
             self.ball.weather_control_timer -= delta
 

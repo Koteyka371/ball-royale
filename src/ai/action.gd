@@ -7266,6 +7266,20 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "bumper_booster":
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("bumper_booster_timer", 10.0)
+                else:
+                    self.ball.bumper_booster_timer = 10.0
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "weather_booster":
                 if self.ball.has_method("set_meta"):
                     self.ball.set_meta("weather_control_timer", 10.0)
@@ -10438,6 +10452,83 @@ func _update_skill_timer(delta: float):
         elif self.ball.has_method("set_meta"):
             self.ball.set_meta("chaos_link_timer", chaos_link_timer)
             self.ball.set_meta("chaos_link_target", target)
+
+    var bumper_booster_timer = 0.0
+    if "bumper_booster_timer" in self.ball:
+        bumper_booster_timer = self.ball.bumper_booster_timer
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("bumper_booster_timer"):
+        bumper_booster_timer = self.ball.get_meta("bumper_booster_timer")
+
+    if bumper_booster_timer > 0:
+        var new_timer = bumper_booster_timer - delta
+        if "bumper_booster_timer" in self.ball:
+            self.ball.bumper_booster_timer = new_timer
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("bumper_booster_timer", new_timer)
+
+        if self.world != null and "balls" in self.world:
+            var my_team = ""
+            if "team" in self.ball: my_team = self.ball.team
+            elif "ball_type" in self.ball: my_team = self.ball.ball_type
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("team"): my_team = self.ball.get_meta("team")
+
+            var b_rad = 10.0
+            if "radius" in self.ball: b_rad = self.ball.radius
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("radius"): b_rad = self.ball.get_meta("radius")
+
+            for other in self.world.balls:
+                var alive = true
+                if "alive" in other: alive = other.alive
+                elif typeof(other) == TYPE_OBJECT and other.has_method("get_meta") and other.has_meta("alive"): alive = other.get_meta("alive")
+
+                var o_id = null
+                if "id" in other: o_id = other.id
+                elif typeof(other) == TYPE_OBJECT and other.has_method("get_meta") and other.has_meta("id"): o_id = other.get_meta("id")
+
+                var my_id = null
+                if "id" in self.ball: my_id = self.ball.id
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): my_id = self.ball.get_meta("id")
+
+                if alive and str(o_id) != str(my_id):
+                    var other_team = ""
+                    if "team" in other: other_team = other.team
+                    elif "ball_type" in other: other_team = other.ball_type
+                    elif typeof(other) == TYPE_OBJECT and other.has_method("get_meta") and other.has_meta("team"): other_team = other.get_meta("team")
+
+                    if other_team != my_team:
+                        var dx = other.x - self.ball.x
+                        var dy = other.y - self.ball.y
+                        var dist_sq = dx*dx + dy*dy
+
+                        var other_rad = 10.0
+                        if "radius" in other: other_rad = other.radius
+                        elif typeof(other) == TYPE_OBJECT and other.has_method("get_meta") and other.has_meta("radius"): other_rad = other.get_meta("radius")
+
+                        var aura_radius = b_rad + other_rad + 10.0
+                        if dist_sq < aura_radius * aura_radius:
+                            var dist = sqrt(dist_sq)
+                            if dist < 0.0001: dist = 0.0001
+                            var nx = dx / dist
+                            var ny = dy / dist
+
+                            var angle = atan2(ny, nx) + randf_range(-0.5, 0.5)
+                            nx = cos(angle)
+                            ny = sin(angle)
+
+                            var bounce_strength = 600.0 * delta
+                            other.x += nx * bounce_strength
+                            other.y += ny * bounce_strength
+
+                            if typeof(other) == TYPE_OBJECT and other.has_method("set_meta"):
+                                if "vx" in other:
+                                    other.vx = nx * 2000.0
+                                    other.vy = ny * 2000.0
+                                else:
+                                    other.set_meta("vx", nx * 2000.0)
+                                    other.set_meta("vy", ny * 2000.0)
+                            elif "vx" in other:
+                                other.vx = nx * 2000.0
+                                other.vy = ny * 2000.0
 
     if "health_link_timer" in self.ball:
         hl_timer = self.ball.health_link_timer
