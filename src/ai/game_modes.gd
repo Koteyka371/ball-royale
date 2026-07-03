@@ -6919,6 +6919,60 @@ class FloorIsLavaMode extends GameMode:
 					if hp <= 0:
 						b.alive = false
 
+class TimeWarpMode extends GameMode:
+	var rewind_timer: float = 0.0
+	var history: Array = []
+	var record_timer: float = 0.0
+	var record_interval: float = 0.1
+	var history_max_length: int = 50
+
+	func _init() -> void:
+		name = "Time Warp"
+		description = "Every 30 seconds, the game state rewinds 5 seconds in time. Balls keep momentum but revert to previous positions and HP."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		rewind_timer += delta
+		record_timer += delta
+		if record_timer >= record_interval:
+			record_timer = 0.0
+			var state: Array = []
+			for b in balls:
+				if typeof(b) == TYPE_OBJECT:
+					state.append({"id": b.id, "x": b.x, "y": b.y, "hp": b.hp})
+				elif typeof(b) == TYPE_DICTIONARY:
+					state.append({"id": b.get("id"), "x": b.get("x"), "y": b.get("y"), "hp": b.get("hp")})
+			history.append(state)
+			if history.size() > history_max_length:
+				history.pop_front()
+
+		if rewind_timer >= 30.0:
+			rewind_timer = 0.0
+			if history.size() > 0:
+				var old_state = history[0]
+				var state_dict = {}
+				for s in old_state:
+					state_dict[s["id"]] = s
+
+				for b in balls:
+					var b_id
+					if typeof(b) == TYPE_OBJECT:
+						b_id = b.id
+					else:
+						b_id = b.get("id")
+
+					if state_dict.has(b_id):
+						var old_b = state_dict[b_id]
+						if typeof(b) == TYPE_OBJECT:
+							b.x = old_b["x"]
+							b.y = old_b["y"]
+							b.hp = old_b["hp"]
+						else:
+							b["x"] = old_b["x"]
+							b["y"] = old_b["y"]
+							b["hp"] = old_b["hp"]
+			history.clear()
+
+
 var GAME_MODES = {
 
 	"black_market": BlackMarketMode.new(),
@@ -6985,5 +7039,6 @@ var GAME_MODES = {
     "supernova": SupernovaMode.new(),
 	"echolocation": EcholocationMode.new(),
 	"body_swap": BodySwapMode.new(),
-	"hazard_billiards": HazardBilliardsMode.new()
+	"hazard_billiards": HazardBilliardsMode.new(),
+	"time_warp": TimeWarpMode.new()
 }

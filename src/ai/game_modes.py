@@ -5721,6 +5721,43 @@ class FloorIsLavaMode(GameMode):
                 if b.hp <= 0:
                     b.alive = False
 
+class TimeWarpMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Time Warp"
+        self.description = "Every 30 seconds, the game state rewinds 5 seconds in time. Balls keep momentum but revert to previous positions and HP."
+        self.rewind_timer = 0.0
+        self.history = []
+        self.record_timer = 0.0
+        self.record_interval = 0.1
+        self.history_max_length = int(5.0 / 0.1)
+
+    def tick(self, world, balls, delta: float = 0.016) -> None:
+        self.rewind_timer += delta
+        self.record_timer += delta
+        if self.record_timer >= self.record_interval:
+            self.record_timer = 0.0
+            state = []
+            for b in balls:
+                state.append({'id': b.id, 'x': b.x, 'y': b.y, 'hp': b.hp})
+            self.history.append(state)
+            if len(self.history) > self.history_max_length:
+                self.history.pop(0)
+
+        if self.rewind_timer >= 30.0:
+            self.rewind_timer = 0.0
+            if self.history:
+                old_state = self.history[0]
+                state_dict = {s['id']: s for s in old_state}
+                for b in balls:
+                    if b.id in state_dict:
+                        old_b = state_dict[b.id]
+                        b.x = old_b['x']
+                        b.y = old_b['y']
+                        b.hp = old_b['hp']
+            self.history.clear()
+
+
 GAME_MODES = {
 
     "black_market": BlackMarketMode(),
@@ -5786,7 +5823,8 @@ GAME_MODES = {
     "supernova": SupernovaMode(),
     "echolocation": EcholocationMode(),
     "body_swap": BodySwapMode(),
-    "hazard_billiards": HazardBilliardsMode()
+    "hazard_billiards": HazardBilliardsMode(),
+    "time_warp": TimeWarpMode()
 }
 
 try:
