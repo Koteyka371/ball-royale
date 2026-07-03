@@ -1523,15 +1523,37 @@ class SummerArena(ProceduralArena):
         super().__init__(arena_size, 5, seed)
         self.is_heatwave = True
 
-
-
-
-
-
-
-
-
-
+    def generate(self):
+        super().generate()
+        import random
+        # Add sun flares
+        for _ in range(4):
+            x = random.uniform(100, self.width - 100)
+            y = random.uniform(100, self.height - 100)
+            h_id = 5000 + len(self.hazards)
+            sun_flare = type("Hazard", (object,), {})()
+            sun_flare.id = h_id
+            sun_flare.x = x
+            sun_flare.y = y
+            sun_flare.radius = random.uniform(30.0, 80.0)
+            sun_flare.kind = "sun_flare"
+            sun_flare.damage = 15.0
+            sun_flare.active = True
+            self.hazards.append(sun_flare)
+        # Add sand traps
+        for _ in range(5):
+            x = random.uniform(100, self.width - 100)
+            y = random.uniform(100, self.height - 100)
+            h_id = 5100 + len(self.hazards)
+            sand_trap = type("Hazard", (object,), {})()
+            sand_trap.id = h_id
+            sand_trap.x = x
+            sand_trap.y = y
+            sand_trap.radius = random.uniform(50.0, 100.0)
+            sand_trap.kind = "sand_trap"
+            sand_trap.damage = 0.0
+            sand_trap.active = True
+            self.hazards.append(sand_trap)
 
 class LavaArena(ProceduralArena):
     def __init__(self, arena_size: float = 2000.0, seed: int | None = None):
@@ -1628,6 +1650,20 @@ class WinterArena(ProceduralArena):
             ice_patch.active = True
             ice_patch.target_radius = 0.0
             self.hazards.append(ice_patch)
+        # Add snowman decoys
+        for _ in range(3):
+            x = random.uniform(100, self.width - 100)
+            y = random.uniform(100, self.height - 100)
+            h_id = 4100 + len(self.hazards)
+            snowman = type("Hazard", (object,), {})()
+            snowman.id = h_id
+            snowman.x = x
+            snowman.y = y
+            snowman.radius = 20.0
+            snowman.kind = "snowman_decoy"
+            snowman.damage = 0.0
+            snowman.active = True
+            self.hazards.append(snowman)
 
 ARENAS["summer"] = SummerArena
 ARENAS["autumn"] = AutumnArena
