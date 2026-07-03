@@ -2579,16 +2579,21 @@ class Action:
                         elif hazard.kind == "lightning_strike":
                             if not getattr(hazard, "hit_targets", False):
                                 hazard.hit_targets = True
+                                b_type = getattr(self.ball, "ball_type", getattr(type(self.ball), "BALL_TYPE", "")).lower()
+                                is_metal = b_type in ["drone", "juggernaut", "tank", "neural"]
+                                dmg = hazard.damage
+                                if is_metal:
+                                    dmg = hazard.damage * 0.5  # Take half damage because they are armored
                                 if hasattr(self.ball, "take_damage"):
-                                    self.ball.take_damage(hazard.damage * 2.0 if getattr(self.ball, "is_in_quicksand", False) else hazard.damage)
+                                    self.ball.take_damage(dmg * 2.0 if getattr(self.ball, "is_in_quicksand", False) else dmg)
                                 elif hasattr(self.ball, "hp"):
-                                    self.ball.hp -= (hazard.damage * 2.0 if getattr(self.ball, "is_in_quicksand", False) else hazard.damage)
+                                    self.ball.hp -= (dmg * 2.0 if getattr(self.ball, "is_in_quicksand", False) else dmg)
                                     if self.ball.hp <= 0:
                                         self.ball.alive = False
                                 if hasattr(self, "_spawn_skill_particles"):
                                     self._spawn_skill_particles("lightning")
-                                b_type = getattr(self.ball, "ball_type", getattr(type(self.ball), "BALL_TYPE", "")).lower()
-                                if b_type in ["drone", "juggernaut", "tank", "neural"]:
+
+                                if is_metal:
                                     self.ball.supercharge_timer = 5.0
                                 else:
                                     self.ball.stutter_timer = 1.0 # Stun

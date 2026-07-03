@@ -67,7 +67,7 @@ def test_supercharge_robotic():
     action.execute("idle", delta)
 
     # Lightning strike should deal 50 damage, then drain applies for 0.1s * 5.0 = 0.5 damage
-    assert ball.hp == 100.0 - 50.0 - 0.5
+    assert ball.hp == 100.0 - 25.0 - 0.5
     # Ball should be supercharged because it's a "drone", initial 5.0 - delta = 4.9
     assert getattr(ball, "supercharge_timer", 0.0) == 4.9
     assert getattr(ball, "stutter_timer", 0.0) == 0.0
@@ -82,7 +82,7 @@ def test_supercharge_robotic():
     assert ball.damage == 15.0
 
     # Also check that drain applies again (0.5)
-    assert ball.hp == pytest.approx(100.0 - 50.0 - 0.5 - 0.5)
+    assert ball.hp == pytest.approx(100.0 - 25.0 - 0.5 - 0.5)
     assert getattr(ball, "supercharge_timer", 0.0) == pytest.approx(4.8)
 
 def test_supercharge_non_robotic():

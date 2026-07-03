@@ -490,8 +490,18 @@ class BattleRoyaleMode(GameMode):
                 if getattr(self, "random", __import__("random")).random() < 0.2 * delta:
                     from arena.procedural_arena import Hazard
                     # Spawn lightning strike zone
-                    x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
-                    y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                    target_b = None
+                    if hasattr(world, "balls"):
+                        metal_balls = [b for b in world.balls if getattr(b, "alive", False) and getattr(b, "ball_type", "").lower() in ["drone", "juggernaut", "tank", "neural"]]
+                        if metal_balls and getattr(self, "random", __import__("random")).random() < 0.5:
+                            target_b = getattr(self, "random", __import__("random")).choice(metal_balls)
+
+                    if target_b:
+                        x = target_b.x
+                        y = target_b.y
+                    else:
+                        x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                        y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
                     lightning = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=30.0, kind="lightning_strike", damage=50.0)
                     setattr(lightning, 'duration', 1.0)
                     world.arena.hazards.append(lightning)
@@ -1631,8 +1641,18 @@ class WeatherChaosMode(GameMode):
                 if getattr(self, "random", __import__("random")).random() < 0.2 * delta:
                     from arena.procedural_arena import Hazard
                     # Spawn lightning strike zone
-                    x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
-                    y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                    target_b = None
+                    if hasattr(world, "balls"):
+                        metal_balls = [b for b in world.balls if getattr(b, "alive", False) and getattr(b, "ball_type", "").lower() in ["drone", "juggernaut", "tank", "neural"]]
+                        if metal_balls and getattr(self, "random", __import__("random")).random() < 0.5:
+                            target_b = getattr(self, "random", __import__("random")).choice(metal_balls)
+
+                    if target_b:
+                        x = target_b.x
+                        y = target_b.y
+                    else:
+                        x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                        y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
                     lightning = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=30.0, kind="lightning_strike", damage=50.0)
                     setattr(lightning, 'duration', 1.0)
                     world.arena.hazards.append(lightning)

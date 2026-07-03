@@ -548,6 +548,26 @@ class BattleRoyaleMode extends GameMode:
                     var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
                     var x = randf_range(100.0, world.arena.width - 100.0)
                     var y = randf_range(100.0, world.arena.height - 100.0)
+                    var target_b = null
+                    if "balls" in world:
+                        var metal_balls = []
+                        for b in world.balls:
+                            if b.alive:
+                                var b_type = ""
+                                if "ball_type" in b: b_type = str(b.ball_type).to_lower()
+                                elif b.has_method("get_meta") and b.has_meta("ball_type"): b_type = str(b.get_meta("ball_type")).to_lower()
+                                if b_type in ["drone", "juggernaut", "tank", "neural"]:
+                                    metal_balls.append(b)
+                        if metal_balls.size() > 0 and randf() < 0.5:
+                            target_b = metal_balls[randi() % metal_balls.size()]
+                    if target_b != null:
+                        if "x" in target_b:
+                            x = target_b.x
+                            y = target_b.y
+                        elif target_b.has_method("get_meta"):
+                            x = target_b.get_meta("x")
+                            y = target_b.get_meta("y")
+
                     var lightning = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 30.0, "lightning_strike", 50.0)
                     lightning.set_meta("duration", 1.0)
                     world.arena.hazards.append(lightning)
