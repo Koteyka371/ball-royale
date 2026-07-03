@@ -5468,8 +5468,15 @@ class DailyMutatorMode(GameMode):
             if pm:
                 if hasattr(pm, "add_cosmetic"):
                     pm.add_cosmetic("Daily Survivor Crown")
+                base_pts = 10
+                try:
+                    from system.leaderboard import LeaderboardManager
+                    lm = LeaderboardManager("leaderboard.json")
+                    base_pts = int(base_pts * lm.get_catchup_multiplier())
+                except Exception:
+                    pass
                 for b in balls_alive:
-                    b.skill_points = getattr(b, "skill_points", 0) + 10
+                    b.skill_points = getattr(b, "skill_points", 0) + base_pts
 
 
 

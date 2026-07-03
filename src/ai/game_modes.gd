@@ -6550,12 +6550,16 @@ class DailyMutatorMode extends GameMode:
 			if pm != null:
 				if pm.has_method("add_cosmetic"):
 					pm.call("add_cosmetic", "Daily Survivor Crown")
+				var base_pts = 10
+				var lm = load("res://src/system/leaderboard.gd").new()
+				if lm.has_method("get_catchup_multiplier"):
+					base_pts = int(base_pts * lm.get_catchup_multiplier())
 				for b in balls_alive:
 					var is_dict = typeof(b) == TYPE_DICTIONARY
 					if is_dict:
-						b["skill_points"] = b.get("skill_points", 0) + 10
+						b["skill_points"] = b.get("skill_points", 0) + base_pts
 					else:
-						b.skill_points = b.get("skill_points", 0) + 10
+						b.skill_points = b.get("skill_points", 0) + base_pts
 
 
 class BlackMarketMode extends GameMode:

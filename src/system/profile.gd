@@ -101,7 +101,11 @@ func save_profile():
         file.store_string(JSON.stringify(data, "  "))
 
 func add_skill_points(points: int):
-    data["skill_points"] += points
+    var multiplier = 1.0
+    var lm = load("res://src/system/leaderboard.gd").new()
+    if lm.has_method("get_catchup_multiplier"):
+        multiplier = lm.get_catchup_multiplier()
+    data["skill_points"] += int(points * multiplier)
     save_profile()
 
 
@@ -159,6 +163,10 @@ func do_prestige() -> bool:
     if can_prestige():
         var current_prestige = data.get("prestige_level", 0)
         var tokens_earned = 5 + current_prestige + (data.get("skill_points", 0) / 100)
+
+        var lm = load("res://src/system/leaderboard.gd").new()
+        if lm.has_method("get_catchup_multiplier"):
+            tokens_earned = int(tokens_earned * lm.get_catchup_multiplier())
         var current_tokens = data.get("prestige_tokens", 0)
         var current_upgrades = data.get("prestige_upgrades", {})
 

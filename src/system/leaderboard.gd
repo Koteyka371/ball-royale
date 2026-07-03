@@ -47,6 +47,16 @@ func update_prestige(player_id: String, prestige_level: int):
         data["players"][player_id] = prestige_level
         save_leaderboard()
 
+func get_catchup_multiplier() -> float:
+    var current_time = Time.get_unix_time_from_system()
+    var start_time = data.get("season_start_time", current_time)
+    var elapsed = current_time - start_time
+
+    var catchup_start = SEASON_DURATION - (7 * 24 * 60 * 60)
+    if elapsed >= catchup_start and elapsed < SEASON_DURATION:
+        return 1.5
+    return 1.0
+
 func check_season():
     var current_time = Time.get_unix_time_from_system()
     var start_time = data.get("season_start_time", current_time)

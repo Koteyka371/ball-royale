@@ -91,7 +91,14 @@ class ProfileManager:
             json.dump(self.data, f, indent=4)
 
     def add_skill_points(self, points):
-        self.data["skill_points"] += points
+        multiplier = 1.0
+        try:
+            from system.leaderboard import LeaderboardManager
+            lm = LeaderboardManager("leaderboard.json", profile_manager=self)
+            multiplier = lm.get_catchup_multiplier()
+        except Exception:
+            pass
+        self.data["skill_points"] += int(points * multiplier)
         self.save()
 
 
@@ -146,6 +153,14 @@ class ProfileManager:
             prestige_level = self.data.get("prestige_level", 0) + 1
             # Calculate prestige tokens based on past stats (skill points, current prestige, maxed bonuses)
             tokens_earned = 5 + prestige_level + (self.data.get("skill_points", 0) // 100)
+
+            # Apply Catch-up multiplier to prestige tokens if joined season late
+            try:
+                from system.leaderboard import LeaderboardManager
+                lm = LeaderboardManager("leaderboard.json", profile_manager=self)
+                tokens_earned = int(tokens_earned * lm.get_catchup_multiplier())
+            except Exception:
+                pass
             current_tokens = self.data.get("prestige_tokens", 0)
             current_upgrades = self.data.get("prestige_upgrades", {})
 

@@ -60,7 +60,7 @@ def test_currency_collection():
     mode.tick(world, balls, 0.016)
 
     assert ball.currency == 1
-    assert len(world.currency_pickups) == 15  # Because setup spawns 15, we check they get removed
+    assert len(world.currency_pickups) == 15  # 1 initial + 15 from setup - 1 collected = 15
 
 def test_currency_collection_precise():
     mode = BlackMarketMode()

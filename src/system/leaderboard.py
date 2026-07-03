@@ -35,6 +35,16 @@ class LeaderboardManager:
             self.data["players"][player_id] = prestige_level
             self.save()
 
+    def get_catchup_multiplier(self):
+        current_time = time.time()
+        start_time = self.data.get("season_start_time", current_time)
+        elapsed = current_time - start_time
+
+        catchup_start = self.SEASON_DURATION - (7 * 24 * 60 * 60)
+        if elapsed >= catchup_start and elapsed < self.SEASON_DURATION:
+            return 1.5
+        return 1.0
+
     def check_season(self):
         current_time = time.time()
         start_time = self.data.get("season_start_time", current_time)
