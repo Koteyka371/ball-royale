@@ -844,6 +844,11 @@ func update_zone(current_tick: int, delta: float) -> void:
                     h.kind = "breakable_wall"
                     h.damage = 0.0
                     h.set_meta("hp", 100.0)
+                elif randf() < 0.05:
+                    h.kind = "launch_pad"
+                    h.damage = 0.0
+                    h.set_meta("target_x", randf_range(200.0, width - 200.0))
+                    h.set_meta("target_y", randf_range(200.0, height - 200.0))
                 elif randf() < 0.1:
                     h.kind = "bounce_pad"
                     h.damage = 0.0

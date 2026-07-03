@@ -808,6 +808,58 @@ func execute(strategy: String, delta: float):
     elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("_chrono_slow"):
         self.ball.erase("_chrono_slow")
 
+    var is_flying = false
+    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("is_flying"):
+        is_flying = self.ball.get_meta("is_flying")
+    elif "is_flying" in self.ball:
+        is_flying = self.ball.is_flying
+
+    if is_flying:
+        var fly_timer = 0.0
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("fly_timer"):
+            fly_timer = self.ball.get_meta("fly_timer")
+        elif "fly_timer" in self.ball:
+            fly_timer = self.ball.fly_timer
+
+        if fly_timer > 0:
+            fly_timer -= delta
+            var tx = self.ball.x
+            var ty = self.ball.y
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta"):
+                self.ball.set_meta("fly_timer", fly_timer)
+                if self.ball.has_meta("fly_target_x"): tx = self.ball.get_meta("fly_target_x")
+                if self.ball.has_meta("fly_target_y"): ty = self.ball.get_meta("fly_target_y")
+                var current_immunity = 0.0
+                if self.ball.has_meta("zone_immunity_timer"): current_immunity = self.ball.get_meta("zone_immunity_timer")
+                self.ball.set_meta("zone_immunity_timer", max(current_immunity, 0.1))
+            else:
+                self.ball.fly_timer = fly_timer
+                if "fly_target_x" in self.ball: tx = self.ball.fly_target_x
+                if "fly_target_y" in self.ball: ty = self.ball.fly_target_y
+                var current_immunity = 0.0
+                if "zone_immunity_timer" in self.ball: current_immunity = self.ball.zone_immunity_timer
+                self.ball.zone_immunity_timer = max(current_immunity, 0.1)
+
+            var dx = tx - self.ball.x
+            var dy = ty - self.ball.y
+            var dist = sqrt(dx*dx + dy*dy)
+            if dist > 5.0:
+                var speed = 2000.0 * delta
+                self.ball.x += (dx / dist) * min(speed, dist)
+                self.ball.y += (dy / dist) * min(speed, dist)
+            if fly_timer <= 0:
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("is_flying", false)
+                else:
+                    self.ball.is_flying = false
+        else:
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                self.ball.set_meta("is_flying", false)
+            else:
+                self.ball.is_flying = false
+        return
+
+
 
 	# Magnet passive: pull boosters and smaller entities
 	var btype = ""
@@ -3405,6 +3457,43 @@ func execute(strategy: String, delta: float):
                                 hazard.active = false
                                 hazard.set_meta("active", false)
                         continue
+                    elif hazard.kind == "launch_pad":
+                        var dx = self.ball.x - hazard.x
+                        var dy = self.ball.y - hazard.y
+                        var d = sqrt(dx*dx + dy*dy)
+                        var b_rad = 10.0
+                        if "radius" in self.ball: b_rad = self.ball.radius
+
+                        var is_flying_c = false
+                        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("is_flying"):
+                            is_flying_c = self.ball.get_meta("is_flying")
+                        elif "is_flying" in self.ball:
+                            is_flying_c = self.ball.is_flying
+
+                        if d < (b_rad + hazard.radius) and not is_flying_c:
+                            var h_tx = self.ball.x
+                            var h_ty = self.ball.y
+                            if typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta"):
+                                if hazard.has_meta("target_x"): h_tx = hazard.get_meta("target_x")
+                                if hazard.has_meta("target_y"): h_ty = hazard.get_meta("target_y")
+                            else:
+                                if "target_x" in hazard: h_tx = hazard.target_x
+                                if "target_y" in hazard: h_ty = hazard.target_y
+
+                            var d_target = sqrt((h_tx - self.ball.x)*(h_tx - self.ball.x) + (h_ty - self.ball.y)*(h_ty - self.ball.y))
+                            var fly_t = max(0.5, d_target / 1500.0)
+
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                self.ball.set_meta("is_flying", true)
+                                self.ball.set_meta("fly_target_x", h_tx)
+                                self.ball.set_meta("fly_target_y", h_ty)
+                                self.ball.set_meta("fly_timer", fly_t)
+                            else:
+                                self.ball.is_flying = true
+                                self.ball.fly_target_x = h_tx
+                                self.ball.fly_target_y = h_ty
+                                self.ball.fly_timer = fly_t
+                        continue
                     elif hazard.kind == "bounce_pad":
                         var dx = self.ball.x - hazard.x
                         var dy = self.ball.y - hazard.y
@@ -4535,7 +4624,8 @@ func _get_enemies_internal() -> Array:
         if typeof(entities) == TYPE_DICTIONARY and entities.has("enemies"):
             for e in entities["enemies"]:
                 var e_type = e.ball_type if "ball_type" in e else (e.get_ball_type() if e.has_method("get_ball_type") else "")
-                if e_type != "spectator":
+                var e_flying = e.is_flying if "is_flying" in e else (e.get_meta("is_flying") if e.has_method("has_meta") and e.has_meta("is_flying") else false)
+                if e_type != "spectator" and not e_flying:
                     enemies.append(e)
         elif typeof(entities) == TYPE_ARRAY:
             for e in entities:
@@ -4543,7 +4633,9 @@ func _get_enemies_internal() -> Array:
                     var e_type = e.ball_type if "ball_type" in e else e.get_ball_type()
                     var b_type = self.ball.ball_type if "ball_type" in self.ball else self.ball.get_ball_type()
                     if e_type != b_type and e_type != "spectator":
-                        enemies.append(e)
+                        var e_flying = e.is_flying if "is_flying" in e else (e.get_meta("is_flying") if e.has_method("has_meta") and e.has_meta("is_flying") else false)
+                        if not e_flying:
+                            enemies.append(e)
 
     if enemies.size() == 0 and self.world != null and "balls" in self.world:
         for b in self.world.balls:
@@ -4553,7 +4645,8 @@ func _get_enemies_internal() -> Array:
             if alive and not is_decoy and not is_illusion:
                 var e_type = b.ball_type if "ball_type" in b else (b.get_ball_type() if b.has_method("get_ball_type") else "")
                 var my_type = self.ball.ball_type if "ball_type" in self.ball else (self.ball.get_ball_type() if self.ball.has_method("get_ball_type") else "")
-                if e_type != my_type and e_type != "spectator":
+                var e_flying = b.is_flying if "is_flying" in b else (b.get_meta("is_flying") if b.has_method("has_meta") and b.has_meta("is_flying") else false)
+                if e_type != my_type and e_type != "spectator" and not e_flying:
                     var bx = b.x if "x" in b else b.get_meta("x")
                     var by = b.y if "y" in b else b.get_meta("y")
                     var dx = bx - self.ball.x

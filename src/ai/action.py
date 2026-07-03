@@ -506,6 +506,27 @@ class Action:
         if hasattr(self.ball, "_chrono_slow"):
             delattr(self.ball, "_chrono_slow")
 
+
+        if getattr(self.ball, "is_flying", False):
+            fly_timer = getattr(self.ball, "fly_timer", 0.0)
+            if fly_timer > 0:
+                self.ball.fly_timer -= delta
+                self.ball.zone_immunity_timer = max(getattr(self.ball, "zone_immunity_timer", 0.0), 0.1) # invincible
+                tx = getattr(self.ball, "fly_target_x", self.ball.x)
+                ty = getattr(self.ball, "fly_target_y", self.ball.y)
+                dx = tx - self.ball.x
+                dy = ty - self.ball.y
+                dist = math.hypot(dx, dy)
+                if dist > 5.0:
+                    speed = 2000.0 * delta
+                    self.ball.x += (dx / dist) * min(speed, dist)
+                    self.ball.y += (dy / dist) * min(speed, dist)
+                if self.ball.fly_timer <= 0:
+                    self.ball.is_flying = False
+            else:
+                self.ball.is_flying = False
+            return  # skip normal strategy
+
         start_hp = getattr(self.ball, "hp", 100.0)
         start_stun = getattr(self.ball, "stun_timer", 0.0)
         start_silence = getattr(self.ball, "silence_timer", 0.0)
@@ -2296,6 +2317,18 @@ class Action:
                                 if hazard.hp <= 0:
                                     hazard.active = False
                             continue
+                        elif hazard.kind == "launch_pad":
+                            dx = self.ball.x - hazard.x
+                            dy = self.ball.y - hazard.y
+                            import math
+                            dist = math.hypot(dx, dy)
+                            if dist < (getattr(self.ball, "radius", 10.0) + getattr(hazard, "radius", 10.0)) and not getattr(self.ball, "is_flying", False):
+                                self.ball.is_flying = True
+                                self.ball.fly_target_x = getattr(hazard, "target_x", self.ball.x)
+                                self.ball.fly_target_y = getattr(hazard, "target_y", self.ball.y)
+                                d_target = math.hypot(self.ball.fly_target_x - self.ball.x, self.ball.fly_target_y - self.ball.y)
+                                self.ball.fly_timer = max(0.5, d_target / 1500.0)
+                            continue
                         elif hazard.kind == "bounce_pad":
                             dx = self.ball.x - hazard.x
                             dy = self.ball.y - hazard.y
@@ -2951,6 +2984,8 @@ class Action:
                         my_stealth_zones.append(h)
 
         def is_visible(enemy) -> bool:
+            if getattr(enemy, "is_flying", False):
+                return False
             enemy_stealth_zones = []
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for h in self.world.arena.hazards:
