@@ -18,6 +18,38 @@ class Action:
             ball.experience -= 100 * ball.level
             ball.level += 1
 
+            # Evolution mechanics
+            if ball.level == 5 or ball.level == 10:
+                evolutions = {
+                    "warrior": ["paladin", "berserker"],
+                    "mage": ["warlock", "necromancer"],
+                    "rogue": ["ninja", "assassin"],
+                    "tank": ["guardian", "juggernaut"],
+                    "ranger": ["sniper", "bounty_hunter"],
+                    "healer": ["monk", "druid"],
+                    # Tier 2 evolutions
+                    "paladin": ["templar", "guardian"],
+                    "berserker": ["juggernaut", "brawler"],
+                    "warlock": ["chaos", "necromancer"],
+                    "necromancer": ["vampire", "warlock"],
+                    "ninja": ["phantom", "assassin"],
+                    "assassin": ["phantom", "ninja"],
+                    "guardian": ["paladin", "juggernaut"],
+                    "juggernaut": ["berserker", "guardian"],
+                    "sniper": ["bounty_hunter", "scout"],
+                    "bounty_hunter": ["sniper", "scout"],
+                    "monk": ["templar", "druid"],
+                    "druid": ["monk", "templar"]
+                }
+                current_type = getattr(ball, "ball_type", "")
+                if current_type in evolutions:
+                    import random
+                    new_type = random.choice(evolutions[current_type])
+                    ball.ball_type = new_type
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("evolution", {"ball": getattr(ball, "id", None), "old_type": current_type, "new_type": new_type, "level": ball.level})
+
             # Apply dynamic cosmetic aura scaling
             if not hasattr(ball, "cosmetic_aura_scale"):
                 ball.cosmetic_aura_scale = 1.0
