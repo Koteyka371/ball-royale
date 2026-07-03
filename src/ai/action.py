@@ -2354,6 +2354,31 @@ class Action:
                             hazard_damage = hazard.damage * delta
                             if getattr(self.ball, "is_in_quicksand", False):
                                 hazard_damage *= 2.0
+                        elif hazard.kind == "hidden_mine":
+                            # Detonate on proximity, disable AI abilities and attacks for 5s
+                            dx = hazard.x - self.ball.x
+                            dy = hazard.y - self.ball.y
+                            dist_sq = dx * dx + dy * dy
+                            if dist_sq < (hazard.radius + self.ball.radius) ** 2:
+                                if getattr(hazard, "active", True):
+                                    hazard.active = False
+                                    hazard.duration = 0.0
+
+                                    # Silence
+                                    self.ball.silence_timer = max(getattr(self.ball, "silence_timer", 0.0), 5.0)
+
+                                    # Damage
+                                    if hasattr(self.ball, "take_damage"):
+                                        self.ball.take_damage(hazard.damage * 2.0 if getattr(self.ball, "is_in_quicksand", False) else hazard.damage)
+                                    elif hasattr(self.ball, "hp"):
+                                        self.ball.hp -= (hazard.damage * 2.0 if getattr(self.ball, "is_in_quicksand", False) else hazard.damage)
+                                        if self.ball.hp <= 0:
+                                            self.ball.alive = False
+
+                                    # Visual event
+                                    if hasattr(self.world, "add_event"):
+                                        self.world.add_event("explosion", {"x": hazard.x, "y": hazard.y, "radius": hazard.radius + 30.0})
+                                continue
                         elif hazard.kind == "hidden_trap":
                             # Applies slow and low DoT when triggered
                             self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.5

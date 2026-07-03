@@ -149,6 +149,8 @@ func generate():
         var kind = "spikes"
         if r < 0.25:
             kind = "lava"
+        elif r < 0.34:
+            kind = "hidden_mine"
         elif r < 0.35:
             kind = "fake_booster"
         elif r < 0.4:
@@ -258,6 +260,9 @@ func generate():
         elif kind == "switch":
             radius = 20.0
             damage = 0.0
+        elif kind == "hidden_mine":
+            radius = 15.0
+            damage = 30.0
         elif kind == "silence_booster":
             radius = 15.0
             damage = 0.0

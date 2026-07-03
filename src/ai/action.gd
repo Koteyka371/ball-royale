@@ -3726,6 +3726,48 @@ func execute(strategy: String, delta: float):
                             is_qs = self.ball.is_in_quicksand
                         if is_qs:
                             hd *= 2.0
+                    elif hazard.kind == "hidden_mine":
+                        var dist_x = hazard.x - self.ball.x
+                        var dist_y = hazard.y - self.ball.y
+                        var dist_sq = dist_x * dist_x + dist_y * dist_y
+                        if dist_sq < (hazard.radius + self.ball.radius) * (hazard.radius + self.ball.radius):
+                            var is_active = true
+                            if hazard.has_meta("active"):
+                                is_active = hazard.get_meta("active")
+                            if is_active:
+                                hazard.set_meta("active", false)
+                                hazard.set_meta("duration", 0.0)
+
+                                var current_silence = 0.0
+                                if "silence_timer" in self.ball:
+                                    current_silence = self.ball.silence_timer
+                                elif self.ball.has_method("get_meta") and self.ball.has_meta("silence_timer"):
+                                    current_silence = self.ball.get_meta("silence_timer")
+
+                                if self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("silence_timer", max(current_silence, 5.0))
+                                elif "silence_timer" in self.ball:
+                                    self.ball.silence_timer = max(current_silence, 5.0)
+
+                                var hd = hazard.damage
+                                var is_qs = false
+                                if self.ball.has_method("get_meta") and self.ball.has_meta("is_in_quicksand"):
+                                    is_qs = self.ball.get_meta("is_in_quicksand")
+                                elif "is_in_quicksand" in self.ball:
+                                    is_qs = self.ball.is_in_quicksand
+                                if is_qs:
+                                    hd *= 2.0
+
+                                if self.ball.has_method("take_damage"):
+                                    self.ball.take_damage(hd)
+                                elif "hp" in self.ball:
+                                    self.ball.hp -= hd
+                                    if self.ball.hp <= 0:
+                                        self.ball.alive = false
+
+                                if world != null and world.has_method("add_event"):
+                                    world.add_event("explosion", {"x": hazard.x, "y": hazard.y, "radius": hazard.radius + 30.0})
+                            continue
                     elif hazard.kind == "hidden_trap":
                         var b_speed = 100.0
                         if self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"):
