@@ -665,3 +665,40 @@ def test_decoy_explosion_reward():
     assert getattr(decoy, "_decoy_exploded", False) is True
     assert getattr(enemy, "hp") < 100
     assert getattr(owner, "score") == 5
+
+def test_deploy_decoy_multiple_swaps():
+    from ai.test_action_advanced import MockWorld, MockBall
+    from ai.action import Action
+    world = MockWorld()
+    world.next_id = 200
+    world.balls = []
+    ball = MockBall(x=0, y=0)
+    ball.id = 123
+    ball.SKILL_COOLDOWN = 4.0
+    ball.skill = "deploy_decoy"
+    ball.skill_timer = 0.0
+    world.balls.append(ball)
+    action = Action(ball, world)
+
+    # First deploy
+    action._use_skill()
+    assert len(world.balls) == 3
+
+    # Move ball
+    ball.x, ball.y = 100, 100
+    ball.skill_timer = 0.0 # Ready to swap
+
+    # First swap
+    action._use_skill()
+    # Ball should be at decoy position (which started near 0,0 and offset somewhat based on math.cos/sin)
+    assert ball.x < 50 and ball.y < 50
+    assert ball.skill_timer > 0.0
+
+    # Move ball again
+    ball.x, ball.y = 200, 200
+    ball.skill_timer = 0.0 # Ready to swap again
+
+    # Second swap
+    action._use_skill()
+    assert ball.x == 100 and ball.y == 100 # It swaps with the first active decoy which is now at 100, 100
+    assert ball.skill_timer > 0.0

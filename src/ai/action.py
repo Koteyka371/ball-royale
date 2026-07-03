@@ -4558,7 +4558,7 @@ class Action:
                     self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 5.0)
             elif skill_name == "deploy_decoy":
                 import copy
-                active_decoys = [b for b in getattr(self.world, "balls", []) if getattr(b, "is_decoy", False) and getattr(b, "owner_id", None) == self.ball.id and getattr(b, "alive", True) and not getattr(b, "has_swapped", False)]
+                active_decoys = [b for b in getattr(self.world, "balls", []) if getattr(b, "is_decoy", False) and getattr(b, "owner_id", None) == self.ball.id and getattr(b, "alive", True)]
                 if active_decoys:
                     decoy = active_decoys[0]
                     tx, ty = self.ball.x, self.ball.y
