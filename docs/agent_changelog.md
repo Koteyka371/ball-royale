@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-522] Community Loadout Leaderboards — *2026-07-03 22:54:31 UTC*
+
+Create a new leaderboard category that tracks the win rates and popularity of shared loadout codes. Players could browse the top performing loadouts each week and quickly import them into their profile to try them out in Battle Royale mode.
+
+---
+
 ## [idea-503] Portal Gun Item — *2026-07-03 20:37:06 UTC*
 
 Introduce a rare 'Portal Gun' item that allows a player to shoot two linked portals onto the arena walls. Players can use these custom portals to quickly traverse the map, escape dangerous situations, or teleport projectiles to surprise enemies.
