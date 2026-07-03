@@ -1736,6 +1736,28 @@ class Action:
                                 push_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 50.0 * delta
                                 self.ball.x += nx * push_strength
                                 self.ball.y += ny * push_strength
+                    elif hazard.kind == "sucking_vortex":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            dist = dist_sq ** 0.5
+                            if dist_sq > 0.0001:
+                                nx, ny = dx / dist, dy / dist
+                                pull_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 50.0 * delta
+                                pull_strength = min(pull_strength, dist * 0.5)
+                                self.ball.x += nx * pull_strength
+                                self.ball.y += ny * pull_strength
+
+                            # Damage near the center
+                            if dist < 40.0 and getattr(hazard, "damage", 0.0) > 0.0:
+                                hazard_damage = hazard.damage * delta
+                                if getattr(self.ball, "is_in_quicksand", False):
+                                    hazard_damage *= 2.0
+                                if hasattr(self.ball, "hp"):
+                                    self.ball.hp -= hazard_damage
+                                    if self.ball.hp <= 0:
+                                        self.ball.alive = False
                     elif hazard.kind == "gravity_well":
                         # Cosmetics: gravity anomaly already implemented
                         dx = hazard.x - self.ball.x

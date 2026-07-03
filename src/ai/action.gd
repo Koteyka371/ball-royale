@@ -2692,6 +2692,33 @@ func execute(strategy: String, delta: float):
                             var push_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 50.0 * delta
                             self.ball.x += nx * push_strength
                             self.ball.y += ny * push_strength
+                elif hazard.kind == "sucking_vortex":
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    if dist_sq < hazard.radius * hazard.radius:
+                        var dist = sqrt(dist_sq)
+                        if dist_sq > 0.0001:
+                            var nx = dx / dist
+                            var ny = dy / dist
+                            var pull_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 50.0 * delta
+                            pull_strength = min(pull_strength, dist * 0.5)
+                            self.ball.x += nx * pull_strength
+                            self.ball.y += ny * pull_strength
+
+                        if dist < 40.0 and "damage" in hazard and hazard.damage > 0.0:
+                            var hazard_damage = hazard.damage * delta
+                            var is_qs = false
+                            if self.ball.has_method("get_meta") and self.ball.has_meta("is_in_quicksand"):
+                                is_qs = self.ball.get_meta("is_in_quicksand")
+                            elif "is_in_quicksand" in self.ball:
+                                is_qs = self.ball.is_in_quicksand
+                            if is_qs:
+                                hazard_damage *= 2.0
+                            if self.ball.has_method("take_damage"):
+                                self.ball.take_damage(hazard_damage)
+                            elif "hp" in self.ball:
+                                self.ball.hp -= hazard_damage
                 elif hazard.kind == "gravity_well":
                     # Cosmetics: gravity anomaly already implemented
                     var dx = hazard.x - self.ball.x
