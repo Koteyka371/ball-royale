@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-492] Necromancer Minion Sacrifice Skill — *2026-07-03 14:50:17 UTC*
+
+Add a new active skill for the Necromancer ball called 'Corpse Explosion' where it can selectively sacrifice one of its active minions to deal significant area-of-effect damage to nearby enemies, while also temporarily applying a slow debuff to survivors caught in the blast radius.
+
+---
+
 ## [idea-485] Prestige Mastery Milestones — *2026-07-03 14:24:12 UTC*
 
 Enhance the prestige system by granting exclusive titles, visual auras, and a custom ball type skin for every milestone (e.g., Prestige 5, Prestige 10). It incentivizes long-term engagement and lets veteran players flex their progress visually in the lobby.

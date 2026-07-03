@@ -8483,7 +8483,7 @@
     },
     {
       "id": "idea-492",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Necromancer Minion Sacrifice Skill",
@@ -13598,6 +13598,42 @@
         "src/ai/em_pulse_booster.py",
         "src/ai/em_pulse_booster.gd",
         "tests/test_em_pulse_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-791",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Weather Modifiers based on Prestige Level",
+      "description": "Introduce a game mutator that alters arena weather dynamically based on the lobby's average prestige level, adding new hazards like solar flares for high-prestige matches.",
+      "allowed_paths": [
+        "src/ui/dynamic_modifiers_based_on_prestige_level.py",
+        "src/ui/dynamic_modifiers_based_on_prestige_level.gd",
+        "src/ai/dynamic_modifiers_based_on_prestige_level.py",
+        "tests/test_dynamic_modifiers_based_on_prestige_level.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-792",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Prestige Guild Perks",
+      "description": "Allow guilds to pool prestige tokens from their members to unlock global, guild-wide cosmetic auras and unique lobby titles for everyone in the guild.",
+      "allowed_paths": [
+        "src/ui/prestige_guild_perks.py",
+        "src/ui/prestige_guild_perks.gd",
+        "src/ai/prestige_guild_perks.py",
+        "tests/test_prestige_guild_perks.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
