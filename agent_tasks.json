@@ -8925,7 +8925,7 @@
     },
     {
       "id": "idea-516",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Dynamic Season Backgrounds",
@@ -14195,6 +14195,74 @@
         "src/ai/shrinking_aura_booster.py",
         "src/ai/shrinking_aura_booster.gd",
         "tests/test_shrinking_aura_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-826",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Acid Rain Weather Event",
+      "description": "A random weather event that periodically drops damaging acid puddles across the arena, restricting movement options over time.",
+      "allowed_paths": [
+        "src/ai/acid_rain.py",
+        "src/ai/acid_rain.gd",
+        "tests/test_acid_rain.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-827",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "New 'Vampiric Drain' trap variant",
+      "description": "A trap that latches onto the triggering ball, continuously siphoning a small amount of health and transferring it back to the trap's owner over 5 seconds. If the victim is destroyed by the drain, the trap spawns a healing aura for the owner's team.",
+      "allowed_paths": [
+        "src/arena/new_vampiric_drain_trap_variant.py",
+        "src/arena/new_vampiric_drain_trap_variant.gd",
+        "tests/test_new_vampiric_drain_trap_variant.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-828",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "New 'Quantum Tunneling' trap variant",
+      "description": "A trap that teleports the triggering ball instantly to the other side of the map along the vector of their current movement, maintaining momentum. Good for disruption and repositioning, creating chaotic high-speed maneuvers.",
+      "allowed_paths": [
+        "src/arena/new_quantum_tunneling_trap_variant.py",
+        "src/arena/new_quantum_tunneling_trap_variant.gd",
+        "tests/test_new_quantum_tunneling_trap_variant.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-829",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Grappling Hook Mechanics",
+      "description": "Introduce a grappling hook item that allows balls to tether to walls or other players to swing across the arena or pull themselves out of danger.",
+      "allowed_paths": [
+        "src/ai/grappling_hook_mechanics.py",
+        "src/ai/grappling_hook_mechanics.gd",
+        "tests/test_grappling_hook_mechanics.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

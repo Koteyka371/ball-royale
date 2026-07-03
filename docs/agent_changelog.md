@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-516] Dynamic Season Backgrounds — *2026-07-03 18:13:03 UTC*
+
+The main menu background changes visually depending on the current season theme (e.g. fiery for Inferno, snowy for Frost).
+
+---
+
 ## [idea-504] Portal Collapse Event — *2026-07-03 17:49:04 UTC*
 
 A new weather/arena event where unstable portals spawn randomly across the map. These portals occasionally collapse, releasing a shockwave that damages and knocks back nearby players, creating a dynamic and risky environment.
