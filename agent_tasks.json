@@ -8142,7 +8142,7 @@
     },
     {
       "id": "idea-472",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Time Loop Ability",
@@ -13923,6 +13923,40 @@
         "src/ai/time_distortion_zones.py",
         "src/ai/time_distortion_zones.gd",
         "tests/test_time_distortion_zones.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-810",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Vampiric Aura Booster",
+      "description": "A rare booster that temporarily transforms a ball's friendly aura into a vampiric aura. Allies within the radius don't gain standard stacking buffs but instead heal for a percentage of the damage they deal to enemies. This encourages aggressive group plays.",
+      "allowed_paths": [
+        "src/ai/vampiric_aura_booster.py",
+        "src/ai/vampiric_aura_booster.gd",
+        "tests/test_vampiric_aura_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-811",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aura Reversal Trap",
+      "description": "A placeable trap that, when triggered, temporarily reverses the effects of stacking auras for enemies caught in its blast radius. Instead of providing buffs (e.g., speed and damage increases), the stacking auras inflict proportional debuffs, punishing teams that clump together too tightly.",
+      "allowed_paths": [
+        "src/arena/aura_reversal_trap.py",
+        "src/arena/aura_reversal_trap.gd",
+        "tests/test_aura_reversal_trap.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

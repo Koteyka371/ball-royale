@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-472] Time Loop Ability — *2026-07-03 16:18:39 UTC*
+
+Create a rare, high-cost active ability for a specific ball type (like the Trickster or a new Time Mage) that allows the ball to instantly return to its location, health, and status from 3 seconds ago.
+
+---
+
 ## [idea-482] Aura Disruption Ability — *2026-07-03 16:14:49 UTC*
 
 Introduce a new ability or item that disrupts enemy auras for a short duration. Balls caught in the disruption zone lose their stacking aura buffs and their aura radius is reduced to zero, making them temporarily vulnerable. This adds a counter-play mechanism to the stacking aura strategy.
