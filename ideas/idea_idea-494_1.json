@@ -1,4 +1,0 @@
-{
-  "title": "Bounty Contracts",
-  "description": "Scattered across the map are contract pickup items. When picked up by an AI ball, it randomly selects an enemy ball as a 'bounty'. If the bounty is eliminated by the contract holder, they receive a huge stat multiplier or massive currency injection. If the bounty survives for a set time, the contract holder takes damage."
-}

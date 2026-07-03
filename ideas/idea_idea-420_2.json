@@ -1,4 +1,0 @@
-{
-  "title": "Bouncing Hazard Mines",
-  "description": "Add new hazards called mine_bounce. When a player gets close to them, they detonate and apply a massive knockback force to all nearby entities without doing much HP damage."
-}

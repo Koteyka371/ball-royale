@@ -1,4 +1,0 @@
-{
-    "title": "Weather-Triggered Arena Hazards",
-    "description": "Arena hazards that spawn dynamically depending on the active weather. For example, 'Tornadoes' that spawn only during Windstorms, or 'Quicksand' pits that only appear during Sandstorms."
-}

@@ -1,4 +1,0 @@
-{
-    "title": "Booster Trap Item",
-    "description": "Introduce a new inventory item called 'Booster Trap' that any ball can place on the ground. When picked up by an enemy, it applies a random negative status effect (like poison, freeze, or stun) instead of giving a buff."
-}

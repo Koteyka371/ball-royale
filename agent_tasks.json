@@ -14353,6 +14353,74 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-835",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Mine",
+      "description": "A variant of the clone mine that, instead of exploding instantly, creates a miniature black hole for 3 seconds. The black hole pulls nearby enemy balls towards its center, drastically slowing their movement. After the 3 seconds, it collapses, dealing moderate damage to all trapped enemies.",
+      "allowed_paths": [
+        "src/ai/black_hole_mine.py",
+        "src/ai/black_hole_mine.gd",
+        "tests/test_black_hole_mine.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-836",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Reaction Power-up",
+      "description": "A rare power-up that makes regular ball collisions trigger a chain lightning effect. When a player with this power-up hits an enemy, a bolt of energy jumps to the next nearest enemy within a medium radius, dealing half damage, and can chain up to 3 times.",
+      "allowed_paths": [
+        "src/ai/chain_reaction_power_up.py",
+        "src/ai/chain_reaction_power_up.gd",
+        "tests/test_chain_reaction_power_up.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-837",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Conductor Booster",
+      "description": "A new booster that makes the collecting ball immune to the negative effects of the current weather and amplifies any positive synergies (e.g., increased supercharge duration during thunderstorms or increased healing from rain).",
+      "allowed_paths": [
+        "src/ai/conductor_booster.py",
+        "src/ai/conductor_booster.gd",
+        "tests/test_conductor_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-838",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Emp Grenade Hazard",
+      "description": "A new hazard type that acts like an EMP grenade, disabling robotic balls completely for 3 seconds and clearing all active buffs (like supercharge) in its radius.",
+      "allowed_paths": [
+        "src/arena/emp_grenade.py",
+        "src/arena/emp_grenade.gd",
+        "tests/test_emp_grenade.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }

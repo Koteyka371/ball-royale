@@ -1,4 +1,0 @@
-{
-  "title": "Chain Reaction Power-up",
-  "description": "A rare power-up that makes regular ball collisions trigger a chain lightning effect. When a player with this power-up hits an enemy, a bolt of energy jumps to the next nearest enemy within a medium radius, dealing half damage, and can chain up to 3 times."
-}
