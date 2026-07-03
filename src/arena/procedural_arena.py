@@ -190,6 +190,12 @@ class ProceduralArena:
             elif kind == "magnet":
                 radius = random.uniform(25.0, 45.0)
                 damage = 0.0
+            elif kind == "gravity_well":
+                radius = random.uniform(40.0, 80.0)
+                damage = 0.0
+            elif kind == "repulsor":
+                radius = random.uniform(40.0, 80.0)
+                damage = 0.0
             elif kind == "bumper":
                 radius = random.uniform(30.0, 60.0)
                 damage = 0.0

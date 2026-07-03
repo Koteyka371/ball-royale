@@ -1297,6 +1297,51 @@ func execute(strategy: String, delta: float):
 					self.ball.team = self.ball.original_team
 
 	# Max HP draining hazard logic
+	# Gravity Well and Repulsor Hazard Logic
+	if world != null and "arena" in world and "hazards" in world.arena:
+		var anchor_timer = 0.0
+		if "anchor_booster_timer" in self.ball:
+			anchor_timer = float(self.ball.anchor_booster_timer)
+		elif self.ball.has_method("has_meta") and self.ball.has_meta("anchor_booster_timer"):
+			anchor_timer = float(self.ball.get_meta("anchor_booster_timer"))
+
+		if anchor_timer <= 0.0:
+			for hazard in world.arena.hazards:
+				var kind = hazard.get("kind", "")
+				var is_active = hazard.get("active", true)
+				if (kind == "gravity_well" or kind == "repulsor") and is_active:
+					var hx = float(hazard.x)
+					var hy = float(hazard.y)
+					var dx = hx - float(self.ball.x)
+					var dy = hy - float(self.ball.y)
+					var dist_sq = dx * dx + dy * dy
+					var radius = float(hazard.get("radius", 50.0))
+					var eff_radius = radius * 3.0
+					if dist_sq > 0.0001 and dist_sq < eff_radius * eff_radius:
+						var dist = sqrt(dist_sq)
+						var mdist = 10.0
+						if dist > 10.0:
+							mdist = dist
+						var force = (eff_radius / mdist) * 50.0 * delta
+						if force > dist * 0.5:
+							force = dist * 0.5
+						var nx = dx / dist
+						var ny = dy / dist
+						if kind == "gravity_well":
+							if typeof(self.ball) == TYPE_DICTIONARY:
+								self.ball["x"] += nx * force
+								self.ball["y"] += ny * force
+							else:
+								self.ball.x += nx * force
+								self.ball.y += ny * force
+						else:
+							if typeof(self.ball) == TYPE_DICTIONARY:
+								self.ball["x"] -= nx * force
+								self.ball["y"] -= ny * force
+							else:
+								self.ball.x -= nx * force
+								self.ball.y -= ny * force
+
 	if world != null and "arena" in world and "hazards" in world.arena:
 		for hazard in world.arena.hazards:
 			if hazard.get("kind") == "vampiric_puddle":
