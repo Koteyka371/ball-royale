@@ -4205,6 +4205,27 @@ class Action:
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
+                elif getattr(nearest, "kind", None) == "hologram_trap":
+                    import math
+                    explosion_radius = getattr(nearest, "radius", 15.0) * 3
+                    dmg = getattr(nearest, "damage", 50.0)
+                    stun_dur = getattr(nearest, "stun_duration", 3.0)
+                    if hasattr(self.world, "balls"):
+                        for b in self.world.balls:
+                            bx = getattr(b, "x", 0)
+                            by = getattr(b, "y", 0)
+                            nx = getattr(nearest, "x", 0)
+                            ny = getattr(nearest, "y", 0)
+                            dx = bx - nx
+                            dy = by - ny
+                            if math.sqrt(dx*dx + dy*dy) <= explosion_radius:
+                                if hasattr(b, "take_damage"):
+                                    b.take_damage(dmg)
+                                b.is_confused = True
+                                b.confusion_timer = max(getattr(b, "confusion_timer", 0.0), stun_dur)
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
                 elif getattr(nearest, "kind", None) == "fake_booster":
                     import math
                     import random

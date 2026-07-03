@@ -6616,6 +6616,52 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "hologram_trap":
+                var explosion_radius = 45.0
+                if "radius" in nearest:
+                    explosion_radius = nearest.radius * 3
+                var dmg = 50.0
+                if "damage" in nearest: dmg = nearest.damage
+                var stun_dur = 3.0
+                if "stun_duration" in nearest: stun_dur = nearest.stun_duration
+
+                if self.world != null and "balls" in self.world:
+                    for b in self.world.balls:
+                        var bx = 0.0
+                        var by = 0.0
+                        if "x" in b: bx = b.x
+                        elif b.has_method("get_meta") and b.has_meta("x"): bx = b.get_meta("x")
+                        if "y" in b: by = b.y
+                        elif b.has_method("get_meta") and b.has_meta("y"): by = b.get_meta("y")
+                        var nx = 0.0
+                        var ny = 0.0
+                        if "x" in nearest: nx = nearest.x
+                        if "y" in nearest: ny = nearest.y
+                        var dx = bx - nx
+                        var dy = by - ny
+                        if sqrt(dx*dx + dy*dy) <= explosion_radius:
+                            if b.has_method("take_damage"):
+                                b.take_damage(dmg)
+                            elif "hp" in b:
+                                b.hp -= dmg
+
+                            if "is_confused" in b:
+                                b.is_confused = true
+                            elif b.has_method("set_meta"):
+                                b.set_meta("is_confused", true)
+
+                            if "confusion_timer" in b:
+                                b.confusion_timer = max(b.confusion_timer, stun_dur)
+                            elif b.has_method("set_meta"):
+                                var current_timer = 0.0
+                                if b.has_meta("confusion_timer"):
+                                    current_timer = b.get_meta("confusion_timer")
+                                b.set_meta("confusion_timer", max(current_timer, stun_dur))
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "fake_booster":
                 var explosion_radius = 45.0
                 if "radius" in nearest:

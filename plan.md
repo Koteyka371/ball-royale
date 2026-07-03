@@ -1,21 +1,13 @@
-1. **Implement `energy_shield` skill logic in Python (`src/ai/action.py`)**
-   - In `_use_skill`, handle `skill_name == "energy_shield"`. Activate it by setting `energy_shield_active = True` and `energy_shield_timer = 3.0` on `self.ball`.
-   - In `_update_skill_timer`, decrement `energy_shield_timer` by `delta`. If it reaches 0 or below, set `energy_shield_active = False`.
-   - In `_attempt_damage` (or when dealing damage), if the target has `energy_shield_active`, negate the damage on the target and apply 50% of `original_damage` (or the damage that would have been dealt) back to the attacker. Ensure target takes 0 damage.
-
-2. **Implement `energy_shield` skill logic in GDScript (`src/ai/action.gd`)**
-   - Replicate the exact same logic in `_use_skill`, `_update_skill_timer`, and `_attempt_damage`. Ensure we use `.has_method("set_meta")` / `has_meta` / `get_meta` correctly if properties aren't defined.
-
-3. **Add tests for `energy_shield`**
-   - Create `src/ai/test_energy_shield.py` testing the 3s timer and the 50% damage reflection in `_attempt_damage`. Verify the target takes 0 damage and attacker takes 50%.
-   - Run tests `PYTHONPATH=src pytest` to verify.
-
-4. **IDEAS INBOX**
-   - Create two JSON files in `ideas/` with new game features.
-
-5. **Complete pre-commit steps to ensure proper testing, verification, review, and reflection are done.**
-   - Call `pre_commit_instructions` tool.
-
-6. **Submit PR**
-   - Stage and commit changes to `idea-469` branch.
-   - Create a Pull Request with title `[idea-469] Add Energy Shield skill with damage reflection` and body `Task: idea-469`. Label the PR with 'automated'.
+1. Use `run_in_bash_session` to run patch script to add `hologram_trap` to hazard lists in `src/arena/procedural_arena.py` and `src/arena/procedural_arena.gd`. Update generation ratios.
+2. Verify Step 1 modifications using `run_in_bash_session` with `cat`.
+3. Use `run_in_bash_session` to run patch script to add `hologram_trap` to the expected list in `src/arena/test_procedural_arena.py`.
+4. Verify Step 3 modifications using `run_in_bash_session` with `cat`.
+5. Use `run_in_bash_session` to run patch script to add interaction logic for `hologram_trap` in `src/ai/action.py`. Inside `_collect_booster` where a hazard is triggered when collected, when `hologram_trap` is collided with, trigger an explosion, deal damage, and set `is_confused = True` and `confusion_timer` to a value.
+6. Verify Step 5 modifications using `run_in_bash_session` with `cat`.
+7. Use `run_in_bash_session` to run patch script to add interaction logic for `hologram_trap` in `src/ai/action.gd`. Inside `_collect_booster` processing.
+8. Verify Step 7 modifications using `run_in_bash_session` with `cat`.
+9. Execute tests using `run_in_bash_session` with `PYTHONPATH=src python3 -m pytest src/`.
+10. Generate 2 new feature idea JSON files in `ideas/` using `run_in_bash_session` to execute a script creating unique filenames and exact formatting.
+11. Verify Step 10 modifications using `run_in_bash_session` with `cat ideas/*.json`.
+12. Complete pre-commit steps to ensure proper testing, verification, review, and reflection are done.
+13. Execute git commands using `run_in_bash_session` to `git add .`, `git commit -m 'Add hologram_trap'`, `git push origin idea-451`, and `gh pr create --title '[idea-451] Add hologram trap' --body 'Task: idea-451' --label 'automated'`, then call `request_code_review`.

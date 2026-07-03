@@ -151,6 +151,8 @@ func generate():
             kind = "lava"
         elif r < 0.35:
             kind = "fake_booster"
+        elif r < 0.38:
+            kind = "hologram_trap"
         elif r < 0.4:
             kind = "decoy_item"
         elif r < 0.42:
