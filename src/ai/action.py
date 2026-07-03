@@ -918,6 +918,34 @@ class Action:
                 else:
                     self.ball._is_wind_riding = False
 
+        # Gravity Well and Repulsor Hazard Logic
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
+            for hazard in self.world.arena.hazards:
+                kind = getattr(hazard, "kind", "")
+                if kind in ("gravity_well", "repulsor") and getattr(hazard, "active", True):
+                    dx = hazard.x - self.ball.x
+                    dy = hazard.y - self.ball.y
+                    dist_sq = dx*dx + dy*dy
+                    radius = getattr(hazard, "radius", 50.0)
+                    eff_radius = radius * 3.0 # Area of effect is larger than physical radius
+                    if dist_sq > 0.0001 and dist_sq < eff_radius * eff_radius:
+                        dist = math.sqrt(dist_sq)
+                        force = (eff_radius / max(10.0, dist)) * 50.0 * delta
+                        # Cap force so they don't zoom infinitely
+                        force = min(force, dist * 0.5)
+
+                        nx = dx / dist
+                        ny = dy / dist
+
+                        if kind == "gravity_well":
+                            # Pull towards center
+                            self.ball.x += nx * force
+                            self.ball.y += ny * force
+                        else:
+                            # Push away from center
+                            self.ball.x -= nx * force
+                            self.ball.y -= ny * force
+
         # Zero gravity processing (friction)
         in_anomaly_zone = False
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
