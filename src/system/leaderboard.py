@@ -26,6 +26,36 @@ class LeaderboardManager:
         with open(self.filename, 'w') as f:
             json.dump(self.data, f, indent=4)
 
+    def record_loadout_win(self, loadout_code, is_win=True):
+        if "loadouts" not in self.data:
+            self.data["loadouts"] = {}
+
+        if loadout_code not in self.data["loadouts"]:
+            self.data["loadouts"][loadout_code] = {"uses": 0, "wins": 0}
+
+        self.data["loadouts"][loadout_code]["uses"] += 1
+        if is_win:
+            self.data["loadouts"][loadout_code]["wins"] += 1
+
+        self.save()
+
+    def get_top_loadouts(self, limit=10):
+        if "loadouts" not in self.data:
+            return []
+
+        loadouts = self.data["loadouts"]
+
+        def sort_key(item):
+            code, stats = item
+            uses = stats.get("uses", 0)
+            wins = stats.get("wins", 0)
+            win_rate = (wins / uses) if uses > 0 else 0
+            return (uses, win_rate)
+
+        sorted_loadouts = sorted(loadouts.items(), key=sort_key, reverse=True)
+
+        return [{"code": code, "uses": stats.get("uses", 0), "wins": stats.get("wins", 0)} for code, stats in sorted_loadouts[:limit]]
+
     def update_prestige(self, player_id, prestige_level):
         if "players" not in self.data:
             self.data["players"] = {}

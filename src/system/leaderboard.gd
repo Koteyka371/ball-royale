@@ -35,6 +35,56 @@ func save_leaderboard():
     if file:
         file.store_string(JSON.stringify(data, "  "))
 
+func record_loadout_win(loadout_code: String, is_win: bool = true):
+    if not data.has("loadouts"):
+        data["loadouts"] = {}
+
+    if not data["loadouts"].has(loadout_code):
+        data["loadouts"][loadout_code] = {"uses": 0, "wins": 0}
+
+    data["loadouts"][loadout_code]["uses"] += 1
+    if is_win:
+        data["loadouts"][loadout_code]["wins"] += 1
+
+    save_leaderboard()
+
+func get_top_loadouts(limit: int = 10) -> Array:
+    if not data.has("loadouts"):
+        return []
+
+    var loadouts = data["loadouts"]
+    var sorted_loadouts = []
+
+    for code in loadouts.keys():
+        var stats = loadouts[code]
+        sorted_loadouts.append({
+            "code": code,
+            "uses": stats.get("uses", 0),
+            "wins": stats.get("wins", 0)
+        })
+
+    sorted_loadouts.sort_custom(func(a, b):
+        var uses_a = a["uses"]
+        var wins_a = a["wins"]
+        var win_rate_a = 0.0
+        if uses_a > 0:
+            win_rate_a = float(wins_a) / uses_a
+
+        var uses_b = b["uses"]
+        var wins_b = b["wins"]
+        var win_rate_b = 0.0
+        if uses_b > 0:
+            win_rate_b = float(wins_b) / uses_b
+
+        if uses_a != uses_b:
+            return uses_a > uses_b
+        return win_rate_a > win_rate_b
+    )
+
+    if sorted_loadouts.size() > limit:
+        return sorted_loadouts.slice(0, limit)
+    return sorted_loadouts
+
 func update_prestige(player_id: String, prestige_level: int):
     if not data.has("players"):
         data["players"] = {}
