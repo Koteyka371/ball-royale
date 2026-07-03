@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-477] Reverse Time Ultimate — *2026-07-03 12:03:48 UTC*
+
+A support ultimate skill that records the positions, health, and statuses of all teammates over the last 3 seconds. When activated, it reverts all allies back to their state from 3 seconds ago, healing recent damage and placing them in a potentially better tactical position.
+
+---
+
 ## [idea-406] Tornado Warning Siren — *2026-07-03 12:03:45 UTC*
 
 Add an audio/visual siren 3 seconds before a tornado spawns in thunderstorm weather so players have a brief warning to move out of the area.
