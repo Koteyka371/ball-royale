@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-483] Cosmetic Auras Based on Level — *2026-07-03 13:15:39 UTC*
+
+Introduce dynamic cosmetic auras for balls during a match that grow in intensity or change color as they level up, offering a visual indicator of a ball's strength and threat level to both players and AI.
+
+---
+
 ## [idea-478] Decoy Ball Mechanic — *2026-07-03 13:15:35 UTC*
 
 Introduce a deployable 'Decoy' that mimics the player's current ball type and health. AI enemies will occasionally lock onto the decoy if they fail a perception check, absorbing damage while giving the player an opportunity to escape or ambush.
