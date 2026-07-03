@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-338-1] Bumper Shield Item — *2026-07-03 17:42:36 UTC*
+
+An active item that gives the ball a temporary bumper aura. Any enemy that touches them is bumped away with high speed, similar to the stationary bumper hazard.
+
+---
+
 ## [idea-491] Decoy Clone Ability — *2026-07-03 17:41:43 UTC*
 
 A new skill where a ball creates a 1 HP holographic clone of itself that runs in the opposite direction, forcing enemies to waste attacks and cooldowns on the fake target.

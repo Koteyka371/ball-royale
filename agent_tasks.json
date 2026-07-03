@@ -8772,7 +8772,7 @@
     },
     {
       "id": "idea-338-1",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bumper Shield Item",
@@ -14127,6 +14127,40 @@
         "src/ai/bounty.py",
         "src/ai/bounty.gd",
         "tests/test_bounty.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-822",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Dummy Items",
+      "description": "Players can place down items that look exactly like boosters or weapons. If an enemy touches it, the dummy item explodes and deals moderate damage or applies a short stun.",
+      "allowed_paths": [
+        "src/ai/decoy_dummy_items.py",
+        "src/ai/decoy_dummy_items.gd",
+        "tests/test_decoy_dummy_items.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-823",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mimic Traps",
+      "description": "Hazardous traps that disguise themselves as dropped loot or exit portals. Upon approach, they spring a net or apply a snare debuff, trapping the player for a few seconds.",
+      "allowed_paths": [
+        "src/arena/mimic_traps.py",
+        "src/arena/mimic_traps.gd",
+        "tests/test_mimic_traps.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
