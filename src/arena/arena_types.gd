@@ -703,15 +703,20 @@ class SummerArena extends ProceduralArena:
 	func _init(size: float = 2000.0, seed_val = null):
 		super(size, 5, seed_val)
 
-
-
-
-
-
-
-
-
-
+	func generate() -> void:
+		super.generate()
+		# Add sun flares
+		for i in range(4):
+			var x = randf_range(100, width - 100)
+			var y = randf_range(100, height - 100)
+			var h_id = 5000 + hazards.size()
+			hazards.append(ProceduralArena.Hazard.new(h_id, x, y, randf_range(30.0, 80.0), "sun_flare", 15.0))
+		# Add sand traps
+		for i in range(5):
+			var x = randf_range(100, width - 100)
+			var y = randf_range(100, height - 100)
+			var h_id = 5100 + hazards.size()
+			hazards.append(ProceduralArena.Hazard.new(h_id, x, y, randf_range(50.0, 100.0), "sand_trap", 0.0))
 
 class LavaArena extends ProceduralArena:
 	var is_lava_theme = true
@@ -763,11 +768,18 @@ class WinterArena extends ProceduralArena:
 
 	func generate() -> void:
 		super.generate()
+		# Add ice patches
 		for i in range(5):
 			var x = randf_range(100, width - 100)
 			var y = randf_range(100, height - 100)
 			var h_id = 4000 + hazards.size()
 			hazards.append(ProceduralArena.Hazard.new(h_id, x, y, randf_range(40.0, 120.0), "ice_patch", 0.0))
+		# Add snowman decoys
+		for i in range(3):
+			var x = randf_range(100, width - 100)
+			var y = randf_range(100, height - 100)
+			var h_id = 4100 + hazards.size()
+			hazards.append(ProceduralArena.Hazard.new(h_id, x, y, 20.0, "snowman_decoy", 0.0))
 
 
 class TimeDistortionArena extends ProceduralArena:
