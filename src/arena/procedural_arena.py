@@ -43,6 +43,7 @@ class ProceduralArena:
         self.wind_dx = 0.0
         self.wind_dy = 0.0
 
+        self.terrain_type = random.choice(["grass", "dirt", "sand", "stone", "ice", "metal"])
         # Shrinking zone
         self.safe_zone_radius = arena_size * 0.7
         self.safe_zone_center = (arena_size / 2, arena_size / 2)
