@@ -4281,6 +4281,14 @@ class Action:
                 elif getattr(nearest, "kind", None) == "stealth_drone_item":
                     self.ball.has_stealth_drone = True
                     self.ball.stealth_drone_timer = 15.0  # Duration of stealth effect
+
+                elif getattr(nearest, "kind", None) == "disruptor_booster":
+                    self.ball.disruptor_aura_timer = 5.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "vision_booster":
                     self.ball.vision_booster_timer = 15.0
                     if not getattr(self.ball, "vision_booster_applied", False):
@@ -5047,7 +5055,7 @@ class Action:
                     target_hazard = None
                     min_dist_sq = 22500.0  # Range 150
                     for h in hazards:
-                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "anchor_booster"]:
+                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster"]:
                             dx = h.x - self.ball.x
                             dy = h.y - self.ball.y
                             dist_sq = dx*dx + dy*dy
@@ -5936,6 +5944,8 @@ class Action:
 
         # Determine aura properties
         aura_radius = 150.0
+        if getattr(self.ball, "aura_disruption_timer", 0.0) > 0:
+            aura_radius = 0.0
 
         # Check nearby friendly balls
         nearby_friendlies = []
@@ -6036,6 +6046,26 @@ class Action:
                 self.ball.speed = base_s * 1.5
 
     def _update_skill_timer(self, delta: float) -> None:
+        if getattr(self.ball, "disruptor_aura_timer", 0.0) > 0:
+            self.ball.disruptor_aura_timer -= delta
+            if self.ball.disruptor_aura_timer < 0:
+                self.ball.disruptor_aura_timer = 0.0
+            if hasattr(self.world, "balls"):
+                my_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
+                for other in self.world.balls:
+                    if getattr(other, "alive", True) and getattr(other, "id", None) != getattr(self.ball, "id", None):
+                        other_team = getattr(other, "team", getattr(other, "ball_type", ""))
+                        if other_team != my_team:
+                            dx = self.ball.x - other.x
+                            dy = self.ball.y - other.y
+                            if (dx*dx + dy*dy) <= 22500.0:  # 150^2
+                                other.aura_disruption_timer = 0.5
+
+        if getattr(self.ball, "aura_disruption_timer", 0.0) > 0:
+            self.ball.aura_disruption_timer -= delta
+            if self.ball.aura_disruption_timer < 0:
+                self.ball.aura_disruption_timer = 0.0
+
         if hasattr(self.ball, "energy_shield_timer") and self.ball.energy_shield_timer > 0:
             self.ball.energy_shield_timer -= delta
             if self.ball.energy_shield_timer <= 0:
@@ -6083,7 +6113,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "reverse_gravity_booster", "anchor_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math

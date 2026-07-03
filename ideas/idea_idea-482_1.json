@@ -1,0 +1,4 @@
+{
+    "title": "Aura Reversal Trap",
+    "description": "A placeable trap that, when triggered, temporarily reverses the effects of stacking auras for enemies caught in its blast radius. Instead of providing buffs (e.g., speed and damage increases), the stacking auras inflict proportional debuffs, punishing teams that clump together too tightly."
+}
