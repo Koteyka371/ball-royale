@@ -8381,7 +8381,7 @@
     },
     {
       "id": "idea-486",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Daily Challenge Modifier Mode",
@@ -13360,6 +13360,193 @@
         "src/ai/dynamic_map_events.py",
         "src/ai/dynamic_map_events.gd",
         "tests/test_dynamic_map_events.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-777",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Orbital Gravity Zones",
+      "description": "A hazard that exerts a perpendicular force instead of just pushing/pulling, causing players to orbit its center rather than simply falling in or out.",
+      "allowed_paths": [
+        "src/ai/orbital_gravity_zones.py",
+        "src/ai/orbital_gravity_zones.gd",
+        "tests/test_orbital_gravity_zones.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-778",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mud Puddles Hazard",
+      "description": "Introduce mud puddles as a new procedural hazard. Balls moving through a mud puddle will have their movement speed significantly reduced by 50% and their turn rate hindered, making them easy targets. Unlike tall grass, they remain fully visible, adding a different kind of positioning tradeoff to the arena.",
+      "allowed_paths": [
+        "src/arena/mud_puddles.py",
+        "src/arena/mud_puddles.gd",
+        "tests/test_mud_puddles.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-779",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncing Hazard Mines",
+      "description": "Add new hazards called mine_bounce. When a player gets close to them, they detonate and apply a massive knockback force to all nearby entities without doing much HP damage.",
+      "allowed_paths": [
+        "src/arena/bouncing_mines.py",
+        "src/arena/bouncing_mines.gd",
+        "tests/test_bouncing_mines.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-780",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Blackhole Granade Item",
+      "description": "A new booster that allows balls to throw a blackhole grenade that creates a small temporary black hole hazard upon explosion, pulling in enemies and dealing damage.",
+      "allowed_paths": [
+        "src/ai/blackhole_granade_item.py",
+        "src/ai/blackhole_granade_item.gd",
+        "tests/test_blackhole_granade_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-781",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sniper Nests",
+      "description": "Add elevated 'sniper nest' terrain zones. Balls inside a sniper nest gain a 25% increase to their perception radius and a minor damage bonus to ranged attacks. However, being in the nest marks them with a visual indicator, making them a high-priority target for aggro AI bots.",
+      "allowed_paths": [
+        "src/ai/sniper_nests.py",
+        "src/ai/sniper_nests.gd",
+        "tests/test_sniper_nests.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-782",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Trickster Smoke Screen",
+      "description": "Trickster balls can deploy a smoke screen that obscures vision for enemies, making it harder for them to aim and attack.",
+      "allowed_paths": [
+        "src/ai/trickster_smoke_screen.py",
+        "src/ai/trickster_smoke_screen.gd",
+        "tests/test_trickster_smoke_screen.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-783",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Mind Swap",
+      "description": "When a decoy expires naturally (timer runs out), the player has a 50% chance to permanently swap places with the decoy, creating a chaotic repositioning mechanic.",
+      "allowed_paths": [
+        "src/ai/decoy_mind_swap.py",
+        "src/ai/decoy_mind_swap.gd",
+        "tests/test_decoy_mind_swap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-784",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aura Intimidation System",
+      "description": "Lower-level balls have a chance to get the 'fear' emotion simply by being in the immediate proximity of a ball with a massive, high-level cosmetic aura.",
+      "allowed_paths": [
+        "src/ai/aura_intimidation.py",
+        "src/ai/aura_intimidation.gd",
+        "tests/test_aura_intimidation.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-785",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Ice Skating Weather",
+      "description": "A new weather event where the ground becomes ice, vastly reducing friction for all balls and causing them to slide when changing directions or after being knocked back.",
+      "allowed_paths": [
+        "src/ai/ice_skating.py",
+        "src/ai/ice_skating.gd",
+        "tests/test_ice_skating.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-786",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aura Collision Effects",
+      "description": "When two balls with high-level auras collide, it causes an AoE elemental explosion based on the combined colors of their auras.",
+      "allowed_paths": [
+        "src/ai/aura_collision_effects.py",
+        "src/ai/aura_collision_effects.gd",
+        "tests/test_aura_collision_effects.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-787",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Confusion Effect",
+      "description": "When a decoy explodes, it can inflict a 'confuse' status on nearby enemies, reversing their movement controls for a brief duration.",
+      "allowed_paths": [
+        "src/ai/decoy_confusion_effect.py",
+        "src/ai/decoy_confusion_effect.gd",
+        "tests/test_decoy_confusion_effect.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

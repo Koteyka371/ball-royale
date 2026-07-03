@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-486] Daily Challenge Modifier Mode — *2026-07-03 13:43:23 UTC*
+
+Introduce a new game mode that randomly applies extreme global mutators daily (e.g., 'Low Gravity + Double Damage' or 'Invisible Hazards'). Players who participate and survive receive exclusive cosmetic rewards and bonus skill points, creating an ever-changing meta.
+
+---
+
 ## [idea-483] Cosmetic Auras Based on Level — *2026-07-03 13:15:39 UTC*
 
 Introduce dynamic cosmetic auras for balls during a match that grow in intensity or change color as they level up, offering a visual indicator of a ball's strength and threat level to both players and AI.
