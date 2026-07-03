@@ -4760,6 +4760,60 @@ class Action:
                     target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
                     self.ball.magnet_tether_target = target
                     self.ball.magnet_tether_timer = 1.0  # Duration of the pull
+            elif skill_name == "holographic_clone":
+                import copy
+                import random
+                clone = copy.copy(self.ball)
+                clone.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                # Spawn slightly away
+                clone.x += random.uniform(-10, 10)
+                clone.y += random.uniform(-10, 10)
+
+                clone.hp = 1.0
+                clone.max_hp = 1.0
+                clone.team = getattr(self.ball, "team", getattr(self.ball, "ball_type", getattr(self.ball, "BALL_TYPE", "")))
+                clone.is_hologram = True
+                clone.clone_owner = self.ball.id
+                clone.alive = True
+
+                # Make it run in opposite direction or random direction away
+                clone.speed = getattr(self.ball, "speed", 2.0) * 1.2 # slightly faster to bait
+                clone.damage = 0 # no damage
+                clone.is_fleeing = True
+                clone.fly_timer = 2.0 # Force fly mode if needed? Actually better to just set it to flee
+                clone.skill_timer = 9999
+                clone.skill = None
+                if hasattr(clone, "SKILL"):
+                    clone.SKILL = None
+                if hasattr(clone, "active_skill"):
+                    clone.active_skill = None
+
+                # We can use fly_timer/is_flying to force it to run opposite
+                clone.is_flying = True
+                eject_angle = random.uniform(0, 2 * 3.14159) # Or opposite to closest enemy
+
+                enemies = self._get_enemies()
+                if enemies:
+                    closest = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                    import math
+                    dx = self.ball.x - closest.x
+                    dy = self.ball.y - closest.y
+                    if dx == 0 and dy == 0:
+                        eject_angle = random.uniform(0, 2 * math.pi)
+                    else:
+                        eject_angle = math.atan2(dy, dx)
+                        eject_angle += random.uniform(-0.5, 0.5) # small variance
+
+                eject_dist = 500.0
+                import math
+                clone.fly_target_x = clone.x + math.cos(eject_angle) * eject_dist
+                clone.fly_target_y = clone.y + math.sin(eject_angle) * eject_dist
+                clone.fly_timer = 3.0
+
+                if hasattr(self.world, "balls"):
+                    self.world.balls.append(clone)
+
+                self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
             elif skill_name == "clone":
                 import copy
                 import random

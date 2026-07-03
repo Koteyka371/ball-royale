@@ -7764,6 +7764,97 @@ func _use_skill():
                 if self.ball.has_method("set_meta"):
                     self.ball.set_meta("magnet_tether_target", target)
                     self.ball.set_meta("magnet_tether_timer", 1.0)
+        elif skill_name == "holographic_clone":
+            var clone = self.ball.duplicate()
+            var next_id = randi() % 90000 + 10000
+            if "next_id" in self.world:
+                next_id = self.world.next_id
+                self.world.next_id += 1
+            clone.id = next_id
+
+            if "x" in clone: clone.x += randf_range(-10.0, 10.0)
+            if "y" in clone: clone.y += randf_range(-10.0, 10.0)
+
+            if "hp" in self.ball: clone.hp = 1.0
+            if "max_hp" in self.ball: clone.max_hp = 1.0
+            if clone.has_method("set_meta"):
+                clone.set_meta("is_hologram", true)
+                clone.set_meta("clone_owner", self.ball.id)
+            clone.alive = true
+
+            var base_speed = 2.0
+            if "speed" in self.ball:
+                base_speed = self.ball.speed
+            if "speed" in clone: clone.speed = base_speed * 1.2
+            if "damage" in clone: clone.damage = 0.0
+
+            if "skill_timer" in clone: clone.skill_timer = 9999.0
+            if "skill" in clone: clone.skill = ""
+            if clone.has_method("set_meta"):
+                clone.set_meta("skill", "")
+
+            # Make it fly away
+            if clone.has_method("set_meta"):
+                clone.set_meta("is_flying", true)
+                clone.set_meta("fly_timer", 3.0)
+                var eject_angle = randf_range(0.0, 2.0 * PI)
+
+                var enemies = self._get_enemies()
+                if enemies.size() > 0:
+                    var closest = null
+                    var min_dist_sq = 9999999.0
+                    for e in enemies:
+                        var dx_e = e.x - self.ball.x
+                        var dy_e = e.y - self.ball.y
+                        var dsq = dx_e*dx_e + dy_e*dy_e
+                        if dsq < min_dist_sq:
+                            min_dist_sq = dsq
+                            closest = e
+                    if closest != null:
+                        var dx = self.ball.x - closest.x
+                        var dy = self.ball.y - closest.y
+                        if dx != 0.0 or dy != 0.0:
+                            eject_angle = atan2(dy, dx)
+                            eject_angle += randf_range(-0.5, 0.5)
+
+                var eject_dist = 500.0
+                clone.set_meta("fly_target_x", clone.x + cos(eject_angle) * eject_dist)
+                clone.set_meta("fly_target_y", clone.y + sin(eject_angle) * eject_dist)
+            else:
+                clone.is_flying = true
+                clone.fly_timer = 3.0
+                var eject_angle = randf_range(0.0, 2.0 * PI)
+
+                var enemies = self._get_enemies()
+                if enemies.size() > 0:
+                    var closest = null
+                    var min_dist_sq = 9999999.0
+                    for e in enemies:
+                        var dx_e = e.x - self.ball.x
+                        var dy_e = e.y - self.ball.y
+                        var dsq = dx_e*dx_e + dy_e*dy_e
+                        if dsq < min_dist_sq:
+                            min_dist_sq = dsq
+                            closest = e
+                    if closest != null:
+                        var dx = self.ball.x - closest.x
+                        var dy = self.ball.y - closest.y
+                        if dx != 0.0 or dy != 0.0:
+                            eject_angle = atan2(dy, dx)
+                            eject_angle += randf_range(-0.5, 0.5)
+
+                var eject_dist = 500.0
+                clone.fly_target_x = clone.x + cos(eject_angle) * eject_dist
+                clone.fly_target_y = clone.y + sin(eject_angle) * eject_dist
+
+
+            if "balls" in self.world:
+                self.world.balls.append(clone)
+
+            if "skill_cooldown" in self.ball:
+                self.ball.skill_timer = self.ball.skill_cooldown
+            else:
+                self.ball.skill_timer = 5.0
         elif skill_name == "clone":
             var num_clones = randi() % 3 + 2 # 2 to 4 clones
             for i in range(num_clones):
