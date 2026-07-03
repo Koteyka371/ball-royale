@@ -62,6 +62,35 @@ func _attempt_damage(attacker, target) -> void:
 	var original_damage = 10.0
 	if "damage" in attacker: original_damage = float(attacker.damage)
 
+	if "ball_type" in attacker and attacker.ball_type == "bounty_hunter":
+		var is_high_threat = false
+		if is_nemesis_active:
+			is_high_threat = true
+		elif target.has_method("get_meta") and target.has_meta("is_bounty") and target.get_meta("is_bounty"):
+			is_high_threat = true
+		elif "is_bounty" in target and target.is_bounty:
+			is_high_threat = true
+
+		if not is_high_threat and self.world != null and "game_mode" in self.world and self.world.game_mode != null:
+			var mode_name = ""
+			if "name" in self.world.game_mode:
+				mode_name = self.world.game_mode.name
+			if mode_name == "Boss Fight":
+				var t_team = ""
+				if "team" in target:
+					t_team = str(target.team)
+				if t_team == "Boss":
+					is_high_threat = true
+			elif mode_name == "VIP Defense":
+				var t_team = ""
+				if "team" in target:
+					t_team = str(target.team)
+				if t_team == "VIP":
+					is_high_threat = true
+
+		if is_high_threat:
+			original_damage *= 2.0
+
 	if "attack_accuracy" in attacker:
 		attack_accuracy = float(attacker.attack_accuracy)
 	elif attacker.has_method("get_meta") and attacker.has_meta("attack_accuracy"):
@@ -202,7 +231,15 @@ func _attempt_damage(attacker, target) -> void:
 					attacker.damage = old_dmg
 		else:
 			if self.world != null and self.world.has_method("_deal_damage"):
+				var old_dmg = original_damage
+				if "damage" in attacker:
+					old_dmg = attacker.damage
+					if original_damage != old_dmg:
+						attacker.damage = original_damage
 				self.world._deal_damage(attacker, target)
+				if "damage" in attacker:
+					if original_damage != old_dmg:
+						attacker.damage = old_dmg
 
 		if is_nemesis_active and "damage" in attacker:
 			attacker.damage = original_damage

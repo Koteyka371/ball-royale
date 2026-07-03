@@ -50,6 +50,19 @@ class Action:
         old_hp = getattr(target, "hp", 0.0)
         original_damage = getattr(attacker, "damage", 10.0)
 
+        # Bounty Hunter damage bonus logic
+        if getattr(attacker, "ball_type", None) == "bounty_hunter":
+            is_high_threat = getattr(target, "is_bounty", False) or getattr(target, "is_nemesis_active", False) or is_nemesis_active
+            if not is_high_threat and hasattr(self.world, "game_mode"):
+                mode_name = getattr(self.world.game_mode, "name", "")
+                if mode_name == "Boss Fight" and getattr(target, "team", "") == "Boss":
+                    is_high_threat = True
+                elif mode_name == "VIP Defense" and getattr(target, "team", "") == "VIP":
+                    is_high_threat = True
+
+            if is_high_threat:
+                original_damage *= 2.0
+
         if random.random() > attack_accuracy:
             return
 
@@ -127,7 +140,12 @@ class Action:
                     attacker.damage = old_dmg
             else:
                 if hasattr(self.world, "_deal_damage"):
+                    old_dmg = getattr(attacker, "damage", original_damage)
+                    if original_damage != old_dmg:
+                        attacker.damage = original_damage
                     self.world._deal_damage(attacker, target)
+                    if original_damage != old_dmg:
+                        attacker.damage = old_dmg
 
             if is_nemesis_active:
                 attacker.damage = original_damage
