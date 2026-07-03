@@ -1996,222 +1996,27 @@ class WeatherChaosMode extends GameMode:
 					ice.set_meta("vy", randf_range(-50.0, 50.0))
 					world.arena.hazards.append(ice)
 			elif weather in ["snow", "blizzard"]:
-				if randf() < 0.05 * delta:
-					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
-					var x = randf_range(100.0, world.arena.width - 100.0)
-					var y = randf_range(100.0, world.arena.height - 100.0)
-					var ice = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 50.0, "ice_patch", 0.0)
-					ice.set_meta("duration", 10.0)
-					ice.set_meta("vx", randf_range(-20.0, 20.0))
-					ice.set_meta("vy", randf_range(-20.0, 20.0))
-					world.arena.hazards.append(ice)
-			if weather in ["snow", "blizzard"] and season_num == 4:
-				if randf() < 0.1 * delta:
-					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
-					var x = randf_range(100.0, world.arena.width - 100.0)
-					var y = randf_range(100.0, world.arena.height - 100.0)
-					var ice = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 50.0, "ice_patch", 0.0)
-					ice.set_meta("duration", 10.0)
-					ice.set_meta("vx", randf_range(-50.0, 50.0))
-					ice.set_meta("vy", randf_range(-50.0, 50.0))
-					world.arena.hazards.append(ice)
-			elif weather == "rain":
-				if randf() < 0.05 * delta:
-					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
-					var x = randf_range(100.0, world.arena.width - 100.0)
-					var y = randf_range(100.0, world.arena.height - 100.0)
-					var mud_pit = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 60.0, "quicksand", 0.0)
-					mud_pit.set_meta("duration", 15.0)
-					world.arena.hazards.append(mud_pit)
-				if season_num == 3:
-					if randf() < 0.1 * delta:
-						var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
-						var x = randf_range(100.0, world.arena.width - 100.0)
-						var y = randf_range(100.0, world.arena.height - 100.0)
-						var puddle = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 40.0, "healing_spring", -10.0)
-						puddle.set_meta("duration", 8.0)
-						world.arena.hazards.append(puddle)
-				else:
-					if randf() < 0.05 * delta:
-						var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
-						var x = randf_range(100.0, world.arena.width - 100.0)
-						var y = randf_range(100.0, world.arena.height - 100.0)
-						var lightning = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 30.0, "lightning_strike", 50.0)
-						lightning.set_meta("duration", 1.0)
-						world.arena.hazards.append(lightning)
-			elif weather == "thunderstorm":
-				if randf() < 0.2 * delta:
-					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
-					var x = randf_range(100.0, world.arena.width - 100.0)
-					var y = randf_range(100.0, world.arena.height - 100.0)
-					var lightning = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 30.0, "lightning_strike", 50.0)
-					lightning.set_meta("duration", 1.0)
-					world.arena.hazards.append(lightning)
-				if randf() < 0.05 * delta:
-					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
-					var x = randf_range(100.0, world.arena.width - 100.0)
-					var y = randf_range(100.0, world.arena.height - 100.0)
-					var warning = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 40.0, "tornado_warning", 0.0)
-					warning.set_meta("duration", 3.0)
-					if world.has_method("add_event"):
-						world.add_event("audio_event", {"sound": "siren_warning", "volume": 1.0, "x": x, "y": y})
-					world.arena.hazards.append(warning)
-
-		for b in balls:
-			if b.alive and b.ball_type != "spectator":
-				if not b.has_meta("base_speed"):
-					if "speed" in b:
-						b.set_meta("base_speed", b.speed)
-					else:
-						b.set_meta("base_speed", 100.0)
-				if not b.has_meta("base_damage"):
-					if "damage" in b:
-						b.set_meta("base_damage", b.damage)
-					else:
-						b.set_meta("base_damage", 10.0)
-
-				var base_spd = b.get_meta("base_speed")
-				var base_dmg = b.get_meta("base_damage")
-				var t = ""
-				if "ball_type" in b: t = b.ball_type
-				var is_fire = t in ["mage", "bomber", "chaos"]
-				var is_water = t in ["elementalist", "healer", "trickster"]
-				var is_air = t in ["ninja", "scout", "phantom"]
-				var is_earth = t in ["tank", "druid", "juggernaut"]
-
-				if weather == "clear":
-					if typeof(b) == TYPE_OBJECT: b.set("cosmetic", "none")
-					elif typeof(b) == TYPE_DICTIONARY: b["cosmetic"] = "none"
-					if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius")
-					elif "base_perception_radius" in b: b.perception_radius = b.base_perception_radius
-					else: b.perception_radius = 250.0
-					if "speed" in b: b.speed = base_spd
-					if "damage" in b:
-						if is_fire: b.damage = base_dmg * 1.5
-						else: b.damage = base_dmg
-					if b.has_method("set_meta"):
-						b.set_meta("dash_range_mult", 1.0)
-						b.set_meta("steering_mult", 1.0)
-						b.set_meta("attack_accuracy", 1.0)
-				elif weather == "rain":
-					if typeof(b) == TYPE_OBJECT: b.set("cosmetic", "umbrella")
-					elif typeof(b) == TYPE_DICTIONARY: b["cosmetic"] = "umbrella"
-					if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius") * 0.5
-					elif "base_perception_radius" in b: b.perception_radius = b.base_perception_radius * 0.5
-					else: b.perception_radius = 250.0 * 0.5
-					if "speed" in b: b.speed = base_spd * 0.8
-					if "damage" in b: b.damage = base_dmg
-					var sk_r = ""
-					if "SKILL" in b:
-						sk_r = b.SKILL
-					elif b.has_method("has_meta") and b.has_meta("SKILL"):
-						sk_r = b.get_meta("SKILL")
-					if sk_r == "fireball":
-						if "hp" in b:
-							b.hp -= 2.0 * delta
-					if b.has_method("set_meta"):
-						b.set_meta("dash_range_mult", 1.5)
-						b.set_meta("steering_mult", 0.5)
-					if "vx" in b and "vy" in b:
-						b.x += b.vx * delta * 0.5
-						b.y += b.vy * delta * 0.5
-					if b.has_method("set_meta"):
-						b.set_meta("attack_accuracy", 0.8)
-					if is_water and "hp" in b:
-						var m = 100.0
-						if "max_hp" in b: m = b.max_hp
-						elif b.has_method("has_meta") and b.has_meta("max_hp"): m = b.get_meta("max_hp")
-						b.hp = min(m, b.hp + 5.0 * delta)
-				elif weather == "fog":
-					if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius") * 0.4
-					elif "base_perception_radius" in b: b.perception_radius = b.base_perception_radius * 0.4
-					else: b.perception_radius = 250.0 * 0.4
-					if "speed" in b: b.speed = base_spd * 0.8
-					if "damage" in b: b.damage = base_dmg * 0.9
-					if b.has_method("set_meta"):
-						b.set_meta("dash_range_mult", 1.0)
-						b.set_meta("steering_mult", 1.0)
-					var bt = ""
-					if "ball_type" in b: bt = b.ball_type
-					elif b.has_method("has_meta") and b.has_meta("ball_type"): bt = b.get_meta("ball_type")
-					if bt in ["trickster", "phantom", "mimic"]:
-						var mt = 0.0
-						if b.has_method("has_meta") and b.has_meta("mirage_timer"): mt = b.get_meta("mirage_timer")
-						elif "mirage_timer" in b: mt = b.mirage_timer
-						else: mt = randf() * 5.0
-						mt += delta
-						if mt >= 5.0:
-							mt = 0.0
-							if "balls" in world:
-								var decoy = null
-								if b.has_method("duplicate"): decoy = b.duplicate()
-								elif b is Dictionary: decoy = b.duplicate()
-								if decoy != null:
-									if "id" in decoy: decoy.id = randi() % 90000 + 10000
-									var mhp = 100.0
-									if "max_hp" in b: mhp = b.max_hp
-									elif b.has_method("has_meta") and b.has_meta("max_hp"): mhp = b.get_meta("max_hp")
-									if "max_hp" in decoy: decoy.max_hp = mhp
-									if "hp" in decoy: decoy.hp = b.hp if "hp" in b else mhp
-									if "damage" in decoy: decoy.damage = 0.0
-									if "speed" in decoy: decoy.speed = 0.0
-									if decoy.has_method("set_meta"):
-										decoy.set_meta("is_decoy", true)
-										decoy.set_meta("decoy_timer", 3.0)
-										decoy.set_meta("skill_timer", 9999.0)
-										decoy.set_meta("attack_timer", 9999.0)
-										decoy.set_meta("SKILL", null)
-										decoy.set_meta("active_skill", null)
-									elif decoy is Dictionary:
-										decoy["is_decoy"] = true
-										decoy["decoy_timer"] = 3.0
-										decoy["skill_timer"] = 9999.0
-										decoy["attack_timer"] = 9999.0
-										decoy["SKILL"] = null
-										decoy["active_skill"] = null
-									world.balls.append(decoy)
-						if b.has_method("set_meta"): b.set_meta("mirage_timer", mt)
-						elif "mirage_timer" in b: b.mirage_timer = mt
-				elif weather == "blizzard":
-					if typeof(b) == TYPE_OBJECT: b.set("cosmetic", "snow_goggles")
-					elif typeof(b) == TYPE_DICTIONARY: b["cosmetic"] = "snow_goggles"
-					if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius") * 0.4
-					elif "base_perception_radius" in b: b.perception_radius = b.base_perception_radius * 0.4
-					else: b.perception_radius = 250.0 * 0.4
-					if "speed" in b: b.speed = base_spd * 0.3
+				if typeof(b) == TYPE_OBJECT: b.set("cosmetic", "snow_goggles")
+				elif typeof(b) == TYPE_DICTIONARY: b["cosmetic"] = "snow_goggles"
+				var b_type = ""
+				if typeof(b) == TYPE_DICTIONARY and b.has("ball_type"): b_type = b["ball_type"]
+				elif typeof(b) == TYPE_OBJECT and "ball_type" in b: b_type = b.ball_type
+				if b_type == "snow_yeti":
+					if "speed" in b: b.speed = base_spd * 1.5
 					if "damage" in b: b.damage = base_dmg * 1.5
 					if b.has_method("set_meta"):
 						b.set_meta("dash_range_mult", 1.0)
-						b.set_meta("steering_mult", 0.8)
-					var sk_r2 = ""
-					if "SKILL" in b: sk_r2 = b.SKILL
-					elif b.has_method("has_meta") and b.has_meta("SKILL"): sk_r2 = b.get_meta("SKILL")
-					if sk_r2 == "iceball" or sk_r2 == "elemental_burst":
-						if "speed" in b: b.speed = base_spd * 1.5
-					var ch = 0.0
-					if "chill_stacks" in b: ch = b.chill_stacks
-					elif b.has_method("has_meta") and b.has_meta("chill_stacks"): ch = b.get_meta("chill_stacks")
-					ch += delta * 2.0
-					if ch >= 3.0:
-						ch = 0.0
-						if "stutter_timer" in b: b.stutter_timer = 2.0
-						elif typeof(b) == TYPE_DICTIONARY: b["stutter_timer"] = 2.0
-					if b.has_method("set_meta"): b.set_meta("chill_stacks", ch)
-					elif typeof(b) == TYPE_DICTIONARY: b["chill_stacks"] = ch
-					else: b.chill_stacks = ch
-				elif weather in ["snow", "blizzard"]:
-					if typeof(b) == TYPE_OBJECT: b.set("cosmetic", "snow_goggles")
-					elif typeof(b) == TYPE_DICTIONARY: b["cosmetic"] = "snow_goggles"
+						b.set_meta("steering_mult", 1.0)
+					if "attack_accuracy" in b: b.attack_accuracy = 1.0
+				else:
 					if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius") * 0.6
 					elif "base_perception_radius" in b: b.perception_radius = b.base_perception_radius * 0.6
 					else: b.perception_radius = 250.0 * 0.6
 					if "speed" in b: b.speed = base_spd * 0.5
 					if "damage" in b: b.damage = base_dmg * 1.2
 					var sk_s = ""
-					if "SKILL" in b:
-						sk_s = b.SKILL
-					elif b.has_method("has_meta") and b.has_meta("SKILL"):
-						sk_s = b.get_meta("SKILL")
+					if "SKILL" in b: sk_s = b.SKILL
+					elif b.has_method("has_meta") and b.has_meta("SKILL"): sk_s = b.get_meta("SKILL")
 					if sk_s == "iceball" or sk_s == "elemental_burst":
 						if "speed" in b: b.speed = base_spd * 1.2
 						if "damage" in b: b.damage = base_dmg * 1.5
@@ -2220,15 +2025,13 @@ class WeatherChaosMode extends GameMode:
 						b.set_meta("steering_mult", 1.0)
 					if b.has_method("set_meta") and b.has_method("get_meta"):
 						var stacks = 0.0
-						if b.has_meta("chill_stacks"):
-							stacks = b.get_meta("chill_stacks")
+						if b.has_meta("chill_stacks"): stacks = b.get_meta("chill_stacks")
 						stacks += delta
 						if stacks >= 3.0:
 							stacks = 0.0
 							b.set_meta("stutter_timer", 1.0)
 						b.set_meta("chill_stacks", stacks)
-					if b.has_method("set_meta"):
-						b.set_meta("attack_accuracy", 0.9)
+					if "attack_accuracy" in b: b.attack_accuracy = 0.9
 				elif weather == "wind":
 					if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius") * 0.55
 					elif "base_perception_radius" in b: b.perception_radius = b.base_perception_radius * 0.55
@@ -2254,80 +2057,44 @@ class WeatherChaosMode extends GameMode:
 				elif weather == "sandstorm":
 					if typeof(b) == TYPE_OBJECT: b.set("cosmetic", "dust_mask")
 					elif typeof(b) == TYPE_DICTIONARY: b["cosmetic"] = "dust_mask"
-					if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius") * 0.3
-					elif "base_perception_radius" in b: b.perception_radius = b.base_perception_radius * 0.3
-					else: b.perception_radius = 250.0 * 0.3
-					if "speed" in b: b.speed = base_spd * 0.7
-					if "damage" in b: b.damage = base_dmg
-					if b.has_method("set_meta"):
-						b.set_meta("dash_range_mult", 0.5)
-						b.set_meta("steering_mult", 0.5)
-						var sand_timer = 0.0
-						if b.has_meta("sandstorm_timer"):
-							sand_timer = b.get_meta("sandstorm_timer")
-						sand_timer += delta
-						if sand_timer >= 1.0:
-							sand_timer = 0.0
-							if "hp" in b and not is_earth:
-								b.hp -= 1.0
-						b.set_meta("sandstorm_timer", sand_timer)
-					if randf() < 0.05 * delta and not is_earth:
-						if "hp" in b: b.hp -= 20
-					if b.has_method("set_meta"):
-						b.set_meta("attack_accuracy", 0.5)
-				elif weather == "magnetic_storm":
-					var pol = 1
-					if typeof(b) == TYPE_OBJECT:
-						if b.has_method("get_meta") and b.has_meta("polarity"):
-							pol = b.get_meta("polarity")
-						elif "polarity" in b:
-							pol = b.polarity
-						else:
-							pol = 1 if randf() > 0.5 else -1
-							b.set("polarity", pol)
-							if b.has_method("set_meta"): b.set_meta("polarity", pol)
-					elif typeof(b) == TYPE_DICTIONARY:
-						if b.has("polarity"):
-							pol = b["polarity"]
-						else:
-							pol = 1 if randf() > 0.5 else -1
-							b["polarity"] = pol
-
-					var cos = "magnet_plus" if pol == 1 else "magnet_minus"
-					if typeof(b) == TYPE_OBJECT: b.set("cosmetic", cos)
-					elif typeof(b) == TYPE_DICTIONARY: b["cosmetic"] = cos
-
-					if world != null and "balls" in world:
-						for other in world.balls:
-							if typeof(other) == TYPE_DICTIONARY: continue
-							if other != b and other.get("alive", false):
-								var has_pol = false
-								var o_pol = 1
-								if typeof(other) == TYPE_OBJECT:
-									if other.has_method("has_meta") and other.has_meta("polarity"):
-										has_pol = true
-										o_pol = other.get_meta("polarity")
-									elif "polarity" in other:
-										has_pol = true
-										o_pol = other.polarity
-
-								if has_pol:
-									var bx = b.get("x")
-									var by = b.get("y")
-									var ox = other.get("x")
-									var oy = other.get("y")
-									if bx != null and by != null and ox != null and oy != null:
-										var dx = ox - bx
-										var dy = oy - by
-										var dist = sqrt(dx*dx + dy*dy)
-										if dist > 0 and dist < 300:
-											var force_mag = 500.0 / (dist + 10.0)
-											if pol != o_pol:
-												b.set("x", bx + (dx/dist) * force_mag * delta)
-												b.set("y", by + (dy/dist) * force_mag * delta)
-											else:
-												b.set("x", bx - (dx/dist) * force_mag * delta)
-												b.set("y", by - (dy/dist) * force_mag * delta)
+					var b_type = ""
+					if typeof(b) == TYPE_DICTIONARY and b.has("ball_type"): b_type = b["ball_type"]
+					elif typeof(b) == TYPE_OBJECT and "ball_type" in b: b_type = b.ball_type
+					if b_type == "sand_elemental":
+						if "speed" in b: b.speed = base_spd * 1.2
+						if "damage" in b: b.damage = base_dmg
+						if b.has_method("set_meta"):
+							b.set_meta("dash_range_mult", 1.0)
+							b.set_meta("steering_mult", 1.0)
+						if "attack_accuracy" in b: b.attack_accuracy = 1.0
+					else:
+						if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius") * 0.3
+						elif "base_perception_radius" in b: b.perception_radius = b.base_perception_radius * 0.3
+						else: b.perception_radius = 250.0 * 0.3
+						if "speed" in b: b.speed = base_spd * 0.7
+						if "damage" in b: b.damage = base_dmg
+						if b.has_method("set_meta"):
+							b.set_meta("dash_range_mult", 0.5)
+							b.set_meta("steering_mult", 0.5)
+						var bt = b_type
+						if bt in ["trickster", "phantom", "mimic"]:
+							if b.has_method("set_meta") and b.has_method("get_meta"):
+								var mtimer = 0.0
+								if b.has_meta("mirage_timer"): mtimer = b.get_meta("mirage_timer")
+								mtimer += delta
+								if mtimer >= 5.0: mtimer = 0.0
+								b.set_meta("mirage_timer", mtimer)
+						if b.has_method("set_meta") and b.has_method("get_meta"):
+							var sand_timer = 0.0
+							if b.has_meta("sandstorm_timer"): sand_timer = b.get_meta("sandstorm_timer")
+							sand_timer += delta
+							if sand_timer >= 1.0:
+								sand_timer = 0.0
+								if "hp" in b: b.hp -= 1.0
+							b.set_meta("sandstorm_timer", sand_timer)
+						if randf() < 0.05 * delta:
+							if "hp" in b: b.hp -= 20.0
+						if "attack_accuracy" in b: b.attack_accuracy = 0.5
 				elif weather == "heatwave":
 					if typeof(b) == TYPE_OBJECT: b.set("cosmetic", "sunglasses")
 					elif typeof(b) == TYPE_DICTIONARY: b["cosmetic"] = "sunglasses"

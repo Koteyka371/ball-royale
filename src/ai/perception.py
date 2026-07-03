@@ -60,10 +60,10 @@ class Perception:
             if self.world.arena.is_raining:
                 perception_radius = perception_radius * 0.8
         if hasattr(self.world, "arena") and getattr(self.world.arena, "is_sandstorming", None) is not None:
-            if self.world.arena.is_sandstorming:
+            if self.world.arena.is_sandstorming and getattr(self.ball, "ball_type", "") != "sand_elemental":
                 perception_radius = perception_radius * 0.3
         if hasattr(self.world, "arena") and getattr(self.world.arena, "is_snowing", None) is not None:
-            if self.world.arena.is_snowing:
+            if self.world.arena.is_snowing and getattr(self.ball, "ball_type", "") != "snow_yeti":
                 perception_radius = perception_radius * 0.6
 
         data: Dict[str, Any] = {
@@ -152,9 +152,15 @@ class Perception:
                 elif hasattr(e, "shadow_booster_timer"):
                     e_has_shadow = e.shadow_booster_timer > 0
 
-                if e_has_stealth or e_has_shadow:
+                is_sand_cloaked = False
+                if getattr(e, "ball_type", "") == "sand_elemental" and hasattr(self.world, "arena") and getattr(self.world.arena, "is_sandstorming", False):
+                    is_sand_cloaked = True
+
+                if e_has_stealth or e_has_shadow or is_sand_cloaked:
                     dist = math.sqrt((ex - bx_curr)**2 + (ey - by_curr)**2)
-                    if e_has_shadow and dist > 30.0:
+                    if is_sand_cloaked and dist > 40.0:
+                        continue
+                    elif e_has_shadow and dist > 30.0:
                         continue
                     elif e_has_stealth and dist > 80.0:
                         continue
