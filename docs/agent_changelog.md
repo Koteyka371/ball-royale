@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-463] Weather-Specific Ball Types — *2026-07-03 14:58:29 UTC*
+
+Introduce new ball types that specifically excel in certain weather conditions. For example, a 'Snow Yeti' ball that ignores perception reduction during snow and gains movement speed on icy surfaces, or a 'Sand Elemental' that can cloak entirely during sandstorms.
+
+---
+
 ## [idea-494] Black Market Mode — *2026-07-03 14:58:26 UTC*
 
 Players start with basic stats and abilities, but collect currency scattered across the map to buy temporary or permanent upgrades from wandering Black Market nodes during the match. These nodes act like dynamic modifier zones, but require payment, making currency collection a key strategic objective.
