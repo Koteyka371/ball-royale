@@ -8261,7 +8261,7 @@
     },
     {
       "id": "idea-479",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Magnetic Boots Cosmetic Modifier",
@@ -13702,6 +13702,40 @@
         "src/arena/triggered_arena_hazards.py",
         "src/arena/triggered_arena_hazards.gd",
         "tests/test_triggered_arena_hazards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-797",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Zones: Hazard Mutations",
+      "description": "As the main battle royale zone shrinks, random hazards inside the safe area undergo a 'mutation' and become significantly more lethal or chaotic (e.g. traps start shooting projectiles or poison clouds double in size), forcing players to not only run from the edge but also adapt to a constantly evolving inner battlefield.",
+      "allowed_paths": [
+        "src/arena/shrinking_zones_mutations.py",
+        "src/arena/shrinking_zones_mutations.gd",
+        "tests/test_shrinking_zones_mutations.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-798",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Collapsing Floor Panels Arena",
+      "description": "An arena where the play area shrinks because large square panels composing the floor glow red and then fall away entirely into a void. Balls that fall into the void instantly die, pushing everyone into a tighter grid as the match progresses.",
+      "allowed_paths": [
+        "src/arena/collapsing_floor_panels_arena.py",
+        "src/arena/collapsing_floor_panels_arena.gd",
+        "tests/test_collapsing_floor_panels_arena.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

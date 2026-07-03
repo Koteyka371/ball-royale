@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-479] Magnetic Boots Cosmetic Modifier — *2026-07-03 15:45:08 UTC*
+
+A cosmetic modifier 'Magnetic Boots' that reduces push-back from explosions and hazards by 50% but slightly reduces base movement speed, adding trade-offs to the loadout system.
+
+---
+
 ## [idea-418] Shrinking Hazards — *2026-07-03 15:22:13 UTC*
 
 Hazards that slowly shrink the safe playable area over time, similar to a battle royale zone.
