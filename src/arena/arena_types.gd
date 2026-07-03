@@ -577,6 +577,7 @@ class PinballArena extends ProceduralArena:
                         h.set_meta("flip_timer", 0.5)
 
 const ARENAS = [
+    "shrinking_hazards",
 
 	"thunderstorm",
 	"thick_fog",

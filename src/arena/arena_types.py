@@ -1458,7 +1458,10 @@ class PinballArena(ProceduralArena):
                     if random.random() < 0.05: # Randomly flip
                         setattr(h, "flip_timer", 0.5)
 
+from arena.shrinking_hazards import ShrinkingHazardsArena
+
 ARENAS = {
+    'shrinking_hazards': ShrinkingHazardsArena,
 
     "siege": SiegeArena,
     "thunderstorm": ThunderstormArena,
