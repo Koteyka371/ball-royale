@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-501] Mud Terrain in Rain — *2026-07-03 18:59:22 UTC*
+
+Rainy weather creates temporary mud patches in dirt/sand arenas, slowing down movement speed of all units except those with a 'swamp' or 'water' trait.
+
+---
+
 ## [idea-499] Lightning Storm Overload — *2026-07-03 18:30:10 UTC*
 
 During thunderstorms, lightning strikes not only deal damage but also supercharge robotic/metal ball types, granting them temporary speed and damage buffs at the cost of slow health drain.
