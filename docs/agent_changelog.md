@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-448] Jump Pads — *2026-07-03 13:15:27 UTC*
+
+A new interactive tile type where stepping on it makes the ball invincible and untargetable for a short duration while it "flies" to a designated landing zone.
+
+---
+
 ## [idea-489] Decoy Detonation — *2026-07-03 13:15:24 UTC*
 
 Allow the Trickster to manually detonate their active decoy by holding down the skill button or activating it a third time. The explosion could deal minor area-of-effect damage or briefly blind enemies within a short radius, giving the Trickster a mix of mobility and trap-setting capability.
