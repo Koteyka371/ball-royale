@@ -4388,7 +4388,103 @@ class MagneticCollisionsMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Magnetic Collisions"
-        self.description = "Collisions pull entities together instead of pushing them apart, creating chaotic clusters of balls that can be targeted by AoE attacks."
+        self.description = "Invisible magnetic fields pull or push balls depending on their assigned polarities. Every 10 seconds, polarities randomly flip, causing sudden tactical shifts and chaotic collisions."
+        self.polarity_flip_timer = 0.0
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        import random
+
+        # Setup magnetic fields as invisible hazards
+        if hasattr(world, "arena") and world.arena:
+            if not hasattr(world.arena, "hazards"):
+                world.arena.hazards = []
+
+            arena_width = getattr(world.arena, "width", 1000)
+            arena_height = getattr(world.arena, "height", 1000)
+
+            # Use Hazard class if possible
+            try:
+                from arena.procedural_arena import Hazard
+                def create_hazard(hid, hx, hy, r, kind):
+                    h = Hazard(id=hid, x=hx, y=hy, radius=r, kind=kind, damage=0.0)
+                    h.invisible = True
+                    return h
+            except ImportError:
+                class MagHazard:
+                    def __init__(self, hid, hx, hy, r, kind):
+                        self.id = hid
+                        self.x = hx
+                        self.y = hy
+                        self.radius = r
+                        self.kind = kind
+                        self.damage = 0.0
+                        self.invisible = True
+                def create_hazard(hid, hx, hy, r, kind):
+                    return MagHazard(hid, hx, hy, r, kind)
+
+            for i in range(5):
+                x = random.uniform(200, arena_width - 200)
+                y = random.uniform(200, arena_height - 200)
+                r = random.uniform(150, 300)
+                kind = random.choice(["magnetic_field_positive", "magnetic_field_negative"])
+                h = create_hazard(20000 + i, x, y, r, kind)
+                world.arena.hazards.append(h)
+
+        # Assign random polarities to balls
+        for b in balls:
+            if getattr(b, "alive", True) and getattr(b, "ball_type", None) != "spectator":
+                b.polarity = random.choice(["positive", "negative"])
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import math
+        import random
+
+        self.polarity_flip_timer += delta
+
+        if self.polarity_flip_timer >= 10.0:
+            self.polarity_flip_timer = 0.0
+            for b in balls:
+                if getattr(b, "alive", True) and getattr(b, "ball_type", None) != "spectator":
+                    b.polarity = "positive" if getattr(b, "polarity", "positive") == "negative" else "negative"
+            if hasattr(world, "add_event"):
+                world.add_event("polarity_flip", {"message": "Polarities have flipped!"})
+
+        # Apply magnetic forces
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards:
+                h_kind = getattr(h, "kind", "")
+                if h_kind in ["magnetic_field_positive", "magnetic_field_negative"]:
+                    h_polarity = "positive" if "positive" in h_kind else "negative"
+                    hx = getattr(h, "x", 0.0)
+                    hy = getattr(h, "y", 0.0)
+                    hr = getattr(h, "radius", 0.0)
+
+                    for b in balls:
+                        if not getattr(b, "alive", True) or getattr(b, "ball_type", None) == "spectator":
+                            continue
+
+                        b_polarity = getattr(b, "polarity", "positive")
+
+                        bx = getattr(b, "x", 0.0)
+                        by = getattr(b, "y", 0.0)
+
+                        dx = hx - bx
+                        dy = hy - by
+                        dist = math.sqrt(dx*dx + dy*dy)
+
+                        if dist > 0 and dist < hr:
+                            # Force magnitude inverse to distance
+                            force = (hr - dist) / hr * 200.0 * delta
+
+                            # Opposites attract, likes repel
+                            if h_polarity != b_polarity:
+                                b.x += (dx / dist) * force
+                                b.y += (dy / dist) * force
+                            else:
+                                b.x -= (dx / dist) * force
+                                b.y -= (dy / dist) * force
 
 
 class StaminaRegenMode(GameMode):

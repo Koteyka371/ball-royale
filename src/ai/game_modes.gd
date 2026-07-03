@@ -5177,9 +5177,128 @@ class GuildVsGuildMode extends GameMode:
 
 
 class MagneticCollisionsMode extends GameMode:
+	var polarity_flip_timer = 0.0
+
 	func _init() -> void:
 		name = "Magnetic Collisions"
-		description = "Collisions pull entities together instead of pushing them apart, creating chaotic clusters of balls that can be targeted by AoE attacks."
+		description = "Invisible magnetic fields pull or push balls depending on their assigned polarities. Every 10 seconds, polarities randomly flip, causing sudden tactical shifts and chaotic collisions."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+
+		# Setup magnetic fields as invisible hazards
+		if "arena" in world and world.arena != null:
+			if not "hazards" in world.arena:
+				world.arena.hazards = []
+
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if "width" in world.arena:
+				arena_width = world.arena.width
+			if "height" in world.arena:
+				arena_height = world.arena.height
+
+			var HazardClass = load("res://src/arena/procedural_arena.gd").Hazard if ResourceLoader.exists("res://src/arena/procedural_arena.gd") else null
+
+			for i in range(5):
+				var x = randf_range(200.0, arena_width - 200.0)
+				var y = randf_range(200.0, arena_height - 200.0)
+				var radius = randf_range(150.0, 300.0)
+				var kind = "magnetic_field_positive" if randf() > 0.5 else "magnetic_field_negative"
+
+				if HazardClass != null:
+					var h = HazardClass.new(20000 + i, x, y, radius, kind, 0.0)
+					if "invisible" in h: h.invisible = true
+					elif h.has_method("set_meta"): h.set_meta("invisible", true)
+					world.arena.hazards.append(h)
+				else:
+					var h = {"id": 20000 + i, "x": x, "y": y, "radius": radius, "kind": kind, "damage": 0.0, "invisible": true}
+					world.arena.hazards.append(h)
+
+		# Assign random polarities to balls
+		for b in balls:
+			var is_dict = typeof(b) == TYPE_DICTIONARY
+			var b_alive = b.get("alive", true) if is_dict else b.alive
+			var b_type = b.get("ball_type", "") if is_dict else b.ball_type
+
+			if b_alive and b_type != "spectator":
+				var start_polarity = "positive" if randf() > 0.5 else "negative"
+				if is_dict:
+					b["polarity"] = start_polarity
+				else:
+					if b.has_method("set_meta"): b.set_meta("polarity", start_polarity)
+					elif "polarity" in b: b.polarity = start_polarity
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		polarity_flip_timer += delta
+		if polarity_flip_timer >= 10.0:
+			polarity_flip_timer = 0.0
+			for b in balls:
+				var is_dict = typeof(b) == TYPE_DICTIONARY
+				var b_alive = b.get("alive", true) if is_dict else b.alive
+				var b_type = b.get("ball_type", "") if is_dict else b.ball_type
+
+				if b_alive and b_type != "spectator":
+					var current_polarity = b.get("polarity", "positive") if is_dict else (b.get_meta("polarity") if b.has_method("get_meta") and b.has_meta("polarity") else (b.polarity if "polarity" in b else "positive"))
+					var new_polarity = "negative" if current_polarity == "positive" else "positive"
+
+					if is_dict:
+						b["polarity"] = new_polarity
+					else:
+						if b.has_method("set_meta"): b.set_meta("polarity", new_polarity)
+						elif "polarity" in b: b.polarity = new_polarity
+
+			if world != null and world.has_method("add_event"):
+				world.add_event("polarity_flip", {"message": "Polarities have flipped!"})
+
+		# Apply magnetic forces
+		if "arena" in world and world.arena != null and "hazards" in world.arena:
+			for h in world.arena.hazards:
+				var h_kind = h.get("kind", "") if typeof(h) == TYPE_DICTIONARY else h.kind
+				if h_kind == "magnetic_field_positive" or h_kind == "magnetic_field_negative":
+					var h_polarity = "positive" if "positive" in h_kind else "negative"
+					var hx = h.get("x", 0.0) if typeof(h) == TYPE_DICTIONARY else h.x
+					var hy = h.get("y", 0.0) if typeof(h) == TYPE_DICTIONARY else h.y
+					var hr = h.get("radius", 0.0) if typeof(h) == TYPE_DICTIONARY else h.radius
+
+					for b in balls:
+						var is_dict = typeof(b) == TYPE_DICTIONARY
+						var b_alive = b.get("alive", true) if is_dict else b.alive
+						var b_type = b.get("ball_type", "") if is_dict else b.ball_type
+
+						if not b_alive or b_type == "spectator":
+							continue
+
+						var b_polarity = b.get("polarity", "positive") if is_dict else (b.get_meta("polarity") if b.has_method("get_meta") and b.has_meta("polarity") else (b.polarity if "polarity" in b else "positive"))
+
+						var bx = b.get("x", 0.0) if is_dict else b.x
+						var by = b.get("y", 0.0) if is_dict else b.y
+
+						var dx = hx - bx
+						var dy = hy - by
+						var dist = sqrt(dx*dx + dy*dy)
+
+						if dist > 0 and dist < hr:
+							var force = (hr - dist) / hr * 200.0 * delta
+
+							if h_polarity != b_polarity:
+								# Attract
+								if is_dict:
+									b["x"] = bx + (dx / dist) * force
+									b["y"] = by + (dy / dist) * force
+								else:
+									b.x += (dx / dist) * force
+									b.y += (dy / dist) * force
+							else:
+								# Repel
+								if is_dict:
+									b["x"] = bx - (dx / dist) * force
+									b["y"] = by - (dy / dist) * force
+								else:
+									b.x -= (dx / dist) * force
+									b.y -= (dy / dist) * force
 
 
 class StaminaRegenMode extends GameMode:
