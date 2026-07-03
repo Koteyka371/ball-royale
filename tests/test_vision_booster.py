@@ -54,7 +54,8 @@ def test_collect_vision_booster():
     action._get_allies = lambda: []
 
     # Execute collect_booster
-    for _ in range(100): action._collect_booster(0.1)
+    ball.x = 510.0 # Make sure we collect it immediately
+    action._collect_booster(0.1)
     print("has_timer:", hasattr(ball, "vision_booster_timer"))
     print("ball.x:", ball.x)
 

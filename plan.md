@@ -1,43 +1,25 @@
-1. **Modify `_collect_booster` in `src/ai/action.py`**
-   - Use `sed` to insert an `elif` condition for `getattr(nearest, "kind", None) == "bumper_booster"` in `src/ai/action.py`.
-   - Set `self.ball.bumper_booster_timer = 5.0`.
-   - Check if the `nearest` item exists in `self.world.arena.hazards` and `self.world.boosters`, and if so, remove it.
+1. **Add `terrain_type` property to `ProceduralArena`**
+   - Update `src/arena/procedural_arena.py` so `ProceduralArena.__init__` adds `self.terrain_type = getattr(self, "terrain_type", "grass")`. For random chance to be dirt/sand, we can just pick it: `self.terrain_type = random.choice(["grass", "dirt", "sand", "stone"])`.
 
-2. **Modify `_update_skill_timer` in `src/ai/action.py`**
-   - Use `sed` to insert a block to decrement `bumper_booster_timer` in `src/ai/action.py`.
-   - When the timer is active (>0), iterate through `self.world.balls`, and apply logic similar to `bumper` hazard. For enemies, compute squared distance `dist_sq`. The aura threshold `dist_sq < (b_rad + other_rad + 10.0)**2`. If in range, calculate normal vectors, apply `bounce_strength = 600.0 * delta` to positions, and set velocities `other.vx = nx * 2000.0` and `other.vy = ny * 2000.0`.
+2. **Add Mud logic in `Action` when raining and on dirt/sand in Python (`src/ai/action.py`)**
+   - In `Action.execute()`, check `if getattr(self.world.arena, "is_raining", False) and getattr(self.world.arena, "terrain_type", "grass") in ["dirt", "sand"]:`
+   - Find "Weather friction" section.
+   - If unit does not have `swamp` or `water` trait (which means `ball_type` in `["elementalist", "healer", "trickster"]` or `ball_type == "swamp_monster"`, or just `ball_type` having 'swamp' or 'water'), apply a slowdown.
+   - To apply the mud slowdown, multiply `self.ball.speed` by 0.5 or set a mud modifier during the frame. The easiest way is `self.ball.speed *= 0.5`.
 
-3. **Verify `src/ai/action.py` changes**
-   - Run `git --no-pager diff src/ai/action.py` to ensure the logic was correctly inserted without syntax errors and whitespace issues.
+3. **Add Mud logic in `Action` when raining and on dirt/sand in GDScript (`src/ai/action.gd`)**
+   - Similar to python, but in GDScript we check `world.arena.get("is_raining") == true` and `world.arena.get("terrain_type") in ["dirt", "sand"]`.
+   - Apply slowdown to `my_ball.speed` if not swamp/water type.
 
-4. **Modify `_collect_booster` equivalent block in `src/ai/action.gd`**
-   - Use `sed` to insert the GDScript block for `bumper_booster` near line `4623` in `src/ai/action.gd` (the collection switch statement).
-   - The logic will set `bumper_booster_timer` metadata to `5.0` and remove from `hazards` and `boosters` arrays.
+4. **Verify changes and write tests**
+   - Write `test_mud_terrain.py` to ensure rain + dirt/sand slows down normal units but not water/swamp units.
+   - Run tests.
 
-5. **Modify `_update_skill_timer` in `src/ai/action.gd`**
-   - Use `sed` to insert the `bumper_booster_timer` decrement logic near the end of `func _update_skill_timer(delta: float):` in `src/ai/action.gd`.
-   - Loop through `self.world.balls` safely, check for enemy status, and apply velocity bumps using `get_meta` and `set_meta`.
+5. **Pre-commit steps**
+   - Complete pre-commit steps to ensure proper testing, verification, review, and reflection are done.
 
-6. **Verify `src/ai/action.gd` changes**
-   - Run `git --no-pager diff src/ai/action.gd` to ensure correct integration.
+6. **Submit PR**
+   - Commit and submit.
 
-7. **Create test file for `bumper_booster`**
-   - Use `write_file` to create `src/ai/test_bumper_booster.py`.
-   - The test will mock world, balls, and booster objects to test both collection logic (timer update and removal) and the aura effect logic (velocity changes on enemy bump).
-
-8. **Verify test file creation**
-   - Run `cat src/ai/test_bumper_booster.py` to verify the test file was written correctly.
-
-9. **Generate IDEAS INBOX files**
-   - Run bash commands: `mkdir -p ideas`
-   - Write two new JSON ideas using `write_file` at `ideas/idea_idea-338-1_1.json` and `ideas/idea_idea-338-1_2.json` with correct schema.
-   - Verify files exist using `ls -l ideas/`.
-
-10. **Run all tests**
-    - Run command `PYTHONPATH=src pytest src/ai/test_bumper_booster.py` and then the whole test suite `PYTHONPATH=src pytest`.
-
-11. **Pre-commit steps**
-    - Complete pre-commit steps to ensure proper testing, verification, review, and reflection are done.
-
-12. **Submit Pull Request**
-    - Run bash command `gh pr create --title "[idea-338-1] Add Bumper Aura Booster" --body "Task: idea-338-1" --label "automated"`.
+7. **Create Idea JSONs**
+   - Create 2 new JSON files in `ideas/` directory.

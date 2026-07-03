@@ -954,6 +954,13 @@ class Action:
                 # Slippery: apply momentum (friction slide)
                 self.ball.x += getattr(self.ball, "vx", 0.0) * delta * 0.5
                 self.ball.y += getattr(self.ball, "vy", 0.0) * delta * 0.5
+
+                # Mud slowdown on dirt/sand
+                if getattr(self.world.arena, "terrain_type", "grass") in ["dirt", "sand"]:
+                    ball_type = getattr(self.ball, "ball_type", getattr(self.ball, "BALL_TYPE", "")).lower()
+                    is_water_or_swamp = ball_type in ["elementalist", "healer", "trickster"] or "swamp" in ball_type or "water" in ball_type
+                    if not is_water_or_swamp:
+                        self.ball.speed = getattr(self.ball, "base_speed", 100.0) * 0.5
             if getattr(self.world.arena, "is_snowing", False) and not is_wind_riding:
                 if getattr(self.ball, "ball_type", "") != "snow_yeti":
                     # Extra slippery: apply even more momentum
@@ -4352,6 +4359,10 @@ class Action:
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                    if nearest in boosters:
+                        boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "invert_booster":
                     if hasattr(self.world, "balls"):
                         for other in self.world.balls:
