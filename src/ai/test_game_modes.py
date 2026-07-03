@@ -590,3 +590,34 @@ def test_pinball_mode():
     assert hasattr(world.arena, "hazards")
     assert len(world.arena.hazards) >= 20
     assert any(h.kind == "bumper" for h in world.arena.hazards)
+
+
+def test_dynamic_hazards_mode():
+    from ai.game_modes import DynamicHazardsMode
+    mode = DynamicHazardsMode()
+    world = MockWorld()
+    setattr(world, "arena", type("Arena", (), {"width": 1000, "height": 1000, "hazards": []})())
+
+    mode.setup(world, [])
+
+    # Simulate time passing to trigger spawn
+    for _ in range(200):  # 200 * 0.016 > 3.0 seconds
+        mode.tick(world, [], 0.016)
+
+    assert len(world.arena.hazards) > 0
+    h = world.arena.hazards[0]
+    assert hasattr(h, 'vx')
+    assert hasattr(h, 'vy')
+
+    # Simulate more time to test movement and survival
+    initial_x = h.x
+    for _ in range(10):
+        mode.tick(world, [], 0.016)
+
+    # Assert hazard moved
+    assert world.arena.hazards[0].x != initial_x
+
+    # Test out of bounds removal
+    h.x = 2000 # Way out of bounds
+    mode.tick(world, [], 0.016)
+    assert len(world.arena.hazards) == 0
