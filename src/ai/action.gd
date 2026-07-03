@@ -17,6 +17,42 @@ func _award_xp(ball, amount: float, world=null) -> void:
 		ball.experience -= 100 * ball.level
 		ball.level += 1
 
+		# Apply dynamic cosmetic aura scaling
+		if not ("cosmetic_aura_scale" in ball) and typeof(ball) == TYPE_OBJECT and not ball.has_meta("cosmetic_aura_scale"):
+			if typeof(ball) == TYPE_OBJECT and ball.has_method("set_meta"):
+				ball.set_meta("cosmetic_aura_scale", 1.0)
+			elif typeof(ball) == TYPE_DICTIONARY:
+				ball["cosmetic_aura_scale"] = 1.0
+			else:
+				ball.cosmetic_aura_scale = 1.0
+
+		var current_scale = 1.0
+		if "cosmetic_aura_scale" in ball:
+			current_scale = float(ball.cosmetic_aura_scale)
+		elif typeof(ball) == TYPE_OBJECT and ball.has_meta("cosmetic_aura_scale"):
+			current_scale = float(ball.get_meta("cosmetic_aura_scale"))
+
+		current_scale += 0.2
+
+		if "cosmetic_aura_scale" in ball:
+			ball.cosmetic_aura_scale = current_scale
+		elif typeof(ball) == TYPE_OBJECT and ball.has_method("set_meta"):
+			ball.set_meta("cosmetic_aura_scale", current_scale)
+		elif typeof(ball) == TYPE_DICTIONARY:
+			ball["cosmetic_aura_scale"] = current_scale
+
+		# Change color based on level
+		var colors = [[0.0, 1.0, 0.0, 0.5], [0.0, 0.0, 1.0, 0.6], [1.0, 0.0, 1.0, 0.7], [1.0, 0.0, 0.0, 0.8], [1.0, 1.0, 0.0, 1.0]]
+		var c_idx = min(ball.level - 1, colors.size() - 1)
+		var new_color = colors[c_idx]
+
+		if "cosmetic_aura_color" in ball:
+			ball.cosmetic_aura_color = new_color
+		elif typeof(ball) == TYPE_OBJECT and ball.has_method("set_meta"):
+			ball.set_meta("cosmetic_aura_color", new_color)
+		elif typeof(ball) == TYPE_DICTIONARY:
+			ball["cosmetic_aura_color"] = new_color
+
 		var rng = randf()
 		var stat = "max_hp"
 		if rng > 0.66: stat = "damage"

@@ -18,6 +18,15 @@ class Action:
             ball.experience -= 100 * ball.level
             ball.level += 1
 
+            # Apply dynamic cosmetic aura scaling
+            if not hasattr(ball, "cosmetic_aura_scale"):
+                ball.cosmetic_aura_scale = 1.0
+            ball.cosmetic_aura_scale += 0.2
+
+            # Change color based on level
+            colors = [(0.0, 1.0, 0.0, 0.5), (0.0, 0.0, 1.0, 0.6), (1.0, 0.0, 1.0, 0.7), (1.0, 0.0, 0.0, 0.8), (1.0, 1.0, 0.0, 1.0)]
+            ball.cosmetic_aura_color = colors[min(ball.level - 1, len(colors) - 1)]
+
             # Apply random stat buff
             import random
             stat = random.choice(["max_hp", "damage", "speed"])
