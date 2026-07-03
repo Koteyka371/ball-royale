@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-480] Class Evolution Paths on Level Up — *2026-07-03 16:33:43 UTC*
+
+Expand the mid-match level-up system so that at specific milestone levels (e.g., Level 5 and 10), balls can choose a subclass evolution (e.g., a Warrior evolving into a Paladin or Berserker), changing their abilities dynamically.
+
+---
+
 ## [idea-472] Time Loop Ability — *2026-07-03 16:18:39 UTC*
 
 Create a rare, high-cost active ability for a specific ball type (like the Trickster or a new Time Mage) that allows the ball to instantly return to its location, health, and status from 3 seconds ago.
