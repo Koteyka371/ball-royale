@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-503] Portal Gun Item — *2026-07-03 20:37:06 UTC*
+
+Introduce a rare 'Portal Gun' item that allows a player to shoot two linked portals onto the arena walls. Players can use these custom portals to quickly traverse the map, escape dangerous situations, or teleport projectiles to surprise enemies.
+
+---
+
 ## [idea-501] Mud Terrain in Rain — *2026-07-03 18:59:22 UTC*
 
 Rainy weather creates temporary mud patches in dirt/sand arenas, slowing down movement speed of all units except those with a 'swamp' or 'water' trait.
