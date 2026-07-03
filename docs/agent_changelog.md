@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-489] Decoy Detonation — *2026-07-03 13:15:24 UTC*
+
+Allow the Trickster to manually detonate their active decoy by holding down the skill button or activating it a third time. The explosion could deal minor area-of-effect damage or briefly blind enemies within a short radius, giving the Trickster a mix of mobility and trap-setting capability.
+
+---
+
 ## [idea-468] Stealth Grass Hazmat Zones — *2026-07-03 13:15:20 UTC*
 
 Introduce patches of tall grass into the procedural arena where balls become temporarily invisible to AI opponents (reducing their perception radius/threat level to 0), but take a minor constant damage over time. This creates a tradeoff between stealth and health.
