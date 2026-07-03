@@ -6919,7 +6919,43 @@ class FloorIsLavaMode extends GameMode:
 					if hp <= 0:
 						b.alive = false
 
+class MeteorShowerMode extends GameMode:
+	var spawn_timer = 0.0
+	var rng = RandomNumberGenerator.new()
+
+	func _init():
+		super()
+		name = "Meteor Shower"
+		description = "High damage hazards fall from the sky."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if not "hazards" in world.arena:
+			world.arena.hazards = []
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+
+		spawn_timer += delta
+
+		if spawn_timer >= 1.0:
+			spawn_timer = 0.0
+			var arena_width = world.arena.width if "width" in world.arena else 1000.0
+			var arena_height = world.arena.height if "height" in world.arena else 1000.0
+
+			var x = rng.randf_range(50.0, arena_width - 50.0)
+			var y = rng.randf_range(50.0, arena_height - 50.0)
+
+			var ProceduralArena = load("res://src/arena/procedural_arena.gd")
+			var h_id = 15000 + world.arena.hazards.size() + rng.randi_range(0, 10000)
+			var meteor = ProceduralArena.Hazard.new(h_id, x, y, 30.0, "meteor", 200.0)
+			meteor.target_radius = 30.0
+			meteor.set_meta("duration", 5.0)
+
+			world.arena.hazards.append(meteor)
+
 var GAME_MODES = {
+	"meteor_shower": MeteorShowerMode.new(),
 
 	"black_market": BlackMarketMode.new(),
 	"floor_is_lava": FloorIsLavaMode.new(),
