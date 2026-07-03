@@ -17,6 +17,46 @@ func _award_xp(ball, amount: float, world=null) -> void:
 		ball.experience -= 100 * ball.level
 		ball.level += 1
 
+		# Evolution mechanics
+		if ball.level == 5 or ball.level == 10:
+			var evolutions = {
+				"warrior": ["paladin", "berserker"],
+				"mage": ["warlock", "necromancer"],
+				"rogue": ["ninja", "assassin"],
+				"tank": ["guardian", "juggernaut"],
+				"ranger": ["sniper", "bounty_hunter"],
+				"healer": ["monk", "druid"],
+				"paladin": ["templar", "guardian"],
+				"berserker": ["juggernaut", "brawler"],
+				"warlock": ["chaos", "necromancer"],
+				"necromancer": ["vampire", "warlock"],
+				"ninja": ["phantom", "assassin"],
+				"assassin": ["phantom", "ninja"],
+				"guardian": ["paladin", "juggernaut"],
+				"juggernaut": ["berserker", "guardian"],
+				"sniper": ["bounty_hunter", "scout"],
+				"bounty_hunter": ["sniper", "scout"],
+				"monk": ["templar", "druid"],
+				"druid": ["monk", "templar"]
+			}
+			var current_type = ""
+			if "ball_type" in ball:
+				current_type = str(ball.ball_type)
+
+			if evolutions.has(current_type):
+				var options = evolutions[current_type]
+				var new_type = options[randi() % options.size()]
+
+				if "ball_type" in ball:
+					ball.ball_type = new_type
+				elif typeof(ball) == TYPE_OBJECT and ball.has_method("set_meta"):
+					ball.set_meta("ball_type", new_type)
+				elif typeof(ball) == TYPE_DICTIONARY:
+					ball["ball_type"] = new_type
+
+				if world != null and world.has_method("add_event"):
+					world.add_event("evolution", {"ball": ball.get("id"), "old_type": current_type, "new_type": new_type, "level": ball.level})
+
 		# Apply dynamic cosmetic aura scaling
 		if not ("cosmetic_aura_scale" in ball) and typeof(ball) == TYPE_OBJECT and not ball.has_meta("cosmetic_aura_scale"):
 			if typeof(ball) == TYPE_OBJECT and ball.has_method("set_meta"):
