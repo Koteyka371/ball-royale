@@ -166,6 +166,23 @@ func _init(ball_ref, world_ref):
             if "speed" in self.ball: self.ball.speed = self.ball.speed * 1.15
             if "status_resistance" in self.ball: self.ball.status_resistance = self.ball.status_resistance + 0.10
             if "damage" in self.ball: self.ball.damage = self.ball.damage * 1.10
+    elif skin.begins_with("prestige_skin_"):
+        var parts = skin.split("_")
+        if parts.size() >= 3 and parts[2].is_valid_int():
+            var level = parts[2].to_int()
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                self.ball.set_meta("has_aura", true)
+                var current_speed = self.ball.get_meta("speed") if self.ball.has_meta("speed") else 100.0
+                self.ball.set_meta("speed", current_speed * (1.0 + level * 0.015))
+                var current_res = self.ball.get_meta("status_resistance") if self.ball.has_meta("status_resistance") else 0.0
+                self.ball.set_meta("status_resistance", current_res + (level * 0.01))
+                var current_dmg = self.ball.get_meta("damage") if self.ball.has_meta("damage") else 10.0
+                self.ball.set_meta("damage", current_dmg * (1.0 + level * 0.01))
+            else:
+                if "has_aura" in self.ball: self.ball.has_aura = true
+                if "speed" in self.ball: self.ball.speed = self.ball.speed * (1.0 + level * 0.015)
+                if "status_resistance" in self.ball: self.ball.status_resistance = self.ball.status_resistance + (level * 0.01)
+                if "damage" in self.ball: self.ball.damage = self.ball.damage * (1.0 + level * 0.01)
 
     self.perception_layer = Perception.new(self.ball, self.world)
 

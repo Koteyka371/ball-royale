@@ -112,6 +112,15 @@ class BallBrain:
             self.ball.speed = getattr(self.ball, "speed", 100.0) * 1.15
             self.ball.status_resistance = getattr(self.ball, "status_resistance", 0.0) + 0.10
             self.ball.damage = getattr(self.ball, "damage", 10.0) * 1.10
+        elif skin.startswith("prestige_skin_"):
+            try:
+                level = int(skin.split("_")[2])
+                self.ball.has_aura = True
+                self.ball.speed = getattr(self.ball, "speed", 100.0) * (1.0 + level * 0.015)
+                self.ball.status_resistance = getattr(self.ball, "status_resistance", 0.0) + (level * 0.01)
+                self.ball.damage = getattr(self.ball, "damage", 10.0) * (1.0 + level * 0.01)
+            except ValueError:
+                pass
 
         self.perception_layer = Perception(self.ball, self.world)
 

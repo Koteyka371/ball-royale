@@ -128,6 +128,19 @@ class ProfileManager:
         maxed_damage = self.data.get("bonuses", {}).get("bonus_damage", 0) >= self.MAX_BONUS_LEVEL
         return unlocked_all_balls and maxed_hp and maxed_speed and maxed_damage
 
+
+    def _to_roman(self, num):
+        val = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1]
+        syb = ["M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"]
+        roman_num = ''
+        i = 0
+        while num > 0:
+            for _ in range(num // val[i]):
+                roman_num += syb[i]
+                num -= val[i]
+            i += 1
+        return roman_num
+
     def do_prestige(self):
         if self.can_prestige():
             prestige_level = self.data.get("prestige_level", 0) + 1
@@ -160,19 +173,33 @@ class ProfileManager:
                 "clan_name": self.data.get("clan_name", "")
             }
 
-            if prestige_level >= 5 and "Prestige V Champion" not in self.data["titles"]:
-                self.data["titles"].append("Prestige V Champion")
-                if "prestige_aura_gold" not in self.data["cosmetics"]:
-                    self.data["cosmetics"].append("prestige_aura_gold")
-                if "prestige_master" not in self.data["unlocked_balls"]:
-                    self.data["unlocked_balls"].append("prestige_master")
+            for level in range(5, prestige_level + 1, 5):
+                if level == 5:
+                    if "Prestige V Champion" not in self.data["titles"]:
+                        self.data["titles"].append("Prestige V Champion")
+                    if "prestige_aura_gold" not in self.data["cosmetics"]:
+                        self.data["cosmetics"].append("prestige_aura_gold")
+                    if "prestige_master" not in self.data["unlocked_balls"]:
+                        self.data["unlocked_balls"].append("prestige_master")
+                elif level == 10:
+                    if "Prestige X Grandmaster" not in self.data["titles"]:
+                        self.data["titles"].append("Prestige X Grandmaster")
+                    if "prestige_aura_diamond" not in self.data["cosmetics"]:
+                        self.data["cosmetics"].append("prestige_aura_diamond")
+                    if "prestige_grandmaster" not in self.data["unlocked_balls"]:
+                        self.data["unlocked_balls"].append("prestige_grandmaster")
+                else:
+                    roman = self._to_roman(level)
+                    title = f"Prestige {roman} Legend"
+                    aura = f"prestige_aura_tier_{level}"
+                    skin = f"prestige_skin_{level}"
 
-            if prestige_level >= 10 and "Prestige X Grandmaster" not in self.data["titles"]:
-                self.data["titles"].append("Prestige X Grandmaster")
-                if "prestige_aura_diamond" not in self.data["cosmetics"]:
-                    self.data["cosmetics"].append("prestige_aura_diamond")
-                if "prestige_grandmaster" not in self.data["unlocked_balls"]:
-                    self.data["unlocked_balls"].append("prestige_grandmaster")
+                    if title not in self.data["titles"]:
+                        self.data["titles"].append(title)
+                    if aura not in self.data["cosmetics"]:
+                        self.data["cosmetics"].append(aura)
+                    if skin not in self.data["unlocked_balls"]:
+                        self.data["unlocked_balls"].append(skin)
 
             self.save()
             lm = LeaderboardManager("leaderboard.json", profile_manager=self)
