@@ -8823,7 +8823,7 @@
     },
     {
       "id": "idea-510",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Meteor Shower Mode",
@@ -14042,6 +14042,23 @@
         "src/arena/booster_trap_item.py",
         "src/arena/booster_trap_item.gd",
         "tests/test_booster_trap_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-817",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Mine",
+      "description": "A trap variant that pulls all nearby entities towards its center for a few seconds when triggered.",
+      "allowed_paths": [
+        "src/ai/gravity_mine.py",
+        "src/ai/gravity_mine.gd",
+        "tests/test_gravity_mine.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

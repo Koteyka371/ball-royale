@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-510] Meteor Shower Mode — *2026-07-03 17:22:39 UTC*
+
+High damage hazards fall from the sky.
+
+---
+
 ## [idea-490]  EMP Trap — *2026-07-03 17:09:44 UTC*
 
 A deployable trap that disables enemy perception radius for a short duration.
