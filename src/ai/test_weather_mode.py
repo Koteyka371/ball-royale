@@ -78,6 +78,49 @@ def test_weather_mode_special_balls():
     assert ice_ball.speed == ice_ball.base_speed * 1.2
     assert ice_ball.damage == ice_ball.base_damage * 1.5
 
+def test_weather_mode_yeti_and_sand_elemental():
+    import ai.game_modes as gm
+    mode = gm.GAME_MODES["weather_chaos"]
+    world = MockWorld()
+    world.leaderboard_manager = type("Mock", (), {"data": {"current_season": 4}})()
+
+    yeti = MockBall(1, "snow_yeti")
+    yeti.base_speed = 100.0
+    yeti.base_damage = 10.0
+    yeti.base_perception_radius = 200.0
+
+    sand_elem = MockBall(2, "sand_elemental")
+    sand_elem.base_speed = 100.0
+    sand_elem.base_damage = 10.0
+    sand_elem.base_perception_radius = 200.0
+
+    balls = [yeti, sand_elem]
+    mode.setup(world, balls)
+
+    # Test snow for yeti
+    mode.weather = "snow"
+    mode.tick(world, balls, 0.1)
+    # Yeti should gain speed and damage, instead of halving speed
+    assert yeti.speed == yeti.base_speed * 1.5
+    assert yeti.damage == yeti.base_damage * 1.5
+    # Sand elemental should be normal or affected by regular snow rules
+    assert sand_elem.speed == sand_elem.base_speed * 0.5
+
+    # Reset
+    yeti.hp = 100
+    sand_elem.hp = 100
+
+    # Test sandstorm for sand_elemental
+    mode.weather = "sandstorm"
+    mode.tick(world, balls, 1.1) # 1.1s to trigger 1sec dot
+
+    # Sand elemental should not take dot damage
+    assert sand_elem.hp == 100
+    assert sand_elem.speed == sand_elem.base_speed * 1.2
+
+    # Yeti should be affected by sandstorm regular rules (takes 1 dot damage + potential random 20)
+    assert yeti.hp <= 99.0
+
 def test_weather_mode_mirage():
     import ai.game_modes as gm
     mode = gm.GAME_MODES["weather_chaos"]

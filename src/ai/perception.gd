@@ -43,10 +43,10 @@ func scan() -> Dictionary:
         if self.world.arena.is_raining:
             perception_radius = perception_radius * 0.8
     if self.world != null and "arena" in self.world and "is_sandstorming" in self.world.arena:
-        if self.world.arena.is_sandstorming:
+        if self.world.arena.is_sandstorming and ("ball_type" in self.ball and self.ball.ball_type != "sand_elemental"):
             perception_radius = perception_radius * 0.3
     if self.world != null and "arena" in self.world and "is_snowing" in self.world.arena:
-        if self.world.arena.is_snowing:
+        if self.world.arena.is_snowing and ("ball_type" in self.ball and self.ball.ball_type != "snow_yeti"):
             perception_radius = perception_radius * 0.6
 
     var data = {
@@ -162,9 +162,15 @@ func scan() -> Dictionary:
             elif "shadow_booster_timer" in e:
                 e_has_shadow = float(e.shadow_booster_timer) > 0
 
-            if e_has_stealth or e_has_shadow:
+            var is_sand_cloaked = false
+            if "ball_type" in e and e.ball_type == "sand_elemental" and self.world != null and "arena" in self.world and "is_sandstorming" in self.world.arena and self.world.arena.is_sandstorming:
+                is_sand_cloaked = true
+
+            if e_has_stealth or e_has_shadow or is_sand_cloaked:
                 var dist = sqrt(pow(e.x - bx_curr, 2) + pow(e.y - by_curr, 2))
-                if e_has_shadow and dist > 30.0:
+                if is_sand_cloaked and dist > 40.0:
+                    continue
+                elif e_has_shadow and dist > 30.0:
                     continue
                 elif e_has_stealth and dist > 80.0:
                     continue

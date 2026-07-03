@@ -1616,7 +1616,8 @@ func execute(strategy: String, delta: float):
             if "vx" in my_ball and "vy" in my_ball:
                 my_ball.x += my_ball.vx * delta * 0.2
                 my_ball.y += my_ball.vy * delta * 0.2
-        if world.arena.get("is_snowing") == true and not is_wind_riding_f:
+        var b_type_slip = my_ball.get("ball_type") if typeof(my_ball) == TYPE_OBJECT or (typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("ball_type")) else ""
+        if world.arena.get("is_snowing") == true and not is_wind_riding_f and b_type_slip != "snow_yeti":
             if "vx" in my_ball and "vy" in my_ball:
                 my_ball.x += my_ball.vx * delta * 0.4
                 my_ball.y += my_ball.vy * delta * 0.4
@@ -4461,7 +4462,8 @@ func execute(strategy: String, delta: float):
             vx = my_ball._reflection_vx
             vy = my_ball._reflection_vy
 
-        if is_snowing and (vx != 0 or vy != 0):
+        var b_type_mom1 = my_ball.get("ball_type") if typeof(my_ball) == TYPE_OBJECT or (typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("ball_type")) else ""
+        if is_snowing and b_type_mom1 != "snow_yeti" and (vx != 0 or vy != 0):
             if my_ball.has_method("set_meta") and my_ball.has_meta("x"):
                 my_ball.set_meta("x", my_ball.get_meta("x") + vx * delta * 0.5)
                 my_ball.set_meta("y", my_ball.get_meta("y") + vy * delta * 0.5)

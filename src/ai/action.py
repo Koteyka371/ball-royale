@@ -896,9 +896,10 @@ class Action:
                 self.ball.x += getattr(self.ball, "vx", 0.0) * delta * 0.5
                 self.ball.y += getattr(self.ball, "vy", 0.0) * delta * 0.5
             if getattr(self.world.arena, "is_snowing", False) and not is_wind_riding:
-                # Extra slippery: apply even more momentum
-                self.ball.x += getattr(self.ball, "vx") * delta * 0.4
-                self.ball.y += getattr(self.ball, "vy") * delta * 0.4
+                if getattr(self.ball, "ball_type", "") != "snow_yeti":
+                    # Extra slippery: apply even more momentum
+                    self.ball.x += getattr(self.ball, "vx") * delta * 0.4
+                    self.ball.y += getattr(self.ball, "vy") * delta * 0.4
             if getattr(self.world.arena, "is_foggy", False):
                 pass # Fog has no friction effect, snow has speed change
             wind_dx = getattr(self.world.arena, "wind_dx", 0.0)
@@ -1695,16 +1696,21 @@ class Action:
                         dy = hazard.y - self.ball.y
                         dist_sq = dx * dx + dy * dy
                         if dist_sq < hazard.radius * hazard.radius:
-                            if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
-                                # Keep sliding in the current direction, drastically reducing steering
-                                speed_mult = 1.5 # Slight speed boost while slipping
-                                self.ball.x += self.ball.vx * delta * speed_mult
-                                self.ball.y += self.ball.vy * delta * speed_mult
+                            if getattr(self.ball, "ball_type", "") == "snow_yeti":
+                                self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 2.0
+                                if hasattr(self.ball, "is_slipping"):
+                                    self.ball.is_slipping = False
+                            else:
+                                if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+                                    # Keep sliding in the current direction, drastically reducing steering
+                                    speed_mult = 1.5 # Slight speed boost while slipping
+                                    self.ball.x += self.ball.vx * delta * speed_mult
+                                    self.ball.y += self.ball.vy * delta * speed_mult
 
-                            # Decrease turning capability by essentially locking in movement
-                            self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 1.5
-                            if not hasattr(self.ball, "is_slipping"):
-                                self.ball.is_slipping = True
+                                # Decrease turning capability by essentially locking in movement
+                                self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 1.5
+                                if not hasattr(self.ball, "is_slipping"):
+                                    self.ball.is_slipping = True
 
                     elif hazard.kind == "quicksand":
                         dx = hazard.x - self.ball.x
@@ -2832,7 +2838,7 @@ class Action:
             elif dist / max(0.0001, delta * 60) < getattr(self.ball, "base_speed", 2.0) * 0.5:
                 self.ball.stamina = min(getattr(self.ball, "max_stamina", 100.0), getattr(self.ball, "stamina", 0.0) + (30.0 * regen_mult) * delta)
 
-            if is_snowing and (getattr(self.ball, 'vx', 0) != 0 or getattr(self.ball, 'vy', 0) != 0):
+            if is_snowing and getattr(self.ball, "ball_type", "") != "snow_yeti" and (getattr(self.ball, 'vx', 0) != 0 or getattr(self.ball, 'vy', 0) != 0):
                 self.ball.x += getattr(self.ball, 'vx', 0) * delta * 0.5
                 self.ball.y += getattr(self.ball, 'vy', 0) * delta * 0.5
 

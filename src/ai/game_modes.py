@@ -562,21 +562,28 @@ class BattleRoyaleMode(GameMode):
                     b.stutter_timer = 2.0
             elif self.weather in ["snow", "blizzard"]:
                 b.cosmetic = "snow_goggles"
-                b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.6
-                b.speed = b.base_speed * 0.5
-                b.damage = b.base_damage * 1.2
-                if getattr(b, "SKILL", "") == "iceball" or getattr(b, "SKILL", "") == "elemental_burst":
-                    b.speed = b.base_speed * 1.2
+                if getattr(b, "ball_type", "") == "snow_yeti":
+                    b.speed = b.base_speed * 1.5
                     b.damage = b.base_damage * 1.5
-                b.dash_range_mult = 1.0
-                b.steering_mult = 1.0
-                if not hasattr(b, "chill_stacks"):
-                    b.chill_stacks = 0.0
-                b.chill_stacks += delta
-                if b.chill_stacks >= 3.0: # Arbitrary threshold, let's say 3 seconds in snow
-                    b.chill_stacks = 0.0
-                    b.stutter_timer = 1.0 # Freeze for 1 second
-                b.attack_accuracy = 0.9
+                    b.dash_range_mult = 1.0
+                    b.steering_mult = 1.0
+                    b.attack_accuracy = 1.0
+                else:
+                    b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.6
+                    b.speed = b.base_speed * 0.5
+                    b.damage = b.base_damage * 1.2
+                    if getattr(b, "SKILL", "") == "iceball" or getattr(b, "SKILL", "") == "elemental_burst":
+                        b.speed = b.base_speed * 1.2
+                        b.damage = b.base_damage * 1.5
+                    b.dash_range_mult = 1.0
+                    b.steering_mult = 1.0
+                    if not hasattr(b, "chill_stacks"):
+                        b.chill_stacks = 0.0
+                    b.chill_stacks += delta
+                    if b.chill_stacks >= 3.0: # Arbitrary threshold, let's say 3 seconds in snow
+                        b.chill_stacks = 0.0
+                        b.stutter_timer = 1.0 # Freeze for 1 second
+                    b.attack_accuracy = 0.9
             elif self.weather == "wind":
                 b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.55
                 b.speed = b.base_speed
@@ -595,22 +602,29 @@ class BattleRoyaleMode(GameMode):
                 b.steering_mult = 1.0
             elif self.weather == "sandstorm":
                 b.cosmetic = "dust_mask"
-                b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.3
-                b.speed = b.base_speed * 0.7
-                b.damage = b.base_damage
-                b.dash_range_mult = 0.5
-                b.steering_mult = 0.5
-                if not hasattr(b, "sandstorm_timer"):
-                    b.sandstorm_timer = 0.0
-                b.sandstorm_timer += delta
-                if b.sandstorm_timer >= 1.0:
-                    b.sandstorm_timer = 0.0
-                    if hasattr(b, "hp"):
-                        b.hp -= 1.0
-                if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
-                    if hasattr(b, "hp"):
-                        b.hp -= 20.0
-                b.attack_accuracy = 0.5
+                if getattr(b, "ball_type", "") == "sand_elemental":
+                    b.speed = b.base_speed * 1.2
+                    b.damage = b.base_damage
+                    b.dash_range_mult = 1.0
+                    b.steering_mult = 1.0
+                    b.attack_accuracy = 1.0
+                else:
+                    b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.3
+                    b.speed = b.base_speed * 0.7
+                    b.damage = b.base_damage
+                    b.dash_range_mult = 0.5
+                    b.steering_mult = 0.5
+                    if not hasattr(b, "sandstorm_timer"):
+                        b.sandstorm_timer = 0.0
+                    b.sandstorm_timer += delta
+                    if b.sandstorm_timer >= 1.0:
+                        b.sandstorm_timer = 0.0
+                        if hasattr(b, "hp"):
+                            b.hp -= 1.0
+                    if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                        if hasattr(b, "hp"):
+                            b.hp -= 20.0
+                    b.attack_accuracy = 0.5
             elif self.weather == "heatwave":
                 b.cosmetic = "sunglasses"
                 b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.7
@@ -1717,21 +1731,28 @@ class WeatherChaosMode(GameMode):
                     b.stutter_timer = 2.0
             elif self.weather in ["snow", "blizzard"]:
                 b.cosmetic = "snow_goggles"
-                b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.6
-                b.speed = b.base_speed * 0.5
-                b.damage = b.base_damage * 1.2
-                if getattr(b, "SKILL", "") == "iceball" or getattr(b, "SKILL", "") == "elemental_burst":
-                    b.speed = b.base_speed * 1.2
+                if getattr(b, "ball_type", "") == "snow_yeti":
+                    b.speed = b.base_speed * 1.5
                     b.damage = b.base_damage * 1.5
-                b.dash_range_mult = 1.0
-                b.steering_mult = 1.0
-                if not hasattr(b, "chill_stacks"):
-                    b.chill_stacks = 0.0
-                b.chill_stacks += delta
-                if b.chill_stacks >= 3.0: # Arbitrary threshold, let's say 3 seconds in snow
-                    b.chill_stacks = 0.0
-                    b.stutter_timer = 1.0 # Freeze for 1 second
-                b.attack_accuracy = 0.9
+                    b.dash_range_mult = 1.0
+                    b.steering_mult = 1.0
+                    b.attack_accuracy = 1.0
+                else:
+                    b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.6
+                    b.speed = b.base_speed * 0.5
+                    b.damage = b.base_damage * 1.2
+                    if getattr(b, "SKILL", "") == "iceball" or getattr(b, "SKILL", "") == "elemental_burst":
+                        b.speed = b.base_speed * 1.2
+                        b.damage = b.base_damage * 1.5
+                    b.dash_range_mult = 1.0
+                    b.steering_mult = 1.0
+                    if not hasattr(b, "chill_stacks"):
+                        b.chill_stacks = 0.0
+                    b.chill_stacks += delta
+                    if b.chill_stacks >= 3.0: # Arbitrary threshold, let's say 3 seconds in snow
+                        b.chill_stacks = 0.0
+                        b.stutter_timer = 1.0 # Freeze for 1 second
+                    b.attack_accuracy = 0.9
             elif self.weather == "wind":
                 b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.55
                 b.speed = b.base_speed
@@ -1747,46 +1768,53 @@ class WeatherChaosMode(GameMode):
                 b.steering_mult = 1.0
             elif self.weather == "sandstorm":
                 b.cosmetic = "dust_mask"
-                b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.3
-                b.speed = b.base_speed * 0.7 # Hard to move
-                b.damage = b.base_damage
-                b.dash_range_mult = 0.5
-                b.steering_mult = 0.5
-                if getattr(b, "ball_type", "") in ["trickster", "phantom", "mimic"]:
-                    if not hasattr(b, "mirage_timer"):
-                        b.mirage_timer = getattr(self, "random", __import__("random")).uniform(0.0, 5.0)
-                    b.mirage_timer += delta
-                    if b.mirage_timer >= 5.0:
-                        b.mirage_timer = 0.0
-                        if hasattr(world, "balls"):
-                            import copy
-                            decoy = copy.copy(b)
-                            decoy.id = getattr(world, "next_id", getattr(self, "random", __import__("random")).randint(10000, 99999))
-                            decoy.hp = getattr(b, "hp", 100)
-                            decoy.max_hp = getattr(b, "max_hp", 100)
-                            decoy.damage = 0
-                            decoy.speed = 0.0
-                            decoy.skill_timer = 9999.0
-                            decoy.attack_timer = 9999.0
-                            decoy.is_decoy = True
-                            decoy.decoy_timer = 3.0
-                            decoy.decoy_type = "stun_trap" if getattr(self, "random", __import__("random")).random() < 0.5 else "explosive"
-                            if hasattr(b, "SKILL") or getattr(b, "active_skill", None) is not None:
-                                decoy.SKILL = None
-                                decoy.active_skill = None
-                            world.balls.append(decoy)
-                # dot damage
-                if not hasattr(b, "sandstorm_timer"):
-                    b.sandstorm_timer = 0.0
-                b.sandstorm_timer += delta
-                if b.sandstorm_timer >= 1.0:
-                    b.sandstorm_timer = 0.0
-                    if hasattr(b, "hp"):
-                        b.hp -= 1.0 # 1 damage per sec
-                # Random lightning strikes
-                if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
-                    # Struck by lightning!
-                    b.hp = getattr(b, "hp", 100) - 20
+                if getattr(b, "ball_type", "") == "sand_elemental":
+                    b.speed = b.base_speed * 1.2
+                    b.damage = b.base_damage
+                    b.dash_range_mult = 1.0
+                    b.steering_mult = 1.0
+                    b.attack_accuracy = 1.0
+                else:
+                    b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.3
+                    b.speed = b.base_speed * 0.7 # Hard to move
+                    b.damage = b.base_damage
+                    b.dash_range_mult = 0.5
+                    b.steering_mult = 0.5
+                    if getattr(b, "ball_type", "") in ["trickster", "phantom", "mimic"]:
+                        if not hasattr(b, "mirage_timer"):
+                            b.mirage_timer = getattr(self, "random", __import__("random")).uniform(0.0, 5.0)
+                        b.mirage_timer += delta
+                        if b.mirage_timer >= 5.0:
+                            b.mirage_timer = 0.0
+                            if hasattr(world, "balls"):
+                                import copy
+                                decoy = copy.copy(b)
+                                decoy.id = getattr(world, "next_id", getattr(self, "random", __import__("random")).randint(10000, 99999))
+                                decoy.hp = getattr(b, "hp", 100)
+                                decoy.max_hp = getattr(b, "max_hp", 100)
+                                decoy.damage = 0
+                                decoy.speed = 0.0
+                                decoy.skill_timer = 9999.0
+                                decoy.attack_timer = 9999.0
+                                decoy.is_decoy = True
+                                decoy.decoy_timer = 3.0
+                                decoy.decoy_type = "stun_trap" if getattr(self, "random", __import__("random")).random() < 0.5 else "explosive"
+                                if hasattr(b, "SKILL") or getattr(b, "active_skill", None) is not None:
+                                    decoy.SKILL = None
+                                    decoy.active_skill = None
+                                world.balls.append(decoy)
+                    # dot damage
+                    if not hasattr(b, "sandstorm_timer"):
+                        b.sandstorm_timer = 0.0
+                    b.sandstorm_timer += delta
+                    if b.sandstorm_timer >= 1.0:
+                        b.sandstorm_timer = 0.0
+                        if hasattr(b, "hp"):
+                            b.hp -= 1.0 # 1 damage per sec
+                    # Random lightning strikes
+                    if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                        # Struck by lightning!
+                        b.hp = getattr(b, "hp", 100) - 20
                 b.attack_accuracy = 0.5
             elif self.weather == "magnetic_storm":
                 # Assign polarity if not present
