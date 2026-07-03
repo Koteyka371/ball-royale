@@ -1001,8 +1001,14 @@ class Action:
             self.ball.dot_duration = 0.0
             self.ball.dot_damage_per_tick = 0.0
 
+
         if not hasattr(self.ball, "_base_speed_set"):
             self.ball.base_speed = getattr(self.ball, "speed", 2.0)
+
+            cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+            if cosmetic == "magnetic_boots":
+                self.ball.base_speed *= 0.9
+
             self.ball.base_damage = getattr(self.ball, "damage", 10.0)
             self.ball._base_speed_set = True
 
@@ -1814,6 +1820,9 @@ class Action:
                                 # push AWAY from hazard, direction = ball - hazard = -dx
                                 nx, ny = -dx / dist, -dy / dist
                                 push_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 50.0 * delta
+                                cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+                                if cosmetic == "magnetic_boots":
+                                    push_strength *= 0.5
                                 self.ball.x += nx * push_strength
                                 self.ball.y += ny * push_strength
                     elif hazard.kind == "reverse_gravity":
@@ -1838,6 +1847,9 @@ class Action:
                                 # We want to push AWAY from hazard, so direction is ball - hazard = -dx
                                 nx, ny = -dx / dist, -dy / dist
                                 push_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 50.0 * delta
+                                cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+                                if cosmetic == "magnetic_boots":
+                                    push_strength *= 0.5
                                 self.ball.x += nx * push_strength
                                 self.ball.y += ny * push_strength
                     elif hazard.kind == "gravity_well":
@@ -2141,6 +2153,9 @@ class Action:
                                 nx = dx / dist
                                 ny = dy / dist
                                 knockback_force = 1000.0 * delta
+                                cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+                                if cosmetic == "magnetic_boots":
+                                    knockback_force *= 0.5
                                 self.ball.x += nx * knockback_force
                                 self.ball.y += ny * knockback_force
                             continue
@@ -5739,6 +5754,10 @@ class Action:
                     knockback_multiplier = 5.0
                 elif gm and getattr(gm, "name", "") == "Magnetic Collisions":
                     knockback_multiplier = -0.5
+
+                cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+                if cosmetic == "magnetic_boots":
+                    knockback_multiplier *= 0.5
 
                 self.ball.x += nx * overlap * knockback_multiplier
                 self.ball.y += ny * overlap * knockback_multiplier
