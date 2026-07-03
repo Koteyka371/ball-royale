@@ -1695,6 +1695,16 @@ func execute(strategy: String, delta: float):
         var base_s = 2.0
         if "speed" in my_ball:
             base_s = my_ball.speed
+
+        var cosmetic_val = ""
+        if "cosmetic" in my_ball:
+            cosmetic_val = str(my_ball.cosmetic).to_lower().replace(" ", "_")
+        elif my_ball.has_method("get_meta") and my_ball.has_meta("cosmetic"):
+            cosmetic_val = str(my_ball.get_meta("cosmetic")).to_lower().replace(" ", "_")
+
+        if cosmetic_val == "magnetic_boots":
+            base_s *= 0.9
+
         my_ball.set_meta("base_speed", base_s)
 
         var base_d = 10.0
@@ -2840,6 +2850,18 @@ func execute(strategy: String, delta: float):
                             var nx = -dx / dist
                             var ny = -dy / dist
                             var push_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 50.0 * delta
+
+                            var cosmetic_val = ""
+                            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("cosmetic"):
+                                cosmetic_val = str(self.ball["cosmetic"]).to_lower().replace(" ", "_")
+                            elif typeof(self.ball) == TYPE_OBJECT and "cosmetic" in self.ball:
+                                cosmetic_val = str(self.ball.cosmetic).to_lower().replace(" ", "_")
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("cosmetic"):
+                                cosmetic_val = str(self.ball.get_meta("cosmetic")).to_lower().replace(" ", "_")
+
+                            if cosmetic_val == "magnetic_boots":
+                                push_strength *= 0.5
+
                             self.ball.x += nx * push_strength
                             self.ball.y += ny * push_strength
                 elif hazard.kind == "reverse_gravity":
@@ -2869,6 +2891,18 @@ func execute(strategy: String, delta: float):
                             var nx = -dx / dist
                             var ny = -dy / dist
                             var push_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 50.0 * delta
+
+                            var cosmetic_val = ""
+                            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("cosmetic"):
+                                cosmetic_val = str(self.ball["cosmetic"]).to_lower().replace(" ", "_")
+                            elif typeof(self.ball) == TYPE_OBJECT and "cosmetic" in self.ball:
+                                cosmetic_val = str(self.ball.cosmetic).to_lower().replace(" ", "_")
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("cosmetic"):
+                                cosmetic_val = str(self.ball.get_meta("cosmetic")).to_lower().replace(" ", "_")
+
+                            if cosmetic_val == "magnetic_boots":
+                                push_strength *= 0.5
+
                             self.ball.x += nx * push_strength
                             self.ball.y += ny * push_strength
                 elif hazard.kind == "gravity_well":
@@ -3305,6 +3339,18 @@ func execute(strategy: String, delta: float):
                             var nx = dx / dist
                             var ny = dy / dist
                             var knockback_force = 1000.0 * delta
+
+                            var cosmetic_val = ""
+                            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("cosmetic"):
+                                cosmetic_val = str(self.ball["cosmetic"]).to_lower().replace(" ", "_")
+                            elif typeof(self.ball) == TYPE_OBJECT and "cosmetic" in self.ball:
+                                cosmetic_val = str(self.ball.cosmetic).to_lower().replace(" ", "_")
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("cosmetic"):
+                                cosmetic_val = str(self.ball.get_meta("cosmetic")).to_lower().replace(" ", "_")
+
+                            if cosmetic_val == "magnetic_boots":
+                                knockback_force *= 0.5
+
                             self.ball.x += nx * knockback_force
                             self.ball.y += ny * knockback_force
                         continue
@@ -9317,6 +9363,17 @@ func _resolve_collisions() -> bool:
                     knockback_multiplier = 5.0
                 elif "name" in self.world.game_mode and self.world.game_mode.name == "Magnetic Collisions":
                     knockback_multiplier = -0.5
+
+            var cosmetic_val = ""
+            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("cosmetic"):
+                cosmetic_val = str(self.ball["cosmetic"]).to_lower().replace(" ", "_")
+            elif typeof(self.ball) == TYPE_OBJECT and "cosmetic" in self.ball:
+                cosmetic_val = str(self.ball.cosmetic).to_lower().replace(" ", "_")
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("cosmetic"):
+                cosmetic_val = str(self.ball.get_meta("cosmetic")).to_lower().replace(" ", "_")
+
+            if cosmetic_val == "magnetic_boots":
+                knockback_multiplier *= 0.5
 
             self.ball.x += nx * overlap * knockback_multiplier
             self.ball.y += ny * overlap * knockback_multiplier
