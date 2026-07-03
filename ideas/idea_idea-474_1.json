@@ -1,0 +1,4 @@
+{
+  "title": "Weather Events System",
+  "description": "Introduce dynamic weather effects (rain, fog, wind) that occur randomly during matches, altering visibility, movement speed, or hazard interactions (e.g., wind pushing dynamic hazards in a specific direction)."
+}
