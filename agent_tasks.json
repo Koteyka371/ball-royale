@@ -8074,7 +8074,7 @@
     },
     {
       "id": "idea-468",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Stealth Grass Hazmat Zones",
@@ -13241,6 +13241,125 @@
         "src/ai/multi_safe_zones.py",
         "src/ai/multi_safe_zones.gd",
         "tests/test_multi_safe_zones.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-770",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Ball Customization Traits",
+      "description": "Allow players to pick minor starting traits (e.g. +5% speed, -5% health) to customize their playstyle.",
+      "allowed_paths": [
+        "src/ai/ball_customization_traits.py",
+        "src/ai/ball_customization_traits.gd",
+        "tests/test_ball_customization_traits.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-771",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather dominance event",
+      "description": "An arena event where two weather types are competing (e.g. fire vs ice). Players must capture points to determine which weather type takes over the arena, providing buffs to the winning team.",
+      "allowed_paths": [
+        "src/ai/dominance.py",
+        "src/ai/dominance.gd",
+        "tests/test_dominance.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-772",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Clan Wars Tournaments",
+      "description": "Introduces structured weekly tournaments where clans face off against each other. Players queue in special clan-only matchmaking lobbies, earning points for their clan based on their survival time and eliminations. Winning clans receive exclusive banners and guild-wide passive buffs.",
+      "allowed_paths": [
+        "src/ai/clan_wars_tournaments.py",
+        "src/ai/clan_wars_tournaments.gd",
+        "tests/test_clan_wars_tournaments.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-773",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather-Adaptive Shields",
+      "description": "A new loadout item 'Weather Shield' that absorbs negative status effects (e.g. wet, cold, sandblind) and converts them into a temporary health regeneration boost.",
+      "allowed_paths": [
+        "src/ai/adaptive_shields.py",
+        "src/ai/adaptive_shields.gd",
+        "tests/test_adaptive_shields.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-774",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tornado Hazard in Windstorm",
+      "description": "Introduce wandering Tornado hazards specifically during the Windstorm mode. Tornados pull balls towards them and scramble their movement vectors for a brief duration.",
+      "allowed_paths": [
+        "src/arena/tornado_in_windstorm.py",
+        "src/arena/tornado_in_windstorm.gd",
+        "tests/test_tornado_in_windstorm.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-775",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Effects Expansion",
+      "description": "Introduce dynamic weather patterns like rain reducing friction or heatwaves increasing stamina consumption.",
+      "allowed_paths": [
+        "src/ai/effects_expansion.py",
+        "src/ai/effects_expansion.gd",
+        "tests/test_effects_expansion.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-776",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Map Events",
+      "description": "Random events that occur during the match to spice up the gameplay. Examples include sudden meteor showers that deal massive AoE damage, a low-gravity zone that expands in the center, or mysterious loot goblins that spawn and run away, dropping rare temporary boosters if destroyed.",
+      "allowed_paths": [
+        "src/ai/dynamic_map_events.py",
+        "src/ai/dynamic_map_events.gd",
+        "tests/test_dynamic_map_events.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

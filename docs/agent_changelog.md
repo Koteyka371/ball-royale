@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-468] Stealth Grass Hazmat Zones — *2026-07-03 13:15:20 UTC*
+
+Introduce patches of tall grass into the procedural arena where balls become temporarily invisible to AI opponents (reducing their perception radius/threat level to 0), but take a minor constant damage over time. This creates a tradeoff between stealth and health.
+
+---
+
 ## [idea-458] Wind glider Wings — *2026-07-03 12:42:31 UTC*
 
 A cosmetic/loadout item that increases speed and jump distance specifically when the windstorm weather is active.
