@@ -8466,7 +8466,7 @@
     },
     {
       "id": "idea-491",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Clone Ability",
@@ -14059,6 +14059,74 @@
         "src/ai/gravity_mine.py",
         "src/ai/gravity_mine.gd",
         "tests/test_gravity_mine.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-818",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aura Disruption Bomb",
+      "description": "A throwable item or character skill that detonates in a large area, stripping the team aura buffs from all enemies caught in the blast and applying the aura_disruption_timer to them for 10 seconds, forcing teams to rely on individual skills rather than stacking benefits.",
+      "allowed_paths": [
+        "src/ai/aura_disruption_bomb.py",
+        "src/ai/aura_disruption_bomb.gd",
+        "tests/test_aura_disruption_bomb.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-819",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Earthquake Mode",
+      "description": "Periodically shakes the screen and applies random momentum impulses to all balls in unpredictable directions.",
+      "allowed_paths": [
+        "src/ai/earthquake.py",
+        "src/ai/earthquake.gd",
+        "tests/test_earthquake.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-820",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Corrupted Aura Modifier",
+      "description": "A rare map event that temporarily flips the effect of friendly auras. If a ball attempts to stand near allies and stack team auras during this event, they instead receive scaling damage over time and slowed movement speed, penalizing grouping behavior and forcing teams to scatter.",
+      "allowed_paths": [
+        "src/ai/corrupted_aura.py",
+        "src/ai/corrupted_aura.gd",
+        "tests/test_corrupted_aura.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-821",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounty System",
+      "description": "Balls that score eliminations acquire a bounty. Killing a ball with a bounty provides temporary stat boosts or currency.",
+      "allowed_paths": [
+        "src/ai/bounty.py",
+        "src/ai/bounty.gd",
+        "tests/test_bounty.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
