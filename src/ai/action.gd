@@ -3597,6 +3597,14 @@ func execute(strategy: String, delta: float):
                             var stam = self.ball.get_meta("stamina")
                             self.ball.set_meta("stamina", max(0.0, stam - 30.0 * delta))
                         continue
+                    elif hazard.kind == "tall_grass":
+                        if self.ball.has_method("take_damage"):
+                            self.ball.take_damage(hazard.damage * delta)
+                        elif "hp" in self.ball:
+                            self.ball.hp -= hazard.damage * delta
+                            if self.ball.hp <= 0 and "alive" in self.ball:
+                                self.ball.alive = false
+                        continue
                     elif hazard.kind == "vampiric_puddle":
                         var hazard_damage = hazard.damage * delta
                         if self.ball.has_method("take_damage"):
@@ -4512,7 +4520,7 @@ func _get_enemies_internal() -> Array:
     if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
         for h in self.world.arena.hazards:
             var h_kind = h.kind if "kind" in h else (h.get_meta("kind") if h.has_method("has_meta") and h.has_meta("kind") else "")
-            if h_kind == "stealth_zone":
+            if h_kind == "stealth_zone" or h_kind == "tall_grass":
                 var hx = h.x if "x" in h else h.get_meta("x")
                 var hy = h.y if "y" in h else h.get_meta("y")
                 var hr = h.radius if "radius" in h else h.get_meta("radius")
@@ -4639,7 +4647,7 @@ func _get_enemies_internal() -> Array:
         if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
             for h in self.world.arena.hazards:
                 var h_kind = h.kind if "kind" in h else (h.get_meta("kind") if h.has_method("has_meta") and h.has_meta("kind") else "")
-                if h_kind == "stealth_zone":
+                if h_kind == "stealth_zone" or h_kind == "tall_grass":
                     var hx = h.x if "x" in h else h.get_meta("x")
                     var hy = h.y if "y" in h else h.get_meta("y")
                     var hr = h.radius if "radius" in h else h.get_meta("radius")

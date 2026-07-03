@@ -2413,6 +2413,14 @@ class Action:
                                 drain_rate = 30.0 * delta
                                 self.ball.stamina = max(0.0, self.ball.stamina - drain_rate)
                             continue
+                        elif hazard.kind == "tall_grass":
+                            if hasattr(self.ball, "take_damage"):
+                                self.ball.take_damage(hazard.damage * delta)
+                            elif hasattr(self.ball, "hp"):
+                                self.ball.hp -= hazard.damage * delta
+                                if self.ball.hp <= 0:
+                                    self.ball.alive = False
+                            continue
                         elif hazard.kind == "vampiric_puddle":
                             hazard_damage = hazard.damage * delta
                             if hasattr(self.ball, "take_damage"):
@@ -2936,7 +2944,7 @@ class Action:
         my_stealth_zones = []
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for h in self.world.arena.hazards:
-                if getattr(h, "kind", "") == "stealth_zone":
+                if getattr(h, "kind", "") in ["stealth_zone", "tall_grass"]:
                     dx = h.x - self.ball.x
                     dy = h.y - self.ball.y
                     if dx*dx + dy*dy <= h.radius*h.radius:
@@ -2946,7 +2954,7 @@ class Action:
             enemy_stealth_zones = []
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for h in self.world.arena.hazards:
-                    if getattr(h, "kind", "") == "stealth_zone":
+                    if getattr(h, "kind", "") in ["stealth_zone", "tall_grass"]:
                         dx = h.x - getattr(enemy, "x", 0)
                         dy = h.y - getattr(enemy, "y", 0)
                         if dx*dx + dy*dy <= h.radius*h.radius:
