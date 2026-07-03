@@ -780,6 +780,29 @@ func _init(ball_ref, world_ref):
 
 func execute(strategy: String, delta: float):
 
+	# Track state history for time_rewind
+	if typeof(self.ball) == TYPE_DICTIONARY:
+		if not self.ball.has("state_history"):
+			self.ball["state_history"] = []
+		var hp_val = 100.0
+		if self.ball.has("hp"): hp_val = float(self.ball["hp"])
+		self.ball["state_history"].push_back({"x": float(self.ball.get("x", 0.0)), "y": float(self.ball.get("y", 0.0)), "hp": hp_val})
+		if self.ball["state_history"].size() > 180:
+			self.ball["state_history"].pop_front()
+	else:
+		if not self.ball.has_method("has_meta") or not self.ball.has_meta("state_history"):
+			if self.ball.has_method("set_meta"):
+				self.ball.set_meta("state_history", [])
+		if self.ball.has_method("has_meta") and self.ball.has_meta("state_history"):
+			var history = self.ball.get_meta("state_history")
+			var hp_val = 100.0
+			if "hp" in self.ball: hp_val = float(self.ball.hp)
+			history.push_back({"x": float(self.ball.x), "y": float(self.ball.y), "hp": hp_val})
+			if history.size() > 180:
+				history.pop_front()
+			self.ball.set_meta("state_history", history)
+
+
     if self.ball.has_method("remove_meta") and self.ball.has_meta("_chrono_slow"):
         self.ball.remove_meta("_chrono_slow")
     elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("_chrono_slow"):
@@ -7000,6 +7023,60 @@ func _use_skill():
                     for h in arena.hazards:
                         if h.has_method("set_meta"):
                             h.set_meta("frozen_timer", 2.0)
+
+        elif skill_name == "time_rewind":
+            var r_allies = []
+            if self.world.has("balls"):
+                for b in self.world.balls:
+                    var is_alive = true
+                    if typeof(b) == TYPE_DICTIONARY:
+                        is_alive = b.get("alive", true)
+                    else:
+                        if "alive" in b: is_alive = b.alive
+                        elif b.has_method("has_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+
+                    var team = ""
+                    if typeof(b) == TYPE_DICTIONARY:
+                        team = b.get("team", "")
+                    else:
+                        if "team" in b: team = b.team
+                        elif b.has_method("has_meta") and b.has_meta("team"): team = b.get_meta("team")
+
+                    if is_alive and team == my_team:
+                        var history = []
+                        if typeof(b) == TYPE_DICTIONARY:
+                            history = b.get("state_history", [])
+                        else:
+                            if b.has_method("has_meta") and b.has_meta("state_history"):
+                                history = b.get_meta("state_history")
+
+                        if history.size() > 0:
+                            var past_state = history[0]
+
+                            if typeof(b) == TYPE_DICTIONARY:
+                                b["x"] = past_state["x"]
+                                b["y"] = past_state["y"]
+                                if past_state["hp"] > b.get("hp", 0.0):
+                                    b["hp"] = past_state["hp"]
+                                b["stun_timer"] = 0.0
+                                b["silence_timer"] = 0.0
+                                b["is_stunned"] = false
+                                b["state_history"] = []
+                            else:
+                                b.x = past_state["x"]
+                                b.y = past_state["y"]
+                                var cur_hp = 0.0
+                                if "hp" in b: cur_hp = b.hp
+                                if past_state["hp"] > cur_hp:
+                                    b.hp = past_state["hp"]
+
+                                if "stun_timer" in b: b.stun_timer = 0.0
+                                if "silence_timer" in b: b.silence_timer = 0.0
+                                if "is_stunned" in b: b.is_stunned = false
+                                if "poison_timer" in b: b.poison_timer = 0.0
+
+                                if b.has_method("set_meta"):
+                                    b.set_meta("state_history", [])
 
         elif skill_name == "magnet_tether":
             var enemies = _get_enemies()
