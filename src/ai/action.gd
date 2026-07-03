@@ -7397,6 +7397,48 @@ func _use_skill():
 
                 if "balls" in self.world:
                     self.world.balls.append(minion)
+        elif skill_name == "corpse_explosion":
+            if "balls" in self.world:
+                var minions = []
+                for b in self.world.balls:
+                    var is_minion = false
+                    if "ball_type" in b and b.ball_type == "minion":
+                        is_minion = true
+                    if is_minion and "team" in b and "team" in self.ball and b.team == self.ball.team:
+                        minions.append(b)
+
+                if minions.size() > 0:
+                    var target_minion = minions[0]
+                    if typeof(target_minion) == TYPE_DICTIONARY:
+                        target_minion["hp"] = 0
+                        target_minion["alive"] = false
+                    else:
+                        target_minion.hp = 0
+                        target_minion.alive = false
+
+                    var explosion_radius = 80.0
+                    var explosion_damage = 45.0
+
+                    var enemies = _get_enemies()
+                    for e in enemies:
+                        var dx = e.x - target_minion.x
+                        var dy = e.y - target_minion.y
+                        var dist = sqrt(dx*dx + dy*dy)
+                        if dist <= explosion_radius:
+                            if e.has_method("take_damage"):
+                                e.take_damage(explosion_damage)
+                            var current_slow = 0.0
+                            if "slow_timer" in e: current_slow = e.slow_timer
+                            elif e.has_meta("slow_timer"): current_slow = e.get_meta("slow_timer")
+
+                            var new_slow = max(current_slow, 2.0)
+                            if typeof(e) == TYPE_DICTIONARY:
+                                e["slow_timer"] = new_slow
+                            elif e.has_method("set_meta"):
+                                e.set_meta("slow_timer", new_slow)
+                            else:
+                                e.slow_timer = new_slow
+
         elif skill_name == "raise_dead":
             if "dead_balls" in self.world:
                 var recent_dead = []
@@ -7429,7 +7471,6 @@ func _use_skill():
                         if dist <= explosion_radius:
                             if e.has_method("take_damage"):
                                 e.take_damage(explosion_damage)
-
         elif skill_name == "deploy_decoy_beacon":
             if "balls" in self.world:
                 var beacon = null

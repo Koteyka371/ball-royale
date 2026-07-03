@@ -14,7 +14,7 @@ class Necromancer:
     PERCEPTION_RADIUS = 320
     AGGRESSION = 0.3
     COLOR = 'black'
-    SKILL = 'raise_dead'
+    SKILL = 'corpse_explosion'
     SKILL_COOLDOWN = 8.0
     ATTACK_RANGE = 35.0
 
