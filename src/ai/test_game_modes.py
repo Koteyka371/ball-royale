@@ -642,3 +642,29 @@ def test_floor_is_lava_mode():
 
     # Ball is outside lava_radius (dist to center is ~565, lava_radius is 485), and outside center platform, so it takes damage
     assert ball.hp < 100
+
+
+
+
+
+def test_meteor_shower_mode():
+    from ai.game_modes import MeteorShowerMode
+    mode = MeteorShowerMode()
+    world = MockWorld()
+    setattr(world, "arena", type("Arena", (), {"width": 1000, "height": 1000, "hazards": []})())
+
+    mode.setup(world, [])
+    assert len(world.arena.hazards) == 0
+
+    # Tick below spawn timer
+    mode.tick(world, [], delta=0.5)
+    assert len(world.arena.hazards) == 0
+
+    # Tick above spawn timer
+    mode.tick(world, [], delta=0.6)
+    assert len(world.arena.hazards) == 1
+
+    hazard = world.arena.hazards[0]
+    assert hazard.kind == "meteor"
+    assert hazard.damage == 200.0
+    assert hazard.radius == 30.0

@@ -5721,7 +5721,59 @@ class FloorIsLavaMode(GameMode):
                 if b.hp <= 0:
                     b.alive = False
 
+class MeteorShowerMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Meteor Shower"
+        self.description = "High damage hazards fall from the sky."
+        self.spawn_timer = 0.0
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+        self.spawn_timer = 0.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        self.spawn_timer += delta
+
+        # Spawn meteors periodically
+        if self.spawn_timer >= 1.0:
+            self.spawn_timer = 0.0
+            import random
+
+            # Use fallback dictionary if Hazard is not easily imported, but procedural arena should be available
+            try:
+                from arena.procedural_arena import Hazard
+            except ImportError:
+                class Hazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.active = True
+                        self.target_radius = 0.0
+
+            arena_width = getattr(world.arena, "width", 1000)
+            arena_height = getattr(world.arena, "height", 1000)
+
+            x = random.uniform(50, arena_width - 50)
+            y = random.uniform(50, arena_height - 50)
+
+            h_id = 15000 + len(world.arena.hazards) + random.randint(0, 10000)
+            meteor = Hazard(id=h_id, x=x, y=y, radius=30.0, kind="meteor", damage=200.0)
+            setattr(meteor, "duration", 5.0)
+            meteor.target_radius = 30.0
+
+            world.arena.hazards.append(meteor)
+
 GAME_MODES = {
+    "meteor_shower": MeteorShowerMode(),
 
     "black_market": BlackMarketMode(),
     "floor_is_lava": FloorIsLavaMode(),
