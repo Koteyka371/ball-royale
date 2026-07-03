@@ -7254,6 +7254,53 @@ func _use_skill():
                         if h.has_method("set_meta"):
                             h.set_meta("frozen_timer", 2.0)
 
+        elif skill_name == "temporal_recall":
+            var history = []
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                history = self.ball.get("state_history", [])
+            else:
+                if self.ball.has_method("has_meta") and self.ball.has_meta("state_history"):
+                    history = self.ball.get_meta("state_history")
+                elif "state_history" in self.ball:
+                    history = self.ball.state_history
+
+            if history.size() > 0:
+                var past_state = history[0]
+                var old_hp = 100.0
+                if typeof(past_state) == TYPE_DICTIONARY:
+                    old_hp = past_state.get("hp", 100.0)
+
+                var current_hp = 0.0
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["x"] = past_state.get("x", 0.0)
+                    self.ball["y"] = past_state.get("y", 0.0)
+                    current_hp = float(self.ball.get("hp", 0.0))
+                    if old_hp > current_hp:
+                        self.ball["hp"] = old_hp
+                    self.ball["stun_timer"] = 0.0
+                    self.ball["silence_timer"] = 0.0
+                    self.ball["is_stunned"] = false
+                    if self.ball.has("poison_timer"):
+                        self.ball["poison_timer"] = 0.0
+                    self.ball["state_history"] = []
+                else:
+                    if "x" in self.ball: self.ball.x = past_state.get("x", 0.0)
+                    if "y" in self.ball: self.ball.y = past_state.get("y", 0.0)
+
+                    if "hp" in self.ball: current_hp = float(self.ball.hp)
+                    if old_hp > current_hp:
+                        if "hp" in self.ball: self.ball.hp = old_hp
+
+                    if "stun_timer" in self.ball: self.ball.stun_timer = 0.0
+                    if "silence_timer" in self.ball: self.ball.silence_timer = 0.0
+                    if "is_stunned" in self.ball: self.ball.is_stunned = false
+                    if "poison_timer" in self.ball: self.ball.poison_timer = 0.0
+
+                    if "state_history" in self.ball:
+                        self.ball.state_history = []
+                    elif self.ball.has_method("set_meta"):
+                        self.ball.set_meta("state_history", [])
+
         elif skill_name == "time_rewind":
             var r_allies = []
             if self.world.has("balls"):

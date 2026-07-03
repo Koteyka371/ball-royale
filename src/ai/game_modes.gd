@@ -167,7 +167,7 @@ class DraftRoyaleMode extends GameMode:
         "elementalist", "guardian", "healer", "juggernaut", "king", "mage", "mimic",
         "monk", "necromancer", "ninja", "paladin", "phantom", "ranger", "rogue", "drone",
         "scout", "sniper", "swarm", "tank", "templar", "trickster", "vampire",
-        "warlock", "warrior"
+        "warlock", "warrior", "time_mage"
     ]
     var team_rosters: Dictionary = {"Team A": [], "Team B": []}
     var teams: Array = ["Team A", "Team B"]
@@ -2933,7 +2933,7 @@ class CustomMatchMode extends GameMode:
 					set_meta("boss_mutator_timer", b_timer)
 
 			var trigger_reroll = false			var trigger_reroll = false
-			var types = ['paladin', 'assassin', 'ninja', 'warrior', 'guardian', 'chaos', 'bomber', 'templar', 'necromancer', 'vampire', 'sniper', 'king', 'easy', 'phantom', 'warlock', 'mimic', 'juggernaut', 'tank', 'berserker', 'druid', 'hard', 'scout', 'brawler', 'medium', 'neural', 'ranger', 'healer', 'rogue', 'drone', 'swarm', 'conjurer', 'monk', 'mage', 'elementalist', 'trickster']
+			var types = ['paladin', 'assassin', 'ninja', 'warrior', 'guardian', 'chaos', 'bomber', 'templar', 'necromancer', 'vampire', 'sniper', 'king', 'easy', 'phantom', 'warlock', 'mimic', 'juggernaut', 'tank', 'berserker', 'druid', 'hard', 'scout', 'brawler', 'medium', 'neural', 'ranger', 'healer', 'rogue', 'drone', 'swarm', 'conjurer', 'monk', 'mage', 'elementalist', 'trickster', 'time_mage']
 			if mutators.has("random_reroll"):
 				if not has_meta("random_reroll_timer"):
 					set_meta("random_reroll_timer", 0.0)

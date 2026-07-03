@@ -4540,6 +4540,26 @@ class Action:
                     for h in self.world.arena.hazards:
                         h.frozen_timer = 2.0
 
+            elif skill_name == "temporal_recall":
+                history = getattr(self.ball, "state_history", [])
+                if history:
+                    past_state = history[0]
+                    self.ball.x = past_state["x"]
+                    self.ball.y = past_state["y"]
+                    if past_state["hp"] > getattr(self.ball, "hp", 0):
+                        self.ball.hp = past_state["hp"]
+
+                    self.ball.stun_timer = 0.0
+                    self.ball.silence_timer = 0.0
+                    self.ball.is_stunned = False
+                    if hasattr(self.ball, "poison_timer"):
+                        self.ball.poison_timer = 0.0
+
+                    self.ball.state_history = []
+
+                    if hasattr(self.world, "add_event"):
+                        self.world.add_event("play_sound", {"sound": "rewind", "x": self.ball.x, "y": self.ball.y})
+
             elif skill_name == "time_rewind":
                 allies = [b for b in getattr(self.world, "balls", []) if getattr(b, "team", "") == getattr(self.ball, "team", "") and getattr(b, "alive", True)]
                 for ally in allies:
