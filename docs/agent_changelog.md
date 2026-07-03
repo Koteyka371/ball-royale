@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-508] New 'Decoy' active skill for Trickster class — *2026-07-03 16:57:43 UTC*
+
+Add a skill for the Trickster class that drops a fake booster (like a decoy) which acts as a hazard to enemies. When an enemy tries to collect it, it explodes and deals damage, while also pushing them back. This would add more strategy and mind games to the combat.
+
+---
+
 ## [idea-506] Season-Themed Dynamic Arenas — *2026-07-03 16:57:39 UTC*
 
 During specific seasons, the procedural arena generation includes seasonal hazards or aesthetics. For example, during a 'Winter' season, the arena could generate slippery ice patches and snowman decoys, while a 'Summer' season could feature sun-flare hazards and sand-trap zones. This would keep the gameplay visually and mechanically fresh.
