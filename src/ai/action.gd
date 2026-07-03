@@ -1759,7 +1759,7 @@ func execute(strategy: String, delta: float):
                     if "is_mirroring" in my_ball: is_mirroring = my_ball.is_mirroring
                     elif my_ball.has_method("get_meta") and my_ball.has_meta("is_mirroring"): is_mirroring = my_ball.get_meta("is_mirroring")
 
-                    if is_orbiting or is_mirroring:
+                    if is_orbiting:
                         var spd = 4.0
                         if "speed" in my_ball: spd = float(my_ball.speed)
                         var orbit_speed = spd * 0.5
@@ -1776,6 +1776,18 @@ func execute(strategy: String, delta: float):
                         var radius = 30.0
                         my_ball.x = owner.x + cos(orbit_angle) * radius
                         my_ball.y = owner.y + sin(orbit_angle) * radius
+                    elif is_mirroring:
+                        var state_history = []
+                        if "state_history" in owner: state_history = owner.state_history
+                        elif owner.has_method("get_meta") and owner.has_meta("state_history"): state_history = owner.get_meta("state_history")
+
+                        if state_history.size() >= 2:
+                            var prev_state = state_history[state_history.size() - 2]
+                            var curr_state = state_history[state_history.size() - 1]
+                            var dx = curr_state["x"] - prev_state["x"]
+                            var dy = curr_state["y"] - prev_state["y"]
+                            my_ball.x -= dx
+                            my_ball.y -= dy
 
     if world != null and "balls" in world:
         for b in world.balls:

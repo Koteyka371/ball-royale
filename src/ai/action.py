@@ -1032,13 +1032,15 @@ class Action:
                             self.ball.x = owner.x + math.cos(self.ball.orbit_angle) * radius
                             self.ball.y = owner.y + math.sin(self.ball.orbit_angle) * radius
                         elif getattr(self.ball, "is_mirroring", False):
-                            import math
-                            # Orbit opposite side
-                            orbit_speed = getattr(self.ball, "speed", 4.0) * 0.5
-                            self.ball.orbit_angle = getattr(self.ball, "orbit_angle", math.pi) + orbit_speed * delta
-                            radius = 30.0
-                            self.ball.x = owner.x + math.cos(self.ball.orbit_angle) * radius
-                            self.ball.y = owner.y + math.sin(self.ball.orbit_angle) * radius
+                            # Mirror movement in opposite direction
+                            state_history = getattr(owner, "state_history", [])
+                            if len(state_history) >= 2:
+                                prev_state = state_history[-2]
+                                curr_state = state_history[-1]
+                                dx = curr_state["x"] - prev_state["x"]
+                                dy = curr_state["y"] - prev_state["y"]
+                                self.ball.x -= dx
+                                self.ball.y -= dy
 
         # Global decoy explosion check
         if hasattr(self.world, "balls"):
