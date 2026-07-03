@@ -11,6 +11,8 @@ var rng: RandomNumberGenerator
 
 var safe_zone_radius: float
 var safe_zone_center: Array
+var safe_zone_buff_timer: float = 0.0
+var active_safe_zone_buff: String = ""
 var last_tick: int = -1
 var danger_grid: Dictionary = {}
 
@@ -472,6 +474,15 @@ func clamp_position(x: float, y: float, radius: float) -> Array:
 
 func update_zone(current_tick: int, delta: float) -> void:
     if current_tick != last_tick:
+        last_tick = current_tick
+
+        if "safe_zone_buff_timer" in self:
+            safe_zone_buff_timer -= delta
+            if safe_zone_buff_timer <= 0:
+                safe_zone_buff_timer = rng.randf_range(5.0, 15.0) if rng else randf_range(5.0, 15.0)
+                var buffs = ["speed", "damage", "healing", "shield", "none"]
+                active_safe_zone_buff = buffs[rng.randi() % buffs.size()] if rng else buffs[randi() % buffs.size()]
+
         if "hazards" in self:
             for hazard in hazards:
                 if hazard.kind == "slip_zone":

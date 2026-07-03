@@ -1192,6 +1192,22 @@ class Action:
                             self.ball.hp -= zone_damage
                             if self.ball.hp <= 0:
                                 self.ball.alive = False
+                else:
+                    # Inside safe zone
+                    active_buff = getattr(self.world.arena, "active_safe_zone_buff", "none")
+                    if active_buff == "speed":
+                        self.ball.speed_booster_timer = max(getattr(self.ball, "speed_booster_timer", 0.0), 2.0)
+                    elif active_buff == "damage":
+                        self.ball.nemesis_booster_timer = max(getattr(self.ball, "nemesis_booster_timer", 0.0), 2.0)
+                    elif active_buff == "healing":
+                        if hasattr(self.ball, "hp"):
+                            max_hp = getattr(self.ball, "max_hp", 100.0)
+                            if self.ball.hp < max_hp:
+                                self.ball.hp = min(max_hp, self.ball.hp + 5.0 * delta)
+                    elif active_buff == "shield":
+                        self.ball.energy_shield_timer = max(getattr(self.ball, "energy_shield_timer", 0.0), 2.0)
+                        self.ball.has_shield = True
+
 
             # Apply hazard damage
 

@@ -46,6 +46,8 @@ class ProceduralArena:
         # Shrinking zone
         self.safe_zone_radius = arena_size * 0.7
         self.safe_zone_center = (arena_size / 2, arena_size / 2)
+        self.safe_zone_buff_timer = 0.0
+        self.active_safe_zone_buff = ""
         self.last_tick = -1
         self.danger_grid: dict[tuple[int, int], float] = {}
 
@@ -473,6 +475,14 @@ class ProceduralArena:
                                                     hazard.duration = 10.0
 
             self.last_tick = current_tick
+
+            import random
+            # Update safe zone buff logic
+            if hasattr(self, "safe_zone_buff_timer"):
+                self.safe_zone_buff_timer -= delta
+                if self.safe_zone_buff_timer <= 0:
+                    self.safe_zone_buff_timer = self.rng.uniform(5.0, 15.0) if hasattr(self, 'rng') else random.uniform(5.0, 15.0)
+                    self.active_safe_zone_buff = self.rng.choice(["speed", "damage", "healing", "shield", "none"]) if hasattr(self, "rng") else random.choice(["speed", "damage", "healing", "shield", "none"])
 
             # Massive Black Hole Event logic
             has_mbh = any(h.kind == "massive_black_hole" for h in getattr(self, "hazards", []))

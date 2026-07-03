@@ -2103,6 +2103,28 @@ func execute(strategy: String, delta: float):
                         self.ball.hp -= zone_damage
                         if self.ball.hp <= 0:
                             self.ball.alive = false
+            else:
+                var active_buff = "none"
+                if "active_safe_zone_buff" in self.world.arena:
+                    active_buff = self.world.arena.active_safe_zone_buff
+                if active_buff == "speed":
+                    var t = self.ball.get_meta("speed_booster_timer") if self.ball.has_meta("speed_booster_timer") else 0.0
+                    if t < 2.0: self.ball.set_meta("speed_booster_timer", 2.0)
+                elif active_buff == "damage":
+                    var t = self.ball.get_meta("nemesis_booster_timer") if self.ball.has_meta("nemesis_booster_timer") else 0.0
+                    if t < 2.0: self.ball.set_meta("nemesis_booster_timer", 2.0)
+                elif active_buff == "healing":
+                    if "hp" in self.ball:
+                        var max_hp = self.ball.get("max_hp") if "max_hp" in self.ball else 100.0
+                        if self.ball.hp < max_hp:
+                            self.ball.hp = min(max_hp, self.ball.hp + 5.0 * delta)
+                elif active_buff == "shield":
+                    var t = self.ball.get_meta("energy_shield_timer") if self.ball.has_meta("energy_shield_timer") else 0.0
+                    if t < 2.0: self.ball.set_meta("energy_shield_timer", 2.0)
+                    if self.ball.has_method("set_meta"):
+                        self.ball.set_meta("has_shield", true)
+                    elif "has_shield" in self.ball:
+                        self.ball.has_shield = true
 
 
         if "hazards" in self.world.arena:
