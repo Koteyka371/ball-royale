@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-458] Wind glider Wings — *2026-07-03 12:42:31 UTC*
+
+A cosmetic/loadout item that increases speed and jump distance specifically when the windstorm weather is active.
+
+---
+
 ## [idea-474] Dynamic Map Hazards Mode — *2026-07-03 12:42:28 UTC*
 
 Introduce a game mode where map hazards, such as spikes, fire, and ice traps, dynamically spawn, move, or change severity as the match progresses, forcing players to adapt not just to the safe zone but also to the ever-changing terrain.
