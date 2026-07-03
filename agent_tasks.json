@@ -8687,7 +8687,7 @@
     },
     {
       "id": "idea-504",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Portal Collapse Event",
@@ -14161,6 +14161,40 @@
         "src/arena/mimic_traps.py",
         "src/arena/mimic_traps.gd",
         "tests/test_mimic_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-824",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aura Deflector Shield",
+      "description": "A booster that places a temporary reflection barrier on the ball, deflecting projectiles back at their origin rather than just absorbing them.",
+      "allowed_paths": [
+        "src/ai/aura_deflector_shield.py",
+        "src/ai/aura_deflector_shield.gd",
+        "tests/test_aura_deflector_shield.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-825",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Aura Booster",
+      "description": "An active item that gives the ball an aura that gradually pulls enemies towards the center, functioning like a moving weak gravity well, useful for combining with AoE attacks.",
+      "allowed_paths": [
+        "src/ai/shrinking_aura_booster.py",
+        "src/ai/shrinking_aura_booster.gd",
+        "tests/test_shrinking_aura_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
