@@ -816,6 +816,28 @@ func _init(ball_ref, world_ref):
 
 func execute(strategy: String, delta: float):
 
+	var glitch_time = 0.0
+	if typeof(self.ball) == TYPE_DICTIONARY:
+		if "glitch_timer" in self.ball: glitch_time = self.ball.glitch_timer
+	else:
+		if self.ball.has_method("has_meta") and self.ball.has_meta("glitch_timer"):
+			glitch_time = self.ball.get_meta("glitch_timer")
+		elif "glitch_timer" in self.ball:
+			glitch_time = self.ball.glitch_timer
+
+	if glitch_time > 0.0:
+		glitch_time -= delta
+		if typeof(self.ball) == TYPE_DICTIONARY:
+			self.ball["glitch_timer"] = glitch_time
+		else:
+			if self.ball.has_method("set_meta"):
+				self.ball.set_meta("glitch_timer", glitch_time)
+			elif "glitch_timer" in self.ball:
+				self.ball.glitch_timer = glitch_time
+		if randf() < 0.2:
+			var strats = ["flee", "wander"]
+			strategy = strats[randi() % strats.size()]
+
 	# Track state history for time_rewind
 	if typeof(self.ball) == TYPE_DICTIONARY:
 		if not self.ball.has("state_history"):
@@ -3766,6 +3788,15 @@ func execute(strategy: String, delta: float):
                         elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("stamina"):
                             var stam = self.ball.get_meta("stamina")
                             self.ball.set_meta("stamina", max(0.0, stam - 30.0 * delta))
+                        continue
+                    elif hazard.kind == "glitch_zone":
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            self.ball["glitch_timer"] = 2.0
+                        else:
+                            if self.ball.has_method("set_meta"):
+                                self.ball.set_meta("glitch_timer", 2.0)
+                            elif "glitch_timer" in self.ball:
+                                self.ball.glitch_timer = 2.0
                         continue
                     elif hazard.kind == "tall_grass":
                         if self.ball.has_method("take_damage"):
