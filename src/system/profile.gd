@@ -159,7 +159,7 @@ func do_prestige() -> bool:
                 "bonus_damage": 0
             },
             "loadouts": data.get("loadouts", {}),
-            "prestige_level": current_prestige + 1,
+                        "prestige_level": current_prestige + 1,
             "prestige_tokens": current_tokens + tokens_earned,
             "prestige_upgrades": current_upgrades,
             "quests": [],
@@ -171,6 +171,21 @@ func do_prestige() -> bool:
             "last_login_date": data.get("last_login_date", ""),
             "guild_name": data.get("guild_name", "")
         }
+
+        if current_prestige + 1 >= 5 and not data["titles"].has("Prestige V Champion"):
+            data["titles"].append("Prestige V Champion")
+            if not data["cosmetics"].has("prestige_aura_gold"):
+                data["cosmetics"].append("prestige_aura_gold")
+            if not data["unlocked_balls"].has("prestige_master"):
+                data["unlocked_balls"].append("prestige_master")
+
+        if current_prestige + 1 >= 10 and not data["titles"].has("Prestige X Grandmaster"):
+            data["titles"].append("Prestige X Grandmaster")
+            if not data["cosmetics"].has("prestige_aura_diamond"):
+                data["cosmetics"].append("prestige_aura_diamond")
+            if not data["unlocked_balls"].has("prestige_grandmaster"):
+                data["unlocked_balls"].append("prestige_grandmaster")
+
         save_profile()
         var lm = load("res://src/system/leaderboard.gd").new(self)
         lm.update_prestige("local_player", current_prestige + 1)

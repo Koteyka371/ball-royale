@@ -8734,6 +8734,10 @@ func _spawn_skill_particles(skill_name: String = ""):
             tier_multiplier = 2.0
         elif ball_skin == "legendary":
             tier_multiplier = 3.0
+        elif ball_skin == "prestige_master":
+            tier_multiplier = 4.0
+        elif ball_skin == "prestige_grandmaster":
+            tier_multiplier = 5.0
 
 
         # Configure particle properties based on skill

@@ -146,7 +146,7 @@ class ProfileManager:
                     "bonus_damage": 0
                 },
                 "loadouts": self.data.get("loadouts", {}),
-                "prestige_level": prestige_level,
+                                "prestige_level": prestige_level,
                 "prestige_tokens": current_tokens + tokens_earned,
                 "prestige_upgrades": current_upgrades,
                 "quests": [],
@@ -159,6 +159,21 @@ class ProfileManager:
                 "guild_name": self.data.get("guild_name", ""),
                 "clan_name": self.data.get("clan_name", "")
             }
+
+            if prestige_level >= 5 and "Prestige V Champion" not in self.data["titles"]:
+                self.data["titles"].append("Prestige V Champion")
+                if "prestige_aura_gold" not in self.data["cosmetics"]:
+                    self.data["cosmetics"].append("prestige_aura_gold")
+                if "prestige_master" not in self.data["unlocked_balls"]:
+                    self.data["unlocked_balls"].append("prestige_master")
+
+            if prestige_level >= 10 and "Prestige X Grandmaster" not in self.data["titles"]:
+                self.data["titles"].append("Prestige X Grandmaster")
+                if "prestige_aura_diamond" not in self.data["cosmetics"]:
+                    self.data["cosmetics"].append("prestige_aura_diamond")
+                if "prestige_grandmaster" not in self.data["unlocked_balls"]:
+                    self.data["unlocked_balls"].append("prestige_grandmaster")
+
             self.save()
             lm = LeaderboardManager("leaderboard.json", profile_manager=self)
             lm.update_prestige("local_player", prestige_level)
