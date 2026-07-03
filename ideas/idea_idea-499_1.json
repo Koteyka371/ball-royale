@@ -1,0 +1,4 @@
+{
+  "title": "Emp Grenade Hazard",
+  "description": "A new hazard type that acts like an EMP grenade, disabling robotic balls completely for 3 seconds and clearing all active buffs (like supercharge) in its radius."
+}
