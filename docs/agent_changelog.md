@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-467] Gravitational Slingshot Hazard — *2026-07-03 16:06:55 UTC*
+
+Hazards that capture balls and rapidly accelerate them in an orbit before ejecting them at a high speed in a random direction.
+
+---
+
 ## [idea-497] New Gamemode: The Floor is Lava — *2026-07-03 15:55:55 UTC*
 
 In this mode, the entire arena floor slowly turns into lava starting from the edges. Safe zones are randomly generated platforms that appear for a limited time before submerging. Players must navigate between platforms using bounce pads and careful movement.

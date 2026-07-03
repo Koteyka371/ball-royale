@@ -8057,7 +8057,7 @@
     },
     {
       "id": "idea-467",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gravitational Slingshot Hazard",
@@ -13838,6 +13838,40 @@
         "src/ai/minion_sacrifice_ability.py",
         "src/ai/minion_sacrifice_ability.gd",
         "tests/test_minion_sacrifice_ability.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-805",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Game Mode: Reverse Floor is Lava",
+      "description": "Instead of the floor turning into lava starting from the edges, the center of the map becomes lava first and expands outwards, forcing players to eventually fight on the very edges of the arena.",
+      "allowed_paths": [
+        "src/ai/game_reverse_floor_is_lava.py",
+        "src/ai/game_reverse_floor_is_lava.gd",
+        "tests/test_game_reverse_floor_is_lava.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-806",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "New Item: Hookshot",
+      "description": "Players can find and equip a Hookshot that allows them to grapple to walls or platforms quickly. This would add a ton of mobility and allow for clutch saves from falling into the lava or out of bounds.",
+      "allowed_paths": [
+        "src/ai/new_item_hookshot.py",
+        "src/ai/new_item_hookshot.gd",
+        "tests/test_new_item_hookshot.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
