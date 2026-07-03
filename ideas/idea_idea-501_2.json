@@ -1,0 +1,4 @@
+{
+    "title": "Dynamic Terraforming Hazards",
+    "description": "Implement hazards that permanently alter the arena terrain. For example, a 'Meteor' hazard could leave behind a 'Crater' that slows movement, or an 'Ice Storm' could create permanent 'Ice Patches' that cause sliding mechanics. These terrain alterations would interact with weather, e.g., a crater filling up with water during 'Rain' to create a new 'Mud Pit'."
+}
