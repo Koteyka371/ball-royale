@@ -2575,7 +2575,7 @@ class DynamicHazardsMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Dynamic Hazards"
-        self.description = "Watch out for moving hazards that traverse the arena!"
+        self.description = "Dynamic map hazards like spikes, fire, and ice traps spawn, move, or change severity."
         self.spawn_timer = 0.0
 
     def setup(self, world: Any, balls: List[Any]) -> None:
@@ -2585,16 +2585,13 @@ class DynamicHazardsMode(GameMode):
         self.spawn_timer = 0.0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
-
         super().tick(world, balls, delta)
 
         self.spawn_timer += delta
-        # Keep maximum active hazards bounded to prevent infinite lag
         max_hazards = 15
 
         if self.spawn_timer >= 3.0:
             self.spawn_timer = 0.0
-
             import random
             from arena.arena_types import Hazard
 
@@ -2612,7 +2609,6 @@ class DynamicHazardsMode(GameMode):
                     ("poison_cloud", 10.0, 45.0)
                 ])
 
-                # Severity increases over time (using current_tick / 60.0 to approx seconds)
                 time_factor = 1.0 + (getattr(world, "current_tick", 0) / 60.0) / 100.0
                 radius_mult = min(2.0, time_factor)
                 damage_mult = min(3.0, time_factor)
@@ -2624,8 +2620,8 @@ class DynamicHazardsMode(GameMode):
                                     kind=kind, damage=base_damage * damage_mult)
                 new_hazard.vx = vx
                 new_hazard.vy = vy
-                # Track original size for breathing effect
                 new_hazard.base_radius = base_radius * radius_mult
+                new_hazard.base_damage = base_damage * damage_mult
 
                 world.arena.hazards.append(new_hazard)
 
@@ -2637,12 +2633,14 @@ class DynamicHazardsMode(GameMode):
                 hazard.x += hazard.vx * delta
                 hazard.y += hazard.vy * delta
 
-                # Change severity / pulsate radius
                 if hasattr(hazard, 'base_radius'):
                     hazard.radius = hazard.base_radius + math.sin(current_time * 2.0) * 5.0
                     hazard.target_radius = hazard.radius
 
-                # Remove if out of bounds (with margin)
+                if hasattr(hazard, 'base_damage'):
+                    # Change severity over time by scaling damage with time
+                    hazard.damage = hazard.base_damage * (1.0 + math.sin(current_time) * 0.5)
+
                 margin = 200.0
                 if (-margin <= hazard.x <= world.arena.width + margin and
                     -margin <= hazard.y <= world.arena.height + margin):

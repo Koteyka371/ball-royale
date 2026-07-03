@@ -3251,7 +3251,7 @@ class DynamicHazardsMode extends GameMode:
 	func _init():
 		super()
 		name = "Dynamic Hazards"
-		description = "Watch out for moving hazards that traverse the arena!"
+		description = "Dynamic map hazards like spikes, fire, and ice traps spawn, move, or change severity."
 
 	func setup(world, balls):
 		super.setup(world, balls)
@@ -3291,17 +3291,19 @@ class DynamicHazardsMode extends GameMode:
 				var damage_mult = min(3.0, time_factor)
 
 				var base_radius = h_type["radius"] * radius_mult
+				var base_damage = h_type["damage"] * damage_mult
 				var ProceduralArena = load("res://src/arena/procedural_arena.gd")
 				var new_hazard = ProceduralArena.Hazard.new(
 					world.arena.hazards.size() + rng.randi_range(1000, 9999),
 					x, y, base_radius,
-					h_type["kind"], h_type["damage"] * damage_mult
+					h_type["kind"], base_damage
 				)
 
 				if new_hazard.has_method("set_meta"):
 					new_hazard.set_meta("vx", vx)
 					new_hazard.set_meta("vy", vy)
 					new_hazard.set_meta("base_radius", base_radius)
+					new_hazard.set_meta("base_damage", base_damage)
 
 				world.arena.hazards.append(new_hazard)
 
@@ -3317,6 +3319,9 @@ class DynamicHazardsMode extends GameMode:
 				if hazard.has_meta("base_radius"):
 					hazard.radius = hazard.get_meta("base_radius") + sin(current_time * 2.0) * 5.0
 					hazard.target_radius = hazard.radius
+
+				if hazard.has_meta("base_damage"):
+					hazard.damage = hazard.get_meta("base_damage") * (1.0 + sin(current_time) * 0.5)
 
 				var margin = 200.0
 				if hazard.x >= -margin and hazard.x <= world.arena.width + margin and \
