@@ -8363,7 +8363,7 @@
     },
     {
       "id": "idea-485",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Prestige Mastery Milestones",
@@ -13581,6 +13581,23 @@
         "src/ai/mutator_voting.py",
         "src/ai/mutator_voting.gd",
         "tests/test_mutator_voting.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-790",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "EM-Pulse Booster",
+      "description": "A new collectible booster that disables all enemy skills and removes their shields within a large radius upon collection. Temporarily turns off certain arena hazards like lasers and gravity wells.",
+      "allowed_paths": [
+        "src/ai/em_pulse_booster.py",
+        "src/ai/em_pulse_booster.gd",
+        "tests/test_em_pulse_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

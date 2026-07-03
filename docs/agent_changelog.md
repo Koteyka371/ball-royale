@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-485] Prestige Mastery Milestones — *2026-07-03 14:24:12 UTC*
+
+Enhance the prestige system by granting exclusive titles, visual auras, and a custom ball type skin for every milestone (e.g., Prestige 5, Prestige 10). It incentivizes long-term engagement and lets veteran players flex their progress visually in the lobby.
+
+---
+
 ## [idea-444] Glitch Zone Hazard — *2026-07-03 14:11:44 UTC*
 
 Add a new hazard called 'Glitch Zone'. When a ball enters this zone, its inputs are randomized or delayed for a short period, simulating a hacked or glitched state. This would add an element of unpredictability and require careful pathing to avoid.
