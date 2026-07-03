@@ -714,6 +714,21 @@ func update_zone(current_tick: int, delta: float) -> void:
                         h.set_meta("vx", h.get_meta("vx") * -1.0)
                     if h.y < 0 or h.y > height:
                         h.set_meta("vy", h.get_meta("vy") * -1.0)
+            elif "kind" in h and h.kind == "tornado_warning":
+                if h.has_meta("duration"):
+                    var dur = h.get_meta("duration") - delta
+                    h.set_meta("duration", dur)
+                    if dur <= 0:
+                        if h.has_method("set_meta"):
+                            h.set_meta("active", false)
+                        if "active" in h:
+                            h.active = false
+                        var HazardClass = load("res://src/arena/procedural_arena.gd").Hazard
+                        var tornado = HazardClass.new(8000 + hazards.size() + (randi() % 1000), h.x, h.y, h.radius, "tornado", 20.0)
+                        tornado.set_meta("duration", 5.0)
+                        tornado.set_meta("vx", randf_range(-100.0, 100.0))
+                        tornado.set_meta("vy", randf_range(-100.0, 100.0))
+                        new_craters.append(tornado)
             elif "kind" in h and (h.kind == "fire_ring" or h.kind == "poison_nova"):
                 if h.has_meta("duration"):
                     var dur = h.get_meta("duration") - delta

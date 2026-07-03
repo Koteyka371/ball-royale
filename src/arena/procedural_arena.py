@@ -608,6 +608,18 @@ class ProceduralArena:
                         if hasattr(h, "vx"): h.vx *= -1
                     if h.y < 0 or h.y > self.height:
                         if hasattr(h, "vy"): h.vy *= -1
+                elif getattr(h, "kind", "") == "tornado_warning":
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0:
+                            h.active = False
+                            import random
+                            tornado_id = 8000 + len(self.hazards) + random.randint(0, 1000)
+                            tornado = Hazard(id=tornado_id, x=h.x, y=h.y, radius=h.radius, kind="tornado", damage=20.0)
+                            setattr(tornado, 'duration', 5.0)
+                            setattr(tornado, 'vx', random.uniform(-100.0, 100.0))
+                            setattr(tornado, 'vy', random.uniform(-100.0, 100.0))
+                            new_craters.append(tornado)
                 elif getattr(h, "kind", "") == "fire_ring" or getattr(h, "kind", "") == "poison_nova":
                     if hasattr(h, "duration"):
                         h.duration -= delta
