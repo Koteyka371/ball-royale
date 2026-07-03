@@ -7666,7 +7666,7 @@
     },
     {
       "id": "idea-444",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Glitch Zone Hazard",
@@ -13547,6 +13547,40 @@
         "src/ai/decoy_confusion_effect.py",
         "src/ai/decoy_confusion_effect.gd",
         "tests/test_decoy_confusion_effect.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-788",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weekend Boss Invasion",
+      "description": "On weekends, there's a chance a massive Juggernaut Boss spawns in the center of the arena during standard matches. Players must decide whether to team up against the boss for massive rewards or use the chaos to eliminate each other.",
+      "allowed_paths": [
+        "src/ai/weekend_boss_invasion.py",
+        "src/ai/weekend_boss_invasion.gd",
+        "tests/test_weekend_boss_invasion.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-789",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mutator Voting System",
+      "description": "Players can spend earned skill points or a new currency to vote on which mutators will be active for the next match, adding a strategic meta-layer to the lobby experience.",
+      "allowed_paths": [
+        "src/ai/mutator_voting.py",
+        "src/ai/mutator_voting.gd",
+        "tests/test_mutator_voting.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

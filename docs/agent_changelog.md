@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-444] Glitch Zone Hazard — *2026-07-03 14:11:44 UTC*
+
+Add a new hazard called 'Glitch Zone'. When a ball enters this zone, its inputs are randomized or delayed for a short period, simulating a hacked or glitched state. This would add an element of unpredictability and require careful pathing to avoid.
+
+---
+
 ## [idea-486] Daily Challenge Modifier Mode — *2026-07-03 13:43:23 UTC*
 
 Introduce a new game mode that randomly applies extreme global mutators daily (e.g., 'Low Gravity + Double Damage' or 'Invisible Hazards'). Players who participate and survive receive exclusive cosmetic rewards and bonus skill points, creating an ever-changing meta.
