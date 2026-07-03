@@ -1,0 +1,4 @@
+{
+    "title": "Vampiric Drain Aura Hazard",
+    "description": "A hazard that slowly drains health from any ball inside its radius and redistributes it to the ball with the lowest health on the map."
+}

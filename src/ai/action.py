@@ -462,8 +462,9 @@ class Action:
                                         if getattr(b, "alive", True) and getattr(b, "id", None) != getattr(next_entity, "owner_id", None):
                                             dist_burst = ((b.x - next_entity.x)**2 + (b.y - next_entity.y)**2)**0.5
                                             if dist_burst <= 200.0:
-                                                b.is_emped = True
-                                                b.emp_timer = 4.0
+                                                if getattr(b, "emp_immune_timer", 0.0) <= 0.0:
+                                                    b.is_emped = True
+                                                    b.emp_timer = 4.0
                                                 b.silence_timer = max(getattr(b, "silence_timer", 0.0), 3.0)
                                                 if hasattr(b, "skill_timer"):
                                                     b.skill_timer = max(getattr(b, "skill_timer", 0.0), 3.0)
@@ -2158,7 +2159,7 @@ class Action:
                                         self.ball.blindness_timer = max(getattr(self.ball, "blindness_timer", 0.0), 3.0)
                                     hazard.duration = 0.0
                                 elif trap_variant == "emp":
-                                    if not getattr(self.ball, "is_emped", False):
+                                    if not getattr(self.ball, "is_emped", False) and getattr(self.ball, "emp_immune_timer", 0.0) <= 0.0:
                                         self.ball.is_emped = True
                                         self.ball.emp_timer = 2.0
                                         # Reset positive buffs and disable abilities by increasing skill_timer
@@ -2285,10 +2286,11 @@ class Action:
                             continue
 
                         elif hazard.kind == "emp_burst":
-                            self.ball.is_scrambled = True
-                            self.ball.scramble_timer = 3.0
-                            if hasattr(self, "_spawn_skill_particles"):
-                                self._spawn_skill_particles("emp")
+                            if getattr(self.ball, "emp_immune_timer", 0.0) <= 0.0:
+                                self.ball.is_scrambled = True
+                                self.ball.scramble_timer = 3.0
+                                if hasattr(self, "_spawn_skill_particles"):
+                                    self._spawn_skill_particles("emp")
                             continue
                         elif hazard.kind == "poison_nova":
                             dx = self.ball.x - hazard.x
@@ -2861,6 +2863,9 @@ class Action:
             self.ball.scramble_timer = getattr(self.ball, "scramble_timer", 0.0) - delta
             if self.ball.scramble_timer <= 0:
                 self.ball.is_scrambled = False
+        if getattr(self.ball, "emp_immune_timer", 0.0) > 0.0:
+            self.ball.emp_immune_timer -= delta
+
         if getattr(self.ball, "is_emped", False):
             self.ball.emp_timer = getattr(self.ball, "emp_timer", 0.0) - delta
             if self.ball.emp_timer <= 0:
@@ -4467,6 +4472,13 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "aura_booster":
                     self.ball.aura_booster_timer = 15.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "emp_immune_booster":
+                    self.ball.emp_immune_timer = 15.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)

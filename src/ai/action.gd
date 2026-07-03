@@ -3459,7 +3459,10 @@ func execute(strategy: String, delta: float):
                                 elif self.ball.has_method("get_meta") and self.ball.has_meta("is_emped"):
                                     is_emped = self.ball.get_meta("is_emped")
 
-                                if not is_emped:
+                                var emp_immune_timer = 0.0
+                                if "emp_immune_timer" in self.ball: emp_immune_timer = self.ball.emp_immune_timer
+                                elif self.ball.has_method("get_meta") and self.ball.has_meta("emp_immune_timer"): emp_immune_timer = self.ball.get_meta("emp_immune_timer")
+                                if not is_emped and emp_immune_timer <= 0.0:
                                     if "is_emped" in self.ball:
                                         self.ball.is_emped = true
                                         self.ball.emp_timer = 2.0
@@ -3680,17 +3683,22 @@ func execute(strategy: String, delta: float):
                         continue
 
                     elif hazard.kind == "emp_burst":
-                        if "is_scrambled" in self.ball:
-                            self.ball.is_scrambled = true
-                            if "scramble_timer" in self.ball:
-                                self.ball.scramble_timer = 3.0
-                            else:
+                        var emp_immune_timer = 0.0
+                        if "emp_immune_timer" in self.ball: emp_immune_timer = self.ball.emp_immune_timer
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("emp_immune_timer"): emp_immune_timer = self.ball.get_meta("emp_immune_timer")
+
+                        if emp_immune_timer <= 0.0:
+                            if "is_scrambled" in self.ball:
+                                self.ball.is_scrambled = true
+                                if "scramble_timer" in self.ball:
+                                    self.ball.scramble_timer = 3.0
+                                else:
+                                    self.ball.set_meta("scramble_timer", 3.0)
+                            elif self.ball.has_method("set_meta"):
+                                self.ball.set_meta("is_scrambled", true)
                                 self.ball.set_meta("scramble_timer", 3.0)
-                        elif self.ball.has_method("set_meta"):
-                            self.ball.set_meta("is_scrambled", true)
-                            self.ball.set_meta("scramble_timer", 3.0)
-                        if self.has_method("_spawn_skill_particles"):
-                            self._spawn_skill_particles("emp")
+                            if self.has_method("_spawn_skill_particles"):
+                                self._spawn_skill_particles("emp")
                         continue
                     elif hazard.kind == "poison_nova":
                         var dx = self.ball.x - hazard.x
@@ -4532,6 +4540,17 @@ func execute(strategy: String, delta: float):
             if scr_timer <= 0:
                 if "is_scrambled" in self.ball: self.ball.is_scrambled = false
                 elif self.ball.has_method("set_meta"): self.ball.set_meta("is_scrambled", false)
+
+    var emp_immune_timer = 0.0
+    if "emp_immune_timer" in self.ball:
+        emp_immune_timer = self.ball.emp_immune_timer
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("emp_immune_timer"):
+        emp_immune_timer = self.ball.get_meta("emp_immune_timer")
+
+    if emp_immune_timer > 0.0:
+        emp_immune_timer -= delta
+        if "emp_immune_timer" in self.ball: self.ball.emp_immune_timer = emp_immune_timer
+        elif self.ball.has_method("set_meta"): self.ball.set_meta("emp_immune_timer", emp_immune_timer)
 
     var is_emped = false
     if "is_emped" in self.ball:
@@ -7229,6 +7248,22 @@ func _collect_booster(delta: float):
                     var idx = world.boosters.find(nearest)
                     if idx != -1:
                         world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "emp_immune_booster":
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("emp_immune_timer", 15.0)
+                elif "emp_immune_timer" in self.ball:
+                    self.ball.emp_immune_timer = 15.0
+                else:
+                    self.ball.set_meta("emp_immune_timer", 15.0)
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var h_idx = self.world.arena.hazards.find(nearest)
+                    if h_idx != -1:
+                        self.world.arena.hazards.remove_at(h_idx)
+                if self.world != null and "boosters" in self.world:
+                    var b_idx = self.world.boosters.find(nearest)
+                    if b_idx != -1:
+                        self.world.boosters.remove_at(b_idx)
             elif "kind" in nearest and nearest.kind == "vision_booster":
                 if self.ball.has_method("set_meta"):
                     self.ball.set_meta("vision_booster_timer", 15.0)
