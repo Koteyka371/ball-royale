@@ -713,6 +713,9 @@ class ProceduralArena:
                 elif random.random() < 0.1:
                     kind = "breakable_wall"
                     damage = 0.0
+                elif random.random() < 0.05:
+                    kind = "launch_pad"
+                    damage = 0.0
                 elif random.random() < 0.1:
                     kind = "bounce_pad"
                     damage = 0.0
@@ -769,6 +772,11 @@ class ProceduralArena:
                         kind = "trap"
                         damage = 100.0
                 new_hazard = Hazard(id=h_id, x=x, y=y, radius=10.0, kind=kind, damage=damage)
+                if kind == "launch_pad":
+                    target_lx = random.uniform(200, self.width - 200)
+                    target_ly = random.uniform(200, self.height - 200)
+                    setattr(new_hazard, "target_x", target_lx)
+                    setattr(new_hazard, "target_y", target_ly)
                 if kind == "temporal_rift":
                     setattr(new_hazard, "time_scale", random.choice([0.5, 1.5, 2.0]))
                 elif kind == "breakable_wall":
