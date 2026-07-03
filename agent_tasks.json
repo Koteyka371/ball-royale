@@ -8721,7 +8721,7 @@
     },
     {
       "id": "idea-506",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Season-Themed Dynamic Arenas",
@@ -13957,6 +13957,40 @@
         "src/arena/aura_reversal_trap.py",
         "src/arena/aura_reversal_trap.gd",
         "tests/test_aura_reversal_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-812",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Evolution Boss Events",
+      "description": "Upon a player reaching their maximum evolution tier, occasionally spawn a powerful corrupted clone of their base class as a world boss to challenge them.",
+      "allowed_paths": [
+        "src/ai/evolution_boss_events.py",
+        "src/ai/evolution_boss_events.gd",
+        "tests/test_evolution_boss_events.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-813",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Skill Tree Specializations",
+      "description": "Add a skill tree where balls can choose different passive upgrades at specific levels, independently of class evolution.",
+      "allowed_paths": [
+        "src/ai/skill_tree_specializations.py",
+        "src/ai/skill_tree_specializations.gd",
+        "tests/test_skill_tree_specializations.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

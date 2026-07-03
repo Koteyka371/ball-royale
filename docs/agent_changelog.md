@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-506] Season-Themed Dynamic Arenas — *2026-07-03 16:57:39 UTC*
+
+During specific seasons, the procedural arena generation includes seasonal hazards or aesthetics. For example, during a 'Winter' season, the arena could generate slippery ice patches and snowman decoys, while a 'Summer' season could feature sun-flare hazards and sand-trap zones. This would keep the gameplay visually and mechanically fresh.
+
+---
+
 ## [idea-480] Class Evolution Paths on Level Up — *2026-07-03 16:33:43 UTC*
 
 Expand the mid-match level-up system so that at specific milestone levels (e.g., Level 5 and 10), balls can choose a subclass evolution (e.g., a Warrior evolving into a Paladin or Berserker), changing their abilities dynamically.
