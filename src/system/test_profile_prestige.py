@@ -44,3 +44,15 @@ def test_prestige_milestones(temp_profile_file):
     assert "Prestige X Grandmaster" in pm.data["titles"]
     assert "prestige_aura_diamond" in pm.data["cosmetics"]
     assert "prestige_grandmaster" in pm.data["unlocked_balls"]
+
+    # Fast forward to prestige 14
+    pm.data["prestige_level"] = 14
+    pm.data["unlocked_balls"] = ["basic"] * pm.TOTAL_BALLS
+    pm.data["bonuses"] = {"bonus_hp": 10, "bonus_speed": 10, "bonus_damage": 10}
+
+    # Test Prestige 15 Milestone
+    assert pm.do_prestige() is True
+    assert pm.data["prestige_level"] == 15
+    assert "Prestige XV Legend" in pm.data["titles"]
+    assert "prestige_aura_tier_15" in pm.data["cosmetics"]
+    assert "prestige_skin_15" in pm.data["unlocked_balls"]

@@ -142,6 +142,19 @@ func can_prestige() -> bool:
     var maxed_damage = bonuses.get("bonus_damage", 0) >= MAX_BONUS_LEVEL
     return unlocked_all_balls and maxed_hp and maxed_speed and maxed_damage
 
+
+func _to_roman(num: int) -> String:
+    var val = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1]
+    var syb = ["M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"]
+    var roman_num = ""
+    var i = 0
+    while num > 0:
+        for _k in range(num / val[i]):
+            roman_num += syb[i]
+            num -= val[i]
+        i += 1
+    return roman_num
+
 func do_prestige() -> bool:
     if can_prestige():
         var current_prestige = data.get("prestige_level", 0)
@@ -172,19 +185,36 @@ func do_prestige() -> bool:
             "guild_name": data.get("guild_name", "")
         }
 
-        if current_prestige + 1 >= 5 and not data["titles"].has("Prestige V Champion"):
-            data["titles"].append("Prestige V Champion")
-            if not data["cosmetics"].has("prestige_aura_gold"):
-                data["cosmetics"].append("prestige_aura_gold")
-            if not data["unlocked_balls"].has("prestige_master"):
-                data["unlocked_balls"].append("prestige_master")
+        var new_prestige = current_prestige + 1
+        var level = 5
+        while level <= new_prestige:
+            if level == 5:
+                if not data["titles"].has("Prestige V Champion"):
+                    data["titles"].append("Prestige V Champion")
+                if not data["cosmetics"].has("prestige_aura_gold"):
+                    data["cosmetics"].append("prestige_aura_gold")
+                if not data["unlocked_balls"].has("prestige_master"):
+                    data["unlocked_balls"].append("prestige_master")
+            elif level == 10:
+                if not data["titles"].has("Prestige X Grandmaster"):
+                    data["titles"].append("Prestige X Grandmaster")
+                if not data["cosmetics"].has("prestige_aura_diamond"):
+                    data["cosmetics"].append("prestige_aura_diamond")
+                if not data["unlocked_balls"].has("prestige_grandmaster"):
+                    data["unlocked_balls"].append("prestige_grandmaster")
+            else:
+                var roman = _to_roman(level)
+                var title = "Prestige " + roman + " Legend"
+                var aura = "prestige_aura_tier_" + str(level)
+                var skin = "prestige_skin_" + str(level)
 
-        if current_prestige + 1 >= 10 and not data["titles"].has("Prestige X Grandmaster"):
-            data["titles"].append("Prestige X Grandmaster")
-            if not data["cosmetics"].has("prestige_aura_diamond"):
-                data["cosmetics"].append("prestige_aura_diamond")
-            if not data["unlocked_balls"].has("prestige_grandmaster"):
-                data["unlocked_balls"].append("prestige_grandmaster")
+                if not data["titles"].has(title):
+                    data["titles"].append(title)
+                if not data["cosmetics"].has(aura):
+                    data["cosmetics"].append(aura)
+                if not data["unlocked_balls"].has(skin):
+                    data["unlocked_balls"].append(skin)
+            level += 5
 
         save_profile()
         var lm = load("res://src/system/leaderboard.gd").new(self)
