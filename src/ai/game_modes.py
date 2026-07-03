@@ -2200,6 +2200,7 @@ class CustomMatchMode(GameMode):
         self.name = "Custom Match"
         self.description = "Custom match with mutator options if Prestige Level >= 5."
         self.mutators = []
+        self._rewards_given = False
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -5222,10 +5223,78 @@ class DynamicSafeZoneMode(GameMode):
             return list(teams_alive)[0]
         return None
 
+
+class DailyMutatorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Daily Mutator"
+        self.description = "Randomly applies extreme global mutators daily. Surviving grants exclusive rewards."
+        self.mutators = []
+        self._rewards_given = False
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        import time
+        current_day = int(time.time() / (24 * 3600))
+
+        mutator_combinations = [
+            ["low_gravity", "double_damage"],
+            ["invisible_hazards"],
+            ["high_speed", "vampirism"],
+            ["global_hp", "global_cooldown"]
+        ]
+
+        self.mutators = mutator_combinations[current_day % len(mutator_combinations)]
+
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator":
+                if "low_gravity" in self.mutators:
+                    b.mass = getattr(b, "mass", 1.0) * 0.5
+                if "double_damage" in self.mutators:
+                    b.base_damage = getattr(b, "base_damage", getattr(b, "damage", 10)) * 2.0
+                    b.damage = getattr(b, "damage", 10) * 2.0
+                if "high_speed" in self.mutators:
+                    b.base_speed = getattr(b, "base_speed", getattr(b, "speed", 100)) * 1.5
+                    b.speed = getattr(b, "speed", 100) * 1.5
+                if "vampirism" in self.mutators:
+                    b.lifesteal = getattr(b, "lifesteal", 0.0) + 0.5
+                if "global_hp" in self.mutators:
+                    b.max_hp = getattr(b, "max_hp", 100.0) * 0.5
+                    b.hp = getattr(b, "hp", 100.0) * 0.5
+                if "global_cooldown" in self.mutators:
+                    b.skill_cooldown = getattr(b, "skill_cooldown", 5.0) * 0.5
+
+        if "invisible_hazards" in self.mutators and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards:
+                h.invisible = True
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        teams_alive = set()
+        balls_alive = []
+        for b in balls:
+            if getattr(b, "alive", True) and getattr(b, "ball_type", None) != "spectator":
+                teams_alive.add(getattr(b, "team", b.ball_type))
+                balls_alive.append(b)
+
+        if len(teams_alive) <= 1 and len(balls_alive) > 0 and len(teams_alive) > 0 and not getattr(self, "_rewards_given", False):
+            self._rewards_given = True
+            # Match is over, give rewards to survivors
+            pm = getattr(world, "profile_manager", None)
+            if pm:
+                if hasattr(pm, "add_cosmetic"):
+                    pm.add_cosmetic("Daily Survivor Crown")
+                for b in balls_alive:
+                    b.skill_points = getattr(b, "skill_points", 0) + 10
+
+
 GAME_MODES = {
 
 
     "geometric_zone": GeometricZoneMode(),
+    "daily_mutator": DailyMutatorMode(),
     "factory": FactoryMode(),
     "mirror_walls": MirrorWallsMode(),
     "stamina_regen": StaminaRegenMode(),

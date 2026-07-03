@@ -6500,10 +6500,113 @@ class DynamicSafeZoneMode extends GameMode:
                         b.alive = false
                         b.hp = 0
 
+
+class DailyMutatorMode extends GameMode:
+	var mutators: Array = []
+	var _rewards_given: bool = false
+
+	func _init():
+		name = "Daily Mutator"
+		description = "Randomly applies extreme global mutators daily. Surviving grants exclusive rewards."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if not world.has("dead_balls"):
+			world.dead_balls = []
+
+		var current_day = int(Time.get_unix_time_from_system() / (24.0 * 3600.0))
+		var mutator_combinations = [
+			["low_gravity", "double_damage"],
+			["invisible_hazards"],
+			["high_speed", "vampirism"],
+			["global_hp", "global_cooldown"]
+		]
+
+		mutators = mutator_combinations[current_day % mutator_combinations.size()]
+
+		for b in balls:
+			var is_dict = typeof(b) == TYPE_DICTIONARY
+			var b_type = b.get("ball_type", "") if is_dict else b.ball_type
+			if b_type != "spectator":
+				if "low_gravity" in mutators:
+					if is_dict:
+						b["mass"] = b.get("mass", 1.0) * 0.5
+					else:
+						b.mass = b.get("mass", 1.0) * 0.5
+				if "double_damage" in mutators:
+					if is_dict:
+						b["base_damage"] = b.get("base_damage", b.get("damage", 10.0)) * 2.0
+						b["damage"] = b.get("damage", 10.0) * 2.0
+					else:
+						b.base_damage = b.get("base_damage", b.get("damage", 10.0)) * 2.0
+						b.damage = b.get("damage", 10.0) * 2.0
+				if "high_speed" in mutators:
+					if is_dict:
+						b["base_speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.5
+						b["speed"] = b.get("speed", 100.0) * 1.5
+					else:
+						b.base_speed = b.get("base_speed", b.get("speed", 100.0)) * 1.5
+						b.speed = b.get("speed", 100.0) * 1.5
+				if "vampirism" in mutators:
+					if is_dict:
+						b["lifesteal"] = b.get("lifesteal", 0.0) + 0.5
+					else:
+						b.lifesteal = b.get("lifesteal", 0.0) + 0.5
+				if "global_hp" in mutators:
+					if is_dict:
+						b["max_hp"] = b.get("max_hp", 100.0) * 0.5
+						b["hp"] = b.get("hp", 100.0) * 0.5
+					else:
+						b.max_hp = b.get("max_hp", 100.0) * 0.5
+						b.hp = b.get("hp", 100.0) * 0.5
+				if "global_cooldown" in mutators:
+					if is_dict:
+						b["skill_cooldown"] = b.get("skill_cooldown", 5.0) * 0.5
+					else:
+						b.skill_cooldown = b.get("skill_cooldown", 5.0) * 0.5
+
+		if "invisible_hazards" in mutators and world.has("arena") and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+				for h in world.arena.hazards:
+					h["invisible"] = true
+			elif typeof(world.arena) == TYPE_OBJECT and world.arena.get("hazards") != null:
+				for h in world.arena.hazards:
+					if typeof(h) == TYPE_DICTIONARY:
+						h["invisible"] = true
+					else:
+						h.invisible = true
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		var teams_alive = {}
+		var balls_alive = []
+		for b in balls:
+			var is_dict = typeof(b) == TYPE_DICTIONARY
+			var b_alive = b.get("alive", true) if is_dict else b.alive
+			var b_type = b.get("ball_type", "") if is_dict else b.ball_type
+			var b_team = b.get("team", b_type) if is_dict else b.get("team", b_type)
+
+			if b_alive and b_type != "spectator":
+				teams_alive[b_team] = true
+				balls_alive.append(b)
+
+		if teams_alive.size() <= 1 and balls_alive.size() > 0 and teams_alive.size() > 0 and not _rewards_given:
+			_rewards_given = true
+			var pm = world.get("profile_manager") if typeof(world) == TYPE_DICTIONARY else world.get("profile_manager")
+			if pm != null:
+				if pm.has_method("add_cosmetic"):
+					pm.call("add_cosmetic", "Daily Survivor Crown")
+				for b in balls_alive:
+					var is_dict = typeof(b) == TYPE_DICTIONARY
+					if is_dict:
+						b["skill_points"] = b.get("skill_points", 0) + 10
+					else:
+						b.skill_points = b.get("skill_points", 0) + 10
+
 var GAME_MODES = {
 
 
 	"geometric_zone": GeometricZoneMode.new(),
+	"daily_mutator": DailyMutatorMode.new(),
 	"factory": FactoryMode.new(),
     "mirror_walls": MirrorWallsMode.new(),
     "stamina_regen": StaminaRegenMode.new(),
