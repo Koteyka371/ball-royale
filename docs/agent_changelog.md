@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-478] Decoy Ball Mechanic — *2026-07-03 13:15:35 UTC*
+
+Introduce a deployable 'Decoy' that mimics the player's current ball type and health. AI enemies will occasionally lock onto the decoy if they fail a perception check, absorbing damage while giving the player an opportunity to escape or ambush.
+
+---
+
 ## [idea-420] Magnetic Fields Hazard — *2026-07-03 13:15:31 UTC*
 
 Hazards that exert continuous pushing or pulling forces on players within their area of effect.
