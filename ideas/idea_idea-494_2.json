@@ -1,0 +1,4 @@
+{
+  "title": "Gambling Node",
+  "description": "Similar to Black Market nodes, there is a rare, static Gambling Node. Players can deposit a varying amount of currency into it. The node rolls a random number and has a chance to either double the currency, steal it entirely, or trigger an immediate explosion dealing heavy area-of-effect damage."
+}

@@ -5290,7 +5290,136 @@ class DailyMutatorMode(GameMode):
                     b.skill_points = getattr(b, "skill_points", 0) + 10
 
 
+
+class BlackMarketMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Black Market"
+        self.description = "Collect currency to buy upgrades from wandering Black Markets."
+        self.currency_spawn_timer = 0.0
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "currency_pickups"):
+            world.currency_pickups = []
+        if not hasattr(world, "black_markets"):
+            world.black_markets = []
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        # Spawn some initial currency
+        import random
+        for _ in range(15):
+            world.currency_pickups.append({
+                "x": random.uniform(50, arena_width - 50),
+                "y": random.uniform(50, arena_height - 50),
+                "type": "currency"
+            })
+
+        # Spawn Black Markets
+        for _ in range(2):
+            world.black_markets.append({
+                "x": random.uniform(100, arena_width - 100),
+                "y": random.uniform(100, arena_height - 100),
+                "vx": random.uniform(-20, 20),
+                "vy": random.uniform(-20, 20),
+                "radius": 40.0
+            })
+
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator":
+                b.currency = getattr(b, "currency", 0)
+                b.team = getattr(b, "team", b.ball_type)
+                b.purchase_cooldown = 0.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import math
+        import random
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        # Spawn currency
+        self.currency_spawn_timer += delta
+        if self.currency_spawn_timer >= 2.0:
+            self.currency_spawn_timer = 0.0
+            if len(world.currency_pickups) < 30:
+                world.currency_pickups.append({
+                    "x": random.uniform(50, arena_width - 50),
+                    "y": random.uniform(50, arena_height - 50),
+                    "type": "currency"
+                })
+
+        # Move Black Markets
+        for bm in world.black_markets:
+            bm["x"] += bm["vx"] * delta
+            bm["y"] += bm["vy"] * delta
+
+            if bm["x"] < bm["radius"] or bm["x"] > arena_width - bm["radius"]:
+                bm["vx"] *= -1
+                bm["x"] = max(bm["radius"], min(arena_width - bm["radius"], bm["x"]))
+            if bm["y"] < bm["radius"] or bm["y"] > arena_height - bm["radius"]:
+                bm["vy"] *= -1
+                bm["y"] = max(bm["radius"], min(arena_height - bm["radius"], bm["y"]))
+
+        # Ball interactions
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            b.purchase_cooldown = max(0.0, getattr(b, "purchase_cooldown", 0.0) - delta)
+
+            # Collect currency
+            pickups_to_remove = []
+            for c in world.currency_pickups:
+                dx = b.x - c["x"]
+                dy = b.y - c["y"]
+                dist = math.sqrt(dx*dx + dy*dy)
+                if dist <= getattr(b, "radius", 10.0) + 15.0:
+                    b.currency = getattr(b, "currency", 0) + 1
+                    pickups_to_remove.append(c)
+
+            for c in pickups_to_remove:
+                if c in world.currency_pickups:
+                    world.currency_pickups.remove(c)
+
+            # Purchase upgrades
+            if getattr(b, "purchase_cooldown", 0.0) <= 0.0 and getattr(b, "currency", 0) >= 5:
+                for bm in world.black_markets:
+                    dx = b.x - bm["x"]
+                    dy = b.y - bm["y"]
+                    dist = math.sqrt(dx*dx + dy*dy)
+                    if dist <= getattr(b, "radius", 10.0) + bm["radius"]:
+                        b.currency -= 5
+                        b.purchase_cooldown = 5.0
+
+                        # Apply random upgrade
+                        upgrade_type = random.choice(["max_hp", "speed", "damage"])
+                        if upgrade_type == "max_hp":
+                            if not hasattr(b, "base_max_hp"):
+                                b.base_max_hp = getattr(b, "max_hp", 100.0)
+                            b.base_max_hp += 20.0
+                            b.max_hp = b.base_max_hp
+                            b.hp = min(getattr(b, "hp", 100.0) + 20.0, b.max_hp)
+                        elif upgrade_type == "speed":
+                            if not hasattr(b, "base_speed"):
+                                b.base_speed = getattr(b, "speed", 100.0)
+                            b.base_speed += 15.0
+                            b.speed = b.base_speed
+                        elif upgrade_type == "damage":
+                            if not hasattr(b, "base_damage"):
+                                b.base_damage = getattr(b, "damage", 10.0)
+                            b.base_damage += 5.0
+                            b.damage = b.base_damage
+
+                        if hasattr(world, "add_event"):
+                            world.add_event("upgrade_purchased", {"ball": b, "upgrade": upgrade_type})
+                        break
+
 GAME_MODES = {
+    "black_market": BlackMarketMode(),
 
 
     "geometric_zone": GeometricZoneMode(),
