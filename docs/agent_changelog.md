@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-450] Shrinking Safe Zones with Multi-Buffs — *2026-07-03 12:11:08 UTC*
+
+Introduce dynamic safe zones that not only protect from environmental damage but also apply randomized buffs (like increased speed or damage) for a short duration, encouraging players to fight for the optimal spot inside the zone.
+
+---
+
 ## [idea-417] Teleporting Decoy — *2026-07-03 12:03:52 UTC*
 
 Allow players to reactivate the decoy skill to instantly swap positions with their active decoy, providing superior mobility and evasion.

@@ -7768,7 +7768,7 @@
     },
     {
       "id": "idea-450",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Safe Zones with Multi-Buffs",
@@ -13156,6 +13156,57 @@
         "src/ai/friction_zones.py",
         "src/ai/friction_zones.gd",
         "tests/test_friction_zones.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-765",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Teleport Trails",
+      "description": "Swapping with a decoy leaves a brief electric trail between the original and new position that damages enemies who cross it.",
+      "allowed_paths": [
+        "src/ai/teleport_trails.py",
+        "src/ai/teleport_trails.gd",
+        "tests/test_teleport_trails.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-766",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravitational Anomaly",
+      "description": "A random event that alters the physics of the arena. Projectiles curve, movement speed is affected depending on the direction of travel relative to the anomaly's center.",
+      "allowed_paths": [
+        "src/ai/gravitational_anomaly.py",
+        "src/ai/gravitational_anomaly.gd",
+        "tests/test_gravitational_anomaly.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-767",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tornado Surfing Skill",
+      "description": "A specific ball type or skill that allows the entity to intentionally enter a tornado to gain a massive speed boost and be launched across the map instead of taking damage.",
+      "allowed_paths": [
+        "src/ai/tornado_surfing_skill.py",
+        "src/ai/tornado_surfing_skill.gd",
+        "tests/test_tornado_surfing_skill.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
