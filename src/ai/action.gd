@@ -4537,6 +4537,23 @@ func _get_enemies_internal() -> Array:
                     if e_type != b_type and e_type != "spectator":
                         enemies.append(e)
 
+    var filtered_enemies = []
+    for e in enemies:
+        var is_decoy = false
+        if "is_decoy" in e:
+            is_decoy = e.is_decoy
+        elif e.has_method("has_meta") and e.has_meta("is_decoy"):
+            is_decoy = e.get_meta("is_decoy")
+
+        if is_decoy:
+            var enemy_id = self.ball.id if "id" in self.ball else 0
+            var decoy_id = e.id if "id" in e else 0
+            if ((enemy_id * 31) + decoy_id) % 100 > 50:
+                filtered_enemies.append(e)
+        else:
+            filtered_enemies.append(e)
+    enemies = filtered_enemies
+
     if enemies.size() == 0 and self.world != null and "balls" in self.world:
         for b in self.world.balls:
             var is_decoy = b.is_decoy if "is_decoy" in b else (b.get_meta("is_decoy") if b.has_method("has_meta") and b.has_meta("is_decoy") else false)
@@ -6338,8 +6355,8 @@ func _collect_booster(delta: float):
                     if "id" in decoy:
                         decoy.id = randi() % 90000 + 10000
                     if "hp" in decoy and "max_hp" in decoy:
-                        decoy.max_hp = float(self.ball.max_hp) * 0.1
-                        decoy.hp = decoy.max_hp
+                        decoy.max_hp = float(self.ball.max_hp)
+                        decoy.hp = float(self.ball.hp)
                     if "damage" in decoy:
                         decoy.damage = 0.0
                     var self_id_stat = -2
@@ -7212,8 +7229,8 @@ func _use_skill():
                     if "id" in beacon:
                         beacon.id = randi() % 90000 + 10000
                     if "hp" in beacon and "max_hp" in beacon:
-                        beacon.max_hp = float(self.ball.max_hp) * 0.3
-                        beacon.hp = beacon.max_hp
+                        beacon.max_hp = float(self.ball.max_hp)
+                        beacon.hp = float(self.ball.hp)
                     if "damage" in beacon:
                         beacon.damage = 0.0
                     if "speed" in beacon:
@@ -7345,8 +7362,8 @@ func _use_skill():
                             if "id" in decoy:
                                 decoy.id = randi() % 90000 + 10000
                             if "hp" in decoy and "max_hp" in decoy:
-                                decoy.max_hp = float(self.ball.max_hp) * 0.1
-                                decoy.hp = decoy.max_hp
+                                decoy.max_hp = float(self.ball.max_hp)
+                                decoy.hp = float(self.ball.hp)
                             if "damage" in decoy:
                                 decoy.damage = 0.0
 

@@ -1,0 +1,51 @@
+The reviewer asked for EXACT scripts to modify files.
+
+I need to create python scripts to patch the files using `re.sub`.
+Wait, or just provide the diff format.
+
+Let's do `re.sub` python scripts since they are the most robust.
+
+Patching `decoy.hp`:
+
+In `src/ai/action.py`:
+```python
+                        decoy.hp = getattr(self.ball, "max_hp", 100) * 0.1
+                        decoy.max_hp = decoy.hp
+```
+to
+```python
+                        decoy.hp = getattr(self.ball, "hp", 100)
+                        decoy.max_hp = getattr(self.ball, "max_hp", 100)
+```
+Wait, there are multiple occurrences.
+`action.py:4044`: `decoy.hp = getattr(self.ball, "max_hp", 100) * 0.1` -> `decoy.hp = getattr(self.ball, "hp", 100)` and `decoy.max_hp = getattr(self.ball, "max_hp", 100)`
+`action.py:4547`: `beacon.hp = getattr(self.ball, "max_hp", 100) * 0.3` -> `beacon.hp = getattr(self.ball, "hp", 100)` and `beacon.max_hp = getattr(self.ball, "max_hp", 100)`
+`action.py:4622`: `decoy.hp = getattr(self.ball, "max_hp", 100) * 0.1` -> `decoy.hp = getattr(self.ball, "hp", 100)` and `decoy.max_hp = getattr(self.ball, "max_hp", 100)`
+
+In `src/ai/action.gd`:
+```gdscript
+                            if "hp" in decoy and "max_hp" in decoy:
+                                decoy.max_hp = float(self.ball.max_hp) * 0.1
+                                decoy.hp = decoy.max_hp
+```
+`action.gd:6341`: `decoy.max_hp = float(self.ball.max_hp) * 0.1` -> `decoy.max_hp = float(self.ball.max_hp)` and `decoy.hp = float(self.ball.hp)`
+`action.gd:6449`: `clone.max_hp = float(self.ball.max_hp) * 0.1` -> wait, clone? clone is clone, not decoy. Wait, `clone.set_meta("is_decoy", true)`? Let's check `action.gd:6461`. Yes, clone is treated as decoy.
+`action.gd:7215`: `beacon.max_hp = float(self.ball.max_hp) * 0.3` -> `beacon.max_hp = float(self.ball.max_hp)` and `beacon.hp = float(self.ball.hp)`
+`action.gd:7348`: `decoy.max_hp = float(self.ball.max_hp) * 0.1` -> `decoy.max_hp = float(self.ball.max_hp)` and `decoy.hp = float(self.ball.hp)`
+
+In `src/ai/game_modes.py`:
+```python
+                        decoy.hp = getattr(b, "max_hp", 100) * 0.1
+                        decoy.max_hp = decoy.hp
+```
+`game_modes.py:630`: `decoy.hp = getattr(b, "max_hp", 100) * 0.1` -> `decoy.hp = getattr(b, "hp", 100)` and `decoy.max_hp = getattr(b, "max_hp", 100)`
+`game_modes.py:1690`: `decoy.hp = getattr(b, "max_hp", 100) * 0.1` -> `decoy.hp = getattr(b, "hp", 100)` and `decoy.max_hp = getattr(b, "max_hp", 100)`
+`game_modes.py:1765`: `decoy.hp = getattr(b, "max_hp", 100) * 0.1` -> `decoy.hp = getattr(b, "hp", 100)` and `decoy.max_hp = getattr(b, "max_hp", 100)`
+`game_modes.py:1832`: `decoy.hp = getattr(b, "max_hp", 100) * 0.1` -> `decoy.hp = getattr(b, "hp", 100)` and `decoy.max_hp = getattr(b, "max_hp", 100)`
+
+In `src/ai/game_modes.gd`:
+```gdscript
+									if "max_hp" in decoy: decoy.max_hp = mhp * 0.1
+									if "hp" in decoy: decoy.hp = mhp * 0.1
+```
+`game_modes.gd:2154`: `decoy.max_hp = mhp * 0.1` -> `decoy.max_hp = mhp` and `decoy.hp = b.hp if "hp" in b else mhp`

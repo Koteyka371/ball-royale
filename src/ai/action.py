@@ -2957,6 +2957,17 @@ class Action:
                 enemies = [e for e in entities if getattr(e, "ball_type", None) != self.ball.ball_type and getattr(e, "ball_type", None) != "spectator" and getattr(e, "alive", True)]
 
         # If entities weren't retrieved properly by get_nearby_entities, retrieve them manually
+        filtered_enemies = []
+        for e in enemies:
+            if getattr(e, "is_decoy", False):
+                enemy_id = getattr(self.ball, "id", 0)
+                decoy_id = getattr(e, "id", 0)
+                if (enemy_id * 31 + decoy_id) % 100 > 50:
+                    filtered_enemies.append(e)
+            else:
+                filtered_enemies.append(e)
+        enemies = filtered_enemies
+
         if not enemies and hasattr(self.world, "balls"):
             for b in self.world.balls:
                 if getattr(b, "ball_type", None) != getattr(self.ball, "ball_type", None) and getattr(b, "ball_type", None) != "spectator" and getattr(b, "alive", True) and not getattr(b, "is_decoy", False) and not getattr(b, "is_illusion", False):
@@ -2968,11 +2979,14 @@ class Action:
         if hasattr(self.world, "balls"):
             for b in self.world.balls:
                 if getattr(b, "is_decoy", False) and getattr(b, "alive", True) and b not in enemies:
-                    if getattr(b, "ball_type", None) != self.ball.ball_type:
-                        dx = getattr(b, "x", 0) - self.ball.x
-                        dy = getattr(b, "y", 0) - self.ball.y
-                        if dx*dx + dy*dy <= perception_radius*perception_radius:
-                            enemies.append(b)
+                    if getattr(b, "ball_type", None) != getattr(self.ball, "ball_type", None):
+                        enemy_id = getattr(self.ball, "id", 0)
+                        decoy_id = getattr(b, "id", 0)
+                        if (enemy_id * 31 + decoy_id) % 100 > 50:
+                            dx = getattr(b, "x", 0) - getattr(self.ball, "x", 0)
+                            dy = getattr(b, "y", 0) - getattr(self.ball, "y", 0)
+                            if dx*dx + dy*dy <= perception_radius*perception_radius:
+                                enemies.append(b)
 
         if hasattr(self.world, "balls"):
             for b in self.world.balls:
@@ -2986,11 +3000,14 @@ class Action:
         if hasattr(self.world, "balls"):
             for b in self.world.balls:
                 if getattr(b, "is_decoy", False) and getattr(b, "alive", True) and b not in enemies:
-                    if getattr(b, "ball_type", None) != self.ball.ball_type:
-                        dx = getattr(b, "x", 0) - self.ball.x
-                        dy = getattr(b, "y", 0) - self.ball.y
-                        if dx*dx + dy*dy <= perception_radius*perception_radius:
-                            enemies.append(b)
+                    if getattr(b, "ball_type", None) != getattr(self.ball, "ball_type", None):
+                        enemy_id = getattr(self.ball, "id", 0)
+                        decoy_id = getattr(b, "id", 0)
+                        if (enemy_id * 31 + decoy_id) % 100 > 50:
+                            dx = getattr(b, "x", 0) - getattr(self.ball, "x", 0)
+                            dy = getattr(b, "y", 0) - getattr(self.ball, "y", 0)
+                            if dx*dx + dy*dy <= perception_radius*perception_radius:
+                                enemies.append(b)
 
         # Include flares as high-priority enemies if they are within perception radius
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -4041,8 +4058,8 @@ class Action:
                     if hasattr(self.world, "balls"):
                         decoy = copy.copy(self.ball)
                         decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
-                        decoy.hp = getattr(self.ball, "max_hp", 100) * 0.1
-                        decoy.max_hp = decoy.hp
+                        decoy.hp = getattr(self.ball, "hp", 100)
+                        decoy.max_hp = getattr(self.ball, "max_hp", 100)
                         decoy.damage = 0
                         decoy.is_decoy = True
                         decoy.decoy_timer = 5.0
@@ -4544,8 +4561,8 @@ class Action:
                     if hasattr(self.world, "next_id"):
                         self.world.next_id += 1
 
-                    beacon.hp = getattr(self.ball, "max_hp", 100) * 0.3
-                    beacon.max_hp = beacon.hp
+                    beacon.hp = getattr(self.ball, "hp", 100)
+                    beacon.max_hp = getattr(self.ball, "max_hp", 100)
                     beacon.damage = 0
                     beacon.speed = 0.0
                     beacon.skill_timer = 9999.0
@@ -4619,8 +4636,8 @@ class Action:
                         if hasattr(self.world, "next_id"):
                             self.world.next_id += 1
 
-                        decoy.hp = getattr(self.ball, "max_hp", 100) * 0.1
-                        decoy.max_hp = decoy.hp
+                        decoy.hp = getattr(self.ball, "hp", 100)
+                        decoy.max_hp = getattr(self.ball, "max_hp", 100)
                         decoy.damage = 0
                         decoy.speed = getattr(self.ball, "speed", 4.0) # Match speed so it can mirror/orbit
                         decoy.skill_timer = 9999.0
