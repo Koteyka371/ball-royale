@@ -8908,7 +8908,7 @@
     },
     {
       "id": "idea-515",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chain Reaction Clones",
@@ -14263,6 +14263,91 @@
         "src/ai/grappling_hook_mechanics.py",
         "src/ai/grappling_hook_mechanics.gd",
         "tests/test_grappling_hook_mechanics.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-830",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "EMP Trap",
+      "description": "A trap that when stepped on disables all shields and buffs of all players in a huge radius.",
+      "allowed_paths": [
+        "src/arena/emp_trap.py",
+        "src/arena/emp_trap.gd",
+        "tests/test_emp_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-831",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Anti-Gravity Trap",
+      "description": "A new placeable trap that temporarily creates an inverted gravity field. Any enemy ball or loose booster that enters the field is violently pushed upwards and outwards, heavily disrupting their momentum and scattering gathered items.",
+      "allowed_paths": [
+        "src/arena/anti_gravity_trap.py",
+        "src/arena/anti_gravity_trap.gd",
+        "tests/test_anti_gravity_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-832",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Orbital Boosters",
+      "description": "Introduce a new game mode or hazard where boosters naturally orbit around a central massive entity (like a black hole or giant gravity well) at high speeds, requiring players to time their movements perfectly to catch them without getting sucked in.",
+      "allowed_paths": [
+        "src/ai/orbital_boosters.py",
+        "src/ai/orbital_boosters.gd",
+        "tests/test_orbital_boosters.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-833",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Seasonal Cosmetics for Nemesis Screen",
+      "description": "Apply the seasonal background themes and specific seasonal UI flourishes to the Nemesis Screen to make the UI feel consistently themed. For example, during the 'Abyssal' season, the Nemesis screen could have a deep-sea ambient particle effect.",
+      "allowed_paths": [
+        "src/ai/seasonal_cosmetics_for_nemesis_screen.py",
+        "src/ai/seasonal_cosmetics_for_nemesis_screen.gd",
+        "tests/test_seasonal_cosmetics_for_nemesis_screen.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-834",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Map Hazards Based on Season",
+      "description": "Extend the seasonal theme logic so that it not only affects the main menu background, but also alters map hazards during gameplay. For example, during the Frost season, random ice patches can appear causing players to slide, while during Inferno season, occasional lava pools deal small damage over time.",
+      "allowed_paths": [
+        "src/arena/dynamic_map_hazards_based_on_season.py",
+        "src/arena/dynamic_map_hazards_based_on_season.gd",
+        "tests/test_dynamic_map_hazards_based_on_season.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

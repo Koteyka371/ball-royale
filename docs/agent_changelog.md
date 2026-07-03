@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-515] Chain Reaction Clones — *2026-07-03 18:30:06 UTC*
+
+When a clone mine explodes, it causes any other friendly clones within its blast radius to also explode after a short delay, creating a cascading field of destruction.
+
+---
+
 ## [idea-516] Dynamic Season Backgrounds — *2026-07-03 18:13:03 UTC*
 
 The main menu background changes visually depending on the current season theme (e.g. fiery for Inferno, snowy for Frost).
