@@ -1,0 +1,4 @@
+{
+  "title": "Black Hole Hazard",
+  "description": "A new hazard type 'black_hole' that slowly pulls nearby balls towards its center. Balls that touch the center take massive damage."
+}

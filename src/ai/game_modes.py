@@ -113,7 +113,7 @@ class DraftRoyaleMode(GameMode):
         self.turn_index = 0
         self.banned_types = []
         self.available_types = [
-            "assassin", "berserker", "bomber", "brawler", "chaos", "conjurer", "druid",
+            "time_mage", "assassin", "berserker", "bomber", "brawler", "chaos", "conjurer", "druid",
             "elementalist", "guardian", "healer", "juggernaut", "king", "mage", "mimic",
             "monk", "necromancer", "ninja", "paladin", "phantom", "ranger", "rogue", "drone",
             "scout", "sniper", "swarm", "tank", "templar", "trickster", "vampire",
@@ -2352,7 +2352,7 @@ class CustomMatchMode(GameMode):
                     trigger_reroll = True
                     self.random_reroll_timer = 0.0
                     import random
-                    types = ['paladin', 'assassin', 'ninja', 'warrior', 'guardian', 'chaos', 'bomber', 'templar', 'necromancer', 'vampire', 'sniper', 'king', 'easy', 'phantom', 'warlock', 'mimic', 'juggernaut', 'tank', 'berserker', 'druid', 'hard', 'scout', 'brawler', 'medium', 'neural', 'ranger', 'healer', 'rogue', 'drone', 'swarm', 'conjurer', 'monk', 'mage', 'elementalist', 'trickster']
+                    types = ['time_mage', 'paladin', 'assassin', 'ninja', 'warrior', 'guardian', 'chaos', 'bomber', 'templar', 'necromancer', 'vampire', 'sniper', 'king', 'easy', 'phantom', 'warlock', 'mimic', 'juggernaut', 'tank', 'berserker', 'druid', 'hard', 'scout', 'brawler', 'medium', 'neural', 'ranger', 'healer', 'rogue', 'drone', 'swarm', 'conjurer', 'monk', 'mage', 'elementalist', 'trickster']
 
             for b in balls:
                 if not getattr(b, "alive", False):

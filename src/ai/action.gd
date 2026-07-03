@@ -7454,6 +7454,45 @@ func _use_skill():
                                 if b.has_method("set_meta"):
                                     b.set_meta("state_history", [])
 
+        elif skill_name == "time_rewind_self":
+            var history = []
+            if typeof(my_ball) == TYPE_DICTIONARY:
+                history = my_ball.get("state_history", [])
+            else:
+                if my_ball.has_method("has_meta") and my_ball.has_meta("state_history"):
+                    history = my_ball.get_meta("state_history")
+                elif "state_history" in my_ball:
+                    history = my_ball.state_history
+
+            if history.size() > 0:
+                var past_state = history[0]
+                if typeof(my_ball) == TYPE_DICTIONARY:
+                    my_ball["x"] = past_state["x"]
+                    my_ball["y"] = past_state["y"]
+                    if past_state["hp"] > my_ball.get("hp", 0.0):
+                        my_ball["hp"] = past_state["hp"]
+                    my_ball["stun_timer"] = 0.0
+                    my_ball["silence_timer"] = 0.0
+                    my_ball["is_stunned"] = false
+                    my_ball["poison_timer"] = 0.0
+                    my_ball["state_history"] = []
+                else:
+                    my_ball.x = past_state["x"]
+                    my_ball.y = past_state["y"]
+                    var cur_hp = 0.0
+                    if "hp" in my_ball: cur_hp = my_ball.hp
+                    if past_state["hp"] > cur_hp:
+                        my_ball.hp = past_state["hp"]
+
+                    if "stun_timer" in my_ball: my_ball.stun_timer = 0.0
+                    if "silence_timer" in my_ball: my_ball.silence_timer = 0.0
+                    if "is_stunned" in my_ball: my_ball.is_stunned = false
+
+                    if "poison_timer" in my_ball: my_ball.poison_timer = 0.0
+                    elif my_ball.has_method("set_meta"): my_ball.set_meta("poison_timer", 0.0)
+
+                    if "state_history" in my_ball: my_ball.state_history = []
+                    elif my_ball.has_method("set_meta"): my_ball.set_meta("state_history", [])
         elif skill_name == "magnet_tether":
             var enemies = _get_enemies()
             if enemies.size() > 0:
