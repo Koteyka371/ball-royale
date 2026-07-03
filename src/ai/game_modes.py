@@ -460,7 +460,9 @@ class BattleRoyaleMode(GameMode):
                     world.arena.hazards.append(ice)
 
             elif self.weather == "rain":
-                if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                arena_name = getattr(world.arena, "__class__", type(world.arena)).__name__.lower()
+                is_dirt_sand = "sand" in arena_name or "dirt" in arena_name or "summer" in arena_name or getattr(world.arena, "is_sandstorming", False)
+                if is_dirt_sand and getattr(self, "random", __import__("random")).random() < 0.05 * delta:
                     from arena.procedural_arena import Hazard
                     # Spawn mud pit
                     x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
@@ -525,7 +527,16 @@ class BattleRoyaleMode(GameMode):
             elif self.weather == "rain":
                 b.cosmetic = "umbrella"
                 b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.5
-                b.speed = b.base_speed * 0.8
+
+                # Check for swamp/water traits
+                b_type = str(getattr(b, "ball_type", "")).lower()
+                traits = getattr(b, "traits", [])
+                has_water_trait = "water" in b_type or "swamp" in b_type or any("water" in str(t).lower() or "swamp" in str(t).lower() for t in traits)
+
+                if not has_water_trait:
+                    b.speed = b.base_speed * 0.8
+                else:
+                    b.speed = getattr(b, "base_speed", 100.0)
                 b.damage = b.base_damage
                 if hasattr(b, "hp"):
                     max_hp = getattr(b, "max_hp", 100.0)
@@ -1601,7 +1612,9 @@ class WeatherChaosMode(GameMode):
                     world.arena.hazards.append(ice)
 
             elif self.weather == "rain":
-                if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                arena_name = getattr(world.arena, "__class__", type(world.arena)).__name__.lower()
+                is_dirt_sand = "sand" in arena_name or "dirt" in arena_name or "summer" in arena_name or getattr(world.arena, "is_sandstorming", False)
+                if is_dirt_sand and getattr(self, "random", __import__("random")).random() < 0.05 * delta:
                     from arena.procedural_arena import Hazard
                     # Spawn mud pit
                     x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
@@ -1669,7 +1682,16 @@ class WeatherChaosMode(GameMode):
             elif self.weather == "rain":
                 b.cosmetic = "umbrella"
                 b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.5
-                b.speed = b.base_speed * 0.8
+
+                # Check for swamp/water traits
+                b_type = str(getattr(b, "ball_type", "")).lower()
+                traits = getattr(b, "traits", [])
+                has_water_trait = "water" in b_type or "swamp" in b_type or any("water" in str(t).lower() or "swamp" in str(t).lower() for t in traits)
+
+                if not has_water_trait:
+                    b.speed = b.base_speed * 0.8
+                else:
+                    b.speed = getattr(b, "base_speed", 100.0)
                 b.damage = b.base_damage
                 if hasattr(b, "hp"):
                     max_hp = getattr(b, "max_hp", 100.0)

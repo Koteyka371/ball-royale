@@ -1867,13 +1867,18 @@ class Action:
                                     self.ball.alive = False
 
                             # Occasional slow debuff that lingers
-                            if getattr(self.ball, "quicksand_debuff_timer", 0.0) <= 0:
-                                if random.random() < 0.1:  # 10% chance per tick to apply debuff
-                                    self.ball.quicksand_debuff_timer = 2.0
+                            b_type = str(getattr(self.ball, "ball_type", "")).lower()
+                            traits = getattr(self.ball, "traits", [])
+                            has_water_trait = "water" in b_type or "swamp" in b_type or any("water" in str(t).lower() or "swamp" in str(t).lower() for t in traits)
 
-                            if getattr(self.ball, "quicksand_debuff_timer", 0.0) > 0:
-                                self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.3
-                                self.ball.quicksand_debuff_timer -= delta
+                            if not has_water_trait:
+                                if getattr(self.ball, "quicksand_debuff_timer", 0.0) <= 0:
+                                    if random.random() < 0.1:  # 10% chance per tick to apply debuff
+                                        self.ball.quicksand_debuff_timer = 2.0
+
+                                if getattr(self.ball, "quicksand_debuff_timer", 0.0) > 0:
+                                    self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.3
+                                    self.ball.quicksand_debuff_timer -= delta
 
                             self.ball.is_in_quicksand = True
                     elif hazard.kind == "sinkhole":
