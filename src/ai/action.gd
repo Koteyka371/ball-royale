@@ -1529,19 +1529,61 @@ func execute(strategy: String, delta: float):
 	# Max HP draining hazard logic
 	# Gravity Well and Repulsor Hazard Logic
 	if world != null and "arena" in world and "hazards" in world.arena:
-		var anchor_timer = 0.0
-		if "anchor_booster_timer" in self.ball:
-			anchor_timer = float(self.ball.anchor_booster_timer)
-		elif self.ball.has_method("has_meta") and self.ball.has_meta("anchor_booster_timer"):
-			anchor_timer = float(self.ball.get_meta("anchor_booster_timer"))
+		var current_tick = world.get("tick", 0)
+		for hazard in world.arena.hazards:
+			var kind = hazard.get("kind", "")
+			var is_active = hazard.get("active", true)
+			if (kind == "gravity_well" or kind == "repulsor") and is_active:
+				var hx = float(hazard.x)
+				var hy = float(hazard.y)
 
-		if anchor_timer <= 0.0:
-			for hazard in world.arena.hazards:
-				var kind = hazard.get("kind", "")
-				var is_active = hazard.get("active", true)
-				if (kind == "gravity_well" or kind == "repulsor") and is_active:
-					var hx = float(hazard.x)
-					var hy = float(hazard.y)
+				if typeof(hazard) == TYPE_OBJECT:
+					if (not hazard.has_meta("last_booster_pull_tick") or hazard.get_meta("last_booster_pull_tick") != current_tick):
+						hazard.set_meta("last_booster_pull_tick", current_tick)
+				elif typeof(hazard) == TYPE_DICTIONARY:
+					if (not hazard.has("last_booster_pull_tick") or hazard["last_booster_pull_tick"] != current_tick):
+						hazard["last_booster_pull_tick"] = current_tick
+					if "boosters" in world:
+						for b in world.boosters:
+							var bx = float(b.x) if typeof(b) != TYPE_DICTIONARY else float(b["x"])
+							var by = float(b.y) if typeof(b) != TYPE_DICTIONARY else float(b["y"])
+							var bdx = hx - bx
+							var bdy = hy - by
+							var bdist_sq = bdx * bdx + bdy * bdy
+							var radius = float(hazard.get("radius", 50.0))
+							var eff_radius = radius * 3.0
+							if bdist_sq > 0.0001 and bdist_sq < eff_radius * eff_radius:
+								var bdist = sqrt(bdist_sq)
+								var mdist = 10.0
+								if bdist > 10.0:
+									mdist = bdist
+								var force = (eff_radius / mdist) * 50.0 * delta
+								if force > bdist * 0.5:
+									force = bdist * 0.5
+								var bnx = bdx / bdist
+								var bny = bdy / bdist
+								if kind == "gravity_well":
+									if typeof(b) == TYPE_DICTIONARY:
+										b["x"] += bnx * force
+										b["y"] += bny * force
+									else:
+										b.x += bnx * force
+										b.y += bny * force
+								else:
+									if typeof(b) == TYPE_DICTIONARY:
+										b["x"] -= bnx * force
+										b["y"] -= bny * force
+									else:
+										b.x -= bnx * force
+										b.y -= bny * force
+
+				var anchor_timer = 0.0
+				if "anchor_booster_timer" in self.ball:
+					anchor_timer = float(self.ball.anchor_booster_timer)
+				elif self.ball.has_method("has_meta") and self.ball.has_meta("anchor_booster_timer"):
+					anchor_timer = float(self.ball.get_meta("anchor_booster_timer"))
+
+				if anchor_timer <= 0.0:
 					var dx = hx - float(self.ball.x)
 					var dy = hy - float(self.ball.y)
 					var dist_sq = dx * dx + dy * dy
@@ -1561,9 +1603,21 @@ func execute(strategy: String, delta: float):
 							if typeof(self.ball) == TYPE_DICTIONARY:
 								self.ball["x"] += nx * force
 								self.ball["y"] += ny * force
+								if hazard.get("damage", 0.0) > 0.0 and dist_sq < radius * radius:
+									self.ball["hp"] -= float(hazard.get("damage", 0.0)) * delta
+									if self.ball["hp"] <= 0:
+										self.ball["hp"] = 0
+										self.ball["alive"] = false
+										self.ball["killer"] = "gravity_well"
 							else:
 								self.ball.x += nx * force
 								self.ball.y += ny * force
+								if hazard.get("damage", 0.0) > 0.0 and dist_sq < radius * radius:
+									self.ball.hp -= float(hazard.get("damage", 0.0)) * delta
+									if self.ball.hp <= 0:
+										self.ball.hp = 0
+										self.ball.alive = false
+										self.ball.killer = "gravity_well"
 						else:
 							if typeof(self.ball) == TYPE_DICTIONARY:
 								self.ball["x"] -= nx * force

@@ -20,6 +20,7 @@ class MockWorld:
         self.arena.safe_zone_radius = 50000.0
         self.arena.safe_zone_center = (0, 0)
         self.balls = []
+        self.boosters = []
 
 def test_gravity_well_pulls():
     world = MockWorld()
@@ -95,3 +96,46 @@ def test_repulsor_pushes():
 
     assert ball.x > 120.0
     assert ball.y == 100.0
+
+class MockBooster:
+    def __init__(self, x=100, y=100):
+        self.x = x
+        self.y = y
+
+def test_gravity_well_pulls_boosters():
+    world = MockWorld()
+    world.boosters = []
+
+    ball = MockBall(x=1000, y=1000) # faraway
+    world.balls.append(ball)
+
+    h_pull = Hazard(id=1, x=100, y=100, radius=50.0, kind="gravity_well", damage=0.0)
+    world.arena.hazards.append(h_pull)
+
+    booster = MockBooster(x=120, y=100)
+    world.boosters.append(booster)
+
+    action = Action(ball, world)
+    action.execute("idle", 1.0)
+
+    assert booster.x < 120.0
+    assert booster.x > 100.0
+
+def test_repulsor_pushes_boosters():
+    world = MockWorld()
+    world.boosters = []
+
+    ball = MockBall(x=1000, y=1000) # faraway
+    world.balls.append(ball)
+
+    h_push = Hazard(id=2, x=100, y=100, radius=50.0, kind="repulsor", damage=0.0)
+    world.arena.hazards.append(h_push)
+
+    booster = MockBooster(x=120, y=100)
+    world.boosters.append(booster)
+
+    action = Action(ball, world)
+    action.execute("idle", 1.0)
+
+    assert booster.x > 120.0
+    assert booster.y == 100.0

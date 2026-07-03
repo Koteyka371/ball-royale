@@ -994,32 +994,63 @@ class Action:
                     self.ball._is_wind_riding = False
 
         # Gravity Well and Repulsor Hazard Logic
-        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            current_tick = getattr(self.world, "tick", 0)
             for hazard in self.world.arena.hazards:
                 kind = getattr(hazard, "kind", "")
                 if kind in ("gravity_well", "repulsor") and getattr(hazard, "active", True):
-                    dx = hazard.x - self.ball.x
-                    dy = hazard.y - self.ball.y
-                    dist_sq = dx*dx + dy*dy
-                    radius = getattr(hazard, "radius", 50.0)
-                    eff_radius = radius * 3.0 # Area of effect is larger than physical radius
-                    if dist_sq > 0.0001 and dist_sq < eff_radius * eff_radius:
-                        dist = math.sqrt(dist_sq)
-                        force = (eff_radius / max(10.0, dist)) * 50.0 * delta
-                        # Cap force so they don't zoom infinitely
-                        force = min(force, dist * 0.5)
+                    if not hasattr(hazard, "last_booster_pull_tick") or hazard.last_booster_pull_tick != current_tick:
+                        hazard.last_booster_pull_tick = current_tick
+                        if hasattr(self.world, "boosters"):
+                            for b in self.world.boosters:
+                                bdx = hazard.x - b.x
+                                bdy = hazard.y - b.y
+                                bdist_sq = bdx*bdx + bdy*bdy
+                                radius = getattr(hazard, "radius", 50.0)
+                                eff_radius = radius * 3.0
+                                if bdist_sq > 0.0001 and bdist_sq < eff_radius * eff_radius:
+                                    bdist = math.sqrt(bdist_sq)
+                                    force = (eff_radius / max(10.0, bdist)) * 50.0 * delta
+                                    force = min(force, bdist * 0.5)
+                                    bnx = bdx / bdist
+                                    bny = bdy / bdist
+                                    if kind == "gravity_well":
+                                        b.x += bnx * force
+                                        b.y += bny * force
+                                    else:
+                                        b.x -= bnx * force
+                                        b.y -= bny * force
 
-                        nx = dx / dist
-                        ny = dy / dist
+                    if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx*dx + dy*dy
+                        radius = getattr(hazard, "radius", 50.0)
+                        eff_radius = radius * 3.0 # Area of effect is larger than physical radius
+                        if dist_sq > 0.0001 and dist_sq < eff_radius * eff_radius:
+                            dist = math.sqrt(dist_sq)
+                            force = (eff_radius / max(10.0, dist)) * 50.0 * delta
+                            # Cap force so they don't zoom infinitely
+                            force = min(force, dist * 0.5)
 
-                        if kind == "gravity_well":
-                            # Pull towards center
-                            self.ball.x += nx * force
-                            self.ball.y += ny * force
-                        else:
-                            # Push away from center
-                            self.ball.x -= nx * force
-                            self.ball.y -= ny * force
+                            nx = dx / dist
+                            ny = dy / dist
+
+                            if kind == "gravity_well":
+                                # Pull towards center
+                                self.ball.x += nx * force
+                                self.ball.y += ny * force
+                                # Apply damage if inside gravity well
+                                if getattr(hazard, "damage", 0.0) > 0.0 and dist_sq < radius * radius:
+                                    self.ball.hp -= hazard.damage * delta
+                                    if self.ball.hp <= 0:
+                                        self.ball.alive = False
+                                        self.ball.hp = 0
+                                        self.ball.killer = "gravity_well"
+                            else:
+                                # Push away from center
+                                self.ball.x -= nx * force
+                                self.ball.y -= ny * force
 
         # Zero gravity processing (friction)
         in_anomaly_zone = False
