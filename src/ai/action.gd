@@ -5236,6 +5236,9 @@ func _get_boosters() -> Array:
             var dy = cy - float(self.ball.get("y", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.get("y"))
             if sqrt(dx*dx + dy*dy) <= perception_radius:
                 boosters.append(c)
+
+
+
     return boosters
 
 func _flee(delta: float):
@@ -6915,6 +6918,22 @@ func _collect_booster(delta: float):
                 else:
                     self.ball["disruptor_aura_timer"] = 5.0
                 if "arena" in world and "hazards" in world.arena:
+                    var idx = world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        world.arena.hazards.remove_at(idx)
+                if "boosters" in world:
+                    var idx = world.boosters.find(nearest)
+                    if idx != -1:
+                        world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "aura_booster":
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("aura_booster_timer", 15.0)
+                elif "aura_booster_timer" in self.ball:
+                    self.ball.aura_booster_timer = 15.0
+                else:
+                    self.ball["aura_booster_timer"] = 15.0
+
+                if world != null and "arena" in world and "hazards" in world.arena:
                     var idx = world.arena.hazards.find(nearest)
                     if idx != -1:
                         world.arena.hazards.remove_at(idx)
@@ -9804,6 +9823,16 @@ func _apply_friendly_aura(delta: float):
 
     # Determine aura properties
     var aura_radius = 150.0
+    var aura_multiplier = 1.0
+    var ab_timer = 0.0
+    if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("aura_booster_timer"):
+        ab_timer = float(self.ball.get_meta("aura_booster_timer"))
+    elif "aura_booster_timer" in self.ball:
+        ab_timer = float(self.ball.aura_booster_timer)
+    if ab_timer > 0.0:
+        aura_radius = 500.0
+        aura_multiplier = 2.0
+
     var ad_timer = 0.0
     if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("aura_disruption_timer"):
         ad_timer = float(self.ball.get_meta("aura_disruption_timer"))
@@ -9879,7 +9908,7 @@ func _apply_friendly_aura(delta: float):
             max_hp = self.ball.get_meta("max_hp")
 
         if "hp" in self.ball:
-            self.ball.hp = min(self.ball.hp + 2.0 * delta, max_hp)
+            self.ball.hp = min(self.ball.hp + (2.0 * aura_multiplier) * delta, max_hp)
 
     var is_dashing = false
     if "is_dashing" in self.ball:
@@ -9900,14 +9929,14 @@ func _apply_friendly_aura(delta: float):
     if not is_dashing and stutter <= 0.0:
         if stack_count >= 2:
             if "speed" in self.ball:
-                self.ball.speed = base_s * 1.1
+                self.ball.speed = base_s * (1.0 + 0.1 * aura_multiplier)
         else:
             if "speed" in self.ball:
                 self.ball.speed = base_s
 
         if stack_count >= 3:
             if "damage" in self.ball:
-                self.ball.damage = base_d * 1.2
+                self.ball.damage = base_d * (1.0 + 0.2 * aura_multiplier)
         else:
             if "damage" in self.ball:
                 self.ball.damage = base_d
@@ -9915,20 +9944,20 @@ func _apply_friendly_aura(delta: float):
         if is_night:
             if ball_type == "vampire":
                 if stack_count >= 2:
-                    if "speed" in self.ball: self.ball.speed = base_s * 1.5 * 1.1
+                    if "speed" in self.ball: self.ball.speed = base_s * 1.5 * (1.0 + 0.1 * aura_multiplier)
                 else:
                     if "speed" in self.ball: self.ball.speed = base_s * 1.5
                 if stack_count >= 3:
-                    if "damage" in self.ball: self.ball.damage = base_d * 1.5 * 1.2
+                    if "damage" in self.ball: self.ball.damage = base_d * 1.5 * (1.0 + 0.2 * aura_multiplier)
                 else:
                     if "damage" in self.ball: self.ball.damage = base_d * 1.5
             elif ball_type == "assassin" or ball_type == "phantom":
                 if stack_count >= 2:
-                    if "speed" in self.ball: self.ball.speed = base_s * 1.2 * 1.1
+                    if "speed" in self.ball: self.ball.speed = base_s * 1.2 * (1.0 + 0.1 * aura_multiplier)
                 else:
                     if "speed" in self.ball: self.ball.speed = base_s * 1.2
                 if stack_count >= 3:
-                    if "damage" in self.ball: self.ball.damage = base_d * 1.5 * 1.2
+                    if "damage" in self.ball: self.ball.damage = base_d * 1.5 * (1.0 + 0.2 * aura_multiplier)
                 else:
                     if "damage" in self.ball: self.ball.damage = base_d * 1.5
             else:
@@ -9946,12 +9975,12 @@ func _apply_friendly_aura(delta: float):
                 if ball_type == "paladin" or ball_type == "guardian":
                     day_mult = 1.5
                     if stack_count >= 2:
-                        if "speed" in self.ball: self.ball.speed = base_s * 1.2 * 1.1
+                        if "speed" in self.ball: self.ball.speed = base_s * 1.2 * (1.0 + 0.1 * aura_multiplier)
                     else:
                         if "speed" in self.ball: self.ball.speed = base_s * 1.2
 
             if stack_count >= 3:
-                if "damage" in self.ball: self.ball.damage = base_d * day_mult * 1.2
+                if "damage" in self.ball: self.ball.damage = base_d * day_mult * (1.0 + 0.2 * aura_multiplier)
             else:
                 if "damage" in self.ball: self.ball.damage = base_d * day_mult
 
@@ -9972,6 +10001,20 @@ func _apply_friendly_aura(delta: float):
 
 
 func _update_skill_timer(delta: float):
+    var ab_timer = 0.0
+    if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("aura_booster_timer"):
+        ab_timer = float(self.ball.get_meta("aura_booster_timer"))
+    elif "aura_booster_timer" in self.ball:
+        ab_timer = float(self.ball.aura_booster_timer)
+
+    if ab_timer > 0.0:
+        ab_timer -= delta
+        if ab_timer < 0.0: ab_timer = 0.0
+        if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+            self.ball.set_meta("aura_booster_timer", ab_timer)
+        if "aura_booster_timer" in self.ball:
+            self.ball["aura_booster_timer"] = ab_timer
+
     var da_timer = 0.0
     if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("disruptor_aura_timer"):
         da_timer = float(self.ball.get_meta("disruptor_aura_timer"))
