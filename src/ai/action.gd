@@ -7286,7 +7286,8 @@ func _use_skill():
                 else:
                     self.ball.skill_timer = 5.0
         elif skill_name == "deploy_decoy":
-            var swapped = false
+            var active_decoys = []
+            var has_swapped_any = false
             if "balls" in self.world:
                 for b in self.world.balls:
                     var is_d = false
@@ -7300,10 +7301,6 @@ func _use_skill():
                         if "owner_id" in b: owner = b.owner_id
                         elif b.has_method("get_meta") and b.has_meta("owner_id"): owner = b.get_meta("owner_id")
 
-                        var has_swapped = false
-                        if "has_swapped" in b: has_swapped = b.has_swapped
-                        elif b.has_method("get_meta") and b.has_meta("has_swapped"): has_swapped = b.get_meta("has_swapped")
-
                         var b_alive = true
                         if "alive" in b: b_alive = b.alive
                         elif b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
@@ -7313,29 +7310,50 @@ func _use_skill():
                         elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): self_id = self.ball.get_meta("id")
 
                         if owner == self_id and b_alive:
-                            var tx = self.ball.x
-                            var ty = self.ball.y
-                            self.ball.x = b.x
-                            self.ball.y = b.y
-                            b.x = tx
-                            b.y = ty
+                            active_decoys.append(b)
+                            var has_swapped = false
+                            if "has_swapped" in b: has_swapped = b.has_swapped
+                            elif b.has_method("get_meta") and b.has_meta("has_swapped"): has_swapped = b.get_meta("has_swapped")
+                            if has_swapped:
+                                has_swapped_any = true
 
-                            if b.has_method("set_meta"):
-                                b.set_meta("has_swapped", true)
-                            elif "has_swapped" in b:
-                                b.has_swapped = true
+            if active_decoys.size() > 0:
+                if not has_swapped_any:
+                    var b = active_decoys[0]
+                    var tx = self.ball.x
+                    var ty = self.ball.y
+                    self.ball.x = b.x
+                    self.ball.y = b.y
+                    b.x = tx
+                    b.y = ty
 
-                            var cooldown = 4.0
-                            if "SKILL_COOLDOWN" in self.ball: cooldown = float(self.ball.SKILL_COOLDOWN)
-                            elif self.ball.has_method("get_meta") and self.ball.has_meta("SKILL_COOLDOWN"): cooldown = float(self.ball.get_meta("SKILL_COOLDOWN"))
+                    if b.has_method("set_meta"):
+                        b.set_meta("has_swapped", true)
+                    elif "has_swapped" in b:
+                        b.has_swapped = true
 
-                            if "skill_timer" in self.ball: self.ball.skill_timer = cooldown
-                            elif self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cooldown)
+                    var cooldown = 4.0
+                    if "SKILL_COOLDOWN" in self.ball: cooldown = float(self.ball.SKILL_COOLDOWN)
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("SKILL_COOLDOWN"): cooldown = float(self.ball.get_meta("SKILL_COOLDOWN"))
 
-                            swapped = true
-                            break
+                    if "skill_timer" in self.ball: self.ball.skill_timer = cooldown
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cooldown)
+                else:
+                    for d in active_decoys:
+                        if "hp" in d: d.hp = 0.0
+                        if "alive" in d: d.alive = false
+                        if d.has_method("set_meta"):
+                            d.set_meta("hp", 0.0)
+                            d.set_meta("alive", false)
 
-                if not swapped:
+                    var cooldown = 4.0
+                    if "SKILL_COOLDOWN" in self.ball: cooldown = float(self.ball.SKILL_COOLDOWN)
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("SKILL_COOLDOWN"): cooldown = float(self.ball.get_meta("SKILL_COOLDOWN"))
+
+                    if "skill_timer" in self.ball: self.ball.skill_timer = cooldown
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cooldown)
+            else:
+                if true:
                     for i in range(2):
                         var decoy = null
                         if self.ball.has_method("duplicate"): decoy = self.ball.duplicate()
