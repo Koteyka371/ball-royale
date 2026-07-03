@@ -7224,7 +7224,7 @@
     },
     {
       "id": "idea-418",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Hazards",
@@ -13668,6 +13668,40 @@
         "src/ai/necromancer_minion_synergy_sacrificial_shield.py",
         "src/ai/necromancer_minion_synergy_sacrificial_shield.gd",
         "tests/test_necromancer_minion_synergy_sacrificial_shield.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-795",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gambling Node",
+      "description": "Similar to Black Market nodes, there is a rare, static Gambling Node. Players can deposit a varying amount of currency into it. The node rolls a random number and has a chance to either double the currency, steal it entirely, or trigger an immediate explosion dealing heavy area-of-effect damage.",
+      "allowed_paths": [
+        "src/ai/gambling_node.py",
+        "src/ai/gambling_node.gd",
+        "tests/test_gambling_node.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-796",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather-Triggered Arena Hazards",
+      "description": "Arena hazards that spawn dynamically depending on the active weather. For example, 'Tornadoes' that spawn only during Windstorms, or 'Quicksand' pits that only appear during Sandstorms.",
+      "allowed_paths": [
+        "src/arena/triggered_arena_hazards.py",
+        "src/arena/triggered_arena_hazards.gd",
+        "tests/test_triggered_arena_hazards.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

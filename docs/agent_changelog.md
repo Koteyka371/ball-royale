@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-418] Shrinking Hazards — *2026-07-03 15:22:13 UTC*
+
+Hazards that slowly shrink the safe playable area over time, similar to a battle royale zone.
+
+---
+
 ## [idea-463] Weather-Specific Ball Types — *2026-07-03 14:58:29 UTC*
 
 Introduce new ball types that specifically excel in certain weather conditions. For example, a 'Snow Yeti' ball that ignores perception reduction during snow and gains movement speed on icy surfaces, or a 'Sand Elemental' that can cloak entirely during sandstorms.
