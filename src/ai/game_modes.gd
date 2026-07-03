@@ -9,7 +9,7 @@ class GameMode:
 
     func setup(world, balls: Array) -> void:
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
         for b in balls:
             var sponsor = ""
             if "sponsor" in b:
@@ -140,13 +140,13 @@ class GameMode:
             crowd.tick(balls, kill_log, current_tick)
 
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
         for b in balls:
             if not b.alive:
-                if not world.dead_balls.has(b):
+                if not world.get_meta("dead_balls").has(b):
                     if b.has_method("set_meta"):
                         b.set_meta("time_since_death", 0.0)
-                    world.dead_balls.append(b)
+                    world.get_meta("dead_balls").append(b)
                 else:
                     if b.has_method("get_meta") and b.has_meta("time_since_death"):
                         b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
@@ -341,7 +341,7 @@ class BattleRoyaleMode extends GameMode:
     func setup(world, balls: Array) -> void:
         super.setup(world, balls)
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
         var valid_balls = []
         for b in balls:
             if b.ball_type != "spectator":
@@ -374,13 +374,13 @@ class BattleRoyaleMode extends GameMode:
             crowd.tick(balls, kill_log, current_tick)
 
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
         for b in balls:
             if not b.alive:
-                if not world.dead_balls.has(b):
+                if not world.get_meta("dead_balls").has(b):
                     if b.has_method("set_meta"):
                         b.set_meta("time_since_death", 0.0)
-                    world.dead_balls.append(b)
+                    world.get_meta("dead_balls").append(b)
                 else:
                     if b.has_method("get_meta") and b.has_meta("time_since_death"):
                         b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
@@ -788,7 +788,7 @@ class TeamDeathmatchMode extends GameMode:
     func setup(world, balls: Array) -> void:
         super.setup(world, balls)
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
         var valid_balls = []
         for b in balls:
             if b.ball_type != "spectator":
@@ -828,7 +828,7 @@ class ZombieInfectionMode extends GameMode:
     func setup(world, balls: Array) -> void:
         super.setup(world, balls)
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
         var valid_balls = []
         for b in balls:
             if b.ball_type != "spectator":
@@ -857,13 +857,13 @@ class ZombieInfectionMode extends GameMode:
             crowd.tick(balls, kill_log, current_tick)
 
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
         for b in balls:
             if not b.alive:
-                if not world.dead_balls.has(b):
+                if not world.get_meta("dead_balls").has(b):
                     if b.has_method("set_meta"):
                         b.set_meta("time_since_death", 0.0)
-                    world.dead_balls.append(b)
+                    world.get_meta("dead_balls").append(b)
                 else:
                     if b.has_method("get_meta") and b.has_meta("time_since_death"):
                         b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
@@ -914,7 +914,7 @@ class BossFightMode extends GameMode:
     func setup(world, balls: Array) -> void:
         super.setup(world, balls)
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
         var valid_balls = []
         for b in balls:
@@ -1005,7 +1005,7 @@ class VIPDefenseMode extends GameMode:
     func setup(world, balls: Array) -> void:
         super.setup(world, balls)
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
         var valid_balls = []
         for b in balls:
             if b.ball_type != "spectator":
@@ -1056,7 +1056,7 @@ class SurvivalMode extends GameMode:
     func setup(world, balls: Array) -> void:
         super.setup(world, balls)
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
         var valid_balls = []
         for b in balls:
             if b.ball_type != "spectator":
@@ -1110,7 +1110,7 @@ class DualPayloadMode extends GameMode:
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if not "dead_balls" in world:
-			world.dead_balls = []
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
 		var valid_balls = []
 		for b in balls:
@@ -1202,17 +1202,17 @@ class DualPayloadMode extends GameMode:
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 		if not "dead_balls" in world:
-			world.dead_balls = []
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
 		for b in balls:
 			var alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
 			if not alive:
-				if not world.dead_balls.has(b):
+				if not world.get_meta("dead_balls").has(b):
 					if typeof(b) == TYPE_DICTIONARY:
 						b["time_since_death"] = 0.0
 					else:
 						b.set("time_since_death", 0.0)
-					world.dead_balls.append(b)
+					world.get_meta("dead_balls").append(b)
 				else:
 					if typeof(b) == TYPE_DICTIONARY:
 						b["time_since_death"] = b.get("time_since_death", 0.0) + delta
@@ -1297,7 +1297,7 @@ class EscortMode extends GameMode:
     func setup(world, balls: Array) -> void:
         super.setup(world, balls)
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
         var valid_balls = []
         for b in balls:
@@ -1371,7 +1371,7 @@ class EscortMode extends GameMode:
                     if bdist <= 300.0:
                         var bteam = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
                         if bteam == "Defenders":
-                            var bmax_hp = b.get("max_hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("max_hp")
+                            var bmax_hp = b.get("max_hp") if b.get("max_hp") != null else 100.0 if typeof(b) == TYPE_DICTIONARY else b.get("max_hp")
                             var bhp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("hp")
                             var new_hp = min(bmax_hp, bhp + 20.0)
                             if typeof(b) == TYPE_DICTIONARY:
@@ -1452,7 +1452,7 @@ class CaptureTheFlagMode extends GameMode:
     func setup(world, balls: Array) -> void:
         super.setup(world, balls)
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
         var valid_balls = []
         for b in balls:
             if b.ball_type != "spectator":
@@ -1508,7 +1508,7 @@ class EvolutionarySimulationMode extends GameMode:
     func setup(world, balls: Array) -> void:
         super.setup(world, balls)
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
         for i in range(balls.size()):
             var b = balls[i]
             if b.ball_type != "spectator":
@@ -1553,13 +1553,13 @@ class VampireRoyaleMode extends GameMode:
             crowd.tick(balls, kill_log, current_tick)
 
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
         for b in balls:
             if not b.alive:
-                if not world.dead_balls.has(b):
+                if not world.get_meta("dead_balls").has(b):
                     if b.has_method("set_meta"):
                         b.set_meta("time_since_death", 0.0)
-                    world.dead_balls.append(b)
+                    world.get_meta("dead_balls").append(b)
                 else:
                     if b.has_method("get_meta") and b.has_meta("time_since_death"):
                         b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
@@ -1611,7 +1611,7 @@ class KingOfTheHillMode extends GameMode:
     func setup(world, balls: Array) -> void:
         super.setup(world, balls)
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
         game_time = 0.0
         for b in balls:
             if b.ball_type != "spectator":
@@ -1631,13 +1631,13 @@ class KingOfTheHillMode extends GameMode:
             crowd.tick(balls, kill_log, current_tick)
 
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
         for b in balls:
             if not b.alive:
-                if not world.dead_balls.has(b):
+                if not world.get_meta("dead_balls").has(b):
                     if b.has_method("set_meta"):
                         b.set_meta("time_since_death", 0.0)
-                    world.dead_balls.append(b)
+                    world.get_meta("dead_balls").append(b)
                 else:
                     if b.has_method("get_meta") and b.has_meta("time_since_death"):
                         b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
@@ -1716,13 +1716,13 @@ class BlackHoleMode extends GameMode:
             crowd.tick(balls, kill_log, current_tick)
 
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
         for b in balls:
             if not b.alive:
-                if not world.dead_balls.has(b):
+                if not world.get_meta("dead_balls").has(b):
                     if b.has_method("set_meta"):
                         b.set_meta("time_since_death", 0.0)
-                    world.dead_balls.append(b)
+                    world.get_meta("dead_balls").append(b)
                 else:
                     if b.has_method("get_meta") and b.has_meta("time_since_death"):
                         b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
@@ -2373,7 +2373,7 @@ class DominationMode extends GameMode:
     func setup(world, balls: Array) -> void:
         super.setup(world, balls)
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
         var mid = balls.size() / 2
         for i in range(balls.size()):
             var b = balls[i]
@@ -2402,13 +2402,13 @@ class DominationMode extends GameMode:
             crowd.tick(balls, kill_log, current_tick)
 
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
         for b in balls:
             if not b.alive:
-                if not world.dead_balls.has(b):
+                if not world.get_meta("dead_balls").has(b):
                     if b.has_method("set_meta"):
                         b.set_meta("time_since_death", 0.0)
-                    world.dead_balls.append(b)
+                    world.get_meta("dead_balls").append(b)
                 else:
                     if b.has_method("get_meta") and b.has_meta("time_since_death"):
                         b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
@@ -2583,7 +2583,7 @@ class MovingZoneMode extends GameMode:
     func setup(world, balls: Array) -> void:
         super.setup(world, balls)
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
         for b in balls:
             if b.ball_type != "spectator":
                 b.set_meta("score", 0)
@@ -2611,13 +2611,13 @@ class MovingZoneMode extends GameMode:
             crowd.tick(balls, kill_log, current_tick)
 
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
         for b in balls:
             if not b.alive:
-                if not world.dead_balls.has(b):
+                if not world.get_meta("dead_balls").has(b):
                     if b.has_method("set_meta"):
                         b.set_meta("time_since_death", 0.0)
-                    world.dead_balls.append(b)
+                    world.get_meta("dead_balls").append(b)
                 else:
                     if b.has_method("get_meta") and b.has_meta("time_since_death"):
                         b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
@@ -2720,7 +2720,7 @@ class MemoryTrapsMode extends GameMode:
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if not "dead_balls" in world:
-			world.dead_balls = []
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
 		var arena_width = 1000.0
 		var arena_height = 1000.0
@@ -2736,13 +2736,13 @@ class MemoryTrapsMode extends GameMode:
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 		if not "dead_balls" in world:
-			world.dead_balls = []
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 		for b in balls:
 			if not b.alive:
-				if not world.dead_balls.has(b):
+				if not world.get_meta("dead_balls").has(b):
 					if b.has_method("set_meta"):
 						b.set_meta("time_since_death", 0.0)
-					world.dead_balls.append(b)
+					world.get_meta("dead_balls").append(b)
 				else:
 					if b.has_method("get_meta") and b.has_meta("time_since_death"):
 						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
@@ -2807,7 +2807,7 @@ class CustomMatchMode extends GameMode:
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if not "dead_balls" in world:
-			world.dead_balls = []
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
 		var pm = null
 		if world != null and "profile_manager" in world:
@@ -2824,13 +2824,13 @@ class CustomMatchMode extends GameMode:
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 		if not "dead_balls" in world:
-			world.dead_balls = []
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 		for b in balls:
 			if not b.alive:
-				if not world.dead_balls.has(b):
+				if not world.get_meta("dead_balls").has(b):
 					if b.has_method("set_meta"):
 						b.set_meta("time_since_death", 0.0)
-					world.dead_balls.append(b)
+					world.get_meta("dead_balls").append(b)
 				else:
 					if b.has_method("get_meta") and b.has_meta("time_since_death"):
 						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
@@ -2986,7 +2986,7 @@ class EcholocationMode extends GameMode:
 			world.arena.is_night = true
 
 		if not "dead_balls" in world:
-			world.dead_balls = []
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
 		for b in balls:
 			if b.ball_type != "spectator":
@@ -3001,14 +3001,14 @@ class EcholocationMode extends GameMode:
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 		if not "dead_balls" in world:
-			world.dead_balls = []
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
 		for b in balls:
 			if not b.alive:
-				if not world.dead_balls.has(b):
+				if not world.get_meta("dead_balls").has(b):
 					if b.has_method("set_meta"):
 						b.set_meta("time_since_death", 0.0)
-					world.dead_balls.append(b)
+					world.get_meta("dead_balls").append(b)
 				else:
 					if b.has_method("get_meta") and b.has_meta("time_since_death"):
 						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
@@ -3077,7 +3077,7 @@ class PitchBlackMode extends GameMode:
 		if world != null and "arena" in world and world.arena != null:
 			world.arena.is_night = true
 		if not "dead_balls" in world:
-			world.dead_balls = []
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 		for b in balls:
 			if b.ball_type != "spectator":
 				var base_perc = 250.0
@@ -3091,13 +3091,13 @@ class PitchBlackMode extends GameMode:
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 		if not "dead_balls" in world:
-			world.dead_balls = []
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 		for b in balls:
 			if not b.alive:
-				if not world.dead_balls.has(b):
+				if not world.get_meta("dead_balls").has(b):
 					if b.has_method("set_meta"):
 						b.set_meta("time_since_death", 0.0)
-					world.dead_balls.append(b)
+					world.get_meta("dead_balls").append(b)
 				else:
 					if b.has_method("get_meta") and b.has_meta("time_since_death"):
 						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
@@ -3145,7 +3145,7 @@ class VisionReducedMode extends GameMode:
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if not "dead_balls" in world:
-			world.dead_balls = []
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 		for b in balls:
 			if b.ball_type != "spectator":
 				var base_perc = 250.0
@@ -3159,13 +3159,13 @@ class VisionReducedMode extends GameMode:
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 		if not "dead_balls" in world:
-			world.dead_balls = []
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 		for b in balls:
 			if not b.alive:
-				if not world.dead_balls.has(b):
+				if not world.get_meta("dead_balls").has(b):
 					if b.has_method("set_meta"):
 						b.set_meta("time_since_death", 0.0)
-					world.dead_balls.append(b)
+					world.get_meta("dead_balls").append(b)
 				else:
 					if b.has_method("get_meta") and b.has_meta("time_since_death"):
 						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
@@ -3457,7 +3457,7 @@ class MovingSafeZoneMode extends GameMode:
                 b.team = b.ball_type
 
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
 
     func tick(world, balls: Array, delta: float = 0.016) -> void:
@@ -3473,7 +3473,7 @@ class MovingSafeZoneMode extends GameMode:
             crowd.tick(balls, kill_log, current_tick)
 
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
         var arena_width = 1000.0
         var arena_height = 1000.0
@@ -3530,10 +3530,10 @@ class MovingSafeZoneMode extends GameMode:
 
         for b in balls:
             if not b.alive:
-                if not world.dead_balls.has(b):
+                if not world.get_meta("dead_balls").has(b):
                     if b.has_method("set_meta"):
                         b.set_meta("time_since_death", 0.0)
-                    world.dead_balls.append(b)
+                    world.get_meta("dead_balls").append(b)
                 else:
                     if b.has_method("get_meta") and b.has_meta("time_since_death"):
                         b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
@@ -3636,18 +3636,18 @@ class ShrinkingDangerZoneMode extends GameMode:
                 b.team = b.ball_type
 
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
     func tick(world, balls: Array, delta: float = 0.016) -> void:
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
         for b in balls:
             if not b.alive:
-                if not world.dead_balls.has(b):
+                if not world.get_meta("dead_balls").has(b):
                     if b.has_method("set_meta"):
                         b.set_meta("time_since_death", 0.0)
-                    world.dead_balls.append(b)
+                    world.get_meta("dead_balls").append(b)
                 else:
                     if b.has_method("get_meta") and b.has_meta("time_since_death"):
                         b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
@@ -3793,7 +3793,7 @@ class ModifierZonesSafeZoneMode extends GameMode:
                 b.team = b.ball_type
 
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
     func tick(world, balls: Array, delta: float = 0.016) -> void:
         if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
@@ -3807,14 +3807,14 @@ class ModifierZonesSafeZoneMode extends GameMode:
             crowd.tick(balls, kill_log, current_tick)
 
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
         for b in balls:
             if not b.alive:
-                if not world.dead_balls.has(b):
+                if not world.get_meta("dead_balls").has(b):
                     if b.has_method("set_meta"):
                         b.set_meta("time_since_death", 0.0)
-                    world.dead_balls.append(b)
+                    world.get_meta("dead_balls").append(b)
                 else:
                     if b.has_method("get_meta") and b.has_meta("time_since_death"):
                         b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
@@ -3883,9 +3883,9 @@ class ModifierZonesSafeZoneMode extends GameMode:
                 continue
 
             if not b.has_meta("base_speed"):
-                b.set_meta("base_speed", b.get("speed", 100.0))
+                b.set_meta("base_speed", b.get("speed") if b.get("speed") != null else 100.0)
             if not b.has_meta("base_damage"):
-                b.set_meta("base_damage", b.get("damage", 10.0))
+                b.set_meta("base_damage", b.get("damage") if b.get("damage") != null else 10.0)
 
             var in_speed_zone = false
             var in_damage_zone = false
@@ -3928,7 +3928,7 @@ class ModifierZonesSafeZoneMode extends GameMode:
 
             if in_debuff_zone:
                 if not b.has_meta("base_max_hp"):
-                    b.set_meta("base_max_hp", b.get("max_hp", 100.0))
+                    b.set_meta("base_max_hp", b.get("max_hp") if b.get("max_hp") != null else 100.0)
                 b.max_hp = b.get_meta("base_max_hp") * 0.5
                 if b.get("hp", 0) > b.max_hp:
                     b.hp = b.max_hp
@@ -3941,7 +3941,7 @@ class ModifierZonesSafeZoneMode extends GameMode:
 
             if in_heal_zone:
                 if "hp" in b and "max_hp" in b:
-                    b.hp = min(b.get("max_hp", 100.0), b.hp + 20.0 * delta)
+                    b.hp = min(b.get("max_hp") if b.get("max_hp") != null else 100.0, b.hp + 20.0 * delta)
 
             var dx_s = b_x - zone_x
             var dy_s = b_y - zone_y
@@ -4035,7 +4035,7 @@ class SafeZoneMode extends GameMode:
                 b.team = b.ball_type
 
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
 
     func tick(world, balls: Array, delta: float = 0.016) -> void:
@@ -4051,14 +4051,14 @@ class SafeZoneMode extends GameMode:
             crowd.tick(balls, kill_log, current_tick)
 
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
         for b in balls:
             if not b.alive:
-                if not world.dead_balls.has(b):
+                if not world.get_meta("dead_balls").has(b):
                     if b.has_method("set_meta"):
                         b.set_meta("time_since_death", 0.0)
-                    world.dead_balls.append(b)
+                    world.get_meta("dead_balls").append(b)
                 else:
                     if b.has_method("get_meta") and b.has_meta("time_since_death"):
                         b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
@@ -4261,7 +4261,7 @@ class BumperBallsMode extends GameMode:
 
     func setup(world, balls: Array) -> void:
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
         for b in balls:
             var sponsor = ""
             if "sponsor" in b:
@@ -4366,7 +4366,7 @@ class ToxicEnvironmentMode extends GameMode:
         if not "boosters" in world:
             world.boosters = []
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
 
     func tick(world, balls: Array, delta: float = 0.016) -> void:
@@ -4382,7 +4382,7 @@ class ToxicEnvironmentMode extends GameMode:
             crowd.tick(balls, kill_log, current_tick)
 
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
         if not "boosters" in world:
             world.boosters = []
 
@@ -4412,10 +4412,10 @@ class ToxicEnvironmentMode extends GameMode:
 
         for b in balls:
             if not b.alive:
-                if not world.dead_balls.has(b):
+                if not world.get_meta("dead_balls").has(b):
                     if b.has_method("set_meta"):
                         b.set_meta("time_since_death", 0.0)
-                    world.dead_balls.append(b)
+                    world.get_meta("dead_balls").append(b)
                 else:
                     if b.has_method("get_meta") and b.has_meta("time_since_death"):
                         b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
@@ -4515,9 +4515,9 @@ class ModifierZonesMode extends GameMode:
 				continue
 
 			if not b.has_meta("base_speed"):
-				b.set_meta("base_speed", b.get("speed", 100.0))
+				b.set_meta("base_speed", b.get("speed") if b.get("speed") != null else 100.0)
 			if not b.has_meta("base_damage"):
-				b.set_meta("base_damage", b.get("damage", 10.0))
+				b.set_meta("base_damage", b.get("damage") if b.get("damage") != null else 10.0)
 
 			var in_speed_zone = false
 			var in_damage_zone = false
@@ -4557,7 +4557,7 @@ class ModifierZonesMode extends GameMode:
 
 			if in_debuff_zone:
 				if not b.has_meta("base_max_hp"):
-					b.set_meta("base_max_hp", b.get("max_hp", 100.0))
+					b.set_meta("base_max_hp", b.get("max_hp") if b.get("max_hp") != null else 100.0)
 				b.max_hp = b.get_meta("base_max_hp") * 0.5
 				if "hp" in b and b.hp > b.max_hp:
 					b.hp = b.max_hp
@@ -4569,7 +4569,7 @@ class ModifierZonesMode extends GameMode:
 					b.remove_meta("zone_modifier_debuff")
 
 			if in_heal_zone:
-				var max_hp = b.get("max_hp", 100.0)
+				var max_hp = b.get("max_hp") if b.get("max_hp") != null else 100.0
 				b.hp = min(max_hp, b.hp + 20.0 * delta)
 
 	func check_winner(world, balls: Array):
@@ -4609,14 +4609,14 @@ class WindstormMode extends GameMode:
     func setup(world, balls: Array) -> void:
         super.setup(world, balls)
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
         for b in balls:
             if b.ball_type != "spectator":
                 b.team = b.ball_type
                 if not "base_speed" in b:
-                    b.base_speed = b.get("speed", 100.0)
+                    b.base_speed = b.get("speed") if b.get("speed") != null else 100.0
                 if not "base_damage" in b:
-                    b.base_damage = b.get("damage", 10.0)
+                    b.base_damage = b.get("damage") if b.get("damage") != null else 10.0
 
 
     func tick(world, balls: Array, delta: float = 0.016) -> void:
@@ -4632,13 +4632,13 @@ class WindstormMode extends GameMode:
             crowd.tick(balls, kill_log, current_tick)
 
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
         for b in balls:
             if not b.alive:
-                if not world.dead_balls.has(b):
+                if not world.get_meta("dead_balls").has(b):
                     if b.has_method("set_meta"):
                         b.set_meta("time_since_death", 0.0)
-                    world.dead_balls.append(b)
+                    world.get_meta("dead_balls").append(b)
                 else:
                     if b.has_method("get_meta") and b.has_meta("time_since_death"):
                         b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
@@ -4743,7 +4743,7 @@ class BountyHuntMode extends GameMode:
     func setup(world, balls: Array) -> void:
         super.setup(world, balls)
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
         var red_team = []
         var blue_team = []
@@ -4841,7 +4841,7 @@ class EarthquakeMode extends GameMode:
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 		if not "dead_balls" in world:
-			world.dead_balls = []
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
 		for b in balls:
 			var alive = false
@@ -4856,7 +4856,7 @@ class EarthquakeMode extends GameMode:
 						b["time_since_death"] = 0.0
 					elif "time_since_death" in b:
 						b.time_since_death = 0.0
-					world.dead_balls.append(b)
+					world.get_meta("dead_balls").append(b)
 				else:
 					if typeof(b) == TYPE_DICTIONARY:
 						b["time_since_death"] = b.get("time_since_death", 0.0) + delta
@@ -5106,13 +5106,13 @@ class SupernovaMode extends GameMode:
             crowd.tick(balls, kill_log, current_tick)
 
         if not "dead_balls" in world:
-            world.dead_balls = []
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
         for b in balls:
             if not b.alive:
-                if not world.dead_balls.has(b):
+                if not world.get_meta("dead_balls").has(b):
                     if b.has_method("set_meta"):
                         b.set_meta("time_since_death", 0.0)
-                    world.dead_balls.append(b)
+                    world.get_meta("dead_balls").append(b)
                 else:
                     if b.has_method("get_meta") and b.has_meta("time_since_death"):
                         b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
@@ -5438,7 +5438,7 @@ class GeometricZoneMode extends GameMode:
 				b.team = b.ball_type
 
 		if not ("dead_balls" in world):
-			world.dead_balls = []
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
 	func sign_tri(p1x, p1y, p2x, p2y, p3x, p3y):
 		return (p1x - p3x) * (p2y - p3y) - (p2x - p3x) * (p1y - p3y)
@@ -5471,13 +5471,13 @@ class GeometricZoneMode extends GameMode:
 
 	func tick(world, balls, delta=0.016):
 		if not ("dead_balls" in world):
-			world.dead_balls = []
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
 		for b in balls:
 			if not (b.alive if "alive" in b else false):
 				if not (b in world.dead_balls):
 					b.time_since_death = 0.0
-					world.dead_balls.append(b)
+					world.get_meta("dead_balls").append(b)
 				else:
 					b.time_since_death += delta
 
@@ -5608,11 +5608,11 @@ class BodySwapMode extends GameMode:
 
 	func setup(world, balls: Array) -> void:
 		if not "dead_balls" in world:
-			world.dead_balls = []
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 		if not "dead_balls" in world:
-			world.dead_balls = []
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
 		for b in balls:
 			var alive = false
@@ -5623,7 +5623,7 @@ class BodySwapMode extends GameMode:
 				if not b in world.dead_balls:
 					if "time_since_death" in b: b.time_since_death = 0.0
 					elif b.has_method("set_meta"): b.set_meta("time_since_death", 0.0)
-					world.dead_balls.append(b)
+					world.get_meta("dead_balls").append(b)
 				else:
 					if "time_since_death" in b: b.time_since_death += delta
 					elif b.has_method("set_meta") and b.has_meta("time_since_death"):
@@ -5684,7 +5684,7 @@ class TugOfWarMode extends GameMode:
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if not "dead_balls" in world:
-			world.dead_balls = []
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
 		var valid_balls = []
 		for b in balls:
@@ -6312,6 +6312,175 @@ class HazardBilliardsMode extends GameMode:
 								elif h.has_method("set"): h.set("vy", new_vy)
 
 
+
+class DynamicSafeZoneMode extends GameMode:
+    var zone_x: float = 500.0
+    var zone_y: float = 500.0
+    var zone_radius: float = 500.0
+    var min_zone_radius: float = 50.0
+    var shrink_rate: float = 10.0
+    var outside_damage_per_second: float = 10.0
+    var zone_target_x: float = 500.0
+    var zone_target_y: float = 500.0
+    var collapse_triggered: bool = false
+    var buff_zone_radius: float = 75.0
+    var buff_type: String = "speed"
+    var buff_timer: float = 0.0
+
+    func _init() -> void:
+        name = "Dynamic Safe Zone"
+        description = "Dynamic safe zones that not only protect from environmental damage but also apply randomized buffs for a short duration, encouraging players to fight for the optimal spot inside the zone."
+
+    func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
+        collapse_triggered = false
+        var arena_width = 1000.0
+        var arena_height = 1000.0
+        if "arena" in world and world.arena:
+            if "width" in world.arena:
+                arena_width = float(world.arena.width)
+            if "height" in world.arena:
+                arena_height = float(world.arena.height)
+
+        zone_x = arena_width / 2.0
+        zone_y = arena_height / 2.0
+        zone_target_x = zone_x
+        zone_target_y = zone_y
+        zone_radius = min(arena_width, arena_height) / 2.0
+        min_zone_radius = 50.0
+        buff_timer = 0.0
+        _pick_new_buff()
+
+    func _pick_new_buff() -> void:
+        var buffs = ["speed", "damage", "heal", "shield"]
+        buff_type = buffs[randi() % buffs.size()]
+        buff_timer = randf_range(5.0, 10.0)
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        super.tick(world, balls, delta)
+
+        if world != null and world.has_method("has_meta") and not world.has_meta("dead_balls"):
+            world.set_meta("dead_balls", [])
+
+        if world != null and world.has_method("has_meta") and world.has_meta("dead_balls"):
+            pass # Keep logic simple
+        elif world != null and world.has_method("has_meta") and not world.has_meta("dead_balls"):
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+
+        for b in balls:
+            if not b.alive:
+                if world != null and world.has_method("has_meta") and world.has_meta("dead_balls"):
+                    if not world.get_meta("dead_balls").has(b):
+                        if b.has_method("set_meta"):
+                            b.set_meta("time_since_death", 0.0)
+                        world.get_meta("dead_balls").append(b)
+                    else:
+                        if b.has_method("get_meta") and b.has_meta("time_since_death"):
+                            b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+
+        buff_timer -= delta
+        if buff_timer <= 0:
+            _pick_new_buff()
+
+        var dx = zone_target_x - zone_x
+        var dy = zone_target_y - zone_y
+        var dist_zone = sqrt(dx*dx + dy*dy)
+        if dist_zone > 5.0:
+            var move_speed = 15.0
+            zone_x += (dx / dist_zone) * move_speed * delta
+            zone_y += (dy / dist_zone) * move_speed * delta
+        else:
+            var arena_width = 1000.0
+            var arena_height = 1000.0
+            if world != null and "arena" in world and world.arena:
+                if "width" in world.arena:
+                    arena_width = float(world.arena.width)
+                if "height" in world.arena:
+                    arena_height = float(world.arena.height)
+            var buffer = max(100.0, zone_radius * 0.5)
+            zone_target_x = randf_range(buffer, arena_width - buffer)
+            zone_target_y = randf_range(buffer, arena_height - buffer)
+
+        if zone_radius > min_zone_radius:
+            zone_radius -= shrink_rate * delta
+            if zone_radius <= min_zone_radius:
+                zone_radius = min_zone_radius
+                if not collapse_triggered:
+                    collapse_triggered = true
+                    if world.has_method("add_event"):
+                        world.add_event("collapse_event", {"type": "collapse_event", "message": "COLLAPSE EVENT! The zone collapses!"})
+        elif collapse_triggered:
+            if zone_radius > 0:
+                zone_radius -= shrink_rate * delta
+                if zone_radius < 0:
+                    zone_radius = 0.0
+
+            for b in balls:
+                if b.alive and b.ball_type != "spectator":
+                    var b_x = b.get("position").x if b.get("position") != null else b.get("x")
+                    var b_y = b.get("position").y if b.get("position") != null else b.get("y")
+                    var dx_pull = zone_x - b_x
+                    var dy_pull = zone_y - b_y
+                    var dist_pull = sqrt(dx_pull*dx_pull + dy_pull*dy_pull)
+                    if dist_pull > 0:
+                        var pull_strength = 2000.0
+                        if not "vx" in b: b.vx = 0.0
+                        if not "vy" in b: b.vy = 0.0
+                        b.vx += (dx_pull / dist_pull) * pull_strength * delta
+                        b.vy += (dy_pull / dist_pull) * pull_strength * delta
+
+        var damage_this_tick = outside_damage_per_second * (10.0 if collapse_triggered else 1.0) * delta
+
+        for b in balls:
+            if not b.alive or b.ball_type == "spectator":
+                continue
+
+            if not b.has_meta("base_speed"):
+                b.set_meta("base_speed", b.get("speed") if b.get("speed") != null else 100.0)
+            if not b.has_meta("base_damage"):
+                b.set_meta("base_damage", b.get("damage") if b.get("damage") != null else 10.0)
+
+            var b_x = b.get("position").x if b.get("position") != null else b.get("x")
+            var b_y = b.get("position").y if b.get("position") != null else b.get("y")
+
+            var dx_ball = b_x - zone_x
+            var dy_ball = b_y - zone_y
+            var dist_ball = sqrt(dx_ball*dx_ball + dy_ball*dy_ball)
+
+            var in_buff_zone = dist_ball <= buff_zone_radius
+
+            if in_buff_zone:
+                if buff_type == "speed":
+                    b.set("speed", b.get_meta("base_speed") * 1.5)
+                    b.set_meta("zone_modifier_speed", true)
+                elif buff_type == "damage":
+                    b.set("damage", b.get_meta("base_damage") * 1.5)
+                    b.set_meta("zone_modifier_damage", true)
+                elif buff_type == "heal":
+                    if "hp" in b and "max_hp" in b:
+                        b.hp = min(b.get("max_hp") if b.get("max_hp") != null else 100.0, b.hp + 30.0 * delta)
+                elif buff_type == "shield":
+                    b.set("shield", b.get("shield") if b.get("shield") != null else 0.0 + 10.0 * delta)
+                    if b.get("shield") > 50.0:
+                        b.set("shield", 50.0)
+
+            if not in_buff_zone or buff_type != "speed":
+                if b.has_meta("zone_modifier_speed") and b.get_meta("zone_modifier_speed"):
+                    b.set("speed", b.get_meta("base_speed"))
+                    b.remove_meta("zone_modifier_speed")
+
+            if not in_buff_zone or buff_type != "damage":
+                if b.has_meta("zone_modifier_damage") and b.get_meta("zone_modifier_damage"):
+                    b.set("damage", b.get_meta("base_damage"))
+                    b.remove_meta("zone_modifier_damage")
+
+            if dist_ball > zone_radius:
+                if "hp" in b:
+                    b.hp -= damage_this_tick
+                    if b.hp <= 0:
+                        b.alive = false
+                        b.hp = 0
+
 var GAME_MODES = {
 
 
@@ -6364,6 +6533,7 @@ var GAME_MODES = {
     "interactive_training": load("res://src/ai/interactive_training.gd").new(),
     "shrinking_danger_zone": ShrinkingDangerZoneMode.new(),
     "safe_zone": SafeZoneMode.new(),
+    "dynamic_safe_zone": DynamicSafeZoneMode.new(),
     "moving_safe_zone": MovingSafeZoneMode.new(),
     "bounty_hunt": BountyHuntMode.new(),
     "earthquake": EarthquakeMode.new(),
