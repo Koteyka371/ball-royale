@@ -1,0 +1,4 @@
+{
+  "title": "Dynamic Map Hazards Based on Season",
+  "description": "Extend the seasonal theme logic so that it not only affects the main menu background, but also alters map hazards during gameplay. For example, during the Frost season, random ice patches can appear causing players to slide, while during Inferno season, occasional lava pools deal small damage over time."
+}
