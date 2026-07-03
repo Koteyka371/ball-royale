@@ -485,6 +485,23 @@ class Action:
 
     def execute(self, strategy: str, delta: float) -> None:
         import math
+
+        # Track state history for time_rewind
+        if not hasattr(self.ball, "state_history"):
+            self.ball.state_history = []
+
+        current_state = {
+            "x": self.ball.x,
+            "y": self.ball.y,
+            "hp": getattr(self.ball, "hp", 100.0)
+        }
+        self.ball.state_history.append(current_state)
+        # Keep last 3 seconds (assuming ~60 ticks/sec or so, delta is in args, let's just keep last 180 ticks, 180 * 0.016 is ~3s)
+        # We can also just store delta and prune by time. Let's do simple max ticks to avoid loop over array: 180.
+        if len(self.ball.state_history) > 180:
+            self.ball.state_history.pop(0)
+
+
         # Clear hazard state flags each tick before iterating over hazards
         if hasattr(self.ball, "_chrono_slow"):
             delattr(self.ball, "_chrono_slow")
@@ -4400,6 +4417,28 @@ class Action:
                     for h in self.world.arena.hazards:
                         h.frozen_timer = 2.0
 
+            elif skill_name == "time_rewind":
+                allies = [b for b in getattr(self.world, "balls", []) if getattr(b, "team", "") == getattr(self.ball, "team", "") and getattr(b, "alive", True)]
+                for ally in allies:
+                    history = getattr(ally, "state_history", [])
+                    if history:
+                        past_state = history[0] # oldest state in the last ~3 seconds
+
+                        ally.x = past_state["x"]
+                        ally.y = past_state["y"]
+                        # heal recent damage (but don't lower HP if they got healed)
+                        if past_state["hp"] > getattr(ally, "hp", 0):
+                            ally.hp = past_state["hp"]
+
+                        # Clear negative statuses
+                        ally.stun_timer = 0.0
+                        ally.silence_timer = 0.0
+                        ally.is_stunned = False
+                        if hasattr(ally, "poison_timer"):
+                            ally.poison_timer = 0.0
+
+                        # Clear history so we don't rewind repeatedly
+                        ally.state_history = []
             elif skill_name == "magnet_tether":
                 enemies = self._get_enemies()
                 if enemies:
