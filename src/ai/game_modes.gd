@@ -6602,7 +6602,187 @@ class DailyMutatorMode extends GameMode:
 					else:
 						b.skill_points = b.get("skill_points", 0) + 10
 
+
+class BlackMarketMode extends GameMode:
+    var currency_spawn_timer = 0.0
+
+    func _init():
+        super._init()
+        self.name = "Black Market"
+        self.description = "Collect currency to buy upgrades from wandering Black Markets."
+
+    func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
+        if not "currency_pickups" in world:
+            world.currency_pickups = []
+        if not "black_markets" in world:
+            world.black_markets = []
+
+        var arena_width = 1000.0
+        var arena_height = 1000.0
+        if world != null and "arena" in world and world.arena != null:
+            if "width" in world.arena: arena_width = float(world.arena.width)
+            if "height" in world.arena: arena_height = float(world.arena.height)
+
+        for i in range(15):
+            world.currency_pickups.append({
+                "x": randf_range(50.0, arena_width - 50.0),
+                "y": randf_range(50.0, arena_height - 50.0),
+                "type": "currency"
+            })
+
+        for i in range(2):
+            world.black_markets.append({
+                "x": randf_range(100.0, arena_width - 100.0),
+                "y": randf_range(100.0, arena_height - 100.0),
+                "vx": randf_range(-20.0, 20.0),
+                "vy": randf_range(-20.0, 20.0),
+                "radius": 40.0
+            })
+
+        for b in balls:
+            if typeof(b) == TYPE_DICTIONARY:
+                if b.get("ball_type", "") != "spectator":
+                    if not b.has("currency"): b["currency"] = 0
+                    if not b.has("team"): b["team"] = b.get("ball_type", "")
+                    b["purchase_cooldown"] = 0.0
+            else:
+                if b.get("ball_type") != "spectator":
+                    if not b.has_meta("currency"): b.set_meta("currency", 0)
+                    if not b.get("team"): b.set("team", b.get("ball_type"))
+                    if not b.has_meta("purchase_cooldown"): b.set_meta("purchase_cooldown", 0.0)
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        super.tick(world, balls, delta)
+        var arena_width = 1000.0
+        var arena_height = 1000.0
+        if world != null and "arena" in world and world.arena != null:
+            if "width" in world.arena: arena_width = float(world.arena.width)
+            if "height" in world.arena: arena_height = float(world.arena.height)
+
+        currency_spawn_timer += delta
+        if currency_spawn_timer >= 2.0:
+            currency_spawn_timer = 0.0
+            if "currency_pickups" in world and world.currency_pickups.size() < 30:
+                world.currency_pickups.append({
+                    "x": randf_range(50.0, arena_width - 50.0),
+                    "y": randf_range(50.0, arena_height - 50.0),
+                    "type": "currency"
+                })
+
+        if "black_markets" in world:
+            for bm in world.black_markets:
+                bm["x"] += bm["vx"] * delta
+                bm["y"] += bm["vy"] * delta
+
+                if bm["x"] < bm["radius"] or bm["x"] > arena_width - bm["radius"]:
+                    bm["vx"] *= -1
+                    bm["x"] = clamp(bm["x"], bm["radius"], arena_width - bm["radius"])
+                if bm["y"] < bm["radius"] or bm["y"] > arena_height - bm["radius"]:
+                    bm["vy"] *= -1
+                    bm["y"] = clamp(bm["y"], bm["radius"], arena_height - bm["radius"])
+
+        for b in balls:
+            var alive = false
+            var is_spec = false
+            var bx = 0.0
+            var by = 0.0
+            var bradius = 10.0
+            var bcurrency = 0
+            var bpcooldown = 0.0
+
+            if typeof(b) == TYPE_DICTIONARY:
+                alive = b.get("alive", false)
+                is_spec = (b.get("ball_type", "") == "spectator")
+                bx = float(b.get("x", 0.0))
+                by = float(b.get("y", 0.0))
+                bradius = float(b.get("radius", 10.0))
+                bcurrency = int(b.get("currency", 0))
+                bpcooldown = float(b.get("purchase_cooldown", 0.0))
+            else:
+                alive = b.get("alive")
+                is_spec = (b.get("ball_type") == "spectator")
+                bx = float(b.get("x"))
+                by = float(b.get("y"))
+                bradius = float(b.get("radius"))
+                bcurrency = int(b.get_meta("currency")) if b.has_meta("currency") else 0
+                bpcooldown = float(b.get_meta("purchase_cooldown")) if b.has_meta("purchase_cooldown") else 0.0
+
+            if not alive or is_spec:
+                continue
+
+            bpcooldown = max(0.0, bpcooldown - delta)
+
+            if "currency_pickups" in world:
+                var pickups_to_remove = []
+                for i in range(world.currency_pickups.size()):
+                    var c = world.currency_pickups[i]
+                    var dx = bx - float(c["x"])
+                    var dy = by - float(c["y"])
+                    var dist = sqrt(dx*dx + dy*dy)
+                    if dist <= bradius + 15.0:
+                        bcurrency += 1
+                        pickups_to_remove.append(i)
+
+                pickups_to_remove.sort_custom(func(a, b): return a > b)
+                for idx in pickups_to_remove:
+                    if idx < world.currency_pickups.size():
+                        world.currency_pickups.remove_at(idx)
+
+            if bpcooldown <= 0.0 and bcurrency >= 5 and "black_markets" in world:
+                for bm in world.black_markets:
+                    var dx = bx - float(bm["x"])
+                    var dy = by - float(bm["y"])
+                    var dist = sqrt(dx*dx + dy*dy)
+                    if dist <= bradius + float(bm["radius"]):
+                        bcurrency -= 5
+                        bpcooldown = 5.0
+
+                        var upgrades = ["max_hp", "speed", "damage"]
+                        var upgrade_type = upgrades[randi() % upgrades.size()]
+
+                        if typeof(b) == TYPE_DICTIONARY:
+                            if upgrade_type == "max_hp":
+                                if not b.has("base_max_hp"): b["base_max_hp"] = float(b.get("max_hp", 100.0))
+                                b["base_max_hp"] += 20.0
+                                b["max_hp"] = b["base_max_hp"]
+                                b["hp"] = min(float(b.get("hp", 100.0)) + 20.0, float(b["max_hp"]))
+                            elif upgrade_type == "speed":
+                                if not b.has("base_speed"): b["base_speed"] = float(b.get("speed", 100.0))
+                                b["base_speed"] += 15.0
+                                b["speed"] = b["base_speed"]
+                            elif upgrade_type == "damage":
+                                if not b.has("base_damage"): b["base_damage"] = float(b.get("damage", 10.0))
+                                b["base_damage"] += 5.0
+                                b["damage"] = b["base_damage"]
+                        else:
+                            if upgrade_type == "max_hp":
+                                var cur_base_mhp = b.get_meta("base_max_hp") if b.has_meta("base_max_hp") else float(b.get("max_hp"))
+                                b.set_meta("base_max_hp", cur_base_mhp + 20.0)
+                                b.set("max_hp", cur_base_mhp + 20.0)
+                                b.set("hp", min(float(b.get("hp")) + 20.0, float(b.get("max_hp"))))
+                            elif upgrade_type == "speed":
+                                var cur_base_spd = b.get_meta("base_speed") if b.has_meta("base_speed") else float(b.get("speed"))
+                                b.set_meta("base_speed", cur_base_spd + 15.0)
+                                b.set("speed", cur_base_spd + 15.0)
+                            elif upgrade_type == "damage":
+                                var cur_base_dmg = b.get_meta("base_damage") if b.has_meta("base_damage") else float(b.get("damage"))
+                                b.set_meta("base_damage", cur_base_dmg + 5.0)
+                                b.set("damage", cur_base_dmg + 5.0)
+
+                        if world.has_method("add_event"):
+                            world.add_event("upgrade_purchased", {"ball": b, "upgrade": upgrade_type})
+                        break
+
+            if typeof(b) == TYPE_DICTIONARY:
+                b["currency"] = bcurrency
+                b["purchase_cooldown"] = bpcooldown
+            else:
+                b.set_meta("currency", bcurrency)
+                b.set_meta("purchase_cooldown", bpcooldown)
+
 var GAME_MODES = {
+	"black_market": BlackMarketMode.new(),
 
 
 	"geometric_zone": GeometricZoneMode.new(),

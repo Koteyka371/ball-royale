@@ -4928,6 +4928,14 @@ func _get_boosters() -> Array:
                 var dy = b.y - self.ball.y
                 if sqrt(dx*dx + dy*dy) <= perception_radius:
                     boosters.append(b)
+    if self.world != null and "currency_pickups" in self.world:
+        for c in self.world.currency_pickups:
+            var cx = float(c["x"])
+            var cy = float(c["y"])
+            var dx = cx - float(self.ball.get("x", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.get("x"))
+            var dy = cy - float(self.ball.get("y", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.get("y"))
+            if sqrt(dx*dx + dy*dy) <= perception_radius:
+                boosters.append(c)
     return boosters
 
 func _flee(delta: float):

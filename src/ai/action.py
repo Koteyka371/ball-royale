@@ -3168,6 +3168,14 @@ class Action:
                     dy = by - self.ball.y
                     if math.sqrt(dx*dx + dy*dy) <= perception_radius:
                         boosters.append(b)
+        if hasattr(self.world, "currency_pickups"):
+            for c in self.world.currency_pickups:
+                cx = c.get("x", 0) if isinstance(c, dict) else getattr(c, "x", 0)
+                cy = c.get("y", 0) if isinstance(c, dict) else getattr(c, "y", 0)
+                dx = cx - self.ball.x
+                dy = cy - self.ball.y
+                if math.sqrt(dx*dx + dy*dy) <= perception_radius:
+                    boosters.append(c)
         return boosters
 
     def _flee(self, delta: float) -> None:
