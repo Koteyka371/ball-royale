@@ -495,6 +495,12 @@ class Action:
     def execute(self, strategy: str, delta: float) -> None:
         import math
 
+        if getattr(self.ball, "glitch_timer", 0.0) > 0.0:
+            self.ball.glitch_timer -= delta
+            if random.random() < 0.2:
+                # Randomize strategy temporarily or swap target
+                strategy = random.choice(["flee", "wander"])
+
         # Track state history for time_rewind
         if not hasattr(self.ball, "state_history"):
             self.ball.state_history = []
@@ -2482,6 +2488,9 @@ class Action:
                             if hasattr(self.ball, "stamina"):
                                 drain_rate = 30.0 * delta
                                 self.ball.stamina = max(0.0, self.ball.stamina - drain_rate)
+                            continue
+                        elif hazard.kind == "glitch_zone":
+                            self.ball.glitch_timer = 2.0
                             continue
                         elif hazard.kind == "tall_grass":
                             if hasattr(self.ball, "take_damage"):
