@@ -8108,7 +8108,7 @@
     },
     {
       "id": "idea-470",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather Predictor Item",
@@ -13207,6 +13207,40 @@
         "src/ai/tornado_surfing_skill.py",
         "src/ai/tornado_surfing_skill.gd",
         "tests/test_tornado_surfing_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-768",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Safe Zones with Obstacles",
+      "description": "The safe zone shrinks, but moving walls or hazards are added to the middle making players fight and navigate obstacles simultaneously.",
+      "allowed_paths": [
+        "src/ai/shrinking_safe_zones_with_obstacles.py",
+        "src/ai/shrinking_safe_zones_with_obstacles.gd",
+        "tests/test_shrinking_safe_zones_with_obstacles.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-769",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Multi-Safe Zones",
+      "description": "Instead of one big safe zone, multiple tiny safe zones spawn randomly across the map, shrinking and splitting over time.",
+      "allowed_paths": [
+        "src/ai/multi_safe_zones.py",
+        "src/ai/multi_safe_zones.gd",
+        "tests/test_multi_safe_zones.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

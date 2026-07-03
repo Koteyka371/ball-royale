@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-470] Weather Predictor Item — *2026-07-03 12:42:24 UTC*
+
+An equippable module or booster that reveals the next weather event and its duration before it happens, giving players a strategic advantage to position themselves safely.
+
+---
+
 ## [idea-450] Shrinking Safe Zones with Multi-Buffs — *2026-07-03 12:11:08 UTC*
 
 Introduce dynamic safe zones that not only protect from environmental damage but also apply randomized buffs (like increased speed or damage) for a short duration, encouraging players to fight for the optimal spot inside the zone.
