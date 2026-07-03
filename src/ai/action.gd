@@ -3296,6 +3296,52 @@ func execute(strategy: String, delta: float):
                                     self.ball.hp -= poison_damage
                                     if self.ball.hp <= 0:
                                         self.ball.alive = false
+                            elif trap_variant == "blindness":
+                                var is_blinded = false
+                                if "is_blinded" in self.ball:
+                                    is_blinded = self.ball.is_blinded
+                                elif self.ball.has_method("get_meta") and self.ball.has_meta("is_blinded"):
+                                    is_blinded = self.ball.get_meta("is_blinded")
+
+                                if not is_blinded:
+                                    if "is_blinded" in self.ball:
+                                        self.ball.is_blinded = true
+                                        self.ball.blindness_timer = 3.0
+                                    elif self.ball.has_method("set_meta"):
+                                        self.ball.set_meta("is_blinded", true)
+                                        self.ball.set_meta("blindness_timer", 3.0)
+
+                                    var base_perc = 250.0
+                                    if "base_perception_radius" in self.ball:
+                                        base_perc = float(self.ball.base_perception_radius)
+                                    elif self.ball.has_method("get_meta") and self.ball.has_meta("base_perception_radius"):
+                                        base_perc = self.ball.get_meta("base_perception_radius")
+                                    else:
+                                        if "perception_radius" in self.ball:
+                                            base_perc = float(self.ball.perception_radius)
+                                        if self.ball.has_method("set_meta"):
+                                            self.ball.set_meta("base_perception_radius", base_perc)
+                                        elif "base_perception_radius" in self.ball:
+                                            self.ball.base_perception_radius = base_perc
+
+                                    self.ball.perception_radius = base_perc * 0.2
+                                else:
+                                    var current_timer = 0.0
+                                    if "blindness_timer" in self.ball:
+                                        current_timer = self.ball.blindness_timer
+                                    elif self.ball.has_method("get_meta") and self.ball.has_meta("blindness_timer"):
+                                        current_timer = self.ball.get_meta("blindness_timer")
+
+                                    var new_timer = max(current_timer, 3.0)
+                                    if "blindness_timer" in self.ball:
+                                        self.ball.blindness_timer = new_timer
+                                    elif self.ball.has_method("set_meta"):
+                                        self.ball.set_meta("blindness_timer", new_timer)
+
+                                if hazard.has_method("set_meta"):
+                                    hazard.set_meta("duration", 0.0)
+                                elif "duration" in hazard:
+                                    hazard.duration = 0.0
                             elif trap_variant == "emp":
                                 var is_emped = false
                                 if "is_emped" in self.ball:
@@ -10505,6 +10551,46 @@ func _update_skill_timer(delta: float):
             self.ball.attack_timer = attack_timer
         elif self.ball.has_method("set_meta"):
             self.ball.set_meta("attack_timer", attack_timer)
+
+    var blindness_timer = 0.0
+    var is_blinded = false
+    if "is_blinded" in self.ball:
+        is_blinded = self.ball.is_blinded
+        blindness_timer = self.ball.blindness_timer
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("is_blinded"):
+        is_blinded = self.ball.get_meta("is_blinded")
+        if self.ball.has_meta("blindness_timer"):
+            blindness_timer = self.ball.get_meta("blindness_timer")
+
+    if is_blinded:
+        blindness_timer -= delta
+        if blindness_timer <= 0:
+            if "is_blinded" in self.ball:
+                self.ball.is_blinded = false
+            elif self.ball.has_method("set_meta"):
+                self.ball.set_meta("is_blinded", false)
+
+            var base_perc = 250.0
+            if "base_perception_radius" in self.ball:
+                base_perc = float(self.ball.base_perception_radius)
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("base_perception_radius"):
+                base_perc = self.ball.get_meta("base_perception_radius")
+
+            var vb_applied = false
+            if "vision_booster_applied" in self.ball:
+                vb_applied = self.ball.vision_booster_applied
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("vision_booster_applied"):
+                vb_applied = self.ball.get_meta("vision_booster_applied")
+
+            if vb_applied:
+                base_perc *= 2.0
+
+            self.ball.perception_radius = base_perc
+
+        if "blindness_timer" in self.ball:
+            self.ball.blindness_timer = blindness_timer
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("blindness_timer", blindness_timer)
 
     var stutter_timer = 0.0
     if "stutter_timer" in self.ball:

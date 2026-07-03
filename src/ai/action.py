@@ -2097,6 +2097,16 @@ class Action:
                                         self.ball.hp -= poison_damage
                                         if self.ball.hp <= 0:
                                             self.ball.alive = False
+                                elif trap_variant == "blindness":
+                                    if not getattr(self.ball, "is_blinded", False):
+                                        self.ball.is_blinded = True
+                                        self.ball.blindness_timer = 3.0
+                                        if not hasattr(self.ball, "base_perception_radius"):
+                                            self.ball.base_perception_radius = getattr(self.ball, "perception_radius", 250.0)
+                                        self.ball.perception_radius = self.ball.base_perception_radius * 0.2
+                                    else:
+                                        self.ball.blindness_timer = max(getattr(self.ball, "blindness_timer", 0.0), 3.0)
+                                    hazard.duration = 0.0
                                 elif trap_variant == "emp":
                                     if not getattr(self.ball, "is_emped", False):
                                         self.ball.is_emped = True
@@ -6353,6 +6363,15 @@ class Action:
             self.ball.reflect_shield_timer -= delta
             if self.ball.reflect_shield_timer <= 0:
                 self.ball.reflect_shield_active = False
+
+        if getattr(self.ball, "is_blinded", False):
+            self.ball.blindness_timer = getattr(self.ball, "blindness_timer", 0.0) - delta
+            if self.ball.blindness_timer <= 0:
+                self.ball.is_blinded = False
+                if hasattr(self.ball, "base_perception_radius"):
+                    self.ball.perception_radius = self.ball.base_perception_radius
+                    if getattr(self.ball, "vision_booster_applied", False):
+                        self.ball.perception_radius *= 2.0
 
     # Refactor: Confirmed kite functionality for Sniper
     def _kite(self, delta: float) -> None:
