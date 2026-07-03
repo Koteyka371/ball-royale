@@ -14472,6 +14472,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-842",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Community Voted Rotating Game Modes",
+      "description": "Every weekend, present three unique experimental game mode mutations (e.g., '10x Speed', 'Invisible Enemies', 'Lava Floor') on the main menu. Players vote using their prestige tokens, and the winning mode becomes the active weekend event.",
+      "allowed_paths": [
+        "src/ai/community_voted_rotating_game_modes.py",
+        "src/ai/community_voted_rotating_game_modes.gd",
+        "tests/test_community_voted_rotating_game_modes.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-843",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Interactive Match Spectating",
+      "description": "Allow players waiting in queue to spectate high-ranked live matches. Spectators can drop small, harmless, but visually fun elements into the arena (like confetti or emotes) using a limited pool of 'cheer points' to engage with the players.",
+      "allowed_paths": [
+        "src/ai/interactive_match_spectating.py",
+        "src/ai/interactive_match_spectating.gd",
+        "tests/test_interactive_match_spectating.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
