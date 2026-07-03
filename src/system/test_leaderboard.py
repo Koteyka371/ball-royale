@@ -54,5 +54,42 @@ class TestLeaderboard(unittest.TestCase):
         self.assertNotIn("Genesis Champion", self.pm.data.get("titles", []))
         self.assertNotIn("Aura of Genesis", self.pm.data.get("status_effects", []))
 
+    def test_record_loadout_win(self):
+        self.lm.record_loadout_win("code1", is_win=True)
+        self.lm.record_loadout_win("code1", is_win=False)
+        self.lm.record_loadout_win("code2", is_win=True)
+        self.lm.record_loadout_win("code3", is_win=False)
+
+        loadouts = self.lm.data.get("loadouts", {})
+        self.assertIn("code1", loadouts)
+        self.assertEqual(loadouts["code1"]["uses"], 2)
+        self.assertEqual(loadouts["code1"]["wins"], 1)
+
+        self.assertIn("code2", loadouts)
+        self.assertEqual(loadouts["code2"]["uses"], 1)
+        self.assertEqual(loadouts["code2"]["wins"], 1)
+
+        self.assertIn("code3", loadouts)
+        self.assertEqual(loadouts["code3"]["uses"], 1)
+        self.assertEqual(loadouts["code3"]["wins"], 0)
+
+    def test_get_top_loadouts(self):
+        # Code 1: 10 uses, 5 wins (50%)
+        for _ in range(5): self.lm.record_loadout_win("code1", is_win=True)
+        for _ in range(5): self.lm.record_loadout_win("code1", is_win=False)
+
+        # Code 2: 2 uses, 2 wins (100%) - Will be ranked lower than Code 1 because uses is the primary sort key
+        for _ in range(2): self.lm.record_loadout_win("code2", is_win=True)
+
+        # Code 3: 15 uses, 3 wins (20%) - High uses, so should be top
+        for _ in range(3): self.lm.record_loadout_win("code3", is_win=True)
+        for _ in range(12): self.lm.record_loadout_win("code3", is_win=False)
+
+        top = self.lm.get_top_loadouts()
+        self.assertEqual(len(top), 3)
+        self.assertEqual(top[0]["code"], "code3") # 15 uses
+        self.assertEqual(top[1]["code"], "code1") # 10 uses
+        self.assertEqual(top[2]["code"], "code2") # 2 uses
+
 if __name__ == '__main__':
     unittest.main()
