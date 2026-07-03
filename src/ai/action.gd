@@ -1464,7 +1464,24 @@ func execute(strategy: String, delta: float):
 				var p2_id = arena.hazards.size() + randi() % 50000 + 50000
 
 				if load("res://src/arena/procedural_arena.gd") != null:
-					var p1 = load("res://src/arena/procedural_arena.gd").Hazard.new(p1_id, self.ball.x + randf_range(-20.0, 20.0), self.ball.y + randf_range(-20.0, 20.0), 30.0, "teleporter", 0.0)
+					var aw = 800.0
+					if "width" in arena: aw = arena.width
+					var ah = 600.0
+					if "height" in arena: ah = arena.height
+
+					var px1 = self.ball.x
+					var py1 = self.ball.y
+					var d_left = px1
+					var d_right = aw - px1
+					var d_top = py1
+					var d_bottom = ah - py1
+					var min_d = min(min(d_left, d_right), min(d_top, d_bottom))
+					if min_d == d_left: px1 = 0.0
+					elif min_d == d_right: px1 = aw
+					elif min_d == d_top: py1 = 0.0
+					else: py1 = ah
+
+					var p1 = load("res://src/arena/procedural_arena.gd").Hazard.new(p1_id, px1, py1, 30.0, "teleporter", 0.0)
 					p1.set_meta("duration", 10.0)
 					p1.set_meta("owner_id", self.ball.id)
 
@@ -1488,6 +1505,19 @@ func execute(strategy: String, delta: float):
 					else:
 						target_x += randf_range(-100.0, 100.0)
 						target_y += randf_range(-100.0, 100.0)
+
+					target_x = max(0.0, min(aw, target_x))
+					target_y = max(0.0, min(ah, target_y))
+
+					d_left = target_x
+					d_right = aw - target_x
+					d_top = target_y
+					d_bottom = ah - target_y
+					min_d = min(min(d_left, d_right), min(d_top, d_bottom))
+					if min_d == d_left: target_x = 0.0
+					elif min_d == d_right: target_x = aw
+					elif min_d == d_top: target_y = 0.0
+					else: target_y = ah
 
 					var p2 = load("res://src/arena/procedural_arena.gd").Hazard.new(p2_id, target_x, target_y, 30.0, "teleporter", 0.0)
 					p2.set_meta("duration", 10.0)

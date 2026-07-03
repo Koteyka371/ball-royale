@@ -726,15 +726,32 @@ class Action:
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "portal_gun" in self.ball.inventory:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 from arena.procedural_arena import Hazard
+                import random
                 portal1_id = len(self.world.arena.hazards) + random.randint(10000, 49999)
                 portal2_id = len(self.world.arena.hazards) + random.randint(50000, 99999)
 
-                # Create entry portal near self
-                p1 = Hazard(portal1_id, self.ball.x + random.uniform(-20, 20), self.ball.y + random.uniform(-20, 20), 30.0, "teleporter", 0.0)
+                # For portal gun, they should spawn on arena walls based on task instructions.
+                # However, arena walls aren't explicitly coordinates we can easily query without arena width/height.
+                # Let's project to borders if we know width/height, else default to some bounds like 0 or 800.
+                aw = getattr(self.world.arena, 'width', 800.0)
+                ah = getattr(self.world.arena, 'height', 600.0)
+
+                # Project ball to nearest wall
+                px1, py1 = self.ball.x, self.ball.y
+                d_left, d_right = px1, aw - px1
+                d_top, d_bottom = py1, ah - py1
+                min_d = min(d_left, d_right, d_top, d_bottom)
+                if min_d == d_left: px1 = 0.0
+                elif min_d == d_right: px1 = aw
+                elif min_d == d_top: py1 = 0.0
+                else: py1 = ah
+
+                # Create entry portal on nearest wall
+                p1 = Hazard(portal1_id, px1, py1, 30.0, "teleporter", 0.0)
                 setattr(p1, 'duration', 10.0)
                 setattr(p1, 'owner_id', getattr(self.ball, 'id', None))
 
-                # Find target location for exit portal
+                # Find target location for exit portal, and project to wall
                 target_x, target_y = self.ball.x, self.ball.y
                 if strategy == "flee":
                     target_x += random.uniform(-300, 300)
@@ -748,7 +765,19 @@ class Action:
                     target_x += random.uniform(-100, 100)
                     target_y += random.uniform(-100, 100)
 
-                # Create exit portal
+                target_x = max(0.0, min(aw, target_x))
+                target_y = max(0.0, min(ah, target_y))
+
+                # Project target to nearest wall
+                d_left, d_right = target_x, aw - target_x
+                d_top, d_bottom = target_y, ah - target_y
+                min_d = min(d_left, d_right, d_top, d_bottom)
+                if min_d == d_left: target_x = 0.0
+                elif min_d == d_right: target_x = aw
+                elif min_d == d_top: target_y = 0.0
+                else: target_y = ah
+
+                # Create exit portal on wall
                 p2 = Hazard(portal2_id, target_x, target_y, 30.0, "teleporter", 0.0)
                 setattr(p2, 'duration', 10.0)
                 setattr(p2, 'owner_id', getattr(self.ball, 'id', None))

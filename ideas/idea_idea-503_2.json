@@ -1,0 +1,4 @@
+{
+  "title": "Shrinking Safe Zone mutator",
+  "description": "A mutator where the arena borders shrink constantly, eliminating any balls caught outside."
+}
