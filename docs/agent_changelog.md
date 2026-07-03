@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-406] Tornado Warning Siren — *2026-07-03 12:03:45 UTC*
+
+Add an audio/visual siren 3 seconds before a tornado spawns in thunderstorm weather so players have a brief warning to move out of the area.
+
+---
+
 ## [idea-376] Anti-Gravity Hazard — *2026-07-02 23:25:48 UTC*
 
 An arena hazard zone that periodically turns on, causing any balls inside to lose traction, reducing their turn rate to near zero and making them drift in their current direction.
