@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-420] Magnetic Fields Hazard — *2026-07-03 13:15:31 UTC*
+
+Hazards that exert continuous pushing or pulling forces on players within their area of effect.
+
+---
+
 ## [idea-448] Jump Pads — *2026-07-03 13:15:27 UTC*
 
 A new interactive tile type where stepping on it makes the ball invincible and untargetable for a short duration while it "flies" to a designated landing zone.
