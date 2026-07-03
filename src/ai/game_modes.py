@@ -5446,8 +5446,131 @@ class BlackMarketMode(GameMode):
                             world.add_event("upgrade_purchased", {"ball": b, "upgrade": upgrade_type})
                         break
 
+class FloorIsLavaMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Floor Is Lava"
+        self.description = "The entire arena floor slowly turns into lava starting from the edges. Safe zones are randomly generated platforms that appear for a limited time before submerging. Players must navigate between platforms using bounce pads and careful movement."
+        self.lava_radius = 2000.0
+        self.min_lava_radius = 0.0
+        self.shrink_rate = 15.0
+        self.platforms = []
+        self.platform_timer = 0.0
+        self.bounce_pads = []
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.world = world
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.lava_radius = max(arena_width, arena_height)
+        self.platforms = []
+        self.bounce_pads = []
+        self.platform_timer = 0.0
+        self._spawn_platform(arena_width/2.0, arena_height/2.0) # Start with center platform
+
+    def _spawn_platform(self, x=None, y=None):
+        import random
+        import math
+        arena_width = getattr(self.world.arena, "width", 1000) if hasattr(self.world, "arena") and self.world.arena else 1000
+        arena_height = getattr(self.world.arena, "height", 1000) if hasattr(self.world, "arena") and self.world.arena else 1000
+
+        if x is None:
+            x = random.uniform(200, arena_width - 200)
+        if y is None:
+            y = random.uniform(200, arena_height - 200)
+
+        radius = random.uniform(100.0, 200.0)
+        lifetime = random.uniform(10.0, 20.0)
+
+        self.platforms.append({
+            "x": x,
+            "y": y,
+            "radius": radius,
+            "timer": lifetime
+        })
+
+        # Add a bounce pad near the edge of the platform
+        angle = random.uniform(0, 2 * 3.14159)
+        pad_x = x + (radius * 0.7) * math.cos(angle)
+        pad_y = y + (radius * 0.7) * math.sin(angle)
+
+        self.bounce_pads.append({
+            "x": pad_x,
+            "y": pad_y,
+            "radius": 40.0,
+            "timer": lifetime
+        })
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        import random
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        center_x = arena_width / 2.0
+        center_y = arena_height / 2.0
+
+        self.lava_radius = max(self.min_lava_radius, self.lava_radius - self.shrink_rate * delta)
+
+        # Platform logic
+        self.platform_timer -= delta
+        if self.platform_timer <= 0:
+            self._spawn_platform()
+            self.platform_timer = random.uniform(5.0, 10.0)
+
+        # Update lifetimes
+        for p in list(self.platforms):
+            p["timer"] -= delta
+            if p["timer"] <= 0:
+                self.platforms.remove(p)
+
+        for bp in list(self.bounce_pads):
+            bp["timer"] -= delta
+            if bp["timer"] <= 0:
+                self.bounce_pads.remove(bp)
+
+        # Make sure bounce pads are placed in arena.hazards
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            # Clean up old bounce pads from hazards list
+            world.arena.hazards = [h for h in world.arena.hazards if getattr(h, "kind", "") != "bounce_pad"]
+
+            # Add current bounce pads to hazards
+            for idx, bp in enumerate(self.bounce_pads):
+                try:
+                    from arena.procedural_arena import Hazard
+                    new_h = Hazard(id=99000 + idx, x=bp["x"], y=bp["y"], radius=bp["radius"], kind="bounce_pad", damage=0.0)
+                    world.arena.hazards.append(new_h)
+                except ImportError:
+                    # Fallback to dict
+                    new_h = type("Hazard", (), {"id": 99000 + idx, "x": bp["x"], "y": bp["y"], "radius": bp["radius"], "kind": "bounce_pad", "damage": 0.0, "active": True})
+                    world.arena.hazards.append(new_h)
+
+        # Damage logic
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            dist_to_center = math.hypot(b.x - center_x, b.y - center_y)
+            in_lava = dist_to_center > self.lava_radius
+
+            # Check if on a platform
+            on_platform = False
+            for p in self.platforms:
+                if math.hypot(b.x - p["x"], b.y - p["y"]) <= p["radius"]:
+                    on_platform = True
+                    break
+
+            if in_lava and not on_platform:
+                b.hp -= 20.0 * delta # Lava damage
+                b.hp = max(0, b.hp)
+                if b.hp <= 0:
+                    b.alive = False
+
 GAME_MODES = {
+
     "black_market": BlackMarketMode(),
+    "floor_is_lava": FloorIsLavaMode(),
 
 
     "geometric_zone": GeometricZoneMode(),
