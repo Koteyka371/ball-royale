@@ -13144,6 +13144,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-764",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Friction Zones",
+      "description": "Zones that increase turning capabilities.",
+      "allowed_paths": [
+        "src/ai/friction_zones.py",
+        "src/ai/friction_zones.gd",
+        "tests/test_friction_zones.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
