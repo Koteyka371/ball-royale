@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-488] Minion Evolution Mechanic — *2026-07-03 15:45:12 UTC*
+
+Introduce an evolution mechanic for minions created by the Necromancer. If a minion survives for more than 30 seconds or scores a killing blow, it transforms into an 'Elite Minion' with increased health, attack power, and an autonomous ranged attack.
+
+---
+
 ## [idea-479] Magnetic Boots Cosmetic Modifier — *2026-07-03 15:45:08 UTC*
 
 A cosmetic modifier 'Magnetic Boots' that reduces push-back from explosions and hazards by 50% but slightly reduces base movement speed, adding trade-offs to the loadout system.
