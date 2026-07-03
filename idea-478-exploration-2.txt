@@ -1,0 +1,100 @@
+Ah, looking at `_get_enemies_internal` in `action.py`:
+
+```python
+        if hasattr(self.world, "balls"):
+            for b in self.world.balls:
+                if getattr(b, "is_decoy", False) and getattr(b, "alive", True) and b not in enemies:
+                    if getattr(b, "ball_type", None) != self.ball.ball_type:
+                        dx = getattr(b, "x", 0) - self.ball.x
+                        dy = getattr(b, "y", 0) - self.ball.y
+                        if dx*dx + dy*dy <= perception_radius*perception_radius:
+                            enemies.append(b)
+```
+
+And in `action.gd`:
+```gdscript
+    if self.world != null and "balls" in self.world:
+        for b in self.world.balls:
+            var is_decoy = false
+            if "is_decoy" in b:
+                is_decoy = b.is_decoy
+            elif b.has_method("has_meta") and b.has_meta("is_decoy"):
+                is_decoy = b.get_meta("is_decoy")
+
+            var is_alive = true
+            if "alive" in b: is_alive = b.alive
+            elif b.has_method("has_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+
+            if is_decoy and is_alive and not enemies.has(b):
+                var e_type = b.ball_type if "ball_type" in b else (b.get_ball_type() if b.has_method("get_ball_type") else "")
+                var my_type = self.ball.ball_type if "ball_type" in self.ball else (self.ball.get_ball_type() if self.ball.has_method("get_ball_type") else "")
+                if e_type != my_type and e_type != "spectator":
+                    var dx = b.x - self.ball.x
+                    var dy = b.y - self.ball.y
+                    if dx*dx + dy*dy <= perception_radius*perception_radius:
+                        enemies.append(b)
+```
+
+It seems decoys ARE already being added to the enemy list if they are of a different team/type!
+Wait, but the task says:
+"AI enemies will occasionally lock onto the decoy if they fail a perception check".
+
+If they already lock onto decoys by adding them to `enemies`, maybe I should just add a perception check!
+Wait, if they *pass* the perception check, they *ignore* the decoy.
+If they *fail* the perception check, they *target* the decoy.
+
+How can I simulate a perception check?
+I can do: `random.random() > (perception / 100)` or something?
+Or: if `random.random() < 0.5`, fail the perception check?
+
+Also, the task says:
+"Introduce a deployable 'Decoy' that mimics the player's current ball type and health. AI enemies will occasionally lock onto the decoy if they fail a perception check, absorbing damage while giving the player an opportunity to escape or ambush."
+
+Wait, how is the decoy deployed? Is there a booster called `decoy_booster`?
+Wait, there is a `decoy_item` hazard. When collected, what does it do?
+Let's see the logic for `decoy_item` in `action.py`.
+```python
+                elif getattr(nearest, "kind", None) == "decoy_item":
+                    import copy
+                    if hasattr(self.world, "balls"):
+                        decoy = copy.copy(self.ball)
+                        decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                        decoy.hp = getattr(self.ball, "max_hp", 100) * 0.1
+                        decoy.max_hp = decoy.hp
+                        decoy.damage = 0
+                        decoy.is_decoy = True
+                        decoy.decoy_timer = 5.0
+                        self.world.balls.append(decoy)
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+```
+Notice: `decoy.hp = getattr(self.ball, "max_hp", 100) * 0.1`. It doesn't mimic the player's *current health*, it mimics 10% of max health.
+And the task says: "mimics the player's current ball type and health".
+
+Let's fix `decoy.hp` to mimic the player's current health, and let's add a perception check to enemies.
+Wait, if I change `decoy_item` in `action.py`, it meets the requirement: "mimics the player's current ball type and health."
+Actually, `decoy.hp = getattr(self.ball, "hp", 100)` and `decoy.max_hp = getattr(self.ball, "max_hp", 100)`.
+
+Wait, the perception check!
+In `action.py` and `action.gd`, when an enemy sees a decoy, it should run a perception check.
+If `is_decoy` is True:
+We can use a random check based on distance, or just a 50% chance.
+Let's see if we should add it in `_get_enemies_internal`.
+If the perception check succeeds, the AI *ignores* the decoy.
+If it fails, it *includes* the decoy in `enemies`.
+So, `if random.random() > 0.5:` (fails check) -> append to enemies.
+
+Wait, if we do a perception check *every frame*, the AI will constantly flicker between seeing and ignoring the decoy.
+We should store the perception check result on the decoy for each enemy!
+Or simpler: wait, if we only append the decoy to enemies 50% of the time, they will stutter.
+Better: give the decoy a property `is_decoy = True`, and in `_get_target`, we decide.
+Wait, `_get_enemies_internal` runs every frame.
+
+Instead of flicking, what if the decoy itself has an innate "perception check DC"? And an enemy checks against it when they first see it, storing the result?
+Or what if we just use `hash(enemy.id + decoy.id) % 100 < 50`? That way, for a given enemy-decoy pair, the perception check result is constant!
+Yes, deterministic random based on their IDs!
+`hash(str(getattr(self.ball, "id", 0)) + str(getattr(b, "id", 0))) % 100 > 50` (50% chance to fail perception check and target the decoy).
+
+Let's double check the exact wording.
+"Introduce a deployable 'Decoy' that mimics the player's current ball type and health. AI enemies will occasionally lock onto the decoy if they fail a perception check, absorbing damage while giving the player an opportunity to escape or ambush."

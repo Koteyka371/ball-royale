@@ -1,0 +1,133 @@
+Okay, let's trace the logic.
+1. When creating a decoy: change `decoy.hp = getattr(..., "max_hp", ...) * 0.1` and `decoy.max_hp = ... * 0.1` to be equal to the current ball's hp and max_hp.
+Actually, the prompt states: "mimics the player's current ball type and health".
+It should probably just be `decoy.max_hp = self.ball.max_hp` and `decoy.hp = self.ball.hp`.
+
+Let's modify `action.py`, `action.gd`, and `game_modes.py`/`.gd` to replace `* 0.1` with simply copying the max_hp and hp.
+In `action.py`:
+```python
+                        decoy.hp = getattr(self.ball, "hp", 100)
+                        decoy.max_hp = getattr(self.ball, "max_hp", 100)
+```
+In `action.gd`:
+```gdscript
+                    if "hp" in decoy and "max_hp" in decoy:
+                        decoy.max_hp = float(self.ball.max_hp)
+                        decoy.hp = float(self.ball.hp)
+```
+Wait, the PR description says "AI enemies will occasionally lock onto the decoy if they fail a perception check".
+So if they PASS the perception check, they will NOT lock onto it.
+In `action.py` `_get_enemies_internal`, there is this logic:
+```python
+        if hasattr(self.world, "balls"):
+            for b in self.world.balls:
+                if getattr(b, "is_decoy", False) and getattr(b, "alive", True) and b not in enemies:
+                    if getattr(b, "ball_type", None) != self.ball.ball_type:
+                        # PERCEPTION CHECK: deterministic based on enemy ID and decoy ID
+                        enemy_id = getattr(self.ball, "id", 0)
+                        decoy_id = getattr(b, "id", 0)
+                        if hash(str(enemy_id) + str(decoy_id)) % 100 > 50:
+                            # Fails perception check -> target the decoy
+                            dx = getattr(b, "x", 0) - self.ball.x
+                            dy = getattr(b, "y", 0) - self.ball.y
+                            if dx*dx + dy*dy <= perception_radius*perception_radius:
+                                enemies.append(b)
+```
+Wait, wait!
+There is another place where it adds `is_decoy`: `_get_target` or similar? No, only `_get_enemies_internal`!
+BUT notice in `action.py` lines 2951-2956:
+```python
+        enemies = []
+        if hasattr(self.world, "get_nearby_entities"):
+            entities = self.world.get_nearby_entities(self.ball, perception_radius)
+            if isinstance(entities, dict):
+                enemies = [e for e in entities.get("enemies", []) if getattr(e, "ball_type", None) != "spectator"]
+            else:
+                enemies = [e for e in entities if getattr(e, "ball_type", None) != self.ball.ball_type and getattr(e, "ball_type", None) != "spectator" and getattr(e, "alive", True)]
+```
+If `is_decoy` entities are present in `entities`, they are ALREADY appended to `enemies` because they have a different `ball_type` or they are just regular entities! We need to FILTER THEM OUT here if they pass the perception check!
+
+Let's modify `action.py`:
+```python
+        def passes_perception_check(enemy, decoy):
+            enemy_id = getattr(enemy, "id", 0)
+            decoy_id = getattr(decoy, "id", 0)
+            return hash(str(enemy_id) + str(decoy_id)) % 100 < 50
+```
+
+Wait, we should filter `enemies` before returning it!
+```python
+        filtered_enemies = []
+        for e in enemies:
+            if getattr(e, "is_decoy", False):
+                enemy_id = getattr(self.ball, "id", 0)
+                decoy_id = getattr(e, "id", 0)
+                # Fail perception check = lock onto decoy
+                # Pass perception check = ignore decoy
+                if hash(str(enemy_id) + str(decoy_id)) % 100 > 50:
+                    filtered_enemies.append(e)
+            else:
+                filtered_enemies.append(e)
+        enemies = filtered_enemies
+```
+And then the block:
+```python
+        if hasattr(self.world, "balls"):
+            for b in self.world.balls:
+                if getattr(b, "is_decoy", False) and getattr(b, "alive", True) and b not in enemies:
+                    if getattr(b, "ball_type", None) != self.ball.ball_type:
+                        enemy_id = getattr(self.ball, "id", 0)
+                        decoy_id = getattr(b, "id", 0)
+                        if hash(str(enemy_id) + str(decoy_id)) % 100 > 50:
+                            dx = getattr(b, "x", 0) - self.ball.x
+                            dy = getattr(b, "y", 0) - self.ball.y
+                            if dx*dx + dy*dy <= perception_radius*perception_radius:
+                                enemies.append(b)
+```
+
+And similarly in `action.gd`:
+```gdscript
+    var filtered_enemies = []
+    for e in enemies:
+        var is_decoy = false
+        if "is_decoy" in e:
+            is_decoy = e.is_decoy
+        elif e.has_method("has_meta") and e.has_meta("is_decoy"):
+            is_decoy = e.get_meta("is_decoy")
+
+        if is_decoy:
+            var enemy_id = self.ball.id if "id" in self.ball else 0
+            var decoy_id = e.id if "id" in e else 0
+            if (hash(str(enemy_id) + str(decoy_id)) % 100) > 50:
+                filtered_enemies.append(e)
+        else:
+            filtered_enemies.append(e)
+    enemies = filtered_enemies
+
+    if self.world != null and "balls" in self.world:
+        for b in self.world.balls:
+            var is_decoy = false
+            if "is_decoy" in b:
+                is_decoy = b.is_decoy
+            elif b.has_method("has_meta") and b.has_meta("is_decoy"):
+                is_decoy = b.get_meta("is_decoy")
+
+            var is_alive = true
+            if "alive" in b: is_alive = b.alive
+            elif b.has_method("has_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+
+            if is_decoy and is_alive and not enemies.has(b):
+                var e_type = b.ball_type if "ball_type" in b else (b.get_ball_type() if b.has_method("get_ball_type") else "")
+                var my_type = self.ball.ball_type if "ball_type" in self.ball else (self.ball.get_ball_type() if self.ball.has_method("get_ball_type") else "")
+                if e_type != my_type and e_type != "spectator":
+                    var enemy_id = self.ball.id if "id" in self.ball else 0
+                    var decoy_id = b.id if "id" in b else 0
+                    if (hash(str(enemy_id) + str(decoy_id)) % 100) > 50:
+                        var dx = b.x - self.ball.x
+                        var dy = b.y - self.ball.y
+                        if dx*dx + dy*dy <= perception_radius*perception_radius:
+                            enemies.append(b)
+```
+
+Also, we need to update everywhere `decoy.hp = ... * 0.1` to copy current hp/max_hp.
+And we should write tests to make sure this logic is robust.

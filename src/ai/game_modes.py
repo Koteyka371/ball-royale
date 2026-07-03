@@ -627,8 +627,8 @@ class BattleRoyaleMode(GameMode):
                         import copy
                         decoy = copy.copy(b)
                         decoy.id = getattr(world, "next_id", getattr(self, "random", __import__("random")).randint(10000, 99999))
-                        decoy.hp = getattr(b, "max_hp", 100) * 0.1
-                        decoy.max_hp = decoy.hp
+                        decoy.hp = getattr(b, "hp", 100)
+                        decoy.max_hp = getattr(b, "max_hp", 100)
                         decoy.damage = 0
                         decoy.speed = 0.0
                         decoy.skill_timer = 9999.0
@@ -1687,8 +1687,8 @@ class WeatherChaosMode(GameMode):
                             import copy
                             decoy = copy.copy(b)
                             decoy.id = getattr(world, "next_id", getattr(self, "random", __import__("random")).randint(10000, 99999))
-                            decoy.hp = getattr(b, "max_hp", 100) * 0.1
-                            decoy.max_hp = decoy.hp
+                            decoy.hp = getattr(b, "hp", 100)
+                            decoy.max_hp = getattr(b, "max_hp", 100)
                             decoy.damage = 0
                             decoy.speed = 0.0
                             decoy.skill_timer = 9999.0
@@ -1762,8 +1762,8 @@ class WeatherChaosMode(GameMode):
                             import copy
                             decoy = copy.copy(b)
                             decoy.id = getattr(world, "next_id", getattr(self, "random", __import__("random")).randint(10000, 99999))
-                            decoy.hp = getattr(b, "max_hp", 100) * 0.1
-                            decoy.max_hp = decoy.hp
+                            decoy.hp = getattr(b, "hp", 100)
+                            decoy.max_hp = getattr(b, "max_hp", 100)
                             decoy.damage = 0
                             decoy.speed = 0.0
                             decoy.skill_timer = 9999.0
@@ -1829,8 +1829,8 @@ class WeatherChaosMode(GameMode):
                         import copy
                         decoy = copy.copy(b)
                         decoy.id = getattr(world, "next_id", getattr(self, "random", __import__("random")).randint(10000, 99999))
-                        decoy.hp = getattr(b, "max_hp", 100) * 0.1
-                        decoy.max_hp = decoy.hp
+                        decoy.hp = getattr(b, "hp", 100)
+                        decoy.max_hp = getattr(b, "max_hp", 100)
                         decoy.damage = 0
                         decoy.speed = 0.0
                         decoy.skill_timer = 9999.0

@@ -2151,8 +2151,8 @@ class WeatherChaosMode extends GameMode:
 									var mhp = 100.0
 									if "max_hp" in b: mhp = b.max_hp
 									elif b.has_method("has_meta") and b.has_meta("max_hp"): mhp = b.get_meta("max_hp")
-									if "max_hp" in decoy: decoy.max_hp = mhp * 0.1
-									if "hp" in decoy: decoy.hp = mhp * 0.1
+									if "max_hp" in decoy: decoy.max_hp = mhp
+									if "hp" in decoy: decoy.hp = b.hp if "hp" in b else mhp
 									if "damage" in decoy: decoy.damage = 0.0
 									if "speed" in decoy: decoy.speed = 0.0
 									if decoy.has_method("set_meta"):
