@@ -86,7 +86,10 @@ func _init(ball_ref, world_ref):
             self.ball.set_meta("inventory", inv)
         elif "inventory" in self.ball:
             self.ball.inventory.append("dash")
-
+    if typeof(prestige_upgrades) == TYPE_DICTIONARY and prestige_upgrades.has("shield_capacity_up"):
+        self.ball.set_meta("bonus_reflect_shield_capacity", prestige_upgrades["shield_capacity_up"] * 20.0)
+    if typeof(prestige_upgrades) == TYPE_DICTIONARY and prestige_upgrades.has("shield_duration_up"):
+        self.ball.set_meta("bonus_reflect_shield_duration", prestige_upgrades["shield_duration_up"] * 1.0)
     var prestige_level = pm.data.get("prestige_level", 0)
     if prestige_level > 0:
         if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
