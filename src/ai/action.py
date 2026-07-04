@@ -5567,27 +5567,49 @@ class Action:
             elif skill_name == "mimic_clone":
                 import copy
                 if hasattr(self.world, "balls"):
-                    clone = copy.copy(self.ball)
-                    clone.id = getattr(self.world, "next_id", __import__('random').randint(10000, 99999))
-                    if hasattr(self.world, "next_id"):
-                        self.world.next_id += 1
+                    active_clone = None
+                    my_id = getattr(self.ball, "id", None)
+                    for b in self.world.balls:
+                        if getattr(b, "is_mimic_clone", False) and getattr(b, "alive", True):
+                            if getattr(b, "mimic_owner", None) == my_id:
+                                active_clone = b
+                                break
 
-                    clone.hp = 50.0  # Absorbs a set amount of damage
-                    clone.max_hp = clone.hp
-                    clone.damage = 0.0 # Deals no damage
-                    clone.is_mimic_clone = True
-                    clone.is_illusion = True
-                    clone.mimic_owner = getattr(self.ball, "id", None)
-                    clone.mimic_timer = 10.0
+                    if active_clone:
+                        # Swap positions
+                        my_x, my_y = getattr(self.ball, "x", 0.0), getattr(self.ball, "y", 0.0)
+                        clone_x, clone_y = getattr(active_clone, "x", 0.0), getattr(active_clone, "y", 0.0)
 
-                    # Clear skills
-                    clone.skill = None
-                    clone.SKILL = None
-                    if hasattr(clone, "active_skill"):
-                        clone.active_skill = None
-                    clone.skill_timer = 9999.0
+                        self.ball.x, self.ball.y = clone_x, clone_y
+                        active_clone.x, active_clone.y = my_x, my_y
 
-                    self.world.balls.append(clone)
+                        if hasattr(self.world, "events"):
+                            self.world.events.append({
+                                'type': 'visual_effect',
+                                'data': {'type': 'line', 'x': my_x, 'y': my_y, 'tx': clone_x, 'ty': clone_y, 'color': 'purple'}
+                            })
+                    else:
+                        clone = copy.copy(self.ball)
+                        clone.id = getattr(self.world, "next_id", __import__('random').randint(10000, 99999))
+                        if hasattr(self.world, "next_id"):
+                            self.world.next_id += 1
+
+                        clone.hp = 50.0  # Absorbs a set amount of damage
+                        clone.max_hp = clone.hp
+                        clone.damage = 0.0 # Deals no damage
+                        clone.is_mimic_clone = True
+                        clone.is_illusion = True
+                        clone.mimic_owner = getattr(self.ball, "id", None)
+                        clone.mimic_timer = 10.0
+
+                        # Clear skills
+                        clone.skill = None
+                        clone.SKILL = None
+                        if hasattr(clone, "active_skill"):
+                            clone.active_skill = None
+                        clone.skill_timer = 9999.0
+
+                        self.world.balls.append(clone)
             elif skill_name == "deploy_illusion":
                 import copy
                 if hasattr(self.world, "balls"):
