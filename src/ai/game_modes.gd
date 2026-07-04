@@ -5188,17 +5188,38 @@ class SupernovaMode extends GameMode:
 class DayNightMode extends GameMode:
     var timer = 0.0
     var phase_duration = 10.0
+    var sunlight_beam_timer = 0.0
+    var active_sunlight_beams = []
 
     func _init():
         super._init()
         name = "Day/Night Cycle"
-        description = "Periodically toggles day and night, affecting ball behavior and visibility."
+        description = "Periodically toggles day and night, affecting ball behavior and visibility. During the day, rare but highly damaging sunlight beams appear."
 
     func setup(world, balls: Array) -> void:
         super.setup(world, balls)
         if world != null and "arena" in world:
             world.arena.is_night = false
         timer = 0.0
+        sunlight_beam_timer = 0.0
+        active_sunlight_beams = []
+
+    func _line_intersects_circle(p1_x, p1_y, p2_x, p2_y, cx, cy, radius):
+        var dx = p2_x - p1_x
+        var dy = p2_y - p1_y
+        var length_sq = dx * dx + dy * dy
+
+        if length_sq == 0:
+            return (p1_x - cx) * (p1_x - cx) + (p1_y - cy) * (p1_y - cy) <= radius * radius
+
+        var t = ((cx - p1_x) * dx + (cy - p1_y) * dy) / length_sq
+        t = max(0.0, min(1.0, t))
+
+        var px = p1_x + t * dx
+        var py = p1_y + t * dy
+
+        var dist_sq = (px - cx) * (px - cx) + (py - cy) * (py - cy)
+        return dist_sq <= radius * radius
 
     func tick(world, balls: Array, delta: float = 0.016) -> void:
         if world != null and "arena" in world:
@@ -5209,7 +5230,92 @@ class DayNightMode extends GameMode:
                     world.arena.is_night = not world.arena.is_night
                 else:
                     world.arena.is_night = true
+                sunlight_beam_timer = 0.0
+                active_sunlight_beams.clear()
 
+            var is_night = false
+            if "is_night" in world.arena:
+                is_night = world.arena.is_night
+
+            var active_beams = []
+            for i in range(active_sunlight_beams.size()):
+                var beam = active_sunlight_beams[i]
+                beam["duration"] -= delta
+                if beam["duration"] > 0:
+                    active_beams.append(beam)
+            active_sunlight_beams = active_beams
+
+            for beam in active_sunlight_beams:
+                var beam_damage = 50.0 * delta
+                var fx = beam["x"]
+                var fy = beam["y"]
+                var beam_radius = beam["radius"]
+
+                for b in balls:
+                    if not b.get("alive", false) or b.get("ball_type", "") == "spectator":
+                        continue
+
+                    var dist_sq = (b.x - fx) * (b.x - fx) + (b.y - fy) * (b.y - fy)
+                    if dist_sq < beam_radius * beam_radius:
+                        var b_type = b.get("ball_type", "").to_lower()
+                        var has_daylight_buff = not (b_type in ["vampire", "assassin", "phantom"])
+
+                        if not has_daylight_buff:
+                            var behind_cover = false
+                            var b_radius = 15.0
+                            if "radius" in b: b_radius = b.radius
+
+                            var hazards = []
+                            if "hazards" in world.arena: hazards = world.arena.hazards
+
+                            for hazard in hazards:
+                                var hk = ""
+                                var hx = 0.0
+                                var hy = 0.0
+                                var hr = 10.0
+                                if typeof(hazard) == TYPE_DICTIONARY:
+                                    hk = hazard.get("kind", "")
+                                    hx = hazard.get("x", 0.0)
+                                    hy = hazard.get("y", 0.0)
+                                    hr = hazard.get("radius", 10.0)
+                                else:
+                                    hk = hazard.get("kind", "")
+                                    hx = hazard.get("x", 0.0)
+                                    hy = hazard.get("y", 0.0)
+                                    hr = hazard.get("radius", 10.0)
+
+                                if hk == "laser_wall" or hk == "wall":
+                                    if _line_intersects_circle(fx, fy, b.x, b.y, hx, hy, hr):
+                                        behind_cover = true
+                                        break
+
+                            if not behind_cover:
+                                if b.has_method("take_damage"):
+                                    b.take_damage(beam_damage)
+                                else:
+                                    var hp = b.get("hp", 100.0)
+                                    b.set("hp", hp - beam_damage)
+                                    if b.get("hp", 100.0) <= 0:
+                                        b.set("alive", false)
+
+            if not is_night:
+                sunlight_beam_timer += delta
+                if sunlight_beam_timer >= 3.0:
+                    sunlight_beam_timer = 0.0
+
+                    var arena_w = 1000.0
+                    var arena_h = 1000.0
+                    if "width" in world.arena: arena_w = world.arena.width
+                    if "height" in world.arena: arena_h = world.arena.height
+
+                    var fx = randf_range(50.0, arena_w - 50.0)
+                    var fy = randf_range(50.0, arena_h - 50.0)
+                    var beam_radius = 150.0
+
+                    active_sunlight_beams.append({"x": fx, "y": fy, "radius": beam_radius, "duration": 2.0})
+
+                    if world.has_method("add_event"):
+                        world.add_event("visual_effect", {"type": "sunlight_beam", "x": fx, "y": fy, "radius": beam_radius, "duration": 2.0})
 
 class GuildVsGuildMode extends GameMode:
     var guilds = {}

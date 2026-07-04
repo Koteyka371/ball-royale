@@ -4394,9 +4394,11 @@ class DayNightMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Day/Night Cycle"
-        self.description = "Periodically toggles day and night, affecting ball behavior and visibility."
+        self.description = "Periodically toggles day and night, affecting ball behavior and visibility. During the day, rare but highly damaging sunlight beams appear."
         self.timer = 0.0
         self.phase_duration = 10.0
+        self.sunlight_beam_timer = 0.0
+        self.active_sunlight_beams = [] # list of dicts: {'x', 'y', 'radius', 'duration'}
 
     def setup(self, world, balls):
         super().setup(world, balls)
@@ -4404,14 +4406,122 @@ class DayNightMode(GameMode):
         if hasattr(world, "arena"):
             world.arena.is_night = False
         self.timer = 0.0
+        self.sunlight_beam_timer = 0.0
+        self.active_sunlight_beams = []
+
+    def _line_intersects_circle(self, p1, p2, circle_center, radius):
+        # Math calculation to see if a line segment intersects a circle
+        # p1, p2, circle_center are (x, y) tuples
+        import math
+        x1, y1 = p1
+        x2, y2 = p2
+        cx, cy = circle_center
+
+        # Vector from p1 to p2
+        dx = x2 - x1
+        dy = y2 - y1
+
+        # Length squared
+        length_sq = dx * dx + dy * dy
+        if length_sq == 0:
+            # p1 == p2
+            return (x1 - cx) ** 2 + (y1 - cy) ** 2 <= radius * radius
+
+        # Projection of p1->circle_center onto p1->p2
+        t = ((cx - x1) * dx + (cy - y1) * dy) / length_sq
+        t = max(0, min(1, t))
+
+        # Closest point on segment
+        px = x1 + t * dx
+        py = y1 + t * dy
+
+        # Distance squared to center
+        dist_sq = (px - cx) ** 2 + (py - cy) ** 2
+        return dist_sq <= radius * radius
 
     def tick(self, world, balls, delta=0.016):
+        import math
+        import random
         if hasattr(world, "arena"):
             self.timer += delta
             if self.timer >= self.phase_duration:
                 self.timer = 0.0
                 world.arena.is_night = not getattr(world.arena, "is_night", False)
+                self.sunlight_beam_timer = 0.0 # reset on phase change
+                self.active_sunlight_beams = [] # clear beams on phase change
 
+            is_night = getattr(world.arena, "is_night", False)
+
+            # Update and apply damage from active beams
+            for beam in list(self.active_sunlight_beams):
+                beam['duration'] -= delta
+                if beam['duration'] <= 0:
+                    self.active_sunlight_beams.remove(beam)
+                    continue
+
+                beam_damage = 50.0 * delta # rapid damage per frame (50 per second)
+                fx, fy = beam['x'], beam['y']
+                beam_radius = beam['radius']
+
+                for b in balls:
+                    if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                        continue
+
+                    dist_sq = (b.x - fx)**2 + (b.y - fy)**2
+                    if dist_sq < beam_radius**2:
+                        ball_type = getattr(b, "ball_type", "").lower()
+                        has_daylight_buff = ball_type not in ["vampire", "assassin", "phantom"]
+
+                        if not has_daylight_buff:
+                            behind_cover = False
+                            b_radius = getattr(b, "radius", 15.0)
+
+                            for hazard in getattr(world.arena, "hazards", []):
+                                hk = ""
+                                hx = 0
+                                hy = 0
+                                hr = 10.0
+
+                                if isinstance(hazard, dict):
+                                    hk = hazard.get("kind", "")
+                                    hx = hazard.get("x", 0.0)
+                                    hy = hazard.get("y", 0.0)
+                                    hr = hazard.get("radius", 10.0)
+                                else:
+                                    hk = getattr(hazard, "kind", "")
+                                    hx = getattr(hazard, "x", 0.0)
+                                    hy = getattr(hazard, "y", 0.0)
+                                    hr = getattr(hazard, "radius", 10.0)
+
+                                if hk in ["laser_wall", "wall"]:
+                                    if self._line_intersects_circle((fx, fy), (b.x, b.y), (hx, hy), hr):
+                                        behind_cover = True
+                                        break
+
+                            if not behind_cover:
+                                if hasattr(b, "take_damage"):
+                                    b.take_damage(beam_damage)
+                                else:
+                                    b.hp -= beam_damage
+                                    if b.hp <= 0:
+                                        b.alive = False
+
+            # Sunlight beams only during the day spawn
+            if not is_night:
+                self.sunlight_beam_timer += delta
+                if self.sunlight_beam_timer >= 3.0:
+                    self.sunlight_beam_timer = 0.0
+
+                    arena_w = getattr(world.arena, "width", 1000)
+                    arena_h = getattr(world.arena, "height", 1000)
+                    fx = random.uniform(50, arena_w - 50)
+                    fy = random.uniform(50, arena_h - 50)
+                    beam_radius = 150.0
+
+                    self.active_sunlight_beams.append({'x': fx, 'y': fy, 'radius': beam_radius, 'duration': 2.0})
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("visual_effect", {"type": "sunlight_beam", "x": fx, "y": fy, "radius": beam_radius, "duration": 2.0})
 
 class GuildVsGuildMode(GameMode):
     """Guild vs Guild mode where players capture territory on a persistent world map."""
