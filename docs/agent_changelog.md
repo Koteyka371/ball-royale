@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-552] Chain Reflect Damage — *2026-07-04 18:19:28 UTC*
+
+Reflected damage has a chance to chain to a nearby enemy, creating a 'bouncing' reflect effect that punishes grouped enemies when hitting a shielded target.
+
+---
+
 ## [idea-551] Empowerment Matrix Trap — *2026-07-04 18:16:34 UTC*
 
 A new hazard/trap that acts as a zone of empowerment. Allies stepping into the matrix receive temporary boosts to speed and damage, while enemies suffer a slow effect.

@@ -9537,7 +9537,7 @@
     },
     {
       "id": "idea-552",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chain Reflect Damage",
@@ -15627,6 +15627,40 @@
         "src/ai/multi_layer_reflect_shield.py",
         "src/ai/multi_layer_reflect_shield.gd",
         "tests/test_multi_layer_reflect_shield.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-910",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Tunnel Trap",
+      "description": "A trap that instantly teleports the victim to a random location within a 500-unit radius when stepped on, disorienting them and occasionally placing them in other hazards.",
+      "allowed_paths": [
+        "src/arena/quantum_tunnel_trap.py",
+        "src/arena/quantum_tunnel_trap.gd",
+        "tests/test_quantum_tunnel_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-911",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chronos Booster",
+      "description": "A booster that drastically reduces all skill cooldowns for a 5-second duration, allowing an entity to spam their abilities and abilities of allies nearby.",
+      "allowed_paths": [
+        "src/ai/chronos_booster.py",
+        "src/ai/chronos_booster.gd",
+        "tests/test_chronos_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
