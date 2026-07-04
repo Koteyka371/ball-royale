@@ -1198,12 +1198,171 @@ func execute(strategy: String, delta: float):
 		if "hp" in self.ball: m_hp = self.ball.hp
 		elif self.ball.has_method("get_meta") and self.ball.has_meta("hp"): m_hp = self.ball.get_meta("hp")
 
+
 		if m_timer <= 0 or m_hp <= 0:
+			if "is_mimic_clone" in self.ball: self.ball.is_mimic_clone = false
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("is_mimic_clone", false)
+			if "is_mimic_charging" in self.ball: self.ball.is_mimic_charging = true
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("is_mimic_charging", true)
+			if "mimic_charge_timer" in self.ball: self.ball.mimic_charge_timer = 3.0
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("mimic_charge_timer", 3.0)
+			var max_hp = 100.0
+			if "max_hp" in self.ball: max_hp = self.ball.max_hp
+			elif self.ball.has_method("get_meta") and self.ball.has_meta("max_hp"): max_hp = self.ball.get_meta("max_hp")
+			if "hp" in self.ball: self.ball.hp = max_hp
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("hp", max_hp)
+			if "alive" in self.ball: self.ball.alive = true
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("alive", true)
+			if "is_illusion" in self.ball: self.ball.is_illusion = false
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("is_illusion", false)
+			return
+		else:
+			self._clamp_position()
+			return
+
+	var is_mimic_charging = false
+	if self.ball.has_method("get_meta") and self.ball.has_meta("is_mimic_charging"): is_mimic_charging = self.ball.get_meta("is_mimic_charging")
+	elif "is_mimic_charging" in self.ball and self.ball.is_mimic_charging: is_mimic_charging = true
+
+
+	var is_alive_mine_charge = true
+	if "alive" in self.ball: is_alive_mine_charge = self.ball.alive
+	elif self.ball.has_method("get_meta") and self.ball.has_meta("alive"): is_alive_mine_charge = self.ball.get_meta("alive")
+	if is_mimic_charging and is_alive_mine_charge:
+		var nearest_enemy = null
+		var min_dist = 999999.0
+		var my_team = ""
+		if "team" in self.ball: my_team = self.ball.team
+		elif self.ball.has_method("get_meta") and self.ball.has_meta("team"): my_team = self.ball.get_meta("team")
+		elif "ball_type" in self.ball: my_team = self.ball.ball_type
+		elif self.ball.has_method("get_meta") and self.ball.has_meta("ball_type"): my_team = self.ball.get_meta("ball_type")
+		if world != null and "balls" in world:
+			for b in world.balls:
+				var b_alive = true
+				if "alive" in b: b_alive = b.alive
+				elif b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+				var b_team = ""
+				if "team" in b: b_team = b.team
+				elif b.has_method("get_meta") and b.has_meta("team"): b_team = b.get_meta("team")
+				elif "ball_type" in b: b_team = b.ball_type
+				elif b.has_method("get_meta") and b.has_meta("ball_type"): b_team = b.get_meta("ball_type")
+				if b_alive and b_team != my_team:
+					var bx = 0.0
+					var by = 0.0
+					if "x" in b: bx = b.x
+					elif b.has_method("get_meta") and b.has_meta("x"): bx = b.get_meta("x")
+					if "y" in b: by = b.y
+					elif b.has_method("get_meta") and b.has_meta("y"): by = b.get_meta("y")
+					var mx = 0.0
+					var my = 0.0
+					if "x" in self.ball: mx = self.ball.x
+					elif self.ball.has_method("get_meta") and self.ball.has_meta("x"): mx = self.ball.get_meta("x")
+					if "y" in self.ball: my = self.ball.y
+					elif self.ball.has_method("get_meta") and self.ball.has_meta("y"): my = self.ball.get_meta("y")
+					var dist = sqrt((mx - bx) * (mx - bx) + (my - by) * (my - by))
+					if dist < min_dist:
+						min_dist = dist
+						nearest_enemy = b
+
+		var detonate = false
+		if nearest_enemy != null:
+			var speed = 300.0
+			if "base_speed" in self.ball: speed = self.ball.base_speed * 1.5
+			elif self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"): speed = self.ball.get_meta("base_speed") * 1.5
+			if min_dist > 0.0001:
+				var bx = 0.0
+				var by = 0.0
+				if "x" in nearest_enemy: bx = nearest_enemy.x
+				elif nearest_enemy.has_method("get_meta") and nearest_enemy.has_meta("x"): bx = nearest_enemy.get_meta("x")
+				if "y" in nearest_enemy: by = nearest_enemy.y
+				elif nearest_enemy.has_method("get_meta") and nearest_enemy.has_meta("y"): by = nearest_enemy.get_meta("y")
+				var mx = 0.0
+				var my = 0.0
+				if "x" in self.ball: mx = self.ball.x
+				elif self.ball.has_method("get_meta") and self.ball.has_meta("x"): mx = self.ball.get_meta("x")
+				if "y" in self.ball: my = self.ball.y
+				elif self.ball.has_method("get_meta") and self.ball.has_meta("y"): my = self.ball.get_meta("y")
+				var dx = bx - mx
+				var dy = by - my
+				var cvx = (dx / min_dist) * speed
+				var cvy = (dy / min_dist) * speed
+				if "vx" in self.ball: self.ball.vx = cvx
+				elif self.ball.has_method("set_meta"): self.ball.set_meta("vx", cvx)
+				if "vy" in self.ball: self.ball.vy = cvy
+				elif self.ball.has_method("set_meta"): self.ball.set_meta("vy", cvy)
+				if "x" in self.ball: self.ball.x += cvx * delta
+				elif self.ball.has_method("set_meta"): self.ball.set_meta("x", self.ball.get_meta("x") + cvx * delta)
+				if "y" in self.ball: self.ball.y += cvy * delta
+				elif self.ball.has_method("set_meta"): self.ball.set_meta("y", self.ball.get_meta("y") + cvy * delta)
+			if min_dist <= 30.0:
+				detonate = true
+		else:
+			detonate = true
+
+		var m_charge = 3.0
+		if "mimic_charge_timer" in self.ball: m_charge = self.ball.mimic_charge_timer
+		elif self.ball.has_method("get_meta") and self.ball.has_meta("mimic_charge_timer"): m_charge = self.ball.get_meta("mimic_charge_timer")
+		m_charge -= delta
+		if "mimic_charge_timer" in self.ball: self.ball.mimic_charge_timer = m_charge
+		elif self.ball.has_method("set_meta"): self.ball.set_meta("mimic_charge_timer", m_charge)
+		if m_charge <= 0:
+			detonate = true
+
+		if detonate:
 			if "alive" in self.ball: self.ball.alive = false
 			elif self.ball.has_method("set_meta"): self.ball.set_meta("alive", false)
-
+			if "hp" in self.ball: self.ball.hp = 0.0
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("hp", 0.0)
+			if world != null and "balls" in world:
+				for b in world.balls:
+					var b_alive = true
+					if "alive" in b: b_alive = b.alive
+					elif b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+					var b_team = ""
+					if "team" in b: b_team = b.team
+					elif b.has_method("get_meta") and b.has_meta("team"): b_team = b.get_meta("team")
+					elif "ball_type" in b: b_team = b.ball_type
+					elif b.has_method("get_meta") and b.has_meta("ball_type"): b_team = b.get_meta("ball_type")
+					if b_alive and b_team != my_team:
+						var bx = 0.0
+						var by = 0.0
+						if "x" in b: bx = b.x
+						elif b.has_method("get_meta") and b.has_meta("x"): bx = b.get_meta("x")
+						if "y" in b: by = b.y
+						elif b.has_method("get_meta") and b.has_meta("y"): by = b.get_meta("y")
+						var mx = 0.0
+						var my = 0.0
+						if "x" in self.ball: mx = self.ball.x
+						elif self.ball.has_method("get_meta") and self.ball.has_meta("x"): mx = self.ball.get_meta("x")
+						if "y" in self.ball: my = self.ball.y
+						elif self.ball.has_method("get_meta") and self.ball.has_meta("y"): my = self.ball.get_meta("y")
+						var d = sqrt((mx - bx) * (mx - bx) + (my - by) * (my - by))
+						if d <= 60.0:
+							if b.has_method("take_damage"):
+								b.take_damage(20.0)
+							else:
+								var bhp = 100.0
+								if "hp" in b: bhp = b.hp
+								elif b.has_method("get_meta") and b.has_meta("hp"): bhp = b.get_meta("hp")
+								bhp -= 20.0
+								if "hp" in b: b.hp = bhp
+								elif b.has_method("set_meta"): b.set_meta("hp", bhp)
+								if bhp <= 0.0:
+									if "alive" in b: b.alive = false
+									elif b.has_method("set_meta"): b.set_meta("alive", false)
+				var mx = 0.0
+				var my = 0.0
+				if "x" in self.ball: mx = self.ball.x
+				elif self.ball.has_method("get_meta") and self.ball.has_meta("x"): mx = self.ball.get_meta("x")
+				if "y" in self.ball: my = self.ball.y
+				elif self.ball.has_method("get_meta") and self.ball.has_meta("y"): my = self.ball.get_meta("y")
+				if world != null and "events" in world:
+					world.events.append({"type": "explosion", "data": {"x": mx, "y": my, "radius": 60.0}})
+				elif world != null and world.has_method("add_event"):
+					world.add_event("explosion", {"x": mx, "y": my, "radius": 60.0})
 		self._clamp_position()
 		return
+
 
 	var is_clone_mine = false
 	if self.ball.has_method("get_meta") and self.ball.get_meta("is_clone"): is_clone_mine = true
@@ -2680,7 +2839,10 @@ func execute(strategy: String, delta: float):
 
             elif b.has_method("get_meta") and b.has_meta("is_mimic_clone"): b_is_mimic_clone = b.get_meta("is_mimic_clone")
 
-            if b_is_illusion and not b_is_mimic_clone:
+            var b_is_mimic_charging = false
+            if "is_mimic_charging" in b: b_is_mimic_charging = b.is_mimic_charging
+            elif b.has_method("get_meta") and b.has_meta("is_mimic_charging"): b_is_mimic_charging = b.get_meta("is_mimic_charging")
+            if b_is_illusion and not b_is_mimic_clone and not b_is_mimic_charging:
                 var b_hp = 1.0
                 if "hp" in b:
                     b_hp = b.hp

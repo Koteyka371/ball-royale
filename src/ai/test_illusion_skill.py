@@ -100,16 +100,26 @@ def test_mimic_clone_does_not_explode():
     clone.is_illusion = True
     clone.hp = 1.0
     clone.mimic_timer = 5.0
+    clone.max_hp = 50.0
 
     enemy = MockBall(60, 50, "blue") # Near clone
     world.balls.extend([clone, enemy])
 
     action = Action(clone, world)
 
-    # Kill the clone
+    # Trigger charge mode (kill the clone)
     clone.hp = 0.0
     action.execute("idle", 0.1)
 
+    assert clone.alive == True # It heals and enters charge mode
+    assert clone.is_mimic_clone == False
+    assert clone.is_mimic_charging == True
+
+    # Run it until it detonates
+    # Do it in small steps because 4.0 delta in one step makes it jump too far!
+    action.execute("idle", 0.1)
+    action.execute("idle", 3.0)
+
     assert clone.alive == False
-    # Enemy takes no damage (because mimic clone does not explode)
-    assert enemy.hp == 100.0
+    # Enemy takes damage because it detonates
+    assert enemy.hp == 80.0
