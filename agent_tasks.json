@@ -16110,6 +16110,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-938",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Vortex Hazard",
+      "description": "A slow-moving vortex appears in the center of the arena. It constantly pulls nearby entities towards it, dealing increasing continuous damage the closer they are to its core.",
+      "allowed_paths": [
+        "src/arena/vortex.py",
+        "src/arena/vortex.gd",
+        "tests/test_vortex.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
