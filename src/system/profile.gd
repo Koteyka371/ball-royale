@@ -100,7 +100,21 @@ func save_profile():
     if file:
         file.store_string(JSON.stringify(data, "  "))
 
+
+func _get_catchup_multiplier() -> float:
+    var lm = load("res://src/system/leaderboard.gd").new(self)
+    var current_time = Time.get_unix_time_from_system()
+    var start_time = lm.data.get("season_start_time", current_time)
+    var elapsed = current_time - start_time
+    var duration = lm.SEASON_DURATION
+    if elapsed > duration * 0.75:
+        return 1.5
+    elif elapsed > duration * 0.5:
+        return 1.25
+    return 1.0
+
 func add_skill_points(points: int):
+    points = int(points * _get_catchup_multiplier())
     data["skill_points"] += points
     save_profile()
 
@@ -159,6 +173,7 @@ func do_prestige() -> bool:
     if can_prestige():
         var current_prestige = data.get("prestige_level", 0)
         var tokens_earned = 5 + current_prestige + (data.get("skill_points", 0) / 100)
+        tokens_earned = int(tokens_earned * _get_catchup_multiplier())
         var current_tokens = data.get("prestige_tokens", 0)
         var current_upgrades = data.get("prestige_upgrades", {})
 
