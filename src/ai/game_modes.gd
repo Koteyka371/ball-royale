@@ -7720,6 +7720,98 @@ class FloorIsLavaMode extends GameMode:
 					if hp <= 0:
 						b.alive = false
 
+class BlizzardMode extends GameMode:
+	var blizzard_timer = 0.0
+	var blizzard_active = false
+	var blizzard_duration = 0.0
+	var spawn_timer = 0.0
+	var rng = RandomNumberGenerator.new()
+
+	func _init():
+		super()
+		name = "Blizzard Mode"
+		description = "Periodically spawns a blizzard that severely reduces all ball movement speed (friction increases) and creates temporary slippery ice patches as hazards that cause balls to slide uncontrollably."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if not "hazards" in world.arena:
+			world.arena.hazards = []
+		blizzard_timer = 0.0
+		blizzard_active = false
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+
+		if not blizzard_active:
+			blizzard_timer += delta
+			if blizzard_timer >= 20.0:
+				blizzard_timer = 0.0
+				blizzard_active = true
+				blizzard_duration = 10.0
+				if world.has_method("add_event"):
+					world.add_event("blizzard_warning", {"type": "weather_warning", "message": "A BLIZZARD HAS BEGUN!"})
+		else:
+			blizzard_duration -= delta
+			if blizzard_duration <= 0:
+				blizzard_active = false
+				if world.has_method("add_event"):
+					world.add_event("blizzard_end", {"type": "weather_warning", "message": "The blizzard has ended."})
+
+			spawn_timer += delta
+			if spawn_timer >= 1.0:
+				spawn_timer = 0.0
+				var arena_width = world.arena.width if "width" in world.arena else 1000.0
+				var arena_height = world.arena.height if "height" in world.arena else 1000.0
+
+				var x = rng.randf_range(50.0, arena_width - 50.0)
+				var y = rng.randf_range(50.0, arena_height - 50.0)
+
+				var ProceduralArena = load("res://src/arena/procedural_arena.gd")
+				var h_id = 16000 + world.arena.hazards.size() + rng.randi_range(0, 10000)
+				var ice_patch = ProceduralArena.Hazard.new(h_id, x, y, 40.0, "ice_patch", 0.0)
+				ice_patch.target_radius = 40.0
+				ice_patch.set_meta("duration", 8.0)
+
+				world.arena.hazards.append(ice_patch)
+
+		for b in balls:
+			var is_alive = b.alive if "alive" in b else true
+			var b_type = b.ball_type if "ball_type" in b else ""
+			if not is_alive or b_type == "spectator":
+				continue
+
+			var speed_mult = 0.3 if blizzard_active else 1.0
+
+			var on_ice = false
+			if "hazards" in world.arena:
+				for h in world.arena.hazards:
+					var h_kind = h.kind if "kind" in h else ""
+					if h_kind == "ice_patch":
+						var dx = b.x - h.x
+						var dy = b.y - h.y
+						var dist = sqrt(dx*dx + dy*dy)
+						var b_radius = b.radius if "radius" in b else 15.0
+						if dist < h.radius + b_radius:
+							on_ice = true
+							break
+
+			if on_ice:
+				speed_mult = 2.0
+				b.set_meta("is_sliding", true)
+				b.set_meta("friction_multiplier", 0.1)
+			else:
+				b.set_meta("is_sliding", false)
+				b.set_meta("friction_multiplier", 1.0)
+
+			var base_speed = 100.0
+			if "base_speed" in b:
+				base_speed = b.base_speed
+			elif "speed" in b:
+				base_speed = b.speed
+
+			b.speed = base_speed * speed_mult
+
+
 class MeteorShowerMode extends GameMode:
 	var spawn_timer = 0.0
 	var rng = RandomNumberGenerator.new()
@@ -8212,6 +8304,7 @@ class LunarEclipseEventMode extends GameMode:
 
 var GAME_MODES = {
 	"meteor_shower": MeteorShowerMode.new(),
+	"blizzard_mode": BlizzardMode.new(),
 
 	"black_market": BlackMarketMode.new(),
 	"floor_is_lava": FloorIsLavaMode.new(),

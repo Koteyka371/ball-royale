@@ -6286,6 +6286,105 @@ class FloorIsLavaMode(GameMode):
                 if b.hp <= 0:
                     b.alive = False
 
+class BlizzardMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Blizzard Mode"
+        self.description = "Periodically spawns a blizzard that severely reduces all ball movement speed (friction increases) and creates temporary slippery ice patches as hazards that cause balls to slide uncontrollably."
+        self.blizzard_timer = 0.0
+        self.blizzard_active = False
+        self.blizzard_duration = 0.0
+        self.spawn_timer = 0.0
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+        self.blizzard_timer = 0.0
+        self.blizzard_active = False
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import random
+
+        if not self.blizzard_active:
+            self.blizzard_timer += delta
+            # Trigger a blizzard every 20 seconds, lasts for 10 seconds
+            if self.blizzard_timer >= 20.0:
+                self.blizzard_timer = 0.0
+                self.blizzard_active = True
+                self.blizzard_duration = 10.0
+                if hasattr(world, "add_event"):
+                    world.add_event("blizzard_warning", {"type": "weather_warning", "message": "A BLIZZARD HAS BEGUN!"})
+        else:
+            self.blizzard_duration -= delta
+            if self.blizzard_duration <= 0:
+                self.blizzard_active = False
+                if hasattr(world, "add_event"):
+                    world.add_event("blizzard_end", {"type": "weather_warning", "message": "The blizzard has ended."})
+
+            self.spawn_timer += delta
+            if self.spawn_timer >= 1.0:
+                self.spawn_timer = 0.0
+                try:
+                    from arena.procedural_arena import Hazard
+                except ImportError:
+                    class Hazard:
+                        def __init__(self, id, x, y, radius, kind, damage):
+                            self.id = id
+                            self.x = x
+                            self.y = y
+                            self.radius = radius
+                            self.kind = kind
+                            self.damage = damage
+                            self.active = True
+                            self.target_radius = 0.0
+
+                arena_width = getattr(world.arena, "width", 1000)
+                arena_height = getattr(world.arena, "height", 1000)
+
+                x = random.uniform(50, arena_width - 50)
+                y = random.uniform(50, arena_height - 50)
+
+                h_id = 16000 + len(world.arena.hazards) + random.randint(0, 10000)
+                ice_patch = Hazard(id=h_id, x=x, y=y, radius=40.0, kind="ice_patch", damage=0.0)
+                setattr(ice_patch, "duration", 8.0)
+                ice_patch.target_radius = 40.0
+
+                world.arena.hazards.append(ice_patch)
+
+        # Apply effects
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            # Base speed multiplier based on blizzard active
+            speed_mult = 0.3 if self.blizzard_active else 1.0
+
+            # Check ice patches
+            on_ice = False
+            if hasattr(world.arena, "hazards"):
+                for h in world.arena.hazards:
+                    if getattr(h, "kind", "") == "ice_patch":
+                        dx = b.x - h.x
+                        dy = b.y - h.y
+                        dist = (dx*dx + dy*dy)**0.5
+                        if dist < h.radius + getattr(b, "radius", 15.0):
+                            on_ice = True
+                            break
+
+            if on_ice:
+                # Slide uncontrollably (simulate by drastically increasing speed but overriding control, or just huge speed buff to make it slide out of control)
+                speed_mult = 2.0
+                setattr(b, "is_sliding", True)
+                setattr(b, "friction_multiplier", 0.1) # extremely slippery
+            else:
+                setattr(b, "is_sliding", False)
+                setattr(b, "friction_multiplier", 1.0)
+
+            b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * speed_mult
+
+
 class MeteorShowerMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -6645,6 +6744,7 @@ class LunarEclipseEventMode(GameMode):
 
 GAME_MODES = {
     "meteor_shower": MeteorShowerMode(),
+    "blizzard_mode": BlizzardMode(),
 
     "black_market": BlackMarketMode(),
     "floor_is_lava": FloorIsLavaMode(),
