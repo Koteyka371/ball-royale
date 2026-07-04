@@ -19,7 +19,7 @@ def test_apply_random_loadout(temp_profile_file):
     result = lobby.apply_random_loadout(1, pm)
 
     assert result is True
-    assert lobby.get_trap_variant(1) in ["normal", "poison", "stun", "ricochet", "emp", "hologram", "blindness", "chain_lightning", "decoy"]
+    assert lobby.get_trap_variant(1) in ["normal", "poison", "stun", "ricochet", "emp", "hologram", "blindness", "chain_lightning", "decoy", "mine"]
     assert lobby.selections["1_ball_type"] in ["ninja", "wizard", "tank", "sniper"]
 
     quests = pm.get_quests()
