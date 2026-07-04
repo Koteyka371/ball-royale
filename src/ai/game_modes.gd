@@ -7077,6 +7077,89 @@ class MeteorShowerMode extends GameMode:
 
 			world.arena.hazards.append(meteor)
 
+class TimeRewindMode extends GameMode:
+	var rewind_timer: float = 0.0
+	var history: Dictionary = {}
+
+	func _init() -> void:
+		name = "Time Rewind"
+		description = "Every 30 seconds, the game state rewinds 5 seconds in time. Balls keep momentum but revert position and HP."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		rewind_timer += delta
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			elif b.has_method("get_meta"):
+				is_alive = b.alive if "alive" in b else false
+
+			var ball_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				ball_type = b.get("ball_type", "")
+			elif "ball_type" in b:
+				ball_type = b.ball_type
+
+			if not is_alive or ball_type == "spectator":
+				continue
+
+			var b_id = str(b.id) if "id" in b else str(b.get_instance_id())
+			if not history.has(b_id):
+				history[b_id] = []
+
+			var cur_hp = 100.0
+			if typeof(b) == TYPE_DICTIONARY:
+				cur_hp = b.get("hp", 100.0)
+			elif "hp" in b:
+				cur_hp = b.hp
+
+			var cur_x = b.x if "x" in b else 0.0
+			var cur_y = b.y if "y" in b else 0.0
+
+			history[b_id].append({"t": rewind_timer, "x": cur_x, "y": cur_y, "hp": cur_hp})
+
+			var new_hist = []
+			for h in history[b_id]:
+				if rewind_timer - h["t"] <= 5.0:
+					new_hist.append(h)
+			history[b_id] = new_hist
+
+		if rewind_timer >= 30.0:
+			for b in balls:
+				var is_alive = false
+				if typeof(b) == TYPE_DICTIONARY:
+					is_alive = b.get("alive", false)
+				elif b.has_method("get_meta"):
+					is_alive = b.alive if "alive" in b else false
+
+				var ball_type = ""
+				if typeof(b) == TYPE_DICTIONARY:
+					ball_type = b.get("ball_type", "")
+				elif "ball_type" in b:
+					ball_type = b.ball_type
+
+				if not is_alive or ball_type == "spectator":
+					continue
+
+				var b_id = str(b.id) if "id" in b else str(b.get_instance_id())
+				if history.has(b_id) and history[b_id].size() > 0:
+					var old_state = history[b_id][0]
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = old_state["x"]
+						b["y"] = old_state["y"]
+						b["hp"] = old_state["hp"]
+					else:
+						b.x = old_state["x"]
+						b.y = old_state["y"]
+						if "hp" in b:
+							b.hp = old_state["hp"]
+
+			history.clear()
+			rewind_timer = 0.0
+
+
 var GAME_MODES = {
 	"meteor_shower": MeteorShowerMode.new(),
 
@@ -7145,5 +7228,6 @@ var GAME_MODES = {
     "supernova": SupernovaMode.new(),
 	"echolocation": EcholocationMode.new(),
 	"body_swap": BodySwapMode.new(),
-	"hazard_billiards": HazardBilliardsMode.new()
+	"hazard_billiards": HazardBilliardsMode.new(),
+	"time_rewind": TimeRewindMode.new()
 }

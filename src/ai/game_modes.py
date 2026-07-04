@@ -5857,6 +5857,44 @@ class MeteorShowerMode(GameMode):
 
             world.arena.hazards.append(meteor)
 
+class TimeRewindMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Time Rewind"
+        self.description = "Every 30 seconds, the game state rewinds 5 seconds in time. Balls keep momentum but revert position and HP."
+        self.rewind_timer = 0.0
+        self.history = {}
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        self.rewind_timer += delta
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+            b_id = getattr(b, "id", str(id(b)))
+            if b_id not in self.history:
+                self.history[b_id] = []
+
+            # record current state
+            self.history[b_id].append((self.rewind_timer, b.x, b.y, getattr(b, "hp", 100.0)))
+
+            # prune history older than 5 seconds
+            self.history[b_id] = [h for h in self.history[b_id] if self.rewind_timer - h[0] <= 5.0]
+
+        if self.rewind_timer >= 30.0:
+            for b in balls:
+                if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                    continue
+                b_id = getattr(b, "id", str(id(b)))
+                if b_id in self.history and len(self.history[b_id]) > 0:
+                    old_state = self.history[b_id][0]
+                    b.x, b.y, b.hp = old_state[1], old_state[2], old_state[3]
+
+            self.history = {}
+            self.rewind_timer = 0.0
+
+
 GAME_MODES = {
     "meteor_shower": MeteorShowerMode(),
 
@@ -5924,7 +5962,8 @@ GAME_MODES = {
     "supernova": SupernovaMode(),
     "echolocation": EcholocationMode(),
     "body_swap": BodySwapMode(),
-    "hazard_billiards": HazardBilliardsMode()
+    "hazard_billiards": HazardBilliardsMode(),
+    "time_rewind": TimeRewindMode()
 }
 
 try:
