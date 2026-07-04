@@ -9639,7 +9639,7 @@
     },
     {
       "id": "idea-558",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Wall-Jump Skill",
@@ -15695,6 +15695,109 @@
         "src/ai/reflect_overload_mechanic.py",
         "src/ai/reflect_overload_mechanic.gd",
         "tests/test_reflect_overload_mechanic.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-914",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sunlight Reflection Shields",
+      "description": "Balls can find and equip reflective shields during the day cycle. These shields completely nullify the sunlight beam damage and instead redirect a weaker beam in a random direction that can damage nearby enemies or trigger explosive traps, adding a dynamic counter-play to the day cycle.",
+      "allowed_paths": [
+        "src/ai/sunlight_reflection_shields.py",
+        "src/ai/sunlight_reflection_shields.gd",
+        "tests/test_sunlight_reflection_shields.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-915",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Mimic Behaviors",
+      "description": "Allow the trickster's decoys to mimic specific abilities like 'flee' or 'attack' visually when the real Trickster executes them, sending out harmless but confusing particle effects to make the illusion even more convincing.",
+      "allowed_paths": [
+        "src/ai/decoy_mimic_behaviors.py",
+        "src/ai/decoy_mimic_behaviors.gd",
+        "tests/test_decoy_mimic_behaviors.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-916",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Fragment Mines",
+      "description": "When a trickster decoy explodes, it scatters tiny fragmented traps on the ground that deal minor damage and cause micro-stutters. This turns a single confusing element into an area denial mechanic.",
+      "allowed_paths": [
+        "src/ai/decoy_fragment_mines.py",
+        "src/ai/decoy_fragment_mines.gd",
+        "tests/test_decoy_fragment_mines.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-917",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild Boss Raid Tiers",
+      "description": "Add multiple difficulty tiers for guild bosses with better rewards for higher tiers.",
+      "allowed_paths": [
+        "src/ui/guild_boss_raid_tiers.py",
+        "src/ui/guild_boss_raid_tiers.gd",
+        "src/ai/guild_boss_raid_tiers.py",
+        "tests/test_guild_boss_raid_tiers.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-918",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Boss Weakness Rotation",
+      "description": "Weekly guild bosses have different elemental weaknesses that change every week.",
+      "allowed_paths": [
+        "src/ai/boss_weakness_rotation.py",
+        "src/ai/boss_weakness_rotation.gd",
+        "tests/test_boss_weakness_rotation.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-919",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Eclipse Anomaly Event",
+      "description": "A rare mid-day event where the sun goes dark abruptly, swapping all day/night buffs globally for 30 seconds. During this time, indestructible walls become destructible, allowing strong balls to break enemy cover points before the sun returns.",
+      "allowed_paths": [
+        "src/ai/eclipse_anomaly.py",
+        "src/ai/eclipse_anomaly.gd",
+        "tests/test_eclipse_anomaly.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

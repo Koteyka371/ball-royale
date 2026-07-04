@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-558] Wall-Jump Skill — *2026-07-04 19:01:17 UTC*
+
+Allow specific ball types to bounce off walls with increased velocity to perform surprise attacks.
+
+---
+
 ## [idea-546] Sunlight Beam Hazard — *2026-07-04 18:38:42 UTC*
 
 During the day cycle, rare but highly damaging 'sunlight beams' can focus randomly on the arena, rapidly depleting HP of balls lacking daylight buffs (like vampires, assassins, or phantoms), forcing them to seek cover behind indestructible walls.
