@@ -5488,7 +5488,7 @@ class DayNightMode extends GameMode:
                                     hy = hazard.get("y", 0.0)
                                     hr = hazard.get("radius", 10.0)
 
-                                if hk == "laser_wall" or hk == "wall":
+                                if hk in ["laser_wall", "wall", "indestructible_wall"]:
                                     if _line_intersects_circle(fx, fy, b.x, b.y, hx, hy, hr):
                                         behind_cover = true
                                         break

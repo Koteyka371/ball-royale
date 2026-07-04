@@ -4614,7 +4614,7 @@ class DayNightMode(GameMode):
                                     hy = getattr(hazard, "y", 0.0)
                                     hr = getattr(hazard, "radius", 10.0)
 
-                                if hk in ["laser_wall", "wall"]:
+                                if hk in ["laser_wall", "wall", "indestructible_wall"]:
                                     if self._line_intersects_circle((fx, fy), (b.x, b.y), (hx, hy), hr):
                                         behind_cover = True
                                         break

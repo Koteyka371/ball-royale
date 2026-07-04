@@ -550,6 +550,49 @@ def test_day_night_mode():
     mode.tick(world, [], delta=11.0)
     assert world.arena.is_night == False
 
+def test_day_night_mode_indestructible_wall_cover():
+    from ai.game_modes import DayNightMode
+
+    class MockArenaDayNight:
+        def __init__(self):
+            self.is_night = False
+            self.width = 1000
+            self.height = 1000
+            self.hazards = [
+                {'kind': 'indestructible_wall', 'x': 500, 'y': 500, 'radius': 20}
+            ]
+
+    class MockWorldDayNight:
+        def __init__(self):
+            self.arena = MockArenaDayNight()
+
+    mode = DayNightMode()
+    world = MockWorldDayNight()
+
+    # b1 is shielded by wall at (500,500) from beam at (600,600)
+    b1 = MockBall(1, "vampire")
+    b1.x, b1.y = 400, 400
+    b1.hp = 100
+    b1.alive = True
+    b1.radius = 10
+
+    # b2 is exposed
+    b2 = MockBall(2, "vampire")
+    b2.x, b2.y = 600, 600
+    b2.hp = 100
+    b2.alive = True
+    b2.radius = 10
+
+    mode.setup(world, [b1, b2])
+    mode.active_sunlight_beams = [
+        {'x': 600, 'y': 600, 'radius': 1000, 'duration': 2.0}
+    ]
+
+    mode.tick(world, [b1, b2], delta=1.0)
+
+    assert b1.hp == 100, f"b1 should be behind cover, hp was {b1.hp}"
+    assert b2.hp == 50, f"b2 should take 50 beam damage, hp was {b2.hp}"
+
 def test_zero_gravity_mode():
     from ai.game_modes import ZeroGravityMode
     mode = ZeroGravityMode()

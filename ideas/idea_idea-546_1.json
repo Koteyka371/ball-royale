@@ -1,4 +1,4 @@
 {
-  "title": "Moonlight Shadow Event",
-  "description": "During the night cycle in Day/Night mode, occasional moonlight shadow events spawn safe zones. Balls remaining outside these zones slowly lose stamina, forcing engagements in key areas."
+  "title": "Dynamic Sun Dial Mechanism",
+  "description": "Introduce a massive sun dial in the center of the arena during DayNightMode. The shadow of the gnomon provides a large, sweeping area of cover against sunlight beams. Players must anticipate the shadow's movement as the sun sets to maintain cover."
 }
