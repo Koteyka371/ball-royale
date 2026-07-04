@@ -254,6 +254,8 @@ class BattleRoyaleMode(GameMode):
         self.shrink_rate = 10.0
         import random
         self.random = random
+        self.match_time = 0.0
+        self.finale_boss_spawned = False
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -724,6 +726,53 @@ class BattleRoyaleMode(GameMode):
                             decoy.SKILL = None
                             decoy.active_skill = None
                         world.balls.append(decoy)
+
+        self.match_time += delta
+
+        # Finale Boss logic
+        if self.match_time > 120.0 and hasattr(world, "arena") and world.arena:
+            if not getattr(self, "finale_boss_spawned", False):
+                self.finale_boss_spawned = True
+                if not hasattr(world.arena, "hazards"):
+                    world.arena.hazards = []
+                # Spawn finale boss at center
+                cx = getattr(world.arena, "width", 1000.0) / 2.0
+                cy = getattr(world.arena, "height", 1000.0) / 2.0
+                from arena.procedural_arena import Hazard
+                boss = Hazard(id=len(world.arena.hazards) + 9000, x=cx, y=cy, radius=50.0, kind="finale_boss", damage=100.0)
+                setattr(boss, "duration", 9999.0)
+                setattr(boss, "boss_timer", 0.0)
+                world.arena.hazards.append(boss)
+                if hasattr(world, "add_event"):
+                    world.add_event("finale_boss_spawn", {"message": "SUDDEN DEATH! The Finale Boss has spawned!"})
+            else:
+                for h in getattr(world.arena, "hazards", []):
+                    if getattr(h, "kind", "") == "finale_boss":
+                        h.radius += 5.0 * delta
+
+                        if not hasattr(h, "boss_timer"):
+                            h.boss_timer = 0.0
+                        h.boss_timer += delta
+
+                        if h.boss_timer >= 1.0:
+                            h.boss_timer = 0.0
+                            import math
+                            from arena.procedural_arena import Hazard
+                            angle = self.random.uniform(0, 2 * math.pi)
+                            proj = Hazard(id=len(world.arena.hazards) + self.random.randint(1000, 9999),
+                                          x=h.x, y=h.y, radius=15.0, kind="boss_projectile", damage=50.0)
+                            setattr(proj, "vx", math.cos(angle) * 300.0)
+                            setattr(proj, "vy", math.sin(angle) * 300.0)
+                            setattr(proj, "duration", 10.0)
+                            world.arena.hazards.append(proj)
+
+        # Move projectiles
+        if hasattr(world, "arena") and getattr(world.arena, "hazards", None) is not None:
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "boss_projectile":
+                    if hasattr(h, "vx") and hasattr(h, "vy"):
+                        h.x += h.vx * delta
+                        h.y += h.vy * delta
 
         self.dark_phase_timer += delta
 
