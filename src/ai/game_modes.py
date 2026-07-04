@@ -247,6 +247,11 @@ class BattleRoyaleMode(GameMode):
         self.next_weather = "clear"
         self.weather_warning_issued = False
         self.supply_drop_timer = 0.0
+        self.zone_initialized = False
+        self.zone_x = 500.0
+        self.zone_y = 500.0
+        self.zone_radius = 1000.0
+        self.shrink_rate = 10.0
         import random
         self.random = random
 
@@ -279,6 +284,27 @@ class BattleRoyaleMode(GameMode):
                     world.dead_balls.append(b)
                 else:
                     b.time_since_death += delta
+
+        # Safe Zone logic
+        if not getattr(self, "zone_initialized", False):
+            self.zone_initialized = True
+            arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+            arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+            self.zone_x = arena_width / 2.0
+            self.zone_y = arena_height / 2.0
+            self.zone_radius = max(arena_width, arena_height)
+            self.shrink_rate = 10.0
+
+        self.zone_radius -= self.shrink_rate * delta
+
+        import math
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                b_x = getattr(b, "x", 0.0)
+                b_y = getattr(b, "y", 0.0)
+                dist = math.hypot(b_x - self.zone_x, b_y - self.zone_y)
+                if dist > self.zone_radius:
+                    b.hp -= 20.0 * delta # damage per second outside safe zone
 
         # Weather logic
         controller = None

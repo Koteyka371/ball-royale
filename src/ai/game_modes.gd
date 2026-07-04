@@ -332,6 +332,11 @@ class BattleRoyaleMode extends GameMode:
     var weather_timer: float = 0.0
     var weather: String = "clear"
     var supply_drop_timer: float = 0.0
+    var zone_initialized: bool = false
+    var zone_x: float = 500.0
+    var zone_y: float = 500.0
+    var zone_radius: float = 1000.0
+    var shrink_rate: float = 10.0
     var rng = RandomNumberGenerator.new()
 
     func _init() -> void:
@@ -384,6 +389,34 @@ class BattleRoyaleMode extends GameMode:
                 else:
                     if b.has_method("get_meta") and b.has_meta("time_since_death"):
                         b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+
+        # Safe Zone logic
+        if not self.get("zone_initialized"):
+            self.set("zone_initialized", true)
+            var arena_width = 1000
+            var arena_height = 1000
+            if "arena" in world and world.arena:
+                if "width" in world.arena: arena_width = world.arena.width
+                if "height" in world.arena: arena_height = world.arena.height
+            self.set("zone_x", arena_width / 2.0)
+            self.set("zone_y", arena_height / 2.0)
+            self.set("zone_radius", max(arena_width, arena_height))
+            self.set("shrink_rate", 10.0)
+
+        self.set("zone_radius", self.get("zone_radius") - self.get("shrink_rate") * delta)
+
+        for b in balls:
+            if b.alive and b.ball_type != "spectator":
+                var b_x = 0.0
+                var b_y = 0.0
+                if "x" in b: b_x = b.x
+                elif b.has_method("get_meta") and b.has_meta("x"): b_x = b.get_meta("x")
+                if "y" in b: b_y = b.y
+                elif b.has_method("get_meta") and b.has_meta("y"): b_y = b.get_meta("y")
+
+                var dist = sqrt(pow(b_x - self.get("zone_x"), 2) + pow(b_y - self.get("zone_y"), 2))
+                if dist > self.get("zone_radius"):
+                    if "hp" in b: b.hp -= 20.0 * delta
 
         dark_phase_timer += delta
 
