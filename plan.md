@@ -1,48 +1,35 @@
-1. **Modify `src/ai/game_modes.py`:**
-   - Update `BattleRoyaleMode` and `WeatherChaosMode` (and anywhere else) where `self.weather == "rain"` spawns a `mud_pit` (`quicksand`). Only spawn it if the arena is a "dirt/sand" arena.
-   - Example check:
-     ```python
-     arena_name = getattr(world.arena, "__class__", type(world.arena)).__name__.lower()
-     is_dirt_sand = "sand" in arena_name or "dirt" in arena_name or "summer" in arena_name or getattr(world.arena, "is_sandstorming", False) or getattr(world.arena, "is_heatwave", False)
-     if is_dirt_sand and getattr(self, "random", __import__("random")).random() < 0.05 * delta:
-         # spawn mud pit...
-     ```
-   - Also, for the `b.speed = b.base_speed * 0.8` effect of rain, exempt units with a `water` or `swamp` trait.
+1. **Understand the Goal**:
+   - Add a new equippable item or booster that temporarily grants immunity to EMP bursts and other scrambling effects.
+   - The item should be named something like `emp_immunity_booster` or `faraday_cage_booster`. Let's use `emp_immunity_booster` for simplicity.
+   - It will set a flag/timer on the ball that collects it, making it immune to effects that set `is_emped` or `is_scrambled` to true.
 
-2. **Modify `src/ai/action.py`:**
-   - Update the `quicksand` hazard logic.
-   - Example check:
-     ```python
-     b_type = str(getattr(self.ball, "ball_type", "")).lower()
-     traits = getattr(self.ball, "traits", [])
-     has_water_trait = "water" in b_type or "swamp" in b_type or "water" in traits or "swamp" in traits
-     if not has_water_trait:
-         # Apply quicksand slow debuff
-     ```
+2. **Files to Modify**:
+   - `src/ai/game_modes.py`: Add `emp_immunity_booster` to `booster_kinds`.
+   - `src/ai/game_modes.gd`: Add `emp_immunity_booster` to `booster_kinds`.
+   - `src/ai/action.py`:
+     - In `_collect_booster`: Add logic for `emp_immunity_booster` to set `emp_immunity_timer`.
+     - In `execute` or `_apply_hazards` / loop: Add countdown for `emp_immunity_timer` and reset `is_emp_immune` flag.
+     - Modify places where `is_emped` or `is_scrambled` are set to `True` (like EMP burst, EMP trap, emp_item) to check `if not getattr(self.ball, "is_emp_immune", False):`. Wait, these effects might be applied to *other* balls (e.g. EMP trap hits a ball, or emp_item hits nearby balls). If `next_entity` hits a ball `b`, we check `if not getattr(b, "is_emp_immune", False):`.
+   - `src/ai/action.gd`:
+     - Same logic translated to GDScript for `emp_immunity_booster`.
 
-3. **Modify `src/ai/game_modes.gd` and `src/ai/action.gd`:**
-   - Implement the exact same logic in GDScript.
-   - For GDScript trait check:
-     ```gdscript
-     var has_water_trait = false
-     var b_type = ""
-     if "ball_type" in b: b_type = str(b.ball_type).to_lower()
-     elif b.has_method("get_meta") and b.has_meta("ball_type"): b_type = str(b.get_meta("ball_type")).to_lower()
+3. **Detailed Logic Details**:
+   - The booster adds `emp_immunity_timer = 15.0` (or some duration) and `is_emp_immune = True`.
+   - Or maybe just check `getattr(b, "emp_immunity_timer", 0.0) > 0` everywhere, to avoid a boolean flag. Let's just use `emp_immunity_timer`.
+   - When an EMP effect tries to hit a ball `b`, check `if getattr(b, "emp_immunity_timer", 0.0) <= 0:`.
+   - The scrambling effects are applied in `action.py`:
+     - EMP trap charge (`b.is_emped = True`, `b.is_scrambled = True`, etc.)
+     - Trap variant "emp" (`self.ball.is_emped = True`)
+     - Hazard `emp_burst` (`self.ball.is_scrambled = True`)
+     - `emp_item` collecting (`other_ball.has_drone = False`, etc. - could block this too).
+   - And the same in `action.gd`.
 
-     var traits = []
-     if "traits" in b: traits = b.traits
-     elif b.has_method("get_meta") and b.has_meta("traits"): traits = b.get_meta("traits")
+4. **Testing**:
+   - Create `src/ai/test_emp_immunity_booster.py` to verify the ball becomes immune and timers work correctly.
 
-     if "water" in b_type or "swamp" in b_type:
-         has_water_trait = true
-     elif typeof(traits) == TYPE_ARRAY:
-         for t in traits:
-             if "water" in str(t).to_lower() or "swamp" in str(t).to_lower():
-                 has_water_trait = true
-                 break
-     ```
+5. **Generate Ideas**:
+   - Create 2 valid JSON files in `ideas/`.
 
-4. **Testing and Pre-commit:**
-   - Run tests.
-   - Pre-commit check.
-   - Commit and submit.
+6. **Pre-commit and PR**:
+   - Run tests, check for issues, format code.
+

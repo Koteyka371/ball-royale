@@ -773,34 +773,40 @@ func _attempt_damage(attacker, target) -> void:
 										if b_alive and b_id != owner_id:
 											var dist_burst = sqrt(pow(b.x - next_entity.x, 2) + pow(b.y - next_entity.y, 2))
 											if dist_burst <= 200.0:
-												if b.has_method("set_meta"): b.set_meta("is_emped", true)
-												if b.has_method("set_meta"): b.set_meta("emp_timer", 4.0)
+												var b_emp_imm = 0.0
+												if "emp_immunity_timer" in b: b_emp_imm = b.emp_immunity_timer
+												elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("emp_immunity_timer"): b_emp_imm = b.get_meta("emp_immunity_timer")
+												elif typeof(b) == TYPE_DICTIONARY and b.has("emp_immunity_timer"): b_emp_imm = b.get("emp_immunity_timer")
 
-												var current_silence = 0.0
-												if "silence_timer" in b: current_silence = b.silence_timer
-												elif b.has_method("get_meta") and b.has_meta("silence_timer"): current_silence = b.get_meta("silence_timer")
+												if b_emp_imm <= 0:
+													if b.has_method("set_meta"): b.set_meta("is_emped", true)
+													if b.has_method("set_meta"): b.set_meta("emp_timer", 4.0)
 
-												var max_s = max(current_silence, 3.0)
-												if "silence_timer" in b: b.silence_timer = max_s
-												elif b.has_method("set_meta"): b.set_meta("silence_timer", max_s)
+													var current_silence = 0.0
+													if "silence_timer" in b: current_silence = b.silence_timer
+													elif b.has_method("get_meta") and b.has_meta("silence_timer"): current_silence = b.get_meta("silence_timer")
 
-												var current_skill = 0.0
-												if "skill_timer" in b: current_skill = b.skill_timer
-												elif b.has_method("get_meta") and b.has_meta("skill_timer"): current_skill = b.get_meta("skill_timer")
+													var max_s = max(current_silence, 3.0)
+													if "silence_timer" in b: b.silence_timer = max_s
+													elif b.has_method("set_meta"): b.set_meta("silence_timer", max_s)
 
-												var max_sk = max(current_skill, 3.0)
-												if "skill_timer" in b: b.skill_timer = max_sk
-												elif b.has_method("set_meta"): b.set_meta("skill_timer", max_sk)
+													var current_skill = 0.0
+													if "skill_timer" in b: current_skill = b.skill_timer
+													elif b.has_method("get_meta") and b.has_meta("skill_timer"): current_skill = b.get_meta("skill_timer")
 
-												var base_sp = 100.0
-												if "base_speed" in b: base_sp = b.base_speed
-												elif b.has_method("get_meta") and b.has_meta("base_speed"): base_sp = b.get_meta("base_speed")
+													var max_sk = max(current_skill, 3.0)
+													if "skill_timer" in b: b.skill_timer = max_sk
+													elif b.has_method("set_meta"): b.set_meta("skill_timer", max_sk)
 
-												if "speed" in b: b.speed = base_sp * 0.5
-												elif b.has_method("set_meta"): b.set_meta("speed", base_sp * 0.5)
+													var base_sp = 100.0
+													if "base_speed" in b: base_sp = b.base_speed
+													elif b.has_method("get_meta") and b.has_meta("base_speed"): base_sp = b.get_meta("base_speed")
 
-												if b.has_method("set_meta"): b.set_meta("is_scrambled", true)
-												if b.has_method("set_meta"): b.set_meta("scramble_timer", 3.0)
+													if "speed" in b: b.speed = base_sp * 0.5
+													elif b.has_method("set_meta"): b.set_meta("speed", base_sp * 0.5)
+
+													if b.has_method("set_meta"): b.set_meta("is_scrambled", true)
+													if b.has_method("set_meta"): b.set_meta("scramble_timer", 3.0)
 						var n_kind = ""
 						if typeof(next_entity) == TYPE_DICTIONARY and next_entity.has("kind"): n_kind = next_entity["kind"]
 						elif typeof(next_entity) == TYPE_OBJECT and next_entity.has_meta("kind"): n_kind = next_entity.get_meta("kind")
@@ -3489,7 +3495,11 @@ func execute(strategy: String, delta: float):
                                 elif self.ball.has_method("get_meta") and self.ball.has_meta("is_emped"):
                                     is_emped = self.ball.get_meta("is_emped")
 
-                                if not is_emped:
+                                var b_emp_imm = 0.0
+                                if "emp_immunity_timer" in self.ball: b_emp_imm = self.ball.emp_immunity_timer
+                                elif self.ball.has_method("get_meta") and self.ball.has_meta("emp_immunity_timer"): b_emp_imm = self.ball.get_meta("emp_immunity_timer")
+
+                                if not is_emped and b_emp_imm <= 0:
                                     if "is_emped" in self.ball:
                                         self.ball.is_emped = true
                                         self.ball.emp_timer = 2.0
@@ -3710,15 +3720,19 @@ func execute(strategy: String, delta: float):
                         continue
 
                     elif hazard.kind == "emp_burst":
-                        if "is_scrambled" in self.ball:
-                            self.ball.is_scrambled = true
-                            if "scramble_timer" in self.ball:
-                                self.ball.scramble_timer = 3.0
-                            else:
+                        var b_emp_imm = 0.0
+                        if "emp_immunity_timer" in self.ball: b_emp_imm = self.ball.emp_immunity_timer
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("emp_immunity_timer"): b_emp_imm = self.ball.get_meta("emp_immunity_timer")
+                        if b_emp_imm <= 0:
+                            if "is_scrambled" in self.ball:
+                                self.ball.is_scrambled = true
+                                if "scramble_timer" in self.ball:
+                                    self.ball.scramble_timer = 3.0
+                                else:
+                                    self.ball.set_meta("scramble_timer", 3.0)
+                            elif self.ball.has_method("set_meta"):
+                                self.ball.set_meta("is_scrambled", true)
                                 self.ball.set_meta("scramble_timer", 3.0)
-                        elif self.ball.has_method("set_meta"):
-                            self.ball.set_meta("is_scrambled", true)
-                            self.ball.set_meta("scramble_timer", 3.0)
                         if self.has_method("_spawn_skill_particles"):
                             self._spawn_skill_particles("emp")
                         continue
@@ -4945,6 +4959,20 @@ func execute(strategy: String, delta: float):
                 inv_t -= delta
                 if inv_t < 0: inv_t = 0.0
                 self.ball.set_meta("invert_timer", inv_t)
+
+        var emp_imm_timer = 0.0
+        if "emp_immunity_timer" in self.ball:
+            emp_imm_timer = float(self.ball.emp_immunity_timer)
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("emp_immunity_timer"):
+            emp_imm_timer = float(self.ball.get_meta("emp_immunity_timer"))
+        if emp_imm_timer > 0:
+            emp_imm_timer -= delta
+            if emp_imm_timer < 0:
+                emp_imm_timer = 0.0
+            if "emp_immunity_timer" in self.ball:
+                self.ball.emp_immunity_timer = emp_imm_timer
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("emp_immunity_timer", emp_imm_timer)
 
         if "nemesis_booster_timer" in self.ball:
             n_timer = float(self.ball.nemesis_booster_timer)
@@ -7309,6 +7337,19 @@ func _collect_booster(delta: float):
                         self.world.arena.hazards.erase(nearest)
                 if self.world != null and "boosters" in self.world and self.world.boosters.has(nearest):
                     self.world.boosters.erase(nearest)
+            elif "kind" in nearest and nearest.kind == "emp_immunity_booster":
+                if "emp_immunity_timer" in self.ball:
+                    self.ball.emp_immunity_timer = 15.0
+                elif self.ball.has_method("set_meta"):
+                    self.ball.set_meta("emp_immunity_timer", 15.0)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "nemesis_booster":
                 self.ball.set_meta("nemesis_booster_timer", 5.0)
                 if "nemesis_booster_timer" in self.ball:
@@ -7446,12 +7487,17 @@ func _collect_booster(delta: float):
                         if not same_team:
                             var dist_emp = sqrt(pow(other_ball.x - self.ball.x, 2) + pow(other_ball.y - self.ball.y, 2))
                             if dist_emp < 300.0: # EMP radius
-                                if "has_drone" in other_ball: other_ball.has_drone = false
-                                if "has_shield" in other_ball: other_ball.has_shield = false
-                                if other_ball.has_method("set_meta"):
-                                    other_ball.set_meta("speed_booster_timer", 0.0)
-                                elif "speed_booster_timer" in other_ball:
-                                    other_ball.speed_booster_timer = 0.0
+                                var ob_emp_imm = 0.0
+                                if "emp_immunity_timer" in other_ball: ob_emp_imm = other_ball.emp_immunity_timer
+                                elif typeof(other_ball) == TYPE_OBJECT and other_ball.has_method("get_meta") and other_ball.has_meta("emp_immunity_timer"): ob_emp_imm = other_ball.get_meta("emp_immunity_timer")
+                                elif typeof(other_ball) == TYPE_DICTIONARY and other_ball.has("emp_immunity_timer"): ob_emp_imm = other_ball.get("emp_immunity_timer", 0.0)
+                                if ob_emp_imm <= 0:
+                                    if "has_drone" in other_ball: other_ball.has_drone = false
+                                    if "has_shield" in other_ball: other_ball.has_shield = false
+                                    if typeof(other_ball) == TYPE_OBJECT and other_ball.has_method("set_meta"):
+                                        other_ball.set_meta("speed_booster_timer", 0.0)
+                                    elif "speed_booster_timer" in other_ball:
+                                        other_ball.speed_booster_timer = 0.0
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
