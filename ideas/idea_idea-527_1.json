@@ -1,0 +1,4 @@
+{
+  "title": "Weather Transitions",
+  "description": "Introduce dynamic weather transitions during a match. For example, a match could start sunny but gradually become cloudy and then transition to a full storm or blizzard, forcing balls to adapt their strategy dynamically rather than staying in one state."
+}

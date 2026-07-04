@@ -42,6 +42,9 @@ func scan() -> Dictionary:
     if self.world != null and "arena" in self.world and "is_raining" in self.world.arena:
         if self.world.arena.is_raining:
             perception_radius = perception_radius * 0.8
+    if self.world != null and "arena" in self.world and "is_windy" in self.world.arena:
+        if self.world.arena.is_windy:
+            perception_radius = perception_radius * 0.7
     if self.world != null and "arena" in self.world and "is_sandstorming" in self.world.arena:
         if self.world.arena.is_sandstorming and ("ball_type" in self.ball and self.ball.ball_type != "sand_elemental"):
             perception_radius = perception_radius * 0.3
