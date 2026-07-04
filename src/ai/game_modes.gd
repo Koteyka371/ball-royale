@@ -921,7 +921,78 @@ class BattleRoyaleMode extends GameMode:
                     vb.set_meta("duration", 15.0)
                     world.arena.hazards.append(vb)
 
+
         match_time += delta
+
+        # Meteor Shower final phase logic
+        var teams_alive = []
+        for b in balls:
+            if typeof(b) == TYPE_OBJECT and b.get("alive") and b.get("ball_type") != "spectator":
+                var team = b.get("team")
+                if not team in teams_alive:
+                    teams_alive.append(team)
+            elif typeof(b) == TYPE_DICTIONARY and b.has("alive") and b["alive"] and b.has("ball_type") and b["ball_type"] != "spectator":
+                var team = b["team"] if b.has("team") else null
+                if team != null and not team in teams_alive:
+                    teams_alive.append(team)
+
+        if match_time > 90.0 or teams_alive.size() <= 2:
+            if self.has_method("has_meta") and not self.has_meta("br_meteor_timer"):
+                self.set_meta("br_meteor_timer", 0.0) if self.has_method("set_meta") else null
+
+            var current_timer = self.get_meta("br_meteor_timer") if self.has_method("get_meta") and self.has_meta("br_meteor_timer") else 0.0
+            current_timer += delta
+
+            if current_timer >= 1.5:
+                current_timer = 0.0
+                if world != null and "arena" in world and world.arena != null:
+                    var aw = world.arena.width if "width" in world.arena else 1000.0
+                    var ah = world.arena.height if "height" in world.arena else 1000.0
+                    var mx = rng.randf_range(50.0, aw - 50.0)
+                    var my = rng.randf_range(50.0, ah - 50.0)
+
+                    # Deal AoE damage
+                    for b in balls:
+                        var is_alive = b.get("alive") if typeof(b) == TYPE_OBJECT else (b["alive"] if typeof(b) == TYPE_DICTIONARY and b.has("alive") else false)
+                        var b_type = b.get("ball_type") if typeof(b) == TYPE_OBJECT else (b["ball_type"] if typeof(b) == TYPE_DICTIONARY and b.has("ball_type") else null)
+                        if is_alive and b_type != "spectator":
+                            var bx = b.get("x") if typeof(b) == TYPE_OBJECT else (b["x"] if typeof(b) == TYPE_DICTIONARY and b.has("x") else 0.0)
+                            var by = b.get("y") if typeof(b) == TYPE_OBJECT else (b["y"] if typeof(b) == TYPE_DICTIONARY and b.has("y") else 0.0)
+                            var dist = sqrt((bx - mx)*(bx - mx) + (by - my)*(by - my))
+                            if dist <= 80.0:
+                                if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+                                    b.take_damage(50.0)
+                                else:
+                                    if typeof(b) == TYPE_OBJECT:
+                                        b.hp -= 50.0
+                                        if b.hp <= 0:
+                                            b.alive = false
+                                    elif typeof(b) == TYPE_DICTIONARY:
+                                        b["hp"] -= 50.0
+                                        if b["hp"] <= 0:
+                                            b["alive"] = false
+
+                    # Spawn crater (wall)
+                    if not "hazards" in world.arena:
+                        world.arena.hazards = []
+
+                    var HazardType = load("res://src/arena/procedural_arena.gd").Hazard
+                    if HazardType != null:
+                        var crater = HazardType.new()
+                        crater.id = world.arena.hazards.size() + 9500
+                        crater.x = mx
+                        crater.y = my
+                        crater.radius = 40.0
+                        crater.kind = "wall"
+                        crater.damage = 0.0
+                        crater.set_meta("duration", 10.0)
+                        world.arena.hazards.append(crater)
+
+                    if world.has_method("add_event"):
+                        world.add_event("visual_effect", {"type": "explosion", "x": mx, "y": my, "radius": 80.0})
+
+            if self.has_method("set_meta"):
+                self.set_meta("br_meteor_timer", current_timer)
 
         # Sudden Death Black Hole logic
         if match_time > 120.0 and world != null and "arena" in world and world.arena != null:

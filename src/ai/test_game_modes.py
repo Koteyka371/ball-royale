@@ -22,6 +22,12 @@ class MockWorld:
 def test_memory_traps_mode():
     mode = MemoryTrapsMode()
     world = MockWorld()
+    class MockArena:
+        def __init__(self):
+            self.width = 1000
+            self.height = 1000
+            self.hazards = []
+    world.arena = MockArena()
     setattr(world, "arena", type("Arena", (), {"width": 1000, "height": 1000})())
 
     # Place a trap exactly at (500, 500)
@@ -62,6 +68,12 @@ def test_battle_royale_mode():
 
     mode = BattleRoyaleMode()
     world = MockWorld()
+    class MockArena:
+        def __init__(self):
+            self.width = 1000
+            self.height = 1000
+            self.hazards = []
+    world.arena = MockArena()
     balls = [MockBall(1, "warrior"), MockBall(2, "scout")]
 
     mode.setup(world, balls)
@@ -76,6 +88,12 @@ def test_battle_royale_mode():
 def test_team_deathmatch_mode():
     mode = TeamDeathmatchMode()
     world = MockWorld()
+    class MockArena:
+        def __init__(self):
+            self.width = 1000
+            self.height = 1000
+            self.hazards = []
+    world.arena = MockArena()
     balls = [MockBall(1), MockBall(2), MockBall(3), MockBall(4)]
 
     mode.setup(world, balls)
@@ -92,6 +110,12 @@ def test_team_deathmatch_mode():
 def test_zombie_infection_mode():
     mode = ZombieInfectionMode()
     world = MockWorld()
+    class MockArena:
+        def __init__(self):
+            self.width = 1000
+            self.height = 1000
+            self.hazards = []
+    world.arena = MockArena()
     balls = [MockBall(1), MockBall(2), MockBall(3)]
 
     mode.setup(world, balls)
@@ -112,6 +136,12 @@ def test_zombie_infection_mode():
 def test_zombie_infection_mode_resurrection():
     mode = ZombieInfectionMode()
     world = MockWorld()
+    class MockArena:
+        def __init__(self):
+            self.width = 1000
+            self.height = 1000
+            self.hazards = []
+    world.arena = MockArena()
     balls = [MockBall(1), MockBall(2), MockBall(3)]
 
     mode.setup(world, balls)
@@ -148,6 +178,12 @@ def test_zombie_infection_mode_resurrection():
 def test_boss_fight_mode():
     mode = BossFightMode()
     world = MockWorld()
+    class MockArena:
+        def __init__(self):
+            self.width = 1000
+            self.height = 1000
+            self.hazards = []
+    world.arena = MockArena()
     balls = [MockBall(1), MockBall(2), MockBall(3)]
 
     mode.setup(world, balls)
@@ -165,6 +201,12 @@ def test_boss_fight_mode():
 def test_vip_defense_mode():
     mode = VIPDefenseMode()
     world = MockWorld()
+    class MockArena:
+        def __init__(self):
+            self.width = 1000
+            self.height = 1000
+            self.hazards = []
+    world.arena = MockArena()
     balls = [MockBall(1), MockBall(2), MockBall(3), MockBall(4)]
 
     mode.setup(world, balls)
@@ -182,6 +224,12 @@ def test_vip_defense_mode():
 def test_survival_mode():
     mode = SurvivalMode()
     world = MockWorld()
+    class MockArena:
+        def __init__(self):
+            self.width = 1000
+            self.height = 1000
+            self.hazards = []
+    world.arena = MockArena()
     balls = [MockBall(1), MockBall(2), MockBall(3), MockBall(4), MockBall(5), MockBall(6)]
 
     mode.setup(world, balls)
@@ -216,6 +264,12 @@ def test_vampire_royale_mode():
 
     balls = [b1, b2, b3]
     world = MockWorld()
+    class MockArena:
+        def __init__(self):
+            self.width = 1000
+            self.height = 1000
+            self.hazards = []
+    world.arena = MockArena()
 
     mode.setup(world, balls)
     mode.tick(world, balls, delta=1.0) # lose 5 HP
@@ -247,6 +301,12 @@ def test_domination_mode():
     from ai.game_modes import DominationMode
     mode = DominationMode()
     world = MockWorld()
+    class MockArena:
+        def __init__(self):
+            self.width = 1000
+            self.height = 1000
+            self.hazards = []
+    world.arena = MockArena()
     balls = [MockBall(1, "warrior"), MockBall(2, "scout"), MockBall(3, "mage"), MockBall(4, "tank")]
 
     # Initialize some required stats to test the buff
@@ -296,6 +356,12 @@ def test_bumper_balls_mode():
     from ai.game_modes import BumperBallsMode
     mode = BumperBallsMode()
     world = MockWorld()
+    class MockArena:
+        def __init__(self):
+            self.width = 1000
+            self.height = 1000
+            self.hazards = []
+    world.arena = MockArena()
     balls = [MockBall(1, "warrior"), MockBall(2, "scout")]
 
     # Give them some initial damage
@@ -327,6 +393,12 @@ def test_random_reroll_mutator():
     mode = CustomMatchMode()
     mode.mutators = ["random_reroll"]
     world = MockWorld()
+    class MockArena:
+        def __init__(self):
+            self.width = 1000
+            self.height = 1000
+            self.hazards = []
+    world.arena = MockArena()
     setattr(world, "profile_manager", type("MockProfile", (), {"are_mutators_unlocked": lambda self=None: True})())
 
     b1 = MockBall("b1", "warrior")
@@ -356,6 +428,12 @@ def test_escort_mode():
     from ai.game_modes import EscortMode
     mode = EscortMode()
     world = MockWorld()
+    class MockArena:
+        def __init__(self):
+            self.width = 1000
+            self.height = 1000
+            self.hazards = []
+    world.arena = MockArena()
     balls = [MockBall(1, "warrior"), MockBall(2, "scout")]
 
     mode.setup(world, balls)
@@ -389,6 +467,12 @@ def test_pitch_black_mode():
     mode = GAME_MODES["pitch_black"]
 
     world = MockWorld()
+    class MockArena:
+        def __init__(self):
+            self.width = 1000
+            self.height = 1000
+            self.hazards = []
+    world.arena = MockArena()
     # Mock arena to check if is_night gets set
     world.arena = type('MockArena', (), {'is_night': False})()
 
@@ -416,6 +500,12 @@ def test_shifting_maze_setup():
     from ai.game_modes import ShiftingMazeMode
     mode = ShiftingMazeMode()
     world = MockWorld()
+    class MockArena:
+        def __init__(self):
+            self.width = 1000
+            self.height = 1000
+            self.hazards = []
+    world.arena = MockArena()
     setattr(world, "arena", type("Arena", (), {"width": 1000, "height": 1000})())
 
     balls = [MockBall(1), MockBall(2)]
@@ -428,6 +518,12 @@ def test_shifting_maze_tick_damage():
     from ai.game_modes import ShiftingMazeMode
     mode = ShiftingMazeMode()
     world = MockWorld()
+    class MockArena:
+        def __init__(self):
+            self.width = 1000
+            self.height = 1000
+            self.hazards = []
+    world.arena = MockArena()
     setattr(world, "arena", type("Arena", (), {"width": 1000, "height": 1000})())
 
     # We will need to set up the ball so its take_damage works
@@ -465,6 +561,12 @@ def test_gravity_well_mode():
     from ai.game_modes import GAME_MODES
     mode = GAME_MODES["gravity_well"]
     world = MockWorld()
+    class MockArena:
+        def __init__(self):
+            self.width = 1000
+            self.height = 1000
+            self.hazards = []
+    world.arena = MockArena()
     world.arena = type('MockArena', (), {'width': 2000.0, 'height': 2000.0, 'hazards': []})()
     balls = [MockBall("teamA")]
 
@@ -507,6 +609,12 @@ def test_supernova_mode():
             self.arena = MockArena()
 
     world = MockWorld()
+    class MockArena:
+        def __init__(self):
+            self.width = 1000
+            self.height = 1000
+            self.hazards = []
+    world.arena = MockArena()
 
     # Ball close to center (500, 500)
     b1 = MockBall(500.0, 510.0, 100)
@@ -554,6 +662,12 @@ def test_zero_gravity_mode():
     from ai.game_modes import ZeroGravityMode
     mode = ZeroGravityMode()
     world = MockWorld()
+    class MockArena:
+        def __init__(self):
+            self.width = 1000
+            self.height = 1000
+            self.hazards = []
+    world.arena = MockArena()
     balls = [MockBall(1, "warrior"), MockBall(2, "scout")]
 
     mode.setup(world, balls)
@@ -564,6 +678,12 @@ def test_zero_gravity_mode():
     from ai.game_modes import ZeroGravityMode
     mode = ZeroGravityMode()
     world = MockWorld()
+    class MockArena:
+        def __init__(self):
+            self.width = 1000
+            self.height = 1000
+            self.hazards = []
+    world.arena = MockArena()
     balls = [MockBall(1, "warrior"), MockBall(2, "scout")]
 
     mode.setup(world, balls)
@@ -583,6 +703,12 @@ def test_pinball_mode():
             self.hazards = []
 
     world = MockWorld()
+    class MockArena:
+        def __init__(self):
+            self.width = 1000
+            self.height = 1000
+            self.hazards = []
+    world.arena = MockArena()
     world.arena = PinballMockArena()
     balls = [MockBall(1, 100, 100), MockBall(2, 200, 200)]
     mode.setup(world, balls)
@@ -596,6 +722,12 @@ def test_dynamic_hazards_mode():
     from ai.game_modes import DynamicHazardsMode
     mode = DynamicHazardsMode()
     world = MockWorld()
+    class MockArena:
+        def __init__(self):
+            self.width = 1000
+            self.height = 1000
+            self.hazards = []
+    world.arena = MockArena()
     setattr(world, "arena", type("Arena", (), {"width": 1000, "height": 1000, "hazards": []})())
 
     mode.setup(world, [])
@@ -626,6 +758,12 @@ def test_floor_is_lava_mode():
     from ai.game_modes import FloorIsLavaMode
     mode = FloorIsLavaMode()
     world = MockWorld()
+    class MockArena:
+        def __init__(self):
+            self.width = 1000
+            self.height = 1000
+            self.hazards = []
+    world.arena = MockArena()
     setattr(world, "arena", type("Arena", (), {"width": 1000, "height": 1000, "hazards": []})())
 
     ball = MockBall(1)
@@ -651,6 +789,12 @@ def test_cursed_buff_zone_mode():
     from ai.game_modes import CursedBuffZoneMode
     mode = CursedBuffZoneMode()
     world = MockWorld()
+    class MockArena:
+        def __init__(self):
+            self.width = 1000
+            self.height = 1000
+            self.hazards = []
+    world.arena = MockArena()
     setattr(world, "arena", type("Arena", (), {"width": 1000, "height": 1000, "hazards": []})())
 
     mode.setup(world, [])
@@ -713,6 +857,12 @@ def test_meteor_shower_mode():
     from ai.game_modes import MeteorShowerMode
     mode = MeteorShowerMode()
     world = MockWorld()
+    class MockArena:
+        def __init__(self):
+            self.width = 1000
+            self.height = 1000
+            self.hazards = []
+    world.arena = MockArena()
     setattr(world, "arena", type("Arena", (), {"width": 1000, "height": 1000, "hazards": []})())
 
     mode.setup(world, [])
@@ -748,3 +898,36 @@ def test_day_night_mode_indestructible_wall_cover():
     mode.tick(world, [b], delta=1.0)
 
     assert b.hp == 100, "Ball should not take damage from sunlight beam when behind indestructible wall"
+
+
+def test_battle_royale_meteor_shower():
+    from ai.game_modes import BattleRoyaleMode
+    mode = BattleRoyaleMode()
+    world = MockWorld()
+    class MockArena:
+        def __init__(self):
+            self.width = 1000
+            self.height = 1000
+            self.hazards = []
+    world.arena = MockArena()
+
+    # 3 teams alive
+    balls = [
+        MockBall(1, "warrior"),
+        MockBall(2, "scout"),
+        MockBall(3, "mage")
+    ]
+    balls[0].team = "A"
+    balls[1].team = "B"
+    balls[2].team = "C"
+
+    # No meteors initially
+    mode.match_time = 50.0
+    mode.tick(world, balls, 2.0)
+    assert len(world.arena.hazards) == 0
+
+    # Meteors spawn when 2 teams remain
+    balls[2].alive = False
+    mode.tick(world, balls, 2.0)
+    assert len(world.arena.hazards) > 0
+    assert world.arena.hazards[0].kind == "wall"
