@@ -8959,7 +8959,7 @@
     },
     {
       "id": "idea-518",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "EMP Shield Item",
@@ -14570,6 +14570,40 @@
         "src/ai/season_recap_video_generation.py",
         "src/ai/season_recap_video_generation.gd",
         "tests/test_season_recap_video_generation.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-848",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Entanglement Modifier",
+      "description": "Pairs of random balls become 'entangled'. Damage taken or healed by one is instantly mirrored to the other, creating unpredictable dynamics and forcing players to protect unlikely allies.",
+      "allowed_paths": [
+        "src/ai/quantum_entanglement.py",
+        "src/ai/quantum_entanglement.gd",
+        "tests/test_quantum_entanglement.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-849",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Temporal Rift Hazards",
+      "description": "Random areas on the map become temporal rifts. Any ball passing through a rift has its movement speed drastically slowed down (bullet time effect) or dramatically sped up, making traversing the map more strategic.",
+      "allowed_paths": [
+        "src/arena/temporal_rift_hazards.py",
+        "src/arena/temporal_rift_hazards.gd",
+        "tests/test_temporal_rift_hazards.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

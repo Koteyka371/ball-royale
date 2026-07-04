@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-518] EMP Shield Item — *2026-07-04 12:27:41 UTC*
+
+A new equippable item or booster that temporarily grants immunity to EMP bursts and other scrambling effects.
+
+---
+
 ## [idea-500] Time Loop Game Mode — *2026-07-04 12:24:04 UTC*
 
 Every 30 seconds, the game state rewinds 5 seconds in time. Balls keep their current momentum but revert to their previous positions and HP, requiring players to plan actions knowing a rewind is imminent.
