@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-505] Season Catch-up Mechanics — *2026-07-04 14:54:22 UTC*
+
+Introduce a 'Catch-up' multiplier that slightly increases the rate at which prestige or EXP is earned for players who join a season late (e.g., in the final week of a 30-day season). This helps new or returning players compete for the top 100 spots without feeling discouraged by an early insurmountable lead by others.
+
+---
+
 ## [idea-536] Chain Lightning Overload Mod — *2026-07-04 14:50:55 UTC*
 
 Introduce an overload mechanic where chain lightning bounces exceeding a certain jump threshold detonate the final target in a small AoE blast, dealing explosive damage but putting the skill on an extended cooldown.
