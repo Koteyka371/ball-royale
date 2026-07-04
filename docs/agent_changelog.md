@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-528] Spring Arena with high winds — *2026-07-04 13:21:09 UTC*
+
+Spring arena pushes players around
+
+---
+
 ## [idea-524] Dynamic Map Hazards Based on Weather — *2026-07-04 13:13:44 UTC*
 
 Expand the weather chaos mode by introducing dynamic map elements that change based on weather. For example, rain can create mud puddles that slow players, snow can freeze certain areas causing sliding, and heatwaves can create localized fire zones that deal damage.

@@ -9129,7 +9129,7 @@
     },
     {
       "id": "idea-528",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Spring Arena with high winds",
@@ -14757,6 +14757,40 @@
         "src/ai/weaponized_recoil.py",
         "src/ai/weaponized_recoil.gd",
         "tests/test_weaponized_recoil.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-859",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Seasonal Map Rotations",
+      "description": "Introduce dynamic map skins and weather biases based on the 'current_season' value (e.g., season 1 is spring with lots of healing puddles and rain, season 4 is winter with constant snow and ice slicks).",
+      "allowed_paths": [
+        "src/ai/seasonal_map_rotations.py",
+        "src/ai/seasonal_map_rotations.gd",
+        "tests/test_seasonal_map_rotations.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-860",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Natural Disasters Mode",
+      "description": "Expand weather chaos into a more intense mode featuring larger-scale hazards like earthquakes that shift walls, giant floods that turn the whole map into water affecting movement, and solar eclipses that restrict vision globally.",
+      "allowed_paths": [
+        "src/ai/natural_disasters.py",
+        "src/ai/natural_disasters.gd",
+        "tests/test_natural_disasters.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
