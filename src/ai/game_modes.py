@@ -4565,6 +4565,49 @@ class MagneticCollisionsMode(GameMode):
                                 b.x -= (dx / dist) * force
                                 b.y -= (dy / dist) * force
 
+        # Ball-to-ball magnetic forces
+        num_balls = len(balls)
+        for i in range(num_balls):
+            b1 = balls[i]
+            if not getattr(b1, "alive", True) or getattr(b1, "ball_type", None) == "spectator":
+                continue
+            b1_polarity = getattr(b1, "polarity", "positive")
+            b1_x = getattr(b1, "x", 0.0)
+            b1_y = getattr(b1, "y", 0.0)
+
+            for j in range(i + 1, num_balls):
+                b2 = balls[j]
+                if not getattr(b2, "alive", True) or getattr(b2, "ball_type", None) == "spectator":
+                    continue
+                b2_polarity = getattr(b2, "polarity", "positive")
+                b2_x = getattr(b2, "x", 0.0)
+                b2_y = getattr(b2, "y", 0.0)
+
+                dx = b2_x - b1_x
+                dy = b2_y - b1_y
+                dist = math.sqrt(dx*dx + dy*dy)
+
+                mag_range = 200.0
+                if dist > 0 and dist < mag_range:
+                    force = (mag_range - dist) / mag_range * 100.0 * delta
+
+                    if b1_polarity != b2_polarity:
+                        # Opposites attract
+                        b1.x += (dx / dist) * force
+                        b1.y += (dy / dist) * force
+                        b2.x -= (dx / dist) * force
+                        b2.y -= (dy / dist) * force
+                    else:
+                        # Likes repel
+                        b1.x -= (dx / dist) * force
+                        b1.y -= (dy / dist) * force
+                        b2.x += (dx / dist) * force
+                        b2.y += (dy / dist) * force
+
+                    # Update current positions for remaining interactions
+                    b1_x = getattr(b1, "x", 0.0)
+                    b1_y = getattr(b1, "y", 0.0)
+
 
 class StaminaRegenMode(GameMode):
     def __init__(self):

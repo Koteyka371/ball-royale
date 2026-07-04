@@ -1,0 +1,4 @@
+{
+  "title": "Bermuda Triangle Arena Hazard",
+  "description": "Three pylons spawn on the arena, forming a triangle. Any ball that enters the center of the triangle randomly teleports to a different location on the map, resetting their momentum to zero."
+}

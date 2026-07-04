@@ -5402,6 +5402,77 @@ class MagneticCollisionsMode extends GameMode:
 									b.x -= (dx / dist) * force
 									b.y -= (dy / dist) * force
 
+		# Ball-to-ball magnetic forces
+		var num_balls = balls.size()
+		for i in range(num_balls):
+			var b1 = balls[i]
+			var is_dict1 = typeof(b1) == TYPE_DICTIONARY
+			var b1_alive = b1.get("alive", true) if is_dict1 else b1.alive
+			var b1_type = b1.get("ball_type", "") if is_dict1 else b1.ball_type
+
+			if not b1_alive or b1_type == "spectator":
+				continue
+
+			var b1_polarity = b1.get("polarity", "positive") if is_dict1 else (b1.get_meta("polarity") if b1.has_method("get_meta") and b1.has_meta("polarity") else (b1.polarity if "polarity" in b1 else "positive"))
+			var b1_x = b1.get("x", 0.0) if is_dict1 else b1.x
+			var b1_y = b1.get("y", 0.0) if is_dict1 else b1.y
+
+			for j in range(i + 1, num_balls):
+				var b2 = balls[j]
+				var is_dict2 = typeof(b2) == TYPE_DICTIONARY
+				var b2_alive = b2.get("alive", true) if is_dict2 else b2.alive
+				var b2_type = b2.get("ball_type", "") if is_dict2 else b2.ball_type
+
+				if not b2_alive or b2_type == "spectator":
+					continue
+
+				var b2_polarity = b2.get("polarity", "positive") if is_dict2 else (b2.get_meta("polarity") if b2.has_method("get_meta") and b2.has_meta("polarity") else (b2.polarity if "polarity" in b2 else "positive"))
+				var b2_x = b2.get("x", 0.0) if is_dict2 else b2.x
+				var b2_y = b2.get("y", 0.0) if is_dict2 else b2.y
+
+				var dx = b2_x - b1_x
+				var dy = b2_y - b1_y
+				var dist = sqrt(dx*dx + dy*dy)
+
+				var mag_range = 200.0
+				if dist > 0 and dist < mag_range:
+					var force = (mag_range - dist) / mag_range * 100.0 * delta
+
+					if b1_polarity != b2_polarity:
+						# Opposites attract
+						if is_dict1:
+							b1["x"] = b1_x + (dx / dist) * force
+							b1["y"] = b1_y + (dy / dist) * force
+						else:
+							b1.x += (dx / dist) * force
+							b1.y += (dy / dist) * force
+
+						if is_dict2:
+							b2["x"] = b2_x - (dx / dist) * force
+							b2["y"] = b2_y - (dy / dist) * force
+						else:
+							b2.x -= (dx / dist) * force
+							b2.y -= (dy / dist) * force
+					else:
+						# Likes repel
+						if is_dict1:
+							b1["x"] = b1_x - (dx / dist) * force
+							b1["y"] = b1_y - (dy / dist) * force
+						else:
+							b1.x -= (dx / dist) * force
+							b1.y -= (dy / dist) * force
+
+						if is_dict2:
+							b2["x"] = b2_x + (dx / dist) * force
+							b2["y"] = b2_y + (dy / dist) * force
+						else:
+							b2.x += (dx / dist) * force
+							b2.y += (dy / dist) * force
+
+					# Update current positions for remaining interactions
+					b1_x = b1.get("x", 0.0) if is_dict1 else b1.x
+					b1_y = b1.get("y", 0.0) if is_dict1 else b1.y
+
 
 class StaminaRegenMode extends GameMode:
     func _init() -> void:
