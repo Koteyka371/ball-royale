@@ -1,0 +1,4 @@
+{
+  "title": "Amnesia Gas Hazard",
+  "description": "A cloud-based hazard that, upon contact, temporarily clears the AI's relationship memory (rivalries, perceived allies, last attacker) for 10 seconds. This forces the AI to re-evaluate their threat assessment from scratch, often leading to them ignoring current targets and behaving erratically until the effect wears off."
+}
