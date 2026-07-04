@@ -11038,6 +11038,65 @@ func _spawn_directed_particles(source, target, effect_type: String = ""):
         particles.emitting = true
         particles.one_shot = true
 
+        if effect_type == "chain_lightning":
+            if typeof(target) == TYPE_OBJECT and typeof(source) == TYPE_OBJECT:
+                var tx = target.get("position").x if target.get("position") != null else target.get("x")
+                var ty = target.get("position").y if target.get("position") != null else target.get("y")
+                var sx = source.get("position").x if source.get("position") != null else source.get("x")
+                var sy = source.get("position").y if source.get("position") != null else source.get("y")
+
+                if tx == null and target.has_method("get_meta") and target.has_meta("x"):
+                    tx = target.get_meta("x")
+                    ty = target.get_meta("y")
+
+                if sx == null and source.has_method("get_meta") and source.has_meta("x"):
+                    sx = source.get_meta("x")
+                    sy = source.get_meta("y")
+
+                if tx != null and ty != null and sx != null and sy != null:
+                    var line = Line2D.new()
+                    line.width = 4.0
+                    line.default_color = Color(0.4, 0.8, 1.0, 0.9) # Bright cyan lightning
+
+                    var start_pos = Vector2(sx, sy)
+                    var end_pos = Vector2(tx, ty)
+                    var dist = start_pos.distance_to(end_pos)
+                    var dir = (end_pos - start_pos).normalized()
+                    var normal = Vector2(-dir.y, dir.x)
+
+                    var points = PackedVector2Array()
+                    points.append(Vector2.ZERO)
+
+                    var segments = 6
+                    var local_end = end_pos - start_pos
+                    for i in range(1, segments):
+                        var t = float(i) / segments
+                        var base_point = Vector2.ZERO.lerp(local_end, t)
+                        var curve_displacement = sin(t * PI) * dist * 0.2
+                        var random_displacement = (randf() * 2.0 - 1.0) * dist * 0.1
+                        var point = base_point + normal * (curve_displacement + random_displacement)
+                        points.append(point)
+
+                    points.append(local_end)
+                    line.points = points
+
+                    var timer = Timer.new()
+                    timer.wait_time = 0.2
+                    timer.one_shot = true
+                    timer.autostart = true
+                    timer.timeout.connect(line.queue_free)
+                    line.add_child(timer)
+
+                    line.top_level = true
+                    line.global_position = start_pos
+                    source.add_child(line)
+
+                    var tween = line.create_tween()
+                    tween.tween_property(line, "modulate:a", 0.0, 0.2)
+
+            particles.queue_free()
+            return
+
         if effect_type == "health_link":
             particles.amount = 30
             particles.lifetime = 0.2
