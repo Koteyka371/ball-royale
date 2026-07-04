@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-534] Wall Ricochet Trajectory Indicators — *2026-07-04 14:49:20 UTC*
+
+Add visual trajectory lines for chain lightning before it casts, showing the player the expected bounce path across entities, hazards, and walls to allow for tactical positioning.
+
+---
+
 ## [idea-523] Loadout Code Fragments (Collectibles) — *2026-07-04 14:34:21 UTC*
 
 Introduce scattered fragments of 'ancient' loadout codes hidden within procedurally generated arenas as rare items. If a player collects all fragments of a code during a match, they permanently unlock a special cosmetic or hidden ball type associated with that unique loadout code.

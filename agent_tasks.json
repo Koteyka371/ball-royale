@@ -9231,7 +9231,7 @@
     },
     {
       "id": "idea-534",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Wall Ricochet Trajectory Indicators",
@@ -14894,6 +14894,57 @@
         "src/arena/decoy_switcharoo_traps.py",
         "src/arena/decoy_switcharoo_traps.gd",
         "tests/test_decoy_switcharoo_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-867",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounty Hunter Tag",
+      "description": "A new game mode where one player is designated as the 'Bounty'. This player gains enhanced health, vision, and damage, but their exact location is periodically pinged on the minimap for all other players. The player who successfully takes down the Bounty steals the tag and inherits the buffs. The player holding the tag the longest at the end of the match wins.",
+      "allowed_paths": [
+        "src/ai/bounty_hunter_tag.py",
+        "src/ai/bounty_hunter_tag.gd",
+        "tests/test_bounty_hunter_tag.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-868",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Teleportation Trap",
+      "description": "A deployable trap that teleports the first enemy that steps on it to a random location in the arena.",
+      "allowed_paths": [
+        "src/arena/teleportation_trap.py",
+        "src/arena/teleportation_trap.gd",
+        "tests/test_teleportation_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-869",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Cursed Loadout Relics",
+      "description": "Scattered across the map are extremely rare 'Cursed Relics' that, when collected, temporarily provide immense buffs (e.g., 300% movement speed and attack damage) but heavily impair the player's perception radius and invert their controls for a period. Surviving the duration permanently grants the relic's unique badge to the player's profile.",
+      "allowed_paths": [
+        "src/ai/cursed_loadout_relics.py",
+        "src/ai/cursed_loadout_relics.gd",
+        "tests/test_cursed_loadout_relics.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
