@@ -267,6 +267,10 @@ class Action:
                 if hasattr(self.world, "_deal_damage"):
                     self.world._deal_damage(attacker, target)
 
+            if getattr(attacker, "leech_booster_timer", 0.0) > 0:
+                target.leech_seed_timer = 5.0
+                target.leech_seed_attacker_id = getattr(attacker, "id", None)
+
             # Apply chain damage modifier if magnetic storm is active
             if hasattr(self.world, "game_mode") and getattr(self.world.game_mode, "weather", "") == "magnetic_storm":
                 import math
@@ -608,6 +612,28 @@ class Action:
 
     def execute(self, strategy: str, delta: float) -> None:
         import math
+
+        if getattr(self.ball, "leech_booster_timer", 0.0) > 0:
+            self.ball.leech_booster_timer -= delta
+
+        if getattr(self.ball, "leech_seed_timer", 0.0) > 0:
+            self.ball.leech_seed_timer -= delta
+            attacker_id = getattr(self.ball, "leech_seed_attacker_id", None)
+
+            attacker = None
+            if attacker_id is not None and hasattr(self.world, "balls"):
+                for b in self.world.balls:
+                    if getattr(b, "id", None) == attacker_id and getattr(b, "alive", False):
+                        attacker = b
+                        break
+
+            if attacker:
+                drain_amount = 5.0 * delta
+                self.ball.hp -= drain_amount
+                attacker.hp = min(getattr(attacker, "max_hp", 100.0), getattr(attacker, "hp", 100.0) + drain_amount)
+
+                if self.ball.hp <= 0:
+                    self.ball.alive = False
 
         if getattr(self.ball, "glitch_timer", 0.0) > 0.0:
             self.ball.glitch_timer -= delta
@@ -5290,6 +5316,13 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "weather_booster":
                     self.ball.weather_control_timer = 10.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "leech_booster":
+                    self.ball.leech_booster_timer = 10.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)

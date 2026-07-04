@@ -464,6 +464,21 @@ func _attempt_damage(attacker, target) -> void:
 			if self.world != null and self.world.has_method("_deal_damage"):
 				self.world._deal_damage(attacker, target)
 
+		var leech_timer = 0.0
+		if "leech_booster_timer" in attacker: leech_timer = float(attacker.leech_booster_timer)
+		elif typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("get_meta") and attacker.has_meta("leech_booster_timer"): leech_timer = float(attacker.get_meta("leech_booster_timer"))
+
+		if leech_timer > 0.0:
+			if "leech_seed_timer" in target: target.leech_seed_timer = 5.0
+			elif typeof(target) != TYPE_DICTIONARY and target.has_method("set_meta"): target.set_meta("leech_seed_timer", 5.0)
+
+			var a_id = null
+			if "id" in attacker: a_id = attacker.id
+			elif typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("get_meta") and attacker.has_meta("id"): a_id = attacker.get_meta("id")
+
+			if "leech_seed_attacker_id" in target: target.leech_seed_attacker_id = a_id
+			elif typeof(target) != TYPE_DICTIONARY and target.has_method("set_meta"): target.set_meta("leech_seed_attacker_id", a_id)
+
 		var weather = ""
 		if self.world != null and "game_mode" in self.world and self.world.game_mode != null and "weather" in self.world.game_mode:
 			weather = str(self.world.game_mode.weather)
@@ -986,6 +1001,69 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+	var leech_booster_t = 0.0
+	if "leech_booster_timer" in self.ball: leech_booster_t = float(self.ball.leech_booster_timer)
+	elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("get_meta") and self.ball.has_meta("leech_booster_timer"): leech_booster_t = float(self.ball.get_meta("leech_booster_timer"))
+
+	if leech_booster_t > 0.0:
+		var new_l = max(0.0, leech_booster_t - delta)
+		if "leech_booster_timer" in self.ball: self.ball.leech_booster_timer = new_l
+		elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("leech_booster_timer", new_l)
+
+	var leech_seed_t = 0.0
+	if "leech_seed_timer" in self.ball: leech_seed_t = float(self.ball.leech_seed_timer)
+	elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("get_meta") and self.ball.has_meta("leech_seed_timer"): leech_seed_t = float(self.ball.get_meta("leech_seed_timer"))
+
+	if leech_seed_t > 0.0:
+		var new_ls = max(0.0, leech_seed_t - delta)
+		if "leech_seed_timer" in self.ball: self.ball.leech_seed_timer = new_ls
+		elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("leech_seed_timer", new_ls)
+
+		var a_id = null
+		if "leech_seed_attacker_id" in self.ball: a_id = self.ball.leech_seed_attacker_id
+		elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("get_meta") and self.ball.has_meta("leech_seed_attacker_id"): a_id = self.ball.get_meta("leech_seed_attacker_id")
+
+		var attacker = null
+		if a_id != null and self.world != null and "balls" in self.world:
+			for b in self.world.balls:
+				var bid = null
+				if "id" in b: bid = b.id
+				elif typeof(b) != TYPE_DICTIONARY and b.has_method("get_meta") and b.has_meta("id"): bid = b.get_meta("id")
+
+				var balive = false
+				if "alive" in b: balive = b.alive
+				elif typeof(b) != TYPE_DICTIONARY and b.has_method("get_meta") and b.has_meta("alive"): balive = b.get_meta("alive")
+
+				if str(bid) == str(a_id) and balive:
+					attacker = b
+					break
+
+		if attacker != null:
+			var drain = 5.0 * delta
+			var cur_hp = 0.0
+			if "hp" in self.ball: cur_hp = float(self.ball.hp)
+			elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("get_meta") and self.ball.has_meta("hp"): cur_hp = float(self.ball.get_meta("hp"))
+
+			var n_hp = cur_hp - drain
+			if "hp" in self.ball: self.ball.hp = n_hp
+			elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("hp", n_hp)
+
+			var atk_cur_hp = 0.0
+			if "hp" in attacker: atk_cur_hp = float(attacker.hp)
+			elif typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("get_meta") and attacker.has_meta("hp"): atk_cur_hp = float(attacker.get_meta("hp"))
+
+			var atk_max = 100.0
+			if "max_hp" in attacker: atk_max = float(attacker.max_hp)
+			elif typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("get_meta") and attacker.has_meta("max_hp"): atk_max = float(attacker.get_meta("max_hp"))
+
+			var a_nhp = min(atk_max, atk_cur_hp + drain)
+			if "hp" in attacker: attacker.hp = a_nhp
+			elif typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("set_meta"): attacker.set_meta("hp", a_nhp)
+
+			if n_hp <= 0.0:
+				if "alive" in self.ball: self.ball.alive = false
+				elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("alive", false)
+
 
 	var glitch_time = 0.0
 	if typeof(self.ball) == TYPE_DICTIONARY:
@@ -8756,6 +8834,20 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+			elif "kind" in nearest and nearest.kind == "leech_booster":
+				if self.ball.has_method("set_meta"):
+					self.ball.set_meta("leech_booster_timer", 10.0)
+				else:
+					self.ball.leech_booster_timer = 10.0
+
+				if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+					var idx = self.world.arena.hazards.find(nearest)
+					if idx != -1:
+						self.world.arena.hazards.remove_at(idx)
+				if self.world != null and "boosters" in self.world:
+					var idx = self.world.boosters.find(nearest)
+					if idx != -1:
+						self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "magnet_booster":
                 if self.ball.has_method("set_meta"):
                     self.ball.set_meta("pull_booster_timer", 5.0)
