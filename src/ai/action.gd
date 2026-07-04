@@ -11222,7 +11222,20 @@ func _apply_friendly_aura(delta: float):
             if "damage" in self.ball:
                 self.ball.damage = base_d
 
-        if is_night:
+        var is_lunar = false
+        if world != null and "arena" in world and "is_lunar_eclipse" in world.arena:
+            is_lunar = world.arena.is_lunar_eclipse
+
+        if is_lunar:
+            if stack_count >= 2:
+                if "speed" in self.ball: self.ball.speed = base_s * 1.5 * (1.0 + 0.1 * aura_multiplier)
+            else:
+                if "speed" in self.ball: self.ball.speed = base_s * 1.5
+            if stack_count >= 3:
+                if "damage" in self.ball: self.ball.damage = base_d * 2.0 * (1.0 + 0.2 * aura_multiplier)
+            else:
+                if "damage" in self.ball: self.ball.damage = base_d * 2.0
+        elif is_night:
             if ball_type == "vampire":
                 if stack_count >= 2:
                     if "speed" in self.ball: self.ball.speed = base_s * 1.5 * (1.0 + 0.1 * aura_multiplier)

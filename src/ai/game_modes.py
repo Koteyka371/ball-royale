@@ -385,7 +385,7 @@ class BattleRoyaleMode(GameMode):
             self.weather_timer += delta
             if self.weather_timer > 15.0:
                 self.weather_timer = 0.0
-                weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm"]
+                weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm", "lunar_eclipse"]
                 rnd = getattr(self, "random", __import__("random"))
                 old_weather = self.weather
                 self.weather = rnd.choice(weathers)
@@ -409,6 +409,8 @@ class BattleRoyaleMode(GameMode):
             world.arena.is_sandstorming = (self.weather == "sandstorm")
             world.arena.is_snowing = (self.weather in ["snow", "blizzard"])
             world.arena.is_heatwave = (self.weather == "heatwave")
+            world.arena.is_lunar_eclipse = (self.weather == "lunar_eclipse")
+            world.arena.is_eclipse = (self.weather == "lunar_eclipse")
 
 
             if self.weather == "heatwave":
@@ -1641,6 +1643,8 @@ class WeatherChaosMode(GameMode):
             world.arena.is_sandstorming = (self.weather == "sandstorm")
             world.arena.is_snowing = (self.weather in ["snow", "blizzard"])
             world.arena.is_heatwave = (self.weather == "heatwave")
+            world.arena.is_lunar_eclipse = (self.weather == "lunar_eclipse")
+            world.arena.is_eclipse = (self.weather == "lunar_eclipse")
             world.arena.wind_dx = getattr(self, "wind_dx", 0.0) if self.weather == "wind" else 0.0
             world.arena.wind_dy = getattr(self, "wind_dy", 0.0) if self.weather == "wind" else 0.0
 
@@ -6427,6 +6431,8 @@ class LunarEclipseEventMode(GameMode):
                 self.event_timer = 0.0
                 if hasattr(world, "add_event"):
                     world.add_event("lunar_eclipse_warning", {"type": "weather_warning", "message": "A LUNAR ECLIPSE HAS BEGUN!"})
+                if hasattr(world, "add_event"):
+                    world.add_event("visual_effect", {"type": "lunar_eclipse", "duration": 10.0})
             else:
                 self.event_timer = 0.0
 
