@@ -25,7 +25,7 @@ func assign_daily_quests_to_profile(profile) -> void:
         profile.add_quest(quest["description"], quest["reward"])
 
 func select_trap_variant(ball_id: int, variant: String) -> void:
-    if variant in ["normal", "poison", "stun", "ricochet", "emp", "hologram"]:
+    if variant in ["normal", "poison", "stun", "ricochet", "emp", "hologram", "chain_lightning", "decoy", "blindness"]:
         selections[ball_id] = variant
 
 func get_trap_variant(ball_id: int) -> String:
@@ -58,7 +58,7 @@ func apply_random_loadout(ball_id: int, profile: ProfileManager) -> bool:
         unlocked_balls = ["basic"]
 
     var ball_type = unlocked_balls[randi() % unlocked_balls.size()]
-    var trap_variants = ["normal", "poison", "stun", "ricochet", "emp", "hologram", "chain_lightning"]
+    var trap_variants = ["normal", "poison", "stun", "ricochet", "emp", "hologram", "chain_lightning", "decoy"]
     var trap_variant = trap_variants[randi() % trap_variants.size()]
 
     select_trap_variant(ball_id, trap_variant)
