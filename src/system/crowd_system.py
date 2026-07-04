@@ -13,13 +13,42 @@ class CrowdSystem:
         self.vote_timer = 0
         self.votes = {}
         self.vote_cooldown = 0
+        self.ball_positions = {}
+        self.camping_time = {}
 
     def tick(self, balls: List[Any], kill_log: List[Dict[str, Any]], tick: int):
         self._update_excitement(tick)
         self._check_events(balls, kill_log, tick)
+        self._check_camping(balls, tick)
         self._throw_buffs_if_needed(balls, tick)
         self._throw_hazards_if_bored(balls, tick)
         self._process_votes(balls, tick)
+
+    def _check_camping(self, balls: List[Any], tick: int):
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                b_id = getattr(b, "id", -1)
+                b_x = getattr(b, "x", 0.0)
+                b_y = getattr(b, "y", 0.0)
+
+                if b_id in self.ball_positions:
+                    old_x, old_y = self.ball_positions[b_id]
+                    dist_sq = (b_x - old_x) ** 2 + (b_y - old_y) ** 2
+
+                    if dist_sq < 10.0:
+                        self.camping_time[b_id] = self.camping_time.get(b_id, 0) + 1
+                    else:
+                        self.camping_time[b_id] = 0
+                        self.ball_positions[b_id] = (b_x, b_y)
+
+                    if self.camping_time[b_id] >= 50:
+                        if hasattr(self.world, 'add_event'):
+                            self.world.add_event("crowd_throw", {"message": "The crowd boos and throws debris at a camper!"})
+                            self.world.add_event("spawn_hazard", {"x": b_x, "y": b_y, "kind": "spike_trap"})
+                        self.camping_time[b_id] = 0
+                else:
+                    self.ball_positions[b_id] = (b_x, b_y)
+                    self.camping_time[b_id] = 0
 
     def _update_excitement(self, tick: int):
         # Decay excitement slowly
@@ -74,6 +103,13 @@ class CrowdSystem:
                     k_type = getattr(killer_obj, "ball_type", "").capitalize()
                     if k_type and k_type != "Spectator":
                         chant_msg = f"{k_type}! {k_type}! " + chant_msg
+
+                    self.world.add_event("spawn_booster", {
+                        "x": getattr(killer_obj, "x", 0),
+                        "y": getattr(killer_obj, "y", 0),
+                        "kind": "speed",
+                        "value": 30.0
+                    })
                 self.world.add_event("crowd_cheer", {"message": chant_msg, "volume": 1.0 + (streak * 0.1)})
                 self.world.add_event("audio_event", {"sound": "epic_crowd_roar", "volume": 1.0})
 
