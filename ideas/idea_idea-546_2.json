@@ -1,4 +1,4 @@
 {
-  "title": "Solar Flare Mechanics",
-  "description": "In Day/Night mode, random solar flares can supercharge balls during the day cycle, granting them a temporary massive speed and damage buff but causing them to take double damage from sunlight beams."
+  "title": "Eclipse Anomaly Event",
+  "description": "A rare mid-day event where the sun goes dark abruptly, swapping all day/night buffs globally for 30 seconds. During this time, indestructible walls become destructible, allowing strong balls to break enemy cover points before the sun returns."
 }
