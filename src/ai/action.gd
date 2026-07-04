@@ -4069,47 +4069,62 @@ func execute(strategy: String, delta: float):
                     elif hazard.kind == "lightning_strike":
                         if not hazard.has_meta("hit_targets") or not hazard.get_meta("hit_targets"):
                             hazard.set_meta("hit_targets", true)
-                            if self.ball.has_method("take_damage"):
-                                var dmg = hazard.damage
-                                var is_qs = false
-                                if self.ball.has_method("get_meta") and self.ball.has_meta("is_in_quicksand"):
-                                    is_qs = self.ball.get_meta("is_in_quicksand")
-                                elif "is_in_quicksand" in self.ball:
-                                    is_qs = self.ball.is_in_quicksand
-                                if is_qs:
-                                    dmg *= 2.0
-                                self.ball.take_damage(dmg)
-                            elif "hp" in self.ball:
-                                var dmg = hazard.damage
-                                var is_qs = false
-                                if self.ball.has_method("get_meta") and self.ball.has_meta("is_in_quicksand"):
-                                    is_qs = self.ball.get_meta("is_in_quicksand")
-                                elif "is_in_quicksand" in self.ball:
-                                    is_qs = self.ball.is_in_quicksand
-                                if is_qs:
-                                    dmg *= 2.0
-                                self.ball.hp -= dmg
-                                if self.ball.hp <= 0:
-                                    self.ball.alive = false
-                            if has_method("_spawn_particles"):
-                                _spawn_particles(self.ball.x, self.ball.y, "lightning")
-
                             var b_type = ""
                             if "ball_type" in self.ball:
                                 b_type = str(self.ball.ball_type).to_lower()
                             elif self.ball.has_method("get_meta") and self.ball.has_meta("ball_type"):
                                 b_type = str(self.ball.get_meta("ball_type")).to_lower()
 
-                            if b_type in ["drone", "juggernaut", "tank", "neural"]:
+                            if b_type == "lightning_rod":
+                                if "hp" in self.ball:
+                                    var maxhp = 100
+                                    if "max_hp" in self.ball:
+                                        maxhp = self.ball.max_hp
+                                    self.ball.hp = min(maxhp, self.ball.hp + hazard.damage)
                                 if self.ball.has_method("set_meta"):
                                     self.ball.set_meta("supercharge_timer", 5.0)
                                 elif "supercharge_timer" in self.ball:
                                     self.ball.supercharge_timer = 5.0
                                 else:
                                     self.ball["supercharge_timer"] = 5.0
+                                if has_method("_spawn_particles"):
+                                    _spawn_particles(self.ball.x, self.ball.y, "lightning")
                             else:
-                                if self.ball.has_method("set_meta"):
-                                    self.ball.set_meta("stutter_timer", 1.0)
+                                if self.ball.has_method("take_damage"):
+                                    var dmg = hazard.damage
+                                    var is_qs = false
+                                    if self.ball.has_method("get_meta") and self.ball.has_meta("is_in_quicksand"):
+                                        is_qs = self.ball.get_meta("is_in_quicksand")
+                                    elif "is_in_quicksand" in self.ball:
+                                        is_qs = self.ball.is_in_quicksand
+                                    if is_qs:
+                                        dmg *= 2.0
+                                    self.ball.take_damage(dmg)
+                                elif "hp" in self.ball:
+                                    var dmg = hazard.damage
+                                    var is_qs = false
+                                    if self.ball.has_method("get_meta") and self.ball.has_meta("is_in_quicksand"):
+                                        is_qs = self.ball.get_meta("is_in_quicksand")
+                                    elif "is_in_quicksand" in self.ball:
+                                        is_qs = self.ball.is_in_quicksand
+                                    if is_qs:
+                                        dmg *= 2.0
+                                    self.ball.hp -= dmg
+                                    if self.ball.hp <= 0:
+                                        self.ball.alive = false
+                                if has_method("_spawn_particles"):
+                                    _spawn_particles(self.ball.x, self.ball.y, "lightning")
+
+                                if b_type in ["drone", "juggernaut", "tank", "neural"]:
+                                    if self.ball.has_method("set_meta"):
+                                        self.ball.set_meta("supercharge_timer", 5.0)
+                                    elif "supercharge_timer" in self.ball:
+                                        self.ball.supercharge_timer = 5.0
+                                    else:
+                                        self.ball["supercharge_timer"] = 5.0
+                                else:
+                                    if self.ball.has_method("set_meta"):
+                                        self.ball.set_meta("stutter_timer", 1.0)
                         continue
                     elif hazard.kind == "breakable_wall":
                         var dx = self.ball.x - hazard.x
@@ -7789,6 +7804,20 @@ func _use_skill():
             var ally_skill = ""
             if "skill" in ally: ally_skill = ally.skill
             elif "SKILL" in ally: ally_skill = ally.SKILL
+
+            if skill_name == "lightning_strike":
+                if world.has_method("get_nearby_entities"):
+                    var nearby_e = world.get_nearby_entities(self.ball, 300)
+                    if typeof(nearby_e) == TYPE_DICTIONARY and nearby_e.has("enemies"):
+                        for local_enemy in nearby_e["enemies"]:
+                            var a_type = ""
+                            if "ball_type" in local_enemy:
+                                a_type = str(local_enemy.ball_type).to_lower()
+                            elif typeof(local_enemy) == TYPE_OBJECT and local_enemy.has_method("get_meta") and local_enemy.has_meta("ball_type"):
+                                a_type = str(local_enemy.get_meta("ball_type")).to_lower()
+                            if a_type == "lightning_rod":
+                                target = local_enemy
+                                break
 
             if (skill_name == "elemental_burst" and ally_skill == "lightning_strike") or \
                (skill_name == "lightning_strike" and ally_skill == "elemental_burst") or \
