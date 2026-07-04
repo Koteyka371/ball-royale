@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-562] Interactive Crowd Booing / Cheering — *2026-07-04 19:10:17 UTC*
+
+Crowd system in the arena actively reacts to ball actions. If a ball camps too long or hides, the crowd boos, and they might throw minor hazards (like small debris) into the arena to force the player out. Conversely, epic plays (multikills) trigger cheers and small beneficial drops.
+
+---
+
 ## [idea-550] Shield Generator Drone — *2026-07-04 19:01:21 UTC*
 
 A new drone variant that follows allies and projects a localized shield, absorbing incoming damage until its energy is depleted or it is destroyed by enemies.

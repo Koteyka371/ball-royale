@@ -9709,7 +9709,7 @@
     },
     {
       "id": "idea-562",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Interactive Crowd Booing / Cheering",
@@ -15798,6 +15798,57 @@
         "src/ai/eclipse_anomaly.py",
         "src/ai/eclipse_anomaly.gd",
         "tests/test_eclipse_anomaly.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-920",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Destructible Environment Interactions",
+      "description": "Introduce destructible walls or obstacles in the arena that break upon high-velocity impact from specific ball types, adding dynamic map changes and new traversal paths during a match.",
+      "allowed_paths": [
+        "src/ai/destructible_environment_interactions.py",
+        "src/ai/destructible_environment_interactions.gd",
+        "tests/test_destructible_environment_interactions.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-921",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Cloaking Field",
+      "description": "A booster that gives the player and nearby allies brief invisibility from AI perception and turret targeting.",
+      "allowed_paths": [
+        "src/ai/cloaking_field.py",
+        "src/ai/cloaking_field.gd",
+        "tests/test_cloaking_field.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-922",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Homing Missiles",
+      "description": "A new ball type that occasionally fires homing projectiles that curve towards the nearest enemy.",
+      "allowed_paths": [
+        "src/ai/homing_missiles.py",
+        "src/ai/homing_missiles.gd",
+        "tests/test_homing_missiles.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
