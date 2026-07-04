@@ -118,8 +118,8 @@ class Action:
             target_max_hp = getattr(target, 'max_hp', 100.0)
             attacker.hp = min(getattr(attacker, 'max_hp', 100.0), getattr(attacker, 'hp', 100.0) + target_max_hp * 0.5)
             attacker.reflect_shield_active = True
-            attacker.reflect_shield_capacity = max(getattr(attacker, 'reflect_shield_capacity', 0.0), target_max_hp * 0.5)
-            attacker.reflect_shield_timer = 5.0
+            attacker.reflect_shield_capacity = max(getattr(attacker, 'reflect_shield_capacity', 0.0), target_max_hp * 0.5 + getattr(attacker, "bonus_reflect_shield_capacity", 0.0))
+            attacker.reflect_shield_timer = 5.0 + getattr(attacker, "bonus_reflect_shield_duration", 0.0)
         else:
             if is_nemesis_active:
                 attacker.damage = original_damage * 1.2
@@ -5882,8 +5882,8 @@ class Action:
                     self.ball.hp = min(getattr(self.ball, "max_hp", 100), self.ball.hp + 20)
                 # Activate reflect shield
                 self.ball.reflect_shield_active = True
-                self.ball.reflect_shield_timer = 5.0
-                self.ball.reflect_shield_capacity = 50.0
+                self.ball.reflect_shield_timer = 5.0 + getattr(self.ball, "bonus_reflect_shield_duration", 0.0)
+                self.ball.reflect_shield_capacity = 50.0 + getattr(self.ball, "bonus_reflect_shield_capacity", 0.0)
 
             elif skill_name == "heal":
                 if hasattr(self.ball, "hp"):
@@ -6546,7 +6546,7 @@ class Action:
             elif skill_name == "reflect_shield":
                 # Activate reflect shield
                 self.ball.reflect_shield_active = True
-                self.ball.reflect_shield_timer = 3.0
+                self.ball.reflect_shield_timer = 3.0 + getattr(self.ball, "bonus_reflect_shield_duration", 0.0)
                 self.ball.reflect_shield_capacity = float('inf')  # Reflects all damage
                 if hasattr(self, "_spawn_skill_particles"):
                     self._spawn_skill_particles("shield")

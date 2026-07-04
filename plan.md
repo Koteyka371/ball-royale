@@ -1,15 +1,21 @@
-1. **Verify setup:** We have already modified `src/arena/procedural_arena.py`, `src/arena/procedural_arena.gd`, `src/ai/game_modes.py`, and `src/ai/game_modes.gd`.
-   These changes include:
-   - Introducing `decoy_spawner` in the procedural arenas.
-   - Spawning logic and movement mimicking logic in the Battle Royale mode (`game_modes.py` and `game_modes.gd`).
-   - I have tested the logic with `test_decoy_spawner.py` and confirmed it works.
+1. **Generate Ideas**:
+   - Run `run_in_bash_session` to create two ideas in `ideas/idea_idea-553_1.json` and `ideas/idea_idea-553_2.json` with the following scripts:
+     `cat << 'EOF' > ideas/idea_idea-553_1.json`
+     `{"title": "Multi-Layer Reflect Shield", "description": "A new upgrade allowing the reflect shield to block multiple instances of damage by breaking it into smaller capacity layers."}`
+     `EOF`
+     `cat << 'EOF' > ideas/idea_idea-553_2.json`
+     `{"title": "Shield Blast", "description": "When the reflect shield reaches its capacity or duration ends, it erupts, dealing a portion of the absorbed damage back in an AoE explosion."}`
+     `EOF`
+   - Verify with `ls ideas/`.
 
-2. **Run tests:**
-   - Execute `PYTHONPATH=src pytest src/` to verify that everything still works properly without any test regressions.
+2. **Run Tests**:
+   - Run `run_in_bash_session` with the command `PYTHONPATH=src pytest src/` to ensure all changes are correct and no regressions have been introduced.
 
-3. **Complete pre-commit steps to ensure proper testing, verification, review, and reflection are done.**
+3. **Pre-commit**:
+   - Complete pre-commit steps to ensure proper testing, verification, review, and reflection are done.
 
-4. **Submit final modifications:**
-   - Generate two random ideas in the `ideas/` folder.
-   - Run `git add .` and `git commit -m "Add decoy spawner hazard to spawn fast-moving player mimics"`
-   - Call `request_code_review`.
+4. **Submit**:
+    - Commit and request code review by running:
+      `git add .`
+      `git commit -m "[idea-553] Allow upgrading reflect shield capacity and duration"`
+      followed by calling `request_code_review`.

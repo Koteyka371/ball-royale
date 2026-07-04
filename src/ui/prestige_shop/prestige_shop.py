@@ -10,7 +10,9 @@ class PrestigeShop:
             "mutator_unlocked": {"cost": 15, "description": "Unlocks custom match mutators (run mutators)"},
             "starting_artifact_shield": {"cost": 10, "description": "Start matches with a shield artifact"},
             "starting_artifact_dash": {"cost": 10, "description": "Start matches with a dash artifact"},
-            "unlock_time_mage": {"cost": 25, "description": "Unlocks the Time-Mage ball archetype"}
+            "unlock_time_mage": {"cost": 25, "description": "Unlocks the Time-Mage ball archetype"},
+            "shield_capacity_up": {"cost": 10, "description": "Increases reflect shield capacity by 20"},
+            "shield_duration_up": {"cost": 10, "description": "Increases reflect shield duration by 1s"}
         }
 
     def buy_upgrade(self, upgrade_name):

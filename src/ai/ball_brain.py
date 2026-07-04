@@ -76,6 +76,10 @@ class BallBrain:
                 if not hasattr(self.ball, 'inventory'):
                     self.ball.inventory = []
                 self.ball.inventory.append("dash")
+            if isinstance(prestige_upgrades, dict) and "shield_capacity_up" in prestige_upgrades:
+                self.ball.bonus_reflect_shield_capacity = prestige_upgrades["shield_capacity_up"] * 20.0
+            if isinstance(prestige_upgrades, dict) and "shield_duration_up" in prestige_upgrades:
+                self.ball.bonus_reflect_shield_duration = prestige_upgrades["shield_duration_up"] * 1.0
 
             # Apply prestige aura and permanent stat increase
             prestige_level = pm.data.get("prestige_level", 0)

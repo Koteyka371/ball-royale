@@ -206,7 +206,10 @@ func _attempt_damage(attacker, target) -> void:
 		var shield_cap = 0.0
 		if "reflect_shield_capacity" in attacker: shield_cap = float(attacker.reflect_shield_capacity)
 		elif attacker.has_method("get_meta") and attacker.has_meta("reflect_shield_capacity"): shield_cap = float(attacker.get_meta("reflect_shield_capacity"))
-		shield_cap = max(shield_cap, target_max_hp * 0.5)
+		var bonus_cap = 0.0
+		if "bonus_reflect_shield_capacity" in attacker: bonus_cap = attacker.bonus_reflect_shield_capacity
+		elif attacker.has_method("get_meta") and attacker.has_meta("bonus_reflect_shield_capacity"): bonus_cap = attacker.get_meta("bonus_reflect_shield_capacity")
+		shield_cap = max(shield_cap, target_max_hp * 0.5 + bonus_cap)
 
 		if "reflect_shield_active" in attacker: attacker.reflect_shield_active = true
 		elif attacker.has_method("set_meta"): attacker.set_meta("reflect_shield_active", true)
@@ -214,8 +217,11 @@ func _attempt_damage(attacker, target) -> void:
 		if "reflect_shield_capacity" in attacker: attacker.reflect_shield_capacity = shield_cap
 		elif attacker.has_method("set_meta"): attacker.set_meta("reflect_shield_capacity", shield_cap)
 
-		if "reflect_shield_timer" in attacker: attacker.reflect_shield_timer = 5.0
-		elif attacker.has_method("set_meta"): attacker.set_meta("reflect_shield_timer", 5.0)
+		var bonus_dur = 0.0
+		if "bonus_reflect_shield_duration" in attacker: bonus_dur = attacker.bonus_reflect_shield_duration
+		elif attacker.has_method("get_meta") and attacker.has_meta("bonus_reflect_shield_duration"): bonus_dur = attacker.get_meta("bonus_reflect_shield_duration")
+		if "reflect_shield_timer" in attacker: attacker.reflect_shield_timer = 5.0 + bonus_dur
+		elif attacker.has_method("set_meta"): attacker.set_meta("reflect_shield_timer", 5.0 + bonus_dur)
 
 	else:
 		if is_nemesis_active:
@@ -5117,6 +5123,20 @@ func execute(strategy: String, delta: float):
 
                                 shield += 20.0
                                 if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("shield", shield)
+                                var bonus_dur = 0.0
+                                if "bonus_reflect_shield_duration" in self.ball: bonus_dur = self.ball.bonus_reflect_shield_duration
+                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("bonus_reflect_shield_duration"): bonus_dur = self.ball.get_meta("bonus_reflect_shield_duration")
+                                var bonus_cap = 0.0
+                                if "bonus_reflect_shield_capacity" in self.ball: bonus_cap = self.ball.bonus_reflect_shield_capacity
+                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("bonus_reflect_shield_capacity"): bonus_cap = self.ball.get_meta("bonus_reflect_shield_capacity")
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("reflect_shield_active", true)
+                                    self.ball.set_meta("reflect_shield_timer", 5.0 + bonus_dur)
+                                    self.ball.set_meta("reflect_shield_capacity", 50.0 + bonus_cap)
+                                else:
+                                    if "reflect_shield_active" in self.ball: self.ball.reflect_shield_active = true
+                                    if "reflect_shield_timer" in self.ball: self.ball.reflect_shield_timer = 5.0 + bonus_dur
+                                    if "reflect_shield_capacity" in self.ball: self.ball.reflect_shield_capacity = 50.0 + bonus_cap
                                 if "shield" in self.ball: self.ball.shield = shield
 
                             elif powerup == "stamina":
@@ -10810,11 +10830,17 @@ func _use_skill():
         elif skill_name == "reflect_shield":
             if self.ball.has_method("set_meta"):
                 self.ball.set_meta("reflect_shield_active", true)
-                self.ball.set_meta("reflect_shield_timer", 3.0)
+                var bonus_dur2 = 0.0
+                if "bonus_reflect_shield_duration" in self.ball: bonus_dur2 = self.ball.bonus_reflect_shield_duration
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("bonus_reflect_shield_duration"): bonus_dur2 = self.ball.get_meta("bonus_reflect_shield_duration")
+                self.ball.set_meta("reflect_shield_timer", 3.0 + bonus_dur2)
                 self.ball.set_meta("reflect_shield_capacity", 999999.0) # Infinite reflection for 3s
             else:
                 self.ball.reflect_shield_active = true
-                self.ball.reflect_shield_timer = 3.0
+                var bonus_dur3 = 0.0
+                if "bonus_reflect_shield_duration" in self.ball: bonus_dur3 = self.ball.bonus_reflect_shield_duration
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("bonus_reflect_shield_duration"): bonus_dur3 = self.ball.get_meta("bonus_reflect_shield_duration")
+                self.ball.reflect_shield_timer = 3.0 + bonus_dur3
                 self.ball.reflect_shield_capacity = 999999.0
 
             if self.has_method("_spawn_skill_particles"):
