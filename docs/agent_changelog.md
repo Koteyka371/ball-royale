@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-447] Black Hole Hazards — *2026-07-04 11:50:02 UTC*
+
+Hazards that exert a gravitational pull on all balls within a certain radius, sucking them in towards a central point that damages them.
+
+---
+
 ## [idea-522] Community Loadout Leaderboards — *2026-07-03 22:54:31 UTC*
 
 Create a new leaderboard category that tracks the win rates and popularity of shared loadout codes. Players could browse the top performing loadouts each week and quickly import them into their profile to try them out in Battle Royale mode.
