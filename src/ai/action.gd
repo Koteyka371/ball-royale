@@ -3733,11 +3733,10 @@ func execute(strategy: String, delta: float):
                                     world.add_event("visual_effect", {"type": "lightning", "x": hazard.x, "y": hazard.y, "tx": self.ball.x, "ty": self.ball.y})
                                     world.add_event("visual_effect", {"type": "explosion", "x": self.ball.x, "y": self.ball.y, "radius": 15, "color": "yellow"})
 
-                                var balls_list = []
-                                if world != null and "balls" in world:
-                                    balls_list = world.balls
-                                elif world != null and "entities" in world:
-                                    balls_list = world.entities
+                                var bounce_count = 0
+                                if hazard.has_method("get_meta") and hazard.has_meta("chain_bounce_count"):
+                                    bounce_count = hazard.get_meta("chain_bounce_count")
+                                bounce_count += 1
 
                                 var owner_id = null
                                 if hazard.has_method("get_meta") and hazard.has_meta("owner_id"):
@@ -3745,48 +3744,88 @@ func execute(strategy: String, delta: float):
                                 elif "owner_id" in hazard:
                                     owner_id = hazard.owner_id
 
-                                var best_dist = 200.0 * 200.0
-                                var nearest_enemy = null
+                                var balls_list = []
+                                if world != null and "balls" in world:
+                                    balls_list = world.balls
+                                elif world != null and "entities" in world:
+                                    balls_list = world.entities
 
-                                for b in balls_list:
-                                    if b == self.ball:
-                                        continue
-                                    var is_alive = true
-                                    if "alive" in b:
-                                        is_alive = b.alive
-                                    if not is_alive:
-                                        continue
-
-                                    if owner_id != null and "id" in b and b.id == owner_id:
-                                        continue
-
-                                    var dist_sq = (b.x - self.ball.x) * (b.x - self.ball.x) + (b.y - self.ball.y) * (b.y - self.ball.y)
-                                    if dist_sq < best_dist:
-                                        best_dist = dist_sq
-                                        nearest_enemy = b
-
-                                if nearest_enemy != null:
-                                    var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
-                                    var new_trap = null
-                                    var trap_id = 15000 + (randi() % 9000)
-                                    if world != null and "arena" in world and "hazards" in world.arena:
-                                        trap_id = world.arena.hazards.size() + (randi() % 9000)
-
-                                    new_trap = ProceduralArenaScript.Hazard.new()
-                                    new_trap.id = trap_id
-                                    new_trap.x = nearest_enemy.x
-                                    new_trap.y = nearest_enemy.y
-                                    new_trap.radius = 15.0
-                                    new_trap.kind = "trap"
-                                    new_trap.damage = max(5.0, current_damage - 5.0)
-
-                                    new_trap.set_meta("duration", 5.0)
-                                    new_trap.set_meta("trap_variant", "chain_lightning")
+                                if bounce_count > 3:
+                                    if world != null and world.has_method("add_event"):
+                                        world.add_event("visual_effect", {"type": "explosion", "x": self.ball.x, "y": self.ball.y, "radius": 45, "color": "cyan"})
+                                    for b in balls_list:
+                                        if b == self.ball:
+                                            continue
+                                        var is_alive = true
+                                        if "alive" in b:
+                                            is_alive = b.alive
+                                        if not is_alive:
+                                            continue
+                                        if owner_id != null and "id" in b and b.id == owner_id:
+                                            continue
+                                        var dist_sq = (b.x - self.ball.x) * (b.x - self.ball.x) + (b.y - self.ball.y) * (b.y - self.ball.y)
+                                        if dist_sq < 45 * 45:
+                                            if "hp" in b:
+                                                b.hp -= 30.0
+                                                if b.hp <= 0:
+                                                    b.alive = false
+                                                    if world != null and world.has_method("add_event"):
+                                                        world.add_event("kill", {"killer_id": owner_id if owner_id != null else -1, "victim_id": b.id})
                                     if owner_id != null:
-                                        new_trap.set_meta("owner_id", owner_id)
+                                        for b in balls_list:
+                                            if "id" in b and b.id == owner_id:
+                                                if "skill_timer" in b:
+                                                    b.skill_timer += 10.0
+                                                elif b.has_method("set_meta"):
+                                                    var current_timer = 0.0
+                                                    if b.has_meta("skill_timer"):
+                                                        current_timer = b.get_meta("skill_timer")
+                                                    b.set_meta("skill_timer", current_timer + 10.0)
+                                                break
+                                else:
+                                    var best_dist = 200.0 * 200.0
+                                    var nearest_enemy = null
 
-                                    if world != null and "arena" in world and "hazards" in world.arena:
-                                        world.arena.hazards.append(new_trap)
+                                    for b in balls_list:
+                                        if b == self.ball:
+                                            continue
+                                        var is_alive = true
+                                        if "alive" in b:
+                                            is_alive = b.alive
+                                        if not is_alive:
+                                            continue
+
+                                        if owner_id != null and "id" in b and b.id == owner_id:
+                                            continue
+
+                                        var dist_sq = (b.x - self.ball.x) * (b.x - self.ball.x) + (b.y - self.ball.y) * (b.y - self.ball.y)
+                                        if dist_sq < best_dist:
+                                            best_dist = dist_sq
+                                            nearest_enemy = b
+
+                                    if nearest_enemy != null:
+                                        var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
+                                        var new_trap = null
+                                        var trap_id = 15000 + (randi() % 9000)
+                                        if world != null and "arena" in world and "hazards" in world.arena:
+                                            trap_id = world.arena.hazards.size() + (randi() % 9000)
+
+                                        new_trap = ProceduralArenaScript.Hazard.new()
+                                        new_trap.id = trap_id
+                                        new_trap.x = nearest_enemy.x
+                                        new_trap.y = nearest_enemy.y
+                                        new_trap.radius = 15.0
+                                        new_trap.kind = "trap"
+                                        new_trap.damage = max(5.0, current_damage - 5.0)
+
+                                        new_trap.set_meta("duration", 5.0)
+                                        new_trap.set_meta("trap_variant", "chain_lightning")
+                                        new_trap.set_meta("chain_bounce_count", bounce_count)
+                                        if owner_id != null:
+                                            new_trap.set_meta("owner_id", owner_id)
+
+                                        if world != null and "arena" in world and "hazards" in world.arena:
+                                            world.arena.hazards.append(new_trap)
 
                                 if hazard.has_method("set_meta"):
                                     hazard.set_meta("duration", 0.0)

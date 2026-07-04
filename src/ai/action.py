@@ -2349,43 +2349,74 @@ class Action:
                                             self.world.events.append(('visual_effect', {'type': 'lightning', 'x': hazard.x, 'y': hazard.y, 'tx': self.ball.x, 'ty': self.ball.y}))
                                             self.world.events.append(('visual_effect', {'type': 'explosion', 'x': self.ball.x, 'y': self.ball.y, 'radius': 15, 'color': 'yellow'}))
 
-                                        # Try to jump to nearest enemy
-                                        balls = getattr(self.world, "balls", getattr(self.world, "entities", []))
-
-                                        best_dist = 200.0 * 200.0 # Jump radius squared
-                                        nearest_enemy = None
-
+                                        # Overload mechanic: count bounces
+                                        bounce_count = getattr(hazard, "chain_bounce_count", 0) + 1
                                         owner_id = getattr(hazard, "owner_id", None)
 
-                                        for b in balls:
-                                            if b == self.ball or not getattr(b, "alive", True):
-                                                continue
-                                            # Don't jump to owner or their teammates
-                                            if owner_id is not None and getattr(b, "id", None) == owner_id:
-                                                continue
+                                        if bounce_count > 3:
+                                            # Overload Detonation!
+                                            if hasattr(self.world, "events"):
+                                                self.world.events.append(('visual_effect', {'type': 'explosion', 'x': self.ball.x, 'y': self.ball.y, 'radius': 45, 'color': 'cyan'}))
 
-                                            dist_sq = (b.x - self.ball.x)**2 + (b.y - self.ball.y)**2
-                                            if dist_sq < best_dist:
-                                                best_dist = dist_sq
-                                                nearest_enemy = b
+                                            # AoE damage
+                                            balls = getattr(self.world, "balls", getattr(self.world, "entities", []))
+                                            for b in balls:
+                                                if b == self.ball or not getattr(b, "alive", True):
+                                                    continue
+                                                if owner_id is not None and getattr(b, "id", None) == owner_id:
+                                                    continue
+                                                dist_sq = (b.x - self.ball.x)**2 + (b.y - self.ball.y)**2
+                                                if dist_sq < 45 * 45:
+                                                    b.hp = getattr(b, "hp", 100) - 30.0
+                                                    if b.hp <= 0:
+                                                        b.alive = False
+                                                        if hasattr(self.world, "add_event"):
+                                                            self.world.add_event("kill", {"killer_id": owner_id if owner_id is not None else -1, "victim_id": getattr(b, "id", -1)})
 
-                                        if nearest_enemy:
-                                            # Spawn a new jumping trap at current target's position
-                                            import random
-                                            try:
-                                                from src.arena.procedural_arena import Hazard
-                                                new_trap = Hazard(x=nearest_enemy.x, y=nearest_enemy.y, radius=15.0, kind="trap", damage=max(5.0, temp_damage - 5.0))
-                                                new_trap.duration = 5.0
-                                                new_trap.trap_variant = "chain_lightning"
-                                                if owner_id is not None:
-                                                    new_trap.owner_id = owner_id
-                                                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
-                                                    new_trap.id = len(self.world.arena.hazards) + random.randint(1000, 9000)
-                                                    self.world.arena.hazards.append(new_trap)
-                                            except Exception:
-                                                pass
+                                            # Find owner and put skill on extended cooldown
+                                            if owner_id is not None:
+                                                for b in balls:
+                                                    if getattr(b, "id", None) == owner_id:
+                                                        b.skill_timer = getattr(b, "skill_timer", 0) + 10.0
+                                                        break
+                                        else:
+                                            # Try to jump to nearest enemy
+                                            balls = getattr(self.world, "balls", getattr(self.world, "entities", []))
+
+                                            best_dist = 200.0 * 200.0 # Jump radius squared
+                                            nearest_enemy = None
+
+                                            for b in balls:
+                                                if b == self.ball or not getattr(b, "alive", True):
+                                                    continue
+                                                # Don't jump to owner or their teammates
+                                                if owner_id is not None and getattr(b, "id", None) == owner_id:
+                                                    continue
+
+                                                dist_sq = (b.x - self.ball.x)**2 + (b.y - self.ball.y)**2
+                                                if dist_sq < best_dist:
+                                                    best_dist = dist_sq
+                                                    nearest_enemy = b
+
+                                            if nearest_enemy:
+                                                # Spawn a new jumping trap at current target's position
+                                                import random
+                                                try:
+                                                    from src.arena.procedural_arena import Hazard
+                                                    new_trap = Hazard(x=nearest_enemy.x, y=nearest_enemy.y, radius=15.0, kind="trap", damage=max(5.0, temp_damage - 5.0))
+                                                    new_trap.duration = 5.0
+                                                    new_trap.trap_variant = "chain_lightning"
+                                                    new_trap.chain_bounce_count = bounce_count
+                                                    if owner_id is not None:
+                                                        new_trap.owner_id = owner_id
+                                                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                                                        new_trap.id = len(self.world.arena.hazards) + random.randint(1000, 9000)
+                                                        self.world.arena.hazards.append(new_trap)
+                                                except Exception:
+                                                    pass
 
                                     hazard.duration = 0.0 # Destroy trap
+
                                 elif trap_variant == "swap":
                                     owner_id = getattr(hazard, "owner_id", None)
                                     if owner_id is not None:
