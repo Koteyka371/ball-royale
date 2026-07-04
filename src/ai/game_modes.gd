@@ -625,7 +625,7 @@ class BattleRoyaleMode extends GameMode:
             self.weather_timer += delta
             if self.weather_timer > 15.0:
                 self.weather_timer = 0.0
-                var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm"]
+                var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm", "lunar_eclipse"]
                 var old_weather = self.weather
                 self.weather = weathers[randi() % weathers.size()]
                 if old_weather != self.weather and world != null and world.has_method("add_event"):
@@ -656,6 +656,13 @@ class BattleRoyaleMode extends GameMode:
                 world.arena.is_snowing = true
             else:
                 world.arena.is_snowing = false
+
+            if self.weather == "lunar_eclipse":
+                world.arena.is_lunar_eclipse = true
+                world.arena.is_eclipse = true
+            else:
+                world.arena.is_lunar_eclipse = false
+                world.arena.is_eclipse = false
 
             if not "hazards" in world.arena:
                 world.arena.hazards = []
@@ -8002,6 +8009,7 @@ class LunarEclipseEventMode extends GameMode:
                 event_timer = 0.0
                 if world != null and world.has_method("add_event"):
                     world.add_event("lunar_eclipse_warning", {"type": "weather_warning", "message": "A LUNAR ECLIPSE HAS BEGUN!"})
+                    world.add_event("visual_effect", {"type": "lunar_eclipse", "duration": 10.0})
             else:
                 event_timer = 0.0
 

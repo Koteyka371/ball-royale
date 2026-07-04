@@ -6816,24 +6816,15 @@ class Action:
             # Re-apply night mode base buffs if needed (just for vampire/normal)
             is_lunar = hasattr(self.world, "arena") and getattr(self.world.arena, "is_lunar_eclipse", False)
             if is_lunar:
-                if ball_type == "vampire":
-                    if stack_count >= 2: self.ball.speed = base_s * 1.5 * 1.1
-                    else: self.ball.speed = base_s * 1.5
-                    if stack_count >= 3: self.ball.damage = base_d * 1.5 * 1.2
-                    else: self.ball.damage = base_d * 1.5
-                elif ball_type in ["assassin", "phantom"]:
-                    if stack_count >= 2: self.ball.speed = base_s * 1.2 * 1.1
-                    else: self.ball.speed = base_s * 1.2
-                    if stack_count >= 3: self.ball.damage = base_d * 1.5 * 1.2
-                    else: self.ball.damage = base_d * 1.5
-                elif ball_type in ["paladin", "guardian"]:
-                    if stack_count >= 2: self.ball.speed = base_s * 1.2 * 1.1
-                    else: self.ball.speed = base_s * 1.2
-                    if stack_count >= 3: self.ball.damage = base_d * 1.5 * 1.2
-                    else: self.ball.damage = base_d * 1.5
-                else:
-                    if stack_count >= 3: self.ball.damage = base_d * 1.2 * 1.2
-                    else: self.ball.damage = base_d * 1.2
+                # In Lunar Eclipse, ALL classes receive the maximum possible day AND night buffs:
+                # Night max buff: 1.5x speed, 1.5x damage (Vampire)
+                # Day max buff: 1.2x speed, 1.5x damage (Paladin/Guardian)
+                # Combined: 1.5x speed, 2.0x damage for ALL classes
+
+                if stack_count >= 2: self.ball.speed = base_s * 1.5 * 1.1
+                else: self.ball.speed = base_s * 1.5
+                if stack_count >= 3: self.ball.damage = base_d * 2.0 * 1.2
+                else: self.ball.damage = base_d * 2.0
             elif is_night:
                 if ball_type == "vampire":
                     if stack_count >= 2: self.ball.speed = base_s * 1.5 * 1.1

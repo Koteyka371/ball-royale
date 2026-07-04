@@ -13,6 +13,12 @@ func scan() -> Dictionary:
     if "perception_radius" in self.ball:
         perception_radius = self.ball.perception_radius
 
+    var is_lunar = false
+    if self.world != null and "arena" in self.world and "is_lunar_eclipse" in self.world.arena:
+        is_lunar = self.world.arena.is_lunar_eclipse
+        if is_lunar:
+            perception_radius = 999999.0
+
     if self.world != null and "arena" in self.world and "is_night" in self.world.arena:
         var has_night_vision = false
         if "traits" in self.ball and typeof(self.ball.traits) == TYPE_ARRAY and self.ball.traits.has("night_vision"):
@@ -39,19 +45,19 @@ func scan() -> Dictionary:
     var ignores_fog = cosmetic == "thermal_goggles"
 
     if self.world != null and "arena" in self.world and "is_foggy" in self.world.arena:
-        if self.world.arena.is_foggy and not ignores_fog:
+        if self.world.arena.is_foggy and not ignores_fog and not is_lunar:
             perception_radius = min(perception_radius, 80.0)
     if self.world != null and "arena" in self.world and "is_raining" in self.world.arena:
-        if self.world.arena.is_raining:
+        if self.world.arena.is_raining and not is_lunar:
             perception_radius = perception_radius * 0.8
     if self.world != null and "arena" in self.world and "is_windy" in self.world.arena:
-        if self.world.arena.is_windy:
+        if self.world.arena.is_windy and not is_lunar:
             perception_radius = perception_radius * 0.7
     if self.world != null and "arena" in self.world and "is_sandstorming" in self.world.arena:
-        if self.world.arena.is_sandstorming and ("ball_type" in self.ball and self.ball.ball_type != "sand_elemental"):
+        if self.world.arena.is_sandstorming and ("ball_type" in self.ball and self.ball.ball_type != "sand_elemental") and not is_lunar:
             perception_radius = perception_radius * 0.3
     if self.world != null and "arena" in self.world and "is_snowing" in self.world.arena:
-        if self.world.arena.is_snowing and ("ball_type" in self.ball and self.ball.ball_type != "snow_yeti"):
+        if self.world.arena.is_snowing and ("ball_type" in self.ball and self.ball.ball_type != "snow_yeti") and not is_lunar:
             perception_radius = perception_radius * 0.6
 
     var data = {

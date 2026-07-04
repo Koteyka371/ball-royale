@@ -19,6 +19,10 @@ class Perception:
         """
         perception_radius = getattr(self.ball, "perception_radius", 300.0)
 
+        is_lunar = hasattr(self.world, "arena") and getattr(self.world.arena, "is_lunar_eclipse", False)
+        if is_lunar:
+            perception_radius = 999999.0
+
 
         if hasattr(self.world, "arena") and getattr(self.world.arena, "is_night", None) is not None:
             # Check for active flares in the arena
@@ -55,20 +59,22 @@ class Perception:
             else:
                 perception_radius = max(perception_radius, 2000.0)
 
+        is_lunar = hasattr(self.world, "arena") and getattr(self.world.arena, "is_lunar_eclipse", False)
+
         if hasattr(self.world, "arena") and getattr(self.world.arena, "is_foggy", None) is not None:
-            if self.world.arena.is_foggy:
+            if self.world.arena.is_foggy and not is_lunar:
                 perception_radius = min(perception_radius, 80.0)
         if hasattr(self.world, "arena") and getattr(self.world.arena, "is_raining", None) is not None:
-            if self.world.arena.is_raining:
+            if self.world.arena.is_raining and not is_lunar:
                 perception_radius = perception_radius * 0.8
         if hasattr(self.world, "arena") and getattr(self.world.arena, "is_windy", None) is not None:
-            if self.world.arena.is_windy:
+            if self.world.arena.is_windy and not is_lunar:
                 perception_radius = perception_radius * 0.7
         if hasattr(self.world, "arena") and getattr(self.world.arena, "is_sandstorming", None) is not None:
-            if self.world.arena.is_sandstorming and getattr(self.ball, "ball_type", "") != "sand_elemental":
+            if self.world.arena.is_sandstorming and getattr(self.ball, "ball_type", "") != "sand_elemental" and not is_lunar:
                 perception_radius = perception_radius * 0.3
         if hasattr(self.world, "arena") and getattr(self.world.arena, "is_snowing", None) is not None:
-            if self.world.arena.is_snowing and getattr(self.ball, "ball_type", "") != "snow_yeti":
+            if self.world.arena.is_snowing and getattr(self.ball, "ball_type", "") != "snow_yeti" and not is_lunar:
                 perception_radius = perception_radius * 0.6
 
         data: Dict[str, Any] = {
