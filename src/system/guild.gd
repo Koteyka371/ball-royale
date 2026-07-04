@@ -42,7 +42,12 @@ func create_guild(guild_name: String, creator_id: String) -> bool:
         },
         "gvg_points": 0,
         "chat_history": [],
-        "vault": []
+        "vault": [],
+        "hq": {
+            "statues": [],
+            "banners": [],
+            "arena": "basic"
+        }
     }
     save_guilds()
     return true
@@ -181,3 +186,30 @@ func collect_passive_resources():
         if data["guilds"].has(owner):
             data["guilds"][owner]["resources"] += 5
     save_guilds()
+
+func unlock_hq_item(guild_name: String, category: String, item_name: String, cost: int) -> bool:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        if not guild.has("hq"):
+            guild["hq"] = {"statues": [], "banners": [], "arena": "basic"}
+        if guild["resources"] >= cost:
+            if category == "statues" or category == "banners":
+                if not guild["hq"][category].has(item_name):
+                    guild["resources"] -= cost
+                    guild["hq"][category].append(item_name)
+                    save_guilds()
+                    return true
+            elif category == "arena":
+                if guild["hq"]["arena"] != item_name:
+                    guild["resources"] -= cost
+                    guild["hq"]["arena"] = item_name
+                    save_guilds()
+                    return true
+    return false
+
+func get_hq_details(guild_name: String) -> Dictionary:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        if guild.has("hq"):
+            return guild["hq"]
+    return {"statues": [], "banners": [], "arena": "basic"}

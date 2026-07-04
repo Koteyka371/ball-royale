@@ -35,7 +35,12 @@ class GuildManager:
             },
             "gvg_points": 0,
             "chat_history": [],
-            "vault": []
+            "vault": [],
+            "hq": {
+                "statues": [],
+                "banners": [],
+                "arena": "basic"
+            }
         }
         self.save()
         return True
@@ -160,3 +165,28 @@ class GuildManager:
             if owner in self.data["guilds"]:
                 self.data["guilds"][owner]["resources"] += 5
         self.save()
+
+    def unlock_hq_item(self, guild_name, category, item_name, cost):
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            if "hq" not in guild:
+                guild["hq"] = {"statues": [], "banners": [], "arena": "basic"}
+            if guild["resources"] >= cost:
+                if category in ["statues", "banners"]:
+                    if item_name not in guild["hq"][category]:
+                        guild["resources"] -= cost
+                        guild["hq"][category].append(item_name)
+                        self.save()
+                        return True
+                elif category == "arena":
+                    if guild["hq"]["arena"] != item_name:
+                        guild["resources"] -= cost
+                        guild["hq"]["arena"] = item_name
+                        self.save()
+                        return True
+        return False
+
+    def get_hq_details(self, guild_name):
+        if guild_name in self.data["guilds"]:
+            return self.data["guilds"][guild_name].get("hq", {"statues": [], "banners": [], "arena": "basic"})
+        return {"statues": [], "banners": [], "arena": "basic"}
