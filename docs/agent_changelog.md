@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-555] Leech Seed Booster — *2026-07-04 19:42:23 UTC*
+
+A booster that allows the collecting ball's attacks to plant a leech seed on the target, draining HP over time and transferring it back to the attacker.
+
+---
+
 ## [idea-556] Black Hole Final Phase — *2026-07-04 19:23:59 UTC*
 
 If a match extends beyond normal limits, spawn a massive slowly growing black hole in the center that pulls all balls inward, creating an intense final showdown.

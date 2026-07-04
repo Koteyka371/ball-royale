@@ -9588,7 +9588,7 @@
     },
     {
       "id": "idea-555",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Leech Seed Booster",
@@ -15900,6 +15900,40 @@
         "src/arena/supernova_arena.py",
         "src/arena/supernova_arena.gd",
         "tests/test_supernova_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-926",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Safe Zones Array",
+      "description": "Instead of one large shrinking circle, the arena has multiple smaller safe zones that randomly collapse, forcing players to constantly migrate between different safe bubbles to survive.",
+      "allowed_paths": [
+        "src/ai/shrinking_safe_zones_array.py",
+        "src/ai/shrinking_safe_zones_array.gd",
+        "tests/test_shrinking_safe_zones_array.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-927",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weapon Scavenger Mode",
+      "description": "Players start with basic attacks and must scavenge weapon crates around the arena to unlock random powerful abilities for their balls. Crates are heavily contested.",
+      "allowed_paths": [
+        "src/ai/weapon_scavenger.py",
+        "src/ai/weapon_scavenger.gd",
+        "tests/test_weapon_scavenger.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
