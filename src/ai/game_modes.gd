@@ -7294,6 +7294,99 @@ class MeteorShowerMode extends GameMode:
 			world.arena.hazards.append(meteor)
 
 
+class CursedBuffZoneMode extends GameMode:
+	var zone_radius: float = 150.0
+
+	func _init() -> void:
+		name = "Cursed Buff Zones"
+		description = "Zones grant massive speed and damage buffs, but rapidly drain HP. High risk, high reward."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if not "hazards" in world.arena or world.arena.hazards == null:
+			world.arena.hazards = []
+
+		var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if "width" in world.arena:
+			arena_width = world.arena.width
+		if "height" in world.arena:
+			arena_height = world.arena.height
+
+		for i in range(3):
+			var x = randf_range(200, arena_width - 200)
+			var y = randf_range(200, arena_height - 200)
+			var zone = Hazard.new(21000+i, x, y, zone_radius, "cursed_buff_zone", 0.0)
+			world.arena.hazards.append(zone)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		var zones = []
+		if "hazards" in world.arena and world.arena.hazards != null:
+			for h in world.arena.hazards:
+				var kind = h.get("kind", "") if typeof(h) == TYPE_DICTIONARY else h.kind
+				if kind == "cursed_buff_zone":
+					zones.append(h)
+
+		for b in balls:
+			var is_dict = typeof(b) == TYPE_DICTIONARY
+			var alive = b.get("alive", false) if is_dict else b.alive
+			var b_type = b.get("ball_type", "") if is_dict else (b.ball_type if "ball_type" in b else "")
+
+			if not alive or b_type == "spectator":
+				continue
+
+			var b_x = b.get("x", 0.0) if is_dict else b.x
+			var b_y = b.get("y", 0.0) if is_dict else b.y
+			var b_radius = b.get("radius", 15.0) if is_dict else b.radius
+
+			var in_zone = false
+			for z in zones:
+				var z_x = z.get("x", 0.0) if typeof(z) == TYPE_DICTIONARY else z.x
+				var z_y = z.get("y", 0.0) if typeof(z) == TYPE_DICTIONARY else z.y
+				var z_radius = z.get("radius", 150.0) if typeof(z) == TYPE_DICTIONARY else z.radius
+
+				var dist = sqrt((b_x - z_x) * (b_x - z_x) + (b_y - z_y) * (b_y - z_y))
+				if dist < z_radius + b_radius:
+					in_zone = true
+					break
+
+			if in_zone:
+				var max_hp = b.get("max_hp", 100.0) if is_dict else (b.max_hp if "max_hp" in b else 100.0)
+				var hp_drain = max_hp * 0.05 * delta
+
+				if is_dict:
+					b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 2.0
+					b["damage"] = b.get("base_damage", b.get("damage", 10.0)) * 2.0
+					var cur_hp = b.get("hp", 100.0) - hp_drain
+					if cur_hp <= 0:
+						b["hp"] = 0
+						b["alive"] = false
+						b["killer"] = "cursed_buff_zone"
+					else:
+						b["hp"] = cur_hp
+				else:
+					b.speed = (b.base_speed if "base_speed" in b else b.speed) * 2.0
+					b.damage = (b.base_damage if "base_damage" in b else b.damage) * 2.0
+					var cur_hp = b.hp - hp_drain
+					if cur_hp <= 0:
+						b.hp = 0
+						b.alive = false
+						b.killer = "cursed_buff_zone"
+					else:
+						b.hp = cur_hp
+			else:
+				if is_dict:
+					b["speed"] = b.get("base_speed", b.get("speed", 100.0))
+					b["damage"] = b.get("base_damage", b.get("damage", 10.0))
+				else:
+					b.speed = b.base_speed if "base_speed" in b else b.speed
+					b.damage = b.base_damage if "base_damage" in b else b.damage
+
+
 class RhythmPanelsMode extends GameMode:
 	var rhythm_timer: float = 0.0
 	var beat_interval: float = 2.0
@@ -7656,5 +7749,6 @@ var GAME_MODES = {
 	"body_swap": BodySwapMode.new(),
 	"hazard_billiards": HazardBilliardsMode.new(),
 	"time_rewind": TimeRewindMode.new(),
-	"rhythm_panels": RhythmPanelsMode.new()
+	"rhythm_panels": RhythmPanelsMode.new(),
+	"cursed_buff_zone": CursedBuffZoneMode.new()
 }
