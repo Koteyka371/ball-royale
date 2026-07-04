@@ -7751,7 +7751,7 @@
     },
     {
       "id": "idea-449",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Debuff Cleansing Power-ups",
@@ -15491,6 +15491,23 @@
         "src/ai/time_dilation_field.py",
         "src/ai/time_dilation_field.gd",
         "tests/test_time_dilation_field.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-902",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Floor Trap",
+      "description": "Introduces a dynamic trap that temporarily causes the entire arena boundaries to rapidly constrict for 10 seconds, forcing intense close-quarters combat before expanding back out.",
+      "allowed_paths": [
+        "src/arena/shrinking_floor_trap.py",
+        "src/arena/shrinking_floor_trap.gd",
+        "tests/test_shrinking_floor_trap.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

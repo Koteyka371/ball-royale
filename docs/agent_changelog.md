@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-449] Debuff Cleansing Power-ups — *2026-07-04 17:33:26 UTC*
+
+Add a new power-up item that instantly cleanses all negative status effects (including the new max HP debuff, burn, and poison) and grants temporary immunity, providing a strategic counterplay option against heavy debuff-focused teams or zones.
+
+---
+
 ## [idea-547] Lunar Eclipse Event — *2026-07-04 17:18:40 UTC*
 
 A rare 'Lunar Eclipse' event that occurs for a brief duration, simultaneously triggering both night time buffs and day time buffs across all classes while completely disabling perception limits, leading to chaotic full-arena fights.
