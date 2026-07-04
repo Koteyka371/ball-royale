@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-531] Reverse Gravity Pulse — *2026-07-04 17:13:49 UTC*
+
+Periodically, gravity wells invert their pull and push entities outward with extreme force, adding a layer of unpredictability to the Gravity Well mode and creating new mobility options.
+
+---
+
 ## [idea-421] Decoy Spawner Hazard — *2026-07-04 16:59:55 UTC*
 
 A new arena hazard that periodically spawns non-damaging, fast-moving decoys that mimic player movements to confuse AI targeting and waste cooldowns.
