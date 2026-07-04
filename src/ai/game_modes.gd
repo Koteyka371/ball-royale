@@ -338,6 +338,8 @@ class BattleRoyaleMode extends GameMode:
     var zone_radius: float = 1000.0
     var shrink_rate: float = 10.0
     var rng = RandomNumberGenerator.new()
+    var match_time: float = 0.0
+    var finale_boss_spawned: bool = false
 
     func _init() -> void:
         name = "Battle Royale"
@@ -770,6 +772,70 @@ class BattleRoyaleMode extends GameMode:
                     vb.damage = 0.0
                     vb.set_meta("duration", 15.0)
                     world.arena.hazards.append(vb)
+
+        match_time += delta
+
+        # Finale Boss logic
+        if match_time > 120.0 and world != null and "arena" in world and world.arena != null:
+            if not finale_boss_spawned:
+                finale_boss_spawned = true
+                if not "hazards" in world.arena:
+                    world.arena.hazards = []
+                var cx = 500.0
+                var cy = 500.0
+                if "width" in world.arena: cx = world.arena.width / 2.0
+                if "height" in world.arena: cy = world.arena.height / 2.0
+
+                var HazardType = load("res://src/arena/procedural_arena.gd").Hazard
+                if HazardType != null:
+                    var boss = HazardType.new()
+                    boss.id = world.arena.hazards.size() + 9000
+                    boss.x = cx
+                    boss.y = cy
+                    boss.radius = 50.0
+                    boss.kind = "finale_boss"
+                    boss.damage = 100.0
+                    boss.set_meta("duration", 9999.0)
+                    boss.set_meta("boss_timer", 0.0)
+                    world.arena.hazards.append(boss)
+
+                if world.has_method("add_event"):
+                    world.add_event("finale_boss_spawn", {"message": "SUDDEN DEATH! The Finale Boss has spawned!"})
+            else:
+                var HazardType = load("res://src/arena/procedural_arena.gd").Hazard
+                if "hazards" in world.arena:
+                    for h in world.arena.hazards:
+                        if h.kind == "finale_boss":
+                            h.radius += 5.0 * delta
+                            var timer = 0.0
+                            if h.has_meta("boss_timer"):
+                                timer = h.get_meta("boss_timer")
+                            timer += delta
+
+                            if timer >= 1.0:
+                                timer = 0.0
+                                if HazardType != null:
+                                    var proj = HazardType.new()
+                                    proj.id = world.arena.hazards.size() + int(randf() * 9000.0) + 1000
+                                    proj.x = h.x
+                                    proj.y = h.y
+                                    proj.radius = 15.0
+                                    proj.kind = "boss_projectile"
+                                    proj.damage = 50.0
+                                    var angle = randf() * PI * 2.0
+                                    proj.set_meta("vx", cos(angle) * 300.0)
+                                    proj.set_meta("vy", sin(angle) * 300.0)
+                                    proj.set_meta("duration", 10.0)
+                                    world.arena.hazards.append(proj)
+                            h.set_meta("boss_timer", timer)
+
+        # Move projectiles
+        if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+            for h in world.arena.hazards:
+                if h.kind == "boss_projectile":
+                    if h.has_meta("vx") and h.has_meta("vy"):
+                        h.x += h.get_meta("vx") * delta
+                        h.y += h.get_meta("vy") * delta
 
         # Dark phase cycle: 20s normal, 10s dark
         if not is_dark_phase and dark_phase_timer >= 20.0:
