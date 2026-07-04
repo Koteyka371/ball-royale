@@ -6226,7 +6226,7 @@ class CursedBuffZoneMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Cursed Buff Zones"
-        self.description = "Zones grant massive speed and damage buffs, but rapidly drain HP. High risk, high reward."
+        self.description = "Zones grant massive speed (+200%) and damage (+150%) buffs, but rapidly drain HP or invert steering. High risk, high reward."
         self.zone_radius = 150.0
 
     def setup(self, world: Any, balls: List[Any]) -> None:
@@ -6255,6 +6255,9 @@ class CursedBuffZoneMode(GameMode):
             x = random.uniform(200, arena_width - 200)
             y = random.uniform(200, arena_height - 200)
             zone = Hazard(id=21000+i, x=x, y=y, radius=self.zone_radius, kind="cursed_buff_zone", damage=0.0)
+            setattr(zone, "buff_multiplier_speed", 3.0)  # +200%
+            setattr(zone, "buff_multiplier_damage", 2.5) # +150%
+            setattr(zone, "curse_type", random.choice(["hp_drain", "inverted_steering"]))
             world.arena.hazards.append(zone)
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
@@ -6268,22 +6271,32 @@ class CursedBuffZoneMode(GameMode):
                 continue
 
             in_zone = False
+            active_zone = None
             for z in zones:
                 dist = math.hypot(b.x - z.x, b.y - z.y)
                 if dist < z.radius + getattr(b, "radius", 15.0):
                     in_zone = True
+                    active_zone = z
                     break
 
             if in_zone:
-                b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 2.0
-                b.damage = getattr(b, "base_damage", getattr(b, "damage", 10.0)) * 2.0
-                # Drain 5% max hp per second
-                max_hp = getattr(b, "max_hp", 100.0)
-                b.hp = getattr(b, "hp", 100.0) - (max_hp * 0.05 * delta)
-                if b.hp <= 0:
-                    b.hp = 0
-                    b.alive = False
-                    b.killer = "cursed_buff_zone"
+                speed_mult = getattr(active_zone, "buff_multiplier_speed", 3.0)
+                damage_mult = getattr(active_zone, "buff_multiplier_damage", 2.5)
+                curse_type = getattr(active_zone, "curse_type", "hp_drain")
+
+                b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * speed_mult
+                b.damage = getattr(b, "base_damage", getattr(b, "damage", 10.0)) * damage_mult
+
+                if curse_type == "hp_drain":
+                    # Drain 5% max hp per second
+                    max_hp = getattr(b, "max_hp", 100.0)
+                    b.hp = getattr(b, "hp", 100.0) - (max_hp * 0.05 * delta)
+                    if b.hp <= 0:
+                        b.hp = 0
+                        b.alive = False
+                        b.killer = "cursed_buff_zone"
+                elif curse_type == "inverted_steering":
+                    b.invert_timer = max(getattr(b, "invert_timer", 0.0), 0.1)
             else:
                 b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                 b.damage = getattr(b, "base_damage", getattr(b, "damage", 10.0))

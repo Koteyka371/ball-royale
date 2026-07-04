@@ -686,17 +686,27 @@ def test_cursed_buff_zone_mode():
     balls = [b1, b2]
 
     # Tick 1 second
+    # Force curse type to hp_drain for deterministic testing
+    zone.curse_type = "hp_drain"
     mode.tick(world, balls, delta=1.0)
 
-    # b1 inside: gets double speed and double damage, loses 5% of max HP
-    assert b1.speed == 200
-    assert b1.damage == 20
+    # b1 inside: gets 3x speed and 2.5x damage, loses 5% of max HP
+    assert b1.speed == 300
+    assert b1.damage == 25
     assert b1.hp == 95
 
     # b2 outside: stats remain base, no damage
     assert b2.speed == 100
     assert b2.damage == 10
     assert b2.hp == 100
+
+    # Test inverted steering
+    zone.curse_type = "inverted_steering"
+    b1.hp = 100
+    b1.invert_timer = 0.0
+    mode.tick(world, balls, delta=1.0)
+    assert b1.hp == 100 # No HP drain
+    assert b1.invert_timer > 0.0
 
 
 def test_meteor_shower_mode():
