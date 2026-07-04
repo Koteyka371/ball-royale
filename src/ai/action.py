@@ -4878,6 +4878,44 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "chain_lightning_booster":
+                    enemies = self._get_enemies()
+                    if enemies:
+                        enemies.sort(key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                        target = enemies[0]
+                        current_damage = 25.0
+                        if hasattr(target, "hp"):
+                            target.hp -= current_damage
+                        if hasattr(self.world, "events"):
+                            self.world.events.append(("visual_effect", {"type": "lightning", "x": self.ball.x, "y": self.ball.y, "tx": target.x, "ty": target.y}))
+
+                        bounced_enemies = {target}
+                        current_pos = target
+
+                        for _ in range(3):
+                            current_damage *= 0.8
+                            next_target = None
+                            best_dist = float("inf")
+                            for e in enemies:
+                                if e not in bounced_enemies and getattr(e, "alive", True):
+                                    d = (e.x - current_pos.x)**2 + (e.y - current_pos.y)**2
+                                    if d < best_dist and d < 40000:
+                                        best_dist = d
+                                        next_target = e
+
+                            if next_target:
+                                if hasattr(next_target, "hp"):
+                                    next_target.hp -= current_damage
+                                if hasattr(self.world, "events"):
+                                    self.world.events.append(("visual_effect", {"type": "lightning", "x": current_pos.x, "y": current_pos.y, "tx": next_target.x, "ty": next_target.y}))
+                                bounced_enemies.add(next_target)
+                                current_pos = next_target
+                            else:
+                                break
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
+                        self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "link_booster":
                     enemies = self._get_enemies()
                     if enemies:

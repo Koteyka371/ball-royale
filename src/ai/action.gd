@@ -7878,6 +7878,59 @@ func _collect_booster(delta: float):
 
                     if "damage_link_target" in self.ball: self.ball.damage_link_target = null
                     elif self.ball.has_method("set_meta"): self.ball.set_meta("damage_link_target", null)
+            elif "kind" in nearest and nearest.kind == "chain_lightning_booster":
+                var enemies = _get_enemies()
+                if enemies.size() > 0:
+                    var target = null
+                    var min_dist = INF
+                    for e in enemies:
+                        var d = (e.x - self.ball.x)*(e.x - self.ball.x) + (e.y - self.ball.y)*(e.y - self.ball.y)
+                        if d < min_dist:
+                            min_dist = d
+                            target = e
+                    if target != null:
+                        var current_damage = 25.0
+                        if "hp" in target:
+                            target.hp -= current_damage
+                        elif target.has_method("set_meta") and target.has_meta("hp"):
+                            target.set_meta("hp", target.get_meta("hp") - current_damage)
+                        if self.world != null and "events" in self.world:
+                            self.world.events.append({"type": "visual_effect", "data": {"type": "lightning", "x": self.ball.x, "y": self.ball.y, "tx": target.x, "ty": target.y}})
+
+                        var bounced_enemies = [target]
+                        var current_pos = target
+                        for i in range(3):
+                            current_damage *= 0.8
+                            var next_target = null
+                            var best_dist = INF
+                            for e in enemies:
+                                if bounced_enemies.find(e) == -1:
+                                    var is_alive = true
+                                    if "alive" in e: is_alive = e.alive
+                                    if is_alive:
+                                        var d = (e.x - current_pos.x)*(e.x - current_pos.x) + (e.y - current_pos.y)*(e.y - current_pos.y)
+                                        if d < best_dist and d < 40000:
+                                            best_dist = d
+                                            next_target = e
+                            if next_target != null:
+                                if "hp" in next_target:
+                                    next_target.hp -= current_damage
+                                elif next_target.has_method("set_meta") and next_target.has_meta("hp"):
+                                    next_target.set_meta("hp", next_target.get_meta("hp") - current_damage)
+                                if self.world != null and "events" in self.world:
+                                    self.world.events.append({"type": "visual_effect", "data": {"type": "lightning", "x": current_pos.x, "y": current_pos.y, "tx": next_target.x, "ty": next_target.y}})
+                                bounced_enemies.append(next_target)
+                                current_pos = next_target
+                            else:
+                                break
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "link_booster":
                 var enemies_link = _get_enemies()
                 if enemies_link.size() > 0:
