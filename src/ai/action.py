@@ -462,14 +462,15 @@ class Action:
                                         if getattr(b, "alive", True) and getattr(b, "id", None) != getattr(next_entity, "owner_id", None):
                                             dist_burst = ((b.x - next_entity.x)**2 + (b.y - next_entity.y)**2)**0.5
                                             if dist_burst <= 200.0:
-                                                b.is_emped = True
-                                                b.emp_timer = 4.0
-                                                b.silence_timer = max(getattr(b, "silence_timer", 0.0), 3.0)
-                                                if hasattr(b, "skill_timer"):
-                                                    b.skill_timer = max(getattr(b, "skill_timer", 0.0), 3.0)
-                                                b.speed = getattr(b, "base_speed", 100.0) * 0.5
-                                                b.is_scrambled = True
-                                                b.scramble_timer = 3.0
+                                                if getattr(b, "emp_immunity_timer", 0.0) <= 0:
+                                                    b.is_emped = True
+                                                    b.emp_timer = 4.0
+                                                    b.silence_timer = max(getattr(b, "silence_timer", 0.0), 3.0)
+                                                    if hasattr(b, "skill_timer"):
+                                                        b.skill_timer = max(getattr(b, "skill_timer", 0.0), 3.0)
+                                                    b.speed = getattr(b, "base_speed", 100.0) * 0.5
+                                                    b.is_scrambled = True
+                                                    b.scramble_timer = 3.0
                         elif getattr(next_entity, "kind", next_entity.get("kind", "") if isinstance(next_entity, dict) else "") == "material":
                             if getattr(next_entity, "active", next_entity.get("active", False) if isinstance(next_entity, dict) else False):
                                 if hasattr(next_entity, "active"): next_entity.active = False
@@ -2199,7 +2200,7 @@ class Action:
                                         self.ball.blindness_timer = max(getattr(self.ball, "blindness_timer", 0.0), 3.0)
                                     hazard.duration = 0.0
                                 elif trap_variant == "emp":
-                                    if not getattr(self.ball, "is_emped", False):
+                                    if getattr(self.ball, "emp_immunity_timer", 0.0) <= 0 and not getattr(self.ball, "is_emped", False):
                                         self.ball.is_emped = True
                                         self.ball.emp_timer = 2.0
                                         # Reset positive buffs and disable abilities by increasing skill_timer
@@ -2326,8 +2327,9 @@ class Action:
                             continue
 
                         elif hazard.kind == "emp_burst":
-                            self.ball.is_scrambled = True
-                            self.ball.scramble_timer = 3.0
+                            if getattr(self.ball, "emp_immunity_timer", 0.0) <= 0:
+                                self.ball.is_scrambled = True
+                                self.ball.scramble_timer = 3.0
                             if hasattr(self, "_spawn_skill_particles"):
                                 self._spawn_skill_particles("emp")
                             continue
@@ -4534,6 +4536,13 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "emp_immunity_booster":
+                    self.ball.emp_immunity_timer = 15.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "nemesis_booster":
                     self.ball.nemesis_booster_timer = 5.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -4590,9 +4599,10 @@ class Action:
                             if getattr(other_ball, "team", None) != getattr(self.ball, "team", None):
                                 dist_emp = math.sqrt((other_ball.x - self.ball.x)**2 + (other_ball.y - self.ball.y)**2)
                                 if dist_emp < 300.0:  # EMP radius
-                                    other_ball.has_drone = False
-                                    other_ball.has_shield = False
-                                    other_ball.speed_booster_timer = 0.0
+                                    if getattr(other_ball, "emp_immunity_timer", 0.0) <= 0:
+                                        other_ball.has_drone = False
+                                        other_ball.has_shield = False
+                                        other_ball.speed_booster_timer = 0.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
@@ -6446,6 +6456,11 @@ class Action:
                                     push_strength = 200.0 * delta
                                     if hasattr(other, "x"): other.x += nx * push_strength
                                     if hasattr(other, "y"): other.y += ny * push_strength
+
+        if getattr(self.ball, "emp_immunity_timer", 0.0) > 0:
+            self.ball.emp_immunity_timer -= delta
+            if self.ball.emp_immunity_timer < 0:
+                self.ball.emp_immunity_timer = 0.0
 
         if hasattr(self.ball, "nemesis_booster_timer") and self.ball.nemesis_booster_timer > 0:
             self.ball.nemesis_booster_timer -= delta
