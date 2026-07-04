@@ -232,6 +232,10 @@ class Action:
                             self.world._deal_damage(attacker, next_target)
                         elif hasattr(next_target, "hp"):
                             next_target.hp -= chain_damage
+                        if hasattr(next_target, "stun_timer"):
+                            next_target.stun_timer = max(getattr(next_target, "stun_timer", 0.0), 0.2)
+                        else:
+                            next_target.stun_timer = 0.2
                         attacker.damage = old_dmg
                         if hasattr(self, "_spawn_skill_particles"):
                             self._spawn_skill_particles("lightning")
@@ -334,6 +338,12 @@ class Action:
                 current_target = target
                 current_damage = original_damage * chain_damage_multiplier
                 hit_entities = [attacker, target]
+
+                # Micro-stun initial target
+                if hasattr(target, "stun_timer"):
+                    target.stun_timer = max(getattr(target, "stun_timer", 0.0), 0.2)
+                else:
+                    target.stun_timer = 0.2
 
                 while jump_count < 3:
                     nearby_entities = []
@@ -449,6 +459,10 @@ class Action:
                         else:
                             if hasattr(self.world, "_deal_damage"):
                                 self.world._deal_damage(attacker, next_entity)
+                            if hasattr(next_entity, "stun_timer"):
+                                next_entity.stun_timer = max(getattr(next_entity, "stun_timer", 0.0), 0.2)
+                            else:
+                                next_entity.stun_timer = 0.2
                     elif e_type in ("hazard", "item", "booster"):
                         if getattr(next_entity, "trap_variant", "") == "emp_trap":
                             # Absorb damage and charge
@@ -5672,6 +5686,10 @@ class Action:
                             target.take_damage(base_dmg)
                         elif hasattr(target, "hp"):
                             target.hp -= base_dmg
+                        if hasattr(target, "stun_timer"):
+                            target.stun_timer = max(getattr(target, "stun_timer", 0.0), 0.2)
+                        else:
+                            target.stun_timer = 0.2
                         if hasattr(self, "_spawn_skill_particles"):
                             self._spawn_skill_particles("lightning")
 
@@ -5717,11 +5735,19 @@ class Action:
                                     next_entity.take_damage(chain_damage)
                                 elif hasattr(next_entity, "hp"):
                                     next_entity.hp -= chain_damage
+                                if hasattr(next_entity, "stun_timer"):
+                                    next_entity.stun_timer = max(getattr(next_entity, "stun_timer", 0.0), 0.2)
+                                else:
+                                    next_entity.stun_timer = 0.2
                             else:
                                 if hasattr(next_entity, "hp"):
                                     next_entity.hp -= chain_damage
                                     if next_entity.hp <= 0:
                                         next_entity.active = False
+                                if hasattr(next_entity, "stun_timer"):
+                                    next_entity.stun_timer = max(getattr(next_entity, "stun_timer", 0.0), 0.2)
+                                else:
+                                    next_entity.stun_timer = 0.2
 
                             if hasattr(self, "_spawn_skill_particles"):
                                 self._spawn_skill_particles("lightning")

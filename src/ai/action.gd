@@ -539,6 +539,17 @@ func _attempt_damage(attacker, target) -> void:
 		cl_timer = attacker.get_meta("chain_lightning_timer")
 
 	if cl_timer > 0.0:
+		var target_stun = 0.0
+		if "stun_timer" in target:
+			target_stun = target.stun_timer
+		elif typeof(target) == TYPE_OBJECT and target.has_meta("stun_timer"):
+			target_stun = target.get_meta("stun_timer")
+		target_stun = max(target_stun, 0.2)
+		if "stun_timer" in target:
+			target.stun_timer = target_stun
+		elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"):
+			target.set_meta("stun_timer", target_stun)
+
 		var enemies = self._get_enemies()
 		var hazards = []
 		if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
@@ -744,6 +755,17 @@ func _attempt_damage(attacker, target) -> void:
 					else:
 						if self.world != null and self.world.has_method("_deal_damage"):
 							self.world._deal_damage(attacker, next_entity)
+
+						var ne_stun = 0.0
+						if "stun_timer" in next_entity:
+							ne_stun = next_entity.stun_timer
+						elif typeof(next_entity) == TYPE_OBJECT and next_entity.has_meta("stun_timer"):
+							ne_stun = next_entity.get_meta("stun_timer")
+						ne_stun = max(ne_stun, 0.2)
+						if "stun_timer" in next_entity:
+							next_entity.stun_timer = ne_stun
+						elif typeof(next_entity) == TYPE_OBJECT and next_entity.has_method("set_meta"):
+							next_entity.set_meta("stun_timer", ne_stun)
 					elif e_type == "hazard" or e_type == "item" or e_type == "booster":
 						var n_t_var = ""
 						if typeof(next_entity) == TYPE_OBJECT and next_entity.has_meta("trap_variant"): n_t_var = next_entity.get_meta("trap_variant")
@@ -9243,12 +9265,34 @@ func _use_skill():
                                 next_entity.take_damage(chain_damage)
                             elif "hp" in next_entity:
                                 next_entity.hp -= chain_damage
+
+                            var ne_stun = 0.0
+                            if "stun_timer" in next_entity:
+                                ne_stun = next_entity.stun_timer
+                            elif typeof(next_entity) == TYPE_OBJECT and next_entity.has_meta("stun_timer"):
+                                ne_stun = next_entity.get_meta("stun_timer")
+                            ne_stun = max(ne_stun, 0.2)
+                            if "stun_timer" in next_entity:
+                                next_entity.stun_timer = ne_stun
+                            elif typeof(next_entity) == TYPE_OBJECT and next_entity.has_method("set_meta"):
+                                next_entity.set_meta("stun_timer", ne_stun)
                         else:
                             if "hp" in next_entity:
                                 next_entity.hp -= chain_damage
                                 if next_entity.hp <= 0:
                                     if "active" in next_entity:
                                         next_entity.active = false
+
+                            var ne_stun = 0.0
+                            if "stun_timer" in next_entity:
+                                ne_stun = next_entity.stun_timer
+                            elif typeof(next_entity) == TYPE_OBJECT and next_entity.has_meta("stun_timer"):
+                                ne_stun = next_entity.get_meta("stun_timer")
+                            ne_stun = max(ne_stun, 0.2)
+                            if "stun_timer" in next_entity:
+                                next_entity.stun_timer = ne_stun
+                            elif typeof(next_entity) == TYPE_OBJECT and next_entity.has_method("set_meta"):
+                                next_entity.set_meta("stun_timer", ne_stun)
 
                         if self.has_method("_spawn_skill_particles"):
                             self._spawn_skill_particles("lightning")
