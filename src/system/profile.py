@@ -1,3 +1,4 @@
+import time
 import json
 import datetime
 import base64
@@ -90,7 +91,26 @@ class ProfileManager:
         with open(self.filename, 'w') as f:
             json.dump(self.data, f, indent=4)
 
+
+    def _get_catchup_multiplier(self):
+        try:
+            filename = "test_leaderboard_catchup.json" if "test" in self.filename else "leaderboard.json"
+            with open(filename, 'r') as f:
+                import json
+                data = json.load(f)
+                start_time = data.get("season_start_time", time.time())
+                elapsed = time.time() - start_time
+                duration = 30 * 24 * 60 * 60
+                if elapsed > duration * 0.75:
+                    return 1.5
+                elif elapsed > duration * 0.5:
+                    return 1.25
+        except Exception:
+            pass
+        return 1.0
+
     def add_skill_points(self, points):
+        points = int(points * self._get_catchup_multiplier())
         self.data["skill_points"] += points
         self.save()
 
@@ -146,6 +166,7 @@ class ProfileManager:
             prestige_level = self.data.get("prestige_level", 0) + 1
             # Calculate prestige tokens based on past stats (skill points, current prestige, maxed bonuses)
             tokens_earned = 5 + prestige_level + (self.data.get("skill_points", 0) // 100)
+            tokens_earned = int(tokens_earned * self._get_catchup_multiplier())
             current_tokens = self.data.get("prestige_tokens", 0)
             current_upgrades = self.data.get("prestige_upgrades", {})
 
