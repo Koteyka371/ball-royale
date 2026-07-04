@@ -1,67 +1,194 @@
-import re
+import sys
 
-with open('src/ai/game_modes.gd', 'r') as f:
-    text = f.read()
+def patch_gd_game_modes():
+    filepath = "src/ai/game_modes.gd"
+    with open(filepath, 'r') as f:
+        content = f.read()
 
-search_mud_gd = """                if self.weather == "rain" and randf() < 0.05 * delta:
-                    var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
-                    var x = randf_range(100.0, world.arena.width - 100.0)
-                    var y = randf_range(100.0, world.arena.height - 100.0)
-                    var mud = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 60.0, "quicksand", 0.0)
-                    mud.set_meta("duration", 15.0)
-                    world.arena.hazards.append(mud)"""
+    search_str1 = """                elif self.weather == "sandstorm":
+                    if "speed" in b: b.speed = base_spd * 0.7
+                    if "damage" in b: b.damage = base_dmg
+                    if b.has_method("set_meta"):
+                        b.set_meta("dash_range_mult", 0.5)
+                        b.set_meta("steering_mult", 0.5)
+                        b.set_meta("attack_accuracy", 0.5)
+                        var sand_timer = 0.0
+                        if b.has_meta("sandstorm_timer"):
+                            sand_timer = b.get_meta("sandstorm_timer")
+                        sand_timer += delta
+                        if sand_timer >= 1.0:
+                            sand_timer = 0.0
+                            if "hp" in b and not is_earth:
+                                b.hp -= 1.0
+                        b.set_meta("sandstorm_timer", sand_timer)
+                    if randf() < 0.05 * delta and not is_earth:
+                        if "hp" in b:
+                            b.hp -= 20.0"""
 
-replace_mud_gd = """                var arena_name = "unknown"
-                if "arena" in world and world.arena != null:
-                    arena_name = str(world.arena.get_script().resource_path).to_lower()
-                var is_dirt_sand = false
-                if "sand" in arena_name or "dirt" in arena_name or "summer" in arena_name:
-                    is_dirt_sand = true
-                elif "arena" in world and "is_sandstorming" in world.arena and world.arena.is_sandstorming:
-                    is_dirt_sand = true
+    replace_str1 = """                elif self.weather == "sandstorm":
+                    var near_shelter_or_flare = false
+                    if world != null and "arena" in world and "hazards" in world.arena:
+                        for h in world.arena.hazards:
+                            var h_kind = ""
+                            if "kind" in h: h_kind = h.kind
+                            if h_kind == "shelter" or h_kind == "flare":
+                                var hx = 0.0
+                                var hy = 0.0
+                                var hr = 0.0
+                                if "x" in h: hx = h.x
+                                if "y" in h: hy = h.y
+                                if "radius" in h: hr = h.radius
+                                if pow(hx - b.x, 2) + pow(hy - b.y, 2) <= pow(hr, 2):
+                                    near_shelter_or_flare = true
+                                    break
 
-                if is_dirt_sand and self.weather == "rain" and randf() < 0.05 * delta:
-                    var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
-                    var x = randf_range(100.0, world.arena.width - 100.0)
-                    var y = randf_range(100.0, world.arena.height - 100.0)
-                    var mud = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 60.0, "quicksand", 0.0)
-                    mud.set_meta("duration", 15.0)
-                    world.arena.hazards.append(mud)"""
+                    if not near_shelter_or_flare:
+                        if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius") * 0.3
+                        elif "base_perception_radius" in b: b.perception_radius = b.base_perception_radius * 0.3
+                        else: b.perception_radius = 250.0 * 0.3
 
-if search_mud_gd in text:
-    text = text.replace(search_mud_gd, replace_mud_gd)
-    print("Replaced mud gd")
-else:
-    print("Could not find mud gd")
+                    if "speed" in b: b.speed = base_spd * 0.7
+                    if "damage" in b: b.damage = base_dmg
+                    if b.has_method("set_meta"):
+                        b.set_meta("dash_range_mult", 0.5)
+                        b.set_meta("steering_mult", 0.5)
+                        b.set_meta("attack_accuracy", 0.5)
+                        var sand_timer = 0.0
+                        if b.has_meta("sandstorm_timer"):
+                            sand_timer = b.get_meta("sandstorm_timer")
+                        sand_timer += delta
+                        if sand_timer >= 1.0:
+                            sand_timer = 0.0
+                            if "hp" in b and not is_earth:
+                                b.hp -= 1.0
+                        b.set_meta("sandstorm_timer", sand_timer)
+                    if randf() < 0.05 * delta and not is_earth:
+                        if "hp" in b:
+                            b.hp -= 20.0"""
 
+    search_str2 = """				elif weather == "sandstorm":
+					if typeof(b) == TYPE_OBJECT: b.set("cosmetic", "dust_mask")
+					elif typeof(b) == TYPE_DICTIONARY: b["cosmetic"] = "dust_mask"
+					var b_type = ""
+					if typeof(b) == TYPE_DICTIONARY and b.has("ball_type"): b_type = b["ball_type"]
+					elif typeof(b) == TYPE_OBJECT and "ball_type" in b: b_type = b.ball_type
+					if b_type == "sand_elemental":
+						if "speed" in b: b.speed = base_spd * 1.2
+						if "damage" in b: b.damage = base_dmg
+						if b.has_method("set_meta"):
+							b.set_meta("dash_range_mult", 1.0)
+							b.set_meta("steering_mult", 1.0)
+						if "attack_accuracy" in b: b.attack_accuracy = 1.0
+					else:
+						if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius") * 0.3
+						elif "base_perception_radius" in b: b.perception_radius = b.base_perception_radius * 0.3
+						else: b.perception_radius = 250.0 * 0.3
+						if "speed" in b: b.speed = base_spd * 0.7
+						if "damage" in b: b.damage = base_dmg
+						if b.has_method("set_meta"):
+							b.set_meta("dash_range_mult", 0.5)
+							b.set_meta("steering_mult", 0.5)
+						var bt = b_type
+						if bt in ["trickster", "phantom", "mimic"]:
+							if b.has_method("set_meta") and b.has_method("get_meta"):
+								var mtimer = 0.0
+								if b.has_meta("mirage_timer"): mtimer = b.get_meta("mirage_timer")
+								mtimer += delta
+								if mtimer >= 5.0: mtimer = 0.0
+								b.set_meta("mirage_timer", mtimer)
+						if b.has_method("set_meta") and b.has_method("get_meta"):
+							var sand_timer = 0.0
+							if b.has_meta("sandstorm_timer"): sand_timer = b.get_meta("sandstorm_timer")
+							sand_timer += delta
+							if sand_timer >= 1.0:
+								sand_timer = 0.0
+								if "hp" in b: b.hp -= 1.0
+							b.set_meta("sandstorm_timer", sand_timer)
+						if randf() < 0.05 * delta:
+							if "hp" in b: b.hp -= 20.0
+						if "attack_accuracy" in b: b.attack_accuracy = 0.5"""
 
-search_rain_gd = """                elif self.weather == "rain":
-			if "speed" in b: b.speed = base_spd * 0.8
-			if "damage" in b: b.damage = base_dmg"""
+    replace_str2 = """				elif weather == "sandstorm":
+					if typeof(b) == TYPE_OBJECT: b.set("cosmetic", "dust_mask")
+					elif typeof(b) == TYPE_DICTIONARY: b["cosmetic"] = "dust_mask"
+					var b_type = ""
+					if typeof(b) == TYPE_DICTIONARY and b.has("ball_type"): b_type = b["ball_type"]
+					elif typeof(b) == TYPE_OBJECT and "ball_type" in b: b_type = b.ball_type
 
-replace_rain_gd = """                elif self.weather == "rain":
-			var has_wt = false
-			var bt = ""
-			if "ball_type" in b: bt = str(b.ball_type).to_lower()
-			elif b.has_method("get_meta") and b.has_meta("ball_type"): bt = str(b.get_meta("ball_type")).to_lower()
-			if "water" in bt or "swamp" in bt: has_wt = true
-			var tr = []
-			if "traits" in b: tr = b.traits
-			elif b.has_method("get_meta") and b.has_meta("traits"): tr = b.get_meta("traits")
-			if typeof(tr) == TYPE_ARRAY:
-				for t in tr:
-					if "water" in str(t).to_lower() or "swamp" in str(t).to_lower():
-						has_wt = true
-			if "speed" in b:
-				if has_wt: b.speed = base_spd
-				else: b.speed = base_spd * 0.8
-			if "damage" in b: b.damage = base_dmg"""
+					var b_traits = []
+					if typeof(b) == TYPE_DICTIONARY and b.has("traits"): b_traits = b["traits"]
+					elif typeof(b) == TYPE_OBJECT and "traits" in b: b_traits = b.traits
+					var is_earth = b_type in ["tank", "druid", "juggernaut", "sand_elemental"] or "earth" in b_traits
 
-if search_rain_gd in text:
-    text = text.replace(search_rain_gd, replace_rain_gd)
-    print("Replaced rain gd")
-else:
-    print("Could not find rain gd block")
+					var near_shelter_or_flare = false
+					if world != null and "arena" in world and "hazards" in world.arena:
+						for h in world.arena.hazards:
+							var h_kind = ""
+							if "kind" in h: h_kind = h.kind
+							if h_kind == "shelter" or h_kind == "flare":
+								var hx = 0.0
+								var hy = 0.0
+								var hr = 0.0
+								if "x" in h: hx = h.x
+								if "y" in h: hy = h.y
+								if "radius" in h: hr = h.radius
+								var bx = 0.0
+								var by = 0.0
+								if typeof(b) == TYPE_DICTIONARY:
+									if b.has("x"): bx = b["x"]
+									if b.has("y"): by = b["y"]
+								elif typeof(b) == TYPE_OBJECT:
+									if "x" in b: bx = b.x
+									if "y" in b: by = b.y
+								if pow(hx - bx, 2) + pow(hy - by, 2) <= pow(hr, 2):
+									near_shelter_or_flare = true
+									break
 
-with open('src/ai/game_modes.gd', 'w') as f:
-    f.write(text)
+					if b_type == "sand_elemental":
+						if "speed" in b: b.speed = base_spd * 1.2
+						if "damage" in b: b.damage = base_dmg
+						if b.has_method("set_meta"):
+							b.set_meta("dash_range_mult", 1.0)
+							b.set_meta("steering_mult", 1.0)
+						if "attack_accuracy" in b: b.attack_accuracy = 1.0
+					else:
+						if not near_shelter_or_flare:
+							if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius") * 0.3
+							elif "base_perception_radius" in b: b.perception_radius = b.base_perception_radius * 0.3
+							else: b.perception_radius = 250.0 * 0.3
+
+						if "speed" in b: b.speed = base_spd * 0.7
+						if "damage" in b: b.damage = base_dmg
+						if b.has_method("set_meta"):
+							b.set_meta("dash_range_mult", 0.5)
+							b.set_meta("steering_mult", 0.5)
+						var bt = b_type
+						if bt in ["trickster", "phantom", "mimic"]:
+							if b.has_method("set_meta") and b.has_method("get_meta"):
+								var mtimer = 0.0
+								if b.has_meta("mirage_timer"): mtimer = b.get_meta("mirage_timer")
+								mtimer += delta
+								if mtimer >= 5.0: mtimer = 0.0
+								b.set_meta("mirage_timer", mtimer)
+						if b.has_method("set_meta") and b.has_method("get_meta"):
+							var sand_timer = 0.0
+							if b.has_meta("sandstorm_timer"): sand_timer = b.get_meta("sandstorm_timer")
+							sand_timer += delta
+							if sand_timer >= 1.0:
+								sand_timer = 0.0
+								if "hp" in b and not is_earth: b.hp -= 1.0
+							b.set_meta("sandstorm_timer", sand_timer)
+						if randf() < 0.05 * delta and not is_earth:
+							if "hp" in b: b.hp -= 20.0
+						if "attack_accuracy" in b: b.attack_accuracy = 0.5"""
+
+    if search_str1 in content and search_str2 in content:
+        content = content.replace(search_str1, replace_str1)
+        content = content.replace(search_str2, replace_str2)
+        with open(filepath, 'w') as f:
+            f.write(content)
+        print("Updated GDScript game modes successfully.")
+    else:
+        print("Failed to find search_str in GDScript file.")
+
+patch_gd_game_modes()

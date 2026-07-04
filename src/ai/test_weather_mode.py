@@ -254,3 +254,151 @@ def test_weather_mode_rain_vision():
     mode.tick(world, balls, 0.1)
 
     assert ball.perception_radius == 125.0 # 250 * 0.5
+
+def test_weather_mode_sandstorm_shelter():
+    import ai.game_modes as gm
+    mode = gm.GAME_MODES["weather_chaos"]
+
+    class MockHazard:
+        def __init__(self, kind, x, y, radius):
+            self.kind = kind
+            self.x = x
+            self.y = y
+            self.radius = radius
+            self.active = True
+
+    class MockArena:
+        def __init__(self):
+            self.hazards = []
+            self.width = 1000
+            self.height = 1000
+
+    class MockWorld:
+        def __init__(self):
+            self.arena = MockArena()
+            self.balls = []
+        def add_event(self, type, data): pass
+
+    class MockBall:
+        def __init__(self, id, ball_type="warrior"):
+            self.id = id
+            self.ball_type = ball_type
+            self.alive = True
+            self.hp = 100
+            self.max_hp = 100
+            self.damage = 10.0
+            self.speed = 100.0
+            self.base_speed = 100.0
+            self.base_damage = 10.0
+            self.base_perception_radius = 250.0
+            self.perception_radius = 250.0
+            self.x = 500
+            self.y = 500
+
+    world = MockWorld()
+    world.leaderboard_manager = type("Mock", (), {"data": {"current_season": 4}})()
+
+    ball_in_shelter = MockBall(1, "warrior")
+    ball_in_shelter.x = 500
+    ball_in_shelter.y = 500
+
+    ball_outside = MockBall(2, "warrior")
+    ball_outside.x = 100
+    ball_outside.y = 100
+
+    ball_earth = MockBall(3, "tank")
+    ball_earth.x = 100
+    ball_earth.y = 100
+
+    ball_earth2 = MockBall(4, "warrior")
+    ball_earth2.x = 100
+    ball_earth2.y = 100
+    ball_earth2.traits = ["earth"]
+
+    balls = [ball_in_shelter, ball_outside, ball_earth, ball_earth2]
+    mode.setup(world, balls)
+
+    mode.weather = "sandstorm"
+
+    # Add shelter
+    shelter = MockHazard("shelter", 500, 500, 100.0)
+    world.arena.hazards.append(shelter)
+
+    mode.tick(world, balls, 1.1)
+
+    # Ball in shelter should have normal vision, but dot damage applies unless earth
+    assert ball_in_shelter.perception_radius == 250.0
+    assert ball_in_shelter.hp < 100.0 # Takes damage
+
+    # Ball outside should have obscured vision and takes damage
+    assert ball_outside.perception_radius == 250.0 * 0.3
+    assert ball_outside.hp < 100.0
+
+    # Earth class should have obscured vision (outside shelter) but NOT take damage
+    assert ball_earth.perception_radius == 250.0 * 0.3
+    assert ball_earth.hp == 100.0
+
+    # Earth trait should have obscured vision (outside shelter) but NOT take damage
+    assert ball_earth2.perception_radius == 250.0 * 0.3
+    assert ball_earth2.hp == 100.0
+
+def test_weather_mode_sandstorm_flare():
+    import ai.game_modes as gm
+    mode = gm.GAME_MODES["weather_chaos"]
+
+    class MockHazard:
+        def __init__(self, kind, x, y, radius):
+            self.kind = kind
+            self.x = x
+            self.y = y
+            self.radius = radius
+            self.active = True
+
+    class MockArena:
+        def __init__(self):
+            self.hazards = []
+            self.width = 1000
+            self.height = 1000
+
+    class MockWorld:
+        def __init__(self):
+            self.arena = MockArena()
+            self.balls = []
+        def add_event(self, type, data): pass
+
+    class MockBall:
+        def __init__(self, id, ball_type="warrior"):
+            self.id = id
+            self.ball_type = ball_type
+            self.alive = True
+            self.hp = 100
+            self.max_hp = 100
+            self.damage = 10.0
+            self.speed = 100.0
+            self.base_speed = 100.0
+            self.base_damage = 10.0
+            self.base_perception_radius = 250.0
+            self.perception_radius = 250.0
+            self.x = 500
+            self.y = 500
+
+    world = MockWorld()
+    world.leaderboard_manager = type("Mock", (), {"data": {"current_season": 4}})()
+
+    ball_near_flare = MockBall(1, "warrior")
+    ball_near_flare.x = 500
+    ball_near_flare.y = 500
+
+    balls = [ball_near_flare]
+    mode.setup(world, balls)
+
+    mode.weather = "sandstorm"
+
+    # Add flare
+    flare = MockHazard("flare", 500, 500, 100.0)
+    world.arena.hazards.append(flare)
+
+    mode.tick(world, balls, 0.1)
+
+    # Ball near flare should have normal vision
+    assert ball_near_flare.perception_radius == 250.0

@@ -1,0 +1,4 @@
+{
+  "title": "Heatwave Mirage Implementation",
+  "description": "Expand the Heatwave weather mode to periodically spawn stationary Mirage clones of balls that appear identical but explode into sand or vanish when hit, confusing aggressive classes like Berserker or Assassin."
+}

@@ -1,62 +1,212 @@
-import re
+import sys
 
-with open('src/ai/game_modes.py', 'r') as f:
-    text = f.read()
+def patch_python_game_modes():
+    filepath = "src/ai/game_modes.py"
+    with open(filepath, 'r') as f:
+        content = f.read()
 
-# First block of mud_pit (BattleRoyaleMode)
-search_mud1 = """                if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
-                    from arena.procedural_arena import Hazard
-                    # Spawn mud pit
-                    x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
-                    y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
-                    mud_pit = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=60.0, kind="quicksand", damage=0.0)
-                    setattr(mud_pit, 'duration', 15.0)
-                    world.arena.hazards.append(mud_pit)"""
-
-replace_mud1 = """                arena_name = getattr(world.arena, "__class__", type(world.arena)).__name__.lower()
-                is_dirt_sand = "sand" in arena_name or "dirt" in arena_name or "summer" in arena_name or getattr(world.arena, "is_sandstorming", False)
-                if is_dirt_sand and getattr(self, "random", __import__("random")).random() < 0.05 * delta:
-                    from arena.procedural_arena import Hazard
-                    # Spawn mud pit
-                    x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
-                    y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
-                    mud_pit = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=60.0, kind="quicksand", damage=0.0)
-                    setattr(mud_pit, 'duration', 15.0)
-                    world.arena.hazards.append(mud_pit)"""
-
-if search_mud1 in text:
-    text = text.replace(search_mud1, replace_mud1)
-    print("Replaced mud_pit spawns")
-else:
-    print("Could not find mud_pit block 1")
-
-# Now the rain speed block
-search_rain_speed1 = """            elif self.weather == "rain":
-                b.cosmetic = "umbrella"
-                b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.5
-                b.speed = b.base_speed * 0.8
-                b.damage = b.base_damage"""
-
-replace_rain_speed1 = """            elif self.weather == "rain":
-                b.cosmetic = "umbrella"
-                b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.5
-
-                # Check for swamp/water traits
-                b_type = str(getattr(b, "ball_type", "")).lower()
-                traits = getattr(b, "traits", [])
-                has_water_trait = "water" in b_type or "swamp" in b_type or any("water" in str(t).lower() or "swamp" in str(t).lower() for t in traits)
-
-                if not has_water_trait:
-                    b.speed = b.base_speed * 0.8
+    # FIRST OCCURRENCE (line ~614)
+    search_str1 = """            elif self.weather == "sandstorm":
+                b.cosmetic = "dust_mask"
+                if getattr(b, "ball_type", "") == "sand_elemental":
+                    b.speed = b.base_speed * 1.2
+                    b.damage = b.base_damage
+                    b.dash_range_mult = 1.0
+                    b.steering_mult = 1.0
+                    b.attack_accuracy = 1.0
                 else:
-                    b.speed = getattr(b, "base_speed", 100.0)
-                b.damage = b.base_damage"""
+                    b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.3
+                    b.speed = b.base_speed * 0.7
+                    b.damage = b.base_damage
+                    b.dash_range_mult = 0.5
+                    b.steering_mult = 0.5
+                    if not hasattr(b, "sandstorm_timer"):
+                        b.sandstorm_timer = 0.0
+                    b.sandstorm_timer += delta
+                    if b.sandstorm_timer >= 1.0:
+                        b.sandstorm_timer = 0.0
+                        if hasattr(b, "hp"):
+                            b.hp -= 1.0
+                    if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                        if hasattr(b, "hp"):
+                            b.hp -= 20.0
+                    b.attack_accuracy = 0.5"""
 
-if search_rain_speed1 in text:
-    text = text.replace(search_rain_speed1, replace_rain_speed1)
-    print("Replaced rain speed blocks")
-else:
-    print("Could not find rain speed block")
+    replace_str1 = """            elif self.weather == "sandstorm":
+                b.cosmetic = "dust_mask"
+                b_type = getattr(b, "ball_type", "")
+                is_earth = b_type in ["tank", "druid", "juggernaut", "sand_elemental"] or (hasattr(b, "traits") and "earth" in getattr(b, "traits", []))
 
-with open('src/ai/game_modes.py', 'w') as f:
-    f.write(text)
+                shelters_or_flares = []
+                if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    for h in world.arena.hazards:
+                        if getattr(h, "kind", "") in ["shelter", "flare"]:
+                            shelters_or_flares.append(h)
+
+                near_shelter_or_flare = False
+                for h in shelters_or_flares:
+                    dist_sq = (getattr(h, "x", 0) - getattr(b, "x", 0))**2 + (getattr(h, "y", 0) - getattr(b, "y", 0))**2
+                    if dist_sq <= getattr(h, "radius", 0)**2:
+                        near_shelter_or_flare = True
+                        break
+
+                if getattr(b, "ball_type", "") == "sand_elemental":
+                    b.speed = b.base_speed * 1.2
+                    b.damage = b.base_damage
+                    b.dash_range_mult = 1.0
+                    b.steering_mult = 1.0
+                    b.attack_accuracy = 1.0
+                else:
+                    if near_shelter_or_flare:
+                        b.perception_radius = getattr(b, "base_perception_radius", 250.0)
+                    else:
+                        b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.3
+                    b.speed = b.base_speed * 0.7
+                    b.damage = b.base_damage
+                    b.dash_range_mult = 0.5
+                    b.steering_mult = 0.5
+                    if not hasattr(b, "sandstorm_timer"):
+                        b.sandstorm_timer = 0.0
+                    b.sandstorm_timer += delta
+                    if b.sandstorm_timer >= 1.0:
+                        b.sandstorm_timer = 0.0
+                        if hasattr(b, "hp") and not is_earth:
+                            b.hp -= 1.0
+                    if getattr(self, "random", __import__("random")).random() < 0.05 * delta and not is_earth:
+                        if hasattr(b, "hp"):
+                            b.hp -= 20.0
+                    b.attack_accuracy = 0.5"""
+
+    # SECOND OCCURRENCE (line ~1791)
+    search_str2 = """            elif self.weather == "sandstorm":
+                b.cosmetic = "dust_mask"
+                if getattr(b, "ball_type", "") == "sand_elemental":
+                    b.speed = b.base_speed * 1.2
+                    b.damage = b.base_damage
+                    b.dash_range_mult = 1.0
+                    b.steering_mult = 1.0
+                    b.attack_accuracy = 1.0
+                else:
+                    b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.3
+                    b.speed = b.base_speed * 0.7 # Hard to move
+                    b.damage = b.base_damage
+                    b.dash_range_mult = 0.5
+                    b.steering_mult = 0.5
+                    if getattr(b, "ball_type", "") in ["trickster", "phantom", "mimic"]:
+                        if not hasattr(b, "mirage_timer"):
+                            b.mirage_timer = getattr(self, "random", __import__("random")).uniform(0.0, 5.0)
+                        b.mirage_timer += delta
+                        if b.mirage_timer >= 5.0:
+                            b.mirage_timer = 0.0
+                            if hasattr(world, "balls"):
+                                import copy
+                                decoy = copy.copy(b)
+                                decoy.id = getattr(world, "next_id", getattr(self, "random", __import__("random")).randint(10000, 99999))
+                                decoy.hp = getattr(b, "hp", 100)
+                                decoy.max_hp = getattr(b, "max_hp", 100)
+                                decoy.damage = 0
+                                decoy.speed = 0.0
+                                decoy.skill_timer = 9999.0
+                                decoy.attack_timer = 9999.0
+                                decoy.is_decoy = True
+                                decoy.decoy_timer = 3.0
+                                decoy.decoy_type = "stun_trap" if getattr(self, "random", __import__("random")).random() < 0.5 else "explosive"
+                                if hasattr(b, "SKILL") or getattr(b, "active_skill", None) is not None:
+                                    decoy.SKILL = None
+                                    decoy.active_skill = None
+                                world.balls.append(decoy)
+                    # dot damage
+                    if not hasattr(b, "sandstorm_timer"):
+                        b.sandstorm_timer = 0.0
+                    b.sandstorm_timer += delta
+                    if b.sandstorm_timer >= 1.0:
+                        b.sandstorm_timer = 0.0
+                        if hasattr(b, "hp"):
+                            b.hp -= 1.0 # 1 damage per sec
+                    # Random lightning strikes
+                    if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                        # Struck by lightning!
+                        b.hp = getattr(b, "hp", 100) - 20
+                b.attack_accuracy = 0.5"""
+
+    replace_str2 = """            elif self.weather == "sandstorm":
+                b.cosmetic = "dust_mask"
+                b_type = getattr(b, "ball_type", "")
+                is_earth = b_type in ["tank", "druid", "juggernaut", "sand_elemental"] or (hasattr(b, "traits") and "earth" in getattr(b, "traits", []))
+
+                shelters_or_flares = []
+                if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    for h in world.arena.hazards:
+                        if getattr(h, "kind", "") in ["shelter", "flare"]:
+                            shelters_or_flares.append(h)
+
+                near_shelter_or_flare = False
+                for h in shelters_or_flares:
+                    dist_sq = (getattr(h, "x", 0) - getattr(b, "x", 0))**2 + (getattr(h, "y", 0) - getattr(b, "y", 0))**2
+                    if dist_sq <= getattr(h, "radius", 0)**2:
+                        near_shelter_or_flare = True
+                        break
+
+                if getattr(b, "ball_type", "") == "sand_elemental":
+                    b.speed = b.base_speed * 1.2
+                    b.damage = b.base_damage
+                    b.dash_range_mult = 1.0
+                    b.steering_mult = 1.0
+                    b.attack_accuracy = 1.0
+                else:
+                    if near_shelter_or_flare:
+                        b.perception_radius = getattr(b, "base_perception_radius", 250.0)
+                    else:
+                        b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.3
+
+                    b.speed = b.base_speed * 0.7 # Hard to move
+                    b.damage = b.base_damage
+                    b.dash_range_mult = 0.5
+                    b.steering_mult = 0.5
+                    if getattr(b, "ball_type", "") in ["trickster", "phantom", "mimic"]:
+                        if not hasattr(b, "mirage_timer"):
+                            b.mirage_timer = getattr(self, "random", __import__("random")).uniform(0.0, 5.0)
+                        b.mirage_timer += delta
+                        if b.mirage_timer >= 5.0:
+                            b.mirage_timer = 0.0
+                            if hasattr(world, "balls"):
+                                import copy
+                                decoy = copy.copy(b)
+                                decoy.id = getattr(world, "next_id", getattr(self, "random", __import__("random")).randint(10000, 99999))
+                                decoy.hp = getattr(b, "hp", 100)
+                                decoy.max_hp = getattr(b, "max_hp", 100)
+                                decoy.damage = 0
+                                decoy.speed = 0.0
+                                decoy.skill_timer = 9999.0
+                                decoy.attack_timer = 9999.0
+                                decoy.is_decoy = True
+                                decoy.decoy_timer = 3.0
+                                decoy.decoy_type = "stun_trap" if getattr(self, "random", __import__("random")).random() < 0.5 else "explosive"
+                                if hasattr(b, "SKILL") or getattr(b, "active_skill", None) is not None:
+                                    decoy.SKILL = None
+                                    decoy.active_skill = None
+                                world.balls.append(decoy)
+                    # dot damage
+                    if not hasattr(b, "sandstorm_timer"):
+                        b.sandstorm_timer = 0.0
+                    b.sandstorm_timer += delta
+                    if b.sandstorm_timer >= 1.0:
+                        b.sandstorm_timer = 0.0
+                        if hasattr(b, "hp") and not is_earth:
+                            b.hp -= 1.0 # 1 damage per sec
+                    # Random lightning strikes
+                    if getattr(self, "random", __import__("random")).random() < 0.05 * delta and not is_earth:
+                        # Struck by lightning!
+                        b.hp = getattr(b, "hp", 100) - 20
+                b.attack_accuracy = 0.5"""
+
+    if search_str1 in content and search_str2 in content:
+        content = content.replace(search_str1, replace_str1)
+        content = content.replace(search_str2, replace_str2)
+        with open(filepath, 'w') as f:
+            f.write(content)
+        print("Updated python game modes successfully.")
+    else:
+        print("Failed to find search_str in python file.")
+
+patch_python_game_modes()
