@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-519] Add Chain Lightning Visual Arcs — *2026-07-04 19:15:13 UTC*
+
+Render bezier curve lightning arcs between hit entities during chain bounces.
+
+---
+
 ## [idea-562] Interactive Crowd Booing / Cheering — *2026-07-04 19:10:17 UTC*
 
 Crowd system in the arena actively reacts to ball actions. If a ball camps too long or hides, the crowd boos, and they might throw minor hazards (like small debris) into the arena to force the player out. Conversely, epic plays (multikills) trigger cheers and small beneficial drops.

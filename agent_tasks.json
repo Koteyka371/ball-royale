@@ -8976,7 +8976,7 @@
     },
     {
       "id": "idea-519",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Add Chain Lightning Visual Arcs",
@@ -15849,6 +15849,40 @@
         "src/ai/homing_missiles.py",
         "src/ai/homing_missiles.gd",
         "tests/test_homing_missiles.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-923",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Crowd Voting Improvements",
+      "description": "Expand the crowd voting system to allow viewers to vote on specific stat modifiers for balls, rather than just boons or hazards. For example, the crowd could vote to increase max speed by 20% for all balls for 30 seconds.",
+      "allowed_paths": [
+        "src/ai/crowd_voting_improvements.py",
+        "src/ai/crowd_voting_improvements.gd",
+        "tests/test_crowd_voting_improvements.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-924",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Map Hazards Based on Excitement",
+      "description": "When the crowd excitement drops below a critical threshold, trigger a large-scale map event (like a slow-moving closing zone or global weather effect) to force player engagement rather than just single-target hazard throws.",
+      "allowed_paths": [
+        "src/arena/dynamic_map_hazards_based_on_excitement.py",
+        "src/arena/dynamic_map_hazards_based_on_excitement.gd",
+        "tests/test_dynamic_map_hazards_based_on_excitement.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
