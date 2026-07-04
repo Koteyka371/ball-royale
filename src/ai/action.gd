@@ -5885,6 +5885,70 @@ func execute(strategy: String, delta: float):
         _hold_zone(delta)
     elif strategy == "opportunistic" or strategy == "collect booster":
         _collect_booster(delta)
+    elif strategy == "use_sub_skill":
+        var skill_name = null
+        if "active_skill" in self.ball and self.ball.active_skill != null and str(self.ball.active_skill) != "": skill_name = self.ball.active_skill
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("active_skill") and self.ball.get_meta("active_skill") != null and str(self.ball.get_meta("active_skill")) != "": skill_name = self.ball.get_meta("active_skill")
+        elif "SKILL" in self.ball and self.ball.SKILL != null and str(self.ball.SKILL) != "": skill_name = self.ball.SKILL
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("SKILL") and self.ball.get_meta("SKILL") != null and str(self.ball.get_meta("SKILL")) != "": skill_name = self.ball.get_meta("SKILL")
+
+        if skill_name == "clone":
+            if "balls" in self.world:
+                var my_clones = []
+                var my_id = null
+                if "id" in self.ball: my_id = self.ball.id
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): my_id = self.ball.get_meta("id")
+
+                for b in self.world.balls:
+                    var b_is_clone = false
+                    if "is_clone" in b: b_is_clone = b.is_clone
+                    elif b.has_method("get_meta") and b.has_meta("is_clone"): b_is_clone = b.get_meta("is_clone")
+
+                    var b_alive = true
+                    if "alive" in b: b_alive = b.alive
+                    elif b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+                    if b_is_clone and b_alive:
+                        var b_owner_id = null
+                        if "clone_owner" in b: b_owner_id = b.clone_owner
+                        elif b.has_method("get_meta") and b.has_meta("clone_owner"): b_owner_id = b.get_meta("clone_owner")
+
+                        if b_owner_id != null and my_id != null and str(b_owner_id) == str(my_id):
+                            my_clones.append(b)
+
+                if my_clones.size() > 0:
+                    var chosen_clone = my_clones[randi() % my_clones.size()]
+                    var my_x = 0.0
+                    if "x" in self.ball: my_x = self.ball.x
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("x"): my_x = self.ball.get_meta("x")
+
+                    var my_y = 0.0
+                    if "y" in self.ball: my_y = self.ball.y
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("y"): my_y = self.ball.get_meta("y")
+
+                    var clone_x = 0.0
+                    if "x" in chosen_clone: clone_x = chosen_clone.x
+                    elif chosen_clone.has_method("get_meta") and chosen_clone.has_meta("x"): clone_x = chosen_clone.get_meta("x")
+
+                    var clone_y = 0.0
+                    if "y" in chosen_clone: clone_y = chosen_clone.y
+                    elif chosen_clone.has_method("get_meta") and chosen_clone.has_meta("y"): clone_y = chosen_clone.get_meta("y")
+
+                    if "x" in self.ball: self.ball.x = clone_x
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("x", clone_x)
+                    if "y" in self.ball: self.ball.y = clone_y
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("y", clone_y)
+
+                    if "x" in chosen_clone: chosen_clone.x = my_x
+                    elif chosen_clone.has_method("set_meta"): chosen_clone.set_meta("x", my_x)
+                    if "y" in chosen_clone: chosen_clone.y = my_y
+                    elif chosen_clone.has_method("set_meta"): chosen_clone.set_meta("y", my_y)
+
+                    if "events" in self.world:
+                        self.world.events.append({'type': 'visual_effect', 'data': {'type': 'line', 'x': my_x, 'y': my_y, 'tx': clone_x, 'ty': clone_y, 'color': 'cyan'}})
+        self._clamp_position()
+        return
+
     elif strategy == "use skill" or strategy == "use_skill" or strategy == "action_skill" or strategy == "Действие":
         var skill_name = ""
         if "skill" in self.ball:
