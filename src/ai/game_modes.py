@@ -5857,8 +5857,91 @@ class MeteorShowerMode(GameMode):
 
             world.arena.hazards.append(meteor)
 
+
+class BlizzardMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Blizzard Mode"
+        self.description = "Periodically spawns a blizzard that severely reduces all ball movement speed (friction increases) and creates temporary slippery ice patches as hazards that cause balls to slide uncontrollably."
+        self.timer = 0.0
+        self.is_blizzard = False
+        import random
+        self.random = random
+
+    def setup(self, world: 'Any', balls: List['Any']) -> None:
+        super().setup(world, balls)
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+        self.timer = 0.0
+        self.is_blizzard = False
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator":
+                if not hasattr(b, "base_speed"):
+                    b.base_speed = getattr(b, "speed", 100.0)
+                if not hasattr(b, "original_base_speed"):
+                    b.original_base_speed = getattr(b, "base_speed", 100.0)
+
+    def tick(self, world: 'Any', balls: List['Any'], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        self.timer += delta
+
+        if not self.is_blizzard and self.timer >= 10.0:
+            self.is_blizzard = True
+            self.timer = 0.0
+            world.arena.is_snowing = True
+
+            # spawn temporary ice patches
+            try:
+                from arena.procedural_arena import Hazard
+            except ImportError:
+                class Hazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.active = True
+
+            for _ in range(5):
+                x = self.random.uniform(0, world.arena.width) if hasattr(world.arena, "width") else self.random.uniform(-500, 500)
+                y = self.random.uniform(0, world.arena.height) if hasattr(world.arena, "height") else self.random.uniform(-500, 500)
+                ice = Hazard(id=len(world.arena.hazards) + self.random.randint(1000, 9999), x=x, y=y, radius=80.0, kind="ice_patch", damage=0.0)
+                if not hasattr(ice, "timer"):
+                    ice.timer = 0.0
+                world.arena.hazards.append(ice)
+
+        elif self.is_blizzard and self.timer >= 5.0:
+            self.is_blizzard = False
+            self.timer = 0.0
+            world.arena.is_snowing = False
+
+        # Manage active ice patches timers and removal
+        if hasattr(world.arena, "hazards"):
+            hazards_to_remove = []
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "ice_patch" and hasattr(h, "timer"):
+                    h.timer += delta
+                    if h.timer >= 15.0: # lasts for 15 seconds
+                        hazards_to_remove.append(h)
+            for h in hazards_to_remove:
+                if h in world.arena.hazards:
+                    world.arena.hazards.remove(h)
+
+        # Apply severe movement speed reduction during blizzard
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                if self.is_blizzard:
+                    b.base_speed = getattr(b, "original_base_speed", 100.0) * 0.3 # Severely reduce speed (friction increases)
+                else:
+                    b.base_speed = getattr(b, "original_base_speed", 100.0)
+
+
 GAME_MODES = {
     "meteor_shower": MeteorShowerMode(),
+    "blizzard_mode": BlizzardMode(),
 
     "black_market": BlackMarketMode(),
     "floor_is_lava": FloorIsLavaMode(),

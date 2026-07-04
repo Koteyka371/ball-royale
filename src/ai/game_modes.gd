@@ -7077,8 +7077,117 @@ class MeteorShowerMode extends GameMode:
 
 			world.arena.hazards.append(meteor)
 
+
+class BlizzardMode extends GameMode:
+	var timer = 0.0
+	var is_blizzard = false
+
+	func _init():
+		super._init()
+		self.name = "Blizzard Mode"
+		self.description = "Periodically spawns a blizzard that severely reduces all ball movement speed (friction increases) and creates temporary slippery ice patches as hazards that cause balls to slide uncontrollably."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if not "hazards" in world.arena:
+			world.arena.hazards = []
+		self.timer = 0.0
+		self.is_blizzard = false
+		for b in balls:
+			var is_spec = false
+			if typeof(b) == TYPE_OBJECT:
+				if b.get("ball_type") == "spectator": is_spec = true
+			elif typeof(b) == TYPE_DICTIONARY:
+				if b.get("ball_type", "") == "spectator": is_spec = true
+
+			if not is_spec:
+				if typeof(b) == TYPE_OBJECT:
+					if not b.has_meta("original_base_speed"):
+						var s = 100.0
+						if "base_speed" in b: s = b.base_speed
+						elif "speed" in b: s = b.speed
+						b.set_meta("original_base_speed", s)
+						if not "base_speed" in b: b.set("base_speed", s)
+				elif typeof(b) == TYPE_DICTIONARY:
+					if not b.has("original_base_speed"):
+						var s = b.get("base_speed", b.get("speed", 100.0))
+						b["original_base_speed"] = s
+						b["base_speed"] = s
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		self.timer += delta
+
+		if not self.is_blizzard and self.timer >= 10.0:
+			self.is_blizzard = true
+			self.timer = 0.0
+			world.arena.is_snowing = true
+
+			for i in range(5):
+				var w = 1000.0
+				var h = 1000.0
+				if "width" in world.arena: w = world.arena.width
+				if "height" in world.arena: h = world.arena.height
+				var x = randf_range(0, w)
+				var y = randf_range(0, h)
+				if not "width" in world.arena:
+					x = randf_range(-500, 500)
+					y = randf_range(-500, 500)
+
+				var ProceduralArena = load("res://src/arena/procedural_arena.gd")
+				var ice = ProceduralArena.Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 80.0, "ice_patch", 0.0)
+				ice.set_meta("timer", 0.0)
+				world.arena.hazards.append(ice)
+
+		elif self.is_blizzard and self.timer >= 5.0:
+			self.is_blizzard = false
+			self.timer = 0.0
+			world.arena.is_snowing = false
+
+		if "hazards" in world.arena:
+			var hazards_to_remove = []
+			for h in world.arena.hazards:
+				if h.kind == "ice_patch" and h.has_meta("timer"):
+					var t = h.get_meta("timer")
+					t += delta
+					h.set_meta("timer", t)
+					if t >= 15.0:
+						hazards_to_remove.append(h)
+			for h in hazards_to_remove:
+				var idx = world.arena.hazards.find(h)
+				if idx != -1:
+					world.arena.hazards.remove_at(idx)
+
+		for b in balls:
+			var alive = false
+			var is_spec = false
+			if typeof(b) == TYPE_OBJECT:
+				alive = b.get("alive")
+				if b.get("ball_type") == "spectator": is_spec = true
+			elif typeof(b) == TYPE_DICTIONARY:
+				alive = b.get("alive", false)
+				if b.get("ball_type", "") == "spectator": is_spec = true
+
+			if alive and not is_spec:
+				if typeof(b) == TYPE_OBJECT:
+					var orig = 100.0
+					if b.has_meta("original_base_speed"): orig = b.get_meta("original_base_speed")
+					if self.is_blizzard:
+						b.set("base_speed", orig * 0.3)
+					else:
+						b.set("base_speed", orig)
+				elif typeof(b) == TYPE_DICTIONARY:
+					var orig = b.get("original_base_speed", 100.0)
+					if self.is_blizzard:
+						b["base_speed"] = orig * 0.3
+					else:
+						b["base_speed"] = orig
+
+
 var GAME_MODES = {
 	"meteor_shower": MeteorShowerMode.new(),
+	"blizzard_mode": BlizzardMode.new(),
 
 	"black_market": BlackMarketMode.new(),
 	"floor_is_lava": FloorIsLavaMode.new(),

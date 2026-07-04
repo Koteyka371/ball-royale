@@ -668,3 +668,56 @@ def test_meteor_shower_mode():
     assert hazard.kind == "meteor"
     assert hazard.damage == 200.0
     assert hazard.radius == 30.0
+
+class MockBallBlizz:
+    def __init__(self, id, ball_type="basic"):
+        self.id = id
+        self.ball_type = ball_type
+        self.alive = True
+        self.speed = 100.0
+        self.hp = 100.0
+        self.max_hp = 100.0
+        self.sponsor = "none"
+
+def test_blizzard_mode():
+    from ai.game_modes import GAME_MODES
+    from unittest.mock import MagicMock
+    mode = GAME_MODES["blizzard_mode"]
+
+    world = MagicMock()
+    # Provide a leaderboard manager with season 0, which corresponds to global_cooldown 0.8 instead of speed changes
+    world.leaderboard_manager = type('LBM', (), {'data': {'current_season': 0}})()
+    if hasattr(world, 'profile_manager'):
+        del world.profile_manager
+    world.arena = MagicMock()
+    world.arena.hazards = []
+    world.arena.is_snowing = False
+
+    ball = MockBallBlizz(1)
+    balls = [ball]
+
+    mode.setup(world, balls)
+
+    assert mode.is_blizzard == False
+    assert getattr(ball, "original_base_speed") == 100.0
+
+    # Tick past 10 seconds to trigger blizzard
+    mode.tick(world, balls, delta=11.0)
+
+    assert mode.is_blizzard == True
+    assert world.arena.is_snowing == True
+    assert len(world.arena.hazards) == 5
+    assert all(h.kind == "ice_patch" for h in world.arena.hazards)
+    assert ball.base_speed == 30.0 # 100.0 * 0.3
+
+    # Tick past 5 seconds to end blizzard
+    mode.tick(world, balls, delta=6.0)
+
+    assert mode.is_blizzard == False
+    assert world.arena.is_snowing == False
+    assert ball.base_speed == 100.0
+
+    # Wait for ice patches to expire (15 seconds total)
+    mode.tick(world, balls, delta=15.0)
+
+    assert len(world.arena.hazards) == 0
