@@ -9452,7 +9452,7 @@
     },
     {
       "id": "idea-547",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Lunar Eclipse Event",
@@ -15474,6 +15474,23 @@
         "src/ai/dynamic_map_sections.py",
         "src/ai/dynamic_map_sections.gd",
         "tests/test_dynamic_map_sections.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-901",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Time-Dilation Field",
+      "description": "An anomalous zone in the arena where the flow of time slows down drastically. Entities, projectiles, and status effects within the field move and expire at half their normal rate. Players can use this defensively to dodge attacks or offensively to trap opponents in slow motion.",
+      "allowed_paths": [
+        "src/ai/time_dilation_field.py",
+        "src/ai/time_dilation_field.gd",
+        "tests/test_time_dilation_field.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

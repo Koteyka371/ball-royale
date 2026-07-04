@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-547] Lunar Eclipse Event — *2026-07-04 17:18:40 UTC*
+
+A rare 'Lunar Eclipse' event that occurs for a brief duration, simultaneously triggering both night time buffs and day time buffs across all classes while completely disabling perception limits, leading to chaotic full-arena fights.
+
+---
+
 ## [idea-531] Reverse Gravity Pulse — *2026-07-04 17:13:49 UTC*
 
 Periodically, gravity wells invert their pull and push entities outward with extreme force, adding a layer of unpredictability to the Gravity Well mode and creating new mobility options.
