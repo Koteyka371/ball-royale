@@ -9845,7 +9845,7 @@
     },
     {
       "id": "idea-570",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Rolling Boulders Event",
@@ -16071,6 +16071,23 @@
         "src/ai/interactive_hq_mini_games.py",
         "src/ai/interactive_hq_mini_games.gd",
         "tests/test_interactive_hq_mini_games.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-936",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Capture Points",
+      "description": "Add capture points to Battle Royale that give zone advantage or reveal enemy positions.",
+      "allowed_paths": [
+        "src/ai/capture_points.py",
+        "src/ai/capture_points.gd",
+        "tests/test_capture_points.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

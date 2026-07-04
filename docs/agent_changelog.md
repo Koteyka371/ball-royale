@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-570] Rolling Boulders Event — *2026-07-04 21:26:26 UTC*
+
+Periodically spawn massive boulders that roll linearly across the arena, crushing balls in their path and interacting physically with walls and other hazards before shattering into smaller rock hazards.
+
+---
+
 ## [idea-462] Sudden Death Meteor Shower — *2026-07-04 21:07:34 UTC*
 
 During the final 30 seconds of a match or when only two teams remain, a meteor shower begins hitting random spots on the arena. Each meteor deals massive AoE damage and leaves a temporary crater (impassable terrain) that alters movement paths and restricts dodging space.
