@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-524] Dynamic Map Hazards Based on Weather — *2026-07-04 13:13:44 UTC*
+
+Expand the weather chaos mode by introducing dynamic map elements that change based on weather. For example, rain can create mud puddles that slow players, snow can freeze certain areas causing sliding, and heatwaves can create localized fire zones that deal damage.
+
+---
+
 ## [idea-525] Shrinking Safe-Zone Mechanics — *2026-07-04 13:08:49 UTC*
 
 Introduce a game mode feature where the safe playable area gradually shrinks over time, applying damage-over-time (DoT) to any ball caught outside it, heavily discouraging camping.

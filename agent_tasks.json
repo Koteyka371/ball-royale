@@ -9061,7 +9061,7 @@
     },
     {
       "id": "idea-524",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Dynamic Map Hazards Based on Weather",
@@ -14723,6 +14723,40 @@
         "src/ai/transitions.py",
         "src/ai/transitions.gd",
         "tests/test_transitions.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-857",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aura Stacking Mode",
+      "description": "Players start with no base abilities but can collect elemental auras that drop globally. Collecting auras stacks their intensity or combines elements to unlock unique hybrid effects.",
+      "allowed_paths": [
+        "src/ai/aura_stacking.py",
+        "src/ai/aura_stacking.gd",
+        "tests/test_aura_stacking.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-858",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weaponized Recoil",
+      "description": "Shooting projectiles or using certain strong skills applies a slight knockback/recoil to the user, allowing skilled players to use recoil for evasive movement or faster traversal.",
+      "allowed_paths": [
+        "src/ai/weaponized_recoil.py",
+        "src/ai/weaponized_recoil.gd",
+        "tests/test_weaponized_recoil.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
