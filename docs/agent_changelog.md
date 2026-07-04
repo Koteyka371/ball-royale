@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-546] Sunlight Beam Hazard — *2026-07-04 18:38:42 UTC*
+
+During the day cycle, rare but highly damaging 'sunlight beams' can focus randomly on the arena, rapidly depleting HP of balls lacking daylight buffs (like vampires, assassins, or phantoms), forcing them to seek cover behind indestructible walls.
+
+---
+
 ## [idea-487] Mirror Image Decoy Movement — *2026-07-04 18:38:38 UTC*
 
 Instead of the decoy remaining completely static, it could perfectly mirror the Trickster's movements in the opposite direction. This would drastically increase confusion for opponents, as they would have to quickly figure out which movement pattern represents the real player trying to engage or flee.
