@@ -306,6 +306,60 @@ class BattleRoyaleMode(GameMode):
                 if dist > self.zone_radius:
                     b.hp -= 20.0 * delta # damage per second outside safe zone
 
+        # Meteor Shower logic for final 30 seconds or <= 2 teams
+        alive_teams = set()
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                alive_teams.add(getattr(b, "team", getattr(b, "ball_type", None)))
+
+        is_late_game = (len(alive_teams) <= 2) or (getattr(self, "zone_radius", 1000.0) <= 300.0)
+
+        if is_late_game:
+            if not hasattr(self, "meteor_shower_timer"):
+                self.meteor_shower_timer = 0.0
+            self.meteor_shower_timer += delta
+            if self.meteor_shower_timer >= 1.0:
+                self.meteor_shower_timer = 0.0
+                import random
+                import math
+                try:
+                    from arena.procedural_arena import Hazard
+                except ImportError:
+                    class Hazard:
+                        def __init__(self, id, x, y, radius, kind, damage):
+                            self.id = id
+                            self.x = x
+                            self.y = y
+                            self.radius = radius
+                            self.kind = kind
+                            self.damage = damage
+                            self.active = True
+                            self.target_radius = 0.0
+
+                if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    arena_width = getattr(world.arena, "width", 1000)
+                    arena_height = getattr(world.arena, "height", 1000)
+
+                    # Spawn within or near safe zone if possible
+                    angle = random.uniform(0, 2 * math.pi)
+                    dist = random.uniform(0, max(100.0, self.zone_radius))
+                    x = self.zone_x + math.cos(angle) * dist
+                    y = self.zone_y + math.sin(angle) * dist
+
+                    # Clamp to arena
+                    x = max(50, min(arena_width - 50, x))
+                    y = max(50, min(arena_height - 50, y))
+
+                    h_id = 16000 + len(world.arena.hazards) + random.randint(0, 10000)
+                    meteor = Hazard(id=h_id, x=x, y=y, radius=30.0, kind="meteor", damage=200.0)
+                    setattr(meteor, "duration", 5.0)
+                    meteor.target_radius = 30.0
+                    world.arena.hazards.append(meteor)
+
+                    if hasattr(world, "add_event") and not getattr(self, "meteor_warning_issued", False):
+                        self.meteor_warning_issued = True
+                        world.add_event("meteor_shower", {"message": "WARNING: Meteor shower detected in the area!"})
+
         # Weather logic
         controller = None
         for b in balls:

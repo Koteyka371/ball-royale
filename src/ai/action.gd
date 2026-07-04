@@ -4190,6 +4190,22 @@ func execute(strategy: String, delta: float):
                             if self.ball.hp <= 0:
                                 self.ball.alive = false
                         continue
+                    elif hazard.kind == "crater":
+                        var dx = self.ball.x - hazard.x
+                        var dy = self.ball.y - hazard.y
+                        var dist = sqrt(dx * dx + dy * dy)
+                        var r_b = 15.0
+                        if "radius" in self.ball:
+                            r_b = self.ball.radius
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("radius"):
+                            r_b = self.ball.get_meta("radius")
+                        var combined_radius = hazard.radius + r_b
+                        if dist < combined_radius and dist > 0.001:
+                            var overlap = combined_radius - dist
+                            self.ball.x += (dx / dist) * overlap
+                            self.ball.y += (dy / dist) * overlap
+                            if "vx" in self.ball: self.ball.vx *= 0.5
+                            if "vy" in self.ball: self.ball.vy *= 0.5
                     elif hazard.kind == "meteor":
                         var hd = hazard.damage * delta
                         var is_qs = false
