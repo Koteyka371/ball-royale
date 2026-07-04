@@ -3115,10 +3115,28 @@ class CustomMatchMode extends GameMode:
 					var b_timer = get_meta("boss_mutator_timer") + delta
 					if b_timer >= 10.0:
 						b_timer = 0.0
+						var is_night = false
+						if world != null and "arena" in world and world.arena != null:
+							if "is_night" in world.arena:
+								is_night = world.arena.is_night
+
+						var nocturnal_types = ["vampire", "assassin", "phantom", "warlock", "necromancer", "chaos", "mimic", "rogue", "ninja"]
+						var diurnal_types = ["paladin", "templar", "guardian", "warrior", "healer", "monk", "king", "sniper", "ranger"]
+
 						var valid_bosses = []
 						for b in balls:
 							if b.alive and b.get("ball_type", "") != "spectator":
+								var b_type = b.get("ball_type", "").to_lower()
+								if is_night and diurnal_types.has(b_type):
+									continue
+								if not is_night and nocturnal_types.has(b_type):
+									continue
 								valid_bosses.append(b)
+
+						if valid_bosses.size() == 0:
+							for b in balls:
+								if b.alive and b.get("ball_type", "") != "spectator":
+									valid_bosses.append(b)
 						if valid_bosses.size() > 0:
 							var new_boss = valid_bosses[randi() % valid_bosses.size()]
 							new_boss.set_meta("_is_boss_mutator", true)

@@ -2645,7 +2645,23 @@ class CustomMatchMode(GameMode):
                     if self.boss_mutator_timer >= 10.0:
                         self.boss_mutator_timer = 0.0
                         import random
-                        valid_bosses = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+                        is_night = getattr(getattr(world, "arena", None), "is_night", False)
+                        nocturnal_types = ["vampire", "assassin", "phantom", "warlock", "necromancer", "chaos", "mimic", "rogue", "ninja"]
+                        diurnal_types = ["paladin", "templar", "guardian", "warrior", "healer", "monk", "king", "sniper", "ranger"]
+
+                        valid_bosses = []
+                        for b in balls:
+                            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                                continue
+                            b_type = getattr(b, "ball_type", "").lower()
+                            if is_night and b_type in diurnal_types:
+                                continue
+                            if not is_night and b_type in nocturnal_types:
+                                continue
+                            valid_bosses.append(b)
+
+                        if not valid_bosses:
+                            valid_bosses = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
                         if valid_bosses:
                             new_boss = random.choice(valid_bosses)
                             new_boss._is_boss_mutator = True
