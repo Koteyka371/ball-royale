@@ -378,6 +378,14 @@ class ProfileManager:
 
         # Rewards
         sp_reward = 10 * min(streak, 10)
+
+        try:
+            is_weekend = datetime.date.fromisoformat(current_date_str).weekday() >= 5
+            if is_weekend:
+                sp_reward *= 2
+        except ValueError:
+            pass
+
         self.add_skill_points(sp_reward)
         rewards = {"skill_points": sp_reward}
 

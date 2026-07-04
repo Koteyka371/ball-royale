@@ -760,8 +760,10 @@ class BattleRoyaleMode(GameMode):
     def _award_skill_points(self):
         try:
             from system.profile import ProfileManager  # type: ignore
+            import datetime
             pm = ProfileManager("profile.json")
-            pm.add_skill_points(10)
+            points = 20 if datetime.date.today().weekday() >= 5 else 10
+            pm.add_skill_points(points)
         except Exception:
             pass
 
@@ -3433,8 +3435,10 @@ class SafeZoneMode(GameMode):
     def _award_skill_points(self):
         try:
             from system.profile import ProfileManager  # type: ignore
+            import datetime
             pm = ProfileManager("profile.json")
-            pm.add_skill_points(10)
+            points = 20 if datetime.date.today().weekday() >= 5 else 10
+            pm.add_skill_points(points)
         except Exception:
             pass
 
