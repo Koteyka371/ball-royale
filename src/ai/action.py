@@ -78,6 +78,52 @@ class Action:
             if hasattr(world, "add_event"):
                 world.add_event("level_up", {"ball": getattr(ball, "id", None), "level": ball.level, "stat": stat})
 
+
+    def _handle_reflect_bounce(self, original_attacker, initial_target, damage: float, bounce_chance: float = 0.5, max_bounces: int = 3, bounce_range: float = 120.0) -> None:
+        import random
+        import math
+
+        if random.random() > bounce_chance:
+            return
+
+        if not hasattr(self.world, "balls"):
+            return
+
+        current_source = original_attacker
+        hit_targets = {getattr(original_attacker, "id", None), getattr(initial_target, "id", None)}
+
+        for _ in range(max_bounces):
+            closest_dist = bounce_range + 1
+            next_target = None
+
+            for other in self.world.balls:
+                other_id = getattr(other, "id", None)
+                if getattr(other, "alive", False) and other_id not in hit_targets and getattr(other, "team", None) == getattr(original_attacker, "team", None) and other_id != getattr(original_attacker, "id", None):
+                    dx = getattr(other, "x", 0) - getattr(current_source, "x", 0)
+                    dy = getattr(other, "y", 0) - getattr(current_source, "y", 0)
+                    dist = math.sqrt(dx*dx + dy*dy)
+                    if dist <= bounce_range and dist < closest_dist:
+                        closest_dist = dist
+                        next_target = other
+
+            if next_target:
+                hit_targets.add(getattr(next_target, "id", None))
+                if hasattr(self, "_spawn_directed_particles"):
+                    self._spawn_directed_particles(next_target, current_source, "chain_lightning")
+
+                if hasattr(self.world, "_deal_damage"):
+                    old_dmg = getattr(initial_target, "damage", damage)
+                    initial_target.damage = damage * 0.75 # Lose 25% damage per bounce
+                    self.world._deal_damage(next_target, initial_target)
+                    initial_target.damage = old_dmg
+                elif hasattr(next_target, "take_damage"):
+                    next_target.take_damage(damage * 0.75)
+
+                damage *= 0.75
+                current_source = next_target
+            else:
+                break
+
     def _attempt_damage(self, attacker, target) -> None:
         import random
         # Check attack accuracy
@@ -167,6 +213,8 @@ class Action:
                     attacker.damage = damage_to_reflect
                     self.world._deal_damage(target, attacker)
                     attacker.damage = old_dmg
+
+                    self._handle_reflect_bounce(attacker, target, damage_to_reflect)
 
                 # If the shield broke, the remainder of the damage applies to the target
                 if capacity < 0:
@@ -426,6 +474,8 @@ class Action:
                                 attacker.damage = damage_to_reflect
                                 self.world._deal_damage(next_entity, attacker)
                                 attacker.damage = old_dmg
+
+                                self._handle_reflect_bounce(attacker, next_entity, damage_to_reflect)
 
                             if capacity < 0:
                                 remainder_damage = -capacity
@@ -1909,8 +1959,10 @@ class Action:
                                                     self.ball.damage = damage_to_reflect
                                                     self.world._deal_damage(self.ball, b)
                                                     self.ball.damage = old_ball_dmg
+                                                    self._handle_reflect_bounce(self.ball, b, damage_to_reflect)
                                                 elif hasattr(b, "take_damage"):
                                                     b.take_damage(damage_to_reflect)
+                                                    self._handle_reflect_bounce(self.ball, b, damage_to_reflect)
                                                 break
 
                                     if capacity < 0:
