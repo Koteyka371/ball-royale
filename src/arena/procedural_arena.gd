@@ -896,6 +896,9 @@ func update_zone(current_tick: int, delta: float) -> void:
                 elif randf() < 0.05:
                     h.kind = "orbital_accelerator"
                     h.damage = 0.0
+                elif randf() < 0.05:
+                    h.kind = "loadout_fragment"
+                    h.damage = 0.0
                 elif randf() < 0.2:
                     h.kind = "gravity_well"
                     h.damage = 0.0

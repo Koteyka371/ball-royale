@@ -393,6 +393,26 @@ func process_daily_login(current_date_str: String) -> Dictionary:
     save_profile()
     return rewards
 
+func add_ancient_fragment() -> bool:
+    var count = data.get("ancient_fragments", 0) + 1
+    data["ancient_fragments"] = count
+    if count >= 3:
+        data["ancient_fragments"] -= 3
+        var unlocked = false
+        if not data.get("cosmetics", []).has("ancient_aura"):
+            add_cosmetic("ancient_aura")
+            unlocked = true
+        if not data.get("unlocked_balls", []).has("ancient_guardian"):
+            if not data.has("unlocked_balls"):
+                data["unlocked_balls"] = []
+            data["unlocked_balls"].append("ancient_guardian")
+            unlocked = true
+        if unlocked:
+            save_profile()
+        return true
+    save_profile()
+    return false
+
 func add_material(material_name: String, amount: int) -> void:
     if not data.has("inventory"):
         data["inventory"] = {"materials": {}, "crafted_items": {}}

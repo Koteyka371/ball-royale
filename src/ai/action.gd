@@ -7482,6 +7482,44 @@ func _collect_booster(delta: float):
                 if "arena" in self.world and "hazards" in self.world.arena:
                     if self.world.arena.hazards.has(nearest):
                         self.world.arena.hazards.erase(nearest)
+            elif "kind" in nearest and nearest.kind == "loadout_fragment":
+                var current_fragments = 0
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    current_fragments = self.ball.get("collected_fragments", 0) + 1
+                    self.ball["collected_fragments"] = current_fragments
+                elif self.ball.has_method("get_meta"):
+                    current_fragments = self.ball.get_meta("collected_fragments", 0) + 1
+                    self.ball.set_meta("collected_fragments", current_fragments)
+                elif "collected_fragments" in self.ball:
+                    self.ball.collected_fragments += 1
+                    current_fragments = self.ball.collected_fragments
+                else:
+                    self.ball.collected_fragments = 1
+                    current_fragments = 1
+
+                var unlocked = false
+                if self.world != null and "profile_manager" in self.world and self.world.profile_manager != null and self.world.profile_manager.has_method("add_ancient_fragment"):
+                    unlocked = self.world.profile_manager.add_ancient_fragment()
+                elif current_fragments >= 3:
+                    unlocked = true
+
+                if unlocked:
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["cosmetic"] = "ancient_aura"
+                    elif self.ball.has_method("set_meta"):
+                        self.ball.set_meta("cosmetic", "ancient_aura")
+                    elif "cosmetic" in self.ball:
+                        self.ball.cosmetic = "ancient_aura"
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+
             elif "kind" in nearest and nearest.kind == "nemesis_compass_item":
                 if not self.ball.has_meta("inventory"):
                     self.ball.set_meta("inventory", [])
