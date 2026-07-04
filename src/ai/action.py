@@ -1339,11 +1339,40 @@ class Action:
                                             other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 2.0
 
                                         import random
+                                        import math
                                         b_type = getattr(b, "ball_type", "")
                                         b_team = getattr(b, "team", "")
-                                        if (b_type == "trickster" or b_team == "trickster") and random.random() < 0.3:
-                                            other.is_confused = True
-                                            other.confusion_timer = 3.0
+
+                                        if b_type == "trickster" or b_team == "trickster":
+                                            # Trickster decoy specific logic
+                                            other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 1.5
+
+                                            # Minor visual noise
+                                            if hasattr(self.world, "events"):
+                                                self.world.events.append({"type": "visual_effect", "data": {"type": "noise", "x": other.x, "y": other.y, "intensity": 0.5}})
+
+                                            if random.random() < 0.3:
+                                                other.is_confused = True
+                                                other.confusion_timer = 3.0
+
+                                            # Generate fragmentation visuals bouncing off other
+                                            if hasattr(self.world, "events"):
+                                                for i in range(4):
+                                                    angle = random.uniform(0, 2 * math.pi)
+                                                    tx = other.x + math.cos(angle) * 150
+                                                    ty = other.y + math.sin(angle) * 150
+                                                    self.world.events.append({
+                                                        "type": "visual_effect",
+                                                        "data": {
+                                                            "type": "fragmentation_projectile",
+                                                            "x": b.x,
+                                                            "y": b.y,
+                                                            "tx": tx,
+                                                            "ty": ty,
+                                                            "bounce": True,
+                                                            "color": "purple"
+                                                        }
+                                                    })
 
                                         if other.hp <= 0:
                                             other.alive = False
