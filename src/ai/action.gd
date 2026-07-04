@@ -1851,12 +1851,26 @@ func execute(strategy: String, delta: float):
 								var bnx = bdx / bdist
 								var bny = bdy / bdist
 								if kind == "gravity_well":
-									if typeof(b) == TYPE_DICTIONARY:
-										b["x"] += bnx * force
-										b["y"] += bny * force
+									var is_inverted = false
+									if typeof(hazard) == TYPE_OBJECT and hazard.has_meta("is_inverted"):
+										is_inverted = hazard.get_meta("is_inverted")
+									elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("is_inverted"):
+										is_inverted = hazard["is_inverted"]
+
+									if is_inverted:
+										if typeof(b) == TYPE_DICTIONARY:
+											b["x"] -= bnx * force * 3.0
+											b["y"] -= bny * force * 3.0
+										else:
+											b.x -= bnx * force * 3.0
+											b.y -= bny * force * 3.0
 									else:
-										b.x += bnx * force
-										b.y += bny * force
+										if typeof(b) == TYPE_DICTIONARY:
+											b["x"] += bnx * force
+											b["y"] += bny * force
+										else:
+											b.x += bnx * force
+											b.y += bny * force
 								else:
 									if typeof(b) == TYPE_DICTIONARY:
 										b["x"] -= bnx * force
@@ -1888,24 +1902,38 @@ func execute(strategy: String, delta: float):
 						var nx = dx / dist
 						var ny = dy / dist
 						if kind == "gravity_well":
-							if typeof(self.ball) == TYPE_DICTIONARY:
-								self.ball["x"] += nx * force
-								self.ball["y"] += ny * force
-								if hazard.get("damage", 0.0) > 0.0 and dist_sq < radius * radius:
-									self.ball["hp"] -= float(hazard.get("damage", 0.0)) * delta
-									if self.ball["hp"] <= 0:
-										self.ball["hp"] = 0
-										self.ball["alive"] = false
-										self.ball["killer"] = "gravity_well"
+							var is_inverted = false
+							if typeof(hazard) == TYPE_OBJECT and hazard.has_meta("is_inverted"):
+								is_inverted = hazard.get_meta("is_inverted")
+							elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("is_inverted"):
+								is_inverted = hazard["is_inverted"]
+
+							if is_inverted:
+								if typeof(self.ball) == TYPE_DICTIONARY:
+									self.ball["x"] -= nx * force * 3.0
+									self.ball["y"] -= ny * force * 3.0
+								else:
+									self.ball.x -= nx * force * 3.0
+									self.ball.y -= ny * force * 3.0
 							else:
-								self.ball.x += nx * force
-								self.ball.y += ny * force
-								if hazard.get("damage", 0.0) > 0.0 and dist_sq < radius * radius:
-									self.ball.hp -= float(hazard.get("damage", 0.0)) * delta
-									if self.ball.hp <= 0:
-										self.ball.hp = 0
-										self.ball.alive = false
-										self.ball.killer = "gravity_well"
+								if typeof(self.ball) == TYPE_DICTIONARY:
+									self.ball["x"] += nx * force
+									self.ball["y"] += ny * force
+									if hazard.get("damage", 0.0) > 0.0 and dist_sq < radius * radius:
+										self.ball["hp"] -= float(hazard.get("damage", 0.0)) * delta
+										if self.ball["hp"] <= 0:
+											self.ball["hp"] = 0
+											self.ball["alive"] = false
+											self.ball["killer"] = "gravity_well"
+								else:
+									self.ball.x += nx * force
+									self.ball.y += ny * force
+									if hazard.get("damage", 0.0) > 0.0 and dist_sq < radius * radius:
+										self.ball.hp -= float(hazard.get("damage", 0.0)) * delta
+										if self.ball.hp <= 0:
+											self.ball.hp = 0
+											self.ball.alive = false
+											self.ball.killer = "gravity_well"
 						else:
 							if typeof(self.ball) == TYPE_DICTIONARY:
 								self.ball["x"] -= nx * force

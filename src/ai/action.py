@@ -1258,8 +1258,13 @@ class Action:
                                     bnx = bdx / bdist
                                     bny = bdy / bdist
                                     if kind == "gravity_well":
-                                        b.x += bnx * force
-                                        b.y += bny * force
+                                        if getattr(hazard, "is_inverted", False):
+                                            # Extreme push out
+                                            b.x -= bnx * force * 3.0
+                                            b.y -= bny * force * 3.0
+                                        else:
+                                            b.x += bnx * force
+                                            b.y += bny * force
                                     else:
                                         b.x -= bnx * force
                                         b.y -= bny * force
@@ -1280,16 +1285,21 @@ class Action:
                             ny = dy / dist
 
                             if kind == "gravity_well":
-                                # Pull towards center
-                                self.ball.x += nx * force
-                                self.ball.y += ny * force
-                                # Apply damage if inside gravity well
-                                if getattr(hazard, "damage", 0.0) > 0.0 and dist_sq < radius * radius:
-                                    self.ball.hp -= hazard.damage * delta
-                                    if self.ball.hp <= 0:
-                                        self.ball.alive = False
-                                        self.ball.hp = 0
-                                        self.ball.killer = "gravity_well"
+                                if getattr(hazard, "is_inverted", False):
+                                    # Push away from center extremely
+                                    self.ball.x -= nx * force * 3.0
+                                    self.ball.y -= ny * force * 3.0
+                                else:
+                                    # Pull towards center
+                                    self.ball.x += nx * force
+                                    self.ball.y += ny * force
+                                    # Apply damage if inside gravity well
+                                    if getattr(hazard, "damage", 0.0) > 0.0 and dist_sq < radius * radius:
+                                        self.ball.hp -= hazard.damage * delta
+                                        if self.ball.hp <= 0:
+                                            self.ball.alive = False
+                                            self.ball.hp = 0
+                                            self.ball.killer = "gravity_well"
                             else:
                                 # Push away from center
                                 self.ball.x -= nx * force

@@ -5213,6 +5213,25 @@ class GravityWellMode extends GameMode:
     func tick(world, balls, delta = 0.016):
         super.tick(world, balls, delta)
 
+        # Update gravity well inversions
+        var gw_hazards_all = []
+        if "hazards" in world.arena:
+            for h in world.arena.hazards:
+                if h.kind == "gravity_well":
+                    gw_hazards_all.append(h)
+
+        for gw in gw_hazards_all:
+            if not gw.has_meta("invert_timer"):
+                gw.set_meta("invert_timer", randf_range(0.0, 5.0))
+                gw.set_meta("is_inverted", false)
+
+            var t = gw.get_meta("invert_timer")
+            t -= delta
+            if t <= 0:
+                gw.set_meta("is_inverted", not gw.get_meta("is_inverted"))
+                t = randf_range(3.0, 5.0)
+            gw.set_meta("invert_timer", t)
+
         spawn_timer += delta
         if spawn_timer >= 5.0:
             spawn_timer = 0.0
