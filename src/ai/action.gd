@@ -3723,6 +3723,74 @@ func execute(strategy: String, delta: float):
                                     hazard.set_meta("duration", 0.0)
                                 elif "duration" in hazard:
                                     hazard.duration = 0.0
+                            elif trap_variant == "decoy":
+                                var owner_id = null
+                                if hazard.has_method("get_meta") and hazard.has_meta("owner_id"):
+                                    owner_id = hazard.get_meta("owner_id")
+                                elif "owner_id" in hazard:
+                                    owner_id = hazard.owner_id
+
+                                if owner_id != null:
+                                    var owner_ball = null
+                                    var balls_list = []
+                                    if world != null and "balls" in world:
+                                        balls_list = world.balls
+                                    elif world != null and "entities" in world:
+                                        balls_list = world.entities
+
+                                    for b in balls_list:
+                                        if "id" in b and b.id == owner_id:
+                                            owner_ball = b
+                                            break
+
+                                    if owner_ball != null:
+                                        var decoy = null
+                                        if owner_ball.has_method("duplicate"):
+                                            decoy = owner_ball.duplicate()
+                                        elif typeof(owner_ball) == TYPE_DICTIONARY:
+                                            decoy = owner_ball.duplicate()
+
+                                        if decoy != null:
+                                            if "id" in decoy:
+                                                decoy.id = randi() % 90000 + 10000
+                                            if "hp" in decoy and "max_hp" in decoy:
+                                                decoy.max_hp = 100.0
+                                                decoy.hp = 100.0
+                                            if "damage" in decoy:
+                                                decoy.damage = 0.0
+                                            if "vx" in decoy:
+                                                decoy.vx = 0.0
+                                            if "vy" in decoy:
+                                                decoy.vy = 0.0
+                                            if "speed" in decoy:
+                                                decoy.speed = 0.0
+
+                                            if "x" in decoy: decoy.x = hazard.x
+                                            if "y" in decoy: decoy.y = hazard.y
+                                            if "alive" in decoy: decoy.alive = true
+
+                                            if typeof(decoy) == TYPE_OBJECT and decoy.has_method("set_meta"):
+                                                decoy.set_meta("is_decoy", true)
+                                                decoy.set_meta("decoy_timer", 5.0)
+                                                decoy.set_meta("decoy_type", "stun_trap")
+                                                decoy.set_meta("skill", null)
+                                                decoy.set_meta("active_skill", null)
+                                                decoy.set_meta("SKILL", null)
+                                            elif typeof(decoy) == TYPE_DICTIONARY:
+                                                decoy["is_decoy"] = true
+                                                decoy["decoy_timer"] = 5.0
+                                                decoy["decoy_type"] = "stun_trap"
+                                                decoy["skill"] = null
+                                                decoy["active_skill"] = null
+                                                decoy["SKILL"] = null
+
+                                            if world != null and "balls" in world:
+                                                world.balls.append(decoy)
+
+                                if hazard.has_method("set_meta"):
+                                    hazard.set_meta("duration", 0.0)
+                                elif "duration" in hazard:
+                                    hazard.duration = 0.0
                             elif trap_variant == "emp":
                                 var is_emped = false
                                 if "is_emped" in self.ball:
