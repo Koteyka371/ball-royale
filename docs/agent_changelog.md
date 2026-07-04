@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-559] Guild Raid Bosses — *2026-07-04 18:38:35 UTC*
+
+Introduce a PvE mode where guild members team up to fight massive boss balls with unique mechanics. Damage dealt by all guild members over a week is combined to defeat the boss and earn exclusive guild cosmetics.
+
+---
+
 ## [idea-552] Chain Reflect Damage — *2026-07-04 18:19:28 UTC*
 
 Reflected damage has a chance to chain to a nearby enemy, creating a 'bouncing' reflect effect that punishes grouped enemies when hitting a shielded target.

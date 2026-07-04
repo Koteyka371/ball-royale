@@ -9656,7 +9656,7 @@
     },
     {
       "id": "idea-559",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Guild Raid Bosses",
@@ -15661,6 +15661,40 @@
         "src/ai/chronos_booster.py",
         "src/ai/chronos_booster.gd",
         "tests/test_chronos_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-912",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Prismatic Reflect Shield",
+      "description": "An upgraded version of the reflect shield that splits the reflected damage among all enemies within a certain radius, rather than just returning it to the attacker or bouncing it to a single target.",
+      "allowed_paths": [
+        "src/ai/prismatic_reflect_shield.py",
+        "src/ai/prismatic_reflect_shield.gd",
+        "tests/test_prismatic_reflect_shield.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-913",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reflect Overload Mechanic",
+      "description": "If a reflect shield takes damage exceeding its maximum capacity by more than 50% in a single hit, it shatters violently, dealing AoE damage to all nearby entities (including the shielded ball's allies) but inflicting a massive stun to the attacker.",
+      "allowed_paths": [
+        "src/ai/reflect_overload_mechanic.py",
+        "src/ai/reflect_overload_mechanic.gd",
+        "tests/test_reflect_overload_mechanic.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
