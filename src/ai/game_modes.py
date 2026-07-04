@@ -382,6 +382,18 @@ class BattleRoyaleMode(GameMode):
             world.arena.is_snowing = (self.weather in ["snow", "blizzard"])
             world.arena.is_heatwave = (self.weather == "heatwave")
 
+
+            if self.weather == "heatwave":
+                if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                    try:
+                        from arena.procedural_arena import Hazard
+                        x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                        y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                        fire = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=60.0, kind="fire_zone", damage=5.0)
+                        setattr(fire, 'duration', 8.0)
+                        world.arena.hazards.append(fire)
+                    except ImportError:
+                        pass
             if not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
 
@@ -462,7 +474,7 @@ class BattleRoyaleMode(GameMode):
             elif self.weather == "rain":
                 arena_name = getattr(world.arena, "__class__", type(world.arena)).__name__.lower()
                 is_dirt_sand = "sand" in arena_name or "dirt" in arena_name or "summer" in arena_name or getattr(world.arena, "is_sandstorming", False)
-                if is_dirt_sand and getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
                     from arena.procedural_arena import Hazard
                     # Spawn mud pit
                     x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
@@ -1537,6 +1549,15 @@ class WeatherChaosMode(GameMode):
             if not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
 
+            if self.weather == "heatwave":
+                if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                    from arena.procedural_arena import Hazard
+                    x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                    y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                    fire = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=60.0, kind="fire_zone", damage=5.0)
+                    setattr(fire, 'duration', 8.0)
+                    world.arena.hazards.append(fire)
+
             if self.weather == "sandstorm":
                 if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
                     from ai.ball_types_swarm import Swarm
@@ -1614,7 +1635,7 @@ class WeatherChaosMode(GameMode):
             elif self.weather == "rain":
                 arena_name = getattr(world.arena, "__class__", type(world.arena)).__name__.lower()
                 is_dirt_sand = "sand" in arena_name or "dirt" in arena_name or "summer" in arena_name or getattr(world.arena, "is_sandstorming", False)
-                if is_dirt_sand and getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
                     from arena.procedural_arena import Hazard
                     # Spawn mud pit
                     x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
