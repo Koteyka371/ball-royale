@@ -7609,7 +7609,7 @@ class CursedBuffZoneMode extends GameMode:
 
 	func _init() -> void:
 		name = "Cursed Buff Zones"
-		description = "Zones grant massive speed and damage buffs, but rapidly drain HP. High risk, high reward."
+		description = "Zones grant massive speed (+200%) and damage (+150%) buffs, but rapidly drain HP or invert steering. High risk, high reward."
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -7629,6 +7629,9 @@ class CursedBuffZoneMode extends GameMode:
 			var x = randf_range(200, arena_width - 200)
 			var y = randf_range(200, arena_height - 200)
 			var zone = Hazard.new(21000+i, x, y, zone_radius, "cursed_buff_zone", 0.0)
+			zone.set_meta("buff_multiplier_speed", 3.0)
+			zone.set_meta("buff_multiplier_damage", 2.5)
+			zone.set_meta("curse_type", "hp_drain" if randf() < 0.5 else "inverted_steering")
 			world.arena.hazards.append(zone)
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
@@ -7654,6 +7657,7 @@ class CursedBuffZoneMode extends GameMode:
 			var b_radius = b.get("radius", 15.0) if is_dict else b.radius
 
 			var in_zone = false
+			var active_zone = null
 			for z in zones:
 				var z_x = z.get("x", 0.0) if typeof(z) == TYPE_DICTIONARY else z.x
 				var z_y = z.get("y", 0.0) if typeof(z) == TYPE_DICTIONARY else z.y
@@ -7662,32 +7666,59 @@ class CursedBuffZoneMode extends GameMode:
 				var dist = sqrt((b_x - z_x) * (b_x - z_x) + (b_y - z_y) * (b_y - z_y))
 				if dist < z_radius + b_radius:
 					in_zone = true
+					active_zone = z
 					break
 
 			if in_zone:
-				var max_hp = b.get("max_hp", 100.0) if is_dict else (b.max_hp if "max_hp" in b else 100.0)
-				var hp_drain = max_hp * 0.05 * delta
+				var speed_mult = 3.0
+				var damage_mult = 2.5
+				var curse_type = "hp_drain"
+				if active_zone != null:
+					if typeof(active_zone) == TYPE_DICTIONARY:
+						speed_mult = active_zone.get("buff_multiplier_speed", 3.0)
+						damage_mult = active_zone.get("buff_multiplier_damage", 2.5)
+						curse_type = active_zone.get("curse_type", "hp_drain")
+					else:
+						speed_mult = active_zone.get_meta("buff_multiplier_speed") if active_zone.has_meta("buff_multiplier_speed") else 3.0
+						damage_mult = active_zone.get_meta("buff_multiplier_damage") if active_zone.has_meta("buff_multiplier_damage") else 2.5
+						curse_type = active_zone.get_meta("curse_type") if active_zone.has_meta("curse_type") else "hp_drain"
 
 				if is_dict:
-					b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 2.0
-					b["damage"] = b.get("base_damage", b.get("damage", 10.0)) * 2.0
-					var cur_hp = b.get("hp", 100.0) - hp_drain
-					if cur_hp <= 0:
-						b["hp"] = 0
-						b["alive"] = false
-						b["killer"] = "cursed_buff_zone"
-					else:
-						b["hp"] = cur_hp
+					b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * speed_mult
+					b["damage"] = b.get("base_damage", b.get("damage", 10.0)) * damage_mult
+
+					if curse_type == "hp_drain":
+						var max_hp = b.get("max_hp", 100.0)
+						var hp_drain = max_hp * 0.05 * delta
+						var cur_hp = b.get("hp", 100.0) - hp_drain
+						if cur_hp <= 0:
+							b["hp"] = 0
+							b["alive"] = false
+							b["killer"] = "cursed_buff_zone"
+						else:
+							b["hp"] = cur_hp
+					elif curse_type == "inverted_steering":
+						b["invert_timer"] = max(b.get("invert_timer", 0.0), 0.1)
 				else:
-					b.speed = (b.base_speed if "base_speed" in b else b.speed) * 2.0
-					b.damage = (b.base_damage if "base_damage" in b else b.damage) * 2.0
-					var cur_hp = b.hp - hp_drain
-					if cur_hp <= 0:
-						b.hp = 0
-						b.alive = false
-						b.killer = "cursed_buff_zone"
-					else:
-						b.hp = cur_hp
+					b.speed = (b.base_speed if "base_speed" in b else b.speed) * speed_mult
+					b.damage = (b.base_damage if "base_damage" in b else b.damage) * damage_mult
+
+					if curse_type == "hp_drain":
+						var max_hp = b.max_hp if "max_hp" in b else 100.0
+						var hp_drain = max_hp * 0.05 * delta
+						var cur_hp = b.hp - hp_drain
+						if cur_hp <= 0:
+							b.hp = 0
+							b.alive = false
+							b.killer = "cursed_buff_zone"
+						else:
+							b.hp = cur_hp
+					elif curse_type == "inverted_steering":
+						if "invert_timer" in b:
+							b.invert_timer = max(b.invert_timer, 0.1)
+						elif b.has_method("get_meta"):
+							var current_invert = b.get_meta("invert_timer") if b.has_meta("invert_timer") else 0.0
+							b.set_meta("invert_timer", max(current_invert, 0.1))
 			else:
 				if is_dict:
 					b["speed"] = b.get("base_speed", b.get("speed", 100.0))

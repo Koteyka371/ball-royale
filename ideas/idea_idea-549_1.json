@@ -1,4 +1,4 @@
 {
-  "title": "Quantum Entanglement Skill",
-  "description": "A new AI skill where two balls become quantumly entangled. Damage taken by one is split between both, but buffs received by one also apply to the other."
+    "title": "Quantum Tunneling Hazard",
+    "description": "A new hazard type that acts as a pair of linked zones. When a ball enters one zone, it is instantly teleported to the other, but its velocity is randomized and it receives a short 'disorientation' debuff (like inverted steering) for 1 second. This adds chaotic repositioning to the arena."
 }

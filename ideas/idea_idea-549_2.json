@@ -1,4 +1,4 @@
 {
-  "title": "Bounty Hunter Mode with Dynamic Economy",
-  "description": "Killing players grants gold which can be spent mid-game in a neutral shop zone to permanently upgrade max HP, base speed, or base damage for the rest of the match."
+    "title": "Vampiric Leech Balls",
+    "description": "A new ball class 'Leech' that deals very low base damage but heals itself for 200% of the damage it deals. Its special ability is a short-range tether that slows the target and continuously drains HP over time. It forces enemies to break line of sight or outrange the tether to survive."
 }
