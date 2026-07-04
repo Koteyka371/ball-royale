@@ -255,7 +255,7 @@ class BattleRoyaleMode(GameMode):
         import random
         self.random = random
         self.match_time = 0.0
-        self.finale_boss_spawned = False
+        self.sudden_death_black_hole_spawned = False
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -788,50 +788,42 @@ class BattleRoyaleMode(GameMode):
 
         self.match_time += delta
 
-        # Finale Boss logic
+        # Sudden Death Black Hole logic
         if self.match_time > 120.0 and hasattr(world, "arena") and world.arena:
-            if not getattr(self, "finale_boss_spawned", False):
-                self.finale_boss_spawned = True
+            if not getattr(self, "sudden_death_black_hole_spawned", False):
+                self.sudden_death_black_hole_spawned = True
                 if not hasattr(world.arena, "hazards"):
                     world.arena.hazards = []
-                # Spawn finale boss at center
+                # Spawn black hole at center
                 cx = getattr(world.arena, "width", 1000.0) / 2.0
                 cy = getattr(world.arena, "height", 1000.0) / 2.0
                 from arena.procedural_arena import Hazard
-                boss = Hazard(id=len(world.arena.hazards) + 9000, x=cx, y=cy, radius=50.0, kind="finale_boss", damage=100.0)
+                boss = Hazard(id=len(world.arena.hazards) + 9000, x=cx, y=cy, radius=50.0, kind="massive_black_hole", damage=100.0)
                 setattr(boss, "duration", 9999.0)
-                setattr(boss, "boss_timer", 0.0)
+                setattr(boss, "lifetime", 0.0)
                 world.arena.hazards.append(boss)
                 if hasattr(world, "add_event"):
-                    world.add_event("finale_boss_spawn", {"message": "SUDDEN DEATH! The Finale Boss has spawned!"})
+                    world.add_event("sudden_death_black_hole_spawn", {"message": "SUDDEN DEATH! A massive black hole is consuming the arena!"})
             else:
                 for h in getattr(world.arena, "hazards", []):
-                    if getattr(h, "kind", "") == "finale_boss":
+                    if getattr(h, "kind", "") == "massive_black_hole":
                         h.radius += 5.0 * delta
+                        if not hasattr(h, "lifetime"):
+                            h.lifetime = 0.0
+                        h.lifetime += delta
 
-                        if not hasattr(h, "boss_timer"):
-                            h.boss_timer = 0.0
-                        h.boss_timer += delta
-
-                        if h.boss_timer >= 1.0:
-                            h.boss_timer = 0.0
-                            import math
-                            from arena.procedural_arena import Hazard
-                            angle = self.random.uniform(0, 2 * math.pi)
-                            proj = Hazard(id=len(world.arena.hazards) + self.random.randint(1000, 9999),
-                                          x=h.x, y=h.y, radius=15.0, kind="boss_projectile", damage=50.0)
-                            setattr(proj, "vx", math.cos(angle) * 300.0)
-                            setattr(proj, "vy", math.sin(angle) * 300.0)
-                            setattr(proj, "duration", 10.0)
-                            world.arena.hazards.append(proj)
-
-        # Move projectiles
-        if hasattr(world, "arena") and getattr(world.arena, "hazards", None) is not None:
-            for h in world.arena.hazards:
-                if getattr(h, "kind", "") == "boss_projectile":
-                    if hasattr(h, "vx") and hasattr(h, "vy"):
-                        h.x += h.vx * delta
-                        h.y += h.vy * delta
+                        import math
+                        for b in balls:
+                            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                                dx = h.x - b.x
+                                dy = h.y - b.y
+                                dist_sq = dx*dx + dy*dy
+                                if dist_sq > 0.0001:
+                                    dist = math.sqrt(dist_sq)
+                                    nx, ny = dx/dist, dy/dist
+                                    pull = (h.radius * 2.0 / max(10.0, dist)) * 50.0 * delta * (1.0 + h.lifetime/10.0)
+                                    b.x += nx * pull
+                                    b.y += ny * pull
 
         self.dark_phase_timer += delta
 
