@@ -988,7 +988,72 @@ class Action:
 
             self.ball.mimic_timer = getattr(self.ball, "mimic_timer", 10.0) - delta
             if self.ball.mimic_timer <= 0 or getattr(self.ball, "hp", 100) <= 0:
+                self.ball.is_mimic_clone = False
+                self.ball.is_mimic_charging = True
+                self.ball.mimic_charge_timer = 3.0
+                self.ball.hp = getattr(self.ball, "max_hp", 100.0)  # restore hp so it doesn't die instantly if charging
+                self.ball.alive = True # explicitly revive it just in case
+                self.ball.is_illusion = False # Disable illusion so it doesn't explode prematurely
+                return # Give it one frame before acting to prevent immediate detonation
+            else:
+                self._clamp_position()
+                return
+
+        if getattr(self.ball, "is_mimic_charging", False) and getattr(self.ball, "alive", True):
+            nearest_enemy = None
+            min_dist = float('inf')
+            if hasattr(self.world, "balls"):
+                for b in self.world.balls:
+                    b_team = getattr(b, "team", "")
+                    if b_team == "": b_team = getattr(b, "ball_type", "")
+                    my_team = getattr(self.ball, "team", "")
+                    if my_team == "": my_team = getattr(self.ball, "ball_type", "")
+                    if getattr(b, "alive", True) and b_team != my_team:
+                        dist = math.sqrt((self.ball.x - getattr(b, "x", 0))**2 + (self.ball.y - getattr(b, "y", 0))**2)
+                        if dist < min_dist:
+                            min_dist = dist
+                            nearest_enemy = b
+
+            detonate = False
+            if nearest_enemy:
+                speed = getattr(self.ball, "base_speed", 200.0) * 1.5
+                if min_dist > 0.0001:
+                    dx = nearest_enemy.x - self.ball.x
+                    dy = nearest_enemy.y - self.ball.y
+                    self.ball.vx = (dx / min_dist) * speed
+                    self.ball.vy = (dy / min_dist) * speed
+                else:
+                    self.ball.vx = 0.0
+                    self.ball.vy = 0.0
+
+                self.ball.x += self.ball.vx * delta
+                self.ball.y += self.ball.vy * delta
+
+                if min_dist <= 30.0:
+                    detonate = True
+            else:
+                detonate = True
+
+            self.ball.mimic_charge_timer = getattr(self.ball, "mimic_charge_timer", 3.0) - delta
+            if self.ball.mimic_charge_timer <= 0:
+                detonate = True
+
+            if detonate:
                 self.ball.alive = False
+                self.ball.hp = 0
+                if hasattr(self.world, "balls"):
+                    for b in self.world.balls:
+                        if getattr(b, "alive", True) and getattr(b, "team", getattr(b, "ball_type", "")) != getattr(self.ball, "team", getattr(self.ball, "ball_type", "")):
+                            d = math.sqrt((self.ball.x - getattr(b, "x", 0))**2 + (self.ball.y - getattr(b, "y", 0))**2)
+                            if d <= 60.0:
+                                if hasattr(b, "take_damage"):
+                                    b.take_damage(20.0)
+                                else:
+                                    b.hp -= 20.0
+                                    if b.hp <= 0:
+                                        b.alive = False
+                if hasattr(self.world, "events"):
+                    self.world.events.append({'type': 'explosion', 'data': {'x': self.ball.x, 'y': self.ball.y, 'radius': 60.0}})
 
             self._clamp_position()
             return
@@ -1522,7 +1587,7 @@ class Action:
                                 except Exception:
                                     pass
 
-        if getattr(self.ball, "is_illusion", False):
+        if getattr(self.ball, "is_illusion", False) and not getattr(self.ball, "is_mimic_charging", False) and not getattr(self.ball, "is_mimic_clone", False):
             self.ball.illusion_timer -= delta
             if self.ball.illusion_timer <= 0:
                 self.ball.alive = False
@@ -1531,7 +1596,7 @@ class Action:
         # Global illusion explosion check
         if hasattr(self.world, "balls"):
             for b in self.world.balls:
-                if getattr(b, "is_illusion", False) and not getattr(b, "is_mimic_clone", False):
+                if getattr(b, "is_illusion", False) and not getattr(b, "is_mimic_clone", False) and not getattr(b, "is_mimic_charging", False):
                     # Absorbs 1 hit or timer runs out
                     if getattr(b, "hp", 1.0) <= 0 or getattr(b, "illusion_timer", 1.0) <= 0 or not getattr(b, "alive", True):
                         if not getattr(b, "_illusion_exploded", False):
