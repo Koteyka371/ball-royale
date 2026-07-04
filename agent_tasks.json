@@ -9367,7 +9367,7 @@
     },
     {
       "id": "idea-542",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Magnetic Polarity System",
@@ -15117,6 +15117,40 @@
         "src/ui/guild_tournaments.gd",
         "src/ai/guild_tournaments.py",
         "tests/test_guild_tournaments.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-880",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncy Castle Game Mode",
+      "description": "A chaotic new game mode where the arena boundaries act as powerful jump pads instead of hard walls. Balls colliding with the outer walls are launched back towards the center with massively increased speed, turning edge fights into high-risk pinball scenarios.",
+      "allowed_paths": [
+        "src/ai/bouncy_castle_game.py",
+        "src/ai/bouncy_castle_game.gd",
+        "tests/test_bouncy_castle_game.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-881",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Chain Reaction",
+      "description": "If an explosive decoy is detonated by the explosion of another decoy, its explosion radius and damage are amplified by 50%, encouraging players to chain decoy placements.",
+      "allowed_paths": [
+        "src/ai/decoy_chain_reaction.py",
+        "src/ai/decoy_chain_reaction.gd",
+        "tests/test_decoy_chain_reaction.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

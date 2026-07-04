@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-542] Magnetic Polarity System — *2026-07-04 15:25:25 UTC*
+
+Implement a Magnetic Polarity system where each ball is randomly assigned a positive or negative charge at the start of the match. Balls with opposite charges are slowly pulled towards each other, while balls with the same charge are slightly repelled. The polarity could flip periodically throughout the match, forcing AI to adapt their movement and positioning dynamically.
+
+---
+
 ## [idea-535] Decoy Enhancement Module — *2026-07-04 15:18:06 UTC*
 
 Allow 'decoy_item' pickups to optionally explode upon expiring or being destroyed, dealing minor area-of-effect damage or blinding nearby enemies to provide greater utility and zoning.
