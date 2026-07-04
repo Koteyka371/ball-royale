@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-550] Shield Generator Drone — *2026-07-04 19:01:21 UTC*
+
+A new drone variant that follows allies and projects a localized shield, absorbing incoming damage until its energy is depleted or it is destroyed by enemies.
+
+---
+
 ## [idea-558] Wall-Jump Skill — *2026-07-04 19:01:17 UTC*
 
 Allow specific ball types to bounce off walls with increased velocity to perform surprise attacks.
