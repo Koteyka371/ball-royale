@@ -576,7 +576,30 @@ class PinballArena extends ProceduralArena:
                     if randf() < 0.05:
                         h.set_meta("flip_timer", 0.5)
 
+
+class SpringArena extends ProceduralArena:
+	func _init(size: float = 2000.0, seed_val = null):
+		super._init(size, seed_val)
+		generate()
+
+	func generate():
+		super.generate()
+		var w = width
+		var h = height
+
+		# Add numerous bounce pads
+		for i in range(15):
+			var x = randf_range(100.0, w - 100.0)
+			var y = randf_range(100.0, h - 100.0)
+			var h_id = 3500 + hazards.size()
+			var radius = randf_range(40.0, 70.0)
+			var pad = ProceduralArena.Hazard.new(h_id, x, y, radius, "bounce_pad", 0.0)
+			pad.set_meta("vx", randf_range(-10.0, 10.0))
+			pad.set_meta("vy", randf_range(-10.0, 10.0))
+			hazards.append(pad)
+
 const ARENAS = [
+    "spring",
     "shrinking_hazards",
 
 	"thunderstorm",
