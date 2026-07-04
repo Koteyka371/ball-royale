@@ -195,6 +195,8 @@ func generate():
             kind = "stamina_drain_zone"
         elif r < 0.9998:
             kind = "slip_zone"
+        elif r < 0.99985:
+            kind = "vortex"
         elif r < 0.9999:
             kind = "tall_grass"
         else:
@@ -296,6 +298,9 @@ func generate():
         elif kind == "tall_grass":
             radius = rng.randf_range(30.0, 60.0)
             damage = 5.0
+        elif kind == "vortex":
+            radius = 80.0
+            damage = 20.0
         elif kind == "spinning_laser":
             radius = rng.randf_range(100.0, 150.0)
             damage = 100.0
