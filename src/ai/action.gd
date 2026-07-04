@@ -1808,6 +1808,106 @@ func execute(strategy: String, delta: float):
         elif self.ball.has_method("set_meta"):
             self.ball.set_meta("chain_lightning_timer", cl_timer)
 
+        if self.world != null and self.world.has_method("add_event"):
+            var enemies = self._get_enemies()
+            var hazards = []
+            if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+                hazards = self.world.arena.hazards
+            var items = []
+            if self.world != null and "arena" in self.world and self.world.arena != null and "items" in self.world.arena:
+                items = self.world.arena.items
+            var boosters = []
+            if self.world != null and "boosters" in self.world:
+                boosters = self.world.boosters
+
+            if enemies.size() > 0 or hazards.size() > 0 or items.size() > 0 or boosters.size() > 0:
+                var weather_is_thunderstorm = false
+                if self.world != null:
+                    if "arena" in self.world and self.world.arena != null and "weather" in self.world.arena and self.world.arena.weather == "thunderstorm":
+                        weather_is_thunderstorm = true
+                    elif "game_mode" in self.world and self.world.game_mode != null and "weather" in self.world.game_mode and self.world.game_mode.weather == "thunderstorm":
+                        weather_is_thunderstorm = true
+
+                var chain_range = 150.0
+                if weather_is_thunderstorm:
+                    chain_range = 300.0
+                var chain_range_sq = chain_range * chain_range
+
+                var jump_count = 0
+                var current_target = self.ball
+                var hit_entities = []
+                hit_entities.append(self.ball)
+
+                while jump_count < 3:
+                    var nearby = []
+                    var ct_x = current_target.x if "x" in current_target else current_target.get_meta("x") if typeof(current_target) == TYPE_OBJECT and current_target.has_meta("x") else current_target["x"]
+                    var ct_y = current_target.y if "y" in current_target else current_target.get_meta("y") if typeof(current_target) == TYPE_OBJECT and current_target.has_meta("y") else current_target["y"]
+                    for e in enemies:
+                        if not hit_entities.has(e):
+                            var dist_sq = pow(e.x - ct_x, 2) + pow(e.y - ct_y, 2)
+                            if dist_sq < chain_range_sq:
+                                nearby.append({"dist": dist_sq, "entity": e, "type": "enemy"})
+                    for h in hazards:
+                        if not hit_entities.has(h):
+                            var is_active = true
+                            if "active" in h: is_active = h.active
+                            if is_active:
+                                var dist_sq = pow(h.x - ct_x, 2) + pow(h.y - ct_y, 2)
+                                if dist_sq < chain_range_sq:
+                                    var t_var = ""
+                                    if typeof(h) == TYPE_OBJECT and h.has_meta("trap_variant"): t_var = h.get_meta("trap_variant")
+                                    if t_var == "emp_trap":
+                                        nearby.append({"dist": -999999.0 + dist_sq, "entity": h, "type": "hazard"})
+                                    else:
+                                        nearby.append({"dist": dist_sq, "entity": h, "type": "hazard"})
+                    for b in boosters:
+                        if not hit_entities.has(b):
+                            var dist_sq = pow(b.x - ct_x, 2) + pow(b.y - ct_y, 2)
+                            if dist_sq < chain_range_sq:
+                                nearby.append({"dist": dist_sq, "entity": b, "type": "booster"})
+                    for it in items:
+                        if not hit_entities.has(it):
+                            var dist_sq = pow(it.x - ct_x, 2) + pow(it.y - ct_y, 2)
+                            if dist_sq < chain_range_sq:
+                                nearby.append({"dist": dist_sq, "entity": it, "type": "item"})
+
+                    if self.world != null and "arena" in self.world and self.world.arena != null:
+                        var aw = 2000.0
+                        var ah = 2000.0
+                        if "width" in self.world.arena: aw = self.world.arena.width
+                        if "height" in self.world.arena: ah = self.world.arena.height
+                        var walls = [{"x": 0.0, "y": ct_y, "name": "left_wall"}, {"x": aw, "y": ct_y, "name": "right_wall"}, {"x": ct_x, "y": 0.0, "name": "top_wall"}, {"x": ct_x, "y": ah, "name": "bottom_wall"}]
+                        for w in walls:
+                            if not hit_entities.has(w["name"]):
+                                var dist_sq = pow(w["x"] - ct_x, 2) + pow(w["y"] - ct_y, 2)
+                                if dist_sq < chain_range_sq:
+                                    nearby.append({"dist": dist_sq, "entity": w, "type": "wall"})
+
+                    if nearby.size() == 0:
+                        break
+
+                    nearby.sort_custom(func(a, b): return a["dist"] < b["dist"])
+                    var next_entity = nearby[0]["entity"]
+                    var e_type = nearby[0]["type"]
+
+                    var tx = next_entity["x"] if e_type == "wall" else next_entity.x
+                    var ty = next_entity["y"] if e_type == "wall" else next_entity.y
+
+                    self.world.add_event("visual_effect", {"type": "line", "x": ct_x, "y": ct_y, "tx": tx, "ty": ty, "color": "yellow"})
+
+                    if e_type == "wall":
+                        hit_entities.append(next_entity["name"])
+                        # Create an object to act as the current target for next iteration
+                        var temp_target = RefCounted.new()
+                        temp_target.set_meta("x", tx)
+                        temp_target.set_meta("y", ty)
+                        current_target = temp_target
+                    else:
+                        hit_entities.append(next_entity)
+                        current_target = next_entity
+
+                    jump_count += 1
+
     # Entanglement logic
     if my_ball.has_method("has_meta") and my_ball.has_meta("entangle_timer"):
         var et = my_ball.get_meta("entangle_timer")
