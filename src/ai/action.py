@@ -1436,8 +1436,12 @@ class Action:
                                     dy = other.y - b.y
                                     dist = math.sqrt(dx*dx + dy*dy)
                                     if dist <= radius:
-                                        if getattr(b, "decoy_type", "") == "stun_trap":
+                                        decoy_type = getattr(b, "decoy_type", "")
+                                        if decoy_type == "stun_trap":
                                             other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 5.0
+                                        elif decoy_type == "explosive":
+                                            other.hp -= explosion_damage
+                                            other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 2.0
                                         else:
                                             other.hp -= explosion_damage
                                             other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 2.0
@@ -4716,6 +4720,8 @@ class Action:
                         decoy.damage = 0
                         decoy.is_decoy = True
                         decoy.decoy_timer = 5.0
+                        decoy.owner_id = getattr(self.ball, "id", None)
+                        decoy.decoy_type = "explosive" # make the pickup decoy explode automatically
                         self.world.balls.append(decoy)
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:

@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Confusion Matrix",
+  "description": "If a decoy item is picked up by a trickster-type ball, the resulting decoy emits a small confusion aura upon expiration, dealing no damage but confusing all enemies in a large radius for a longer duration than the standard trickster fragmentation."
+}
