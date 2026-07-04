@@ -5526,6 +5526,20 @@ func execute(strategy: String, delta: float):
             if self.ball.has_method("set_meta"):
                 self.ball.set_meta("emp_immunity_timer", emp_imm_timer)
 
+        var imm_timer = 0.0
+        if "immunity_timer" in self.ball:
+            imm_timer = float(self.ball.immunity_timer)
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("immunity_timer"):
+            imm_timer = float(self.ball.get_meta("immunity_timer"))
+        if imm_timer > 0:
+            imm_timer -= delta
+            if imm_timer < 0:
+                imm_timer = 0.0
+            if "immunity_timer" in self.ball:
+                self.ball.immunity_timer = imm_timer
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("immunity_timer", imm_timer)
+
         if "nemesis_booster_timer" in self.ball:
             n_timer = float(self.ball.nemesis_booster_timer)
         elif self.ball.has_method("get_meta") and self.ball.has_meta("nemesis_booster_timer"):
