@@ -816,7 +816,59 @@ class BattleRoyaleMode(GameMode):
                             decoy.active_skill = None
                         world.balls.append(decoy)
 
+
         self.match_time += delta
+
+        # Meteor Shower final phase logic
+        teams_alive = set(getattr(b, "team", None) for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator")
+        if self.match_time > 90.0 or len(teams_alive) <= 2:
+            self.br_meteor_timer = getattr(self, "br_meteor_timer", 0.0) + delta
+            if self.br_meteor_timer >= 1.5:
+                self.br_meteor_timer = 0.0
+                if hasattr(world, "arena") and world.arena:
+                    aw = getattr(world.arena, "width", 1000.0)
+                    ah = getattr(world.arena, "height", 1000.0)
+                    mx = getattr(self, "random", __import__("random")).uniform(50.0, aw - 50.0)
+                    my = getattr(self, "random", __import__("random")).uniform(50.0, ah - 50.0)
+
+                    import math
+                    # Deal AoE damage
+                    for b in balls:
+                        if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                            dist = math.hypot(getattr(b, 'x', 0) - mx, getattr(b, 'y', 0) - my)
+                            if dist <= 80.0:
+                                if hasattr(b, "take_damage"):
+                                    b.take_damage(50.0)
+                                else:
+                                    b.hp -= 50.0
+                                    if b.hp <= 0:
+                                        b.alive = False
+
+                    # Spawn crater (wall)
+                    if not hasattr(world.arena, "hazards"):
+                        world.arena.hazards = []
+
+                    try:
+                        from arena.procedural_arena import Hazard
+                        crater = Hazard(id=len(world.arena.hazards) + 9500, x=mx, y=my, radius=40.0, kind="wall", damage=0.0)
+                        setattr(crater, "duration", 10.0)
+                        world.arena.hazards.append(crater)
+                    except ImportError:
+                        class FallbackHazard:
+                            def __init__(self, id, x, y, radius, kind, damage):
+                                self.id = id
+                                self.x = x
+                                self.y = y
+                                self.radius = radius
+                                self.kind = kind
+                                self.damage = damage
+                                self.active = True
+                        crater = FallbackHazard(id=len(world.arena.hazards) + 9500, x=mx, y=my, radius=40.0, kind="wall", damage=0.0)
+                        setattr(crater, "duration", 10.0)
+                        world.arena.hazards.append(crater)
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("visual_effect", {"type": "explosion", "x": mx, "y": my, "radius": 80.0})
 
         # Sudden Death Black Hole logic
         if self.match_time > 120.0 and hasattr(world, "arena") and world.arena:
