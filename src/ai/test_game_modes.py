@@ -730,3 +730,21 @@ def test_meteor_shower_mode():
     assert hazard.kind == "meteor"
     assert hazard.damage == 200.0
     assert hazard.radius == 30.0
+
+def test_day_night_mode_indestructible_wall_cover():
+    from ai.game_modes import DayNightMode
+    world = type('MockWorld', (), {})()
+    world.arena = type('MockArena', (), {'is_night': False, 'hazards': []})()
+
+    hazard = type('MockHazard', (), {'kind': 'indestructible_wall', 'x': 500.0, 'y': 500.0, 'radius': 50.0})()
+    world.arena.hazards.append(hazard)
+
+    mode = DayNightMode()
+    mode.setup(world, [])
+
+    b = type('MockBall', (), {'alive': True, 'ball_type': 'vampire', 'x': 450.0, 'y': 500.0, 'hp': 100})()
+
+    mode.active_sunlight_beams.append({'x': 550.0, 'y': 500.0, 'radius': 200.0, 'duration': 2.0})
+    mode.tick(world, [b], delta=1.0)
+
+    assert b.hp == 100, "Ball should not take damage from sunlight beam when behind indestructible wall"
