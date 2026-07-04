@@ -269,6 +269,8 @@ def test_weather_mode_sandstorm_shelter():
 
     class MockArena:
         def __init__(self):
+            self.width = 1000
+            self.height = 1000
             self.hazards = [
                 MockHazard("shelter", 100, 100, 50),
                 MockHazard("flare", 500, 500, 100)
@@ -277,6 +279,8 @@ def test_weather_mode_sandstorm_shelter():
     class MockWorld:
         def __init__(self):
             self.arena = MockArena()
+            self.width = 10000
+            self.height = 10000
             self.leaderboard_manager = type("Mock", (), {"data": {"current_season": 4}})()
             self.balls = []
             self.dead_balls = []
@@ -312,7 +316,8 @@ def test_weather_mode_sandstorm_shelter():
 
     # Sheltered by flare
     b3 = MockBall(3, "scout")
-    b3.x, b3.y = 520, 500
+    # Move b3 closer to the center to not be hit by safe zone damage
+    b3.x, b3.y = 500, 500
 
     # Earth elemental
     b4 = MockBall(4, "sand_elemental")
@@ -322,9 +327,21 @@ def test_weather_mode_sandstorm_shelter():
     world.balls = balls
     mode.setup(world, balls)
 
+    # Force a very large zone radius to prevent safe zone damage during this test
+    mode.zone_radius = 10000.0
+
     mode.weather = "sandstorm"
 
-    mode.tick(world, balls, 1.0)
+    # Mock random to prevent random damage
+    import random
+    original_random = random.random
+    random.random = lambda: 1.0 # Guarantee > 0.05
+    mode.random = random
+
+    try:
+        mode.tick(world, balls, 1.0)
+    finally:
+        random.random = original_random
 
     # Assertions
     # b1: not sheltered, reduced vision and dot damage
