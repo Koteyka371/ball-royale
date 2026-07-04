@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-523] Loadout Code Fragments (Collectibles) — *2026-07-04 14:34:21 UTC*
+
+Introduce scattered fragments of 'ancient' loadout codes hidden within procedurally generated arenas as rare items. If a player collects all fragments of a code during a match, they permanently unlock a special cosmetic or hidden ball type associated with that unique loadout code.
+
+---
+
 ## [idea-532] Chain Lightning Relic — *2026-07-04 14:34:17 UTC*
 
 A consumable item that, upon use, strikes the nearest enemy with a lightning bolt that bounces to up to 3 additional nearby enemies, dealing decreasing damage with each jump. Useful for breaking up grouped opponents.
