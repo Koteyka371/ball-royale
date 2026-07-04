@@ -9112,7 +9112,7 @@
     },
     {
       "id": "idea-527",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Autumn Arena with leaves",
@@ -14638,6 +14638,57 @@
         "src/ai/kinetic_rebound_armor.py",
         "src/ai/kinetic_rebound_armor.gd",
         "tests/test_kinetic_rebound_armor.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-852",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Control Tower",
+      "description": "A new neutral building or capture point that occasionally spawns. Whichever team holds the zone gains control over the weather (e.g. directing lightning strikes at enemies, or causing wind to push enemies away).",
+      "allowed_paths": [
+        "src/ai/control_tower.py",
+        "src/ai/control_tower.gd",
+        "tests/test_control_tower.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-853",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Overcharge Mechanic for Lightning Balls",
+      "description": "If a ball type like Lightning Rod absorbs too many strikes in a short period of time, it gains an 'Overcharged' state where it moves 30% faster and periodically zaps nearby enemies but slowly loses health due to excess energy.",
+      "allowed_paths": [
+        "src/ai/overcharge_mechanic_for_lightning_balls.py",
+        "src/ai/overcharge_mechanic_for_lightning_balls.gd",
+        "tests/test_overcharge_mechanic_for_lightning_balls.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-854",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Overcharge Booster",
+      "description": "A temporary power-up that makes your skills cost health instead of having a cooldown, while also giving your normal attacks a chance to inflict a short micro-stun.",
+      "allowed_paths": [
+        "src/ai/overcharge_booster.py",
+        "src/ai/overcharge_booster.gd",
+        "tests/test_overcharge_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

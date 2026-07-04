@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-527] Autumn Arena with leaves — *2026-07-04 13:01:19 UTC*
+
+Autumn arena obscures vision
+
+---
+
 ## [idea-410] Lightning Rod Ball Type — *2026-07-04 12:39:45 UTC*
 
 A new ball type that can absorb lightning strikes for health/speed boosts instead of taking damage, and attracts lightning away from allies.
