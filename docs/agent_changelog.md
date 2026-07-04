@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-517] Custom Season Badges — *2026-07-04 12:04:23 UTC*
+
+Players can equip a custom badge next to their name corresponding to the highest season rank they achieved.
+
+---
+
 ## [idea-447] Black Hole Hazards — *2026-07-04 11:50:02 UTC*
 
 Hazards that exert a gravitational pull on all balls within a certain radius, sucking them in towards a central point that damages them.

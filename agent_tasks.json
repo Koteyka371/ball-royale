@@ -8942,7 +8942,7 @@
     },
     {
       "id": "idea-517",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Custom Season Badges",
@@ -14501,6 +14501,40 @@
         "src/ai/interactive_match_spectating.py",
         "src/ai/interactive_match_spectating.gd",
         "tests/test_interactive_match_spectating.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-844",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Anti-Gravity Boots Item",
+      "description": "A new equippable item that significantly reduces the pull force of gravity-based hazards, allowing players to safely traverse dangerous zones.",
+      "allowed_paths": [
+        "src/ai/anti_gravity_boots_item.py",
+        "src/ai/anti_gravity_boots_item.gd",
+        "tests/test_anti_gravity_boots_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-845",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Cosmic Storm Weather Event",
+      "description": "A random weather event that spawns miniature gravity wells across the arena, temporarily altering movement dynamics and adding chaos.",
+      "allowed_paths": [
+        "src/ai/cosmic_storm.py",
+        "src/ai/cosmic_storm.gd",
+        "tests/test_cosmic_storm.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
