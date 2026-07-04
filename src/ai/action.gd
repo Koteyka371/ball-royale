@@ -4895,6 +4895,35 @@ func execute(strategy: String, delta: float):
                             if self.ball.hp <= 0:
                                 self.ball.alive = false
                         continue
+					elif hazard.kind == "boulder" or hazard.kind == "rock":
+						var hd = hazard.damage * delta
+						var is_qs = false
+						if self.ball.has_method("get_meta") and self.ball.has_meta("is_in_quicksand"):
+							is_qs = self.ball.get_meta("is_in_quicksand")
+						elif "is_in_quicksand" in self.ball:
+							is_qs = self.ball.is_in_quicksand
+						if is_qs:
+							hd *= 2.0
+						var shielded = false
+						for dome in arena.hazards:
+							var dkind = dome.get("kind", "") if typeof(dome) == TYPE_DICTIONARY else (dome.kind if "kind" in dome else "")
+							if dkind == "orbital_shield_dome":
+								var dx = dome.get("x", 0.0) if typeof(dome) == TYPE_DICTIONARY else dome.x
+								var dy = dome.get("y", 0.0) if typeof(dome) == TYPE_DICTIONARY else dome.y
+								var dist = sqrt((self.ball.x - dx)*(self.ball.x - dx) + (self.ball.y - dy)*(self.ball.y - dy))
+								var r = dome.get("radius", 300.0) if typeof(dome) == TYPE_DICTIONARY else (dome.radius if "radius" in dome else 300.0)
+								if dist <= r:
+									shielded = true
+									break
+						if shielded:
+							hd *= 0.1
+						if self.ball.has_method("take_damage"):
+							self.ball.take_damage(hd)
+						elif "hp" in self.ball:
+							self.ball.hp -= hd
+							if self.ball.hp <= 0:
+								self.ball.alive = false
+						continue
                     elif hazard.kind == "meteor":
                         var hd = hazard.damage * delta
                         var is_qs = false

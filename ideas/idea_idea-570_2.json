@@ -1,0 +1,4 @@
+{
+  "title": "Magnetic polarity walls",
+  "description": "Walls around the arena dynamically change their magnetic polarity (positive/negative). Balls with matching polarity are repelled strongly, while opposite polarity balls are sucked into the walls and trapped for a short duration."
+}

@@ -6286,6 +6286,131 @@ class FloorIsLavaMode(GameMode):
                 if b.hp <= 0:
                     b.alive = False
 
+
+class BoulderCrushMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Boulder Crush"
+        self.description = "Massive boulders roll across the arena, crushing balls and shattering into smaller rocks upon hitting boundaries or walls."
+        self.spawn_timer = 0.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+        self.spawn_timer = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        self.spawn_timer += delta
+
+        import random
+        import math
+
+        try:
+            from arena.procedural_arena import Hazard
+        except ImportError:
+            class Hazard:
+                def __init__(self, id, x, y, radius, kind, damage):
+                    self.id = id
+                    self.x = x
+                    self.y = y
+                    self.radius = radius
+                    self.kind = kind
+                    self.damage = damage
+                    self.active = True
+                    self.target_radius = radius
+
+        arena_w = getattr(world.arena, "width", 1000)
+        arena_h = getattr(world.arena, "height", 1000)
+
+        # Spawn logic
+        if self.spawn_timer >= 3.0:
+            self.spawn_timer = 0.0
+            side = random.choice(["top", "bottom", "left", "right"])
+            b_id = 30000 + len(world.arena.hazards) + random.randint(0, 10000)
+
+            radius = 120.0
+            damage = 100.0 # Huge continuous damage or flat chunks
+
+            if side == "top":
+                x = random.uniform(radius, arena_w - radius)
+                y = -radius
+                vx = random.uniform(-100, 100)
+                vy = random.uniform(300, 500)
+            elif side == "bottom":
+                x = random.uniform(radius, arena_w - radius)
+                y = arena_h + radius
+                vx = random.uniform(-100, 100)
+                vy = random.uniform(-500, -300)
+            elif side == "left":
+                x = -radius
+                y = random.uniform(radius, arena_h - radius)
+                vx = random.uniform(300, 500)
+                vy = random.uniform(-100, 100)
+            else:
+                x = arena_w + radius
+                y = random.uniform(radius, arena_h - radius)
+                vx = random.uniform(-500, -300)
+                vy = random.uniform(-100, 100)
+
+            boulder = Hazard(id=b_id, x=x, y=y, radius=radius, kind="boulder", damage=damage)
+            boulder.vx = vx
+            boulder.vy = vy
+            boulder.target_radius = radius
+            world.arena.hazards.append(boulder)
+
+        # Update hazards
+        surviving = []
+        new_rocks = []
+        for h in world.arena.hazards:
+            if getattr(h, "kind", "") == "boulder":
+                h.x += getattr(h, "vx", 0) * delta
+                h.y += getattr(h, "vy", 0) * delta
+
+                shatter = False
+
+                # Check walls
+                for other in world.arena.hazards:
+                    if getattr(other, "kind", "") in ["laser_wall", "wall", "stone_wall"]:
+                        dist = math.hypot(h.x - other.x, h.y - other.y)
+                        if dist < h.radius + getattr(other, "radius", 50.0):
+                            shatter = True
+                            break
+
+                # Check bounds
+                if h.x < -h.radius * 2 or h.x > arena_w + h.radius * 2 or h.y < -h.radius * 2 or h.y > arena_h + h.radius * 2:
+                    shatter = True
+
+                if shatter:
+                    # Spawn smaller rocks
+                    for i in range(3):
+                        r_id = 40000 + random.randint(0, 100000)
+                        rock = Hazard(id=r_id, x=h.x, y=h.y, radius=30.0, kind="rock", damage=25.0)
+                        rock.vx = getattr(h, "vx", 0) * random.uniform(0.5, 1.5) + random.uniform(-150, 150)
+                        rock.vy = getattr(h, "vy", 0) * random.uniform(0.5, 1.5) + random.uniform(-150, 150)
+                        rock.target_radius = 30.0
+                        setattr(rock, "duration", 5.0)
+                        new_rocks.append(rock)
+                else:
+                    surviving.append(h)
+            elif getattr(h, "kind", "") == "rock":
+                h.x += getattr(h, "vx", 0) * delta
+                h.y += getattr(h, "vy", 0) * delta
+
+                if hasattr(h, "duration"):
+                    h.duration -= delta
+                    if h.duration > 0:
+                        surviving.append(h)
+                else:
+                    # Default lifetime check if missing duration somehow
+                    if -h.radius * 2 <= h.x <= arena_w + h.radius * 2 and -h.radius * 2 <= h.y <= arena_h + h.radius * 2:
+                        surviving.append(h)
+            else:
+                surviving.append(h)
+
+        world.arena.hazards = surviving + new_rocks
+
 class MeteorShowerMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -6645,6 +6770,7 @@ class LunarEclipseEventMode(GameMode):
 
 GAME_MODES = {
     "meteor_shower": MeteorShowerMode(),
+    "boulder_crush": BoulderCrushMode(),
 
     "black_market": BlackMarketMode(),
     "floor_is_lava": FloorIsLavaMode(),

@@ -2979,6 +2979,25 @@ class Action:
                                 if self.ball.hp <= 0:
                                     self.ball.alive = False
                             continue
+                        elif hazard.kind in ["boulder", "rock"]:
+                            hazard_damage = hazard.damage * delta
+                            if getattr(self.ball, "is_in_quicksand", False):
+                                hazard_damage *= 2.0
+                            shielded = False
+                            for dome in self.world.arena.hazards:
+                                if dome.kind == "orbital_shield_dome":
+                                    if getattr(self.world, "math", __import__("math")).hypot(self.ball.x - dome.x, self.ball.y - dome.y) <= getattr(dome, "radius", 300.0):
+                                        shielded = True
+                                        break
+                            if shielded:
+                                hazard_damage *= 0.1
+                            if hasattr(self.ball, "take_damage"):
+                                self.ball.take_damage(hazard_damage)
+                            elif hasattr(self.ball, "hp"):
+                                self.ball.hp -= hazard_damage
+                                if self.ball.hp <= 0:
+                                    self.ball.alive = False
+                            continue
                         elif hazard.kind == "meteor":
                             hazard_damage = hazard.damage * delta
                             if getattr(self.ball, "is_in_quicksand", False):

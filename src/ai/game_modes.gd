@@ -7720,6 +7720,174 @@ class FloorIsLavaMode extends GameMode:
 					if hp <= 0:
 						b.alive = false
 
+class BoulderCrushMode extends GameMode:
+	var spawn_timer = 0.0
+	var rng = RandomNumberGenerator.new()
+
+	func _init():
+		super()
+		name = "Boulder Crush"
+		description = "Massive boulders roll across the arena, crushing balls and shattering into smaller rocks upon hitting boundaries or walls."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if not "hazards" in world.arena:
+			world.arena.hazards = []
+		spawn_timer = 0.0
+		rng.randomize()
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+		spawn_timer += delta
+
+		var arena_w = 1000.0
+		var arena_h = 1000.0
+		if "width" in world.arena:
+			arena_w = world.arena.width
+		if "height" in world.arena:
+			arena_h = world.arena.height
+
+		if spawn_timer >= 3.0:
+			spawn_timer = 0.0
+			var side = rng.randi_range(0, 3)
+			var b_id = 30000 + world.arena.hazards.size() + rng.randi_range(0, 10000)
+
+			var r = 120.0
+			var dmg = 100.0
+			var bx = 0.0
+			var by = 0.0
+			var bvx = 0.0
+			var bvy = 0.0
+
+			if side == 0:
+				bx = rng.randf_range(r, arena_w - r)
+				by = -r
+				bvx = rng.randf_range(-100, 100)
+				bvy = rng.randf_range(300, 500)
+			elif side == 1:
+				bx = rng.randf_range(r, arena_w - r)
+				by = arena_h + r
+				bvx = rng.randf_range(-100, 100)
+				bvy = rng.randf_range(-500, -300)
+			elif side == 2:
+				bx = -r
+				by = rng.randf_range(r, arena_h - r)
+				bvx = rng.randf_range(300, 500)
+				bvy = rng.randf_range(-100, 100)
+			else:
+				bx = arena_w + r
+				by = rng.randf_range(r, arena_h - r)
+				bvx = rng.randf_range(-500, -300)
+				bvy = rng.randf_range(-100, 100)
+
+			var boulder = {
+				"id": b_id,
+				"x": bx,
+				"y": by,
+				"radius": r,
+				"kind": "boulder",
+				"damage": dmg,
+				"active": true,
+				"target_radius": r,
+				"vx": bvx,
+				"vy": bvy
+			}
+			world.arena.hazards.append(boulder)
+
+		var surviving = []
+		var new_rocks = []
+
+		for h in world.arena.hazards:
+			var kind = h.get("kind", "") if typeof(h) == TYPE_DICTIONARY else (h.kind if "kind" in h else "")
+			if kind == "boulder":
+				var h_vx = h.get("vx", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.vx if "vx" in h else 0.0)
+				var h_vy = h.get("vy", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.vy if "vy" in h else 0.0)
+				var h_x = h.get("x", 0.0) if typeof(h) == TYPE_DICTIONARY else h.x
+				var h_y = h.get("y", 0.0) if typeof(h) == TYPE_DICTIONARY else h.y
+				var h_r = h.get("radius", 0.0) if typeof(h) == TYPE_DICTIONARY else h.radius
+
+				h_x += h_vx * delta
+				h_y += h_vy * delta
+
+				if typeof(h) == TYPE_DICTIONARY:
+					h["x"] = h_x
+					h["y"] = h_y
+				else:
+					h.x = h_x
+					h.y = h_y
+
+				var shatter = false
+
+				for other in world.arena.hazards:
+					var okind = other.get("kind", "") if typeof(other) == TYPE_DICTIONARY else (other.kind if "kind" in other else "")
+					if okind == "laser_wall" or okind == "wall" or okind == "stone_wall":
+						var ox = other.get("x", 0.0) if typeof(other) == TYPE_DICTIONARY else other.x
+						var oy = other.get("y", 0.0) if typeof(other) == TYPE_DICTIONARY else other.y
+						var orad = other.get("radius", 50.0) if typeof(other) == TYPE_DICTIONARY else (other.radius if "radius" in other else 50.0)
+						var dist = sqrt((h_x - ox)*(h_x - ox) + (h_y - oy)*(h_y - oy))
+						if dist < h_r + orad:
+							shatter = true
+							break
+
+				if h_x < -h_r * 2 or h_x > arena_w + h_r * 2 or h_y < -h_r * 2 or h_y > arena_h + h_r * 2:
+					shatter = true
+
+				if shatter:
+					for i in range(3):
+						var rx = h_vx * rng.randf_range(0.5, 1.5) + rng.randf_range(-150, 150)
+						var ry = h_vy * rng.randf_range(0.5, 1.5) + rng.randf_range(-150, 150)
+						var rock = {
+							"id": 40000 + rng.randi_range(0, 100000),
+							"x": h_x,
+							"y": h_y,
+							"radius": 30.0,
+							"kind": "rock",
+							"damage": 25.0,
+							"active": true,
+							"target_radius": 30.0,
+							"vx": rx,
+							"vy": ry,
+							"duration": 5.0
+						}
+						new_rocks.append(rock)
+				else:
+					surviving.append(h)
+
+			elif kind == "rock":
+				var h_vx = h.get("vx", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.vx if "vx" in h else 0.0)
+				var h_vy = h.get("vy", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.vy if "vy" in h else 0.0)
+				var h_x = h.get("x", 0.0) if typeof(h) == TYPE_DICTIONARY else h.x
+				var h_y = h.get("y", 0.0) if typeof(h) == TYPE_DICTIONARY else h.y
+
+				h_x += h_vx * delta
+				h_y += h_vy * delta
+
+				if typeof(h) == TYPE_DICTIONARY:
+					h["x"] = h_x
+					h["y"] = h_y
+				else:
+					h.x = h_x
+					h.y = h_y
+
+				var has_dur = typeof(h) == TYPE_DICTIONARY and h.has("duration") or typeof(h) != TYPE_DICTIONARY and "duration" in h
+				if has_dur:
+					var dur = h.get("duration", 0.0) if typeof(h) == TYPE_DICTIONARY else h.duration
+					dur -= delta
+					if typeof(h) == TYPE_DICTIONARY:
+						h["duration"] = dur
+					else:
+						h.duration = dur
+					if dur > 0:
+						surviving.append(h)
+				else:
+					surviving.append(h)
+			else:
+				surviving.append(h)
+
+		world.arena.hazards = surviving
+		for r in new_rocks:
+			world.arena.hazards.append(r)
+
 class MeteorShowerMode extends GameMode:
 	var spawn_timer = 0.0
 	var rng = RandomNumberGenerator.new()
@@ -8212,6 +8380,7 @@ class LunarEclipseEventMode extends GameMode:
 
 var GAME_MODES = {
 	"meteor_shower": MeteorShowerMode.new(),
+	"boulder_crush": BoulderCrushMode.new(),
 
 	"black_market": BlackMarketMode.new(),
 	"floor_is_lava": FloorIsLavaMode.new(),
