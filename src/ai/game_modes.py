@@ -577,8 +577,11 @@ class BattleRoyaleMode(GameMode):
                     b.speed = getattr(b, "base_speed", 100.0)
                 b.damage = b.base_damage
                 if hasattr(b, "hp"):
-                    max_hp = getattr(b, "max_hp", 100.0)
-                    b.hp = min(max_hp, b.hp + 5.0 * delta)
+                    if not has_water_trait:
+                        b.hp -= 2.0 * delta
+                    else:
+                        max_hp = getattr(b, "max_hp", 100.0)
+                        b.hp = min(max_hp, b.hp + 5.0 * delta)
                 b.dash_range_mult = 1.5
                 b.steering_mult = 0.5
                 if getattr(b, "SKILL", "") == "fireball":
@@ -1741,8 +1744,11 @@ class WeatherChaosMode(GameMode):
                     b.speed = getattr(b, "base_speed", 100.0)
                 b.damage = b.base_damage
                 if hasattr(b, "hp"):
-                    max_hp = getattr(b, "max_hp", 100.0)
-                    b.hp = min(max_hp, b.hp + 5.0 * delta)
+                    if not has_water_trait:
+                        b.hp -= 2.0 * delta
+                    else:
+                        max_hp = getattr(b, "max_hp", 100.0)
+                        b.hp = min(max_hp, b.hp + 5.0 * delta)
                 # rain makes surface slippery/increases dash range but reduces steering
                 b.dash_range_mult = 1.5
                 b.steering_mult = 0.5
