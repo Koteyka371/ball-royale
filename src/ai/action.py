@@ -79,6 +79,23 @@ class Action:
                 world.add_event("level_up", {"ball": getattr(ball, "id", None), "level": ball.level, "stat": stat})
 
     def _attempt_damage(self, attacker, target) -> None:
+
+        # Intercept damage logic for shield_drone
+        if getattr(target, 'ball_type', '') != 'shield_drone':
+            if hasattr(self.world, 'get_nearby_entities'):
+                nearby = self.world.get_nearby_entities(target, 150.0)
+                if isinstance(nearby, dict):
+                    allies = nearby.get("allies", [])
+                    pm = getattr(self.world, "profile_manager", None)
+                    for a in allies:
+                        if getattr(a, 'ball_type', '') == 'shield_drone' and getattr(a, 'hp', 0) > 0 and getattr(a, 'alive', False):
+                            is_n = False
+                            if pm and hasattr(pm, "is_nemesis") and getattr(target, "ball_type", None) and getattr(a, "ball_type", None):
+                                is_n = pm.is_nemesis(target.ball_type, a.ball_type)
+                            if not is_n:
+                                original_damage = getattr(attacker, "damage", 10.0)
+                                a.take_damage(original_damage)
+                                return
         import random
         # Check attack accuracy
         attack_accuracy = getattr(attacker, "attack_accuracy", 1.0)
