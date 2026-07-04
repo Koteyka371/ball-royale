@@ -1,0 +1,4 @@
+{
+  "title": "Prismatic Reflect Shield",
+  "description": "An upgraded version of the reflect shield that splits the reflected damage among all enemies within a certain radius, rather than just returning it to the attacker or bouncing it to a single target."
+}

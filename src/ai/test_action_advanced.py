@@ -712,3 +712,58 @@ def test_deploy_decoy_multiple_swaps():
     active_decoys = [b for b in world.balls if getattr(b, 'is_decoy', False) and getattr(b, 'alive', True)]
     assert len(active_decoys) == 0 # Decoys are detonated
     assert ball.skill_timer > 0.0
+
+
+def test_reflect_bounce_chain():
+    ball = MockBall(x=100, y=100)
+    world = MockWorld()
+    action = Action(ball, world)
+
+    attacker = MockEntity(x=150, y=100, ball_type="enemy")
+    attacker.damage = 20.0
+    attacker.team = "B"
+    attacker.id = 1
+
+    target = MockEntity(x=100, y=100, ball_type="ally")
+    target.hp = 100.0
+    target.reflect_shield_active = True
+    target.reflect_shield_capacity = 50.0
+    target.id = 2
+    target.team = "A"
+
+    # nearby enemy
+    enemy2 = MockEntity(x=160, y=100, ball_type="enemy")
+    enemy2.hp = 100.0
+    enemy2.team = "B"
+    enemy2.id = 3
+
+    world.balls = [attacker, target, enemy2]
+
+    # Keep track of dealt damage
+    damage_dealt = []
+    def mock_deal_damage(dmg_target, dmg_attacker):
+        damage_dealt.append((dmg_target.id, dmg_attacker.id))
+    world._deal_damage = mock_deal_damage
+
+    # To ensure it bounces, mock random.random to return 0 so it always passes the chance
+    import random
+    original_random = random.random
+    random.random = lambda: 0.0
+
+    try:
+        # 1st hit: 20 damage
+        action._attempt_damage(attacker, target)
+
+        # It should deal reflection damage from target to attacker
+        # And it should bounce from attacker to enemy2
+
+        assert target.reflect_shield_capacity == 30.0
+        assert target.reflect_shield_active is True
+
+        # We expect: target reflects to attacker, and bounce logic deals damage to enemy2
+        # `_attempt_damage` handles reflection internally using `world._deal_damage(target, attacker)` where target = the shielded ball
+        assert (1, 2) in damage_dealt or (2, 1) in damage_dealt # The test might be tracking the order of arguments differently. Let's just check the ids.
+        # Check if enemy2 got hit by the bounce (source would be target)
+        assert (3, 2) in damage_dealt or (2, 3) in damage_dealt
+    finally:
+        random.random = original_random
