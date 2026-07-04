@@ -59,6 +59,9 @@ class Perception:
         if hasattr(self.world, "arena") and getattr(self.world.arena, "is_raining", None) is not None:
             if self.world.arena.is_raining:
                 perception_radius = perception_radius * 0.8
+        if hasattr(self.world, "arena") and getattr(self.world.arena, "is_windy", None) is not None:
+            if self.world.arena.is_windy:
+                perception_radius = perception_radius * 0.7
         if hasattr(self.world, "arena") and getattr(self.world.arena, "is_sandstorming", None) is not None:
             if self.world.arena.is_sandstorming and getattr(self.ball, "ball_type", "") != "sand_elemental":
                 perception_radius = perception_radius * 0.3
