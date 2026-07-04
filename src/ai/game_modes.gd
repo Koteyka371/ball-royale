@@ -837,7 +837,10 @@ class BattleRoyaleMode extends GameMode:
 
     func _award_skill_points() -> void:
         var pm = ProfileManager.new()
-        pm.add_skill_points(10)
+        var current_datetime = Time.get_datetime_dict_from_system()
+        var is_weekend = current_datetime.weekday == Time.WEEKDAY_SATURDAY or current_datetime.weekday == Time.WEEKDAY_SUNDAY
+        var points = 20 if is_weekend else 10
+        pm.add_skill_points(points)
 
 class TeamDeathmatchMode extends GameMode:
     func _init() -> void:

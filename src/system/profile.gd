@@ -380,6 +380,13 @@ func process_daily_login(current_date_str: String) -> Dictionary:
     data["last_login_date"] = current_date_str
 
     var sp_reward = 10 * min(streak, 10)
+
+    var current_time_unix = Time.get_unix_time_from_datetime_string(current_date_str + "T00:00:00")
+    var current_datetime = Time.get_datetime_dict_from_unix_time(current_time_unix)
+    var is_weekend = current_datetime.weekday == Time.WEEKDAY_SATURDAY or current_datetime.weekday == Time.WEEKDAY_SUNDAY
+    if is_weekend:
+        sp_reward *= 2
+
     add_skill_points(sp_reward)
     var rewards = {"skill_points": sp_reward}
 

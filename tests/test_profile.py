@@ -81,30 +81,31 @@ def test_daily_login():
 
     pm = ProfileManager("test_profile_daily.json")
 
-    # Day 1: New login
+    # Day 1: New login (2023-10-01 is a Sunday, weekend -> x2 points)
     rewards = pm.process_daily_login("2023-10-01")
-    assert rewards["skill_points"] == 10
+    assert rewards["skill_points"] == 20
     assert pm.data["login_streak"] == 1
-    assert pm.data["skill_points"] == 10
+    assert pm.data["skill_points"] == 20
 
     # Same day login: Should do nothing
     rewards2 = pm.process_daily_login("2023-10-01")
     assert rewards2 == {}
     assert pm.data["login_streak"] == 1
-    assert pm.data["skill_points"] == 10
+    assert pm.data["skill_points"] == 20
 
-    # Day 2: Consecutive login
+    # Day 2: Consecutive login (2023-10-02 is Monday -> x1 points)
     rewards3 = pm.process_daily_login("2023-10-02")
     assert rewards3["skill_points"] == 20
     assert pm.data["login_streak"] == 2
-    assert pm.data["skill_points"] == 30
+    assert pm.data["skill_points"] == 40
 
-    # Day 4: Skip a day, streak resets
+    # Day 4: Skip a day, streak resets (2023-10-04 is Wednesday -> x1 points)
     rewards4 = pm.process_daily_login("2023-10-04")
     assert rewards4["skill_points"] == 10
     assert pm.data["login_streak"] == 1
 
     # Force streak to 6 and simulate Day 5 login to hit 7
+    # 2023-10-06 is Friday -> x1 points
     pm.data["login_streak"] = 6
     pm.data["last_login_date"] = "2023-10-05"
     rewards5 = pm.process_daily_login("2023-10-06")
