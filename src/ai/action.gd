@@ -2532,9 +2532,28 @@ func execute(strategy: String, delta: float):
                                 var dy = other.y - b.y
                                 var dist = sqrt(dx*dx + dy*dy)
                                 if dist <= radius:
-                                    if "hp" in other:
-                                        other.hp -= explosion_damage
+                                    var b_decoy_type = b.decoy_type if "decoy_type" in b else (b.get_meta("decoy_type") if b.has_method("has_meta") and b.has_meta("decoy_type") else "")
+                                    if b_decoy_type == "stun_trap":
+                                        if "stutter_timer" in other:
+                                            other.stutter_timer += 5.0
+                                        elif other.has_method("set_meta") and other.has_meta("stutter_timer"):
+                                            other.set_meta("stutter_timer", other.get_meta("stutter_timer") + 5.0)
+                                        elif other.has_method("set_meta"):
+                                            other.set_meta("stutter_timer", 5.0)
+                                    elif b_decoy_type == "explosive":
+                                        if "hp" in other:
+                                            other.hp -= explosion_damage
+                                        if "stutter_timer" in other:
+                                            other.stutter_timer += 2.0
+                                        elif other.has_method("set_meta") and other.has_meta("stutter_timer"):
+                                            other.set_meta("stutter_timer", other.get_meta("stutter_timer") + 2.0)
+                                        elif other.has_method("set_meta"):
+                                            other.set_meta("stutter_timer", 2.0)
+                                    else:
+                                        if "hp" in other:
+                                            other.hp -= explosion_damage
 
+                                    if "hp" in other:
                                         var rng = RandomNumberGenerator.new()
                                         rng.randomize()
                                         var b_type = b.ball_type if "ball_type" in b else (b.get_meta("ball_type") if b.has_method("has_meta") and b.has_meta("ball_type") else "")
@@ -7502,9 +7521,12 @@ func _collect_booster(delta: float):
                         decoy.set_meta("has_swapped", false)
                         decoy.set_meta("is_decoy", true)
                         decoy.set_meta("decoy_timer", 5.0)
+                        decoy.set_meta("decoy_type", "explosive")
                     elif typeof(decoy) == TYPE_DICTIONARY:
                         decoy["is_decoy"] = true
                         decoy["decoy_timer"] = 5.0
+                        decoy["owner_id"] = self_id_stat
+                        decoy["decoy_type"] = "explosive"
 
                     if self.world != null and "balls" in self.world:
                         self.world.balls.append(decoy)
