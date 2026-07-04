@@ -1,0 +1,4 @@
+{
+  "title": "Destructible Environment Interactions",
+  "description": "Introduce destructible walls or obstacles in the arena that break upon high-velocity impact from specific ball types, adding dynamic map changes and new traversal paths during a match."
+}
