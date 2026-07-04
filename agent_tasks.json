@@ -8500,7 +8500,7 @@
     },
     {
       "id": "idea-493",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Nemesis Tracker Item",
@@ -14791,6 +14791,40 @@
         "src/ai/natural_disasters.py",
         "src/ai/natural_disasters.gd",
         "tests/test_natural_disasters.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-861",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sticky Wall Arena",
+      "description": "An arena with glue patches and sticky walls that slow down players and heavily dampen bouncing physics, forcing close-quarters combat.",
+      "allowed_paths": [
+        "src/arena/sticky_wall_arena.py",
+        "src/arena/sticky_wall_arena.gd",
+        "tests/test_sticky_wall_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-862",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bumper Car Powerup",
+      "description": "A temporary booster that completely removes fall-off damage and instead causes massive knockback to anyone touched by the active player.",
+      "allowed_paths": [
+        "src/ai/bumper_car_powerup.py",
+        "src/ai/bumper_car_powerup.gd",
+        "tests/test_bumper_car_powerup.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

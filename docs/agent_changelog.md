@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-493] Nemesis Tracker Item — *2026-07-04 13:58:53 UTC*
+
+A new active item that provides a temporary compass or minimap indicator pointing directly to the nearest Nemesis, allowing players to hunt them down.
+
+---
+
 ## [idea-528] Spring Arena with high winds — *2026-07-04 13:21:09 UTC*
 
 Spring arena pushes players around
