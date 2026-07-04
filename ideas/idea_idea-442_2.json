@@ -1,0 +1,4 @@
+{
+    "title": "Time Stop Mode",
+    "description": "A mutator where periodically all projectiles, moving hazards, and non-player entities are frozen in time for a short duration, but players can still move, allowing them to reposition to evade danger or strike."
+}

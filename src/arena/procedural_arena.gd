@@ -272,7 +272,7 @@ func generate():
         elif kind == "link_booster":
             radius = 15.0
             damage = 0.0
-        elif kind == "stamina_booster" or kind == "weather_booster" or kind == "magnet_booster" or kind == "clone_booster" or kind == "invert_booster" or kind == "freeze_booster" or kind == "reverse_gravity_booster":
+        elif kind == "stamina_booster" or kind == "weather_booster" or kind == "magnet_booster" or kind == "clone_booster" or kind == "invert_booster" or kind == "freeze_booster" or kind == "reverse_gravity_booster" or kind == "blaze_booster":
             radius = 15.0
             damage = 0.0
         elif kind == "stealth_zone":
@@ -600,7 +600,7 @@ func update_zone(current_tick: int, delta: float) -> void:
                 sx = max(50.0, min(width - 50.0, sx))
                 sy = max(50.0, min(height - 50.0, sy))
 
-                var item_kinds = ["healing_spring", "damage_link", "emp_burst", "nemesis_booster", "stamina_booster", "vision_booster", "reverse_gravity_booster"]
+                var item_kinds = ["healing_spring", "damage_link", "emp_burst", "nemesis_booster", "stamina_booster", "vision_booster", "reverse_gravity_booster", "blaze_booster"]
                 var item_kind = item_kinds[randi() % item_kinds.size()]
 
                 var item_id = 9000 + hazards.size() + (randi() % 1000)

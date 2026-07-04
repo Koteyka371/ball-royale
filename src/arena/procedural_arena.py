@@ -154,7 +154,7 @@ class ProceduralArena:
             elif kind == "link_booster":
                 radius = 15.0
                 damage = 0.0
-            elif kind == "stamina_booster" or kind == "weather_booster" or kind == "magnet_booster" or kind == "clone_booster" or kind == "invert_booster" or kind == "freeze_booster" or kind == "reverse_gravity_booster":
+            elif kind == "stamina_booster" or kind == "weather_booster" or kind == "magnet_booster" or kind == "clone_booster" or kind == "invert_booster" or kind == "freeze_booster" or kind == "reverse_gravity_booster" or kind == "blaze_booster":
                 radius = 15.0
                 damage = 0.0
             elif kind == "stealth_zone":
@@ -511,7 +511,7 @@ class ProceduralArena:
                     sx = max(50.0, min(self.width - 50.0, sx))
                     sy = max(50.0, min(self.height - 50.0, sy))
 
-                    item_kind = random.choice(["healing_spring", "damage_link", "emp_burst", "nemesis_booster", "stamina_booster", "vision_booster", "reverse_gravity_booster"])
+                    item_kind = random.choice(["healing_spring", "damage_link", "emp_burst", "nemesis_booster", "stamina_booster", "vision_booster", "reverse_gravity_booster", "blaze_booster"])
 
                     item_id = 9000 + len(self.hazards) + random.randint(0, 1000)
                     drop = Hazard(id=item_id, x=sx, y=sy, radius=20.0, kind=item_kind, damage=0.0)

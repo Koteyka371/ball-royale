@@ -4783,6 +4783,14 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "blaze_booster":
+                    self.ball.blaze_booster_timer = 5.0
+                    self.ball.speed_boost_timer = getattr(self.ball, "speed_boost_timer", 0.0) + 5.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "stamina_booster":
                     current_stamina = getattr(self.ball, "stamina", 0.0)
                     max_stamina = getattr(self.ball, "max_stamina", 100.0)
@@ -6528,11 +6536,32 @@ class Action:
             self.ball.nemesis_booster_timer -= delta
             if self.ball.nemesis_booster_timer < 0:
                 self.ball.nemesis_booster_timer = 0.0
+        if hasattr(self.ball, "blaze_booster_timer") and self.ball.blaze_booster_timer > 0:
+            self.ball.blaze_booster_timer -= delta
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                from arena.procedural_arena import Hazard
+                # Drop fire roughly every so often or continuous? The task says "leaving a trail of fire".
+                # We can just drop a fire_zone or fire hazard with short duration and high damage.
+                # To prevent spawning too many, we can use a small timer or just spawn if moving.
+                import random
+                if getattr(self.ball, "speed", 0.0) > 10.0 and random.random() < 0.2:
+                    vx = getattr(self.ball, "velocity_x", 0.0)
+                    vy = getattr(self.ball, "velocity_y", 0.0)
+                    import math
+                    mag = math.sqrt(vx*vx + vy*vy)
+                    dx = -vx/mag * 20.0 if mag > 0 else 0.0
+                    dy = -vy/mag * 20.0 if mag > 0 else 0.0
+                    h = Hazard(id=random.randint(10000, 99999), x=self.ball.x + dx, y=self.ball.y + dy, radius=15.0, kind="fire_zone", damage=5.0)
+                    h.duration = 2.0
+                    self.world.arena.hazards.append(h)
+            if self.ball.blaze_booster_timer < 0:
+                self.ball.blaze_booster_timer = 0.0
+
         if hasattr(self.ball, "pull_booster_timer") and self.ball.pull_booster_timer > 0:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "aura_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "aura_booster", "blaze_booster"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math
