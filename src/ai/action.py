@@ -688,6 +688,26 @@ class Action:
                 self.ball.inventory.remove("placeable_trap")
 
         # Weather Scanner deployment
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "nemesis_compass_item" in self.ball.inventory:
+            pm = getattr(self.world, "profile_manager", None)
+            if pm and hasattr(pm, "is_nemesis"):
+                nemesis = None
+                min_dist_sq = float("inf")
+                if hasattr(self.world, "balls"):
+                    for other in self.world.balls:
+                        if getattr(other, "id", None) != getattr(self.ball, "id", None) and getattr(other, "hp", 0) > 0:
+                            if getattr(other, "ball_type", None) and getattr(self.ball, "ball_type", None):
+                                if pm.is_nemesis(self.ball.ball_type, other.ball_type):
+                                    dist_sq = (other.x - self.ball.x)**2 + (other.y - self.ball.y)**2
+                                    if dist_sq < min_dist_sq:
+                                        min_dist_sq = dist_sq
+                                        nemesis = other
+                if nemesis:
+                    if hasattr(self.world, "events"):
+                        self.world.events.append({"type": "nemesis_compass", "data": {"target_x": nemesis.x, "target_y": nemesis.y, "owner_id": getattr(self.ball, "id", None)}})
+                        self.world.events.append({"type": "visual_effect", "data": {"type": "line", "x": self.ball.x, "y": self.ball.y, "tx": nemesis.x, "ty": nemesis.y, "color": "red"}})
+            self.ball.inventory.remove("nemesis_compass_item")
+
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "weather_scanner" in self.ball.inventory:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 try:
@@ -4587,6 +4607,15 @@ class Action:
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
+                elif getattr(nearest, "kind", None) == "nemesis_compass_item":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("nemesis_compass_item")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "clone_booster":
                     import copy
                     import math
