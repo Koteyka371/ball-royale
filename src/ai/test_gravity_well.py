@@ -31,6 +31,16 @@ class DummyArena:
     def update_zone(self, tick, delta=0.0):
         pass
 
+class DummyArena:
+    def __init__(self):
+        self.hazards = []
+        self.width = 2000.0
+        self.height = 2000.0
+    def clamp_position(self, x, y, r=0):
+        return x, y, False
+    def update_zone(self, tick, delta=0):
+        pass
+
 class DummyWorld:
     def __init__(self):
         self.arena = DummyArena()

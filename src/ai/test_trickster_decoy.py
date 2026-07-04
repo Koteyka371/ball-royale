@@ -60,3 +60,48 @@ def test_fake_booster_knockback():
     assert enemy.stun_timer > 0
     # verify knockback
     assert enemy.x != 5 or enemy.y != 0
+
+def test_trickster_decoy_mirroring():
+    # Test that the decoy perfectly mirrors the Trickster's movements in the opposite direction
+    owner = Trickster(1, 100, 100)
+    owner.id = 1
+    owner.team = "teamA"
+    owner.prev_x = 90
+    owner.prev_y = 110 # Owner moved dx=10, dy=-10
+
+    decoy = MockBall(99, 150, 150)
+    decoy.owner_id = 1
+    decoy.is_decoy = True
+    decoy.decoy_timer = 5.0
+    decoy.is_mirroring = True
+
+    arena = MockArena()
+    world = MockWorld(arena, [owner, decoy])
+
+    action = Action(decoy, world)
+
+    action.execute("idle", 0.1)
+
+    # Initial distance check
+    # dx = 10, dy = -10
+    # Decoy should move -10 in x and +10 in y ?
+    # Let's verify the exact positions
+    # owner moved to (100, 100) from (90, 110)
+    # the mirror logic in action.py sets:
+    # mirror_center_x = (owner.x + decoy.x)/2
+    # mirror_center_y = (owner.y + decoy.y)/2
+    # decoy.x = mirror_center_x - (owner.x - mirror_center_x)
+    # decoy.y = mirror_center_y - (owner.y - mirror_center_y)
+
+    # Wait, the mirror center is calculated on the first tick!
+    # So on tick 1, mirror_center_x = (100 + 150)/2 = 125
+    # mirror_center_y = (100 + 150)/2 = 125
+    # decoy.x = 125 - (100 - 125) = 150
+    # decoy.y = 125 - (100 - 125) = 150
+    # Next tick, owner moves to 110, 90.
+    owner.x = 110
+    owner.y = 90
+    action.execute("idle", 0.1)
+
+    assert abs(decoy.x - (125 - (110 - 125))) < 5.0 # 140
+    assert abs(decoy.y - (125 - (90 - 125))) < 5.0 # 160
