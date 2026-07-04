@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-507] Weather effect: Sandstorm — *2026-07-04 15:51:29 UTC*
+
+A new weather event 'Sandstorm' where movement speed is reduced for all balls, and vision is obscured unless they are near a 'shelter' hazard or within a flare's radius. Sandstorm could deal minor damage over time to non-earth elemental classes.
+
+---
+
 ## [idea-543] Skill Re-activation (Teleport to Mimic) — *2026-07-04 15:51:25 UTC*
 
 When a ball has an active mimic clone on the field, casting the skill again could instantly swap the positions of the owner and the clone, allowing for advanced juking and escape mechanics.
