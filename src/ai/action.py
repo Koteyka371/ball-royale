@@ -1447,7 +1447,12 @@ class Action:
                                         b_type = getattr(b, "ball_type", "")
                                         b_team = getattr(b, "team", "")
 
-                                        if b_type == "trickster" or b_team == "trickster":
+                                        if getattr(b, "is_item_decoy", False):
+                                            other.hp -= 20.0
+                                            other.is_blinded = True
+                                            other.blindness_timer = max(getattr(other, "blindness_timer", 0.0), 3.0)
+                                            other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 1.5
+                                        elif b_type == "trickster" or b_team == "trickster":
                                             # Trickster decoy specific logic
                                             other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 1.5
 
@@ -4715,6 +4720,7 @@ class Action:
                         decoy.max_hp = getattr(self.ball, "max_hp", 100)
                         decoy.damage = 0
                         decoy.is_decoy = True
+                        decoy.is_item_decoy = True
                         decoy.decoy_timer = 5.0
                         self.world.balls.append(decoy)
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):

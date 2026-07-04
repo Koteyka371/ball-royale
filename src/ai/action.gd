@@ -2535,12 +2535,36 @@ func execute(strategy: String, delta: float):
                                     if "hp" in other:
                                         other.hp -= explosion_damage
 
+
+
                                         var rng = RandomNumberGenerator.new()
                                         rng.randomize()
                                         var b_type = b.ball_type if "ball_type" in b else (b.get_meta("ball_type") if b.has_method("has_meta") and b.has_meta("ball_type") else "")
                                         var b_team_check = b.team if "team" in b else (b.get_meta("team") if b.has_method("has_meta") and b.has_meta("team") else "")
+                                        var is_item = false
+                                        if "is_item_decoy" in b:
+                                            is_item = b.is_item_decoy
+                                        elif b.has_method("get_meta") and b.has_meta("is_item_decoy"):
+                                            is_item = b.get_meta("is_item_decoy")
 
-                                        if b_type == "trickster" or b_team_check == "trickster":
+                                        if is_item:
+                                            if "hp" in other:
+                                                other.hp -= 20.0
+                                            if "stutter_timer" in other:
+                                                other.stutter_timer += 1.5
+                                            elif other.has_method("set_meta") and other.has_meta("stutter_timer"):
+                                                other.set_meta("stutter_timer", other.get_meta("stutter_timer") + 1.5)
+                                            elif other.has_method("set_meta"):
+                                                other.set_meta("stutter_timer", 1.5)
+
+                                            if "is_blinded" in other:
+                                                other.is_blinded = true
+                                                other.blindness_timer = max(other.blindness_timer if "blindness_timer" in other else 0.0, 3.0)
+                                            elif other.has_method("set_meta"):
+                                                other.set_meta("is_blinded", true)
+                                                other.set_meta("blindness_timer", max(other.get_meta("blindness_timer") if other.has_meta("blindness_timer") else 0.0, 3.0))
+
+                                        elif b_type == "trickster" or b_team_check == "trickster":
                                             if "stutter_timer" in other:
                                                 other.stutter_timer += 1.5
                                             elif other.has_method("set_meta") and other.has_meta("stutter_timer"):
@@ -7501,9 +7525,11 @@ func _collect_booster(delta: float):
                         decoy.set_meta("owner_id", self_id_stat)
                         decoy.set_meta("has_swapped", false)
                         decoy.set_meta("is_decoy", true)
+                        decoy.set_meta("is_item_decoy", true)
                         decoy.set_meta("decoy_timer", 5.0)
                     elif typeof(decoy) == TYPE_DICTIONARY:
                         decoy["is_decoy"] = true
+                        decoy["is_item_decoy"] = true
                         decoy["decoy_timer"] = 5.0
 
                     if self.world != null and "balls" in self.world:

@@ -1,0 +1,4 @@
+{
+  "title": "Deployable Shield Generators",
+  "description": "A new booster/item type that allows a ball to drop a stationary shield generator. The generator projects a temporary dome shield that blocks projectiles and hazard damage for any ball standing inside it until the generator's HP is depleted."
+}
