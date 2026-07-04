@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Entanglement Skill",
+  "description": "A new skill that physically links the position and damage states of two entities for a short duration. If one gets hit, both take damage, and if one is knocked back, the other moves proportionally. Rendering could feature a vibrating tether line."
+}
