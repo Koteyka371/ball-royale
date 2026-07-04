@@ -10,6 +10,8 @@ var active_vote = null
 var vote_timer = 0
 var votes = {}
 var vote_cooldown = 0
+var ball_positions = {}
+var camping_time = {}
 
 func _init(p_world):
     world = p_world
@@ -17,9 +19,54 @@ func _init(p_world):
 func tick(balls: Array, kill_log: Array, current_tick: int):
     _update_excitement(current_tick)
     _check_events(balls, kill_log, current_tick)
+    _check_camping(balls, current_tick)
     _throw_buffs_if_needed(balls, current_tick)
     _throw_hazards_if_bored(balls, current_tick)
     _process_votes(balls, current_tick)
+
+func _check_camping(balls: Array, current_tick: int):
+    for b in balls:
+        var is_alive = false
+        var b_type = ""
+        var b_id = -1
+        var b_x = 0.0
+        var b_y = 0.0
+
+        if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+            is_alive = b.get("alive") if b.get("alive") != null else false
+            b_type = b.get("ball_type") if b.get("ball_type") != null else ""
+            b_id = b.get("id") if b.get("id") != null else -1
+            b_x = float(b.get("x")) if b.get("x") != null else 0.0
+            b_y = float(b.get("y")) if b.get("y") != null else 0.0
+        elif typeof(b) == TYPE_DICTIONARY:
+            is_alive = b.get("alive", false)
+            b_type = b.get("ball_type", "")
+            b_id = b.get("id", -1)
+            b_x = float(b.get("x", 0.0))
+            b_y = float(b.get("y", 0.0))
+
+        if is_alive and b_type != "spectator":
+            var id_str = str(b_id)
+            if ball_positions.has(id_str):
+                var old_pos = ball_positions[id_str]
+                var dist_sq = (b_x - old_pos[0]) * (b_x - old_pos[0]) + (b_y - old_pos[1]) * (b_y - old_pos[1])
+
+                if dist_sq < 10.0:
+                    if not camping_time.has(id_str):
+                        camping_time[id_str] = 0
+                    camping_time[id_str] += 1
+                else:
+                    camping_time[id_str] = 0
+                    ball_positions[id_str] = [b_x, b_y]
+
+                if camping_time.has(id_str) and camping_time[id_str] >= 50:
+                    if world != null and world.has_method("add_event"):
+                        world.add_event("crowd_throw", {"message": "The crowd boos and throws debris at a camper!"})
+                        world.add_event("spawn_hazard", {"x": b_x, "y": b_y, "kind": "spike_trap"})
+                    camping_time[id_str] = 0
+            else:
+                ball_positions[id_str] = [b_x, b_y]
+                camping_time[id_str] = 0
 
 func _update_excitement(current_tick: int):
     if excitement_level > 0:
@@ -99,14 +146,27 @@ func _handle_kill(kill_info: Dictionary, current_tick: int, balls: Array):
 
             if killer_obj != null:
                 var k_type = ""
+                var k_x = 0.0
+                var k_y = 0.0
                 if typeof(killer_obj) == TYPE_OBJECT and killer_obj.has_method("get"):
                     k_type = killer_obj.get("ball_type")
+                    k_x = float(killer_obj.get("x")) if killer_obj.get("x") != null else 0.0
+                    k_y = float(killer_obj.get("y")) if killer_obj.get("y") != null else 0.0
                 elif typeof(killer_obj) == TYPE_DICTIONARY:
                     k_type = killer_obj.get("ball_type", "")
+                    k_x = float(killer_obj.get("x", 0.0))
+                    k_y = float(killer_obj.get("y", 0.0))
 
-                if k_type != null and k_type != "" and k_type != "spectator":
+                if k_type != null and k_type != "" and k_type.to_lower() != "spectator":
                     k_type = k_type.capitalize()
                     chant_msg = "%s! %s! %s" % [k_type, k_type, chant_msg]
+
+                world.add_event("spawn_booster", {
+                    "x": k_x,
+                    "y": k_y,
+                    "kind": "speed",
+                    "value": 30.0
+                })
 
             world.add_event("crowd_cheer", {"message": chant_msg, "volume": 1.0 + (streak * 0.1)})
             world.add_event("audio_event", {"sound": "epic_crowd_roar", "volume": 1.0})
