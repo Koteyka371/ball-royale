@@ -367,6 +367,35 @@ class BattleRoyaleMode extends GameMode:
                 if b.has_method("set_meta"):
                     b.set_meta("base_perception_radius", base_perc)
 
+                var PreGameLobbyClass = load("res://src/system/lobby.gd")
+                if PreGameLobbyClass and PreGameLobbyClass.has_method("get_instance"):
+                    var lobby = PreGameLobbyClass.get_instance()
+                    var bid = b.get("id") if b.get("id") != null else i
+                    var perks = lobby.get_perks(bid)
+                    for perk in perks:
+                        if perk == "Thick Skinned":
+                            var b_max_hp = float(b.get("max_hp")) if b.get("max_hp") != null else 100.0
+                            if not b.has_meta("base_max_hp"):
+                                b.set_meta("base_max_hp", b_max_hp)
+                            b.set_meta("base_max_hp", float(b.get_meta("base_max_hp")) * 1.1)
+                            b.set("max_hp", b.get_meta("base_max_hp"))
+                            b.set("hp", b.get("max_hp"))
+                        elif perk == "Nimble":
+                            var b_speed = float(b.get("speed")) if b.get("speed") != null else 100.0
+                            if not b.has_meta("base_speed"):
+                                b.set_meta("base_speed", b_speed)
+                            b.set_meta("base_speed", float(b.get_meta("base_speed")) * 1.1)
+                            b.set("speed", b.get_meta("base_speed"))
+                        elif perk == "Heavy Hitter":
+                            var b_damage = float(b.get("damage")) if b.get("damage") != null else 10.0
+                            if not b.has_meta("base_damage"):
+                                b.set_meta("base_damage", b_damage)
+                            b.set_meta("base_damage", float(b.get_meta("base_damage")) * 1.1)
+                            b.set("damage", b.get_meta("base_damage"))
+                        elif perk == "Eagle Eye":
+                            b.set_meta("base_perception_radius", float(b.get_meta("base_perception_radius")) * 1.1)
+                            b.set("perception_radius", b.get_meta("base_perception_radius"))
+
 
     func tick(world, balls: Array, delta: float = 0.016) -> void:
         # Evaluate crowd system

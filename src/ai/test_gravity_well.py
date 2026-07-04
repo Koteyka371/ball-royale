@@ -53,7 +53,7 @@ def test_gravity_well_pull():
         Hazard(id=1, x=1000.0, y=1000.0, radius=200.0, kind="gravity_well", damage=0.0)
     ]
 
-    ball = DummyBall(x=1050.0, y=1050.0, radius=10.0)
+    ball = DummyBall(x=1100.0, y=1100.0, radius=10.0)
     action = Action(ball, world)
 
     initial_dist = ((ball.x - 1000.0)**2 + (ball.y - 1000.0)**2)**0.5
@@ -73,7 +73,7 @@ def test_gravity_well_damage():
         Hazard(id=1, x=1000.0, y=1000.0, radius=200.0, kind="gravity_well", damage=10.0)
     ]
 
-    ball = DummyBall(x=1050.0, y=1050.0, radius=10.0)
+    ball = DummyBall(x=1100.0, y=1100.0, radius=10.0)
     action = Action(ball, world)
 
     assert ball.hp == 100.0
@@ -89,7 +89,7 @@ def test_gravity_well_inverted_push():
     hazard.is_inverted = True
     world.arena.hazards = [hazard]
 
-    ball = DummyBall(x=1050.0, y=1050.0, radius=10.0)
+    ball = DummyBall(x=1100.0, y=1100.0, radius=10.0)
     action = Action(ball, world)
 
     initial_dist = ((ball.x - 1000.0)**2 + (ball.y - 1000.0)**2)**0.5
