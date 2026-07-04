@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-530] Decoy Placement Trap — *2026-07-04 16:16:18 UTC*
+
+A new trap type that spawns a stationary decoy of the player when triggered by an enemy. The decoy distracts AI opponents, drawing their aggro while the true player gets a window to escape or counter-attack.
+
+---
+
 ## [idea-507] Weather effect: Sandstorm — *2026-07-04 15:51:29 UTC*
 
 A new weather event 'Sandstorm' where movement speed is reduced for all balls, and vision is obscured unless they are near a 'shelter' hazard or within a flare's radius. Sandstorm could deal minor damage over time to non-earth elemental classes.

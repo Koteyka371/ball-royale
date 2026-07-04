@@ -9163,7 +9163,7 @@
     },
     {
       "id": "idea-530",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Placement Trap",
@@ -15185,6 +15185,108 @@
         "src/ai/quantum_entanglement_buff.py",
         "src/ai/quantum_entanglement_buff.gd",
         "tests/test_quantum_entanglement_buff.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-884",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "New Item: Portable Oasis",
+      "description": "A deployable item that creates a temporary zone where weather effects (like sandstorm damage and vision reduction, heatwave mirages, or blizzard slowness) are negated for all players standing inside it, and slowly regenerates stamina.",
+      "allowed_paths": [
+        "src/ai/new_item_portable_oasis.py",
+        "src/ai/new_item_portable_oasis.gd",
+        "tests/test_new_item_portable_oasis.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-885",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Skill Re-cast Enhancements",
+      "description": "Allowing double-tapping or re-casting of other skills. For example, a fireball could be detonated early by casting the skill again while the fireball is in flight.",
+      "allowed_paths": [
+        "src/ai/skill_re_cast_enhancements.py",
+        "src/ai/skill_re_cast_enhancements.gd",
+        "tests/test_skill_re_cast_enhancements.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-886",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Nullifier Item",
+      "description": "An item that temporarily makes the ball unaffected by global wind or localized gravity wells/pull hazards.",
+      "allowed_paths": [
+        "src/ai/gravity_nullifier_item.py",
+        "src/ai/gravity_nullifier_item.gd",
+        "tests/test_gravity_nullifier_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-887",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sticky Tar Trap",
+      "description": "A placeable trap that creates a puddle of tar, heavily slowing down any balls that roll through it for a few seconds.",
+      "allowed_paths": [
+        "src/arena/sticky_tar_trap.py",
+        "src/arena/sticky_tar_trap.gd",
+        "tests/test_sticky_tar_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-888",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "New Hazard Type: Geyser",
+      "description": "A dynamic map hazard that erupts periodically. When erupting, it shoots players upwards (applying a short stun or launch status) and deals minor water-elemental damage. Water and Earth elemental balls could receive a temporary speed boost or healing when hit by it instead of taking damage.",
+      "allowed_paths": [
+        "src/arena/new_type_geyser.py",
+        "src/arena/new_type_geyser.gd",
+        "tests/test_new_type_geyser.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-889",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Explosion Trigger",
+      "description": "When a mimic clone expires or is destroyed, it could trigger a small explosion or release a smokescreen, punishing enemies who mistakenly attack the clone.",
+      "allowed_paths": [
+        "src/ai/decoy_explosion_trigger.py",
+        "src/ai/decoy_explosion_trigger.gd",
+        "tests/test_decoy_explosion_trigger.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
