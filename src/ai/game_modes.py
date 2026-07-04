@@ -308,6 +308,63 @@ class BattleRoyaleMode(GameMode):
                 if dist > self.zone_radius:
                     b.hp -= 20.0 * delta # damage per second outside safe zone
 
+
+        # Handle decoy_spawners
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "decoy_spawner":
+                    if not hasattr(h, "spawn_timer"):
+                        h.spawn_timer = 0.0
+                    h.spawn_timer += delta
+                    if h.spawn_timer >= 3.0:
+                        h.spawn_timer = 0.0
+                        class DecoyBall:
+                            def __init__(self, id_val, x, y):
+                                self.id = id_val
+                                self.x = x
+                                self.y = y
+                                self.vx = 0.0
+                                self.vy = 0.0
+                                self.radius = 15.0
+                                self.hp = 1.0
+                                self.max_hp = 1.0
+                                self.alive = True
+                                self.ball_type = "mimic_decoy"
+                                self.is_decoy = True
+                                self.spawned_by_decoy_spawner = True
+                                self.lifespan = 8.0
+                        b_id = 80000 + getattr(self, "random", __import__("random")).randint(0, 9999)
+                        new_decoy = DecoyBall(b_id, h.x, h.y)
+                        if hasattr(world, "balls"):
+                            world.balls.append(new_decoy)
+                            if hasattr(world, "entities") and world.balls is not world.entities:
+                                world.entities.append(new_decoy)
+
+        # Handle decoy movement mimicking
+        for b in list(balls):
+            if getattr(b, "spawned_by_decoy_spawner", False) and getattr(b, "alive", False):
+                b.lifespan -= delta
+                if float(b.lifespan) <= 0:
+                    b.alive = False
+                    continue
+                # Find nearest alive player
+                nearest_player = None
+                min_dist = float('inf')
+                for p in balls:
+                    if getattr(p, "alive", False) and not getattr(p, "is_decoy", False) and getattr(p, "ball_type", None) != "spectator":
+                        dx = p.x - b.x
+                        dy = p.y - b.y
+                        dist = dx*dx + dy*dy
+                        if dist < min_dist:
+                            min_dist = dist
+                            nearest_player = p
+                if nearest_player:
+                    # Move towards player or match velocity
+                    b.vx = getattr(nearest_player, "vx", 0.0) * 1.5
+                    b.vy = getattr(nearest_player, "vy", 0.0) * 1.5
+                    b.x += b.vx * delta
+                    b.y += b.vy * delta
+
         # Weather logic
         controller = None
         for b in balls:

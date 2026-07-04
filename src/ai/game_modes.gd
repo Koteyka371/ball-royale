@@ -420,6 +420,118 @@ class BattleRoyaleMode extends GameMode:
                 if dist > self.get("zone_radius"):
                     if "hp" in b: b.hp -= 20.0 * delta
 
+
+        # Handle decoy_spawners
+        if "arena" in world and world.arena != null and "hazards" in world.arena:
+            for h in world.arena.hazards:
+                if "kind" in h and h.kind == "decoy_spawner":
+                    if not h.has_method("has_meta") or not h.has_meta("spawn_timer"):
+                        h.set_meta("spawn_timer", 0.0)
+                    var st = h.get_meta("spawn_timer") + delta
+                    if st >= 3.0:
+                        st = 0.0
+                        var new_decoy = {}
+                        var id_val = 80000 + (randi() % 9999)
+                        new_decoy["id"] = id_val
+                        new_decoy["x"] = h.x
+                        new_decoy["y"] = h.y
+                        new_decoy["vx"] = 0.0
+                        new_decoy["vy"] = 0.0
+                        new_decoy["radius"] = 15.0
+                        new_decoy["hp"] = 1.0
+                        new_decoy["max_hp"] = 1.0
+                        new_decoy["alive"] = true
+                        new_decoy["ball_type"] = "mimic_decoy"
+                        new_decoy["is_decoy"] = true
+                        new_decoy["spawned_by_decoy_spawner"] = true
+                        new_decoy["lifespan"] = 8.0
+                        new_decoy["has_method"] = Callable(func(method_name): return false)
+                        world.balls.append(new_decoy)
+                    h.set_meta("spawn_timer", st)
+
+        # Handle decoy movement mimicking
+        for b in balls:
+            var spawned_by = false
+            if typeof(b) == TYPE_DICTIONARY and b.has("spawned_by_decoy_spawner"):
+                spawned_by = b["spawned_by_decoy_spawner"]
+            elif "spawned_by_decoy_spawner" in b:
+                spawned_by = b.spawned_by_decoy_spawner
+            elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("spawned_by_decoy_spawner"):
+                spawned_by = b.get_meta("spawned_by_decoy_spawner")
+
+            if spawned_by:
+                var alive_val = true
+                if typeof(b) == TYPE_DICTIONARY and b.has("alive"):
+                    alive_val = b["alive"]
+                elif "alive" in b:
+                    alive_val = b.alive
+
+                if alive_val:
+                    var lifespan = 0.0
+                    if typeof(b) == TYPE_DICTIONARY and b.has("lifespan"):
+                        lifespan = b["lifespan"] - delta
+                        b["lifespan"] = lifespan
+                    elif "lifespan" in b:
+                        b.lifespan -= delta
+                        lifespan = b.lifespan
+
+                    if lifespan <= 0:
+                        if typeof(b) == TYPE_DICTIONARY:
+                            b["alive"] = false
+                        else:
+                            b.alive = false
+                        continue
+
+                    var nearest_player = null
+                    var min_dist = 99999999.0
+                    for p in balls:
+                        var p_alive = false
+                        if typeof(p) == TYPE_DICTIONARY and p.has("alive"): p_alive = p["alive"]
+                        elif "alive" in p: p_alive = p.alive
+                        var is_decoy = false
+                        if typeof(p) == TYPE_DICTIONARY and p.has("is_decoy"): is_decoy = p["is_decoy"]
+                        elif "is_decoy" in p: is_decoy = p.is_decoy
+                        var b_type = ""
+                        if typeof(p) == TYPE_DICTIONARY and p.has("ball_type"): b_type = p["ball_type"]
+                        elif "ball_type" in p: b_type = p.ball_type
+
+                        if p_alive and not is_decoy and b_type != "spectator":
+                            var p_x = 0.0
+                            var p_y = 0.0
+                            if typeof(p) == TYPE_DICTIONARY:
+                                if p.has("x"): p_x = p["x"]
+                                if p.has("y"): p_y = p["y"]
+                            else:
+                                if "x" in p: p_x = p.x
+                                if "y" in p: p_y = p.y
+                            var dx = p_x - (b["x"] if typeof(b) == TYPE_DICTIONARY else b.x)
+                            var dy = p_y - (b["y"] if typeof(b) == TYPE_DICTIONARY else b.y)
+                            var dist = dx*dx + dy*dy
+                            if dist < min_dist:
+                                min_dist = dist
+                                nearest_player = p
+
+                    if nearest_player != null:
+                        var vx = 0.0
+                        var vy = 0.0
+                        if typeof(nearest_player) == TYPE_DICTIONARY:
+                            if nearest_player.has("vx"): vx = nearest_player["vx"]
+                            if nearest_player.has("vy"): vy = nearest_player["vy"]
+                        else:
+                            if "vx" in nearest_player: vx = nearest_player.vx
+                            if "vy" in nearest_player: vy = nearest_player.vy
+
+                        if typeof(b) == TYPE_DICTIONARY:
+                            b["vx"] = vx * 1.5
+                            b["vy"] = vy * 1.5
+                            b["x"] += b["vx"] * delta
+                            b["y"] += b["vy"] * delta
+                        else:
+                            b.vx = vx * 1.5
+                            b.vy = vy * 1.5
+                            b.x += b.vx * delta
+                            b.y += b.vy * delta
+
         dark_phase_timer += delta
 
         supply_drop_timer += delta
