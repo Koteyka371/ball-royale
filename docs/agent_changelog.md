@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-509] Acid Rain Weather — *2026-07-04 14:23:05 UTC*
+
+Rain that causes small DoT effect.
+
+---
+
 ## [idea-493] Nemesis Tracker Item — *2026-07-04 13:58:53 UTC*
 
 A new active item that provides a temporary compass or minimap indicator pointing directly to the nearest Nemesis, allowing players to hunt them down.
