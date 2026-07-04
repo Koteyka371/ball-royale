@@ -132,3 +132,27 @@ def test_guild_leaderboard(temp_guild_file):
     assert leaderboard[0]["gvg_points"] == 10
     assert leaderboard[1]["name"] == "Guild1"
     assert leaderboard[1]["gvg_points"] == 0
+
+def test_boss_progress(temp_guild_file):
+    gm = GuildManager(temp_guild_file)
+    gm.create_guild("BossKillers", "player1")
+
+    week_id = "week_1"
+    required_damage = 1000.0
+
+    # Check defeated before damage
+    assert not gm.check_boss_defeated("BossKillers", week_id, required_damage)
+
+    # Deal damage
+    assert gm.record_boss_damage("BossKillers", 400.0, week_id)
+    assert not gm.check_boss_defeated("BossKillers", week_id, required_damage)
+
+    assert gm.record_boss_damage("BossKillers", 700.0, week_id)
+    assert gm.check_boss_defeated("BossKillers", week_id, required_damage)
+
+    # Claim rewards
+    assert gm.claim_boss_reward("BossKillers", "player1", week_id, required_damage)
+    # Should not be able to claim twice
+    assert not gm.claim_boss_reward("BossKillers", "player1", week_id, required_damage)
+    # Different player can claim
+    assert gm.claim_boss_reward("BossKillers", "player2", week_id, required_damage)

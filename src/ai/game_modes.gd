@@ -1153,6 +1153,142 @@ class ZombieInfectionMode extends GameMode:
 
         return null
 
+
+class GuildBossFightMode extends GameMode:
+    var boss_id = null
+    var pull_radius = 300.0
+    var pull_strength = 50.0
+    var guild_name = null
+    var guild_manager = null
+    var week_id = "week_1"
+
+    func _init(p_guild_name = null, p_guild_manager = null, p_week_id = "week_1") -> void:
+        name = "Guild Boss Fight"
+        description = "Guild members team up to deal as much damage as possible to an immortal boss."
+        guild_name = p_guild_name
+        guild_manager = p_guild_manager
+        week_id = p_week_id
+
+    func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
+        if not "dead_balls" in world:
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+
+        var valid_balls = []
+        for b in balls:
+            if b.ball_type != "spectator":
+                valid_balls.append(b)
+
+        if valid_balls.size() > 0:
+            var boss = valid_balls[0]
+            boss.team = "Boss"
+            if "max_hp" in boss:
+                boss.max_hp = 10000000.0
+                boss.hp = boss.max_hp
+            if "damage" in boss:
+                boss.damage *= 3.0
+
+            boss.set_meta("total_damage_taken", 0.0)
+            if "id" in boss:
+                boss_id = boss.id
+            elif boss.has_meta("id"):
+                boss_id = boss.get_meta("id")
+
+            var arena_width = 1000
+            var arena_height = 1000
+            if world != null and "arena" in world and world.arena != null:
+                if "width" in world.arena:
+                    arena_width = world.arena.width
+                if "height" in world.arena:
+                    arena_height = world.arena.height
+
+            if "x" in boss and "y" in boss:
+                boss.x = arena_width / 2.0
+                boss.y = arena_height / 2.0
+
+            if "radius" in boss:
+                boss.radius *= 4.0
+            elif boss.has_meta("radius"):
+                boss.set_meta("radius", boss.get_meta("radius") * 4.0)
+
+            if "base_speed" in boss:
+                boss.base_speed *= 0.5
+            elif boss.has_meta("base_speed"):
+                boss.set_meta("base_speed", boss.get_meta("base_speed") * 0.5)
+
+            if "mass" in boss:
+                boss.mass *= 10.0
+            elif boss.has_meta("mass"):
+                boss.set_meta("mass", boss.get_meta("mass") * 10.0)
+
+            for i in range(1, valid_balls.size()):
+                var b = valid_balls[i]
+                b.team = "Hunters"
+                if "max_hp" in b:
+                    b.max_hp *= 1.5
+                    b.hp = b.max_hp
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        super.tick(world, balls, delta)
+
+        var boss = null
+        for b in balls:
+            var current_id = null
+            if "id" in b:
+                current_id = b.id
+            elif b.has_meta("id"):
+                current_id = b.get_meta("id")
+
+            if current_id != null and boss_id != null and current_id == boss_id:
+                boss = b
+                break
+
+        if boss == null:
+            return
+
+        if "hp" in boss and "max_hp" in boss and boss.hp < boss.max_hp:
+            var damage_taken = boss.max_hp - boss.hp
+            var total_dmg = boss.get_meta("total_damage_taken")
+            boss.set_meta("total_damage_taken", total_dmg + damage_taken)
+            boss.hp = boss.max_hp
+
+        for b in balls:
+            var current_id = null
+            if "id" in b:
+                current_id = b.id
+            elif b.has_meta("id"):
+                current_id = b.get_meta("id")
+
+            if current_id != boss_id and "alive" in b and b.alive:
+                if "x" in b and "y" in b and "x" in boss and "y" in boss:
+                    var dx = boss.x - b.x
+                    var dy = boss.y - b.y
+                    var dist = sqrt(dx*dx + dy*dy)
+                    if dist > 0 and dist < pull_radius:
+                        var pull = pull_strength * delta
+                        if "vx" in b and "vy" in b:
+                            b.vx += (dx / dist) * pull
+                            b.vy += (dy / dist) * pull
+
+    func end_match(world, balls: Array) -> void:
+        if guild_manager != null and guild_name != null:
+            var boss = null
+            for b in balls:
+                var current_id = null
+                if "id" in b:
+                    current_id = b.id
+                elif b.has_meta("id"):
+                    current_id = b.get_meta("id")
+                if current_id == boss_id:
+                    boss = b
+                    break
+
+            if boss != null and boss.has_meta("total_damage_taken"):
+                var dmg = boss.get_meta("total_damage_taken")
+                if dmg > 0:
+                    guild_manager.record_boss_damage(guild_name, dmg, week_id)
+
+
 class BossFightMode extends GameMode:
     func _init() -> void:
         name = "Boss Fight"
@@ -8110,6 +8246,7 @@ var GAME_MODES = {
     "team_deathmatch": TeamDeathmatchMode.new(),
     "zombie_infection": ZombieInfectionMode.new(),
     "boss_fight": BossFightMode.new(),
+    "guild_boss_fight": GuildBossFightMode.new(),
     "vip_defense": VIPDefenseMode.new(),
     "survival": SurvivalMode.new(),
     "toxic_environment": ToxicEnvironmentMode.new(),

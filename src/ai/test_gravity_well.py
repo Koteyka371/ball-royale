@@ -3,15 +3,37 @@ from arena.procedural_arena import ProceduralArena, Hazard
 
 class DummyBall:
     def __init__(self, x, y, radius):
+        self.id = 1
         self.x = x
         self.y = y
+        self.vx = 0.0
+        self.vy = 0.0
         self.radius = radius
         self.hp = 100.0
         self.alive = True
+        self.team = "test"
+        self.ball_type = "normal"
+        self.max_speed = 200.0
+        self.speed = 200.0
+
+class DummyArena:
+    def __init__(self):
+        self.hazards = []
+        self.width = 2000.0
+        self.height = 2000.0
+        self.rooms = []
+        self.corridors = []
+        self.zones = []
+
+    def clamp_position(self, x, y, radius):
+        return x, y, False
+
+    def update_zone(self, tick, delta=0.0):
+        pass
 
 class DummyWorld:
     def __init__(self):
-        self.arena = ProceduralArena(2000.0, 0)
+        self.arena = DummyArena()
         self.tick = 0
         self.boosters = []
 
