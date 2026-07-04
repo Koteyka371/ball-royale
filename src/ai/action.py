@@ -2508,6 +2508,23 @@ class Action:
                                         self.ball.hp -= 50.0
                                         if self.ball.hp <= 0:
                                             self.ball.alive = False
+
+                                    # Disable AI abilities and rendering them unable to attack for 5 seconds.
+                                    if hasattr(self.ball, "skill_timer"):
+                                        self.ball.skill_timer = max(getattr(self.ball, "skill_timer", 0.0), 5.0)
+                                    else:
+                                        self.ball.skill_timer = 5.0
+
+                                    if hasattr(self.ball, "silence_timer"):
+                                        self.ball.silence_timer = max(getattr(self.ball, "silence_timer", 0.0), 5.0)
+                                    else:
+                                        self.ball.silence_timer = 5.0
+
+                                    if hasattr(self.ball, "attack_timer"):
+                                        self.ball.attack_timer = max(getattr(self.ball, "attack_timer", 0.0), 5.0)
+                                    else:
+                                        self.ball.attack_timer = 5.0
+
                                     hazard.duration = 0.0 # Destroy trap
                                 elif trap_variant == "freeze":
                                     # Freeze: halt for 2 seconds

@@ -4075,6 +4075,29 @@ func execute(strategy: String, delta: float):
                                     self.ball.hp -= 50.0
                                     if self.ball.hp <= 0:
                                         self.ball.alive = false
+
+                                # Disable AI abilities and rendering them unable to attack for 5 seconds.
+                                if "skill_timer" in self.ball:
+                                    self.ball.skill_timer = max(self.ball.skill_timer, 5.0)
+                                elif self.ball.has_method("get_meta") and self.ball.has_meta("skill_timer"):
+                                    self.ball.set_meta("skill_timer", max(self.ball.get_meta("skill_timer"), 5.0))
+                                elif self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("skill_timer", 5.0)
+
+                                if "silence_timer" in self.ball:
+                                    self.ball.silence_timer = max(self.ball.silence_timer, 5.0)
+                                elif self.ball.has_method("get_meta") and self.ball.has_meta("silence_timer"):
+                                    self.ball.set_meta("silence_timer", max(self.ball.get_meta("silence_timer"), 5.0))
+                                elif self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("silence_timer", 5.0)
+
+                                if "attack_timer" in self.ball:
+                                    self.ball.attack_timer = max(self.ball.attack_timer, 5.0)
+                                elif self.ball.has_method("get_meta") and self.ball.has_meta("attack_timer"):
+                                    self.ball.set_meta("attack_timer", max(self.ball.get_meta("attack_timer"), 5.0))
+                                elif self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("attack_timer", 5.0)
+
                                 if hazard.has_method("set_meta"):
                                     hazard.set_meta("duration", 0.0)
                                 elif "duration" in hazard:
