@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-514] Clone Illusion Switch — *2026-07-04 21:31:12 UTC*
+
+Players can manually swap positions with one of their static clones using a sub-skill, allowing for advanced deception and sudden repositioning.
+
+---
+
 ## [idea-570] Rolling Boulders Event — *2026-07-04 21:26:26 UTC*
 
 Periodically spawn massive boulders that roll linearly across the arena, crushing balls in their path and interacting physically with walls and other hazards before shattering into smaller rock hazards.
