@@ -7632,7 +7632,7 @@
     },
     {
       "id": "idea-442",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Speed Burst Shoes",
@@ -15151,6 +15151,40 @@
         "src/ai/decoy_chain_reaction.py",
         "src/ai/decoy_chain_reaction.gd",
         "tests/test_decoy_chain_reaction.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-882",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bermuda Triangle Arena Hazard",
+      "description": "Three pylons spawn on the arena, forming a triangle. Any ball that enters the center of the triangle randomly teleports to a different location on the map, resetting their momentum to zero.",
+      "allowed_paths": [
+        "src/arena/bermuda_triangle_arena.py",
+        "src/arena/bermuda_triangle_arena.gd",
+        "tests/test_bermuda_triangle_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-883",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Entanglement Buff",
+      "description": "A new booster that links two balls together dynamically. When one ball picks up a health pack or speed boost, the entangled ball also receives a partial percentage of that buff regardless of distance.",
+      "allowed_paths": [
+        "src/ai/quantum_entanglement_buff.py",
+        "src/ai/quantum_entanglement_buff.gd",
+        "tests/test_quantum_entanglement_buff.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

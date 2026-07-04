@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-442] Speed Burst Shoes — *2026-07-04 15:51:20 UTC*
+
+An item that drastically increases movement speed for a short duration while leaving a trail of fire.
+
+---
+
 ## [idea-542] Magnetic Polarity System — *2026-07-04 15:25:25 UTC*
 
 Implement a Magnetic Polarity system where each ball is randomly assigned a positive or negative charge at the start of the match. Balls with opposite charges are slowly pulled towards each other, while balls with the same charge are slightly repelled. The polarity could flip periodically throughout the match, forcing AI to adapt their movement and positioning dynamically.
