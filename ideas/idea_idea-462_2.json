@@ -1,0 +1,4 @@
+{
+  "title": "Dynamic Crater Mutator",
+  "description": "A daily mutator that causes all explosive attacks (like bomber skills or fireball impacts) to leave behind temporary impassable craters, drastically changing the terrain dynamically during team fights."
+}

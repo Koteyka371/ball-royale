@@ -2674,6 +2674,17 @@ class Action:
                                 if self.ball.hp <= 0:
                                     self.ball.alive = False
                             continue
+                        elif hazard.kind == "crater":
+                            dx = self.ball.x - hazard.x
+                            dy = self.ball.y - hazard.y
+                            dist = _math.hypot(dx, dy)
+                            combined_radius = hazard.radius + getattr(self.ball, 'radius', 15.0)
+                            if dist < combined_radius and dist > 0.001:
+                                overlap = combined_radius - dist
+                                self.ball.x += (dx / dist) * overlap
+                                self.ball.y += (dy / dist) * overlap
+                                if hasattr(self.ball, 'vx'): self.ball.vx *= 0.5
+                                if hasattr(self.ball, 'vy'): self.ball.vy *= 0.5
                         elif hazard.kind == "meteor":
                             hazard_damage = hazard.damage * delta
                             if getattr(self.ball, "is_in_quicksand", False):

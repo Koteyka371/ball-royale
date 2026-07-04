@@ -418,6 +418,65 @@ class BattleRoyaleMode extends GameMode:
                 if dist > self.get("zone_radius"):
                     if "hp" in b: b.hp -= 20.0 * delta
 
+        # Meteor Shower logic for final 30 seconds or <= 2 teams
+        var alive_teams = {}
+        for b in balls:
+            if b.alive and b.ball_type != "spectator":
+                var t = "default"
+                if "team" in b: t = b.team
+                elif b.has_method("get") and b.get("team") != null: t = b.get("team")
+                else: t = b.ball_type
+                alive_teams[t] = true
+
+        var z_rad = 1000.0
+        if self.get("zone_radius") != null: z_rad = self.get("zone_radius")
+
+        var is_late_game = (alive_teams.size() <= 2) or (z_rad <= 300.0)
+
+        if is_late_game:
+            if not self.has_meta("meteor_shower_timer"):
+                self.set_meta("meteor_shower_timer", 0.0)
+
+            var t = self.get_meta("meteor_shower_timer") + delta
+            self.set_meta("meteor_shower_timer", t)
+
+            if t >= 1.0:
+                self.set_meta("meteor_shower_timer", 0.0)
+                if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+                    var arena_width = 1000.0
+                    var arena_height = 1000.0
+                    if "width" in world.arena: arena_width = world.arena.width
+                    if "height" in world.arena: arena_height = world.arena.height
+
+                    var zx = arena_width / 2.0
+                    var zy = arena_height / 2.0
+                    if self.get("zone_x") != null: zx = self.get("zone_x")
+                    if self.get("zone_y") != null: zy = self.get("zone_y")
+
+                    var rng = RandomNumberGenerator.new()
+                    rng.randomize()
+                    var angle = rng.randf_range(0, 2 * PI)
+                    var dist = rng.randf_range(0, max(100.0, z_rad))
+
+                    var mx = zx + cos(angle) * dist
+                    var my = zy + sin(angle) * dist
+
+                    mx = max(50.0, min(arena_width - 50.0, mx))
+                    my = max(50.0, min(arena_height - 50.0, my))
+
+                    var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
+                    if ProceduralArenaScript != null:
+                        var h_id = 16000 + world.arena.hazards.size() + rng.randi_range(0, 10000)
+                        var meteor = ProceduralArenaScript.Hazard.new(h_id, mx, my, 30.0, "meteor", 200.0)
+                        meteor.target_radius = 30.0
+                        meteor.set_meta("duration", 5.0)
+                        world.arena.hazards.append(meteor)
+
+                        if not self.has_meta("meteor_warning_issued"):
+                            self.set_meta("meteor_warning_issued", true)
+                            if world.has_method("add_event"):
+                                world.add_event("meteor_shower", {"message": "WARNING: Meteor shower detected in the area!"})
+
         dark_phase_timer += delta
 
         supply_drop_timer += delta
