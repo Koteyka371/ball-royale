@@ -2439,13 +2439,42 @@ func execute(strategy: String, delta: float):
                                         rng.randomize()
                                         var b_type = b.ball_type if "ball_type" in b else (b.get_meta("ball_type") if b.has_method("has_meta") and b.has_meta("ball_type") else "")
                                         var b_team_check = b.team if "team" in b else (b.get_meta("team") if b.has_method("has_meta") and b.has_meta("team") else "")
-                                        if (b_type == "trickster" or b_team_check == "trickster") and rng.randf() < 0.3:
-                                            if "is_confused" in other:
-                                                other.is_confused = true
-                                                other.confusion_timer = 3.0
+
+                                        if b_type == "trickster" or b_team_check == "trickster":
+                                            if "stutter_timer" in other:
+                                                other.stutter_timer += 1.5
+                                            elif other.has_method("set_meta") and other.has_meta("stutter_timer"):
+                                                other.set_meta("stutter_timer", other.get_meta("stutter_timer") + 1.5)
                                             elif other.has_method("set_meta"):
-                                                other.set_meta("is_confused", true)
-                                                other.set_meta("confusion_timer", 3.0)
+                                                other.set_meta("stutter_timer", 1.5)
+
+                                            if world != null and "events" in world:
+                                                world.events.append({"type": "visual_effect", "data": {"type": "noise", "x": other.x, "y": other.y, "intensity": 0.5}})
+
+                                                for i in range(4):
+                                                    var angle = rng.randf_range(0.0, 2.0 * PI)
+                                                    var tx = other.x + cos(angle) * 150.0
+                                                    var ty = other.y + sin(angle) * 150.0
+                                                    world.events.append({
+                                                        "type": "visual_effect",
+                                                        "data": {
+                                                            "type": "fragmentation_projectile",
+                                                            "x": b.x,
+                                                            "y": b.y,
+                                                            "tx": tx,
+                                                            "ty": ty,
+                                                            "bounce": true,
+                                                            "color": "purple"
+                                                        }
+                                                    })
+
+                                            if rng.randf() < 0.3:
+                                                if "is_confused" in other:
+                                                    other.is_confused = true
+                                                    other.confusion_timer = 3.0
+                                                elif other.has_method("set_meta"):
+                                                    other.set_meta("is_confused", true)
+                                                    other.set_meta("confusion_timer", 3.0)
 
                                         if other.hp <= 0:
                                             if "alive" in other:
