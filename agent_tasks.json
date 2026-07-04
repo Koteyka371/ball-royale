@@ -8551,7 +8551,7 @@
     },
     {
       "id": "idea-496",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Ice Storm Weather Event",
@@ -15934,6 +15934,57 @@
         "src/ai/weapon_scavenger.py",
         "src/ai/weapon_scavenger.gd",
         "tests/test_weapon_scavenger.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-928",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Perk Synergy Combinations",
+      "description": "Introduce hidden synergies when specific pairs of perks are equipped. For example, combining 'Nimble' and 'Eagle Eye' grants 'Sniper Stance', providing a large damage bonus when attacking from far away while moving.",
+      "allowed_paths": [
+        "src/ai/perk_synergy_combinations.py",
+        "src/ai/perk_synergy_combinations.gd",
+        "tests/test_perk_synergy_combinations.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-929",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirror Image Booster",
+      "description": "When taking lethal damage, this booster creates a decoy mirror image that explodes while the actual ball goes invisible for 2 seconds with 1 HP remaining.",
+      "allowed_paths": [
+        "src/ai/mirror_image_booster.py",
+        "src/ai/mirror_image_booster.gd",
+        "tests/test_mirror_image_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-930",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Negative Perks for Bonus Multiplier",
+      "description": "Allow players to equip 'Curse' perks that reduce their stats (like '-10% Max HP') in exchange for larger rewards like higher currency drop rates or extra experience points during the Battle Royale.",
+      "allowed_paths": [
+        "src/ai/negative_perks_for_bonus_multiplier.py",
+        "src/ai/negative_perks_for_bonus_multiplier.gd",
+        "tests/test_negative_perks_for_bonus_multiplier.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

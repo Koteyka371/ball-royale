@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-496] Ice Storm Weather Event — *2026-07-04 20:00:19 UTC*
+
+Periodically spawns a blizzard that severely reduces all ball movement speed (friction increases) and creates temporary slippery ice patches as hazards that cause balls to slide uncontrollably.
+
+---
+
 ## [idea-560] Ball Loadouts / Perk System — *2026-07-04 19:42:27 UTC*
 
 Before entering a battle royale, balls can select two perks (e.g., 'Thick Skinned' for +10% HP, 'Nimble' for +10% Speed). This allows players to further customize the existing ball classes (like making a tankier scout or a faster elementalist).
