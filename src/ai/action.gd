@@ -3092,6 +3092,21 @@ func execute(strategy: String, delta: float):
                         if self.ball.has_method("set_meta"):
                             self.ball.set_meta("is_slipping", true)
 
+                elif hazard.kind == "fire_zone":
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    var hr = hazard.radius
+                    if dist_sq < hr * hr:
+                        if "hp" in self.ball:
+                            var dmg = 5.0 * delta
+                            if "damage" in hazard: dmg = hazard.damage * delta
+                            self.ball.hp -= dmg
+                            if self.ball.hp <= 0:
+                                self.ball.alive = false
+                                self.ball.hp = 0
+                                if "killer" in self.ball:
+                                    self.ball.killer = "fire_zone"
                 elif hazard.kind == "quicksand":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y

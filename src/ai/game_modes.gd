@@ -1993,6 +1993,26 @@ class WeatherChaosMode extends GameMode:
 			if not "hazards" in world.arena:
 				world.arena.hazards = []
 
+			if weather == "heatwave":
+				if randf() < 0.05 * delta:
+					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
+					if Hazard:
+						var x = randf_range(100.0, world.arena.width - 100.0)
+						var y = randf_range(100.0, world.arena.height - 100.0)
+						var fire = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 60.0, "fire_zone", 5.0)
+						fire.set_meta("duration", 8.0)
+						world.arena.hazards.append(fire)
+
+			if weather == "rain":
+				if randf() < 0.05 * delta:
+					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
+					if Hazard:
+						var x = randf_range(100.0, world.arena.width - 100.0)
+						var y = randf_range(100.0, world.arena.height - 100.0)
+						var mud_pit = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 60.0, "quicksand", 0.0)
+						mud_pit.set_meta("duration", 15.0)
+						world.arena.hazards.append(mud_pit)
+
 			if weather == "sandstorm":
 				if randf() < 0.05 * delta:
 					var BallClass = load("res://src/ai/ball_types_swarm.gd")
@@ -5247,6 +5267,26 @@ class MagneticCollisionsMode extends GameMode:
 			if not "hazards" in world.arena:
 				world.arena.hazards = []
 
+			if weather == "heatwave":
+				if randf() < 0.05 * delta:
+					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
+					if Hazard:
+						var x = randf_range(100.0, world.arena.width - 100.0)
+						var y = randf_range(100.0, world.arena.height - 100.0)
+						var fire = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 60.0, "fire_zone", 5.0)
+						fire.set_meta("duration", 8.0)
+						world.arena.hazards.append(fire)
+
+			if weather == "rain":
+				if randf() < 0.05 * delta:
+					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
+					if Hazard:
+						var x = randf_range(100.0, world.arena.width - 100.0)
+						var y = randf_range(100.0, world.arena.height - 100.0)
+						var mud_pit = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 60.0, "quicksand", 0.0)
+						mud_pit.set_meta("duration", 15.0)
+						world.arena.hazards.append(mud_pit)
+
 			var arena_width = 1000.0
 			var arena_height = 1000.0
 			if "width" in world.arena:
@@ -5378,6 +5418,26 @@ class PinballMode extends GameMode:
 		if "arena" in world and world.arena != null:
 			if not "hazards" in world.arena:
 				world.arena.hazards = []
+
+			if weather == "heatwave":
+				if randf() < 0.05 * delta:
+					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
+					if Hazard:
+						var x = randf_range(100.0, world.arena.width - 100.0)
+						var y = randf_range(100.0, world.arena.height - 100.0)
+						var fire = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 60.0, "fire_zone", 5.0)
+						fire.set_meta("duration", 8.0)
+						world.arena.hazards.append(fire)
+
+			if weather == "rain":
+				if randf() < 0.05 * delta:
+					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
+					if Hazard:
+						var x = randf_range(100.0, world.arena.width - 100.0)
+						var y = randf_range(100.0, world.arena.height - 100.0)
+						var mud_pit = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 60.0, "quicksand", 0.0)
+						mud_pit.set_meta("duration", 15.0)
+						world.arena.hazards.append(mud_pit)
 			var arena_width = 1000.0
 			var arena_height = 1000.0
 			if "width" in world.arena:
