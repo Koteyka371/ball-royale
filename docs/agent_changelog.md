@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-556] Black Hole Final Phase — *2026-07-04 19:23:59 UTC*
+
+If a match extends beyond normal limits, spawn a massive slowly growing black hole in the center that pulls all balls inward, creating an intense final showdown.
+
+---
+
 ## [idea-519] Add Chain Lightning Visual Arcs — *2026-07-04 19:15:13 UTC*
 
 Render bezier curve lightning arcs between hit entities during chain bounces.

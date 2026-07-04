@@ -9605,7 +9605,7 @@
     },
     {
       "id": "idea-556",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Final Phase",
@@ -15883,6 +15883,23 @@
         "src/arena/dynamic_map_hazards_based_on_excitement.py",
         "src/arena/dynamic_map_hazards_based_on_excitement.gd",
         "tests/test_dynamic_map_hazards_based_on_excitement.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-925",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Supernova Arena Event",
+      "description": "An arena event where a giant central star expands over time, pulling entities towards it and dealing massive damage in its core. It eventually explodes, repelling everything outward and scattering rare boosters.",
+      "allowed_paths": [
+        "src/arena/supernova_arena.py",
+        "src/arena/supernova_arena.gd",
+        "tests/test_supernova_arena.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
