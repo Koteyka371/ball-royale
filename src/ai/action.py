@@ -859,6 +859,110 @@ class Action:
             self.ball.chain_lightning_timer -= delta
             if self.ball.chain_lightning_timer <= 0:
                 self.ball.chain_lightning_timer = 0.0
+            elif hasattr(self.world, "events"):
+                # Simulate trajectory
+                enemies = self._get_enemies()
+                hazards = []
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    hazards = self.world.arena.hazards
+
+                boosters = getattr(self.world, "boosters", [])
+                items = []
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "items"):
+                    items = self.world.arena.items
+
+                if enemies or hazards or boosters or items:
+                    weather_is_thunderstorm = hasattr(self.world, "arena") and getattr(self.world.arena, "weather", "") == "thunderstorm"
+                    if not weather_is_thunderstorm and hasattr(self.world, "game_mode") and getattr(self.world.game_mode, "weather", "") == "thunderstorm":
+                        weather_is_thunderstorm = True
+
+                    chain_range = 150
+                    if weather_is_thunderstorm:
+                        chain_range = 300
+                    chain_range_sq = chain_range * chain_range
+
+                    jump_count = 0
+                    current_target = self.ball
+                    hit_entities = [self.ball]
+
+                    while jump_count < 3:
+                        nearby_entities = []
+                        ct_x = getattr(current_target, "x", current_target.get("x", 0.0) if isinstance(current_target, dict) else 0.0)
+                        ct_y = getattr(current_target, "y", current_target.get("y", 0.0) if isinstance(current_target, dict) else 0.0)
+                        for e in enemies:
+                            if e not in hit_entities:
+                                dist_sq = (e.x - ct_x)**2 + (e.y - ct_y)**2
+                                if dist_sq < chain_range_sq:
+                                    nearby_entities.append((dist_sq, e, "enemy"))
+                        for h in hazards:
+                            if h not in hit_entities and getattr(h, "active", True):
+                                dist_sq = (h.x - ct_x)**2 + (h.y - ct_y)**2
+                                if dist_sq < chain_range_sq:
+                                    if getattr(h, "trap_variant", "") == "emp_trap":
+                                        nearby_entities.append((-999999 + dist_sq, h, "hazard"))
+                                    else:
+                                        nearby_entities.append((dist_sq, h, "hazard"))
+                        for b in boosters:
+                            if b not in hit_entities:
+                                dist_sq = (b.x - ct_x)**2 + (b.y - ct_y)**2
+                                if dist_sq < chain_range_sq:
+                                    nearby_entities.append((dist_sq, b, "booster"))
+                        for it in items:
+                            if it not in hit_entities:
+                                dist_sq = (it.x - ct_x)**2 + (it.y - ct_y)**2
+                                if dist_sq < chain_range_sq:
+                                    nearby_entities.append((dist_sq, it, "item"))
+
+                        if hasattr(self.world, "arena"):
+                            aw = getattr(self.world.arena, "width", 2000.0)
+                            ah = getattr(self.world.arena, "height", 2000.0)
+
+                            class WallPoint:
+                                def __init__(self, x, y, name):
+                                    self.x = x
+                                    self.y = y
+                                    self.name = name
+
+                            walls = [
+                                WallPoint(0.0, ct_y, "left_wall"),
+                                WallPoint(aw, ct_y, "right_wall"),
+                                WallPoint(ct_x, 0.0, "top_wall"),
+                                WallPoint(ct_x, ah, "bottom_wall")
+                            ]
+                            for w in walls:
+                                if w.name not in hit_entities:
+                                    dist_sq = (w.x - ct_x)**2 + (w.y - ct_y)**2
+                                    if dist_sq < chain_range_sq:
+                                        nearby_entities.append((dist_sq, w, "wall"))
+
+                        if not nearby_entities:
+                            break
+
+                        nearby_entities.sort(key=lambda x: x[0])
+                        _, next_entity, e_type = nearby_entities[0]
+
+                        # Add visual effect for trajectory
+                        tx = getattr(next_entity, "x", next_entity.get("x", 0.0) if isinstance(next_entity, dict) else 0.0)
+                        ty = getattr(next_entity, "y", next_entity.get("y", 0.0) if isinstance(next_entity, dict) else 0.0)
+                        self.world.events.append({
+                            "type": "visual_effect",
+                            "data": {
+                                "type": "line",
+                                "x": ct_x,
+                                "y": ct_y,
+                                "tx": tx,
+                                "ty": ty,
+                                "color": "yellow"
+                            }
+                        })
+
+                        if e_type == "wall":
+                            hit_entities.append(next_entity.name)
+                        else:
+                            hit_entities.append(next_entity)
+
+                        current_target = next_entity
+                        jump_count += 1
 
 
 
