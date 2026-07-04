@@ -647,6 +647,58 @@ def test_floor_is_lava_mode():
 
 
 
+def test_cursed_buff_zone_mode():
+    from ai.game_modes import CursedBuffZoneMode
+    mode = CursedBuffZoneMode()
+    world = MockWorld()
+    setattr(world, "arena", type("Arena", (), {"width": 1000, "height": 1000, "hazards": []})())
+
+    mode.setup(world, [])
+    assert len(world.arena.hazards) == 3
+    for h in world.arena.hazards:
+        assert h.kind == "cursed_buff_zone"
+
+    zone = world.arena.hazards[0]
+    zone.x = 500
+    zone.y = 500
+    zone.radius = 150
+
+    b1 = MockBall(1)
+    b1.x = 500
+    b1.y = 500 # Inside
+    b1.hp = 100
+    b1.max_hp = 100
+    b1.speed = 100
+    b1.base_speed = 100
+    b1.damage = 10
+    b1.base_damage = 10
+
+    b2 = MockBall(2)
+    b2.x = 900
+    b2.y = 900 # Outside
+    b2.hp = 100
+    b2.max_hp = 100
+    b2.speed = 100
+    b2.base_speed = 100
+    b2.damage = 10
+    b2.base_damage = 10
+
+    balls = [b1, b2]
+
+    # Tick 1 second
+    mode.tick(world, balls, delta=1.0)
+
+    # b1 inside: gets double speed and double damage, loses 5% of max HP
+    assert b1.speed == 200
+    assert b1.damage == 20
+    assert b1.hp == 95
+
+    # b2 outside: stats remain base, no damage
+    assert b2.speed == 100
+    assert b2.damage == 10
+    assert b2.hp == 100
+
+
 def test_meteor_shower_mode():
     from ai.game_modes import MeteorShowerMode
     mode = MeteorShowerMode()

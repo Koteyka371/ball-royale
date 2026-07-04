@@ -6105,6 +6105,73 @@ class MeteorShowerMode(GameMode):
             world.arena.hazards.append(meteor)
 
 
+class CursedBuffZoneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Cursed Buff Zones"
+        self.description = "Zones grant massive speed and damage buffs, but rapidly drain HP. High risk, high reward."
+        self.zone_radius = 150.0
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        import random
+        try:
+            from arena.procedural_arena import Hazard
+        except ImportError:
+            class Hazard:
+                def __init__(self, id, x, y, radius, kind, damage):
+                    self.id = id
+                    self.x = x
+                    self.y = y
+                    self.radius = radius
+                    self.kind = kind
+                    self.damage = damage
+
+        arena_width = getattr(world.arena, "width", 1000)
+        arena_height = getattr(world.arena, "height", 1000)
+
+        # Spawn 3 zones
+        for i in range(3):
+            x = random.uniform(200, arena_width - 200)
+            y = random.uniform(200, arena_height - 200)
+            zone = Hazard(id=21000+i, x=x, y=y, radius=self.zone_radius, kind="cursed_buff_zone", damage=0.0)
+            world.arena.hazards.append(zone)
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import math
+
+        zones = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") == "cursed_buff_zone"]
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            in_zone = False
+            for z in zones:
+                dist = math.hypot(b.x - z.x, b.y - z.y)
+                if dist < z.radius + getattr(b, "radius", 15.0):
+                    in_zone = True
+                    break
+
+            if in_zone:
+                b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 2.0
+                b.damage = getattr(b, "base_damage", getattr(b, "damage", 10.0)) * 2.0
+                # Drain 5% max hp per second
+                max_hp = getattr(b, "max_hp", 100.0)
+                b.hp = getattr(b, "hp", 100.0) - (max_hp * 0.05 * delta)
+                if b.hp <= 0:
+                    b.hp = 0
+                    b.alive = False
+                    b.killer = "cursed_buff_zone"
+            else:
+                b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                b.damage = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+
+
 class RhythmPanelsMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -6399,7 +6466,8 @@ GAME_MODES = {
     "body_swap": BodySwapMode(),
     "hazard_billiards": HazardBilliardsMode(),
     "time_rewind": TimeRewindMode(),
-    "rhythm_panels": RhythmPanelsMode()
+    "rhythm_panels": RhythmPanelsMode(),
+    "cursed_buff_zone": CursedBuffZoneMode()
 }
 
 try:
