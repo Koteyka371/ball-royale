@@ -2552,6 +2552,12 @@ func execute(strategy: String, delta: float):
                                     else:
                                         if "hp" in other:
                                             other.hp -= explosion_damage
+                                        if "stutter_timer" in other:
+                                            other.stutter_timer += 2.0
+                                        elif other.has_method("set_meta") and other.has_meta("stutter_timer"):
+                                            other.set_meta("stutter_timer", other.get_meta("stutter_timer") + 2.0)
+                                        elif other.has_method("set_meta"):
+                                            other.set_meta("stutter_timer", 2.0)
 
                                     if "hp" in other:
                                         var rng = RandomNumberGenerator.new()

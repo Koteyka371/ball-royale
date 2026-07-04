@@ -1444,6 +1444,7 @@ class Action:
                                             other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 2.0
                                         else:
                                             other.hp -= explosion_damage
+                                            other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 2.0
 
                                         import random
                                         import math
