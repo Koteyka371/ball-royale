@@ -25,6 +25,23 @@ class PreGameLobby:
     def get_trap_variant(self, ball_id):
         return self.selections.get(ball_id, "normal")
 
+    def select_perk(self, ball_id, perk):
+        key = f"{ball_id}_perks"
+        if key not in self.selections:
+            self.selections[key] = []
+        if len(self.selections[key]) < 2 and perk not in self.selections[key]:
+            self.selections[key].append(perk)
+
+    def select_perks(self, ball_id, perks):
+        key = f"{ball_id}_perks"
+        self.selections[key] = []
+        for perk in perks:
+            self.select_perk(ball_id, perk)
+
+    def get_perks(self, ball_id):
+        key = f"{ball_id}_perks"
+        return self.selections.get(key, [])
+
 
     def apply_loadout_to_ball(self, ball_id, profile, loadout_name):
         loadout = profile.get_loadout(loadout_name)
@@ -42,6 +59,8 @@ class PreGameLobby:
                 self.selections[f"{ball_id}_title"] = loadout["title"]
             if loadout.get("badge"):
                 self.selections[f"{ball_id}_badge"] = loadout["badge"]
+            if "perks" in loadout:
+                self.select_perks(ball_id, loadout["perks"])
             return True
         return False
 

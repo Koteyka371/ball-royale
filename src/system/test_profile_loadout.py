@@ -12,7 +12,7 @@ def temp_profile_file(tmp_path):
 
 def test_save_and_get_loadout(temp_profile_file):
     pm = ProfileManager(temp_profile_file)
-    pm.save_loadout("stealth", "ninja", "poison", {"bonus_speed": 5}, cosmetic="shadow", title="The Silent")
+    pm.save_loadout("stealth", "ninja", "poison", {"bonus_speed": 5}, cosmetic="shadow", title="The Silent", perks=["Thick Skinned", "Nimble"])
 
     loadout = pm.get_loadout("stealth")
     assert loadout is not None
@@ -21,6 +21,7 @@ def test_save_and_get_loadout(temp_profile_file):
     assert loadout["preferred_bonuses"]["bonus_speed"] == 5
     assert loadout["cosmetic"] == "shadow"
     assert loadout["title"] == "The Silent"
+    assert loadout["perks"] == ["Thick Skinned", "Nimble"]
 
 def test_default_loadout(temp_profile_file):
     pm = ProfileManager(temp_profile_file)
@@ -64,12 +65,16 @@ def test_apply_loadout_to_lobby(temp_profile_file):
     pm.save_loadout("my_fav", "wizard", "stun", {"bonus_damage": 3})
 
     lobby = PreGameLobby()
+    pm.save_loadout("my_fav2", "wizard", "stun", {"bonus_damage": 3}, perks=["Heavy Hitter"])
     result = lobby.apply_loadout_to_ball(1, pm, "my_fav")
 
     assert result is True
     assert lobby.get_trap_variant(1) == "stun"
     assert lobby.selections["1_ball_type"] == "wizard"
     assert lobby.selections["1_preferred_bonuses"] == {"bonus_damage": 3}
+
+    lobby.apply_loadout_to_ball(3, pm, "my_fav2")
+    assert lobby.get_perks(3) == ["Heavy Hitter"]
 
     result2 = lobby.apply_loadout_to_ball(2, pm, "nonexistent")
     assert result2 is False

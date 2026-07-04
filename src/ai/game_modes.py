@@ -275,6 +275,36 @@ class BattleRoyaleMode(GameMode):
                 if not hasattr(b, "base_damage"):
                     b.base_damage = getattr(b, "damage", 10.0)
 
+                # Apply Perks
+                try:
+                    from system.lobby import lobby
+                    bid = getattr(b, "id", i)
+                    perks = lobby.get_perks(bid)
+                    for perk in perks:
+                        if perk == "Thick Skinned":
+                            if not hasattr(b, "base_max_hp"):
+                                b.base_max_hp = getattr(b, "max_hp", 100.0)
+                            b.base_max_hp *= 1.1
+                            b.max_hp = b.base_max_hp
+                            b.hp = b.max_hp
+                        elif perk == "Nimble":
+                            if not hasattr(b, "base_speed"):
+                                b.base_speed = getattr(b, "speed", 100.0)
+                            b.base_speed *= 1.1
+                            b.speed = b.base_speed
+                        elif perk == "Heavy Hitter":
+                            if not hasattr(b, "base_damage"):
+                                b.base_damage = getattr(b, "damage", 10.0)
+                            b.base_damage *= 1.1
+                            b.damage = b.base_damage
+                        elif perk == "Eagle Eye":
+                            if not hasattr(b, "base_perception_radius"):
+                                b.base_perception_radius = getattr(b, "perception_radius", 250.0)
+                            b.base_perception_radius *= 1.1
+                            b.perception_radius = b.base_perception_radius
+                except (ImportError, AttributeError):
+                    pass
+
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
 
         if not hasattr(world, "dead_balls"):

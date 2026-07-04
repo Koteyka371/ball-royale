@@ -33,6 +33,25 @@ func get_trap_variant(ball_id: int) -> String:
         return selections[ball_id]
     return "normal"
 
+func select_perk(ball_id: int, perk: String) -> void:
+    var key = str(ball_id) + "_perks"
+    if not selections.has(key):
+        selections[key] = []
+    if selections[key].size() < 2 and not selections[key].has(perk):
+        selections[key].append(perk)
+
+func select_perks(ball_id: int, perks: Array) -> void:
+    var key = str(ball_id) + "_perks"
+    selections[key] = []
+    for perk in perks:
+        select_perk(ball_id, perk)
+
+func get_perks(ball_id: int) -> Array:
+    var key = str(ball_id) + "_perks"
+    if selections.has(key):
+        return selections[key]
+    return []
+
 
 func apply_loadout_to_ball(ball_id: int, profile: ProfileManager, loadout_name: String) -> bool:
     var loadout = profile.get_loadout(loadout_name)
@@ -49,6 +68,8 @@ func apply_loadout_to_ball(ball_id: int, profile: ProfileManager, loadout_name: 
             selections[str(ball_id) + "_title"] = loadout["title"]
         if loadout.has("badge") and loadout["badge"] != "":
             selections[str(ball_id) + "_badge"] = loadout["badge"]
+        if loadout.has("perks"):
+            select_perks(ball_id, loadout["perks"])
         return true
     return false
 

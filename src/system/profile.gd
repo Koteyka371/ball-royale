@@ -272,7 +272,7 @@ func add_badge(badge_name: String):
         data["badges"].append(badge_name)
         save_profile()
 
-func save_loadout(loadout_name: String, ball_type: String, trap_variant: String, preferred_bonuses: Dictionary = {}, cosmetic: String = "", title: String = "", badge: String = ""):
+func save_loadout(loadout_name: String, ball_type: String, trap_variant: String, preferred_bonuses: Dictionary = {}, cosmetic: String = "", title: String = "", badge: String = "", perks: Array = []):
     if not data.has("loadouts"):
         data["loadouts"] = {}
     data["loadouts"][loadout_name] = {
@@ -281,7 +281,8 @@ func save_loadout(loadout_name: String, ball_type: String, trap_variant: String,
         "preferred_bonuses": preferred_bonuses,
         "cosmetic": cosmetic,
         "title": title,
-        "badge": badge
+        "badge": badge,
+        "perks": perks
     }
     save_profile()
 
