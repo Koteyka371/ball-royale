@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-548] Random Boss Invasions during Late Game — *2026-07-04 16:41:51 UTC*
+
+If a match extends beyond a certain time limit, a massive, unkillable Boss entity spawns at the center of the arena. It slowly expands an instant-kill zone or shoots devastating projectiles in random directions. This would force remaining balls to scramble, breaking defensive stalemates and creating high-stakes, chaotic finales.
+
+---
+
 ## [idea-530] Decoy Placement Trap — *2026-07-04 16:16:18 UTC*
 
 A new trap type that spawns a stationary decoy of the player when triggered by an enemy. The decoy distracts AI opponents, drawing their aggro while the true player gets a window to escape or counter-attack.

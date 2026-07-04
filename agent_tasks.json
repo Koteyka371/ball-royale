@@ -9469,7 +9469,7 @@
     },
     {
       "id": "idea-548",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Random Boss Invasions during Late Game",
@@ -15287,6 +15287,159 @@
         "src/ai/decoy_explosion_trigger.py",
         "src/ai/decoy_explosion_trigger.gd",
         "tests/test_decoy_explosion_trigger.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-890",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "New Ball Type: The Illusionist",
+      "description": "A ball type that frequently spawns multiple fake clones of itself as it moves. The clones deal no damage and have 1 HP, but they inherit the ball's current momentum and color. Enemies hitting the clones trigger a small visual explosion that briefly blinds them, heavily rewarding misdirection and punishing aggressive spam.",
+      "allowed_paths": [
+        "src/ai/new_ball_the_illusionist.py",
+        "src/ai/new_ball_the_illusionist.gd",
+        "tests/test_new_ball_the_illusionist.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-891",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Eclipse Devourer Hazard",
+      "description": "A new rare boss hazard that only spawns during a Lunar Eclipse. It wanders the arena and instantly consumes any ball it touches, converting them into shadowy minions that attack other players.",
+      "allowed_paths": [
+        "src/arena/eclipse_devourer.py",
+        "src/arena/eclipse_devourer.gd",
+        "tests/test_eclipse_devourer.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-892",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Moonlight Shadow Event",
+      "description": "During the night cycle in Day/Night mode, occasional moonlight shadow events spawn safe zones. Balls remaining outside these zones slowly lose stamina, forcing engagements in key areas.",
+      "allowed_paths": [
+        "src/ai/moonlight_shadow.py",
+        "src/ai/moonlight_shadow.gd",
+        "tests/test_moonlight_shadow.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-893",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "New Item: Grappling Hook Booster",
+      "description": "A booster item that, when picked up, gives the ball a 'grappling hook' skill. Using the skill pulls the ball rapidly towards the nearest wall or large environmental hazard, allowing for swift escapes or sudden aggressive gap closures. If it hits an enemy, it pulls the user and enemy together.",
+      "allowed_paths": [
+        "src/ai/new_item_grappling_hook_booster.py",
+        "src/ai/new_item_grappling_hook_booster.gd",
+        "tests/test_new_item_grappling_hook_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-894",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sun God's Wrath Mode",
+      "description": "An intense daytime-only mode where the sun gets progressively hotter, causing a slowly shrinking safe zone of shade. Balls outside the shade take continuous damage and have their stamina drained.",
+      "allowed_paths": [
+        "src/ai/sun_gods_wrath.py",
+        "src/ai/sun_gods_wrath.gd",
+        "tests/test_sun_gods_wrath.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-895",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Trap upgrades",
+      "description": "Upgradable traps via currency.",
+      "allowed_paths": [
+        "src/arena/trap_upgrades.py",
+        "src/arena/trap_upgrades.gd",
+        "tests/test_trap_upgrades.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-896",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounty targets per mode",
+      "description": "Make bounties unique depending on game mode.",
+      "allowed_paths": [
+        "src/ai/bounty_targets_per.py",
+        "src/ai/bounty_targets_per.gd",
+        "tests/test_bounty_targets_per.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-897",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Solar Flare Mechanics",
+      "description": "In Day/Night mode, random solar flares can supercharge balls during the day cycle, granting them a temporary massive speed and damage buff but causing them to take double damage from sunlight beams.",
+      "allowed_paths": [
+        "src/ai/solar_flare_mechanics.py",
+        "src/ai/solar_flare_mechanics.gd",
+        "tests/test_solar_flare_mechanics.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-898",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounty Hunter Mode with Dynamic Economy",
+      "description": "Killing players grants gold which can be spent mid-game in a neutral shop zone to permanently upgrade max HP, base speed, or base damage for the rest of the match.",
+      "allowed_paths": [
+        "src/ai/bounty_hunter_with_dynamic_economy.py",
+        "src/ai/bounty_hunter_with_dynamic_economy.gd",
+        "tests/test_bounty_hunter_with_dynamic_economy.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
