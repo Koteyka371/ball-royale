@@ -165,6 +165,7 @@ class ProfileManager:
                 "quests": [],
                 "cosmetics": self.data.get("cosmetics", []),
                 "titles": self.data.get("titles", []),
+                "badges": self.data.get("badges", []),
                 "status_effects": self.data.get("status_effects", []),
                 "nemeses": self.data.get("nemeses", {}),
                 "login_streak": self.data.get("login_streak", 0),
@@ -235,7 +236,14 @@ class ProfileManager:
             self.data["titles"].append(title_name)
             self.save()
 
-    def save_loadout(self, loadout_name, ball_type, trap_variant, preferred_bonuses=None, cosmetic=None, title=None):
+    def add_badge(self, badge_name):
+        if "badges" not in self.data:
+            self.data["badges"] = []
+        if badge_name not in self.data["badges"]:
+            self.data["badges"].append(badge_name)
+            self.save()
+
+    def save_loadout(self, loadout_name, ball_type, trap_variant, preferred_bonuses=None, cosmetic=None, title=None, badge=None):
         if "loadouts" not in self.data:
             self.data["loadouts"] = {}
         if preferred_bonuses is None:
@@ -245,7 +253,8 @@ class ProfileManager:
             "trap_variant": trap_variant,
             "preferred_bonuses": preferred_bonuses,
             "cosmetic": cosmetic,
-            "title": title
+            "title": title,
+            "badge": badge
         }
         self.save()
 

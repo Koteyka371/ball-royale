@@ -132,6 +132,17 @@ func end_season():
             if profile_manager.has_method("add_status_effect"):
                 profile_manager.call("add_status_effect", "Aura of " + theme)
 
+        var all_ranked = []
+        for p in sorted_players:
+            all_ranked.append(p["id"])
+
+        if all_ranked.has("local_player") and profile_manager != null:
+            var rank = all_ranked.find("local_player") + 1
+            var theme = get_theme(season_num)
+            var badge_name = "Season " + str(season_num) + " Rank " + str(rank) + " " + theme + " Badge"
+            if profile_manager.has_method("add_badge"):
+                profile_manager.call("add_badge", badge_name)
+
     data["season_start_time"] = Time.get_unix_time_from_system()
     data["current_season"] = season_num + 1
     data["players"] = {}

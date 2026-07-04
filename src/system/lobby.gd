@@ -47,6 +47,8 @@ func apply_loadout_to_ball(ball_id: int, profile: ProfileManager, loadout_name: 
             selections[str(ball_id) + "_cosmetic"] = loadout["cosmetic"]
         if loadout.has("title") and loadout["title"] != "":
             selections[str(ball_id) + "_title"] = loadout["title"]
+        if loadout.has("badge") and loadout["badge"] != "":
+            selections[str(ball_id) + "_badge"] = loadout["badge"]
         return true
     return false
 
