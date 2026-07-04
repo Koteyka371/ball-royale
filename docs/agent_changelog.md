@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-513] Idea 2: EMP Mine — *2026-07-04 17:43:09 UTC*
+
+A hidden mine that detonates on proximity, disabling AI abilities and rendering them unable to attack for 5 seconds.
+
+---
+
 ## [idea-449] Debuff Cleansing Power-ups — *2026-07-04 17:33:26 UTC*
 
 Add a new power-up item that instantly cleanses all negative status effects (including the new max HP debuff, burn, and poison) and grants temporary immunity, providing a strategic counterplay option against heavy debuff-focused teams or zones.
