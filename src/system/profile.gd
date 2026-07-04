@@ -178,6 +178,7 @@ func do_prestige() -> bool:
             "quests": [],
             "cosmetics": data.get("cosmetics", []),
             "titles": data.get("titles", []),
+        "badges": data.get("badges", []),
             "status_effects": data.get("status_effects", []),
             "nemeses": data.get("nemeses", {}),
             "login_streak": data.get("login_streak", 0),
@@ -249,7 +250,14 @@ func add_title(title_name: String):
         data["titles"].append(title_name)
         save_profile()
 
-func save_loadout(loadout_name: String, ball_type: String, trap_variant: String, preferred_bonuses: Dictionary = {}, cosmetic: String = "", title: String = ""):
+func add_badge(badge_name: String):
+    if not data.has("badges"):
+        data["badges"] = []
+    if not data["badges"].has(badge_name):
+        data["badges"].append(badge_name)
+        save_profile()
+
+func save_loadout(loadout_name: String, ball_type: String, trap_variant: String, preferred_bonuses: Dictionary = {}, cosmetic: String = "", title: String = "", badge: String = ""):
     if not data.has("loadouts"):
         data["loadouts"] = {}
     data["loadouts"][loadout_name] = {
@@ -257,7 +265,8 @@ func save_loadout(loadout_name: String, ball_type: String, trap_variant: String,
         "trap_variant": trap_variant,
         "preferred_bonuses": preferred_bonuses,
         "cosmetic": cosmetic,
-        "title": title
+        "title": title,
+        "badge": badge
     }
     save_profile()
 

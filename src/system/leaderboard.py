@@ -91,6 +91,14 @@ class LeaderboardManager:
                 self.profile_manager.add_title(f"{theme} Champion")
                 self.profile_manager.add_status_effect(f"Aura of {theme}")
 
+            all_ranked_players = [p for p, _ in sorted_players]
+            if "local_player" in all_ranked_players and self.profile_manager:
+                rank = all_ranked_players.index("local_player") + 1
+                theme = self.get_theme(season_num)
+                badge_name = f"Season {season_num} Rank {rank} {theme} Badge"
+                if hasattr(self.profile_manager, 'add_badge'):
+                    self.profile_manager.add_badge(badge_name)
+
         # Reset for next season
         self.data["season_start_time"] = time.time()
         self.data["current_season"] = season_num + 1

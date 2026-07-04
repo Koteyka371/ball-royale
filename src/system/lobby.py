@@ -40,6 +40,8 @@ class PreGameLobby:
                 self.selections[f"{ball_id}_cosmetic"] = loadout["cosmetic"]
             if loadout.get("title"):
                 self.selections[f"{ball_id}_title"] = loadout["title"]
+            if loadout.get("badge"):
+                self.selections[f"{ball_id}_badge"] = loadout["badge"]
             return True
         return False
 
