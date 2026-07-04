@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-521] Chain Lightning Stun Effect — *2026-07-04 12:39:42 UTC*
+
+Apply a micro-stun (0.2s) to entities hit by chain lightning.
+
+---
+
 ## [idea-518] EMP Shield Item — *2026-07-04 12:27:41 UTC*
 
 A new equippable item or booster that temporarily grants immunity to EMP bursts and other scrambling effects.

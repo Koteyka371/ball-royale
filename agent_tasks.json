@@ -9010,7 +9010,7 @@
     },
     {
       "id": "idea-521",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chain Lightning Stun Effect",
@@ -14604,6 +14604,40 @@
         "src/arena/temporal_rift_hazards.py",
         "src/arena/temporal_rift_hazards.gd",
         "tests/test_temporal_rift_hazards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-850",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chronosphere Hazard",
+      "description": "A new arena hazard that creates a large, slowly expanding bubble of warped time. Balls entering the sphere have their movement speed, skill cooldowns, and projectile velocities reduced by 75%, allowing for precise dodging and creating 'bullet time' zones during chaotic endgame teamfights.",
+      "allowed_paths": [
+        "src/arena/chronosphere.py",
+        "src/arena/chronosphere.gd",
+        "tests/test_chronosphere.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-851",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Kinetic Rebound Armor",
+      "description": "A new equippable item or innate ball skill that, when hit by an enemy dash or melee attack, absorbs a portion of the kinetic energy, completely negating knockback, and stores it as a temporary speed boost or a charged explosive counter-attack.",
+      "allowed_paths": [
+        "src/ai/kinetic_rebound_armor.py",
+        "src/ai/kinetic_rebound_armor.gd",
+        "tests/test_kinetic_rebound_armor.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
