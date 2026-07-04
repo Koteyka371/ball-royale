@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-487] Mirror Image Decoy Movement — *2026-07-04 18:38:38 UTC*
+
+Instead of the decoy remaining completely static, it could perfectly mirror the Trickster's movements in the opposite direction. This would drastically increase confusion for opponents, as they would have to quickly figure out which movement pattern represents the real player trying to engage or flee.
+
+---
+
 ## [idea-559] Guild Raid Bosses — *2026-07-04 18:38:35 UTC*
 
 Introduce a PvE mode where guild members team up to fight massive boss balls with unique mechanics. Damage dealt by all guild members over a week is combined to defeat the boss and earn exclusive guild cosmetics.
