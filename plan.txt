@@ -1,0 +1,23 @@
+Okay, AI enemies DO target decoys if `is_decoy` is set on a ball! And wait, if it's an arena hazard, it won't be in `world.balls`.
+So we shouldn't make them hazards in the traditional sense if we want AI to target them.
+Wait! The task asks for: "A new arena hazard that periodically spawns non-damaging, fast-moving decoys that mimic player movements to confuse AI targeting and waste cooldowns."
+So the HAZARD spawns the DECOYS.
+"A new arena hazard that periodically spawns ... decoys"
+Ah! The "ai_mimic_decoy_event" or the hazard itself?
+Maybe there's a hazard called `"decoy_spawner"` or something.
+Let's re-read carefully: "A new arena hazard that periodically spawns non-damaging, fast-moving decoys that mimic player movements to confuse AI targeting and waste cooldowns."
+
+Okay, let's create a hazard:
+Kind: `"decoy_spawner"`
+It periodically (e.g. every 3 seconds) spawns a decoy (a ball) with `is_decoy = True` that mimics player movements.
+Wait, "a new arena hazard" could just be one of the hazards placed in the arena that has an update loop.
+
+Let's do this:
+1. In `src/arena/procedural_arena.py` and `src/arena/procedural_arena.gd`, add `"decoy_spawner"` to the list of hazards spawned in `update_zone` when it rolls for random events or when it spawns zones (like `repulsion_field`, `gravity_well`, etc). Wait, the prompt says "A new arena hazard...". We can add it as a new hazard type spawned randomly during the arena's `update_zone` (for example, in the `num_zones` loop). Let's call it `"decoy_spawner"`.
+   Wait, the task says "A new arena hazard that periodically spawns..." This implies the hazard *exists* in the arena, and while it's active, it spawns decoys.
+2. The spawner: `hazard.kind == "decoy_spawner"`. It can have a `spawn_timer`. Every X seconds (delta), it spawns a decoy ball into `world.balls`.
+3. Wait, where do we tick hazards? In `BattleRoyaleMode.tick()` or in `procedural_arena`?
+If we do it in `BattleRoyaleMode.tick()`, we can just loop over `world.arena.hazards`. If `h.kind == "decoy_spawner"`, tick its spawn timer. If it fires, create a decoy ball and append to `world.balls`.
+4. Wait, "fast-moving decoys that mimic player movements". The decoys are balls!
+   We can create a mock ball, give it `is_decoy = True`, `hp = 1`, `alive = True`. And how do they "mimic player movements"?
+   In `game_modes.tick()`, we can also loop over all balls where `getattr(b, "spawned_by_decoy_spawner", False)`. For each of them, find the nearest real player, and match their movement (e.g., set `vx`, `vy` or manually update `x`, `y` based on the player's movement, but moving fast).
