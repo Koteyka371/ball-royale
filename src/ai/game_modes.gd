@@ -7173,6 +7173,128 @@ class MeteorShowerMode extends GameMode:
 
 			world.arena.hazards.append(meteor)
 
+
+class RhythmPanelsMode extends GameMode:
+	var rhythm_timer: float = 0.0
+	var beat_interval: float = 2.0
+	var rng = RandomNumberGenerator.new()
+
+	func _init() -> void:
+		super._init()
+		name = "Rhythm Panels"
+		description = "Floor panels light up to the beat. Stay on lit panels for buffs; unlit panels will debuff and damage you."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		rhythm_timer = 0.0
+		if not "hazards" in world.arena:
+			world.arena.hazards = []
+
+		var arena_width = world.arena.width if "width" in world.arena else 1000.0
+		var arena_height = world.arena.height if "height" in world.arena else 1000.0
+
+		rng.randomize()
+		var ProceduralArena = load("res://src/arena/procedural_arena.gd")
+		for i in range(8):
+			var x = rng.randf_range(100.0, arena_width - 100.0)
+			var y = rng.randf_range(100.0, arena_height - 100.0)
+			var panel = ProceduralArena.Hazard.new(17000 + i, x, y, 120.0, "rhythm_panel", 0.0)
+			panel.set_meta("is_lit", false)
+			world.arena.hazards.append(panel)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		rhythm_timer += delta
+		var phase = fmod(rhythm_timer, beat_interval) / beat_interval
+		var is_beat = phase < 0.4
+
+		var panels = []
+		if "hazards" in world.arena:
+			for h in world.arena.hazards:
+				var kind = h.get("kind", "") if typeof(h) == TYPE_DICTIONARY else h.kind
+				if kind == "rhythm_panel":
+					panels.append(h)
+					if typeof(h) == TYPE_DICTIONARY:
+						h["is_lit"] = is_beat
+					else:
+						h.set_meta("is_lit", is_beat)
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+				var bt = b.get("ball_type", "")
+				if not is_alive or bt == "spectator":
+					continue
+			else:
+				is_alive = b.alive
+				var bt = b.ball_type
+				if not is_alive or bt == "spectator":
+					continue
+
+			var b_x = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x
+			var b_y = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.y
+			var b_radius = b.get("radius", 15.0) if typeof(b) == TYPE_DICTIONARY else b.radius
+
+			var on_panel = false
+			for p in panels:
+				var p_x = p.get("x", 0.0) if typeof(p) == TYPE_DICTIONARY else p.x
+				var p_y = p.get("y", 0.0) if typeof(p) == TYPE_DICTIONARY else p.y
+				var p_radius = p.get("radius", 120.0) if typeof(p) == TYPE_DICTIONARY else p.radius
+
+				var dist = sqrt((b_x - p_x) * (b_x - p_x) + (b_y - p_y) * (b_y - p_y))
+				if dist < p_radius + b_radius:
+					on_panel = true
+					break
+
+			var speed_prop = "speed"
+			var base_speed_prop = "base_speed"
+			var hp_prop = "hp"
+			var max_hp_prop = "max_hp"
+
+			if on_panel:
+				if is_beat:
+					if typeof(b) == TYPE_DICTIONARY:
+						b[speed_prop] = b.get(base_speed_prop, b.get(speed_prop, 100.0)) * 1.5
+						var hp = b.get(hp_prop, 100.0)
+						var max_hp = b.get(max_hp_prop, 100.0)
+						if hp < max_hp:
+							b[hp_prop] = min(max_hp, hp + 10.0 * delta)
+					else:
+						var base_s = b.base_speed if "base_speed" in b else b.speed
+						b.speed = base_s * 1.5
+						var hp = b.hp
+						var max_hp = b.max_hp if "max_hp" in b else 100.0
+						if hp < max_hp:
+							b.hp = min(max_hp, hp + 10.0 * delta)
+				else:
+					if typeof(b) == TYPE_DICTIONARY:
+						b[speed_prop] = b.get(base_speed_prop, b.get(speed_prop, 100.0)) * 0.5
+						var hp = b.get(hp_prop, 100.0) - 20.0 * delta
+						if hp <= 0:
+							b[hp_prop] = 0
+							b["alive"] = false
+							b["killer"] = "rhythm_panel"
+						else:
+							b[hp_prop] = hp
+					else:
+						var base_s = b.base_speed if "base_speed" in b else b.speed
+						b.speed = base_s * 0.5
+						var hp = b.hp - 20.0 * delta
+						if hp <= 0:
+							b.hp = 0
+							b.alive = false
+							b.killer = "rhythm_panel"
+						else:
+							b.hp = hp
+			else:
+				if typeof(b) == TYPE_DICTIONARY:
+					b[speed_prop] = b.get(base_speed_prop, b.get(speed_prop, 100.0))
+				else:
+					var base_s = b.base_speed if "base_speed" in b else b.speed
+					b.speed = base_s
+
 class TimeRewindMode extends GameMode:
 	var rewind_timer: float = 0.0
 	var history: Dictionary = {}
@@ -7325,5 +7447,6 @@ var GAME_MODES = {
 	"echolocation": EcholocationMode.new(),
 	"body_swap": BodySwapMode.new(),
 	"hazard_billiards": HazardBilliardsMode.new(),
-	"time_rewind": TimeRewindMode.new()
+	"time_rewind": TimeRewindMode.new(),
+	"rhythm_panels": RhythmPanelsMode.new()
 }

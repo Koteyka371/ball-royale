@@ -1,0 +1,4 @@
+{
+  "title": "Paint the Floor Mode",
+  "description": "Every entity leaves a trail of their team's color. Stepping on your own color gives a speed and regen buff, while stepping on enemy colors causes slowdown and damage. Teams win by controlling the most territory."
+}

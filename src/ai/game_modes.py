@@ -5910,6 +5910,82 @@ class MeteorShowerMode(GameMode):
 
             world.arena.hazards.append(meteor)
 
+
+class RhythmPanelsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Rhythm Panels"
+        self.description = "Floor panels light up to the beat. Stay on lit panels for buffs; unlit panels will debuff and damage you."
+        self.rhythm_timer = 0.0
+        self.beat_interval = 2.0
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        self.rhythm_timer = 0.0
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        import random
+        try:
+            from arena.procedural_arena import Hazard
+        except ImportError:
+            class Hazard:
+                def __init__(self, id, x, y, radius, kind, damage):
+                    self.id = id
+                    self.x = x
+                    self.y = y
+                    self.radius = radius
+                    self.kind = kind
+                    self.damage = damage
+
+        arena_width = getattr(world.arena, "width", 1000)
+        arena_height = getattr(world.arena, "height", 1000)
+
+        for i in range(8):
+            x = random.uniform(100, arena_width - 100)
+            y = random.uniform(100, arena_height - 100)
+            panel = Hazard(id=17000+i, x=x, y=y, radius=120.0, kind="rhythm_panel", damage=0.0)
+            setattr(panel, "is_lit", False)
+            world.arena.hazards.append(panel)
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        self.rhythm_timer += delta
+        phase = (self.rhythm_timer % self.beat_interval) / self.beat_interval
+        is_beat = phase < 0.4
+
+        panels = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") == "rhythm_panel"]
+        for p in panels:
+            setattr(p, "is_lit", is_beat)
+
+        import math
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            on_panel = False
+            for p in panels:
+                dist = math.hypot(b.x - p.x, b.y - p.y)
+                if dist < p.radius + getattr(b, "radius", 15.0):
+                    on_panel = True
+                    break
+
+            if on_panel:
+                if is_beat:
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.5
+                    if getattr(b, "hp", 100.0) < getattr(b, "max_hp", 100.0):
+                        b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + 10.0 * delta)
+                else:
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 0.5
+                    b.hp = getattr(b, "hp", 100.0) - 20.0 * delta
+                    if b.hp <= 0:
+                        b.hp = 0
+                        b.alive = False
+                        b.killer = "rhythm_panel"
+            else:
+                b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+
 class TimeRewindMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -6016,7 +6092,8 @@ GAME_MODES = {
     "echolocation": EcholocationMode(),
     "body_swap": BodySwapMode(),
     "hazard_billiards": HazardBilliardsMode(),
-    "time_rewind": TimeRewindMode()
+    "time_rewind": TimeRewindMode(),
+    "rhythm_panels": RhythmPanelsMode()
 }
 
 try:
