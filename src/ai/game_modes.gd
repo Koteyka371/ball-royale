@@ -2142,41 +2142,87 @@ class WeatherChaosMode extends GameMode:
 					var b_type = ""
 					if typeof(b) == TYPE_DICTIONARY and b.has("ball_type"): b_type = b["ball_type"]
 					elif typeof(b) == TYPE_OBJECT and "ball_type" in b: b_type = b.ball_type
-					if b_type == "sand_elemental":
+					var b_traits = []
+					if typeof(b) == TYPE_DICTIONARY and b.has("traits"): b_traits = b["traits"]
+					elif typeof(b) == TYPE_OBJECT and "traits" in b: b_traits = b.traits
+					var is_earth = ("earth" in b_type.to_lower() or "sand" in b_type.to_lower() or b_traits.has("earth") or b_traits.has("sand"))
+					if is_earth:
 						if "speed" in b: b.speed = base_spd * 1.2
 						if "damage" in b: b.damage = base_dmg
-						if b.has_method("set_meta"):
+						if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
 							b.set_meta("dash_range_mult", 1.0)
 							b.set_meta("steering_mult", 1.0)
 						if "attack_accuracy" in b: b.attack_accuracy = 1.0
 					else:
-						if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius") * 0.3
-						elif "base_perception_radius" in b: b.perception_radius = b.base_perception_radius * 0.3
-						else: b.perception_radius = 250.0 * 0.3
+						var is_sheltered = false
+						if "arena" in world and "hazards" in world.arena:
+							for h in world.arena.hazards:
+								var hk = ""
+								if typeof(h) == TYPE_DICTIONARY and h.has("kind"): hk = h["kind"]
+								elif typeof(h) == TYPE_OBJECT and "kind" in h: hk = h.kind
+								var hactive = true
+								if typeof(h) == TYPE_DICTIONARY and h.has("active"): hactive = h["active"]
+								elif typeof(h) == TYPE_OBJECT and "active" in h: hactive = h.active
+								if (hk == "shelter" or hk == "flare") and hactive:
+									var hx = 0.0; var hy = 0.0; var hrad = 0.0
+									if typeof(h) == TYPE_DICTIONARY:
+										if h.has("x"): hx = h["x"]
+										if h.has("y"): hy = h["y"]
+										if h.has("radius"): hrad = h["radius"]
+									elif typeof(h) == TYPE_OBJECT:
+										if "x" in h: hx = h.x
+										if "y" in h: hy = h.y
+										if "radius" in h: hrad = h.radius
+									var bx = 0.0; var by = 0.0
+									if typeof(b) == TYPE_DICTIONARY:
+										if b.has("x"): bx = b["x"]
+										if b.has("y"): by = b["y"]
+									elif typeof(b) == TYPE_OBJECT:
+										if "x" in b: bx = b.x
+										if "y" in b: by = b.y
+									var dist_sq = (bx - hx) * (bx - hx) + (by - hy) * (by - hy)
+									if dist_sq <= (hrad * hrad):
+										is_sheltered = true
+										break
+
+						var bpr = 250.0
+						if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("base_perception_radius"): bpr = b.get_meta("base_perception_radius")
+						elif typeof(b) == TYPE_DICTIONARY and b.has("base_perception_radius"): bpr = b["base_perception_radius"]
+						elif typeof(b) == TYPE_OBJECT and "base_perception_radius" in b: bpr = b.base_perception_radius
+
+						if is_sheltered:
+							if "perception_radius" in b: b.perception_radius = bpr
+						else:
+							if "perception_radius" in b: b.perception_radius = bpr * 0.3
+
 						if "speed" in b: b.speed = base_spd * 0.7
 						if "damage" in b: b.damage = base_dmg
-						if b.has_method("set_meta"):
+						if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
 							b.set_meta("dash_range_mult", 0.5)
 							b.set_meta("steering_mult", 0.5)
+
 						var bt = b_type
 						if bt in ["trickster", "phantom", "mimic"]:
-							if b.has_method("set_meta") and b.has_method("get_meta"):
+							if typeof(b) == TYPE_OBJECT and b.has_method("set_meta") and b.has_method("get_meta"):
 								var mtimer = 0.0
 								if b.has_meta("mirage_timer"): mtimer = b.get_meta("mirage_timer")
 								mtimer += delta
 								if mtimer >= 5.0: mtimer = 0.0
 								b.set_meta("mirage_timer", mtimer)
-						if b.has_method("set_meta") and b.has_method("get_meta"):
+
+						if typeof(b) == TYPE_OBJECT and b.has_method("set_meta") and b.has_method("get_meta"):
 							var sand_timer = 0.0
 							if b.has_meta("sandstorm_timer"): sand_timer = b.get_meta("sandstorm_timer")
 							sand_timer += delta
 							if sand_timer >= 1.0:
 								sand_timer = 0.0
-								if "hp" in b: b.hp -= 1.0
+								if not is_sheltered and "hp" in b: b.hp -= 1.0
 							b.set_meta("sandstorm_timer", sand_timer)
+
 						if randf() < 0.05 * delta:
 							if "hp" in b: b.hp -= 20.0
-						if "attack_accuracy" in b: b.attack_accuracy = 0.5
+
+					if "attack_accuracy" in b: b.attack_accuracy = 0.5
 				elif weather == "heatwave":
 					if typeof(b) == TYPE_OBJECT: b.set("cosmetic", "sunglasses")
 					elif typeof(b) == TYPE_DICTIONARY: b["cosmetic"] = "sunglasses"

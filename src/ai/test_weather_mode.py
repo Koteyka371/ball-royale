@@ -254,3 +254,90 @@ def test_weather_mode_rain_vision():
     mode.tick(world, balls, 0.1)
 
     assert ball.perception_radius == 125.0 # 250 * 0.5
+
+def test_weather_mode_sandstorm_shelter():
+    import ai.game_modes as gm
+    mode = gm.GAME_MODES["weather_chaos"]
+
+    class MockHazard:
+        def __init__(self, k, x, y, r, active=True):
+            self.kind = k
+            self.x = x
+            self.y = y
+            self.radius = r
+            self.active = active
+
+    class MockArena:
+        def __init__(self):
+            self.hazards = [
+                MockHazard("shelter", 100, 100, 50),
+                MockHazard("flare", 500, 500, 100)
+            ]
+
+    class MockWorld:
+        def __init__(self):
+            self.arena = MockArena()
+            self.leaderboard_manager = type("Mock", (), {"data": {"current_season": 4}})()
+            self.balls = []
+            self.dead_balls = []
+        def add_event(self, type, data):
+            pass
+
+    class MockBall:
+        def __init__(self, id, t):
+            self.id = id
+            self.alive = True
+            self.ball_type = t
+            self.team = "test"
+            self.x = 0
+            self.y = 0
+            self.base_speed = 100.0
+            self.speed = 100.0
+            self.base_damage = 10.0
+            self.damage = 10.0
+            self.base_perception_radius = 200.0
+            self.perception_radius = 200.0
+            self.hp = 100.0
+            self.traits = []
+
+    world = MockWorld()
+
+    # Not sheltered, not earth elemental
+    b1 = MockBall(1, "scout")
+    b1.x, b1.y = 0, 0
+
+    # Sheltered by shelter
+    b2 = MockBall(2, "scout")
+    b2.x, b2.y = 100, 100
+
+    # Sheltered by flare
+    b3 = MockBall(3, "scout")
+    b3.x, b3.y = 520, 500
+
+    # Earth elemental
+    b4 = MockBall(4, "sand_elemental")
+    b4.x, b4.y = 0, 0
+
+    balls = [b1, b2, b3, b4]
+    world.balls = balls
+    mode.setup(world, balls)
+
+    mode.weather = "sandstorm"
+
+    mode.tick(world, balls, 1.0)
+
+    # Assertions
+    # b1: not sheltered, reduced vision and dot damage
+    assert b1.perception_radius == 200.0 * 0.3
+    assert b1.hp == 99.0
+
+    # b2: sheltered, normal vision, no dot damage
+    assert b2.perception_radius == 200.0
+    assert b2.hp == 100.0
+
+    # b3: sheltered by flare, normal vision, no dot damage
+    assert b3.perception_radius == 200.0
+    assert b3.hp == 100.0
+
+    # b4: earth elemental, no vision reduction, speed increased
+    assert b4.speed == 100.0 * 1.2
