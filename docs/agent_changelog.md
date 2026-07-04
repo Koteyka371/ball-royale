@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-462] Sudden Death Meteor Shower — *2026-07-04 21:07:34 UTC*
+
+During the final 30 seconds of a match or when only two teams remain, a meteor shower begins hitting random spots on the arena. Each meteor deals massive AoE damage and leaves a temporary crater (impassable terrain) that alters movement paths and restricts dodging space.
+
+---
+
 ## [idea-561] Guild Headquarters Customization — *2026-07-04 20:05:51 UTC*
 
 Allow guilds to spend resources on customizing a virtual headquarters. Members can view their customized HQ, which can feature unlocked statues, banners, and an interactive training arena for testing new loadouts.
