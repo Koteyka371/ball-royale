@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-560] Ball Loadouts / Perk System — *2026-07-04 19:42:27 UTC*
+
+Before entering a battle royale, balls can select two perks (e.g., 'Thick Skinned' for +10% HP, 'Nimble' for +10% Speed). This allows players to further customize the existing ball classes (like making a tankier scout or a faster elementalist).
+
+---
+
 ## [idea-555] Leech Seed Booster — *2026-07-04 19:42:23 UTC*
 
 A booster that allows the collecting ball's attacks to plant a leech seed on the target, draining HP over time and transferring it back to the attacker.
