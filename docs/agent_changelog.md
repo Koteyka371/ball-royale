@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-421] Decoy Spawner Hazard — *2026-07-04 16:59:55 UTC*
+
+A new arena hazard that periodically spawns non-damaging, fast-moving decoys that mimic player movements to confuse AI targeting and waste cooldowns.
+
+---
+
 ## [idea-548] Random Boss Invasions during Late Game — *2026-07-04 16:41:51 UTC*
 
 If a match extends beyond a certain time limit, a massive, unkillable Boss entity spawns at the center of the arena. It slowly expands an instant-kill zone or shoots devastating projectiles in random directions. This would force remaining balls to scramble, breaking defensive stalemates and creating high-stakes, chaotic finales.
