@@ -370,6 +370,27 @@ class ProfileManager:
         self.save()
         return rewards
 
+    def add_ancient_fragment(self):
+        """Adds an ancient loadout fragment. Collect 3 to unlock ancient items."""
+        count = self.data.get("ancient_fragments", 0) + 1
+        self.data["ancient_fragments"] = count
+        if count >= 3:
+            self.data["ancient_fragments"] -= 3
+            unlocked = False
+            if "ancient_aura" not in self.data.get("cosmetics", []):
+                self.add_cosmetic("ancient_aura")
+                unlocked = True
+            if "ancient_guardian" not in self.data.get("unlocked_balls", []):
+                if "unlocked_balls" not in self.data:
+                    self.data["unlocked_balls"] = []
+                self.data["unlocked_balls"].append("ancient_guardian")
+                unlocked = True
+            if unlocked:
+                self.save()
+            return True
+        self.save()
+        return False
+
     def add_material(self, material_name, amount):
         if "inventory" not in self.data:
             self.data["inventory"] = {"materials": {}, "crafted_items": {}}

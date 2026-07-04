@@ -4698,6 +4698,20 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "loadout_fragment":
+                    self.ball.collected_fragments = getattr(self.ball, "collected_fragments", 0) + 1
+                    if hasattr(self.world, "profile_manager") and self.world.profile_manager:
+                        if self.world.profile_manager.add_ancient_fragment():
+                            self.ball.cosmetic = "ancient_aura"
+                    elif self.ball.collected_fragments >= 3:
+                        self.ball.cosmetic = "ancient_aura"
+
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+
                 elif getattr(nearest, "kind", None) == "placeable_trap_item":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []

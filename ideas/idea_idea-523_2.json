@@ -1,0 +1,4 @@
+{
+    "title": "Bounty Hunter Tag",
+    "description": "A new game mode where one player is designated as the 'Bounty'. This player gains enhanced health, vision, and damage, but their exact location is periodically pinged on the minimap for all other players. The player who successfully takes down the Bounty steals the tag and inherits the buffs. The player holding the tag the longest at the end of the match wins."
+}
