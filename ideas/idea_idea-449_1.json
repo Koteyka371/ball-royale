@@ -1,0 +1,4 @@
+{
+  "title": "Bouncy Terrain Feature",
+  "description": "Add dynamic terrain objects that act as trampolines. Balls colliding with them gain a temporary speed boost and ignore ground hazards for 2 seconds."
+}

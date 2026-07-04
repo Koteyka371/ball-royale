@@ -7601,6 +7601,40 @@ func _collect_booster(delta: float):
                         self.world.arena.hazards.erase(nearest)
                 if self.world != null and "boosters" in self.world and self.world.boosters.has(nearest):
                     self.world.boosters.erase(nearest)
+            elif "kind" in nearest and nearest.kind == "cleanse_booster":
+                if "immunity_timer" in self.ball: self.ball.immunity_timer = 15.0
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("immunity_timer", 15.0)
+                if "burn_timer" in self.ball: self.ball.burn_timer = 0.0
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("burn_timer", 0.0)
+                if "poison_timer" in self.ball: self.ball.poison_timer = 0.0
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("poison_timer", 0.0)
+                if "slow_timer" in self.ball: self.ball.slow_timer = 0.0
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("slow_timer", 0.0)
+                if "confusion_timer" in self.ball: self.ball.confusion_timer = 0.0
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("confusion_timer", 0.0)
+                if "is_confused" in self.ball: self.ball.is_confused = false
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("is_confused", false)
+                if "blindness_timer" in self.ball: self.ball.blindness_timer = 0.0
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("blindness_timer", 0.0)
+                if "is_blinded" in self.ball: self.ball.is_blinded = false
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("is_blinded", false)
+
+                var has_debuff = false
+                if self.ball.has_method("has_meta") and self.ball.has_meta("zone_modifier_debuff"):
+                    has_debuff = true
+                if has_debuff:
+                    if self.ball.has_method("has_meta") and self.ball.has_meta("base_max_hp"):
+                        self.ball.max_hp = self.ball.get_meta("base_max_hp")
+                    self.ball.remove_meta("zone_modifier_debuff")
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "emp_immunity_booster":
                 if "emp_immunity_timer" in self.ball:
                     self.ball.emp_immunity_timer = 15.0
