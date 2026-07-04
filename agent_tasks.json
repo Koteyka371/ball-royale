@@ -9146,7 +9146,7 @@
     },
     {
       "id": "idea-529",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Wormhole Links",
@@ -15508,6 +15508,74 @@
         "src/arena/shrinking_floor_trap.py",
         "src/arena/shrinking_floor_trap.gd",
         "tests/test_shrinking_floor_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-903",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Amnesia Gas Hazard",
+      "description": "A cloud-based hazard that, upon contact, temporarily clears the AI's relationship memory (rivalries, perceived allies, last attacker) for 10 seconds. This forces the AI to re-evaluate their threat assessment from scratch, often leading to them ignoring current targets and behaving erratically until the effect wears off.",
+      "allowed_paths": [
+        "src/arena/amnesia_gas.py",
+        "src/arena/amnesia_gas.gd",
+        "tests/test_amnesia_gas.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-904",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncing Laser Trap",
+      "description": "A new trap variant that, when triggered, releases a small laser beam that bounces between nearby walls or entities 5 times. Each bounce deals light damage and slows the target slightly. If it hits the same target consecutively, the damage doubles.",
+      "allowed_paths": [
+        "src/arena/bouncing_laser_trap.py",
+        "src/arena/bouncing_laser_trap.gd",
+        "tests/test_bouncing_laser_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-905",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Tunneling Hazard",
+      "description": "A new hazard type that acts as a pair of linked zones. When a ball enters one zone, it is instantly teleported to the other, but its velocity is randomized and it receives a short 'disorientation' debuff (like inverted steering) for 1 second. This adds chaotic repositioning to the arena.",
+      "allowed_paths": [
+        "src/arena/quantum_tunneling.py",
+        "src/arena/quantum_tunneling.gd",
+        "tests/test_quantum_tunneling.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-906",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Vampiric Leech Balls",
+      "description": "A new ball class 'Leech' that deals very low base damage but heals itself for 200% of the damage it deals. Its special ability is a short-range tether that slows the target and continuously drains HP over time. It forces enemies to break line of sight or outrange the tether to survive.",
+      "allowed_paths": [
+        "src/ai/vampiric_leech_balls.py",
+        "src/ai/vampiric_leech_balls.gd",
+        "tests/test_vampiric_leech_balls.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

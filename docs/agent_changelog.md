@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-529] Wormhole Links — *2026-07-04 18:00:18 UTC*
+
+Gravity wells can randomly pair up to act as wormholes. When a player falls into one, they are instantly teleported and launched out of its pair, taking a small amount of temporal damage.
+
+---
+
 ## [idea-549] Cursed Relic Modifier Zones — *2026-07-04 17:43:13 UTC*
 
 Introduce dynamic zones on the map that grant massive buffs (like +200% speed or +150% damage) but come with severe curses (e.g., losing 5% HP per second or inverted steering). Players who intentionally enter these zones could make clutch plays if they manage the risk correctly, adding strategic depth to positional gameplay.
