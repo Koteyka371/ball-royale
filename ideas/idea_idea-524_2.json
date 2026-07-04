@@ -1,4 +1,0 @@
-{
-  "title": "Seasonal Map Rotations",
-  "description": "Introduce dynamic map skins and weather biases based on the 'current_season' value (e.g., season 1 is spring with lots of healing puddles and rain, season 4 is winter with constant snow and ice slicks)."
-}

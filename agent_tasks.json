@@ -14830,6 +14830,41 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-863",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Nemesis Drone",
+      "description": "A consumable item that spawns a tiny invincible drone that slowly flies toward your Nemesis and damages them if they touch it.",
+      "allowed_paths": [
+        "src/ai/nemesis_drone.py",
+        "src/ai/nemesis_drone.gd",
+        "tests/test_nemesis_drone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-864",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Nemesis Tracker UI",
+      "description": "Add an overlay on the edge of the screen pointing towards the nearest Nemesis when the compass is active.",
+      "allowed_paths": [
+        "src/ui/nemesis_tracker_ui.py",
+        "src/ui/nemesis_tracker_ui.gd",
+        "src/ai/nemesis_tracker_ui.py",
+        "tests/test_nemesis_tracker_ui.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
