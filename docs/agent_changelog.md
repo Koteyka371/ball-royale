@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-538] Gravity Swap — *2026-07-04 15:18:02 UTC*
+
+The arena periodically reverses the polarity of the center, pushing balls out and pulling hazards in.
+
+---
+
 ## [idea-539] Weekend Multiplier Event — *2026-07-04 15:08:44 UTC*
 
 Introduce weekend events where daily login streak rewards and skill point gains from matches are temporarily multiplied, encouraging weekend activity.

@@ -9299,7 +9299,7 @@
     },
     {
       "id": "idea-538",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gravity Swap",
@@ -15099,6 +15099,24 @@
         "src/ai/paint_the_floor.py",
         "src/ai/paint_the_floor.gd",
         "tests/test_paint_the_floor.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-879",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild Tournaments",
+      "description": "Introduce weekly Guild vs. Guild tournaments where the top guilds compete for exclusive cosmetic items, unique titles, and massive prestige token payouts.",
+      "allowed_paths": [
+        "src/ui/guild_tournaments.py",
+        "src/ui/guild_tournaments.gd",
+        "src/ai/guild_tournaments.py",
+        "tests/test_guild_tournaments.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
