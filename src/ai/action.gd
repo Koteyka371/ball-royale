@@ -9018,48 +9018,101 @@ func _use_skill():
                                 self.ball.set_meta("skill_timer", 0.5)
         elif skill_name == "mimic_clone":
             if "balls" in self.world:
-                var clone = null
-                if self.ball.has_method("duplicate"):
-                    clone = self.ball.duplicate()
-                elif self.ball is Dictionary:
-                    clone = self.ball.duplicate()
+                var active_clone = null
+                var my_id = null
+                if "id" in self.ball: my_id = self.ball.id
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): my_id = self.ball.get_meta("id")
 
-                if clone != null:
-                    var next_id = randi() % 90000 + 10000
-                    if "next_id" in self.world:
-                        next_id = self.world.next_id
-                        self.world.next_id += 1
+                for b in self.world.balls:
+                    var b_is_mimic_clone = false
+                    if "is_mimic_clone" in b: b_is_mimic_clone = b.is_mimic_clone
+                    elif b.has_method("get_meta") and b.has_meta("is_mimic_clone"): b_is_mimic_clone = b.get_meta("is_mimic_clone")
 
-                    if "id" in clone: clone.id = next_id
-                    if "hp" in clone and "max_hp" in clone:
-                        clone.max_hp = 50.0
-                        clone.hp = clone.max_hp
-                    if "damage" in clone: clone.damage = 0.0
+                    var b_alive = true
+                    if "alive" in b: b_alive = b.alive
+                    elif b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
 
-                    if "skill" in clone: clone.skill = ""
-                    if "SKILL" in clone: clone.SKILL = ""
-                    if "skill_timer" in clone: clone.skill_timer = 9999.0
+                    if b_is_mimic_clone and b_alive:
+                        var b_owner_id = null
+                        if "mimic_owner" in b: b_owner_id = b.mimic_owner
+                        elif b.has_method("get_meta") and b.has_meta("mimic_owner"): b_owner_id = b.get_meta("mimic_owner")
 
-                    var owner_id = null
-                    if "id" in self.ball: owner_id = self.ball.id
-                    elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): owner_id = self.ball.get_meta("id")
+                        if b_owner_id != null and my_id != null and str(b_owner_id) == str(my_id):
+                            active_clone = b
+                            break
 
-                    if clone.has_method("set_meta"):
-                        clone.set_meta("is_mimic_clone", true)
-                        clone.set_meta("is_illusion", true)
-                        clone.set_meta("mimic_timer", 10.0)
-                        clone.set_meta("mimic_owner", owner_id)
-                        clone.set_meta("skill", "")
-                        clone.set_meta("skill_timer", 9999.0)
-                    elif clone is Dictionary:
-                        clone["is_mimic_clone"] = true
-                        clone["is_illusion"] = true
-                        clone["mimic_timer"] = 10.0
-                        clone["mimic_owner"] = owner_id
-                        clone["skill"] = ""
-                        clone["skill_timer"] = 9999.0
+                if active_clone != null:
+                    var my_x = 0.0
+                    if "x" in self.ball: my_x = self.ball.x
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("x"): my_x = self.ball.get_meta("x")
 
-                    self.world.balls.append(clone)
+                    var my_y = 0.0
+                    if "y" in self.ball: my_y = self.ball.y
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("y"): my_y = self.ball.get_meta("y")
+
+                    var clone_x = 0.0
+                    if "x" in active_clone: clone_x = active_clone.x
+                    elif active_clone.has_method("get_meta") and active_clone.has_meta("x"): clone_x = active_clone.get_meta("x")
+
+                    var clone_y = 0.0
+                    if "y" in active_clone: clone_y = active_clone.y
+                    elif active_clone.has_method("get_meta") and active_clone.has_meta("y"): clone_y = active_clone.get_meta("y")
+
+                    if "x" in self.ball: self.ball.x = clone_x
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("x", clone_x)
+                    if "y" in self.ball: self.ball.y = clone_y
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("y", clone_y)
+
+                    if "x" in active_clone: active_clone.x = my_x
+                    elif active_clone.has_method("set_meta"): active_clone.set_meta("x", my_x)
+                    if "y" in active_clone: active_clone.y = my_y
+                    elif active_clone.has_method("set_meta"): active_clone.set_meta("y", my_y)
+
+                    if "events" in self.world:
+                        self.world.events.append({'type': 'visual_effect', 'data': {'type': 'line', 'x': my_x, 'y': my_y, 'tx': clone_x, 'ty': clone_y, 'color': 'purple'}})
+                else:
+                    var clone = null
+                    if self.ball.has_method("duplicate"):
+                        clone = self.ball.duplicate()
+                    elif self.ball is Dictionary:
+                        clone = self.ball.duplicate()
+
+                    if clone != null:
+                        var next_id = randi() % 90000 + 10000
+                        if "next_id" in self.world:
+                            next_id = self.world.next_id
+                            self.world.next_id += 1
+
+                        if "id" in clone: clone.id = next_id
+                        if "hp" in clone and "max_hp" in clone:
+                            clone.max_hp = 50.0
+                            clone.hp = clone.max_hp
+                        if "damage" in clone: clone.damage = 0.0
+
+                        if "skill" in clone: clone.skill = ""
+                        if "SKILL" in clone: clone.SKILL = ""
+                        if "skill_timer" in clone: clone.skill_timer = 9999.0
+
+                        var owner_id = null
+                        if "id" in self.ball: owner_id = self.ball.id
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): owner_id = self.ball.get_meta("id")
+
+                        if clone.has_method("set_meta"):
+                            clone.set_meta("is_mimic_clone", true)
+                            clone.set_meta("is_illusion", true)
+                            clone.set_meta("mimic_timer", 10.0)
+                            clone.set_meta("mimic_owner", owner_id)
+                            clone.set_meta("skill", "")
+                            clone.set_meta("skill_timer", 9999.0)
+                        elif clone is Dictionary:
+                            clone["is_mimic_clone"] = true
+                            clone["is_illusion"] = true
+                            clone["mimic_timer"] = 10.0
+                            clone["mimic_owner"] = owner_id
+                            clone["skill"] = ""
+                            clone["skill_timer"] = 9999.0
+
+                        self.world.balls.append(clone)
         elif skill_name == "deploy_illusion":
             if "balls" in self.world:
                 var illusion = null
