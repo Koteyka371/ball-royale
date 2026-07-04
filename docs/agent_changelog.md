@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-537] Neon Disco Mode — *2026-07-04 14:55:57 UTC*
+
+A mode where floor panels light up with music rhythm, buffing or debuffing entities based on timing.
+
+---
+
 ## [idea-505] Season Catch-up Mechanics — *2026-07-04 14:54:22 UTC*
 
 Introduce a 'Catch-up' multiplier that slightly increases the rate at which prestige or EXP is earned for players who join a season late (e.g., in the final week of a 30-day season). This helps new or returning players compete for the top 100 spots without feeling discouraged by an early insurmountable lead by others.

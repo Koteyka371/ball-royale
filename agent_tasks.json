@@ -9282,7 +9282,7 @@
     },
     {
       "id": "idea-537",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Neon Disco Mode",
@@ -14996,6 +14996,41 @@
         "src/arena/mirror_traps.py",
         "src/arena/mirror_traps.gd",
         "tests/test_mirror_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-873",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Daily Roulette",
+      "description": "A spinning wheel minigame where players can spend prestige tokens for random rewards.",
+      "allowed_paths": [
+        "src/ai/daily_roulette.py",
+        "src/ai/daily_roulette.gd",
+        "tests/test_daily_roulette.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-874",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild Wars Mode",
+      "description": "A new competitive mode where guilds battle each other over territories.",
+      "allowed_paths": [
+        "src/ui/guild_wars.py",
+        "src/ui/guild_wars.gd",
+        "src/ai/guild_wars.py",
+        "tests/test_guild_wars.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
