@@ -6028,6 +6028,77 @@ class TimeRewindMode(GameMode):
             self.rewind_timer = 0.0
 
 
+
+class PolarityShiftMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Polarity Shift"
+        self.description = "The arena periodically reverses the polarity of the center, pushing balls out and pulling hazards in, then reversing."
+        self.polarity_state = 1  # 1 = push balls out, pull hazards in; -1 = pull balls in, push hazards out
+        self.shift_timer = 0.0
+
+    def setup(self, world, balls) -> None:
+        super().setup(world, balls)
+        self.polarity_state = 1
+        self.shift_timer = 0.0
+
+    def tick(self, world, balls, delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import math
+
+        self.shift_timer += delta
+        if self.shift_timer >= 10.0:
+            self.shift_timer = 0.0
+            self.polarity_state *= -1
+            if hasattr(world, "add_event"):
+                state_str = "pushing balls out!" if self.polarity_state == 1 else "pulling balls in!"
+                world.add_event("polarity_shift", {"message": f"Center polarity reversed, {state_str}"})
+
+        if not hasattr(world, "arena"):
+            return
+
+        arena_width = getattr(world.arena, "width", 1000.0)
+        arena_height = getattr(world.arena, "height", 1000.0)
+        cx = arena_width / 2.0
+        cy = arena_height / 2.0
+
+        # Max force applied at center, diminishing outwards, or constant force?
+        # Let's use constant force or inverse distance. Let's just use linear force.
+        force_mag = 150.0 * delta
+
+        # Move balls
+        for b in balls:
+            if getattr(b, "alive", True) and getattr(b, "ball_type", None) != "spectator":
+                bx = getattr(b, "x", cx)
+                by = getattr(b, "y", cy)
+                dx = bx - cx
+                dy = by - cy
+                dist = math.sqrt(dx*dx + dy*dy)
+
+                if dist > 0.1:
+                    dir_x = dx / dist
+                    dir_y = dy / dist
+                    # state = 1 -> push out -> move in +dir
+                    b.x += dir_x * force_mag * self.polarity_state
+                    b.y += dir_y * force_mag * self.polarity_state
+
+        # Move hazards
+        if hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards:
+                hx = getattr(h, "x", cx)
+                hy = getattr(h, "y", cy)
+                dx = hx - cx
+                dy = hy - cy
+                dist = math.sqrt(dx*dx + dy*dy)
+
+                if dist > 0.1:
+                    dir_x = dx / dist
+                    dir_y = dy / dist
+                    # state = 1 -> pull in -> move in -dir
+                    h.x -= dir_x * force_mag * self.polarity_state
+                    h.y -= dir_y * force_mag * self.polarity_state
+
+
 GAME_MODES = {
     "meteor_shower": MeteorShowerMode(),
 
@@ -6042,6 +6113,7 @@ GAME_MODES = {
     "stamina_regen": StaminaRegenMode(),
     "zero_gravity": ZeroGravityMode(),
     "magnetic_collisions": MagneticCollisionsMode(),
+    "polarity_shift": PolarityShiftMode(),
     "day_night_mode": DayNightMode(),
     "shifting_maze": ShiftingMazeMode(),
     "stamina_speed": StaminaSpeedMode(),

@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Entanglement Skill",
+  "description": "A new active skill that links the user's health pool to another target for a short duration. Any damage taken by the user is instead applied to the target, and any healing the user receives is mirrored to the target. This skill can be used defensively to redirect fatal burst damage to an enemy or offensively to heal an allied tank."
+}
