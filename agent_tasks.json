@@ -16093,6 +16093,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-937",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sniper's Nest Mode",
+      "description": "Periodically, tall towers rise from the ground. Balls that climb them gain massively increased line of sight and projectile speed, but are immobile while on top.",
+      "allowed_paths": [
+        "src/ai/snipers_nest.py",
+        "src/ai/snipers_nest.gd",
+        "tests/test_snipers_nest.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
