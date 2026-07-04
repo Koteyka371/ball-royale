@@ -2312,7 +2312,47 @@ class Action:
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
                         dist_sq = dx * dx + dy * dy
+
+                        # Random pairing logic
+                        if not hasattr(hazard, "paired_checked"):
+                            hazard.paired_checked = True
+                            if not hasattr(hazard, "paired_id"):
+                                import random
+                                if random.random() < 0.3:
+                                    other_gws = [h for h in self.world.arena.hazards if getattr(h, "kind", "") == "gravity_well" and h.id != hazard.id and not getattr(h, "paired_checked", False)]
+                                    if other_gws:
+                                        pair = random.choice(other_gws)
+                                        hazard.paired_id = pair.id
+                                        pair.paired_id = hazard.id
+                                        pair.paired_checked = True
+
                         if dist_sq < hazard.radius * hazard.radius:
+                            # Wormhole teleport logic
+                            current_tick = getattr(self.world, "tick", 0)
+                            last_teleport = getattr(self.ball, "last_teleport_tick", -100)
+                            if hasattr(hazard, "paired_id") and (current_tick - last_teleport > 20):
+                                pair = next((h for h in self.world.arena.hazards if h.id == hazard.paired_id), None)
+                                if pair:
+                                    import math, random
+                                    angle = random.uniform(0, 2 * math.pi)
+                                    launch_dist = getattr(pair, "radius", 50.0) + 30.0
+                                    self.ball.x = pair.x + math.cos(angle) * launch_dist
+                                    self.ball.y = pair.y + math.sin(angle) * launch_dist
+                                    self.ball.last_teleport_tick = current_tick
+
+                                    temp_damage = 5.0
+                                    if hasattr(self.ball, "take_damage"):
+                                        self.ball.take_damage(temp_damage)
+                                    elif hasattr(self.ball, "hp"):
+                                        self.ball.hp -= temp_damage
+                                        if self.ball.hp <= 0:
+                                            self.ball.alive = False
+                                            self.ball.hp = 0
+
+                                    if hasattr(self.world, "events"):
+                                        self.world.events.append({'type': 'visual_effect', 'data': {'x': self.ball.x, 'y': self.ball.y, 'kind': 'teleport'}})
+                                    continue
+
                             # Apply slight damage if any
                             if getattr(hazard, "damage", 0.0) > 0.0:
                                 hazard_damage = hazard.damage * delta
