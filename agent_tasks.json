@@ -9265,7 +9265,7 @@
     },
     {
       "id": "idea-536",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chain Lightning Overload Mod",
@@ -14945,6 +14945,40 @@
         "src/ai/cursed_loadout_relics.py",
         "src/ai/cursed_loadout_relics.gd",
         "tests/test_cursed_loadout_relics.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-870",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Arcane Prism Hazard",
+      "description": "A new hazard that absorbs nearby chain lightning strikes and immediately amplifies and splits them into 3 distinct bolts that seek out the furthest entities on the map, drastically altering standard engagement ranges during thunderstorms.",
+      "allowed_paths": [
+        "src/arena/arcane_prism.py",
+        "src/arena/arcane_prism.gd",
+        "tests/test_arcane_prism.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-871",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Magnetic Boots Cosmetic",
+      "description": "A new cosmetic/item loadout that heavily reduces knockback and pull effects from emp traps, temporal rifts, and black holes, but slightly increases the player's vulnerability to chain lightning bounces by functioning as an implicit lightning rod when within range.",
+      "allowed_paths": [
+        "src/ai/magnetic_boots_cosmetic.py",
+        "src/ai/magnetic_boots_cosmetic.gd",
+        "tests/test_magnetic_boots_cosmetic.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

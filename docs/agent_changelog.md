@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-536] Chain Lightning Overload Mod — *2026-07-04 14:50:55 UTC*
+
+Introduce an overload mechanic where chain lightning bounces exceeding a certain jump threshold detonate the final target in a small AoE blast, dealing explosive damage but putting the skill on an extended cooldown.
+
+---
+
 ## [idea-534] Wall Ricochet Trajectory Indicators — *2026-07-04 14:49:20 UTC*
 
 Add visual trajectory lines for chain lightning before it casts, showing the player the expected bounce path across entities, hazards, and walls to allow for tactical positioning.
