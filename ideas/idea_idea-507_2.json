@@ -1,4 +1,0 @@
-{
-  "title": "New Hazard Type: Geyser",
-  "description": "A dynamic map hazard that erupts periodically. When erupting, it shoots players upwards (applying a short stun or launch status) and deals minor water-elemental damage. Water and Earth elemental balls could receive a temporary speed boost or healing when hit by it instead of taking damage."
-}

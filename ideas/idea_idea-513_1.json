@@ -1,4 +1,0 @@
-{
-  "title": "Bouncing Laser Trap",
-  "description": "A new trap variant that, when triggered, releases a small laser beam that bounces between nearby walls or entities 5 times. Each bounce deals light damage and slows the target slightly. If it hits the same target consecutively, the damage doubles."
-}

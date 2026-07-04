@@ -1,4 +1,0 @@
-{
-  "title": "Shrinking Safe Zones Array",
-  "description": "Instead of one large shrinking circle, the arena has multiple smaller safe zones that randomly collapse, forcing players to constantly migrate between different safe bubbles to survive."
-}

@@ -1,4 +1,0 @@
-{
-  "title": "Reflect Overload Mechanic",
-  "description": "If a reflect shield takes damage exceeding its maximum capacity by more than 50% in a single hit, it shatters violently, dealing AoE damage to all nearby entities (including the shielded ball's allies) but inflicting a massive stun to the attacker."
-}

@@ -1,4 +1,0 @@
-{
-  "title": "New Ball Type: The Illusionist",
-  "description": "A ball type that frequently spawns multiple fake clones of itself as it moves. The clones deal no damage and have 1 HP, but they inherit the ball's current momentum and color. Enemies hitting the clones trigger a small visual explosion that briefly blinds them, heavily rewarding misdirection and punishing aggressive spam."
-}
