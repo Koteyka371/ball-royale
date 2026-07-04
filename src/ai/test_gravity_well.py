@@ -59,7 +59,7 @@ def test_gravity_well_pull():
     initial_dist = ((ball.x - 1000.0)**2 + (ball.y - 1000.0)**2)**0.5
     print(f"Initial: x={ball.x}, y={ball.y}, dist={initial_dist}")
 
-    action.execute("idle", 0.1)
+    action.execute("idle", 0.016)
 
     final_dist = ((ball.x - 1000.0)**2 + (ball.y - 1000.0)**2)**0.5
     print(f"Final: x={ball.x}, y={ball.y}, dist={final_dist}")
@@ -77,7 +77,7 @@ def test_gravity_well_damage():
     action = Action(ball, world)
 
     assert ball.hp == 100.0
-    action.execute("idle", 0.1)
+    action.execute("idle", 0.016)
 
     # 10.0 damage * 0.1 delta = 1.0
     assert ball.hp < 100.0
@@ -93,7 +93,7 @@ def test_gravity_well_inverted_push():
     action = Action(ball, world)
 
     initial_dist = ((ball.x - 1000.0)**2 + (ball.y - 1000.0)**2)**0.5
-    action.execute("idle", 0.1)
+    action.execute("idle", 0.016)
     final_dist = ((ball.x - 1000.0)**2 + (ball.y - 1000.0)**2)**0.5
 
     print(f"Inverted Initial dist: {initial_dist}, Final dist: {final_dist}")

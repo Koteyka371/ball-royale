@@ -180,6 +180,37 @@ func _handle_reflect_bounce(original_attacker, initial_target, damage: float, bo
 			break
 
 func _attempt_damage(attacker, target) -> void:
+
+	var target_b_type = ""
+	if "ball_type" in target: target_b_type = str(target.ball_type)
+	if target_b_type != "shield_drone":
+		var world_ref = self.world
+		if world_ref != null and world_ref.has_method("get_nearby_entities"):
+			var nearby = world_ref.get_nearby_entities(target, 150.0)
+			if typeof(nearby) == TYPE_DICTIONARY and nearby.has("allies"):
+				var pm_ref = null
+				if "profile_manager" in world_ref: pm_ref = world_ref.profile_manager
+				for a in nearby["allies"]:
+					var a_type = ""
+					if "ball_type" in a: a_type = str(a.ball_type)
+					var a_hp = 0.0
+					if "hp" in a: a_hp = float(a.hp)
+					var a_alive = false
+					if "alive" in a: a_alive = bool(a.alive)
+					if a_type == "shield_drone" and a_hp > 0 and a_alive:
+						var is_n = false
+						if pm_ref != null and pm_ref.has_method("is_nemesis") and target_b_type != "" and a_type != "":
+							is_n = pm_ref.is_nemesis(target_b_type, a_type)
+						if not is_n:
+							var original_dmg = 10.0
+							if "damage" in attacker: original_dmg = float(attacker.damage)
+							if a.has_method("take_damage"):
+								a.take_damage(original_dmg)
+							elif typeof(a) != TYPE_DICTIONARY and a.has_method("set_meta"):
+								a.set_meta("hp", a_hp - original_dmg)
+							else:
+								a.hp -= original_dmg
+							return
 	var attack_accuracy = 1.0
 
 	var pm = null

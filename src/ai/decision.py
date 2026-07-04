@@ -20,6 +20,7 @@ class Decision:
         "juggernaut": "defend",
         "rogue": "chase",
         "drone": "chase",
+        "shield_drone": "escort",
         "guardian": "defend",
         "phantom": "chase",
         "swarm": "group_attack",
