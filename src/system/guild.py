@@ -13,6 +13,13 @@ class GuildManager:
                     data["guilds"] = {}
                 if "territories" not in data:
                     data["territories"] = {}
+                for guild in data["guilds"].values():
+                    if "hq" not in guild:
+                        guild["hq"] = {
+                            "statues": [],
+                            "banners": [],
+                            "training_arena_unlocked": False
+                        }
                 return data
         except (FileNotFoundError, json.JSONDecodeError):
             return {"guilds": {}, "territories": {}}
@@ -36,7 +43,12 @@ class GuildManager:
             "gvg_points": 0,
             "chat_history": [],
             "vault": [],
-            "boss_progress": {}
+            "boss_progress": {},
+            "hq": {
+                "statues": [],
+                "banners": [],
+                "training_arena_unlocked": False
+            }
         }
         self.save()
         return True
@@ -191,3 +203,31 @@ class GuildManager:
                     self.save()
                     return True
         return False
+
+    def unlock_hq_feature(self, guild_name, feature_type, feature_id, cost):
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            if guild["resources"] >= cost:
+                if feature_type == "training_arena":
+                    if not guild.get("hq", {}).get("training_arena_unlocked", False):
+                        guild["resources"] -= cost
+                        guild.setdefault("hq", {})["training_arena_unlocked"] = True
+                        self.save()
+                        return True
+                elif feature_type in ["statues", "banners"]:
+                    if feature_id not in guild.setdefault("hq", {}).setdefault(feature_type, []):
+                        guild["resources"] -= cost
+                        guild["hq"][feature_type].append(feature_id)
+                        self.save()
+                        return True
+        return False
+
+    def get_hq_status(self, guild_name):
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            return guild.get("hq", {
+                "statues": [],
+                "banners": [],
+                "training_arena_unlocked": False
+            })
+        return None

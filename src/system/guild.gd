@@ -19,6 +19,13 @@ func load_guilds():
                 data["guilds"] = {}
             if not data.has("territories"):
                 data["territories"] = {}
+            for g_name in data["guilds"].keys():
+                if not data["guilds"][g_name].has("hq"):
+                    data["guilds"][g_name]["hq"] = {
+                        "statues": [],
+                        "banners": [],
+                        "training_arena_unlocked": false
+                    }
             return
 
     data = {"guilds": {}, "territories": {}}
@@ -43,7 +50,12 @@ func create_guild(guild_name: String, creator_id: String) -> bool:
         "gvg_points": 0,
         "chat_history": [],
         "vault": [],
-        "boss_progress": {}
+        "boss_progress": {},
+        "hq": {
+            "statues": [],
+            "banners": [],
+            "training_arena_unlocked": false
+        }
     }
     save_guilds()
     return true
@@ -212,3 +224,34 @@ func claim_boss_reward(guild_name: String, player_id: String, week_id: String, r
                 save_guilds()
                 return true
     return false
+
+func unlock_hq_feature(guild_name: String, feature_type: String, feature_id: String, cost: int) -> bool:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        if guild["resources"] >= cost:
+            if not guild.has("hq"):
+                guild["hq"] = {"statues": [], "banners": [], "training_arena_unlocked": false}
+
+            if feature_type == "training_arena":
+                if not guild["hq"]["training_arena_unlocked"]:
+                    guild["resources"] -= cost
+                    guild["hq"]["training_arena_unlocked"] = true
+                    save_guilds()
+                    return true
+            elif feature_type in ["statues", "banners"]:
+                if not guild["hq"].has(feature_type):
+                    guild["hq"][feature_type] = []
+                if not guild["hq"][feature_type].has(feature_id):
+                    guild["resources"] -= cost
+                    guild["hq"][feature_type].append(feature_id)
+                    save_guilds()
+                    return true
+    return false
+
+func get_hq_status(guild_name: String) -> Dictionary:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        if guild.has("hq"):
+            return guild["hq"]
+        return {"statues": [], "banners": [], "training_arena_unlocked": false}
+    return {}

@@ -156,3 +156,26 @@ def test_boss_progress(temp_guild_file):
     assert not gm.claim_boss_reward("BossKillers", "player1", week_id, required_damage)
     # Different player can claim
     assert gm.claim_boss_reward("BossKillers", "player2", week_id, required_damage)
+
+def test_hq_customization(temp_guild_file):
+    gm = GuildManager(temp_guild_file)
+    gm.create_guild("HQGuild", "player1")
+
+    # Needs resources
+    assert gm.unlock_hq_feature("HQGuild", "statues", "golden_ball", 500) == False
+
+    gm.donate_resources("HQGuild", 1000)
+
+    # Unlock statue
+    assert gm.unlock_hq_feature("HQGuild", "statues", "golden_ball", 500) == True
+    # Can't unlock same statue
+    assert gm.unlock_hq_feature("HQGuild", "statues", "golden_ball", 500) == False
+
+    # Unlock training arena
+    assert gm.unlock_hq_feature("HQGuild", "training_arena", "", 500) == True
+    assert gm.unlock_hq_feature("HQGuild", "training_arena", "", 500) == False # Already unlocked
+
+    hq_status = gm.get_hq_status("HQGuild")
+    assert hq_status is not None
+    assert "golden_ball" in hq_status["statues"]
+    assert hq_status["training_arena_unlocked"] == True
