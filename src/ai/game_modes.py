@@ -6892,3 +6892,190 @@ try:
     GAME_MODES["interactive_training"] = InteractiveTrainingMode()
 except ImportError:
     pass
+
+class RollingBouldersMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Rolling Boulders"
+        self.description = "Periodically spawn massive boulders that roll linearly across the arena, crushing balls and shattering into rocks upon hitting boundaries."
+        self.spawn_timer = 0.0
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+        self.spawn_timer = 0.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import random
+        import math
+
+        self.spawn_timer += delta
+
+        arena_width = getattr(world.arena, "width", 1000)
+        arena_height = getattr(world.arena, "height", 1000)
+
+        try:
+            from arena.procedural_arena import Hazard
+        except ImportError:
+            class Hazard:
+                def __init__(self, id, x, y, radius, kind, damage):
+                    self.id = id
+                    self.x = x
+                    self.y = y
+                    self.radius = radius
+                    self.kind = kind
+                    self.damage = damage
+                    self.active = True
+                    self.target_radius = 0.0
+
+        if self.spawn_timer >= 5.0:
+            self.spawn_timer = 0.0
+
+            side = random.choice(["top", "bottom", "left", "right"])
+
+            x, y = 0.0, 0.0
+            vx, vy = 0.0, 0.0
+            speed = random.uniform(150.0, 250.0)
+
+            if side == "top":
+                x = random.uniform(100, arena_width - 100)
+                y = 0.0
+                vx = random.uniform(-50.0, 50.0)
+                vy = speed
+            elif side == "bottom":
+                x = random.uniform(100, arena_width - 100)
+                y = arena_height
+                vx = random.uniform(-50.0, 50.0)
+                vy = -speed
+            elif side == "left":
+                x = 0.0
+                y = random.uniform(100, arena_height - 100)
+                vx = speed
+                vy = random.uniform(-50.0, 50.0)
+            elif side == "right":
+                x = arena_width
+                y = random.uniform(100, arena_height - 100)
+                vx = -speed
+                vy = random.uniform(-50.0, 50.0)
+
+            h_id = 30000 + len(world.arena.hazards) + random.randint(0, 10000)
+            boulder = Hazard(id=h_id, x=x, y=y, radius=60.0, kind="rolling_boulder", damage=300.0)
+            setattr(boulder, "vx", vx)
+            setattr(boulder, "vy", vy)
+            setattr(boulder, "duration", 20.0)  # Should hit a wall before expiring
+
+            world.arena.hazards.append(boulder)
+
+        hazards_to_remove = []
+        new_hazards = []
+
+        for h in getattr(world.arena, "hazards", []):
+            if getattr(h, "kind", "") == "rolling_boulder":
+                # Update position
+                vx = getattr(h, "vx", 0.0)
+                vy = getattr(h, "vy", 0.0)
+                h.x += vx * delta
+                h.y += vy * delta
+
+                # Check ball collisions
+                boulder_radius = getattr(h, "radius", 60.0)
+                boulder_damage = getattr(h, "damage", 300.0)
+
+                for b in balls:
+                    if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                        ball_radius = getattr(b, "radius", 15.0)
+                        dist_sq = (b.x - h.x)**2 + (b.y - h.y)**2
+                        if dist_sq <= (boulder_radius + ball_radius)**2:
+                            b.hp -= boulder_damage
+                            if b.hp <= 0:
+                                b.hp = 0
+                                b.alive = False
+                                b.killer = "rolling_boulder"
+
+                # Check interactions with other hazards
+                for other_h in getattr(world.arena, "hazards", []):
+                    if other_h != h and getattr(other_h, "kind", "") in ["spikes", "trap", "pull_trap"]:
+                        dist_sq = (h.x - other_h.x)**2 + (h.y - other_h.y)**2
+                        if dist_sq <= (boulder_radius + getattr(other_h, "radius", 15.0))**2:
+                            hazards_to_remove.append(other_h)
+
+                # Check wall/bounds collisions
+                hit_wall = False
+                if h.x + boulder_radius < -50 or h.x - boulder_radius > arena_width + 50 or h.y + boulder_radius < -50 or h.y - boulder_radius > arena_height + 50:
+                    hit_wall = True
+
+                if not hit_wall and hasattr(world.arena, "walls"):
+                    for wall in world.arena.walls:
+                        # Simple AABB check vs circle
+                        wx, wy, ww, wh = getattr(wall, "x", 0), getattr(wall, "y", 0), getattr(wall, "width", 0), getattr(wall, "height", 0)
+
+                        test_x = h.x
+                        test_y = h.y
+
+                        if h.x < wx: test_x = wx
+                        elif h.x > wx + ww: test_x = wx + ww
+
+                        if h.y < wy: test_y = wy
+                        elif h.y > wy + wh: test_y = wy + wh
+
+                        dist_x = h.x - test_x
+                        dist_y = h.y - test_y
+                        if dist_x*dist_x + dist_y*dist_y <= boulder_radius*boulder_radius:
+                            hit_wall = True
+                            break
+
+                if hit_wall:
+                    hazards_to_remove.append(h)
+
+                    # Shatter into rocks
+                    for i in range(3):
+                        rock_id = 40000 + len(world.arena.hazards) + len(new_hazards) + random.randint(0, 10000)
+                        rock = Hazard(id=rock_id, x=h.x, y=h.y, radius=15.0, kind="rock", damage=30.0)
+                        setattr(rock, "duration", 5.0)
+
+                        angle = random.uniform(0, 2 * math.pi)
+                        rock_speed = random.uniform(50.0, 150.0)
+                        setattr(rock, "vx", math.cos(angle) * rock_speed)
+                        setattr(rock, "vy", math.sin(angle) * rock_speed)
+
+                        new_hazards.append(rock)
+
+            elif getattr(h, "kind", "") == "rock":
+                # Rocks also roll a bit
+                vx = getattr(h, "vx", 0.0)
+                vy = getattr(h, "vy", 0.0)
+                if vx != 0.0 or vy != 0.0:
+                    h.x += vx * delta
+                    h.y += vy * delta
+                    # Decelerate
+                    setattr(h, "vx", vx * 0.95)
+                    setattr(h, "vy", vy * 0.95)
+
+                # Check ball collisions
+                rock_radius = getattr(h, "radius", 15.0)
+                rock_damage = getattr(h, "damage", 30.0)
+
+                for b in balls:
+                    if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                        ball_radius = getattr(b, "radius", 15.0)
+                        dist_sq = (b.x - h.x)**2 + (b.y - h.y)**2
+                        if dist_sq <= (rock_radius + ball_radius)**2:
+                            b.hp -= rock_damage
+                            if b.hp <= 0:
+                                b.hp = 0
+                                b.alive = False
+                                b.killer = "rock"
+                            if h not in hazards_to_remove:
+                                hazards_to_remove.append(h)
+
+        for h in hazards_to_remove:
+            if h in world.arena.hazards:
+                world.arena.hazards.remove(h)
+
+        world.arena.hazards.extend(new_hazards)
+
+
+
+GAME_MODES["rolling_boulders"] = RollingBouldersMode()

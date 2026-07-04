@@ -8391,8 +8391,228 @@ class LunarEclipseEventMode extends GameMode:
                 if world != null and world.has_method("add_event"):
                     world.add_event("lunar_eclipse_end", {"type": "weather_warning", "message": "The lunar eclipse has ended."})
 
+class RollingBouldersMode extends GameMode:
+	var spawn_timer = 0.0
+	var rng = RandomNumberGenerator.new()
+
+	func _init():
+		super()
+		name = "Rolling Boulders"
+		description = "Periodically spawn massive boulders that roll linearly across the arena, crushing balls and shattering into rocks upon hitting boundaries."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if not "hazards" in world.arena:
+			world.arena.hazards = []
+		spawn_timer = 0.0
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+		spawn_timer += delta
+
+		var arena_width = world.arena.width if "width" in world.arena else 1000.0
+		var arena_height = world.arena.height if "height" in world.arena else 1000.0
+
+		if spawn_timer >= 5.0:
+			spawn_timer = 0.0
+			var side = rng.randi_range(0, 3)
+			var x = 0.0
+			var y = 0.0
+			var vx = 0.0
+			var vy = 0.0
+			var speed = rng.randf_range(150.0, 250.0)
+
+			if side == 0: # top
+				x = rng.randf_range(100.0, arena_width - 100.0)
+				y = 0.0
+				vx = rng.randf_range(-50.0, 50.0)
+				vy = speed
+			elif side == 1: # bottom
+				x = rng.randf_range(100.0, arena_width - 100.0)
+				y = arena_height
+				vx = rng.randf_range(-50.0, 50.0)
+				vy = -speed
+			elif side == 2: # left
+				x = 0.0
+				y = rng.randf_range(100.0, arena_height - 100.0)
+				vx = speed
+				vy = rng.randf_range(-50.0, 50.0)
+			else: # right
+				x = arena_width
+				y = rng.randf_range(100.0, arena_height - 100.0)
+				vx = -speed
+				vy = rng.randf_range(-50.0, 50.0)
+
+			var ProceduralArena = load("res://src/arena/procedural_arena.gd")
+			var h_id = 30000 + world.arena.hazards.size() + rng.randi_range(0, 10000)
+			var boulder = ProceduralArena.Hazard.new(h_id, x, y, 60.0, "rolling_boulder", 300.0)
+
+			# Use Object meta/properties to set dynamic attributes
+			if typeof(boulder) == TYPE_DICTIONARY:
+				boulder["vx"] = vx
+				boulder["vy"] = vy
+				boulder["duration"] = 20.0
+			elif typeof(boulder) == TYPE_OBJECT:
+				boulder.set_meta("vx", vx)
+				boulder.set_meta("vy", vy)
+				boulder.set_meta("duration", 20.0)
+
+			world.arena.hazards.append(boulder)
+
+		var hazards_to_remove = []
+		var new_hazards = []
+
+		for h in world.arena.hazards:
+			var kind = h.kind if "kind" in h else (h["kind"] if typeof(h) == TYPE_DICTIONARY else "")
+			if kind == "rolling_boulder":
+				var hx = h.x if "x" in h else h["x"]
+				var hy = h.y if "y" in h else h["y"]
+
+				var vx = 0.0
+				var vy = 0.0
+				if typeof(h) == TYPE_DICTIONARY:
+					vx = h.get("vx", 0.0)
+					vy = h.get("vy", 0.0)
+				elif typeof(h) == TYPE_OBJECT:
+					vx = h.get_meta("vx") if h.has_meta("vx") else 0.0
+					vy = h.get_meta("vy") if h.has_meta("vy") else 0.0
+
+				hx += vx * delta
+				hy += vy * delta
+
+				if typeof(h) == TYPE_DICTIONARY:
+					h["x"] = hx
+					h["y"] = hy
+				else:
+					h.x = hx
+					h.y = hy
+
+				var boulder_radius = h.radius if "radius" in h else (h["radius"] if typeof(h) == TYPE_DICTIONARY else 60.0)
+				var boulder_damage = h.damage if "damage" in h else (h["damage"] if typeof(h) == TYPE_DICTIONARY else 300.0)
+
+				for b in balls:
+					if b.alive and b.ball_type != "spectator":
+						var dist_sq = (b.x - hx) * (b.x - hx) + (b.y - hy) * (b.y - hy)
+						if dist_sq <= (boulder_radius + b.radius) * (boulder_radius + b.radius):
+							b.hp -= boulder_damage
+							if b.hp <= 0:
+								b.hp = 0
+								b.alive = false
+								b.killer = "rolling_boulder"
+
+				for other_h in world.arena.hazards:
+					if other_h != h:
+						var okind = other_h.kind if "kind" in other_h else (other_h["kind"] if typeof(other_h) == TYPE_DICTIONARY else "")
+						if okind in ["spikes", "trap", "pull_trap"]:
+							var ohx = other_h.x if "x" in other_h else other_h["x"]
+							var ohy = other_h.y if "y" in other_h else other_h["y"]
+							var dist_sq = (hx - ohx) * (hx - ohx) + (hy - ohy) * (hy - ohy)
+							var oradius = other_h.radius if "radius" in other_h else (other_h["radius"] if typeof(other_h) == TYPE_DICTIONARY else 15.0)
+							if dist_sq <= (boulder_radius + oradius) * (boulder_radius + oradius):
+								hazards_to_remove.append(other_h)
+
+				var hit_wall = false
+				if hx + boulder_radius < -50 or hx - boulder_radius > arena_width + 50 or hy + boulder_radius < -50 or hy - boulder_radius > arena_height + 50:
+					hit_wall = true
+
+				if not hit_wall and "walls" in world.arena:
+					for wall in world.arena.walls:
+						var wx = wall.get("x", 0) if typeof(wall) == TYPE_DICTIONARY else wall.x
+						var wy = wall.get("y", 0) if typeof(wall) == TYPE_DICTIONARY else wall.y
+						var ww = wall.get("width", 0) if typeof(wall) == TYPE_DICTIONARY else wall.width
+						var wh = wall.get("height", 0) if typeof(wall) == TYPE_DICTIONARY else wall.height
+
+						var test_x = hx
+						var test_y = hy
+
+						if hx < wx: test_x = wx
+						elif hx > wx + ww: test_x = wx + ww
+
+						if hy < wy: test_y = wy
+						elif hy > wy + wh: test_y = wy + wh
+
+						var dist_x = hx - test_x
+						var dist_y = hy - test_y
+						if dist_x*dist_x + dist_y*dist_y <= boulder_radius*boulder_radius:
+							hit_wall = true
+							break
+
+				if hit_wall:
+					hazards_to_remove.append(h)
+					var ProceduralArena = load("res://src/arena/procedural_arena.gd")
+
+					for i in range(3):
+						var rock_id = 40000 + world.arena.hazards.size() + new_hazards.size() + rng.randi_range(0, 10000)
+						var rock = ProceduralArena.Hazard.new(rock_id, hx, hy, 15.0, "rock", 30.0)
+						var angle = rng.randf_range(0, 2 * PI)
+						var rock_speed = rng.randf_range(50.0, 150.0)
+						var rvx = cos(angle) * rock_speed
+						var rvy = sin(angle) * rock_speed
+
+						if typeof(rock) == TYPE_DICTIONARY:
+							rock["vx"] = rvx
+							rock["vy"] = rvy
+							rock["duration"] = 5.0
+						elif typeof(rock) == TYPE_OBJECT:
+							rock.set_meta("vx", rvx)
+							rock.set_meta("vy", rvy)
+							rock.set_meta("duration", 5.0)
+
+						new_hazards.append(rock)
+
+			elif kind == "rock":
+				var hx = h.x if "x" in h else h["x"]
+				var hy = h.y if "y" in h else h["y"]
+
+				var vx = 0.0
+				var vy = 0.0
+				if typeof(h) == TYPE_DICTIONARY:
+					vx = h.get("vx", 0.0)
+					vy = h.get("vy", 0.0)
+				elif typeof(h) == TYPE_OBJECT:
+					vx = h.get_meta("vx") if h.has_meta("vx") else 0.0
+					vy = h.get_meta("vy") if h.has_meta("vy") else 0.0
+
+				if vx != 0.0 or vy != 0.0:
+					hx += vx * delta
+					hy += vy * delta
+					if typeof(h) == TYPE_DICTIONARY:
+						h["x"] = hx
+						h["y"] = hy
+						h["vx"] = vx * 0.95
+						h["vy"] = vy * 0.95
+					else:
+						h.x = hx
+						h.y = hy
+						h.set_meta("vx", vx * 0.95)
+						h.set_meta("vy", vy * 0.95)
+
+				var rock_radius = h.radius if "radius" in h else (h["radius"] if typeof(h) == TYPE_DICTIONARY else 15.0)
+				var rock_damage = h.damage if "damage" in h else (h["damage"] if typeof(h) == TYPE_DICTIONARY else 30.0)
+
+				for b in balls:
+					if b.alive and b.ball_type != "spectator":
+						var dist_sq = (b.x - hx) * (b.x - hx) + (b.y - hy) * (b.y - hy)
+						if dist_sq <= (rock_radius + b.radius) * (rock_radius + b.radius):
+							b.hp -= rock_damage
+							if b.hp <= 0:
+								b.hp = 0
+								b.alive = false
+								b.killer = "rock"
+							if not hazards_to_remove.has(h):
+								hazards_to_remove.append(h)
+
+		for h in hazards_to_remove:
+			if world.arena.hazards.has(h):
+				world.arena.hazards.erase(h)
+
+		for h in new_hazards:
+			world.arena.hazards.append(h)
+
+
 var GAME_MODES = {
 	"meteor_shower": MeteorShowerMode.new(),
+	"rolling_boulders": RollingBouldersMode.new(),
 	"blizzard_mode": BlizzardMode.new(),
 
 	"black_market": BlackMarketMode.new(),
