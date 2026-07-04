@@ -8125,7 +8125,7 @@
     },
     {
       "id": "idea-471",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Explosion Fragmentation",
@@ -14860,6 +14860,23 @@
         "src/ui/nemesis_tracker_ui.gd",
         "src/ai/nemesis_tracker_ui.py",
         "tests/test_nemesis_tracker_ui.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-865",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Acid Rain Mutator",
+      "description": "A weather mutator that increases the rain DoT and temporarily destroys small obstacles.",
+      "allowed_paths": [
+        "src/ai/acid_rain_mutator.py",
+        "src/ai/acid_rain_mutator.gd",
+        "tests/test_acid_rain_mutator.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-471] Decoy Explosion Fragmentation — *2026-07-04 14:32:09 UTC*
+
+When a Trickster decoy explodes, it sends out visual fragmentation projectiles that can bounce off walls. They deal no damage but cause temporary slow/stuttering and apply minor visual noise.
+
+---
+
 ## [idea-509] Acid Rain Weather — *2026-07-04 14:23:05 UTC*
 
 Rain that causes small DoT effect.
