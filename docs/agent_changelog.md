@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-561] Guild Headquarters Customization — *2026-07-04 20:05:51 UTC*
+
+Allow guilds to spend resources on customizing a virtual headquarters. Members can view their customized HQ, which can feature unlocked statues, banners, and an interactive training arena for testing new loadouts.
+
+---
+
 ## [idea-496] Ice Storm Weather Event — *2026-07-04 20:00:19 UTC*
 
 Periodically spawns a blizzard that severely reduces all ball movement speed (friction increases) and creates temporary slippery ice patches as hazards that cause balls to slide uncontrollably.

@@ -9691,7 +9691,7 @@
     },
     {
       "id": "idea-561",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Guild Headquarters Customization",
@@ -15985,6 +15985,57 @@
         "src/ai/negative_perks_for_bonus_multiplier.py",
         "src/ai/negative_perks_for_bonus_multiplier.gd",
         "tests/test_negative_perks_for_bonus_multiplier.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-931",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather-Based Stat Bonuses",
+      "description": "Certain elemental ball types gain passive stat boosts when a specific weather mode matches their element, e.g., elementalist in sandstorm.",
+      "allowed_paths": [
+        "src/ai/based_stat_bonuses.py",
+        "src/ai/based_stat_bonuses.gd",
+        "tests/test_based_stat_bonuses.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-932",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sacrificial Alters",
+      "description": "Hazards where balls can deliberately sacrifice a portion of their max HP to gain permanent buffs or a rare booster drop.",
+      "allowed_paths": [
+        "src/ai/sacrificial_alters.py",
+        "src/ai/sacrificial_alters.gd",
+        "tests/test_sacrificial_alters.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-933",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Gravity Mode",
+      "description": "Periodically inverts gravity causing balls to fall upwards, requiring them to use ceilings instead of floors.",
+      "allowed_paths": [
+        "src/ai/reverse_gravity.py",
+        "src/ai/reverse_gravity.gd",
+        "tests/test_reverse_gravity.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
