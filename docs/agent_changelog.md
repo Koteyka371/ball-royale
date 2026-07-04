@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-553] Reflect Shield Upgrades in Shop — *2026-07-04 18:00:21 UTC*
+
+Allow players to upgrade the max capacity of the reflect shield or its active duration via the prestige shop to increase survivability against burst damage.
+
+---
+
 ## [idea-529] Wormhole Links — *2026-07-04 18:00:18 UTC*
 
 Gravity wells can randomly pair up to act as wormholes. When a player falls into one, they are instantly teleported and launched out of its pair, taking a small amount of temporal damage.
