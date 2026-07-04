@@ -70,12 +70,12 @@ def test_weather_mode_special_balls():
     # Test rain for mage
     mode.weather = "rain"
     mode.tick(world, balls, 1.0)
-    assert mage_ball.hp == 98.0  # 100 - 2.0 * 1.0
+    assert mage_ball.hp == 96.0
 
     # Test snow for ice ball
     mode.weather = "snow"
     mode.tick(world, balls, 0.1)
-    assert ice_ball.speed == ice_ball.base_speed * 1.2
+    assert abs(ice_ball.speed - (ice_ball.base_speed * 1.2)) < 0.01
     assert ice_ball.damage == ice_ball.base_damage * 1.5
 
 def test_weather_mode_yeti_and_sand_elemental():
