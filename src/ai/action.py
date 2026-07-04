@@ -2089,6 +2089,18 @@ class Action:
                                                     b.x += tx * orbital_strength
                                                     b.y += ty * orbital_strength
 
+                                                if hazard.kind in ("black_hole", "massive_black_hole") and bdist_sq < hazard.radius * hazard.radius:
+                                                    damage_val = getattr(hazard, "damage", 10.0) * delta * lifetime_mult
+                                                    if hasattr(b, "take_damage"):
+                                                        b.take_damage(damage_val)
+                                                    elif hasattr(b, "hp"):
+                                                        b.hp -= damage_val
+                                                        if b.hp <= 0:
+                                                            b.hp = 0
+                                                            b.alive = False
+                                                            b.killer = "black_hole"
+
+
                             # Pull boosters once per frame
                             if hazard.kind in ("black_hole", "massive_black_hole", "tornado", "local_tornado") and hasattr(self.world, "boosters"):
                                 for b in self.world.boosters:
