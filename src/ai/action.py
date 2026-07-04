@@ -6964,6 +6964,10 @@ class Action:
             self.ball.emp_immunity_timer -= delta
             if self.ball.emp_immunity_timer < 0:
                 self.ball.emp_immunity_timer = 0.0
+        if getattr(self.ball, "immunity_timer", 0.0) > 0:
+            self.ball.immunity_timer -= delta
+            if self.ball.immunity_timer < 0:
+                self.ball.immunity_timer = 0.0
 
         if hasattr(self.ball, "nemesis_booster_timer") and self.ball.nemesis_booster_timer > 0:
             self.ball.nemesis_booster_timer -= delta
