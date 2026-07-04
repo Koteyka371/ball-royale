@@ -978,6 +978,96 @@ class ZombieInfectionMode(GameMode):
         return None
 
 
+
+class GuildBossFightMode(GameMode):
+    def __init__(self, guild_name=None, guild_manager=None, week_id="week_1"):
+        super().__init__()
+        self.name = "Guild Boss Fight"
+        self.description = "Guild members team up to deal as much damage as possible to an immortal boss."
+        self.boss_id = None
+        self.pull_radius = 300.0
+        self.pull_strength = 50.0
+        self.guild_name = guild_name
+        self.guild_manager = guild_manager
+        self.week_id = week_id
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        if not valid_balls:
+            return
+
+        # First ball is the boss
+        boss = valid_balls[0]
+        boss.team = "Boss"
+        boss.max_hp = 10000000.0  # Basically immortal
+        boss.hp = boss.max_hp
+        boss.damage = getattr(boss, "damage", 10.0) * 3.0
+        boss.radius = getattr(boss, "radius", 10.0) * 4.0
+
+        # Tracking damage for guild
+        boss.total_damage_taken = 0.0
+        self.boss_id = boss.id
+
+        boss.base_speed = float(getattr(boss, "base_speed", getattr(boss, "speed", 100.0))) * 0.5
+        boss.mass = getattr(boss, "mass", 1.0) * 10.0
+
+        # Position boss in center
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        boss.x = arena_width / 2.0
+        boss.y = arena_height / 2.0
+
+        # The rest are hunters
+        for b in valid_balls[1:]:
+            b.team = "Hunters"
+            b.max_hp = getattr(b, "max_hp", 100) * 1.5
+            b.hp = b.max_hp
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import math
+
+        boss = None
+        for b in balls:
+            if b.id == self.boss_id:
+                boss = b
+                break
+
+        if not boss:
+            return
+
+        # Track damage taken and heal boss
+        if boss.hp < boss.max_hp:
+            damage_taken = boss.max_hp - boss.hp
+            boss.total_damage_taken += damage_taken
+            boss.hp = boss.max_hp
+
+        # Unique mechanic: pull hunters in
+        for b in balls:
+            if b.id != self.boss_id and getattr(b, "alive", False):
+                dx = boss.x - b.x
+                dy = boss.y - b.y
+                dist = math.hypot(dx, dy)
+                if 0 < dist < self.pull_radius:
+                    pull = self.pull_strength * delta
+                    b.vx = getattr(b, "vx", 0.0) + (dx / dist) * pull
+                    b.vy = getattr(b, "vy", 0.0) + (dy / dist) * pull
+
+    def end_match(self, world: Any, balls: List[Any]) -> None:
+        if self.guild_manager and self.guild_name:
+            boss = None
+            for b in balls:
+                if getattr(b, "id", None) == self.boss_id:
+                    boss = b
+                    break
+
+            if boss and getattr(boss, "total_damage_taken", 0) > 0:
+                self.guild_manager.record_boss_damage(self.guild_name, boss.total_damage_taken, self.week_id)
+
 class BossFightMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -6583,6 +6673,7 @@ GAME_MODES = {
     "team_deathmatch": TeamDeathmatchMode(),
     "zombie_infection": ZombieInfectionMode(),
     "boss_fight": BossFightMode(),
+    "guild_boss_fight": GuildBossFightMode(),
     "vip_defense": VIPDefenseMode(),
     "survival": SurvivalMode(),
     "toxic_environment": ToxicEnvironmentMode(),

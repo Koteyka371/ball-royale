@@ -35,7 +35,8 @@ class GuildManager:
             },
             "gvg_points": 0,
             "chat_history": [],
-            "vault": []
+            "vault": [],
+            "boss_progress": {}
         }
         self.save()
         return True
@@ -160,3 +161,33 @@ class GuildManager:
             if owner in self.data["guilds"]:
                 self.data["guilds"][owner]["resources"] += 5
         self.save()
+
+    def record_boss_damage(self, guild_name, damage, week_id):
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            if "boss_progress" not in guild:
+                guild["boss_progress"] = {}
+            if week_id not in guild["boss_progress"]:
+                guild["boss_progress"][week_id] = {"damage_dealt": 0.0, "claimed_by": []}
+            guild["boss_progress"][week_id]["damage_dealt"] += damage
+            self.save()
+            return True
+        return False
+
+    def check_boss_defeated(self, guild_name, week_id, required_damage):
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            if "boss_progress" in guild and week_id in guild["boss_progress"]:
+                return guild["boss_progress"][week_id]["damage_dealt"] >= required_damage
+        return False
+
+    def claim_boss_reward(self, guild_name, player_id, week_id, required_damage):
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            if "boss_progress" in guild and week_id in guild["boss_progress"]:
+                progress = guild["boss_progress"][week_id]
+                if progress["damage_dealt"] >= required_damage and player_id not in progress["claimed_by"]:
+                    progress["claimed_by"].append(player_id)
+                    self.save()
+                    return True
+        return False

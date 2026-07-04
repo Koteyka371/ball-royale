@@ -42,7 +42,8 @@ func create_guild(guild_name: String, creator_id: String) -> bool:
         },
         "gvg_points": 0,
         "chat_history": [],
-        "vault": []
+        "vault": [],
+        "boss_progress": {}
     }
     save_guilds()
     return true
@@ -181,3 +182,33 @@ func collect_passive_resources():
         if data["guilds"].has(owner):
             data["guilds"][owner]["resources"] += 5
     save_guilds()
+
+func record_boss_damage(guild_name: String, damage: float, week_id: String) -> bool:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        if not guild.has("boss_progress"):
+            guild["boss_progress"] = {}
+        if not guild["boss_progress"].has(week_id):
+            guild["boss_progress"][week_id] = {"damage_dealt": 0.0, "claimed_by": []}
+        guild["boss_progress"][week_id]["damage_dealt"] += damage
+        save_guilds()
+        return true
+    return false
+
+func check_boss_defeated(guild_name: String, week_id: String, required_damage: float) -> bool:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        if guild.has("boss_progress") and guild["boss_progress"].has(week_id):
+            return guild["boss_progress"][week_id]["damage_dealt"] >= required_damage
+    return false
+
+func claim_boss_reward(guild_name: String, player_id: String, week_id: String, required_damage: float) -> bool:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        if guild.has("boss_progress") and guild["boss_progress"].has(week_id):
+            var progress = guild["boss_progress"][week_id]
+            if progress["damage_dealt"] >= required_damage and not progress["claimed_by"].has(player_id):
+                progress["claimed_by"].append(player_id)
+                save_guilds()
+                return true
+    return false
