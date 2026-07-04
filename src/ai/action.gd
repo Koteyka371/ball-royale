@@ -1971,6 +1971,70 @@ func execute(strategy: String, delta: float):
 						self.ball.set_meta("_vampiric_drained", true)
 
 	# Temporal rift logic to modify local delta
+	var emp_timer = 0.0
+	if self.ball.has_method("get_meta") and self.ball.has_meta("empowerment_boost_timer"):
+		emp_timer = float(self.ball.get_meta("empowerment_boost_timer"))
+	if emp_timer > 0:
+		emp_timer -= delta
+		self.ball.set_meta("empowerment_boost_timer", emp_timer)
+		if emp_timer <= 0:
+			self.ball.set_meta("empowerment_boost_timer", 0.0)
+			if self.ball.has_method("get_meta") and self.ball.has_meta("base_damage_multiplier"):
+				self.ball["damage_multiplier"] = float(self.ball.get_meta("base_damage_multiplier"))
+			var b_speed = 100.0
+			if "base_speed" in self.ball: b_speed = float(self.ball.base_speed)
+			self.ball["speed"] = b_speed
+
+	# Empowerment Matrix logic
+	if world != null and "arena" in world and "hazards" in world.arena:
+		for hazard in world.arena.hazards:
+			if hazard.get("kind") == "empowerment_matrix":
+				var my_rad = 10.0
+				if "radius" in self.ball:
+					my_rad = float(self.ball.radius)
+				var dist = sqrt((self.ball.x - hazard.x) * (self.ball.x - hazard.x) + (self.ball.y - hazard.y) * (self.ball.y - hazard.y))
+				var h_rad = 50.0
+				if "radius" in hazard: h_rad = float(hazard.radius)
+				if dist <= h_rad + my_rad:
+					var owner_team = hazard.get("owner_team")
+					if owner_team == null:
+						var owner_id = hazard.get("owner_id")
+						if owner_id != null:
+							if "balls" in world:
+								for b in world.balls:
+									if b.get("id") == owner_id:
+										owner_team = b.get("team")
+										if owner_team == null:
+											owner_team = b.get("ball_type")
+											if owner_team == null:
+												owner_team = ""
+										hazard["owner_team"] = owner_team
+										break
+					if owner_team != null:
+						var my_team = self.ball.get("team")
+						if my_team == null:
+							my_team = self.ball.get("ball_type")
+							if my_team == null:
+								my_team = ""
+
+						if owner_team == my_team:
+							# Ally: boost speed and damage
+							self.ball.set_meta("empowerment_boost_timer", 0.5)
+							var base_speed = 100.0
+							if "base_speed" in self.ball: base_speed = float(self.ball.base_speed)
+							self.ball["speed"] = base_speed * 1.5
+							if not (self.ball.has_method("has_meta") and self.ball.has_meta("base_damage_multiplier")):
+								var dmg_mult = 1.0
+								if "damage_multiplier" in self.ball: dmg_mult = float(self.ball.damage_multiplier)
+								self.ball.set_meta("base_damage_multiplier", dmg_mult)
+							self.ball["damage_multiplier"] = float(self.ball.get_meta("base_damage_multiplier")) * 1.5
+						else:
+							# Enemy: slow
+							self.ball.set_meta("empowerment_boost_timer", 0.5)
+							var base_speed = 100.0
+							if "base_speed" in self.ball: base_speed = float(self.ball.base_speed)
+							self.ball["speed"] = base_speed * 0.5
+
 	if world != null and "arena" in world and "hazards" in world.arena:
 		for hazard in world.arena.hazards:
 			if hazard.get("kind") == "temporal_rift":

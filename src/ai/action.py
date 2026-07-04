@@ -846,6 +846,47 @@ class Action:
                         self.ball._vampiric_drained = True
 
         # Temporal rift logic to modify local delta
+        if getattr(self.ball, "empowerment_boost_timer", 0.0) > 0:
+            self.ball.empowerment_boost_timer -= delta
+            if self.ball.empowerment_boost_timer <= 0:
+                self.ball.empowerment_boost_timer = 0.0
+                if hasattr(self.ball, "base_damage_multiplier"):
+                    self.ball.damage_multiplier = self.ball.base_damage_multiplier
+                self.ball.speed = getattr(self.ball, "base_speed", 100.0)
+
+        # Empowerment Matrix logic
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            for hazard in self.world.arena.hazards:
+                if getattr(hazard, "kind", "") == "empowerment_matrix":
+                    dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
+                    if dist <= getattr(hazard, "radius", 50.0) + getattr(self.ball, "radius", 10.0):
+                        # Use owner_team from hazard if available to avoid lookup failure
+                        owner_team = getattr(hazard, "owner_team", None)
+                        if owner_team is None:
+                            owner_id = getattr(hazard, "owner_id", None)
+                            if owner_id is not None:
+                                if hasattr(self.world, "balls"):
+                                    for b in self.world.balls:
+                                        if getattr(b, "id", None) == owner_id:
+                                            owner_team = getattr(b, "team", getattr(b, "ball_type", ""))
+                                            hazard.owner_team = owner_team
+                                            break
+
+                        if owner_team is not None:
+                            my_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
+                            if owner_team == my_team:
+                                # Ally: boost speed and damage
+                                self.ball.empowerment_boost_timer = 0.5
+                                self.ball.speed = getattr(self.ball, "base_speed", 100.0) * 1.5
+                                # Save base damage multiplier if not saved yet
+                                if not hasattr(self.ball, "base_damage_multiplier"):
+                                    self.ball.base_damage_multiplier = getattr(self.ball, "damage_multiplier", 1.0)
+                                self.ball.damage_multiplier = self.ball.base_damage_multiplier * 1.5
+                            else:
+                                # Enemy: slow
+                                self.ball.empowerment_boost_timer = 0.5
+                                self.ball.speed = getattr(self.ball, "base_speed", 100.0) * 0.5
+
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for hazard in self.world.arena.hazards:
                 if getattr(hazard, "kind", "") == "temporal_rift":
