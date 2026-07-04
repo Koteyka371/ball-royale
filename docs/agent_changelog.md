@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-525] Shrinking Safe-Zone Mechanics — *2026-07-04 13:08:49 UTC*
+
+Introduce a game mode feature where the safe playable area gradually shrinks over time, applying damage-over-time (DoT) to any ball caught outside it, heavily discouraging camping.
+
+---
+
 ## [idea-527] Autumn Arena with leaves — *2026-07-04 13:01:19 UTC*
 
 Autumn arena obscures vision

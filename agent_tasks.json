@@ -9078,7 +9078,7 @@
     },
     {
       "id": "idea-525",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Safe-Zone Mechanics",
@@ -14689,6 +14689,40 @@
         "src/ai/overcharge_booster.py",
         "src/ai/overcharge_booster.gd",
         "tests/test_overcharge_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-855",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Wind-Riding Specialization",
+      "description": "Create a new 'Wind Rider' ball type or a skill that gives balls a speed boost and extended jump capability specifically during windy conditions in the Autumn arena, providing a tactical advantage.",
+      "allowed_paths": [
+        "src/ai/wind_riding_specialization.py",
+        "src/ai/wind_riding_specialization.gd",
+        "tests/test_wind_riding_specialization.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-856",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Transitions",
+      "description": "Introduce dynamic weather transitions during a match. For example, a match could start sunny but gradually become cloudy and then transition to a full storm or blizzard, forcing balls to adapt their strategy dynamically rather than staying in one state.",
+      "allowed_paths": [
+        "src/ai/transitions.py",
+        "src/ai/transitions.gd",
+        "tests/test_transitions.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
