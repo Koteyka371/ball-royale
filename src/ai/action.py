@@ -3584,6 +3584,35 @@ class Action:
             self._hold_zone(delta)
         elif strategy in ("opportunistic", "collect_booster", "collect booster"):
             self._collect_booster(delta)
+        elif strategy == "use_sub_skill":
+            skill_name = getattr(self.ball, "active_skill", getattr(self.ball, "SKILL", None))
+            if skill_name == "clone":
+                # Find my clones
+                if hasattr(self.world, "balls"):
+                    my_clones = []
+                    my_id = getattr(self.ball, "id", None)
+                    for b in self.world.balls:
+                        if getattr(b, "is_clone", False) and getattr(b, "alive", True):
+                            if getattr(b, "clone_owner", None) == my_id:
+                                my_clones.append(b)
+
+                    if my_clones:
+                        import random
+                        chosen_clone = random.choice(my_clones)
+                        my_x, my_y = getattr(self.ball, "x", 0.0), getattr(self.ball, "y", 0.0)
+                        clone_x, clone_y = getattr(chosen_clone, "x", 0.0), getattr(chosen_clone, "y", 0.0)
+
+                        self.ball.x, self.ball.y = clone_x, clone_y
+                        chosen_clone.x, chosen_clone.y = my_x, my_y
+
+                        if hasattr(self.world, "events"):
+                            self.world.events.append({
+                                'type': 'visual_effect',
+                                'data': {'type': 'line', 'x': my_x, 'y': my_y, 'tx': clone_x, 'ty': clone_y, 'color': 'cyan'}
+                            })
+            self._clamp_position()
+            return
+
         elif strategy in ("use_skill", "use skill", "action_skill", "Действие"):
             if getattr(self.ball, "skill", "") == "flank":
                 self.ball.current_action = "flank"
