@@ -654,14 +654,32 @@ class BattleRoyaleMode(GameMode):
                 b.steering_mult = 1.0
             elif self.weather == "sandstorm":
                 b.cosmetic = "dust_mask"
-                if getattr(b, "ball_type", "") == "sand_elemental":
+                b_type_str = getattr(b, "ball_type", "").lower()
+                b_traits = getattr(b, "traits", [])
+                is_earth = "earth" in b_type_str or "sand" in b_type_str or "earth" in b_traits or "sand" in b_traits
+                if is_earth:
                     b.speed = b.base_speed * 1.2
                     b.damage = b.base_damage
                     b.dash_range_mult = 1.0
                     b.steering_mult = 1.0
                     b.attack_accuracy = 1.0
                 else:
-                    b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.3
+                    is_sheltered = False
+                    if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                        for h in world.arena.hazards:
+                            hk = getattr(h, "kind", "")
+                            if hk in ["shelter", "flare"] and getattr(h, "active", True):
+                                dist_sq = (b.x - getattr(h, "x", 0))**2 + (b.y - getattr(h, "y", 0))**2
+                                rad = getattr(h, "radius", 0)
+                                if dist_sq <= rad**2:
+                                    is_sheltered = True
+                                    break
+
+                    if is_sheltered:
+                        b.perception_radius = getattr(b, "base_perception_radius", 250.0)
+                    else:
+                        b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.3
+
                     b.speed = b.base_speed * 0.7
                     b.damage = b.base_damage
                     b.dash_range_mult = 0.5
@@ -671,12 +689,12 @@ class BattleRoyaleMode(GameMode):
                     b.sandstorm_timer += delta
                     if b.sandstorm_timer >= 1.0:
                         b.sandstorm_timer = 0.0
-                        if hasattr(b, "hp"):
+                        if not is_sheltered and hasattr(b, "hp"):
                             b.hp -= 1.0
                     if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
                         if hasattr(b, "hp"):
                             b.hp -= 20.0
-                    b.attack_accuracy = 0.5
+                b.attack_accuracy = 0.5
             elif self.weather == "heatwave":
                 b.cosmetic = "sunglasses"
                 b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.7
@@ -1845,14 +1863,32 @@ class WeatherChaosMode(GameMode):
                 b.steering_mult = 1.0
             elif self.weather == "sandstorm":
                 b.cosmetic = "dust_mask"
-                if getattr(b, "ball_type", "") == "sand_elemental":
+                b_type_str = getattr(b, "ball_type", "").lower()
+                b_traits = getattr(b, "traits", [])
+                is_earth = "earth" in b_type_str or "sand" in b_type_str or "earth" in b_traits or "sand" in b_traits
+                if is_earth:
                     b.speed = b.base_speed * 1.2
                     b.damage = b.base_damage
                     b.dash_range_mult = 1.0
                     b.steering_mult = 1.0
                     b.attack_accuracy = 1.0
                 else:
-                    b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.3
+                    is_sheltered = False
+                    if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                        for h in world.arena.hazards:
+                            hk = getattr(h, "kind", "")
+                            if hk in ["shelter", "flare"] and getattr(h, "active", True):
+                                dist_sq = (b.x - getattr(h, "x", 0))**2 + (b.y - getattr(h, "y", 0))**2
+                                rad = getattr(h, "radius", 0)
+                                if dist_sq <= rad**2:
+                                    is_sheltered = True
+                                    break
+
+                    if is_sheltered:
+                        b.perception_radius = getattr(b, "base_perception_radius", 250.0)
+                    else:
+                        b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.3
+
                     b.speed = b.base_speed * 0.7 # Hard to move
                     b.damage = b.base_damage
                     b.dash_range_mult = 0.5
@@ -1886,12 +1922,13 @@ class WeatherChaosMode(GameMode):
                     b.sandstorm_timer += delta
                     if b.sandstorm_timer >= 1.0:
                         b.sandstorm_timer = 0.0
-                        if hasattr(b, "hp"):
+                        if not is_sheltered and hasattr(b, "hp"):
                             b.hp -= 1.0 # 1 damage per sec
                     # Random lightning strikes
                     if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
                         # Struck by lightning!
-                        b.hp = getattr(b, "hp", 100) - 20
+                        if hasattr(b, "hp"):
+                            b.hp -= 20.0
                 b.attack_accuracy = 0.5
             elif self.weather == "magnetic_storm":
                 # Assign polarity if not present
