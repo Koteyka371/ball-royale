@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-549] Cursed Relic Modifier Zones — *2026-07-04 17:43:13 UTC*
+
+Introduce dynamic zones on the map that grant massive buffs (like +200% speed or +150% damage) but come with severe curses (e.g., losing 5% HP per second or inverted steering). Players who intentionally enter these zones could make clutch plays if they manage the risk correctly, adding strategic depth to positional gameplay.
+
+---
+
 ## [idea-513] Idea 2: EMP Mine — *2026-07-04 17:43:09 UTC*
 
 A hidden mine that detonates on proximity, disabling AI abilities and rendering them unable to attack for 5 seconds.
