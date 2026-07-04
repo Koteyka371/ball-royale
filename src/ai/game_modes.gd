@@ -339,7 +339,7 @@ class BattleRoyaleMode extends GameMode:
     var shrink_rate: float = 10.0
     var rng = RandomNumberGenerator.new()
     var match_time: float = 0.0
-    var finale_boss_spawned: bool = false
+    var sudden_death_black_hole_spawned: bool = false
 
     func _init() -> void:
         name = "Battle Royale"
@@ -894,10 +894,10 @@ class BattleRoyaleMode extends GameMode:
 
         match_time += delta
 
-        # Finale Boss logic
+        # Sudden Death Black Hole logic
         if match_time > 120.0 and world != null and "arena" in world and world.arena != null:
-            if not finale_boss_spawned:
-                finale_boss_spawned = true
+            if not sudden_death_black_hole_spawned:
+                sudden_death_black_hole_spawned = true
                 if not "hazards" in world.arena:
                     world.arena.hazards = []
                 var cx = 500.0
@@ -912,49 +912,36 @@ class BattleRoyaleMode extends GameMode:
                     boss.x = cx
                     boss.y = cy
                     boss.radius = 50.0
-                    boss.kind = "finale_boss"
+                    boss.kind = "massive_black_hole"
                     boss.damage = 100.0
                     boss.set_meta("duration", 9999.0)
-                    boss.set_meta("boss_timer", 0.0)
+                    boss.set_meta("lifetime", 0.0)
                     world.arena.hazards.append(boss)
 
                 if world.has_method("add_event"):
-                    world.add_event("finale_boss_spawn", {"message": "SUDDEN DEATH! The Finale Boss has spawned!"})
+                    world.add_event("sudden_death_black_hole_spawn", {"message": "SUDDEN DEATH! A massive black hole is consuming the arena!"})
             else:
-                var HazardType = load("res://src/arena/procedural_arena.gd").Hazard
                 if "hazards" in world.arena:
                     for h in world.arena.hazards:
-                        if h.kind == "finale_boss":
+                        if h.kind == "massive_black_hole":
                             h.radius += 5.0 * delta
-                            var timer = 0.0
-                            if h.has_meta("boss_timer"):
-                                timer = h.get_meta("boss_timer")
-                            timer += delta
+                            var lifetime = 0.0
+                            if h.has_meta("lifetime"):
+                                lifetime = h.get_meta("lifetime")
+                            h.set_meta("lifetime", lifetime + delta)
 
-                            if timer >= 1.0:
-                                timer = 0.0
-                                if HazardType != null:
-                                    var proj = HazardType.new()
-                                    proj.id = world.arena.hazards.size() + int(randf() * 9000.0) + 1000
-                                    proj.x = h.x
-                                    proj.y = h.y
-                                    proj.radius = 15.0
-                                    proj.kind = "boss_projectile"
-                                    proj.damage = 50.0
-                                    var angle = randf() * PI * 2.0
-                                    proj.set_meta("vx", cos(angle) * 300.0)
-                                    proj.set_meta("vy", sin(angle) * 300.0)
-                                    proj.set_meta("duration", 10.0)
-                                    world.arena.hazards.append(proj)
-                            h.set_meta("boss_timer", timer)
-
-        # Move projectiles
-        if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
-            for h in world.arena.hazards:
-                if h.kind == "boss_projectile":
-                    if h.has_meta("vx") and h.has_meta("vy"):
-                        h.x += h.get_meta("vx") * delta
-                        h.y += h.get_meta("vy") * delta
+                            for b in balls:
+                                if b.alive and b.ball_type != "spectator":
+                                    var dx = h.x - b.x
+                                    var dy = h.y - b.y
+                                    var dist_sq = dx*dx + dy*dy
+                                    if dist_sq > 0.0001:
+                                        var dist = sqrt(dist_sq)
+                                        var nx = dx / dist
+                                        var ny = dy / dist
+                                        var pull = (h.radius * 2.0 / max(10.0, dist)) * 50.0 * delta * (1.0 + lifetime / 10.0)
+                                        b.x += nx * pull
+                                        b.y += ny * pull
 
         # Dark phase cycle: 20s normal, 10s dark
         if not is_dark_phase and dark_phase_timer >= 20.0:
