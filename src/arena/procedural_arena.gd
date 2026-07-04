@@ -195,6 +195,8 @@ func generate():
             kind = "stamina_drain_zone"
         elif r < 0.9998:
             kind = "slip_zone"
+        elif r < 0.99985:
+            kind = "frictionless_zone"
         elif r < 0.9999:
             kind = "tall_grass"
         else:
@@ -202,7 +204,10 @@ func generate():
 
         var radius = 15.0
         var damage = 20.0
-        if kind == "spikes":
+        if kind == "frictionless_zone":
+            radius = rng.randf_range(30.0, 60.0)
+            damage = 0.0
+        elif kind == "spikes":
             radius = rng.randf_range(15.0, 30.0)
             damage = 20.0
         elif kind == "lava":

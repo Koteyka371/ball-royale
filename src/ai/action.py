@@ -527,6 +527,8 @@ class Action:
     def execute(self, strategy: str, delta: float) -> None:
         import math
 
+        self.ball.is_frictionless = False
+
         if getattr(self.ball, "glitch_timer", 0.0) > 0.0:
             self.ball.glitch_timer -= delta
             if random.random() < 0.2:
@@ -1864,6 +1866,17 @@ class Action:
                                 self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.01
                                 if not hasattr(self.ball, "is_slipping"):
                                     self.ball.is_slipping = True
+                    elif hazard.kind == "frictionless_zone":
+                        if getattr(hazard, "active", True):
+                            dx = hazard.x - self.ball.x
+                            dy = hazard.y - self.ball.y
+                            dist_sq = dx * dx + dy * dy
+                            if dist_sq < hazard.radius * hazard.radius:
+                                self.ball.is_frictionless = True
+                                if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+                                    self.ball.x += self.ball.vx * delta * 1.5
+                                    self.ball.y += self.ball.vy * delta * 1.5
+                                self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.01
                     elif hazard.kind == "ice_patch":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
@@ -3039,7 +3052,10 @@ class Action:
                 # Reverse velocity, add random slight angle variation for trick shots, and multiply speed
                 import random
                 angle = _math.atan2(-vy, -vx) + random.uniform(-0.2, 0.2)
-                new_speed = min(speed * 1.5, 2000.0)  # Increase speed, cap at 2000
+                bounce_mult = 1.5
+                if getattr(self.ball, "is_frictionless", False):
+                    bounce_mult = 2.0
+                new_speed = min(speed * bounce_mult, 2000.0)  # Increase speed, cap at 2000
 
                 # Save the reflection velocity to be set after execution
                 self.ball._reflection_vx = math.cos(angle) * new_speed

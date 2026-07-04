@@ -855,6 +855,10 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+	if typeof(self.ball) == TYPE_DICTIONARY:
+		self.ball["is_frictionless"] = false
+	elif self.ball.has_method("set_meta"):
+		self.ball.set_meta("is_frictionless", false)
 
 	var glitch_time = 0.0
 	if typeof(self.ball) == TYPE_DICTIONARY:
@@ -3044,6 +3048,35 @@ func execute(strategy: String, delta: float):
                             self.ball.speed = base_s * 0.01
                             if self.ball.has_method("set_meta"):
                                 self.ball.set_meta("is_slipping", true)
+                elif hazard.kind == "frictionless_zone":
+                    var active = true
+                    if "active" in hazard: active = hazard.active
+                    if active:
+                        var dx = hazard.x - self.ball.x
+                        var dy = hazard.y - self.ball.y
+                        var dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            if typeof(self.ball) == TYPE_DICTIONARY:
+                                self.ball["is_frictionless"] = true
+                            elif self.ball.has_method("set_meta"):
+                                self.ball.set_meta("is_frictionless", true)
+
+                            if "vx" in self.ball and "vy" in self.ball:
+                                self.ball.x += self.ball.vx * delta * 1.5
+                                self.ball.y += self.ball.vy * delta * 1.5
+
+                            var base_s = 100.0
+                            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("base_speed"):
+                                base_s = self.ball["base_speed"]
+                            elif self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"):
+                                base_s = self.ball.get_meta("base_speed")
+                            elif "base_speed" in self.ball:
+                                base_s = self.ball.base_speed
+
+                            if typeof(self.ball) == TYPE_DICTIONARY:
+                                self.ball["speed"] = base_s * 0.01
+                            else:
+                                self.ball.speed = base_s * 0.01
                 elif hazard.kind == "ice_patch":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
@@ -4847,7 +4880,17 @@ func execute(strategy: String, delta: float):
                 nvx = -vx
                 nvy = -vy
 
-            var new_speed = min(speed * 1.5, 2000.0)
+            var bounce_mult = 1.5
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                if self.ball.get("is_frictionless", false):
+                    bounce_mult = 2.0
+            elif self.ball.has_method("get_meta"):
+                if self.ball.has_meta("is_frictionless") and self.ball.get_meta("is_frictionless"):
+                    bounce_mult = 2.0
+            elif "is_frictionless" in self.ball and self.ball.is_frictionless:
+                bounce_mult = 2.0
+
+            var new_speed = min(speed * bounce_mult, 2000.0)
             var angle = atan2(nvy, nvx) + randf_range(-0.1, 0.1)
 
             nvx = cos(angle) * new_speed
