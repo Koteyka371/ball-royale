@@ -9,9 +9,19 @@ class DummyBall:
         self.hp = 100.0
         self.alive = True
 
+class DummyArena:
+    def __init__(self):
+        self.hazards = []
+        self.width = 2000.0
+        self.height = 2000.0
+    def clamp_position(self, x, y, r=0):
+        return x, y, False
+    def update_zone(self, tick, delta=0):
+        pass
+
 class DummyWorld:
     def __init__(self):
-        self.arena = ProceduralArena(2000.0, 0)
+        self.arena = DummyArena()
         self.tick = 0
         self.boosters = []
 

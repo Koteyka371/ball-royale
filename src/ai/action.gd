@@ -2656,7 +2656,7 @@ func execute(strategy: String, delta: float):
                     if "is_mirroring" in my_ball: is_mirroring = my_ball.is_mirroring
                     elif my_ball.has_method("get_meta") and my_ball.has_meta("is_mirroring"): is_mirroring = my_ball.get_meta("is_mirroring")
 
-                    if is_orbiting or is_mirroring:
+                    if is_orbiting:
                         var spd = 4.0
                         if "speed" in my_ball: spd = float(my_ball.speed)
                         var orbit_speed = spd * 0.5
@@ -2673,6 +2673,28 @@ func execute(strategy: String, delta: float):
                         var radius = 30.0
                         my_ball.x = owner.x + cos(orbit_angle) * radius
                         my_ball.y = owner.y + sin(orbit_angle) * radius
+                    elif is_mirroring:
+                        var mx = null
+                        var my = null
+                        if "mirror_center_x" in my_ball:
+                            mx = my_ball.mirror_center_x
+                            my = my_ball.mirror_center_y
+                        elif my_ball.has_method("get_meta") and my_ball.has_meta("mirror_center_x"):
+                            mx = my_ball.get_meta("mirror_center_x")
+                            my = my_ball.get_meta("mirror_center_y")
+
+                        if mx == null:
+                            mx = (owner.x + my_ball.x) / 2.0
+                            my = (owner.y + my_ball.y) / 2.0
+                            if "mirror_center_x" in my_ball:
+                                my_ball.mirror_center_x = mx
+                                my_ball.mirror_center_y = my
+                            elif my_ball.has_method("set_meta"):
+                                my_ball.set_meta("mirror_center_x", mx)
+                                my_ball.set_meta("mirror_center_y", my)
+
+                        my_ball.x = mx - (owner.x - mx)
+                        my_ball.y = my - (owner.y - my)
 
     if world != null and "balls" in world:
         for b in world.balls:
