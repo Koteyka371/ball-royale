@@ -3724,7 +3724,168 @@ func execute(strategy: String, delta: float):
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
                     var dist_sq = dx * dx + dy * dy
+
+                    # Random pairing logic
+                    var has_paired_checked = false
+                    if typeof(hazard) == TYPE_OBJECT and hazard.has_meta("paired_checked"):
+                        has_paired_checked = true
+                    elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("paired_checked"):
+                        has_paired_checked = true
+
+                    if not has_paired_checked:
+                        if typeof(hazard) == TYPE_OBJECT:
+                            hazard.set_meta("paired_checked", true)
+                        else:
+                            hazard["paired_checked"] = true
+
+                        var has_paired_id = false
+                        if typeof(hazard) == TYPE_OBJECT and hazard.has_meta("paired_id"):
+                            has_paired_id = true
+                        elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("paired_id"):
+                            has_paired_id = true
+
+                        if not has_paired_id and randf() < 0.3:
+                            var other_gws = []
+                            for h in self.world.arena.hazards:
+                                var h_kind = ""
+                                if typeof(h) == TYPE_OBJECT:
+                                    h_kind = h.kind if "kind" in h else ""
+                                else:
+                                    h_kind = h.get("kind", "")
+
+                                var h_id = -1
+                                if typeof(h) == TYPE_OBJECT:
+                                    h_id = h.id if "id" in h else -1
+                                else:
+                                    h_id = h.get("id", -1)
+
+                                var h_paired = false
+                                if typeof(h) == TYPE_OBJECT and h.has_meta("paired_checked"):
+                                    h_paired = true
+                                elif typeof(h) == TYPE_DICTIONARY and h.has("paired_checked"):
+                                    h_paired = true
+
+                                var haz_id = -1
+                                if typeof(hazard) == TYPE_OBJECT:
+                                    haz_id = hazard.id if "id" in hazard else -1
+                                else:
+                                    haz_id = hazard.get("id", -1)
+
+                                if h_kind == "gravity_well" and h_id != haz_id and not h_paired:
+                                    other_gws.append(h)
+
+                            if other_gws.size() > 0:
+                                var selected_pair = other_gws[randi() % other_gws.size()]
+                                var selected_id = -1
+                                if typeof(selected_pair) == TYPE_OBJECT:
+                                    selected_id = selected_pair.id if "id" in selected_pair else -1
+                                else:
+                                    selected_id = selected_pair.get("id", -1)
+
+                                var haz_id2 = -1
+                                if typeof(hazard) == TYPE_OBJECT:
+                                    haz_id2 = hazard.id if "id" in hazard else -1
+                                else:
+                                    haz_id2 = hazard.get("id", -1)
+
+                                if typeof(hazard) == TYPE_OBJECT:
+                                    hazard.set_meta("paired_id", selected_id)
+                                else:
+                                    hazard["paired_id"] = selected_id
+
+                                if typeof(selected_pair) == TYPE_OBJECT:
+                                    selected_pair.set_meta("paired_id", haz_id2)
+                                    selected_pair.set_meta("paired_checked", true)
+                                else:
+                                    selected_pair["paired_id"] = haz_id2
+                                    selected_pair["paired_checked"] = true
+
                     if dist_sq < hazard.radius * hazard.radius:
+                        # Wormhole teleport logic
+                        var current_tick = 0
+                        if typeof(self.world) == TYPE_OBJECT:
+                            current_tick = self.world.tick if "tick" in self.world else 0
+                        else:
+                            current_tick = self.world.get("tick", 0)
+
+                        var last_teleport = -100
+                        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_meta("last_teleport_tick"):
+                            last_teleport = self.ball.get_meta("last_teleport_tick")
+                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("last_teleport_tick"):
+                            last_teleport = self.ball["last_teleport_tick"]
+                        elif typeof(self.ball) == TYPE_OBJECT and "last_teleport_tick" in self.ball:
+                            last_teleport = self.ball.last_teleport_tick
+
+                        var h_paired_id = null
+                        if typeof(hazard) == TYPE_OBJECT and hazard.has_meta("paired_id"):
+                            h_paired_id = hazard.get_meta("paired_id")
+                        elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("paired_id"):
+                            h_paired_id = hazard["paired_id"]
+
+                        if h_paired_id != null and (current_tick - last_teleport > 20):
+                            var target_pair = null
+                            for h in self.world.arena.hazards:
+                                var curr_id = -1
+                                if typeof(h) == TYPE_OBJECT:
+                                    curr_id = h.id if "id" in h else -1
+                                else:
+                                    curr_id = h.get("id", -1)
+
+                                if curr_id == h_paired_id:
+                                    target_pair = h
+                                    break
+                            if target_pair != null:
+                                var angle = randf() * 2.0 * PI
+                                var pair_radius = 50.0
+                                if typeof(target_pair) == TYPE_OBJECT:
+                                    pair_radius = target_pair.radius if "radius" in target_pair else 50.0
+                                else:
+                                    pair_radius = target_pair.get("radius", 50.0)
+
+                                var launch_dist = pair_radius + 30.0
+
+                                if typeof(self.ball) == TYPE_DICTIONARY:
+                                    self.ball["x"] = target_pair.x + cos(angle) * launch_dist
+                                    self.ball["y"] = target_pair.y + sin(angle) * launch_dist
+                                    self.ball["last_teleport_tick"] = current_tick
+                                else:
+                                    self.ball.x = target_pair.x + cos(angle) * launch_dist
+                                    self.ball.y = target_pair.y + sin(angle) * launch_dist
+                                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                        self.ball.set_meta("last_teleport_tick", current_tick)
+                                    else:
+                                        self.ball.last_teleport_tick = current_tick
+
+                                var temp_damage = 5.0
+                                if typeof(self.ball) == TYPE_DICTIONARY:
+                                    self.ball["hp"] -= temp_damage
+                                    if self.ball["hp"] <= 0:
+                                        self.ball["hp"] = 0
+                                        self.ball["alive"] = false
+                                else:
+                                    if self.ball.has_method("take_damage"):
+                                        self.ball.take_damage(temp_damage)
+                                    elif "hp" in self.ball:
+                                        self.ball.hp -= temp_damage
+                                        if self.ball.hp <= 0:
+                                            self.ball.hp = 0
+                                            self.ball.alive = false
+
+                                if "events" in self.world:
+                                    var eff = {}
+                                    eff["type"] = "visual_effect"
+                                    var b_x = 0
+                                    var b_y = 0
+                                    if typeof(self.ball) == TYPE_OBJECT:
+                                        b_x = self.ball.x if "x" in self.ball else 0
+                                        b_y = self.ball.y if "y" in self.ball else 0
+                                    else:
+                                        b_x = self.ball.get("x", 0)
+                                        b_y = self.ball.get("y", 0)
+                                    eff["data"] = {"x": b_x, "y": b_y, "kind": "teleport"}
+                                    self.world.events.append(eff)
+                                continue
+
                         # Apply slight damage if any
                         if "damage" in hazard and hazard.damage > 0.0:
                             var hazard_damage = hazard.damage * delta
