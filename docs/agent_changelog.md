@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-535] Decoy Enhancement Module — *2026-07-04 15:18:06 UTC*
+
+Allow 'decoy_item' pickups to optionally explode upon expiring or being destroyed, dealing minor area-of-effect damage or blinding nearby enemies to provide greater utility and zoning.
+
+---
+
 ## [idea-538] Gravity Swap — *2026-07-04 15:18:02 UTC*
 
 The arena periodically reverses the polarity of the center, pushing balls out and pulling hazards in.
