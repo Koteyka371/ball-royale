@@ -4728,6 +4728,26 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+
+                elif getattr(nearest, "kind", None) == "cleanse_booster":
+                    self.ball.immunity_timer = 15.0
+                    if hasattr(self.ball, "burn_timer"): self.ball.burn_timer = 0.0
+                    if hasattr(self.ball, "poison_timer"): self.ball.poison_timer = 0.0
+                    if hasattr(self.ball, "slow_timer"): self.ball.slow_timer = 0.0
+                    if hasattr(self.ball, "confusion_timer"): self.ball.confusion_timer = 0.0
+                    if hasattr(self.ball, "is_confused"): self.ball.is_confused = False
+                    if hasattr(self.ball, "blindness_timer"): self.ball.blindness_timer = 0.0
+                    if hasattr(self.ball, "is_blinded"): self.ball.is_blinded = False
+                    # Remove zone debuff
+                    if getattr(self.ball, "zone_modifier_debuff", False):
+                        if hasattr(self.ball, "base_max_hp"):
+                            self.ball.max_hp = self.ball.base_max_hp
+                        delattr(self.ball, "zone_modifier_debuff")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "emp_immunity_booster":
                     self.ball.emp_immunity_timer = 15.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
