@@ -8619,7 +8619,7 @@
     },
     {
       "id": "idea-500",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Time Loop Game Mode",
@@ -14535,6 +14535,41 @@
         "src/ai/cosmic_storm.py",
         "src/ai/cosmic_storm.gd",
         "tests/test_cosmic_storm.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-846",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild Emblem Customization",
+      "description": "Allows players to unlock and combine different shapes, colors, and symbols to create a unique emblem for their guild.",
+      "allowed_paths": [
+        "src/ui/guild_emblem_customization.py",
+        "src/ui/guild_emblem_customization.gd",
+        "src/ai/guild_emblem_customization.py",
+        "tests/test_guild_emblem_customization.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-847",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Season Recap Video Generation",
+      "description": "Automatically compiles a short highlight reel or stats summary video at the end of each season for the top players.",
+      "allowed_paths": [
+        "src/ai/season_recap_video_generation.py",
+        "src/ai/season_recap_video_generation.gd",
+        "tests/test_season_recap_video_generation.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

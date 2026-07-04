@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-500] Time Loop Game Mode — *2026-07-04 12:24:04 UTC*
+
+Every 30 seconds, the game state rewinds 5 seconds in time. Balls keep their current momentum but revert to their previous positions and HP, requiring players to plan actions knowing a rewind is imminent.
+
+---
+
 ## [idea-517] Custom Season Badges — *2026-07-04 12:04:23 UTC*
 
 Players can equip a custom badge next to their name corresponding to the highest season rank they achieved.
