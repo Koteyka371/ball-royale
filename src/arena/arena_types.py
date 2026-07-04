@@ -1460,7 +1460,41 @@ class PinballArena(ProceduralArena):
 
 from arena.shrinking_hazards import ShrinkingHazardsArena
 
+
+class SpringArena(ProceduralArena):
+    def __init__(self, arena_size: float = 2000.0, seed: int | None = None):
+        super().__init__(arena_size=arena_size, num_rooms=1, seed=seed)
+        self.hazards = []
+        self.generate()
+
+    def generate(self):
+        super().generate()
+        width = self.width
+        height = self.height
+
+        # Add numerous bounce pads
+        for i in range(15):
+            import random
+            x = random.uniform(100.0, width - 100.0)
+            y = random.uniform(100.0, height - 100.0)
+            h_id = 3500 + len(self.hazards)
+            radius = random.uniform(40.0, 70.0)
+
+            # Using proper Hazard dataclass
+            from arena.procedural_arena import Hazard
+            pad = Hazard(id=h_id, x=x, y=y, radius=radius, kind="bounce_pad", damage=0.0)
+            pad.active = True
+            pad.target_radius = 0.0
+
+            # Additional push vector to enhance visual logic or customized bouncing direction
+            pad.vx = random.uniform(-10.0, 10.0)
+            pad.vy = random.uniform(-10.0, 10.0)
+
+            self.hazards.append(pad)
+
+
 ARENAS = {
+    'spring': SpringArena,
     'shrinking_hazards': ShrinkingHazardsArena,
 
     "siege": SiegeArena,
