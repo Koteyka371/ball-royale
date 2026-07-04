@@ -5016,6 +5016,14 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "speed_booster_item":
+                    self.ball.speed_boost_timer = 5.0
+                    self.ball.speed = getattr(self.ball, "base_speed", 2.0) * 3.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "stamina_booster":
                     current_stamina = getattr(self.ball, "stamina", 0.0)
                     max_stamina = getattr(self.ball, "max_stamina", 100.0)
@@ -7012,6 +7020,28 @@ class Action:
                     self.ball.base_perception_radius /= 2.0
                     self.ball.perception_radius = self.ball.base_perception_radius
                     self.ball.vision_booster_applied = False
+
+        if getattr(self.ball, "speed_boost_timer", 0.0) > 0:
+            self.ball.speed_boost_timer -= delta
+            self.ball.speed = getattr(self.ball, "base_speed", 2.0) * 3.0
+            # leave fire trail
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                if getattr(self.ball, "speed_boost_timer", 0.0) > 0 and __import__('random').random() < 0.3:
+                    class DummyHazard:
+                        pass
+                    hazard = DummyHazard()
+                    hazard.x = self.ball.x
+                    hazard.y = self.ball.y
+                    hazard.radius = 15.0
+                    hazard.damage = 10.0
+                    hazard.kind = "fire"
+                    hazard.duration = 2.0
+                    hazard.owner_id = getattr(self.ball, "id", None)
+                    hazard.creation_time = getattr(self.world, "time", 0.0)
+                    self.world.arena.hazards.append(hazard)
+            if self.ball.speed_boost_timer <= 0:
+                self.ball.speed_boost_timer = 0.0
+                self.ball.speed = getattr(self.ball, "base_speed", 2.0)
         if hasattr(self.ball, "reflect_shield_timer") and self.ball.reflect_shield_timer > 0:
             self.ball.reflect_shield_timer -= delta
             if self.ball.reflect_shield_timer <= 0:

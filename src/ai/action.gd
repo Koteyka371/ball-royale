@@ -7880,6 +7880,17 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "speed_booster_item":
+                self.ball.set_meta("speed_boost_timer", 5.0)
+                if "speed_boost_timer" in self.ball: self.ball.speed_boost_timer = 5.0
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "zone_immunity":
                 var dur = 5.0
                 if "duration" in nearest: dur = nearest.duration
@@ -11724,6 +11735,44 @@ func _update_skill_timer(delta: float):
             self.ball.vision_booster_timer = vb_timer
         elif self.ball.has_method("set_meta"):
             self.ball.set_meta("vision_booster_timer", vb_timer)
+
+    var sb_timer = 0.0
+    if "speed_boost_timer" in self.ball:
+        sb_timer = float(self.ball.speed_boost_timer)
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("speed_boost_timer"):
+        sb_timer = self.ball.get_meta("speed_boost_timer")
+
+    if sb_timer > 0:
+        sb_timer -= delta
+        if randf() < 0.3:
+            if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                var hazard = {}
+                hazard["x"] = self.ball.x
+                hazard["y"] = self.ball.y
+                hazard["radius"] = 15.0
+                hazard["damage"] = 10.0
+                hazard["kind"] = "fire"
+                hazard["duration"] = 2.0
+                var oid = null
+                if "id" in self.ball: oid = self.ball.id
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): oid = self.ball.get_meta("id")
+                hazard["owner_id"] = oid
+                var ctime = 0.0
+                if "time" in self.world: ctime = self.world.time
+                hazard["creation_time"] = ctime
+                self.world.arena.hazards.append(hazard)
+        if "speed" in self.ball and "base_speed" in self.ball:
+            self.ball.speed = self.ball.base_speed * 3.0
+
+        if sb_timer <= 0:
+            sb_timer = 0.0
+            if "speed" in self.ball and "base_speed" in self.ball:
+                self.ball.speed = self.ball.base_speed
+
+        if "speed_boost_timer" in self.ball:
+            self.ball.speed_boost_timer = sb_timer
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("speed_boost_timer", sb_timer)
 
 func _kite(delta: float):
     # Added Kite cosmetic comment
