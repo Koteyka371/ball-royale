@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-539] Weekend Multiplier Event — *2026-07-04 15:08:44 UTC*
+
+Introduce weekend events where daily login streak rewards and skill point gains from matches are temporarily multiplied, encouraging weekend activity.
+
+---
+
 ## [idea-537] Neon Disco Mode — *2026-07-04 14:55:57 UTC*
 
 A mode where floor panels light up with music rhythm, buffing or debuffing entities based on timing.

@@ -9316,7 +9316,7 @@
     },
     {
       "id": "idea-539",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weekend Multiplier Event",
@@ -15031,6 +15031,74 @@
         "src/ui/guild_wars.gd",
         "src/ai/guild_wars.py",
         "tests/test_guild_wars.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-875",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncy Terrain Feature",
+      "description": "Add dynamic terrain objects that act as trampolines. Balls colliding with them gain a temporary speed boost and ignore ground hazards for 2 seconds.",
+      "allowed_paths": [
+        "src/ai/bouncy_terrain_feature.py",
+        "src/ai/bouncy_terrain_feature.gd",
+        "tests/test_bouncy_terrain_feature.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-876",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Magnetic Polarity Shift",
+      "description": "A new hazard that toggles the polarity of nearby balls. Balls with same polarity repel each other, while balls with opposite polarity attract, adding chaotic physics interactions.",
+      "allowed_paths": [
+        "src/ai/magnetic_polarity_shift.py",
+        "src/ai/magnetic_polarity_shift.gd",
+        "tests/test_magnetic_polarity_shift.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-877",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncy Castles Mode",
+      "description": "An arena heavily populated with large bouncy platforms that propel balls high into the air. Hazards are primarily aerial (e.g. flying drones, lightning clouds). Players must manage their air time and bounces to survive.",
+      "allowed_paths": [
+        "src/ai/bouncy_castles.py",
+        "src/ai/bouncy_castles.gd",
+        "tests/test_bouncy_castles.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-878",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Paint the Floor Mode",
+      "description": "Every entity leaves a trail of their team's color. Stepping on your own color gives a speed and regen buff, while stepping on enemy colors causes slowdown and damage. Teams win by controlling the most territory.",
+      "allowed_paths": [
+        "src/ai/paint_the_floor.py",
+        "src/ai/paint_the_floor.gd",
+        "tests/test_paint_the_floor.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
