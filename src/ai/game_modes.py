@@ -4321,6 +4321,17 @@ class GravityWellMode(GameMode):
         super().tick(world, balls, delta)
         import random
 
+        # Update gravity well inversions
+        gw_hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") == "gravity_well"]
+        for gw in gw_hazards:
+            if not hasattr(gw, "invert_timer"):
+                gw.invert_timer = random.uniform(0.0, 5.0)
+                gw.is_inverted = False
+            gw.invert_timer -= delta
+            if gw.invert_timer <= 0:
+                gw.is_inverted = not gw.is_inverted
+                gw.invert_timer = random.uniform(3.0, 5.0)
+
         self.spawn_timer += delta
         if self.spawn_timer >= 5.0:
             self.spawn_timer = 0.0

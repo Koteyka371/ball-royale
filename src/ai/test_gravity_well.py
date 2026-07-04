@@ -50,3 +50,19 @@ def test_gravity_well_damage():
     # 10.0 damage * 0.1 delta = 1.0
     assert ball.hp < 100.0
     print(f"HP after gravity well: {ball.hp}")
+
+def test_gravity_well_inverted_push():
+    world = DummyWorld()
+    hazard = Hazard(id=1, x=1000.0, y=1000.0, radius=200.0, kind="gravity_well", damage=10.0)
+    hazard.is_inverted = True
+    world.arena.hazards = [hazard]
+
+    ball = DummyBall(x=1050.0, y=1050.0, radius=10.0)
+    action = Action(ball, world)
+
+    initial_dist = ((ball.x - 1000.0)**2 + (ball.y - 1000.0)**2)**0.5
+    action.execute("idle", 0.1)
+    final_dist = ((ball.x - 1000.0)**2 + (ball.y - 1000.0)**2)**0.5
+
+    print(f"Inverted Initial dist: {initial_dist}, Final dist: {final_dist}")
+    assert final_dist > initial_dist
