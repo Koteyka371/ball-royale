@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-543] Skill Re-activation (Teleport to Mimic) — *2026-07-04 15:51:25 UTC*
+
+When a ball has an active mimic clone on the field, casting the skill again could instantly swap the positions of the owner and the clone, allowing for advanced juking and escape mechanics.
+
+---
+
 ## [idea-442] Speed Burst Shoes — *2026-07-04 15:51:20 UTC*
 
 An item that drastically increases movement speed for a short duration while leaving a trail of fire.
