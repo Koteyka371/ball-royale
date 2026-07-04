@@ -7381,6 +7381,93 @@ class TimeRewindMode extends GameMode:
 			rewind_timer = 0.0
 
 
+
+class PolarityShiftMode extends GameMode:
+	var polarity_state = 1
+	var shift_timer = 0.0
+
+	func _init() -> void:
+		name = "Polarity Shift"
+		description = "The arena periodically reverses the polarity of the center, pushing balls out and pulling hazards in, then reversing."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		polarity_state = 1
+		shift_timer = 0.0
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		shift_timer += delta
+		if shift_timer >= 10.0:
+			shift_timer = 0.0
+			polarity_state *= -1
+			if "add_event" in world and world.has_method("add_event"):
+				var state_str = "pushing balls out!" if polarity_state == 1 else "pulling balls in!"
+				world.add_event("polarity_shift", {"message": "Center polarity reversed, " + state_str})
+
+		if not "arena" in world or world.arena == null:
+			return
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if "width" in world.arena:
+			arena_width = world.arena.width
+		if "height" in world.arena:
+			arena_height = world.arena.height
+
+		var cx = arena_width / 2.0
+		var cy = arena_height / 2.0
+		var force_mag = 150.0 * delta
+
+		for b in balls:
+			var is_dict = typeof(b) == TYPE_DICTIONARY
+			var alive = b.get("alive", true) if is_dict else b.alive
+			var b_type = b.get("ball_type", "") if is_dict else (b.ball_type if "ball_type" in b else "")
+
+			if alive and b_type != "spectator":
+				var bx = b.get("x", cx) if is_dict else b.x
+				var by = b.get("y", cy) if is_dict else b.y
+				var dx = bx - cx
+				var dy = by - cy
+				var dist = sqrt(dx*dx + dy*dy)
+
+				if dist > 0.1:
+					var dir_x = dx / dist
+					var dir_y = dy / dist
+					var move_x = dir_x * force_mag * polarity_state
+					var move_y = dir_y * force_mag * polarity_state
+
+					if is_dict:
+						b["x"] += move_x
+						b["y"] += move_y
+					else:
+						b.x += move_x
+						b.y += move_y
+
+		if "hazards" in world.arena:
+			for h in world.arena.hazards:
+				var is_h_dict = typeof(h) == TYPE_DICTIONARY
+				var hx = h.get("x", cx) if is_h_dict else h.x
+				var hy = h.get("y", cy) if is_h_dict else h.y
+				var dx = hx - cx
+				var dy = hy - cy
+				var dist = sqrt(dx*dx + dy*dy)
+
+				if dist > 0.1:
+					var dir_x = dx / dist
+					var dir_y = dy / dist
+					var move_x = -(dir_x * force_mag * polarity_state)
+					var move_y = -(dir_y * force_mag * polarity_state)
+
+					if is_h_dict:
+						h["x"] += move_x
+						h["y"] += move_y
+					else:
+						h.x += move_x
+						h.y += move_y
+
+
 var GAME_MODES = {
 	"meteor_shower": MeteorShowerMode.new(),
 
@@ -7395,6 +7482,7 @@ var GAME_MODES = {
     "stamina_regen": StaminaRegenMode.new(),
     "zero_gravity": ZeroGravityMode.new(),
     "magnetic_collisions": MagneticCollisionsMode.new(),
+    "polarity_shift": PolarityShiftMode.new(),
 	"day_night_mode": DayNightMode.new(),
 	"shifting_maze": ShiftingMazeMode.new(),
 	"stamina_speed": StaminaSpeedMode.new(),
