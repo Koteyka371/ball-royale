@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-532] Chain Lightning Relic — *2026-07-04 14:34:17 UTC*
+
+A consumable item that, upon use, strikes the nearest enemy with a lightning bolt that bounces to up to 3 additional nearby enemies, dealing decreasing damage with each jump. Useful for breaking up grouped opponents.
+
+---
+
 ## [idea-471] Decoy Explosion Fragmentation — *2026-07-04 14:32:09 UTC*
 
 When a Trickster decoy explodes, it sends out visual fragmentation projectiles that can bounce off walls. They deal no damage but cause temporary slow/stuttering and apply minor visual noise.

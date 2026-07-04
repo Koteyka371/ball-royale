@@ -9197,7 +9197,7 @@
     },
     {
       "id": "idea-532",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chain Lightning Relic",
@@ -14877,6 +14877,23 @@
         "src/ai/acid_rain_mutator.py",
         "src/ai/acid_rain_mutator.gd",
         "tests/test_acid_rain_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-866",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Switcharoo Traps",
+      "description": "Instead of exploding, some decoys can be configured to instantly swap the positions of all players caught in the blast radius.",
+      "allowed_paths": [
+        "src/arena/decoy_switcharoo_traps.py",
+        "src/arena/decoy_switcharoo_traps.gd",
+        "tests/test_decoy_switcharoo_traps.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
