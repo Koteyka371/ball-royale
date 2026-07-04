@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-410] Lightning Rod Ball Type — *2026-07-04 12:39:45 UTC*
+
+A new ball type that can absorb lightning strikes for health/speed boosts instead of taking damage, and attracts lightning away from allies.
+
+---
+
 ## [idea-521] Chain Lightning Stun Effect — *2026-07-04 12:39:42 UTC*
 
 Apply a micro-stun (0.2s) to entities hit by chain lightning.
