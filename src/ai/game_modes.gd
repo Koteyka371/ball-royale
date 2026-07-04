@@ -7585,6 +7585,44 @@ class PolarityShiftMode extends GameMode:
 						h.y += move_y
 
 
+
+class LunarEclipseEventMode extends GameMode:
+    var event_timer = 0.0
+    var event_active = false
+    var event_duration = 0.0
+
+    func _init():
+        name = "Lunar Eclipse Event"
+        description = "A rare Lunar Eclipse triggers briefly, granting all day and night buffs while disabling perception limits."
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        if not event_active:
+            event_timer += delta
+
+        if not event_active and event_timer > 30.0:
+            if randf() < 0.2:  # 20% chance every 30 seconds
+                event_active = true
+                event_duration = 10.0
+                event_timer = 0.0
+                if world != null and world.has_method("add_event"):
+                    world.add_event("lunar_eclipse_warning", {"type": "weather_warning", "message": "A LUNAR ECLIPSE HAS BEGUN!"})
+            else:
+                event_timer = 0.0
+
+        if event_active:
+            event_duration -= delta
+            if world != null and "arena" in world:
+                world.arena.is_lunar_eclipse = true
+                world.arena.is_eclipse = true
+
+            if event_duration <= 0:
+                event_active = false
+                if world != null and "arena" in world:
+                    world.arena.is_lunar_eclipse = false
+                    world.arena.is_eclipse = false
+                if world != null and world.has_method("add_event"):
+                    world.add_event("lunar_eclipse_end", {"type": "weather_warning", "message": "The lunar eclipse has ended."})
+
 var GAME_MODES = {
 	"meteor_shower": MeteorShowerMode.new(),
 
@@ -7626,6 +7664,7 @@ var GAME_MODES = {
 	"unstable_portals_event": UnstablePortalsEventMode.new(),
 	"minefield_event": MinefieldEventMode.new(),
     "weather_chaos": WeatherChaosMode.new(),
+	"lunar_eclipse_event": LunarEclipseEventMode.new(),
     "domination": DominationMode.new(),
     "black_hole": BlackHoleMode.new(),
     "gravity_well": GravityWellMode.new(),

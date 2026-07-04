@@ -6179,6 +6179,45 @@ class PolarityShiftMode(GameMode):
                     h.y -= dir_y * force_mag * self.polarity_state
 
 
+
+class LunarEclipseEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Lunar Eclipse Event"
+        self.description = "A rare Lunar Eclipse triggers briefly, granting all day and night buffs while disabling perception limits."
+        self.event_timer = 0.0
+        self.event_active = False
+        self.event_duration = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        if not self.event_active:
+            self.event_timer += delta
+
+        if not self.event_active and self.event_timer > 30.0:
+            import random
+            if random.random() < 0.2:  # 20% chance every 30 seconds
+                self.event_active = True
+                self.event_duration = 10.0
+                self.event_timer = 0.0
+                if hasattr(world, "add_event"):
+                    world.add_event("lunar_eclipse_warning", {"type": "weather_warning", "message": "A LUNAR ECLIPSE HAS BEGUN!"})
+            else:
+                self.event_timer = 0.0
+
+        if self.event_active:
+            self.event_duration -= delta
+            if hasattr(world, "arena"):
+                world.arena.is_lunar_eclipse = True
+                world.arena.is_eclipse = True
+
+            if self.event_duration <= 0:
+                self.event_active = False
+                if hasattr(world, "arena"):
+                    world.arena.is_lunar_eclipse = False
+                    world.arena.is_eclipse = False
+                if hasattr(world, "add_event"):
+                    world.add_event("lunar_eclipse_end", {"type": "weather_warning", "message": "The lunar eclipse has ended."})
+
 GAME_MODES = {
     "meteor_shower": MeteorShowerMode(),
 
@@ -6220,6 +6259,7 @@ GAME_MODES = {
     "unstable_portals_event": UnstablePortalsEventMode(),
     "minefield_event": MinefieldEventMode(),
     "weather_chaos": WeatherChaosMode(),
+    "lunar_eclipse_event": LunarEclipseEventMode(),
     "domination": DominationMode(),
     "black_hole": BlackHoleMode(),
     "gravity_well": GravityWellMode(),

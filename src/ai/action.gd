@@ -2121,11 +2121,44 @@ func execute(strategy: String, delta: float):
         # But wait, self.ball is usually a custom class instance.
 
     if my_ball.has_method("has_meta") and my_ball.has_meta("_base_speed_set"):
-        if self.world != null and "arena" in self.world and "is_night" in self.world.arena:
+        var is_night = false
+        var is_lunar = false
+        if self.world != null and "arena" in self.world:
+            if "is_night" in self.world.arena:
+                is_night = self.world.arena.is_night
+            if "is_lunar_eclipse" in self.world.arena:
+                is_lunar = self.world.arena.is_lunar_eclipse
+
+        if self.world != null and "arena" in self.world and ("is_night" in self.world.arena or "is_lunar_eclipse" in self.world.arena):
             var b_type_action = ""
             if "ball_type" in my_ball:
                 b_type_action = str(my_ball.ball_type).to_lower()
-            if self.world.arena.is_night:
+
+            if is_lunar:
+                if b_type_action == "vampire":
+                    if "speed" in my_ball:
+                        my_ball.speed = my_ball.get_meta("base_speed") * 1.5
+                    if "damage" in my_ball:
+                        my_ball.damage = my_ball.get_meta("base_damage") * 1.5
+                elif b_type_action == "assassin" or b_type_action == "phantom":
+                    if "speed" in my_ball:
+                        my_ball.speed = my_ball.get_meta("base_speed") * 1.2
+                    if "damage" in my_ball:
+                        my_ball.damage = my_ball.get_meta("base_damage") * 1.5
+                    if "has_stealth_drone" in my_ball:
+                        my_ball.has_stealth_drone = true
+                    my_ball.set_meta("has_stealth_drone", true)
+                elif b_type_action == "paladin" or b_type_action == "guardian":
+                    if "speed" in my_ball:
+                        my_ball.speed = my_ball.get_meta("base_speed") * 1.2
+                    if "damage" in my_ball:
+                        my_ball.damage = my_ball.get_meta("base_damage") * 1.5
+                else:
+                    if "speed" in my_ball:
+                        my_ball.speed = my_ball.get_meta("base_speed")
+                    if "damage" in my_ball:
+                        my_ball.damage = my_ball.get_meta("base_damage") * 1.2
+            elif is_night:
                 if b_type_action == "vampire":
                     if "speed" in my_ball:
                         my_ball.speed = my_ball.get_meta("base_speed") * 1.5
