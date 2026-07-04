@@ -9520,7 +9520,7 @@
     },
     {
       "id": "idea-551",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Empowerment Matrix Trap",
@@ -15576,6 +15576,57 @@
         "src/ai/vampiric_leech_balls.py",
         "src/ai/vampiric_leech_balls.gd",
         "tests/test_vampiric_leech_balls.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-907",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shield Blast",
+      "description": "When the reflect shield reaches its capacity or duration ends, it erupts, dealing a portion of the absorbed damage back in an AoE explosion.",
+      "allowed_paths": [
+        "src/ai/shield_blast.py",
+        "src/ai/shield_blast.gd",
+        "tests/test_shield_blast.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-908",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Cosmic Storm Mode",
+      "description": "A new game mode where the entire arena is occasionally bombarded by cosmic storms, forcing players to find temporary shelters or risk being heavily damaged. Shelters have limited capacity and are procedurally generated during the storm.",
+      "allowed_paths": [
+        "src/ai/cosmic_storm.py",
+        "src/ai/cosmic_storm.gd",
+        "tests/test_cosmic_storm.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-909",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Multi-Layer Reflect Shield",
+      "description": "A new upgrade allowing the reflect shield to block multiple instances of damage by breaking it into smaller capacity layers.",
+      "allowed_paths": [
+        "src/ai/multi_layer_reflect_shield.py",
+        "src/ai/multi_layer_reflect_shield.gd",
+        "tests/test_multi_layer_reflect_shield.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

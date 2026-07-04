@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-551] Empowerment Matrix Trap — *2026-07-04 18:16:34 UTC*
+
+A new hazard/trap that acts as a zone of empowerment. Allies stepping into the matrix receive temporary boosts to speed and damage, while enemies suffer a slow effect.
+
+---
+
 ## [idea-553] Reflect Shield Upgrades in Shop — *2026-07-04 18:00:21 UTC*
 
 Allow players to upgrade the max capacity of the reflect shield or its active duration via the prestige shop to increase survivability against burst damage.
