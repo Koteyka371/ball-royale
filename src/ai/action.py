@@ -2641,19 +2641,25 @@ class Action:
                         elif hazard.kind == "lightning_strike":
                             if not getattr(hazard, "hit_targets", False):
                                 hazard.hit_targets = True
-                                if hasattr(self.ball, "take_damage"):
-                                    self.ball.take_damage(hazard.damage * 2.0 if getattr(self.ball, "is_in_quicksand", False) else hazard.damage)
-                                elif hasattr(self.ball, "hp"):
-                                    self.ball.hp -= (hazard.damage * 2.0 if getattr(self.ball, "is_in_quicksand", False) else hazard.damage)
-                                    if self.ball.hp <= 0:
-                                        self.ball.alive = False
-                                if hasattr(self, "_spawn_skill_particles"):
-                                    self._spawn_skill_particles("lightning")
                                 b_type = getattr(self.ball, "ball_type", getattr(type(self.ball), "BALL_TYPE", "")).lower()
-                                if b_type in ["drone", "juggernaut", "tank", "neural"]:
+                                if b_type == "lightning_rod":
+                                    self.ball.hp = min(getattr(self.ball, "max_hp", 100), getattr(self.ball, "hp", 100) + hazard.damage)
                                     self.ball.supercharge_timer = 5.0
+                                    if hasattr(self, "_spawn_skill_particles"):
+                                        self._spawn_skill_particles("lightning")
                                 else:
-                                    self.ball.stutter_timer = 1.0 # Stun
+                                    if hasattr(self.ball, "take_damage"):
+                                        self.ball.take_damage(hazard.damage * 2.0 if getattr(self.ball, "is_in_quicksand", False) else hazard.damage)
+                                    elif hasattr(self.ball, "hp"):
+                                        self.ball.hp -= (hazard.damage * 2.0 if getattr(self.ball, "is_in_quicksand", False) else hazard.damage)
+                                        if self.ball.hp <= 0:
+                                            self.ball.alive = False
+                                    if hasattr(self, "_spawn_skill_particles"):
+                                        self._spawn_skill_particles("lightning")
+                                    if b_type in ["drone", "juggernaut", "tank", "neural"]:
+                                        self.ball.supercharge_timer = 5.0
+                                    else:
+                                        self.ball.stutter_timer = 1.0 # Stun
                             continue
                         elif hazard.kind == "breakable_wall":
                             # Clamp position manually
@@ -4842,6 +4848,17 @@ class Action:
 
             for ally in allies:
                 ally_skill = getattr(ally, "skill", getattr(ally, "SKILL", ""))
+                # Redirect lightning strike if enemy is lightning rod
+                if skill_name == "lightning_strike":
+                    nearby = self.world.get_nearby_entities(self.ball, 300)
+                    local_enemies = getattr(nearby, 'get', lambda k, d: [])('enemies', [])
+                    for local_enemy in local_enemies:
+                        a_type = getattr(local_enemy, "ball_type", getattr(type(local_enemy), "BALL_TYPE", "")).lower()
+                        if a_type == "lightning_rod":
+                            # Retarget towards lightning rod
+                            target = local_enemy
+                            break
+
                 # Synergy: elemental_burst (water) + lightning_strike OR fireball + smokescreen
                 if (skill_name == "elemental_burst" and ally_skill == "lightning_strike") or                    (skill_name == "lightning_strike" and ally_skill == "elemental_burst") or                    (skill_name == "fireball" and ally_skill == "smokescreen") or                    (skill_name == "smokescreen" and ally_skill == "fireball"):
                     if (self.ball.x - ally.x)**2 + (self.ball.y - ally.y)**2 < 40000:  # Distance check (radius 200)
