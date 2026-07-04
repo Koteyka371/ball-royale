@@ -1291,9 +1291,26 @@ class Action:
                 self.ball.is_dashing = True
                 self.ball.speed = self.ball.base_speed * 2.0
 
-        if hasattr(self.world, "arena") and getattr(self.world.arena, "is_night", None) is not None:
+        if hasattr(self.world, "arena") and (getattr(self.world.arena, "is_night", None) is not None or getattr(self.world.arena, "is_lunar_eclipse", False)):
             b_type = getattr(self.ball, "ball_type", "").lower()
-            if self.world.arena.is_night:
+            is_lunar = getattr(self.world.arena, "is_lunar_eclipse", False)
+            is_night = getattr(self.world.arena, "is_night", False)
+
+            if is_lunar:
+                if b_type == "vampire":
+                    self.ball.speed = self.ball.base_speed * 1.5
+                    self.ball.damage = getattr(self.ball, "base_damage", 10.0) * 1.5
+                elif b_type in ["assassin", "phantom"]:
+                    self.ball.speed = self.ball.base_speed * 1.2
+                    self.ball.damage = getattr(self.ball, "base_damage", 10.0) * 1.5
+                    self.ball.has_stealth_drone = True
+                elif b_type in ["paladin", "guardian"]:
+                    self.ball.speed = self.ball.base_speed * 1.2
+                    self.ball.damage = getattr(self.ball, "base_damage", 10.0) * 1.5
+                else:
+                    self.ball.speed = self.ball.base_speed
+                    self.ball.damage = getattr(self.ball, "base_damage", 10.0) * 1.2
+            elif is_night:
                 if b_type == "vampire":
                     self.ball.speed = self.ball.base_speed * 1.5
                     self.ball.damage = getattr(self.ball, "base_damage", 10.0) * 1.5
@@ -6722,7 +6739,27 @@ class Action:
                 self.ball.damage = base_d
 
             # Re-apply night mode base buffs if needed (just for vampire/normal)
-            if is_night:
+            is_lunar = hasattr(self.world, "arena") and getattr(self.world.arena, "is_lunar_eclipse", False)
+            if is_lunar:
+                if ball_type == "vampire":
+                    if stack_count >= 2: self.ball.speed = base_s * 1.5 * 1.1
+                    else: self.ball.speed = base_s * 1.5
+                    if stack_count >= 3: self.ball.damage = base_d * 1.5 * 1.2
+                    else: self.ball.damage = base_d * 1.5
+                elif ball_type in ["assassin", "phantom"]:
+                    if stack_count >= 2: self.ball.speed = base_s * 1.2 * 1.1
+                    else: self.ball.speed = base_s * 1.2
+                    if stack_count >= 3: self.ball.damage = base_d * 1.5 * 1.2
+                    else: self.ball.damage = base_d * 1.5
+                elif ball_type in ["paladin", "guardian"]:
+                    if stack_count >= 2: self.ball.speed = base_s * 1.2 * 1.1
+                    else: self.ball.speed = base_s * 1.2
+                    if stack_count >= 3: self.ball.damage = base_d * 1.5 * 1.2
+                    else: self.ball.damage = base_d * 1.5
+                else:
+                    if stack_count >= 3: self.ball.damage = base_d * 1.2 * 1.2
+                    else: self.ball.damage = base_d * 1.2
+            elif is_night:
                 if ball_type == "vampire":
                     if stack_count >= 2: self.ball.speed = base_s * 1.5 * 1.1
                     else: self.ball.speed = base_s * 1.5
