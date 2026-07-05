@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-613] Reflective Shield — *2026-07-05 19:48:25 UTC*
+
+A defensive skill that grants a temporary shield reflecting incoming damage back to attackers for a short duration.
+
+---
+
 ## [idea-601] Reverse Controls Mode — *2026-07-05 19:20:59 UTC*
 
 A game mode where all movement inputs for players (and AI logic calculations) are reversed, making movement completely counter-intuitive.

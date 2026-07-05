@@ -10578,7 +10578,7 @@
     },
     {
       "id": "idea-613",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Reflective Shield",
@@ -17093,6 +17093,23 @@
         "src/ai/double_tap_combo_ability.py",
         "src/ai/double_tap_combo_ability.gd",
         "tests/test_double_tap_combo_ability.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-996",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Echoes of the Past Hazard",
+      "description": "A hazard that intermittently records the positions of all entities in its radius. After a brief delay, it replays phantom clones that repeat the recorded movements and deal minor damage on contact.",
+      "allowed_paths": [
+        "src/arena/echoes_of_the_past.py",
+        "src/arena/echoes_of_the_past.gd",
+        "tests/test_echoes_of_the_past.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
