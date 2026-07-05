@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-608] Tag Team Mode — *2026-07-05 19:19:57 UTC*
+
+A new game mode where players queue as a team of two balls but only one is active at a time. The active ball can swap with their teammate using a tag mechanism, which could have a cooldown or require returning to a specific zone. This allows for strategic combinations of different ball types and requires careful management of both balls' health.
+
+---
+
 ## [idea-609] Reverse Safe Zone — *2026-07-05 19:19:53 UTC*
 
 A game mode where the safe zone expands outward from the center, and the center becomes dangerous. It forces players to move towards the edges of the map as the game progresses, completely changing standard battle royale dynamics.
