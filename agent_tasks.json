@@ -10203,7 +10203,7 @@
     },
     {
       "id": "idea-591",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Walls of Fire",
@@ -16445,6 +16445,40 @@
         "src/ai/sticky_walls.py",
         "src/ai/sticky_walls.gd",
         "tests/test_sticky_walls.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-958",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Blacksmith Mode",
+      "description": "Players can find and collect scattered anvil pieces to summon a powerful blacksmith boss that drops legendary loot.",
+      "allowed_paths": [
+        "src/ai/blacksmith.py",
+        "src/ai/blacksmith.gd",
+        "tests/test_blacksmith.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-959",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Elemental Crafter NPC",
+      "description": "A wandering NPC that grants elemental buffs (fire, ice, lightning) depending on which hazard it passes through.",
+      "allowed_paths": [
+        "src/ai/elemental_crafter_npc.py",
+        "src/ai/elemental_crafter_npc.gd",
+        "tests/test_elemental_crafter_npc.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

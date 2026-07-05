@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-591] Shrinking Walls of Fire — *2026-07-05 15:20:25 UTC*
+
+The edges of the arena slowly burn inwards. Any player touching the flaming boundary takes massive continuous damage. The safe zone shrinks down to a tiny dot by the end of the match.
+
+---
+
 ## [idea-577] Blacksmith NPC — *2026-07-05 14:56:43 UTC*
 
 A neutral NPC that wanders the arena and can upgrade your crafted artifacts if you protect them from hazards for 30 seconds.
