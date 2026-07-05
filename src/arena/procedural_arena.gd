@@ -236,7 +236,28 @@ func generate():
                 new_hazard.set_meta("powerup_type", powerups[rng.randi() % powerups.size()])
             if kind == "breakable_wall":
                 new_hazard.set_meta("hp", 100.0)
-            if rng.randf() < 0.5:
+            if rng.randf() < 0.3:
+                var chain_length = rng.randi_range(4, 10)
+                var speed = rng.randf_range(50.0, 150.0)
+                var angle = rng.randf_range(0.0, PI * 2)
+                var vx = cos(angle) * speed
+                var vy = sin(angle) * speed
+
+                new_hazard.set_meta("vx", vx)
+                new_hazard.set_meta("vy", vy)
+                hazards.append(new_hazard)
+
+                var prev_hazard = new_hazard
+                for j in range(1, chain_length):
+                    var linked_hazard = Hazard.new(hazards.size() + i * 1000 + j, s[0], s[1], radius, "bumper", 0.0)
+                    linked_hazard.set_meta("target_hazard_id", prev_hazard.id)
+                    linked_hazard.set_meta("chain_link", true)
+                    linked_hazard.set_meta("chain_distance", radius * 1.8)
+                    if new_hazard.has_meta("powerup_type"):
+                        linked_hazard.set_meta("powerup_type", new_hazard.get_meta("powerup_type"))
+                    hazards.append(linked_hazard)
+                    prev_hazard = linked_hazard
+            elif rng.randf() < 0.5:
                 var target = null
                 if hazards.size() > 0:
                     target = hazards[rng.randi_range(0, hazards.size() - 1)]
@@ -245,12 +266,13 @@ func generate():
                     new_hazard.set_meta("orbit_angle", rng.randf_range(0.0, PI * 2))
                     new_hazard.set_meta("orbit_radius", target.radius + radius + rng.randf_range(10.0, 50.0))
                     new_hazard.set_meta("orbit_speed", rng.randf_range(1.0, 3.0))
+                hazards.append(new_hazard)
             else:
                 var angle = rng.randf_range(0.0, PI * 2)
                 var speed = rng.randf_range(50.0, 150.0)
                 new_hazard.set_meta("vx", cos(angle) * speed)
                 new_hazard.set_meta("vy", sin(angle) * speed)
-            hazards.append(new_hazard)
+                hazards.append(new_hazard)
             continue
         elif kind == "quicksand":
             radius = rng.randf_range(40.0, 80.0)
@@ -711,7 +733,24 @@ func update_zone(current_tick: int, delta: float) -> void:
                         if "active" in h:
                             h.active = false
             elif "kind" in h and h.kind == "bumper":
-                if h.has_meta("target_hazard_id"):
+                if h.has_meta("chain_link") and h.get_meta("chain_link"):
+                    if h.has_meta("target_hazard_id"):
+                        var t_id = h.get_meta("target_hazard_id")
+                        var target = null
+                        for th in hazards:
+                            if th.id == t_id:
+                                target = th
+                                break
+                        if target != null:
+                            var dx = target.x - h.x
+                            var dy = target.y - h.y
+                            var dist = sqrt(dx * dx + dy * dy)
+                            if dist > 0.0001:
+                                var desired_dist = h.get_meta("chain_distance") if h.has_meta("chain_distance") else 60.0
+                                if dist > desired_dist:
+                                    h.x = target.x - (dx / dist) * desired_dist
+                                    h.y = target.y - (dy / dist) * desired_dist
+                elif h.has_meta("target_hazard_id"):
                     var t_id = h.get_meta("target_hazard_id")
                     var target = null
                     for th in hazards:

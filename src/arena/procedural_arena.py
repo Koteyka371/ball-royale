@@ -217,7 +217,29 @@ class ProceduralArena:
                     setattr(new_hazard, "powerup_type", random.choice(powerups))
                 if kind == "breakable_wall":
                     setattr(new_hazard, "hp", 100.0)
-                if random.random() < 0.5:
+                if random.random() < 0.3:
+                    # Create a chain of linked bumpers
+                    chain_length = random.randint(4, 10)
+                    speed = random.uniform(50.0, 150.0)
+                    angle = random.uniform(0, 3.14159 * 2)
+                    vx = math.cos(angle) * speed
+                    vy = math.sin(angle) * speed
+
+                    setattr(new_hazard, "vx", vx)
+                    setattr(new_hazard, "vy", vy)
+                    self.hazards.append(new_hazard)
+
+                    prev_hazard = new_hazard
+                    for j in range(1, chain_length):
+                        linked_hazard = Hazard(id=len(self.hazards) + i * 1000 + j, x=hx, y=hy, radius=radius, kind="bumper", damage=0.0)
+                        setattr(linked_hazard, "target_hazard_id", prev_hazard.id)
+                        setattr(linked_hazard, "chain_link", True)
+                        setattr(linked_hazard, "chain_distance", radius * 1.8)
+                        if hasattr(new_hazard, "powerup_type"):
+                            setattr(linked_hazard, "powerup_type", getattr(new_hazard, "powerup_type"))
+                        self.hazards.append(linked_hazard)
+                        prev_hazard = linked_hazard
+                elif random.random() < 0.5:
                     # Orbit another hazard
                     target = None
                     if len(self.hazards) > 0:
@@ -227,14 +249,14 @@ class ProceduralArena:
                         setattr(new_hazard, "orbit_angle", random.uniform(0, 3.14159 * 2))
                         setattr(new_hazard, "orbit_radius", target.radius + radius + random.uniform(10.0, 50.0))
                         setattr(new_hazard, "orbit_speed", random.uniform(1.0, 3.0))
+                    self.hazards.append(new_hazard)
                 else:
                     # Linear moving path with wall bounce
                     angle = random.uniform(0, 3.14159 * 2)
                     speed = random.uniform(50.0, 150.0)
                     setattr(new_hazard, "vx", math.cos(angle) * speed)
                     setattr(new_hazard, "vy", math.sin(angle) * speed)
-
-                self.hazards.append(new_hazard)
+                    self.hazards.append(new_hazard)
                 continue
             else:
                 radius = 15.0
@@ -609,7 +631,18 @@ class ProceduralArena:
                         if h.duration <= 0:
                             h.active = False
                 elif getattr(h, "kind", "") == "bumper":
-                    if hasattr(h, "target_hazard_id"):
+                    if getattr(h, "chain_link", False):
+                        if hasattr(h, "target_hazard_id"):
+                            target = next((x for x in self.hazards if x.id == h.target_hazard_id), None)
+                            if target:
+                                dx = target.x - h.x
+                                dy = target.y - h.y
+                                dist = math.sqrt(dx*dx + dy*dy)
+                                desired_dist = getattr(h, "chain_distance", 60.0)
+                                if dist > desired_dist:
+                                    h.x = target.x - (dx / dist) * desired_dist
+                                    h.y = target.y - (dy / dist) * desired_dist
+                    elif hasattr(h, "target_hazard_id"):
                         target = next((x for x in self.hazards if x.id == h.target_hazard_id), None)
                         if target:
                             h.orbit_angle += getattr(h, "orbit_speed", 1.0) * delta
