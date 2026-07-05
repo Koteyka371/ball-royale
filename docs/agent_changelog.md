@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-600] Quantum Mirror Shield — *2026-07-05 18:30:45 UTC*
+
+A defensive item that creates a temporary energy shield around the ball. While active, any projectiles or ranged attacks that hit the shield are reflected back towards the attacker with increased velocity, rewarding precise timing and punishing predictable ranged spam.
+
+---
+
 ## [idea-603] Day/Night Cyclic Global Vision Modifiers — *2026-07-05 18:30:42 UTC*
 
 Introduce global visibility shifts to all game modes by making it progressively darker during a night phase, reducing 'perception_radius' dynamically across all AI balls, except those carrying a 'Lantern' cosmetic or light-source booster. This allows ambush tactics at night.
