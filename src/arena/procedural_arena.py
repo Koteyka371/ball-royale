@@ -351,6 +351,36 @@ class ProceduralArena:
             self.hazards.append(w2)
 
 
+
+        # Generate quantum teleporters
+        num_quantum = max(1, self.num_rooms // 3)
+        for p in range(num_quantum):
+            q1_id = len(self.hazards) + 11000 + p*2
+            q2_id = len(self.hazards) + 11000 + p*2 + 1
+
+            q1_x, q1_y = self.get_random_spawn_point(30.0)
+
+            # Find distant point
+            q2_x, q2_y = self.get_random_spawn_point(30.0)
+            best_dist = (q1_x - q2_x)**2 + (q1_y - q2_y)**2
+            for _ in range(10):
+                tx, ty = self.get_random_spawn_point(30.0)
+                dist = (q1_x - tx)**2 + (q1_y - ty)**2
+                if dist > best_dist:
+                    best_dist = dist
+                    q2_x, q2_y = tx, ty
+
+            q1 = Hazard(id=q1_id, x=q1_x, y=q1_y, radius=30.0, kind="quantum_teleporter", damage=0.0)
+            q1.target_x = q2_x
+            q1.target_y = q2_y
+
+            q2 = Hazard(id=q2_id, x=q2_x, y=q2_y, radius=30.0, kind="quantum_teleporter", damage=0.0)
+            q2.target_x = q1_x
+            q2.target_y = q1_y
+
+            self.hazards.append(q1)
+            self.hazards.append(q2)
+
         # Generate random one-way teleporters
         num_oneway_teleporters = max(1, self.num_rooms // 2)
         for t in range(num_oneway_teleporters):

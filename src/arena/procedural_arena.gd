@@ -416,6 +416,36 @@ func generate():
             hazards.append(w2)
 
 
+
+    # Generate quantum teleporters
+    var num_quantum = max(1, num_rooms / 3)
+    for p in range(num_quantum):
+        var q1_id = hazards.size() + 11000 + p*2
+        var q2_id = hazards.size() + 11000 + p*2 + 1
+
+        var q1_pt = get_random_spawn_point(30.0)
+
+        # Find distant point
+        var q2_pt = get_random_spawn_point(30.0)
+        var best_dist = (q1_pt[0] - q2_pt[0])*(q1_pt[0] - q2_pt[0]) + (q1_pt[1] - q2_pt[1])*(q1_pt[1] - q2_pt[1])
+        for i in range(10):
+            var t_pt = get_random_spawn_point(30.0)
+            var dist = (q1_pt[0] - t_pt[0])*(q1_pt[0] - t_pt[0]) + (q1_pt[1] - t_pt[1])*(q1_pt[1] - t_pt[1])
+            if dist > best_dist:
+                best_dist = dist
+                q2_pt = t_pt
+
+        var q1 = ProceduralArena.Hazard.new(q1_id, q1_pt[0], q1_pt[1], 30.0, "quantum_teleporter", 0.0)
+        q1.set_meta("target_x", q2_pt[0])
+        q1.set_meta("target_y", q2_pt[1])
+
+        var q2 = ProceduralArena.Hazard.new(q2_id, q2_pt[0], q2_pt[1], 30.0, "quantum_teleporter", 0.0)
+        q2.set_meta("target_x", q1_pt[0])
+        q2.set_meta("target_y", q1_pt[1])
+
+        hazards.append(q1)
+        hazards.append(q2)
+
     # Generate random one-way teleporters
     var num_oneway_teleporters = max(1, num_rooms / 2)
     for t in range(num_oneway_teleporters):
