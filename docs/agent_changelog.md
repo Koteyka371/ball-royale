@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-582] Shrinking Safe Zones — *2026-07-05 12:40:49 UTC*
+
+Introduce a shrinking safe zone mechanic over time, forcing players towards the center of the arena. Taking damage when outside the zone increases as the zone shrinks.
+
+---
+
 ## [idea-338-2] Pinball Game Mode — *2026-07-05 12:40:45 UTC*
 
 A game mode where the arena is mostly filled with bumpers, bounce pads, and flippers. Balls deal reduced damage with basic attacks, but slamming an enemy into a hazard deals massive bonus damage.
