@@ -972,3 +972,49 @@ def test_bouncy_terrain_mode():
     # and not deal damage
     assert ball.hp == 100
     assert abs(ball.vx) > 150 # speed multiplied by 2.0 and randomized angle slightly, so abs(vx) should be significantly higher than 100
+
+def test_battle_royale_final_boss_spawn():
+    mode = BattleRoyaleMode()
+    world = MockWorld()
+    if not hasattr(world, "events"):
+        world.events = []
+
+    if not hasattr(world, "add_event"):
+        def add_event(type, data):
+            world.events.append((type, data))
+        world.add_event = add_event
+
+    class MockArena:
+        def __init__(self):
+            self.width = 1000
+            self.height = 1000
+            self.hazards = []
+    world.arena = MockArena()
+    world.balls = []
+    balls = [MockBall(1, "warrior")]
+
+    mode.setup(world, balls)
+
+    mode.tick(world, balls, delta=75.0)
+
+    assert mode.final_boss_spawned == True
+
+    bosses = [b for b in world.balls if getattr(b, "is_final_boss", False)]
+    assert len(bosses) == 1
+    boss = bosses[0]
+
+    assert boss.team == "Boss"
+    assert boss.max_hp == 3000.0
+
+    boss.hp = 0
+    boss.alive = False
+    boss.killer_id = 1
+
+    balls.append(boss)
+
+    mode.tick(world, balls, delta=1.0)
+
+    defeated_events = [e for e in world.events if e[0] == "boss_defeated"]
+    assert len(defeated_events) == 1
+    assert defeated_events[0][1]["killer_id"] == 1
+    assert defeated_events[0][1]["points"] == 5000
