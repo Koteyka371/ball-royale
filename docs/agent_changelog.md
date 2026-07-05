@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-603] Day/Night Cyclic Global Vision Modifiers — *2026-07-05 18:30:42 UTC*
+
+Introduce global visibility shifts to all game modes by making it progressively darker during a night phase, reducing 'perception_radius' dynamically across all AI balls, except those carrying a 'Lantern' cosmetic or light-source booster. This allows ambush tactics at night.
+
+---
+
 ## [idea-526] Quantum Swap Trap — *2026-07-05 18:11:26 UTC*
 
 A rare hazard that, when stepped on by a ball, instantly swaps the positions of that ball and a randomly chosen enemy, creating sudden ambushes or miraculous escapes.

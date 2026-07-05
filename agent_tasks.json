@@ -10407,7 +10407,7 @@
     },
     {
       "id": "idea-603",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Day/Night Cyclic Global Vision Modifiers",
@@ -16787,6 +16787,142 @@
         "src/ai/chain_lightning_tether.py",
         "src/ai/chain_lightning_tether.gd",
         "tests/test_chain_lightning_tether.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-978",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Confusion Aura",
+      "description": "An area of effect aura around decoy clones that periodically scrambles the AI logic (flips targeting priorities from enemy to closest ally) of enemies caught within it, causing temporary friendly fire instances during chaotic brawls.",
+      "allowed_paths": [
+        "src/ai/decoy_confusion_aura.py",
+        "src/ai/decoy_confusion_aura.gd",
+        "tests/test_decoy_confusion_aura.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-979",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Phase Shift Hazard",
+      "description": "A hazard that makes the triggering ball ethereal for 5 seconds. Ethereal balls can pass through walls and hazards but cannot attack or use skills.",
+      "allowed_paths": [
+        "src/arena/phase_shift.py",
+        "src/arena/phase_shift.gd",
+        "tests/test_phase_shift.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-980",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Paddle Mode",
+      "description": "Combine black holes and paddles: The sweeping paddles pull players in with gravity while moving, forcing players to fight immense suction before getting launched at high speeds upon contact.",
+      "allowed_paths": [
+        "src/ai/black_hole_paddle.py",
+        "src/ai/black_hole_paddle.gd",
+        "tests/test_black_hole_paddle.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-981",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Lightning Rod Deployable",
+      "description": "A new active item 'lightning_rod_item' that players can drop during thunderstorms. It attracts all nearby lightning strikes to its location and charges up, eventually detonating in a massive chain-lightning EMP blast that disables shields and abilities.",
+      "allowed_paths": [
+        "src/ai/lightning_rod_deployable.py",
+        "src/ai/lightning_rod_deployable.gd",
+        "tests/test_lightning_rod_deployable.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-982",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Voodoo Doll Trap",
+      "description": "A trap that links the triggering ball's HP to a random enemy for 10 seconds. Any damage taken by the triggerer is also dealt to the linked enemy.",
+      "allowed_paths": [
+        "src/arena/voodoo_doll_trap.py",
+        "src/arena/voodoo_doll_trap.gd",
+        "tests/test_voodoo_doll_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-983",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Corrosive Acid Rain Weather",
+      "description": "Introduce a new 'acid_rain' weather condition that slowly degrades the armor and max HP of metallic or heavily armored balls over time, while occasionally spawning neutralizing puddles that players can fight over to wash off the acid.",
+      "allowed_paths": [
+        "src/ai/corrosive_acid_rain.py",
+        "src/ai/corrosive_acid_rain.gd",
+        "tests/test_corrosive_acid_rain.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-984",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Laser Grid Sweepers",
+      "description": "Similar to Sweeping Paddles, but instead of physical bouncing paddles, they are solid beam lasers that deal high continuous damage if players touch them, creating intense dodging gameplay.",
+      "allowed_paths": [
+        "src/ai/laser_grid_sweepers.py",
+        "src/ai/laser_grid_sweepers.gd",
+        "tests/test_laser_grid_sweepers.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-985",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Explosive Knockback Cascade",
+      "description": "Enhance standard explosion events (like decoy or mine explosions) to apply significant physics knockback to surviving entities, pushing them outward. If knocked entities collide heavily with a wall or another entity, it triggers a secondary, smaller stun explosion, creating a cascading crowd control effect.",
+      "allowed_paths": [
+        "src/ai/explosive_knockback_cascade.py",
+        "src/ai/explosive_knockback_cascade.gd",
+        "tests/test_explosive_knockback_cascade.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
