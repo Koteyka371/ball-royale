@@ -9165,7 +9165,205 @@ class ScramblerDroneMode extends GameMode:
 					new_hazards.append(h)
 			world.arena.hazards = new_hazards
 
+class ArtifactUpgraderMode extends GameMode:
+	var npc = null
+
+	func _init() -> void:
+		name = "Artifact Upgrader"
+		description = "Protect the wandering crafter NPC from hazards for 30 seconds to upgrade your artifacts!"
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if not "dead_balls" in world:
+			world.dead_balls = []
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world.get("arena") != null:
+			if world.arena.get("width") != null:
+				arena_width = world.arena.width
+			if world.arena.get("height") != null:
+				arena_height = world.arena.height
+
+		npc = {
+			"x": arena_width / 2.0,
+			"y": arena_height / 2.0,
+			"vx": randf_range(-50.0, 50.0),
+			"vy": randf_range(-50.0, 50.0),
+			"radius": 30.0,
+			"max_hp": 500.0,
+			"hp": 500.0,
+			"alive": true,
+			"team": "Neutral",
+			"ball_type": "crafter_npc",
+			"is_invulnerable": false,
+			"has_method": Callable(func(method_name): return false)
+		}
+
+		if world.get("arena") == null:
+			world.arena = {}
+
+		if not "hazards" in world.arena:
+			world.arena.hazards = []
+
+		for i in range(5):
+			world.arena.hazards.append({
+				"x": randf_range(100.0, arena_width - 100.0),
+				"y": randf_range(100.0, arena_height - 100.0),
+				"radius": 40.0,
+				"damage": 10.0,
+				"kind": "damage_zone"
+			})
+
+		for b in balls:
+			if b.get("ball_type") != "spectator":
+				if b.has_method("set_meta"):
+					b.set_meta("npc_protection_time", 0.0)
+					b.set_meta("artifact_upgraded", false)
+				elif typeof(b) == TYPE_DICTIONARY:
+					b["npc_protection_time"] = 0.0
+					b["artifact_upgraded"] = false
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if not "dead_balls" in world:
+			world.dead_balls = []
+
+		for b in balls:
+			if not b.get("alive", false):
+				if not b in world.dead_balls:
+					if b.has_method("set_meta"):
+						b.set_meta("time_since_death", 0.0)
+					elif typeof(b) == TYPE_DICTIONARY:
+						b["time_since_death"] = 0.0
+					world.dead_balls.append(b)
+				else:
+					var tsd = 0.0
+					if b.has_method("get_meta") and b.has_meta("time_since_death"):
+						tsd = b.get_meta("time_since_death")
+					elif typeof(b) == TYPE_DICTIONARY and b.has("time_since_death"):
+						tsd = b["time_since_death"]
+					tsd += delta
+					if b.has_method("set_meta"):
+						b.set_meta("time_since_death", tsd)
+					elif typeof(b) == TYPE_DICTIONARY:
+						b["time_since_death"] = tsd
+
+		if npc != null and npc.get("alive", false):
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if world.get("arena") != null:
+				if world.arena.get("width") != null:
+					arena_width = world.arena.width
+				if world.arena.get("height") != null:
+					arena_height = world.arena.height
+
+			npc["x"] += npc["vx"] * delta
+			npc["y"] += npc["vy"] * delta
+
+			if npc["x"] - npc["radius"] < 0:
+				npc["x"] = npc["radius"]
+				npc["vx"] *= -1
+			elif npc["x"] + npc["radius"] > arena_width:
+				npc["x"] = arena_width - npc["radius"]
+				npc["vx"] *= -1
+
+			if npc["y"] - npc["radius"] < 0:
+				npc["y"] = npc["radius"]
+				npc["vy"] *= -1
+			elif npc["y"] + npc["radius"] > arena_height:
+				npc["y"] = arena_height - npc["radius"]
+				npc["vy"] *= -1
+
+			var hazards = []
+			if world.get("arena") != null and world.arena.get("hazards") != null:
+				hazards = world.arena.hazards
+
+			for hz in hazards:
+				var hx = hz.get("x", 0)
+				var hy = hz.get("y", 0)
+				var hr = hz.get("radius", 0)
+				var h_dmg = hz.get("damage", 0)
+
+				var dx = npc["x"] - hx
+				var dy = npc["y"] - hy
+				var dist = sqrt(dx*dx + dy*dy)
+				if dist < npc["radius"] + hr:
+					npc["hp"] -= h_dmg * delta
+					if npc["hp"] <= 0:
+						npc["alive"] = false
+						npc["hp"] = 0
+
+			if npc["alive"]:
+				for b in balls:
+					if b.get("alive", false) and b.get("ball_type") != "spectator":
+						var bx = b.get("x", 0)
+						var by = b.get("y", 0)
+						var dx = bx - npc["x"]
+						var dy = by - npc["y"]
+						var dist = sqrt(dx*dx + dy*dy)
+
+						if dist < 150.0:
+							var p_time = 0.0
+							var upgraded = false
+
+							if b.has_method("get_meta"):
+								if b.has_meta("npc_protection_time"):
+									p_time = b.get_meta("npc_protection_time")
+								if b.has_meta("artifact_upgraded"):
+									upgraded = b.get_meta("artifact_upgraded")
+							elif typeof(b) == TYPE_DICTIONARY:
+								p_time = b.get("npc_protection_time", 0.0)
+								upgraded = b.get("artifact_upgraded", false)
+
+							p_time += delta
+
+							if b.has_method("set_meta"):
+								b.set_meta("npc_protection_time", p_time)
+							elif typeof(b) == TYPE_DICTIONARY:
+								b["npc_protection_time"] = p_time
+
+							if p_time >= 30.0 and not upgraded:
+								if b.has_method("set_meta"):
+									b.set_meta("artifact_upgraded", true)
+								elif typeof(b) == TYPE_DICTIONARY:
+									b["artifact_upgraded"] = true
+
+								var m_hp = b.get("max_hp", 100.0) * 1.5
+								if "max_hp" in b:
+									b.max_hp = m_hp
+								elif typeof(b) == TYPE_DICTIONARY:
+									b["max_hp"] = m_hp
+
+								if "hp" in b:
+									b.hp = m_hp
+								elif typeof(b) == TYPE_DICTIONARY:
+									b["hp"] = m_hp
+
+								var bdmg = b.get("base_damage", b.get("damage", 10.0)) * 1.5
+								if "base_damage" in b:
+									b.base_damage = bdmg
+								elif typeof(b) == TYPE_DICTIONARY:
+									b["base_damage"] = bdmg
+
+								if "damage" in b:
+									b.damage = bdmg
+								elif typeof(b) == TYPE_DICTIONARY:
+									b["damage"] = bdmg
+
+								var bspd = b.get("base_speed", b.get("speed", 100.0)) * 1.2
+								if "base_speed" in b:
+									b.base_speed = bspd
+								elif typeof(b) == TYPE_DICTIONARY:
+									b["base_speed"] = bspd
+
+								if "speed" in b:
+									b.speed = bspd
+								elif typeof(b) == TYPE_DICTIONARY:
+									b["speed"] = bspd
+
+
 var GAME_MODES = {
+	"artifact_upgrader": ArtifactUpgraderMode.new(),
 	"meteor_shower": MeteorShowerMode.new(),
 	"rolling_boulders": RollingBouldersMode.new(),
 	"scrambler_drones": ScramblerDroneMode.new()

@@ -7069,7 +7069,149 @@ class ScramblerDroneMode(GameMode):
             if h in world.arena.hazards:
                 world.arena.hazards.remove(h)
 
+class ArtifactUpgraderMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Artifact Upgrader"
+        self.description = "Protect the wandering crafter NPC from hazards for 30 seconds to upgrade your artifacts!"
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        import random
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        class NPCBall:
+            def __init__(self):
+                self.x = arena_width / 2.0
+                self.y = arena_height / 2.0
+                self.vx = random.uniform(-50, 50)
+                self.vy = random.uniform(-50, 50)
+                self.radius = 30.0
+                self.max_hp = 500.0
+                self.hp = 500.0
+                self.alive = True
+                self.team = "Neutral"
+                self.ball_type = "crafter_npc"
+                self.is_invulnerable = False
+
+        self.npc = NPCBall()
+
+        if not hasattr(world, "arena"):
+            class MockArena:
+                pass
+            world.arena = MockArena()
+
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        class SimpleHazard:
+            def __init__(self):
+                self.x = random.uniform(100, arena_width - 100)
+                self.y = random.uniform(100, arena_height - 100)
+                self.radius = 40.0
+                self.damage = 10.0
+                self.kind = "damage_zone"
+
+        for _ in range(5):
+            world.arena.hazards.append(SimpleHazard())
+
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator":
+                b.npc_protection_time = 0.0
+                b.artifact_upgraded = False
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+
+        if getattr(self, "npc", None) and getattr(self.npc, "alive", False):
+            arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+            arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+            self.npc.x += getattr(self.npc, "vx", 0) * delta
+            self.npc.y += getattr(self.npc, "vy", 0) * delta
+
+            if self.npc.x - self.npc.radius < 0:
+                self.npc.x = self.npc.radius
+                if hasattr(self.npc, "vx"): self.npc.vx *= -1
+            elif self.npc.x + self.npc.radius > arena_width:
+                self.npc.x = arena_width - self.npc.radius
+                if hasattr(self.npc, "vx"): self.npc.vx *= -1
+
+            if self.npc.y - self.npc.radius < 0:
+                self.npc.y = self.npc.radius
+                if hasattr(self.npc, "vy"): self.npc.vy *= -1
+            elif self.npc.y + self.npc.radius > arena_height:
+                self.npc.y = arena_height - self.npc.radius
+                if hasattr(self.npc, "vy"): self.npc.vy *= -1
+
+            import math
+            for hz in getattr(getattr(world, "arena", None), "hazards", []):
+                hx = getattr(hz, "x", 0)
+                hy = getattr(hz, "y", 0)
+                hr = getattr(hz, "radius", 0)
+                h_dmg = getattr(hz, "damage", 0)
+
+                dist = math.hypot(self.npc.x - hx, self.npc.y - hy)
+                if dist < self.npc.radius + hr:
+                    self.npc.hp -= h_dmg * delta
+                    if self.npc.hp <= 0:
+                        self.npc.alive = False
+                        self.npc.hp = 0
+
+            if self.npc.alive:
+                for b in balls:
+                    if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                        dist = math.hypot(getattr(b, "x", 0) - self.npc.x, getattr(b, "y", 0) - self.npc.y)
+                        if dist < 150.0:
+                            b.npc_protection_time = getattr(b, "npc_protection_time", 0.0) + delta
+                            if b.npc_protection_time >= 30.0 and not getattr(b, "artifact_upgraded", False):
+                                b.artifact_upgraded = True
+
+                                # upgrade stats
+                                mhp = getattr(b, "max_hp", 100) * 1.5
+                                b.max_hp = mhp
+                                b.hp = mhp
+
+                                b_dmg = getattr(b, "base_damage", getattr(b, "damage", 10)) * 1.5
+                                if hasattr(b, "base_damage"):
+                                    b.base_damage = b_dmg
+                                b.damage = b_dmg
+
+                                b_spd = getattr(b, "base_speed", getattr(b, "speed", 100)) * 1.2
+                                if getattr(b, "artifact_upgraded", False) and getattr(b, "_just_upgraded", False):
+                                    pass
+                                else:
+                                    b._just_upgraded = True
+                                    b_spd = getattr(b, "base_speed", getattr(b, "speed", 100)) * 1.2
+                                if not getattr(b, "_speed_upgraded", False):
+                                    if hasattr(b, "base_speed"):
+                                        b.base_speed = getattr(b, "base_speed", 100) * 1.2
+                                    b.speed = getattr(b, "speed", 100) * 1.2
+                                    b._speed_upgraded = True
+
+
+
+
+
+
+
+
+
+
 GAME_MODES = {
+    "artifact_upgrader": ArtifactUpgraderMode(),
     "meteor_shower": MeteorShowerMode(),
     "blizzard_mode": BlizzardMode(),
 
