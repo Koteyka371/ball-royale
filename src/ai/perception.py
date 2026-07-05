@@ -44,7 +44,10 @@ class Perception:
                 has_night_vision = True
             if getattr(self.ball, "ball_type", "") == "vampire":
                 has_night_vision = True
-            if str(getattr(self.ball, "cosmetic", "")).lower().replace(" ", "_") == "night_vision_goggles":
+            cosmetic_val = str(getattr(self.ball, "cosmetic", "")).lower().replace(" ", "_")
+            if cosmetic_val in ["night_vision_goggles", "lantern"]:
+                has_night_vision = True
+            if getattr(self.ball, "light_source_booster_timer", 0.0) > 0:
                 has_night_vision = True
 
             if getattr(self.world.arena, "is_lunar_eclipse", False):
@@ -55,7 +58,8 @@ class Perception:
                 perception_radius = max(perception_radius, 2000.0)
             elif self.world.arena.is_night:
                 if not has_night_vision:
-                    perception_radius = min(perception_radius, 100.0)
+                    night_ratio = getattr(self.world.arena, "night_ratio", 1.0)
+                    perception_radius = max(100.0, perception_radius * (1.0 - night_ratio * 0.8))
             else:
                 perception_radius = max(perception_radius, 2000.0)
 

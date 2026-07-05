@@ -4842,6 +4842,7 @@ class DayNightMode(GameMode):
                 self.active_sunlight_beams = [] # clear beams on phase change
 
             is_night = getattr(world.arena, "is_night", False)
+            world.arena.night_ratio = (self.timer / max(0.1, self.phase_duration)) if is_night else 0.0
 
             # Update and apply damage from active beams
             for beam in list(self.active_sunlight_beams):

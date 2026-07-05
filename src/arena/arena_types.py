@@ -1303,6 +1303,8 @@ class DayNightArena(ProceduralArena):
             self.day_night_timer = 0.0
             self.is_night = not self.is_night
 
+        self.night_ratio = (self.day_night_timer / max(0.1, self.phase_duration)) if self.is_night else 0.0
+
         if self.is_eclipse:
             self.eclipse_timer -= delta
             if self.eclipse_timer <= 0:
