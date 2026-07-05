@@ -2,11 +2,13 @@ class PreGameLobby:
     def __init__(self):
         self.selections = {}
         self.daily_quests = [
-            {"description": "Survive for 5 minutes", "reward": 50},
+            {"description": "Survive for 5 minutes", "reward": {"skill_points": 50, "material": "Iron Ore", "material_amount": 2}},
             {"description": "Defeat 10 enemies with sniper ball", "reward": 100},
             {"description": "Heal allies for 500 HP", "reward": 75},
-            {"description": "Win a Battle Royale match", "reward": 200},
-            {"description": "Deal 1000 damage in a single match", "reward": 150}
+            {"description": "Win a Battle Royale match", "reward": {"skill_points": 200, "cosmetic": "winner_crown"}},
+            {"description": "Deal 1000 damage in a single match", "reward": 150},
+            {"description": "Deal 10,000 damage", "reward": {"skill_points": 300, "prestige_tokens": 1}},
+            {"description": "Play 3 matches in the current weekly mutator mode", "reward": {"skill_points": 250, "cosmetic": "mutator_badge"}}
         ]
 
     def get_daily_quests(self):

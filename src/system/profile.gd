@@ -73,7 +73,7 @@ func load_profile():
         "clan_name": ""
     }
 
-func add_quest(quest_description: String, reward: int):
+func add_quest(quest_description: String, reward: Variant):
     if not data.has("quests"):
         data["quests"] = []
     data["quests"].append({
@@ -91,7 +91,19 @@ func complete_quest(quest_index: int) -> bool:
         var quest = data["quests"][quest_index]
         if not quest.get("completed", false):
             quest["completed"] = true
-            add_skill_points(quest["reward"])
+            var reward = quest.get("reward", 0)
+            if typeof(reward) == TYPE_DICTIONARY:
+                if reward.has("skill_points"):
+                    add_skill_points(reward["skill_points"])
+                if reward.has("cosmetic"):
+                    add_cosmetic(reward["cosmetic"])
+                if reward.has("prestige_tokens"):
+                    data["prestige_tokens"] = data.get("prestige_tokens", 0) + reward["prestige_tokens"]
+                if reward.has("material") and reward.has("material_amount"):
+                    add_material(reward["material"], reward["material_amount"])
+            else:
+                add_skill_points(reward)
+            save_profile()
             return true
     return false
 
