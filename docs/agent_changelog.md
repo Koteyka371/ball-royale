@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-571] Bumper Chains — *2026-07-05 15:59:14 UTC*
+
+Allow bumpers to link to one another creating long chains that sweep across the arena, functioning as a moving wall.
+
+---
+
 ## [idea-592] Quantum Entanglement Mode — *2026-07-05 15:42:52 UTC*
 
 Every player is randomly paired with another player in the arena. If one takes damage or gets a status effect, the other gets it too, regardless of distance.

@@ -9862,7 +9862,7 @@
     },
     {
       "id": "idea-571",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bumper Chains",
@@ -16566,6 +16566,23 @@
         "src/ai/new_weapon_repulsor_ray.py",
         "src/ai/new_weapon_repulsor_ray.gd",
         "tests/test_new_weapon_repulsor_ray.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-965",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Phantom Juggernaut Mode",
+      "description": "A game mode where one player is selected as the Phantom Juggernaut. They have highly increased stats but are permanently invisible. They can only be tracked by the trail of environmental destruction they leave behind or through echolocation skills.",
+      "allowed_paths": [
+        "src/ai/phantom_juggernaut.py",
+        "src/ai/phantom_juggernaut.gd",
+        "tests/test_phantom_juggernaut.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
