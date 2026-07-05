@@ -1869,6 +1869,27 @@ func execute(strategy: String, delta: float):
 			self.ball.silence_timer = max(0.0, st)
 	if (strategy == "flee" or strategy == "defend") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
+		if inv.has("laser_fence_item"):
+			if world != null and "arena" in world and "hazards" in world.arena:
+				var arena = world.arena
+				var trap_id = arena.hazards.size() + randi() % 10000
+				var trap = null
+				if load("res://src/arena/procedural_arena.gd") != null:
+					trap = load("res://src/arena/procedural_arena.gd").Hazard.new()
+					trap.id = trap_id
+					trap.x = self.ball.x
+					trap.y = self.ball.y
+					trap.radius = 10.0
+					trap.kind = "laser_fence_node"
+					trap.damage = 0.0
+					trap.set_meta("duration", 15.0)
+					trap.set_meta("owner_id", self.ball.id)
+					arena.hazards.append(trap)
+					inv.erase("laser_fence_item")
+					self.ball.set_meta("inventory", inv)
+
+	if (strategy == "flee" or strategy == "defend") and self.ball.has_meta("inventory"):
+		var inv = self.ball.get_meta("inventory")
 		if inv.has("placeable_trap"):
 			if world != null and "arena" in world and "hazards" in world.arena:
 				var arena = world.arena
@@ -9580,6 +9601,16 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "laser_fence_item":
+                if not self.ball.has_meta("inventory"):
+                    self.ball.set_meta("inventory", [])
+                var inv = self.ball.get_meta("inventory")
+                inv.append("laser_fence_item")
+                self.ball.set_meta("inventory", inv)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "exit_portal_item":
                 if not self.ball.has_meta("inventory"):
                     self.ball.set_meta("inventory", [])
@@ -13226,6 +13257,69 @@ func _update_skill_timer(delta: float):
                 var h_kind = ""
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
+                if h_kind == "laser_fence_node":
+                    var owner_id = null
+                    if "owner_id" in hazard: owner_id = hazard.owner_id
+                    elif hazard.has_method("get_meta") and hazard.has_meta("owner_id"): owner_id = hazard.get_meta("owner_id")
+
+                    var b_id = null
+                    if "id" in self.ball: b_id = self.ball.id
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): b_id = self.ball.get_meta("id")
+
+                    if owner_id != b_id and owner_id != null:
+                        for other_hazard in self.world.arena.hazards:
+                            var oh_kind = ""
+                            if "kind" in other_hazard: oh_kind = other_hazard.kind
+                            elif other_hazard.has_method("get_meta") and other_hazard.has_meta("kind"): oh_kind = other_hazard.get_meta("kind")
+
+                            if oh_kind == "laser_fence_node":
+                                var oh_owner_id = null
+                                if "owner_id" in other_hazard: oh_owner_id = other_hazard.owner_id
+                                elif other_hazard.has_method("get_meta") and other_hazard.has_meta("owner_id"): oh_owner_id = other_hazard.get_meta("owner_id")
+
+                                var h_id = -1
+                                if "id" in hazard: h_id = hazard.id
+                                elif hazard.has_method("get_meta") and hazard.has_meta("id"): h_id = hazard.get_meta("id")
+
+                                var oh_id = -1
+                                if "id" in other_hazard: oh_id = other_hazard.id
+                                elif other_hazard.has_method("get_meta") and other_hazard.has_meta("id"): oh_id = other_hazard.get_meta("id")
+
+                                if oh_owner_id == owner_id and oh_id > h_id:
+                                    var x1 = hazard.x if "x" in hazard else hazard.get_meta("x")
+                                    var y1 = hazard.y if "y" in hazard else hazard.get_meta("y")
+                                    var x2 = other_hazard.x if "x" in other_hazard else other_hazard.get_meta("x")
+                                    var y2 = other_hazard.y if "y" in other_hazard else other_hazard.get_meta("y")
+                                    var px = self.ball.x
+                                    var py = self.ball.y
+
+                                    var l2 = pow(x2 - x1, 2) + pow(y2 - y1, 2)
+                                    var dist = 0.0
+                                    if l2 == 0:
+                                        dist = sqrt(pow(px - x1, 2) + pow(py - y1, 2))
+                                    else:
+                                        var t = max(0.0, min(1.0, ((px - x1)*(x2 - x1) + (py - y1)*(y2 - y1)) / l2))
+                                        var proj_x = x1 + t * (x2 - x1)
+                                        var proj_y = y1 + t * (y2 - y1)
+                                        dist = sqrt(pow(px - proj_x, 2) + pow(py - proj_y, 2))
+
+                                    var radius = 10.0
+                                    if "radius" in self.ball: radius = self.ball.radius
+                                    elif self.ball.has_method("get_meta") and self.ball.has_meta("radius"): radius = self.ball.get_meta("radius")
+
+                                    if dist <= radius + 5.0:
+                                        var damage = 50.0 * delta
+                                        if "hp" in self.ball: self.ball.hp -= damage
+                                        elif self.ball.has_method("set_meta") and self.ball.has_meta("hp"): self.ball.set_meta("hp", self.ball.get_meta("hp") - damage)
+
+                                        var current_stun = 0.0
+                                        if "stun_timer" in self.ball: current_stun = self.ball.stun_timer
+                                        elif self.ball.has_method("get_meta") and self.ball.has_meta("stun_timer"): current_stun = self.ball.get_meta("stun_timer")
+
+                                        var new_stun = max(current_stun, 0.5)
+                                        if "stun_timer" in self.ball: self.ball.stun_timer = new_stun
+                                        elif self.ball.has_method("set_meta"): self.ball.set_meta("stun_timer", new_stun)
+
                 if h_kind == "pull_trap":
                     var owner_id = null
                     if "owner_id" in hazard: owner_id = hazard.owner_id

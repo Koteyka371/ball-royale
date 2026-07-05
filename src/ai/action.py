@@ -785,6 +785,16 @@ class Action:
                 self.world.arena.hazards.append(flare)
                 self.ball.inventory.remove("deployable_flare")
 
+        if strategy in ("flee", "defend") and hasattr(self.ball, "inventory") and "laser_fence_item" in self.ball.inventory:
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                from arena.procedural_arena import Hazard
+                node_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
+                fence_node = Hazard(node_id, self.ball.x, self.ball.y, 10.0, "laser_fence_node", 0.0)
+                setattr(fence_node, 'duration', 15.0)
+                setattr(fence_node, 'owner_id', getattr(self.ball, 'id', None))
+                self.world.arena.hazards.append(fence_node)
+                self.ball.inventory.remove("laser_fence_item")
+
         # Check inventory for traps to place if fleeing or defending
         if strategy in ("flee", "defend") and hasattr(self.ball, "inventory") and "placeable_trap" in self.ball.inventory:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -5616,6 +5626,13 @@ class Action:
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
+                elif getattr(nearest, "kind", None) == "laser_fence_item":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("laser_fence_item")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
                 elif getattr(nearest, "kind", None) == "exit_portal_item":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
@@ -7659,6 +7676,28 @@ class Action:
 
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for hazard in self.world.arena.hazards:
+                if getattr(hazard, "kind", "") == "laser_fence_node":
+                    if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
+                        owner_id = getattr(hazard, "owner_id", None)
+                        for other_hazard in self.world.arena.hazards:
+                            if getattr(other_hazard, "kind", "") == "laser_fence_node" and getattr(other_hazard, "owner_id", None) == owner_id and getattr(other_hazard, "id", -1) > getattr(hazard, "id", -1):
+                                import math
+                                x1, y1 = hazard.x, hazard.y
+                                x2, y2 = other_hazard.x, other_hazard.y
+                                px, py = self.ball.x, self.ball.y
+                                l2 = (x2 - x1)**2 + (y2 - y1)**2
+                                if l2 == 0:
+                                    dist = math.sqrt((px - x1)**2 + (py - y1)**2)
+                                else:
+                                    t = max(0, min(1, ((px - x1)*(x2 - x1) + (py - y1)*(y2 - y1)) / l2))
+                                    proj_x = x1 + t * (x2 - x1)
+                                    proj_y = y1 + t * (y2 - y1)
+                                    dist = math.sqrt((px - proj_x)**2 + (py - proj_y)**2)
+                                if dist <= getattr(self.ball, "radius", 10.0) + 5.0:
+                                    damage = 50.0 * delta
+                                    self.ball.hp = getattr(self.ball, "hp", 100.0) - damage
+                                    self.ball.stun_timer = max(getattr(self.ball, "stun_timer", 0.0), 0.5)
+
                 if getattr(hazard, "kind", "") == "pull_trap":
                     if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2

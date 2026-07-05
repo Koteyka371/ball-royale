@@ -1,0 +1,4 @@
+{
+  "title": "Dynamic Grid Overload",
+  "description": "If a player links more than 5 laser fence nodes together, they overload and explode simultaneously, dealing massive AoE damage in their vicinity and resetting the fence."
+}
