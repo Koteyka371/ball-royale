@@ -2148,6 +2148,51 @@ func execute(strategy: String, delta: float):
 						var dmg = hazard.damage if "damage" in hazard else 10.0
 						self.ball.take_damage(dmg * delta)
 
+			elif hazard.get("kind") == "position_swap_hazard":
+				if hazard.get("duration", 1.0) > 0:
+					var my_rad = 10.0
+					if "radius" in self.ball:
+						my_rad = float(self.ball.radius)
+					var h_rad = hazard.get("radius", 20.0)
+					var dist = sqrt(pow(self.ball.x - hazard.x, 2) + pow(self.ball.y - hazard.y, 2))
+
+					if dist <= h_rad + my_rad:
+						var enemies = []
+						if "balls" in world:
+							for b in world.balls:
+								if b.get("team") != self.ball.get("team") and b.get("hp", 1.0) > 0:
+									enemies.append(b)
+						if enemies.size() > 0:
+							var target = enemies[randi() % enemies.size()]
+							var current_tick = world.get("tick", 0)
+
+							var tx = target.x
+							var ty = target.y
+							target.x = self.ball.x
+							target.y = self.ball.y
+							self.ball.x = tx
+							self.ball.y = ty
+
+							if typeof(self.ball) == TYPE_DICTIONARY:
+								self.ball["last_teleport_tick"] = current_tick
+							else:
+								self.ball.set_meta("last_teleport_tick", current_tick)
+
+							if typeof(target) == TYPE_DICTIONARY:
+								target["last_teleport_tick"] = current_tick
+							else:
+								target.set_meta("last_teleport_tick", current_tick)
+
+							if typeof(hazard) == TYPE_DICTIONARY:
+								hazard["duration"] = 0.0
+							else:
+								hazard.duration = 0.0
+
+							if "events" in world:
+								world.events.append({"type": "teleport", "x": target.x, "y": target.y, "id": target.get("id", 0)})
+								world.events.append({"type": "teleport", "x": self.ball.x, "y": self.ball.y, "id": self.ball.get("id", 0)})
+							break
+
 			elif hazard.get("kind") == "vampiric_puddle":
 				var my_rad = 10.0
 				if "radius" in self.ball:

@@ -1,0 +1,4 @@
+{
+  "title": "Wormhole Trap Sequence",
+  "description": "Instead of a single swap, a triggered wormhole trap teleports the ball rapidly between 3-4 random locations across the arena in quick succession before depositing them at a final location. This could confuse enemies trying to track the target while briefly disorienting the player/AI."
+}

@@ -199,6 +199,8 @@ func generate():
             kind = "vortex"
         elif r < 0.9999:
             kind = "tall_grass"
+        elif r < 0.99995:
+            kind = "position_swap_hazard"
         else:
             kind = "switch"
 
@@ -216,6 +218,9 @@ func generate():
         elif kind == "hidden_trap":
             radius = rng.randf_range(20.0, 35.0)
             damage = 15.0
+        elif kind == "position_swap_hazard":
+            radius = 20.0
+            damage = 0.0
         elif kind == "magnet":
             radius = rng.randf_range(25.0, 45.0)
             damage = 0.0

@@ -940,6 +940,32 @@ class Action:
                         if hasattr(self.ball, "take_damage"):
                             self.ball.take_damage(getattr(hazard, "damage", 10.0) * delta)
 
+                elif getattr(hazard, "kind", "") == "position_swap_hazard":
+                    if getattr(hazard, "duration", 1.0) > 0:
+                        dist = math.hypot(self.ball.x - hazard.x, self.ball.y - hazard.y)
+                        if dist <= getattr(hazard, "radius", 20.0) + getattr(self.ball, "radius", 10.0):
+                            enemies = self._get_enemies()
+                            if enemies:
+                                import random
+                                target = random.choice(enemies)
+                                current_tick = getattr(self.world, "tick", 0)
+
+                                # Swap positions
+                                tx, ty = target.x, target.y
+                                target.x, target.y = self.ball.x, self.ball.y
+                                self.ball.x, self.ball.y = tx, ty
+
+                                # Enforce teleport cooldown and destroy hazard
+                                setattr(self.ball, "last_teleport_tick", current_tick)
+                                setattr(target, "last_teleport_tick", current_tick)
+                                hazard.duration = 0.0
+
+                                # Emit visual effects
+                                if hasattr(self.world, "events"):
+                                    self.world.events.append({"type": "teleport", "x": target.x, "y": target.y, "id": getattr(target, "id", 0)})
+                                    self.world.events.append({"type": "teleport", "x": self.ball.x, "y": self.ball.y, "id": getattr(self.ball, "id", 0)})
+                                break
+
                 elif getattr(hazard, "kind", "") == "vampiric_puddle":
                     dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
                     if dist <= getattr(hazard, "radius", 0.0) + getattr(self.ball, "radius", 10.0):
