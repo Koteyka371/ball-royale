@@ -25,6 +25,8 @@ class ClanManager:
 
         self.data["clans"][clan_name] = {
             "members": [creator_id],
+            "roles": {creator_id: "leader"},
+            "stash": {},
             "quests": [],
             "points": 0
         }
@@ -36,6 +38,9 @@ class ClanManager:
             clan = self.data["clans"][clan_name]
             if player_id not in clan["members"]:
                 clan["members"].append(player_id)
+                if "roles" not in clan:
+                    clan["roles"] = {}
+                clan["roles"][player_id] = "member"
                 self.save()
                 return True
         return False
@@ -45,10 +50,65 @@ class ClanManager:
             clan = self.data["clans"][clan_name]
             if player_id in clan["members"]:
                 clan["members"].remove(player_id)
+                if "roles" in clan and player_id in clan["roles"]:
+                    del clan["roles"][player_id]
                 if len(clan["members"]) == 0:
                     del self.data["clans"][clan_name]
                 self.save()
                 return True
+        return False
+
+    def set_member_role(self, clan_name, admin_id, target_id, new_role):
+        if clan_name in self.data["clans"]:
+            clan = self.data["clans"][clan_name]
+            if "roles" not in clan:
+                clan["roles"] = {m: "member" for m in clan["members"]}
+                if clan["members"]:
+                    clan["roles"][clan["members"][0]] = "leader"
+
+            admin_role = clan["roles"].get(admin_id, "member")
+            if admin_role == "leader" and target_id in clan["members"]:
+                clan["roles"][target_id] = new_role
+                self.save()
+                return True
+        return False
+
+    def deposit_to_stash(self, clan_name, player_id, item_name, amount):
+        if amount <= 0:
+            return False
+        if clan_name in self.data["clans"]:
+            clan = self.data["clans"][clan_name]
+            if player_id in clan["members"]:
+                if "stash" not in clan:
+                    clan["stash"] = {}
+                if item_name not in clan["stash"]:
+                    clan["stash"][item_name] = 0
+                clan["stash"][item_name] += amount
+                self.save()
+                return True
+        return False
+
+    def withdraw_from_stash(self, clan_name, player_id, item_name, amount):
+        if amount <= 0:
+            return False
+        if clan_name in self.data["clans"]:
+            clan = self.data["clans"][clan_name]
+            if player_id in clan["members"]:
+                if "roles" not in clan:
+                    clan["roles"] = {m: "member" for m in clan["members"]}
+                    if clan["members"]:
+                        clan["roles"][clan["members"][0]] = "leader"
+
+                role = clan["roles"].get(player_id, "member")
+                if role in ["leader", "officer"]:
+                    if "stash" not in clan:
+                        clan["stash"] = {}
+                    if clan["stash"].get(item_name, 0) >= amount:
+                        clan["stash"][item_name] -= amount
+                        if clan["stash"][item_name] == 0:
+                            del clan["stash"][item_name]
+                        self.save()
+                        return True
         return False
 
     def add_clan_quest(self, clan_name, description, required_progress):

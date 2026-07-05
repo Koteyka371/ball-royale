@@ -70,3 +70,43 @@ def test_clan_leaderboard(temp_clan_file):
     assert leaderboard[0]["points"] == 100
     assert leaderboard[1]["name"] == "Clan1"
     assert leaderboard[1]["points"] == 50
+
+def test_clan_roles_and_stash(temp_clan_file):
+    cm = ClanManager(temp_clan_file)
+    cm.create_clan("TradeClan", "leader1")
+    cm.join_clan("TradeClan", "member1")
+
+    # Check default roles
+    clan = cm.data["clans"]["TradeClan"]
+    assert clan["roles"]["leader1"] == "leader"
+    assert clan["roles"]["member1"] == "member"
+
+    # Leader promotes member
+    assert cm.set_member_role("TradeClan", "leader1", "member1", "officer") == True
+    assert clan["roles"]["member1"] == "officer"
+
+    # Member tries to promote (fails)
+    assert cm.set_member_role("TradeClan", "member1", "leader1", "member") == False
+
+    # Deposit items (anyone)
+    assert cm.deposit_to_stash("TradeClan", "member1", "wood", 50) == True
+    assert cm.deposit_to_stash("TradeClan", "leader1", "iron", 10) == True
+    assert clan["stash"]["wood"] == 50
+    assert clan["stash"]["iron"] == 10
+
+    # Demote member to regular member
+    assert cm.set_member_role("TradeClan", "leader1", "member1", "member") == True
+
+    # Member tries to withdraw (fails)
+    assert cm.withdraw_from_stash("TradeClan", "member1", "wood", 10) == False
+
+    # Leader withdraws
+    assert cm.withdraw_from_stash("TradeClan", "leader1", "wood", 20) == True
+    assert clan["stash"]["wood"] == 30
+
+    # Promote member to officer and withdraw
+    assert cm.set_member_role("TradeClan", "leader1", "member1", "officer") == True
+    assert cm.withdraw_from_stash("TradeClan", "member1", "wood", 30) == True
+
+    # Stash should not have 'wood' anymore
+    assert "wood" not in clan["stash"]

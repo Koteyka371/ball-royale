@@ -32,6 +32,8 @@ func create_clan(clan_name: String, creator_id: String) -> bool:
 
     data["clans"][clan_name] = {
         "members": [creator_id],
+        "roles": {creator_id: "leader"},
+        "stash": {},
         "quests": [],
         "points": 0
     }
@@ -43,6 +45,9 @@ func join_clan(clan_name: String, player_id: String) -> bool:
         var clan = data["clans"][clan_name]
         if not clan["members"].has(player_id):
             clan["members"].append(player_id)
+            if not clan.has("roles"):
+                clan["roles"] = {}
+            clan["roles"][player_id] = "member"
             save_clans()
             return true
     return false
@@ -52,10 +57,75 @@ func leave_clan(clan_name: String, player_id: String) -> bool:
         var clan = data["clans"][clan_name]
         if clan["members"].has(player_id):
             clan["members"].erase(player_id)
+            if clan.has("roles") and clan["roles"].has(player_id):
+                clan["roles"].erase(player_id)
             if clan["members"].size() == 0:
                 data["clans"].erase(clan_name)
             save_clans()
             return true
+    return false
+
+func set_member_role(clan_name: String, admin_id: String, target_id: String, new_role: String) -> bool:
+    if data["clans"].has(clan_name):
+        var clan = data["clans"][clan_name]
+        if not clan.has("roles"):
+            clan["roles"] = {}
+            for m in clan["members"]:
+                clan["roles"][m] = "member"
+            if clan["members"].size() > 0:
+                clan["roles"][clan["members"][0]] = "leader"
+
+        var admin_role = "member"
+        if clan["roles"].has(admin_id):
+            admin_role = clan["roles"][admin_id]
+
+        if admin_role == "leader" and clan["members"].has(target_id):
+            clan["roles"][target_id] = new_role
+            save_clans()
+            return true
+    return false
+
+func deposit_to_stash(clan_name: String, player_id: String, item_name: String, amount: int) -> bool:
+    if amount <= 0:
+        return false
+    if data["clans"].has(clan_name):
+        var clan = data["clans"][clan_name]
+        if clan["members"].has(player_id):
+            if not clan.has("stash"):
+                clan["stash"] = {}
+            if not clan["stash"].has(item_name):
+                clan["stash"][item_name] = 0
+            clan["stash"][item_name] += amount
+            save_clans()
+            return true
+    return false
+
+func withdraw_from_stash(clan_name: String, player_id: String, item_name: String, amount: int) -> bool:
+    if amount <= 0:
+        return false
+    if data["clans"].has(clan_name):
+        var clan = data["clans"][clan_name]
+        if clan["members"].has(player_id):
+            if not clan.has("roles"):
+                clan["roles"] = {}
+                for m in clan["members"]:
+                    clan["roles"][m] = "member"
+                if clan["members"].size() > 0:
+                    clan["roles"][clan["members"][0]] = "leader"
+
+            var role = "member"
+            if clan["roles"].has(player_id):
+                role = clan["roles"][player_id]
+
+            if role == "leader" or role == "officer":
+                if not clan.has("stash"):
+                    clan["stash"] = {}
+                if clan["stash"].has(item_name) and clan["stash"][item_name] >= amount:
+                    clan["stash"][item_name] -= amount
+                    if clan["stash"][item_name] == 0:
+                        clan["stash"].erase(item_name)
+                    save_clans()
+                    return true
     return false
 
 func add_clan_quest(clan_name: String, description: String, required_progress: int) -> bool:
