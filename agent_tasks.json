@@ -10526,7 +10526,7 @@
     },
     {
       "id": "idea-610",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Daily Quests",
@@ -17263,6 +17263,23 @@
         "src/arena/geyser_hazards.py",
         "src/arena/geyser_hazards.gd",
         "tests/test_geyser_hazards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1006",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Temporal Loop Zone",
+      "description": "A field that, when entered, records the player's position and HP for 3 seconds, then suddenly rewinds their state back to where they started the loop.",
+      "allowed_paths": [
+        "src/ai/temporal_loop_zone.py",
+        "src/ai/temporal_loop_zone.gd",
+        "tests/test_temporal_loop_zone.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-610] Daily Quests — *2026-07-05 21:29:57 UTC*
+
+Introduce daily quests to encourage players to log in every day. Quests could include tasks like 'Deal 10,000 damage', 'Survive for 5 minutes', or 'Play 3 matches in the current weekly mutator mode'. Completing quests would reward players with experience, currency, or cosmetic items.
+
+---
+
 ## [idea-557] Black Hole Generator Hazard — *2026-07-05 21:21:31 UTC*
 
 A new procedural hazard that pulls nearby balls towards its center, slowing them down and dealing damage over time.
