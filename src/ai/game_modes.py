@@ -7924,15 +7924,33 @@ class ReversedInputMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Reversed Input"
-        self.description = "All movement inputs for players and AI are reversed, making movement completely counter-intuitive."
+        self.description = "All movement inputs for players and AI are periodically reversed for 5 seconds, making movement completely counter-intuitive."
+        self.timer = 0.0
+        self.is_reversed = False
+        self.interval = 10.0
+        self.duration = 5.0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
-        for b in balls:
-            if getattr(b, "alive", False):
-                vx = getattr(b, "vx", 0.0)
-                vy = getattr(b, "vy", 0.0)
-                b.x -= vx * delta * 2
-                b.y -= vy * delta * 2
+        self.timer += delta
+
+        if not self.is_reversed and self.timer >= self.interval:
+            self.is_reversed = True
+            self.timer = 0.0
+            if hasattr(world, "add_event"):
+                world.add_event("reversed_input", {"message": "Controls reversed!"})
+        elif self.is_reversed and self.timer >= self.duration:
+            self.is_reversed = False
+            self.timer = 0.0
+            if hasattr(world, "add_event"):
+                world.add_event("reversed_input", {"message": "Controls normal."})
+
+        if self.is_reversed:
+            for b in balls:
+                if getattr(b, "alive", False):
+                    vx = getattr(b, "vx", 0.0)
+                    vy = getattr(b, "vy", 0.0)
+                    b.x -= vx * delta * 2
+                    b.y -= vy * delta * 2
 
 GAME_MODES["rolling_boulders"] = RollingBouldersMode()
 GAME_MODES["soul_link"] = SoulLinkMode()
