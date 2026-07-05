@@ -6094,7 +6094,7 @@ class PinballMode extends GameMode:
 				world.arena.hazards = []
 
 			if weather == "heatwave":
-				if randf() < 0.05 * delta:
+				if randf() < 0.05 * 0.016:
 					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
 					if Hazard:
 						var x = randf_range(100.0, world.arena.width - 100.0)
@@ -6104,7 +6104,7 @@ class PinballMode extends GameMode:
 						world.arena.hazards.append(fire)
 
 			if weather == "rain":
-				if randf() < 0.05 * delta:
+				if randf() < 0.05 * 0.016:
 					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
 					if Hazard:
 						var x = randf_range(100.0, world.arena.width - 100.0)
@@ -6112,6 +6112,7 @@ class PinballMode extends GameMode:
 						var mud_pit = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 60.0, "quicksand", 0.0)
 						mud_pit.set_meta("duration", 15.0)
 						world.arena.hazards.append(mud_pit)
+
 			var arena_width = 1000.0
 			var arena_height = 1000.0
 			if "width" in world.arena:
@@ -6120,20 +6121,157 @@ class PinballMode extends GameMode:
 				arena_height = world.arena.height
 
 			var HazardClass = load("res://src/arena/procedural_arena.gd").Hazard if ResourceLoader.exists("res://src/arena/procedural_arena.gd") else null
-			for i in range(20):
+			var hazard_kinds = ["bumper", "bounce_pad", "pinball_flipper"]
+			for i in range(25):
 				var x = randf_range(100.0, arena_width - 100.0)
 				var y = randf_range(100.0, arena_height - 100.0)
 				var radius = randf_range(30.0, 60.0)
+				var kind = hazard_kinds[randi() % hazard_kinds.size()]
 				if HazardClass != null:
-					var h = HazardClass.new(10000 + i, x, y, radius, "bumper", 0.0)
+					var h = HazardClass.new(10000 + i, x, y, radius, kind, 0.0)
 					world.arena.hazards.append(h)
 				else:
-					var h = {"id": 10000 + i, "x": x, "y": y, "radius": radius, "kind": "bumper", "damage": 0.0}
+					var h = {"id": 10000 + i, "x": x, "y": y, "radius": radius, "kind": kind, "damage": 0.0}
 					world.arena.hazards.append(h)
+
+		for b in balls:
+			var dmg = 10.0
+			if "damage" in b:
+				dmg = b.damage
+			elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("damage"):
+				dmg = b.get_meta("damage")
+
+			if typeof(b) == TYPE_DICTIONARY:
+				b["_original_damage"] = dmg
+				b["damage"] = dmg * 0.25
+				b["base_damage"] = b.get("base_damage", dmg) * 0.25
+			elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+				b.set_meta("_original_damage", dmg)
+				b.set_meta("damage", dmg * 0.25)
+				var b_dmg = dmg
+				if b.has_meta("base_damage"): b_dmg = b.get_meta("base_damage")
+				elif "base_damage" in b: b_dmg = b.base_damage
+				b.set_meta("base_damage", b_dmg * 0.25)
+			elif "damage" in b:
+				b._original_damage = dmg
+				b.damage = dmg * 0.25
+				var b_dmg = dmg
+				if "base_damage" in b: b_dmg = b.base_damage
+				b.base_damage = b_dmg * 0.25
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 		super.tick(world, balls, delta)
 
+		var hazards = []
+		if "arena" in world and world.arena != null and "hazards" in world.arena:
+			for h in world.arena.hazards:
+				var kind = ""
+				if "kind" in h:
+					kind = h.kind
+				elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("kind"):
+					kind = h.get_meta("kind")
+				if kind in ["bumper", "bounce_pad", "pinball_flipper"]:
+					hazards.append(h)
+
+		for b in balls:
+			var alive = false
+			if "alive" in b:
+				alive = b.alive
+			elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive"):
+				alive = b.get_meta("alive")
+
+			if alive:
+				var last_hit_timer = 0.0
+				var hazard_slam_cd = 0.0
+
+				if typeof(b) == TYPE_OBJECT and b.has_method("get_meta"):
+					if b.has_meta("_last_hit_by_timer"): last_hit_timer = b.get_meta("_last_hit_by_timer")
+					if b.has_meta("_hazard_slam_cd"): hazard_slam_cd = b.get_meta("_hazard_slam_cd")
+				elif typeof(b) == TYPE_DICTIONARY:
+					if b.has("_last_hit_by_timer"): last_hit_timer = b["_last_hit_by_timer"]
+					if b.has("_hazard_slam_cd"): hazard_slam_cd = b["_hazard_slam_cd"]
+
+				if last_hit_timer > 0:
+					last_hit_timer -= delta
+				if hazard_slam_cd > 0:
+					hazard_slam_cd -= delta
+
+				if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+					b.set_meta("_last_hit_by_timer", last_hit_timer)
+					b.set_meta("_hazard_slam_cd", hazard_slam_cd)
+				elif typeof(b) == TYPE_DICTIONARY:
+					b["_last_hit_by_timer"] = last_hit_timer
+					b["_hazard_slam_cd"] = hazard_slam_cd
+
+				if last_hit_timer > 0 and hazard_slam_cd <= 0:
+					var b_rad = 10.0
+					if "radius" in b:
+						b_rad = b.radius
+					elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("radius"):
+						b_rad = b.get_meta("radius")
+					elif typeof(b) == TYPE_DICTIONARY and b.has("radius"):
+						b_rad = b["radius"]
+
+					var b_x = 0.0
+					var b_y = 0.0
+					if "x" in b: b_x = b.x
+					elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("x"): b_x = b.get_meta("x")
+					elif typeof(b) == TYPE_DICTIONARY and b.has("x"): b_x = b["x"]
+
+					if "y" in b: b_y = b.y
+					elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("y"): b_y = b.get_meta("y")
+					elif typeof(b) == TYPE_DICTIONARY and b.has("y"): b_y = b["y"]
+
+					for h in hazards:
+						var h_rad = 10.0
+						if "radius" in h: h_rad = h.radius
+						elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("radius"): h_rad = h.get_meta("radius")
+						elif typeof(h) == TYPE_DICTIONARY and h.has("radius"): h_rad = h["radius"]
+
+						var h_x = 0.0
+						var h_y = 0.0
+						if "x" in h: h_x = h.x
+						elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("x"): h_x = h.get_meta("x")
+						elif typeof(h) == TYPE_DICTIONARY and h.has("x"): h_x = h["x"]
+
+						if "y" in h: h_y = h.y
+						elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("y"): h_y = h.get_meta("y")
+						elif typeof(h) == TYPE_DICTIONARY and h.has("y"): h_y = h["y"]
+
+						var dx = b_x - h_x
+						var dy = b_y - h_y
+						var dist = sqrt(dx*dx + dy*dy)
+
+						if dist < b_rad + h_rad:
+							var bonus_damage = 50.0
+							var cur_hp = 0.0
+							if "hp" in b: cur_hp = b.hp
+							elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("hp"): cur_hp = b.get_meta("hp")
+							elif typeof(b) == TYPE_DICTIONARY and b.has("hp"): cur_hp = b["hp"]
+
+							cur_hp -= bonus_damage
+
+							var last_hitter = "hazard"
+							if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("_last_hit_by_id"): last_hitter = b.get_meta("_last_hit_by_id")
+							elif typeof(b) == TYPE_DICTIONARY and b.has("_last_hit_by_id"): last_hitter = b["_last_hit_by_id"]
+
+							if "hp" in b: b.set("hp", cur_hp)
+							elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("hp", cur_hp)
+							elif typeof(b) == TYPE_DICTIONARY: b["hp"] = cur_hp
+
+							if cur_hp <= 0:
+								if "alive" in b: b.set("alive", false)
+								elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("alive", false)
+								elif typeof(b) == TYPE_DICTIONARY: b["alive"] = false
+
+								if "killer" in b: b.set("killer", last_hitter)
+								elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("killer", last_hitter)
+								elif typeof(b) == TYPE_DICTIONARY: b["killer"] = last_hitter
+
+							if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("_hazard_slam_cd", 1.0)
+							elif typeof(b) == TYPE_DICTIONARY: b["_hazard_slam_cd"] = 1.0
+
+							break
 
 class MirrorWallsMode extends GameMode:
     func _init():
