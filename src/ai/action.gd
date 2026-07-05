@@ -3289,6 +3289,34 @@ func execute(strategy: String, delta: float):
                                                         owner.set_meta("score", 5)
                                                     break
 
+                        var pull_radius = 150.0
+                        if "balls" in world:
+                            for other in world.balls:
+                                var other_alive = false
+                                if "alive" in other:
+                                    other_alive = other.alive
+                                elif other.has_method("get_meta") and other.has_meta("alive"):
+                                    other_alive = other.get_meta("alive")
+
+                                var other_team = ""
+                                if "team" in other:
+                                    other_team = other.team
+
+                                var other_id = -1
+                                if "id" in other:
+                                    other_id = other.id
+                                elif other.has_method("get_meta") and other.has_meta("id"):
+                                    other_id = other.get_meta("id")
+
+                                if other_alive and other_team != b_team and other_id != b_id:
+                                    var dx_other = other.x - b.x
+                                    var dy_other = other.y - b.y
+                                    var dist_other = sqrt(dx_other*dx_other + dy_other*dy_other)
+                                    if dist_other <= pull_radius and dist_other > 0.0001:
+                                        var pull_strength = 60.0
+                                        other.x -= (dx_other/dist_other) * pull_strength
+                                        other.y -= (dy_other/dist_other) * pull_strength
+
                         if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
                             if world.arena.has_method("get"):
                                 var ScriptType = load("res://src/arena/procedural_arena.gd")
