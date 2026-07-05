@@ -105,3 +105,25 @@ def test_supercharge_non_robotic():
     assert getattr(ball, "supercharge_timer", 0.0) == 0.0
     # It should be stunned (1.0 - 0.1 = 0.9)
     assert getattr(ball, "stutter_timer", 0.0) == 0.9
+
+def test_supercharge_metal():
+    ball = MockBall(ball_type="knight", speed=2.0, damage=10.0)
+    # Give the ball "metal" trait or "armor" trait
+    ball.traits = ["metal"]
+    world = MockWorld()
+    world.balls.append(ball)
+
+    action = Action(ball, world)
+    action._base_speed_set = True
+
+    lightning = MockHazard(kind="lightning_strike", damage=50.0, radius=30.0, x=0.0, y=0.0)
+    world.arena.hazards.append(lightning)
+
+    delta = 0.1
+    action.execute("idle", delta)
+
+    # Ball should get supercharge because of "metal" trait
+    assert getattr(ball, "supercharge_timer", 0.0) == pytest.approx(4.9)
+    assert getattr(ball, "stutter_timer", 0.0) == 0.0
+    # Also speed buff
+    assert getattr(ball, "speed_buff_timer", 0.0) == pytest.approx(3.0)

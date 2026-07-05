@@ -3379,8 +3379,9 @@ class Action:
                                             self.ball.alive = False
                                     if hasattr(self, "_spawn_skill_particles"):
                                         self._spawn_skill_particles("lightning")
-                                    if b_type in ["drone", "juggernaut", "tank", "neural"]:
+                                    if b_type in ["drone", "juggernaut", "tank", "neural"] or "metal" in b_type or "armor" in b_type or "metal" in getattr(self.ball, "traits", []) or "armor" in getattr(self.ball, "traits", []):
                                         self.ball.supercharge_timer = 5.0
+                                        self.ball.speed_buff_timer = getattr(self.ball, "speed_buff_timer", 0.0) + 3.0 # Speed boost
                                     else:
                                         self.ball.stutter_timer = 1.0 # Stun
                             continue

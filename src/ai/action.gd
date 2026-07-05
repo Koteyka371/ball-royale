@@ -5605,13 +5605,31 @@ func execute(strategy: String, delta: float):
                                 if has_method("_spawn_particles"):
                                     _spawn_particles(self.ball.x, self.ball.y, "lightning")
 
-                                if b_type in ["drone", "juggernaut", "tank", "neural"]:
+                                var is_metal = false
+                                var traits = []
+                                if "traits" in self.ball: traits = self.ball.traits
+                                elif self.ball.has_method("has_meta") and self.ball.has_meta("traits"): traits = self.ball.get_meta("traits")
+                                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("traits"): traits = self.ball["traits"]
+                                if "metal" in b_type or "armor" in b_type or "metal" in traits or "armor" in traits:
+                                    is_metal = true
+
+                                if b_type in ["drone", "juggernaut", "tank", "neural"] or is_metal:
                                     if self.ball.has_method("set_meta"):
                                         self.ball.set_meta("supercharge_timer", 5.0)
+                                        var sb = self.ball.get_meta("speed_buff_timer") if self.ball.has_meta("speed_buff_timer") else 0.0
+                                        self.ball.set_meta("speed_buff_timer", sb + 3.0)
                                     elif "supercharge_timer" in self.ball:
                                         self.ball.supercharge_timer = 5.0
+                                        var curr_sb = 0.0
+                                        if "speed_buff_timer" in self.ball:
+                                            curr_sb = self.ball.speed_buff_timer
+                                        self.ball.speed_buff_timer = curr_sb + 3.0
                                     else:
                                         self.ball["supercharge_timer"] = 5.0
+                                        var curr_sb = 0.0
+                                        if "speed_buff_timer" in self.ball:
+                                            curr_sb = self.ball["speed_buff_timer"]
+                                        self.ball["speed_buff_timer"] = curr_sb + 3.0
                                 else:
                                     if self.ball.has_method("set_meta"):
                                         self.ball.set_meta("stutter_timer", 1.0)
