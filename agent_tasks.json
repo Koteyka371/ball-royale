@@ -9350,7 +9350,7 @@
     },
     {
       "id": "idea-541",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Kamikaze Clones",
@@ -16326,6 +16326,40 @@
         "src/ai/black_hole_mutator.py",
         "src/ai/black_hole_mutator.gd",
         "tests/test_black_hole_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-951",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Magnetic Mine",
+      "description": "A deployable hazard that sticks to the first ball that approaches it, ticking down before exploding. Passing close to another ball transfers the mine.",
+      "allowed_paths": [
+        "src/ai/magnetic_mine.py",
+        "src/ai/magnetic_mine.gd",
+        "tests/test_magnetic_mine.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-952",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Blacksmith Ball",
+      "description": "A new ball class that permanently increases its own damage and max health based on the total number of materials it collects during a match.",
+      "allowed_paths": [
+        "src/ai/blacksmith_ball.py",
+        "src/ai/blacksmith_ball.gd",
+        "tests/test_blacksmith_ball.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

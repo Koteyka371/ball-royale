@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-541] Kamikaze Clones — *2026-07-05 13:11:33 UTC*
+
+An upgraded version of the mimic clone that, instead of vanishing upon expiring, aggressively charges at the nearest enemy and detonates for a small amount of damage.
+
+---
+
 ## [idea-578] Material Magnet Booster — *2026-07-05 13:01:14 UTC*
 
 A temporary power-up that pulls all dropped materials within a 500-radius towards the player for 10 seconds, helping safe collection in danger zones.
