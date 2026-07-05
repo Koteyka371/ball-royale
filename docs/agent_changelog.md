@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-526] Quantum Swap Trap — *2026-07-05 18:11:26 UTC*
+
+A rare hazard that, when stepped on by a ball, instantly swaps the positions of that ball and a randomly chosen enemy, creating sudden ambushes or miraculous escapes.
+
+---
+
 ## [idea-594] Decoy Mine — *2026-07-05 18:11:23 UTC*
 
 A decoy clone that acts like the mimic clone but instead of just expiring or dying, it explodes and deals massive area of effect damage when it absorbs enough damage.
