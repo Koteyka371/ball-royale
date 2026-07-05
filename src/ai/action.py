@@ -6921,6 +6921,12 @@ class Action:
                 # Flag the ball as having received a knockback collision recently (timer)
                 setattr(self.ball, "_knockback_timer", 0.5)
 
+                if getattr(other, "team", None) != getattr(self.ball, "team", None):
+                    setattr(other, "_last_hit_by_id", getattr(self.ball, "id", None))
+                    setattr(other, "_last_hit_by_timer", 2.0)
+                    setattr(self.ball, "_last_hit_by_id", getattr(other, "id", None))
+                    setattr(self.ball, "_last_hit_by_timer", 2.0)
+
                 bounced = True
 
                 gm = getattr(self.world, "game_mode", None)

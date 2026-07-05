@@ -5084,33 +5084,67 @@ class PinballMode(GameMode):
             arena_width = getattr(world.arena, "width", 1000)
             arena_height = getattr(world.arena, "height", 1000)
 
-            # Use Hazard class if possible, else dict-like
             try:
                 from arena.procedural_arena import Hazard
-                def create_hazard(hid, hx, hy, r):
-                    return Hazard(id=hid, x=hx, y=hy, radius=r, kind="bumper", damage=0.0)
+                def create_hazard(hid, hx, hy, r, k):
+                    return Hazard(id=hid, x=hx, y=hy, radius=r, kind=k, damage=0.0)
             except ImportError:
                 class BumperHazard:
-                    def __init__(self, hid, hx, hy, r):
+                    def __init__(self, hid, hx, hy, r, k):
                         self.id = hid
                         self.x = hx
                         self.y = hy
                         self.radius = r
-                        self.kind = "bumper"
+                        self.kind = k
                         self.damage = 0.0
-                def create_hazard(hid, hx, hy, r):
-                    return BumperHazard(hid, hx, hy, r)
+                def create_hazard(hid, hx, hy, r, k):
+                    return BumperHazard(hid, hx, hy, r, k)
 
-            for i in range(20):
+            hazard_kinds = ["bumper", "bounce_pad", "pinball_flipper"]
+            for i in range(25):
                 x = random.uniform(100, arena_width - 100)
                 y = random.uniform(100, arena_height - 100)
                 r = random.uniform(30.0, 60.0)
-                world.arena.hazards.append(create_hazard(10000 + i, x, y, r))
+                kind = random.choice(hazard_kinds)
+                world.arena.hazards.append(create_hazard(10000 + i, x, y, r, kind))
+
+        # Reduce damage of basic attacks
+        for b in balls:
+            b._original_damage = getattr(b, "damage", 10.0)
+            b.damage = b._original_damage * 0.25
+            b.base_damage = getattr(b, "base_damage", getattr(b, "damage", 10.0)) * 0.25
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
-
         super().tick(world, balls, delta)
+        import math
 
+        hazards = []
+        if hasattr(world, "arena") and world.arena and hasattr(world.arena, "hazards"):
+            hazards = [h for h in world.arena.hazards if getattr(h, "kind", "") in ["bumper", "bounce_pad", "pinball_flipper"]]
+
+        for b in balls:
+            if getattr(b, "alive", False):
+                if getattr(b, "_last_hit_by_timer", 0.0) > 0:
+                    b._last_hit_by_timer -= delta
+                if getattr(b, "_hazard_slam_cd", 0.0) > 0:
+                    b._hazard_slam_cd -= delta
+
+                if getattr(b, "_last_hit_by_timer", 0.0) > 0 and getattr(b, "_hazard_slam_cd", 0.0) <= 0:
+                    b_rad = getattr(b, "radius", 10.0)
+                    for h in hazards:
+                        h_rad = getattr(h, "radius", 10.0)
+                        dx = b.x - h.x
+                        dy = b.y - h.y
+                        dist = math.sqrt(dx*dx + dy*dy)
+                        if dist < b_rad + h_rad:
+                            # Slammed into hazard!
+                            bonus_damage = 50.0
+                            b.hp -= bonus_damage
+                            if b.hp <= 0:
+                                b.alive = False
+                                b.killer = getattr(b, "_last_hit_by_id", "hazard")
+                            b._hazard_slam_cd = 1.0
+                            break
 
 class MirrorWallsMode(GameMode):
     def __init__(self):

@@ -11704,6 +11704,33 @@ func _resolve_collisions() -> bool:
                 self.ball.set_meta("_knockback_timer", 0.5)
             elif "hp" in self.ball:
                 self.ball._knockback_timer = 0.5
+
+            var self_team = self.ball.team if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team") else (self.ball.team if "team" in self.ball else null)
+            var other_team = other.team if typeof(other) == TYPE_DICTIONARY and other.has("team") else (other.team if "team" in other else null)
+            if self_team != null and other_team != null and self_team != other_team:
+                var self_id = self.ball.id if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id") else (self.ball.id if "id" in self.ball else null)
+                var other_id = other.id if typeof(other) == TYPE_DICTIONARY and other.has("id") else (other.id if "id" in other else null)
+
+                if typeof(other) == TYPE_DICTIONARY:
+                    other["_last_hit_by_id"] = self_id
+                    other["_last_hit_by_timer"] = 2.0
+                elif typeof(other) == TYPE_OBJECT and other.has_method("set_meta"):
+                    other.set_meta("_last_hit_by_id", self_id)
+                    other.set_meta("_last_hit_by_timer", 2.0)
+                elif "hp" in other:
+                    other.set("_last_hit_by_id", self_id)
+                    other.set("_last_hit_by_timer", 2.0)
+
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["_last_hit_by_id"] = other_id
+                    self.ball["_last_hit_by_timer"] = 2.0
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("_last_hit_by_id", other_id)
+                    self.ball.set_meta("_last_hit_by_timer", 2.0)
+                elif "hp" in self.ball:
+                    self.ball.set("_last_hit_by_id", other_id)
+                    self.ball.set("_last_hit_by_timer", 2.0)
+
             bounced = true
 
     return bounced
