@@ -5023,6 +5023,7 @@ class MagneticCollisionsMode(GameMode):
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
+        self.swap_timer = 0.0
         import random
 
         # Setup magnetic fields as invisible hazards
@@ -7725,6 +7726,7 @@ class SoulLinkMode(GameMode):
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
+        self.swap_timer = 0.0
         import random
         alive_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
         random.shuffle(alive_balls)
@@ -7867,3 +7869,95 @@ GAME_MODES["rolling_boulders"] = RollingBouldersMode()
 GAME_MODES["soul_link"] = SoulLinkMode()
 GAME_MODES["clan_tournament"] = ClanTournamentMode()
 GAME_MODES["scrambler_drones"] = ScramblerDroneMode()
+
+
+class TagTeamMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Tag Team"
+        self.description = "Players queue as a team of two balls but only one is active at a time. The active ball swaps with their teammate on a cooldown."
+        self.swap_timer = 0.0
+        self.swap_interval = 10.0
+        self.team_counter = 1
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        self.swap_timer = 0.0
+        import random
+        alive_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        random.shuffle(alive_balls)
+
+        self.team_counter = 1
+        for i in range(0, len(alive_balls) - 1, 2):
+            b1 = alive_balls[i]
+            b2 = alive_balls[i+1]
+
+            b1.tag_team_id = self.team_counter
+            b2.tag_team_id = self.team_counter
+            self.team_counter += 1
+
+            # b1 is active, b2 is spectator (inactive)
+            b2.tag_original_ball_type = getattr(b2, "ball_type", "player")
+            b2.tag_original_team = getattr(b2, "team", "players")
+
+            b1.tag_original_ball_type = getattr(b1, "ball_type", "player")
+            b1.tag_original_team = getattr(b1, "team", "players")
+
+            b2.ball_type = "spectator"
+            b2.team = "spectator"
+            # Ensure b2 doesn't immediately die from being out of bounds while spectator
+            # Move b2 away
+            b2.x, b2.y = -1000.0, -1000.0
+
+        if len(alive_balls) % 2 != 0:
+            alive_balls[-1].tag_team_id = self.team_counter
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        self.swap_timer += delta
+        if self.swap_timer >= self.swap_interval:
+            self.swap_timer = 0.0
+
+            # Group by team
+            teams = {}
+            for b in balls:
+                if not getattr(b, "alive", False):
+                    continue
+                tid = getattr(b, "tag_team_id", None)
+                if tid is not None:
+                    if tid not in teams:
+                        teams[tid] = []
+                    teams[tid].append(b)
+
+            for tid, members in teams.items():
+                if len(members) == 2:
+                    b1, b2 = members
+                    # Figure out who is active and who is inactive
+                    b1_is_spec = getattr(b1, "ball_type", "") == "spectator"
+                    b2_is_spec = getattr(b2, "ball_type", "") == "spectator"
+
+                    if b1_is_spec and not b2_is_spec:
+                        inactive, active = b1, b2
+                    elif b2_is_spec and not b1_is_spec:
+                        inactive, active = b2, b1
+                    else:
+                        continue # Both are active or both are inactive, ignore
+
+                    # Swap them
+                    # Inactive becomes active
+                    inactive.ball_type = getattr(inactive, "tag_original_ball_type", "player")
+                    inactive.team = getattr(inactive, "tag_original_team", "players")
+                    inactive.x, inactive.y = active.x, active.y
+                    inactive.vx, inactive.vy = getattr(active, "vx", 0.0), getattr(active, "vy", 0.0)
+
+                    # Active becomes inactive
+                    active.ball_type = "spectator"
+                    active.team = "spectator"
+                    active.x, active.y = -1000.0, -1000.0
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("tag_swap", {"type": "tag_swap", "message": "Tag Swap! Players switch!"})
+
+
+GAME_MODES["tag_team"] = TagTeamMode()
