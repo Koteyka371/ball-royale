@@ -2531,9 +2531,19 @@ class WeatherChaosMode extends GameMode:
 					if Hazard:
 						var x = randf_range(100.0, world.arena.width - 100.0)
 						var y = randf_range(100.0, world.arena.height - 100.0)
-						var mud_pit = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 60.0, "quicksand", 0.0)
-						mud_pit.set_meta("duration", 15.0)
-						world.arena.hazards.append(mud_pit)
+						var is_dirt_sand = false
+						if "arena" in world and world.arena != null:
+							if "is_sandstorming" in world.arena and world.arena.is_sandstorming:
+								is_dirt_sand = true
+
+						if is_dirt_sand:
+							var mud_pit = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 60.0, "quicksand", 0.0)
+							mud_pit.set_meta("duration", 15.0)
+							world.arena.hazards.append(mud_pit)
+						else:
+							var puddle = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 50.0, "puddle", 0.0)
+							puddle.set_meta("duration", 20.0)
+							world.arena.hazards.append(puddle)
 
 			if weather == "sandstorm":
 				if randf() < 0.05 * delta:
@@ -2594,6 +2604,16 @@ class WeatherChaosMode extends GameMode:
 					ice.set_meta("vy", randf_range(-50.0, 50.0))
 					world.arena.hazards.append(ice)
 			elif weather in ["snow", "blizzard"]:
+				if world != null and "arena" in world and "hazards" in world.arena:
+					for h in world.arena.hazards:
+						var h_kind = ""
+						if "kind" in h: h_kind = h.kind
+						elif h.has_method("get_meta") and h.has_meta("kind"): h_kind = h.get_meta("kind")
+						if h_kind == "puddle":
+							if "kind" in h: h.kind = "ice_patch"
+							elif h.has_method("set_meta"): h.set_meta("kind", "ice_patch")
+							if typeof(h) == TYPE_OBJECT and h.has_method("set"): h.set("kind", "ice_patch")
+
 				if typeof(b) == TYPE_OBJECT: b.set("cosmetic", "snow_goggles")
 				elif typeof(b) == TYPE_DICTIONARY: b["cosmetic"] = "snow_goggles"
 				var b_type = ""
@@ -6102,9 +6122,19 @@ class MagneticCollisionsMode extends GameMode:
 					if Hazard:
 						var x = randf_range(100.0, world.arena.width - 100.0)
 						var y = randf_range(100.0, world.arena.height - 100.0)
-						var mud_pit = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 60.0, "quicksand", 0.0)
-						mud_pit.set_meta("duration", 15.0)
-						world.arena.hazards.append(mud_pit)
+						var is_dirt_sand = false
+						if "arena" in world and world.arena != null:
+							if "is_sandstorming" in world.arena and world.arena.is_sandstorming:
+								is_dirt_sand = true
+
+						if is_dirt_sand:
+							var mud_pit = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 60.0, "quicksand", 0.0)
+							mud_pit.set_meta("duration", 15.0)
+							world.arena.hazards.append(mud_pit)
+						else:
+							var puddle = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 50.0, "puddle", 0.0)
+							puddle.set_meta("duration", 20.0)
+							world.arena.hazards.append(puddle)
 
 			var arena_width = 1000.0
 			var arena_height = 1000.0
@@ -6331,9 +6361,19 @@ class PinballMode extends GameMode:
 					if Hazard:
 						var x = randf_range(100.0, world.arena.width - 100.0)
 						var y = randf_range(100.0, world.arena.height - 100.0)
-						var mud_pit = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 60.0, "quicksand", 0.0)
-						mud_pit.set_meta("duration", 15.0)
-						world.arena.hazards.append(mud_pit)
+						var is_dirt_sand = false
+						if "arena" in world and world.arena != null:
+							if "is_sandstorming" in world.arena and world.arena.is_sandstorming:
+								is_dirt_sand = true
+
+						if is_dirt_sand:
+							var mud_pit = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 60.0, "quicksand", 0.0)
+							mud_pit.set_meta("duration", 15.0)
+							world.arena.hazards.append(mud_pit)
+						else:
+							var puddle = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 50.0, "puddle", 0.0)
+							puddle.set_meta("duration", 20.0)
+							world.arena.hazards.append(puddle)
 
 			var arena_width = 1000.0
 			var arena_height = 1000.0

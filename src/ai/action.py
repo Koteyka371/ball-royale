@@ -2475,6 +2475,13 @@ class Action:
                         if dist_sq < hazard.radius * hazard.radius:
                             # Apply slow effect
                             self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.3
+                    elif hazard.kind == "puddle":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            self.ball.steering_mult = 0.5
+                            self.ball.dash_range_mult = 1.5
                     elif hazard.kind == "ice_patch":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
@@ -2485,6 +2492,7 @@ class Action:
                                 if hasattr(self.ball, "is_slipping"):
                                     self.ball.is_slipping = False
                             else:
+                                self.ball.steering_mult = 0.0
                                 if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
                                     # Keep sliding in the current direction, drastically reducing steering
                                     speed_mult = 1.5 # Slight speed boost while slipping
