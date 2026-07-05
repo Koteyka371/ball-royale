@@ -73,4 +73,4 @@ def test_update_zone():
 
     # Clamp to min size
     arena.update_zone(1, 100.0)
-    assert arena.safe_zone_radius == 50.0
+    assert arena.safe_zone_radius == 0.0

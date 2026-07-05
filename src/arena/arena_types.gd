@@ -258,10 +258,10 @@ class BattleRoyaleShrinkingZoneArena extends ProceduralArena:
     func update_zone(current_tick: int, delta: float) -> void:
         if current_tick != last_tick:
             last_tick = current_tick
-            if safe_zone_radius > 50.0:
+            if safe_zone_radius > 0.0:
                 safe_zone_radius -= 15.0 * delta
-                if safe_zone_radius <= 50.0:
-                    safe_zone_radius = 50.0
+                if safe_zone_radius <= 0.0:
+                    safe_zone_radius = 0.0
             else:
                 if current_tick % 120 == 0:
                     if has_method("_trigger_event"):

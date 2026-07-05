@@ -26,7 +26,7 @@ def test_zone_shrinks_minimum():
 
     # Big delta
     arena.update_zone(2, 10.0)
-    assert arena.safe_zone_radius == 50.0  # Clamped to 50.0
+    assert arena.safe_zone_radius == 0.0  # Clamped to 50.0
 
     arena.update_zone(3, 10.0)
-    assert arena.safe_zone_radius == 50.0
+    assert arena.safe_zone_radius == 0.0

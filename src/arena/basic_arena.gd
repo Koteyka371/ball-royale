@@ -33,7 +33,7 @@ func is_point_inside(x: float, y: float, radius: float) -> bool:
 	var cx = safe_zone_center[0]
 	var cy = safe_zone_center[1]
 	var dist = sqrt((x - cx)*(x - cx) + (y - cy)*(y - cy))
-	return dist <= safe_zone_radius - radius
+	return dist <= max(0.0, safe_zone_radius - radius)
 
 func clamp_position(x: float, y: float, radius: float) -> Array:
 	var bounced = false
@@ -57,12 +57,12 @@ func clamp_position(x: float, y: float, radius: float) -> Array:
 	var cx = safe_zone_center[0]
 	var cy = safe_zone_center[1]
 	var dist = sqrt((new_x - cx)*(new_x - cx) + (new_y - cy)*(new_y - cy))
-	if dist > safe_zone_radius - radius:
+	if dist > max(0.0, safe_zone_radius - radius):
 		if dist > 0.0001:
 			var dir_x = (new_x - cx) / dist
 			var dir_y = (new_y - cy) / dist
-			new_x = cx + dir_x * (safe_zone_radius - radius)
-			new_y = cy + dir_y * (safe_zone_radius - radius)
+			new_x = cx + dir_x * max(0.0, safe_zone_radius - radius)
+			new_y = cy + dir_y * max(0.0, safe_zone_radius - radius)
 		else:
 			new_x = cx
 			new_y = cy
@@ -73,10 +73,10 @@ func clamp_position(x: float, y: float, radius: float) -> Array:
 func update_zone(current_tick: int, delta: float) -> void:
 	if current_tick != last_tick:
 		last_tick = current_tick
-		if safe_zone_radius > 50.0:
+		if safe_zone_radius > 0.0:
 			safe_zone_radius -= 10.0 * delta
-			if safe_zone_radius <= 50.0:
-				safe_zone_radius = 50.0
+			if safe_zone_radius <= 0.0:
+				safe_zone_radius = 0.0
 		else:
 			if current_tick % 120 == 0:
 				if has_method("_trigger_event"):
