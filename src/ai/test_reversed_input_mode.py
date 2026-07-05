@@ -25,10 +25,30 @@ def test_reversed_input_mode():
     ball = MockBall(20.0, 10.0, 100.0, 0.0)
     balls = [ball]
 
-    # Tick mode
-    mode.tick(world, balls, delta=0.1)
+    # Tick mode until interval reached (10.0 seconds)
+    # Not reversed yet
+    mode.tick(world, balls, delta=5.0)
+    assert not mode.is_reversed
 
-    # Ball should have moved back 2 * dx = 20, ending at x = 0
-    # Equivalent to moving from 10 to 0 instead of 10 to 20.
+    # Still not reversed
+    mode.tick(world, balls, delta=4.9)
+    assert not mode.is_reversed
+
+    # Tick to cross interval, should also apply the reverse action immediately since is_reversed becomes True
+    mode.tick(world, balls, delta=0.1) # reaches 10.0 exactly
+    assert mode.is_reversed
+
+    # The tick above triggers is_reversed, so it applies the reverse action for delta=0.1.
+    # ball.x was 20.0, vx is 100.0, delta is 0.1
+    # bx -= 100.0 * 0.1 * 2 = 20.0
+    # so ball.x becomes 0.0
     assert ball.x == 0.0
     assert ball.y == 10.0
+
+    # Tick until duration (5.0 seconds) ends
+    mode.tick(world, balls, delta=4.8)
+    assert mode.is_reversed
+
+    # Tick to cross duration
+    mode.tick(world, balls, delta=0.2)
+    assert not mode.is_reversed

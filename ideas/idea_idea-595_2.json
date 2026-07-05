@@ -1,0 +1,4 @@
+{
+    "title": "Shrinking Safe Zone Mutator",
+    "description": "In this mutator, the entire arena slowly shrinks, applying consistent damage to any entity that is outside the progressively smaller boundary."
+}

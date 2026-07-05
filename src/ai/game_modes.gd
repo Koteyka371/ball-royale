@@ -10001,30 +10001,49 @@ class SweepingPaddlesMode extends GameMode:
 
 
 class ReversedInputMode extends GameMode:
+	var timer = 0.0
+	var is_reversed = false
+	var interval = 10.0
+	var duration = 5.0
+
 	func _init() -> void:
 		name = "Reversed Input"
-		description = "All movement inputs for players and AI are reversed, making movement completely counter-intuitive."
+		description = "All movement inputs for players and AI are periodically reversed for 5 seconds, making movement completely counter-intuitive."
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
-		for b in balls:
-			var alive = false
-			if "alive" in b: alive = b.alive
-			elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive"): alive = b.get_meta("alive")
-			elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): alive = b.alive
+		timer += delta
 
-			if alive:
-				var vx = 0.0
-				var vy = 0.0
-				if "vx" in b: vx = b.vx
-				elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("vx"): vx = b.get_meta("vx")
-				elif typeof(b) == TYPE_DICTIONARY and b.has("vx"): vx = b.vx
+		if not is_reversed and timer >= interval:
+			is_reversed = true
+			timer = 0.0
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("reversed_input", {"message": "Controls reversed!"})
+		elif is_reversed and timer >= duration:
+			is_reversed = false
+			timer = 0.0
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("reversed_input", {"message": "Controls normal."})
 
-				if "vy" in b: vy = b.vy
-				elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("vy"): vy = b.get_meta("vy")
-				elif typeof(b) == TYPE_DICTIONARY and b.has("vy"): vy = b.vy
+		if is_reversed:
+			for b in balls:
+				var alive = false
+				if "alive" in b: alive = b.alive
+				elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive"): alive = b.get_meta("alive")
+				elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): alive = b.alive
 
-				b.x -= vx * delta * 2
-				b.y -= vy * delta * 2
+				if alive:
+					var vx = 0.0
+					var vy = 0.0
+					if "vx" in b: vx = b.vx
+					elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("vx"): vx = b.get_meta("vx")
+					elif typeof(b) == TYPE_DICTIONARY and b.has("vx"): vx = b.vx
+
+					if "vy" in b: vy = b.vy
+					elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("vy"): vy = b.get_meta("vy")
+					elif typeof(b) == TYPE_DICTIONARY and b.has("vy"): vy = b.vy
+
+					b.x -= vx * delta * 2
+					b.y -= vy * delta * 2
 
 
 class MazeSafeZoneMode extends GameMode:
