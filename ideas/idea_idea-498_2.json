@@ -1,0 +1,4 @@
+{
+  "title": "Ice Walls Mutator",
+  "description": "Certain environmental walls become coated in ice. Bouncing off these walls preserves more momentum and slightly freezes the ball, applying a short-lived micro-slow upon leaving the wall's proximity."
+}

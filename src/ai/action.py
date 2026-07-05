@@ -160,6 +160,10 @@ class Action:
         old_hp = getattr(target, "hp", 0.0)
         original_damage = getattr(attacker, "damage", 10.0)
 
+        # Ice patch damage reduction
+        if getattr(target, 'on_ice_patch', False):
+            original_damage *= 0.8
+
         if random.random() > attack_accuracy:
             return
 
@@ -612,6 +616,9 @@ class Action:
 
     def execute(self, strategy: str, delta: float) -> None:
         import math
+        self.ball.on_ice_patch = False
+        if hasattr(self.ball, "friction_multiplier") and self.ball.friction_multiplier == 0.05:
+            self.ball.friction_multiplier = getattr(self.ball, "base_friction_multiplier", 1.0)
 
         if getattr(self.ball, "leech_booster_timer", 0.0) > 0:
             self.ball.leech_booster_timer -= delta
@@ -2352,19 +2359,19 @@ class Action:
                         dy = hazard.y - self.ball.y
                         dist_sq = dx * dx + dy * dy
                         if dist_sq < hazard.radius * hazard.radius:
+                            self.ball.on_ice_patch = True
                             if getattr(self.ball, "ball_type", "") == "snow_yeti":
                                 self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 2.0
                                 if hasattr(self.ball, "is_slipping"):
                                     self.ball.is_slipping = False
                             else:
                                 if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
-                                    # Keep sliding in the current direction, drastically reducing steering
-                                    speed_mult = 1.5 # Slight speed boost while slipping
-                                    self.ball.x += self.ball.vx * delta * speed_mult
-                                    self.ball.y += self.ball.vy * delta * speed_mult
+                                    # Keep sliding in the current direction
+                                    self.ball.x += self.ball.vx * delta
+                                    self.ball.y += self.ball.vy * delta
 
-                                # Decrease turning capability by essentially locking in movement
-                                self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 1.5
+                                # Uncontrollable slide: nearly 0 friction
+                                self.ball.friction_multiplier = 0.05
                                 if not hasattr(self.ball, "is_slipping"):
                                     self.ball.is_slipping = True
 

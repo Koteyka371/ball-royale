@@ -249,6 +249,15 @@ func _attempt_damage(attacker, target) -> void:
 	var original_damage = 10.0
 	if "damage" in attacker: original_damage = float(attacker.damage)
 
+	var on_ice = false
+	if typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("on_ice_patch"):
+		on_ice = target.get_meta("on_ice_patch")
+	elif "on_ice_patch" in target:
+		on_ice = target.on_ice_patch
+
+	if on_ice:
+		original_damage *= 0.8
+
 	if "attack_accuracy" in attacker:
 		attack_accuracy = float(attacker.attack_accuracy)
 	elif attacker.has_method("get_meta") and attacker.has_meta("attack_accuracy"):
@@ -1001,6 +1010,10 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+	if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+		self.ball.set_meta("on_ice_patch", false)
+		if self.ball.has_meta("friction_multiplier") and self.ball.get_meta("friction_multiplier") == 0.05:
+			self.ball.set_meta("friction_multiplier", 1.0)
 	var leech_booster_t = 0.0
 	if "leech_booster_timer" in self.ball: leech_booster_t = float(self.ball.leech_booster_timer)
 	elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("get_meta") and self.ball.has_meta("leech_booster_timer"): leech_booster_t = float(self.ball.get_meta("leech_booster_timer"))
@@ -3948,19 +3961,15 @@ func execute(strategy: String, delta: float):
                     var dy = hazard.y - self.ball.y
                     var dist_sq = dx * dx + dy * dy
                     if dist_sq < hazard.radius * hazard.radius:
-                        if "vx" in self.ball and "vy" in self.ball:
-                            var speed_mult = 1.5
-                            self.ball.x += self.ball.vx * delta * speed_mult
-                            self.ball.y += self.ball.vy * delta * speed_mult
-
-                        var base_s = 100.0
-                        if self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"):
-                            base_s = self.ball.get_meta("base_speed")
-                        elif "base_speed" in self.ball:
-                            base_s = self.ball.base_speed
-
-                        self.ball.speed = base_s * 1.5
                         if self.ball.has_method("set_meta"):
+                            self.ball.set_meta("on_ice_patch", true)
+
+                        if "vx" in self.ball and "vy" in self.ball:
+                            self.ball.x += self.ball.vx * delta
+                            self.ball.y += self.ball.vy * delta
+
+                        if self.ball.has_method("set_meta"):
+                            self.ball.set_meta("friction_multiplier", 0.05)
                             self.ball.set_meta("is_slipping", true)
 
                 elif hazard.kind == "fire_zone":

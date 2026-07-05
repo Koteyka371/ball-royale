@@ -1,0 +1,4 @@
+{
+  "title": "Sliding Momentum Bash",
+  "description": "Balls sliding out of control on an ice patch accumulate momentum. If they hit another ball while sliding at high velocity, they deal bonus knockback and damage to the target."
+}
