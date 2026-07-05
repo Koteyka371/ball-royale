@@ -1,1 +1,0 @@
-{"title": "Chrono-Stutter Hazard", "description": "A hazard that periodically saves the position, velocity, and health of any entity that enters it. Every 5 seconds, all affected entities are forcefully rewound back to their saved state, creating a localized 'time stutter' effect that disrupts momentum and strategies."}

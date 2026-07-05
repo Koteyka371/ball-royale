@@ -1,4 +1,0 @@
-{
-  "title": "Lightning Rod Deployable",
-  "description": "A new active item 'lightning_rod_item' that players can drop during thunderstorms. It attracts all nearby lightning strikes to its location and charges up, eventually detonating in a massive chain-lightning EMP blast that disables shields and abilities."
-}

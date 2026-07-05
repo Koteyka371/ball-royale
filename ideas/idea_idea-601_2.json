@@ -1,4 +1,0 @@
-{
-    "title": "Echoes of the Past Hazard",
-    "description": "A hazard that intermittently records the positions of all entities in its radius. After a brief delay, it replays phantom clones that repeat the recorded movements and deal minor damage on contact."
-}

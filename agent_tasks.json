@@ -17251,6 +17251,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1005",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Geyser Hazards",
+      "description": "Add geysers in the arena that build up pressure and eventually erupt. When they erupt, they launch any balls standing on them in a random direction with high velocity, potentially knocking them into other hazards or out of bounds.",
+      "allowed_paths": [
+        "src/arena/geyser_hazards.py",
+        "src/arena/geyser_hazards.gd",
+        "tests/test_geyser_hazards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }

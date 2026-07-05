@@ -1,4 +1,0 @@
-{
-  "title": "Radioactive Poison Cloud",
-  "description": "Enhancement to the decoy poison cloud. When enemies stand in the cloud, they do not just take DoT but instead accumulate a 'Radiation' debuff that increases the damage they take from all other sources until the debuff fades. Useful for softening tank builds."
-}

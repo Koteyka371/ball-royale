@@ -1,4 +1,0 @@
-{
-  "title": "Explosive Knockback Cascade",
-  "description": "Enhance standard explosion events (like decoy or mine explosions) to apply significant physics knockback to surviving entities, pushing them outward. If knocked entities collide heavily with a wall or another entity, it triggers a secondary, smaller stun explosion, creating a cascading crowd control effect."
-}

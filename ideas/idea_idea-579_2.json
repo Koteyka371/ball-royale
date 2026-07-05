@@ -1,4 +1,0 @@
-{
-  "title": "Shrinking Safe Zones within Safe Zones",
-  "description": "In the late game, instead of the primary safe zone just shrinking steadily, micro safe zones start appearing inside it, while the rest of the primary safe zone gets flooded with toxic gas. Entities must bounce between these micro zones to survive."
-}

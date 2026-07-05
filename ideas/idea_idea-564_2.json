@@ -1,4 +1,0 @@
-{
-  "title": "New Hazard: Time Bomb",
-  "description": "A hazard that spawns on the map and slowly ticks down. When it reaches 0, it explodes in a massive radius, damaging anyone caught inside."
-}
