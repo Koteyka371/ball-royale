@@ -1123,6 +1123,51 @@ class Action:
 
 
         # Clone mine logic
+
+        if getattr(self.ball, "is_decoy_clone", False):
+            if not getattr(self.ball, "_exploded", False):
+                self.ball.mimic_timer = getattr(self.ball, "mimic_timer", 10.0) - delta
+                if getattr(self.ball, "hp", 100) <= 0 or self.ball.mimic_timer <= 0:
+                    self.ball._exploded = True
+                    self.ball.alive = False
+                    self.ball.hp = 0
+                    if hasattr(self.world, "events"):
+                        self.world.events.append({'type': 'explosion', 'data': {'x': getattr(self.ball, "x", 0.0), 'y': getattr(self.ball, "y", 0.0), 'radius': 120.0}})
+                    if hasattr(self.world, "balls"):
+                        for b in self.world.balls:
+                            if getattr(b, "alive", True) and getattr(b, "team", getattr(b, "ball_type", "")) != getattr(self.ball, "team", getattr(self.ball, "ball_type", "")):
+                                import math
+                                d = math.sqrt((self.ball.x - getattr(b, "x", 0))**2 + (self.ball.y - getattr(b, "y", 0))**2)
+                                if d <= 120.0:
+                                    if hasattr(b, "take_damage"):
+                                        b.take_damage(50.0)
+                                    else:
+                                        b.hp -= 50.0
+                                        if b.hp <= 0:
+                                            b.alive = False
+                    return
+
+            if getattr(self.ball, "alive", True):
+                owner_id = getattr(self.ball, "mimic_owner", None)
+                owner = None
+                if hasattr(self.world, "balls"):
+                    for b in self.world.balls:
+                        if getattr(b, "id", None) == owner_id:
+                            owner = b
+                            break
+
+                if owner and getattr(owner, "alive", True):
+                    self.ball.vx = getattr(owner, "vx", 0.0)
+                    self.ball.vy = getattr(owner, "vy", 0.0)
+                else:
+                    self.ball.vx = 0.0
+                    self.ball.vy = 0.0
+
+                self.ball.x += getattr(self.ball, "vx", 0.0) * delta
+                self.ball.y += getattr(self.ball, "vy", 0.0) * delta
+                self._clamp_position()
+                return
+
         if getattr(self.ball, "is_mimic_clone", False) and getattr(self.ball, "alive", True):
             owner_id = getattr(self.ball, "mimic_owner", None)
             owner = None
@@ -6163,6 +6208,31 @@ class Action:
 
                         self.world.balls.append(decoy)
 
+            elif skill_name == "decoy_clone":
+                import copy
+                if hasattr(self.world, "balls"):
+                    # Unlike mimic_clone, we just deploy it without swapping
+                    clone = copy.copy(self.ball)
+                    clone.id = getattr(self.world, "next_id", __import__('random').randint(10000, 99999))
+                    if hasattr(self.world, "next_id"):
+                        self.world.next_id += 1
+
+                    clone.hp = 50.0  # Absorbs a set amount of damage
+                    clone.max_hp = clone.hp
+                    clone.damage = 0.0
+                    clone.is_decoy_clone = True
+                    clone.is_illusion = True
+                    clone.mimic_owner = getattr(self.ball, "id", None)
+                    clone.mimic_timer = 10.0
+
+                    # Clear skills
+                    clone.skill = None
+                    clone.SKILL = None
+                    if hasattr(clone, "active_skill"):
+                        clone.active_skill = None
+                    clone.skill_timer = 9999.0
+
+                    self.world.balls.append(clone)
             elif skill_name == "mimic_clone":
                 import copy
                 if hasattr(self.world, "balls"):
