@@ -10288,7 +10288,7 @@
     },
     {
       "id": "idea-596",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Clan Wars Game Mode",
@@ -16685,6 +16685,40 @@
         "src/arena/quantum_entanglement_arena.py",
         "src/arena/quantum_entanglement_arena.gd",
         "tests/test_quantum_entanglement_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-972",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Clan Wars and Territory Control",
+      "description": "Introduce a meta-game layer where clans can compete for control over specific arenas or map regions. Controlling a territory grants clan members passive bonuses (e.g., increased resource drops, reduced damage from environmental hazards) within that arena. Territory control can be contested through scheduled Clan War matches where teams from rival clans battle in specialized objective-based modes.",
+      "allowed_paths": [
+        "src/ai/clan_wars_and_territory_control.py",
+        "src/ai/clan_wars_and_territory_control.gd",
+        "tests/test_clan_wars_and_territory_control.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-973",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Clan Perks and Upgrades",
+      "description": "Allow clans to spend accumulated 'Clan Points' (earned from quests and matches) to unlock global perks for all members. Perks could include increased inventory space, a small chance to not consume a consumable item, or access to exclusive clan-only cosmetic auras. These upgrades would provide a tangible long-term progression system for clans.",
+      "allowed_paths": [
+        "src/ai/clan_perks_and_upgrades.py",
+        "src/ai/clan_perks_and_upgrades.gd",
+        "tests/test_clan_perks_and_upgrades.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-596] Clan Wars Game Mode — *2026-07-05 17:09:52 UTC*
+
+A new game mode where two clans face off against each other in a multi-round tournament. Winning yields special clan cosmetics and bonus clan points for the leaderboard.
+
+---
+
 ## [idea-598] Clan Vault — *2026-07-05 17:01:08 UTC*
 
 A shared storage space where clan members can deposit and withdraw crafting materials or unwanted items, with rank-based access controls.
