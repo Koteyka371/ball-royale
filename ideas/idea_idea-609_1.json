@@ -1,0 +1,4 @@
+{
+  "title": "Reverse Gravitational Pull Mutator",
+  "description": "A mutator that intermittently reverses the gravitational pull of hazards and game modes, causing elements that usually attract (like Black Holes or Inverse Safe Zones) to suddenly repel for short, chaotic durations."
+}

@@ -7628,6 +7628,166 @@ class HazardBilliardsMode extends GameMode:
 
 
 
+class InverseSafeZoneMode extends GameMode:
+    var zone_x: float = 500.0
+    var zone_y: float = 500.0
+    var danger_radius: float = 50.0
+    var max_danger_radius: float = 500.0
+    var expand_rate: float = 15.0
+    var inside_damage_per_second: float = 20.0
+
+    func _init() -> void:
+        name = "Inverse Safe Zone"
+        description = "A battle royale mode where the center expands and becomes dangerous, forcing players to the edges."
+
+    func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
+        var arena_width = 1000.0
+        var arena_height = 1000.0
+        if "arena" in world and world.arena:
+            if "width" in world.arena:
+                arena_width = float(world.arena.width)
+            if "height" in world.arena:
+                arena_height = float(world.arena.height)
+        zone_x = arena_width / 2.0
+        zone_y = arena_height / 2.0
+        danger_radius = 50.0
+        max_danger_radius = max(arena_width, arena_height) / 2.0
+
+        for b in balls:
+            if "ball_type" in b and b.ball_type != "spectator":
+                if typeof(b) == TYPE_DICTIONARY:
+                    b["team"] = b.ball_type
+                else:
+                    b.team = b.ball_type
+
+        if not ("dead_balls" in world):
+            world["dead_balls"] = []
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        if not ("dead_balls" in world):
+            world["dead_balls"] = []
+
+        for b in balls:
+            var is_alive = false
+            if typeof(b) == TYPE_DICTIONARY:
+                is_alive = b.get("alive", false)
+            else:
+                is_alive = b.alive
+
+            if not is_alive:
+                if not (b in world.dead_balls):
+                    if typeof(b) == TYPE_DICTIONARY:
+                        b["time_since_death"] = 0.0
+                    else:
+                        b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    if typeof(b) == TYPE_DICTIONARY:
+                        b["time_since_death"] += delta
+                    else:
+                        b.time_since_death += delta
+
+        if danger_radius < max_danger_radius:
+            danger_radius += expand_rate * delta
+            if danger_radius > max_danger_radius:
+                danger_radius = max_danger_radius
+
+        var damage_this_tick = inside_damage_per_second * delta
+
+        for b in balls:
+            var is_alive = false
+            var b_type = null
+            if typeof(b) == TYPE_DICTIONARY:
+                is_alive = b.get("alive", false)
+                b_type = b.get("ball_type", null)
+            else:
+                is_alive = b.alive
+                b_type = b.ball_type
+
+            if is_alive and b_type != "spectator":
+                var bx = 0.0
+                var by = 0.0
+                if typeof(b) == TYPE_DICTIONARY:
+                    bx = b.get("x", 0.0)
+                    by = b.get("y", 0.0)
+                else:
+                    bx = b.x
+                    by = b.y
+
+                var dx = bx - zone_x
+                var dy = by - zone_y
+                var dist = sqrt(dx*dx + dy*dy)
+
+                if dist > 0.1:
+                    var push_strength = 2000.0 * (1.0 - min(1.0, dist / max_danger_radius))
+                    if typeof(b) == TYPE_DICTIONARY:
+                        if not ("vx" in b): b["vx"] = 0.0
+                        if not ("vy" in b): b["vy"] = 0.0
+                        b["vx"] += (dx / dist) * push_strength * delta
+                        b["vy"] += (dy / dist) * push_strength * delta
+                    else:
+                        if not ("vx" in b): b.vx = 0.0
+                        if not ("vy" in b): b.vy = 0.0
+                        b.vx += (dx / dist) * push_strength * delta
+                        b.vy += (dy / dist) * push_strength * delta
+
+                if dist <= danger_radius:
+                    if typeof(b) == TYPE_DICTIONARY:
+                        b["hp"] -= damage_this_tick
+                        if b["hp"] <= 0:
+                            b["alive"] = false
+                            b["hp"] = 0
+                    else:
+                        b.hp -= damage_this_tick
+                        if b.hp <= 0:
+                            b.alive = false
+                            b.hp = 0
+
+    func check_winner(world, balls: Array):
+        var alive = []
+        for b in balls:
+            var is_alive = false
+            var b_type = null
+            if typeof(b) == TYPE_DICTIONARY:
+                is_alive = b.get("alive", false)
+                b_type = b.get("ball_type", null)
+            else:
+                is_alive = b.alive
+                b_type = b.ball_type
+            if is_alive and b_type != "spectator":
+                alive.append(b)
+
+        if alive.size() == 0:
+            if has_method("_award_skill_points"):
+                call("_award_skill_points")
+            return "Draw"
+
+        var teams_alive = {}
+        for b in alive:
+            var t = null
+            if typeof(b) == TYPE_DICTIONARY:
+                t = b.get("team", b.get("ball_type", null))
+            else:
+                t = b.team
+            if t != null:
+                teams_alive[t] = true
+
+        if teams_alive.size() == 1:
+            if has_method("_award_skill_points"):
+                call("_award_skill_points")
+            return teams_alive.keys()[0]
+
+        if alive.size() == 1:
+            if has_method("_award_skill_points"):
+                call("_award_skill_points")
+            if typeof(alive[0]) == TYPE_DICTIONARY:
+                return alive[0].get("team", alive[0].get("ball_type", null))
+            else:
+                return alive[0].team
+
+        return null
+
 class DynamicSafeZoneMode extends GameMode:
     var zone_x: float = 500.0
     var zone_y: float = 500.0
@@ -9836,6 +9996,7 @@ var GAME_MODES = {
     "evolutionary_simulation": EvolutionarySimulationMode.new(),
     "interactive_training": load("res://src/ai/interactive_training.gd").new(),
     "shrinking_danger_zone": ShrinkingDangerZoneMode.new(),
+    "inverse_safe_zone": InverseSafeZoneMode.new(),
     "safe_zone": SafeZoneMode.new(),
     "dynamic_safe_zone": DynamicSafeZoneMode.new(),
     "moving_safe_zone": MovingSafeZoneMode.new(),
