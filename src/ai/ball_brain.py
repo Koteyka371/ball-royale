@@ -36,16 +36,33 @@ class BallBrain:
                     from system.guild import GuildManager
                     gm = GuildManager("guilds.json")
                     guild_buffs = gm.get_guild_buffs(pm.data["guild_name"])
-                    if guild_buffs:
+                    guild_perks = gm.get_guild_perks(pm.data["guild_name"])
+
+                    hp_multi = 1.0
+                    speed_multi = 1.0
+                    dmg_multi = 1.0
+
+                    for perk in guild_perks:
+                        if perk == "hp_5_percent": hp_multi += 0.05
+                        elif perk == "hp_10_percent": hp_multi += 0.10
+                        elif perk == "speed_5_percent": speed_multi += 0.05
+                        elif perk == "speed_10_percent": speed_multi += 0.10
+                        elif perk == "dmg_5_percent": dmg_multi += 0.05
+                        elif perk == "dmg_10_percent": dmg_multi += 0.10
+
+                    if guild_buffs or guild_perks:
                         hp_percent = self.ball.hp / self.ball.max_hp if getattr(self.ball, 'max_hp', 0) > 0 else 1.0
                         if hasattr(self.ball, 'max_hp'):
                             self.ball.max_hp += guild_buffs.get("bonus_hp", 0) * 10
+                            self.ball.max_hp *= hp_multi
                         if hasattr(self.ball, 'hp'):
                             self.ball.hp = self.ball.max_hp * hp_percent
                         if hasattr(self.ball, 'speed'):
                             self.ball.speed += guild_buffs.get("bonus_speed", 0) * 5
+                            self.ball.speed *= speed_multi
                         if hasattr(self.ball, 'damage'):
                             self.ball.damage += guild_buffs.get("bonus_damage", 0) * 2
+                            self.ball.damage *= dmg_multi
                 except Exception:
                     pass
 
