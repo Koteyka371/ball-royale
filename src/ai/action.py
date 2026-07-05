@@ -3613,16 +3613,21 @@ class Action:
                                 # Grant a temporary movement speed boost upon bouncing
                                 self.ball.speed_boost_timer = getattr(self.ball, "speed_boost_timer", 0.0) + 3.0
 
+                                # Combo logic
+                                bumper_combo = getattr(self.ball, "bumper_combo", 0) + 1
+                                self.ball.bumper_combo = bumper_combo
+                                combo_multiplier = 1.0 + (bumper_combo * 0.5)
+
                                 # Apply bumper powerup if present
                                 powerup = getattr(hazard, "powerup_type", None)
                                 if powerup == "heal":
-                                    self.ball.hp = min(getattr(self.ball, "max_hp", 100.0), getattr(self.ball, "hp", 100.0) + 10.0)
+                                    self.ball.hp = min(getattr(self.ball, "max_hp", 100.0), getattr(self.ball, "hp", 100.0) + (10.0 * combo_multiplier))
                                 elif powerup == "speed":
-                                    self.ball.speed_boost_timer = 3.0
+                                    self.ball.speed_boost_timer = 3.0 * combo_multiplier
                                 elif powerup == "shield":
-                                    self.ball.shield = getattr(self.ball, "shield", 0.0) + 20.0
+                                    self.ball.shield = getattr(self.ball, "shield", 0.0) + (20.0 * combo_multiplier)
                                 elif powerup == "stamina":
-                                    self.ball.stamina = min(getattr(self.ball, "max_stamina", 100.0), getattr(self.ball, "stamina", 100.0) + 20.0)
+                                    self.ball.stamina = min(getattr(self.ball, "max_stamina", 100.0), getattr(self.ball, "stamina", 100.0) + (20.0 * combo_multiplier))
 
                             continue
                         elif hazard.kind == "healing_spring":
@@ -3914,6 +3919,7 @@ class Action:
 
         # Reflect projectiles and entities with increased speed upon hitting the boundary
         if bounced_wall:
+            self.ball.bumper_combo = 0
             import math as _math
             vx = getattr(self.ball, "vx", 0.0)
             vy = getattr(self.ball, "vy", 0.0)
@@ -8173,8 +8179,10 @@ class Action:
             regen_mult *= 2.0
 
         if getattr(self.ball, "is_dashing", False):
+            self.ball.bumper_combo = 0
             self.ball.stamina = max(0.0, getattr(self.ball, "stamina", 0.0) - (50.0 * drain_mult) * delta)
         elif getattr(self.ball, "_is_wind_riding", False):
+            self.ball.bumper_combo = 0
             self.ball.stamina = max(0.0, getattr(self.ball, "stamina", 0.0) - (15.0 * drain_mult) * delta)
         elif dist / max(0.0001, delta * 60) < getattr(self.ball, "base_speed", 2.0) * 0.5:
             self.ball.stamina = min(getattr(self.ball, "max_stamina", 100.0), getattr(self.ball, "stamina", 0.0) + (30.0 * regen_mult) * delta)
