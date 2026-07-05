@@ -923,7 +923,24 @@ class Action:
         # Max HP draining hazard logic
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for hazard in self.world.arena.hazards:
-                if getattr(hazard, "kind", "") == "vampiric_puddle":
+                if getattr(hazard, "kind", "") == "shrapnel":
+                    if getattr(hazard, "duration", 0.0) > 0:
+                        hazard.duration -= delta
+                        if hazard.duration <= 0:
+                            hazard.duration = 0.0
+                            # Let cleanup handle or just wait for other cleanup
+
+                    hazard.x += getattr(hazard, "vx", 0) * delta
+                    hazard.y += getattr(hazard, "vy", 0) * delta
+                    hazard.vx *= (1.0 - 2.0 * delta)
+                    hazard.vy *= (1.0 - 2.0 * delta)
+
+                    dist = math.hypot(self.ball.x - hazard.x, self.ball.y - hazard.y)
+                    if dist <= getattr(hazard, "radius", 5.0) + getattr(self.ball, "radius", 10.0):
+                        if hasattr(self.ball, "take_damage"):
+                            self.ball.take_damage(getattr(hazard, "damage", 10.0) * delta)
+
+                elif getattr(hazard, "kind", "") == "vampiric_puddle":
                     dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
                     if dist <= getattr(hazard, "radius", 0.0) + getattr(self.ball, "radius", 10.0):
                         # Shrink max HP by 5 per second
@@ -5401,6 +5418,22 @@ class Action:
                                         b.x += (dx / dist) * 15.0
                                         b.y += (dy / dist) * 15.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        num_shrapnel = random.randint(3, 5)
+                        class Shrapnel:
+                            pass
+                        for _ in range(num_shrapnel):
+                            shrapnel = Shrapnel()
+                            shrapnel.kind = "shrapnel"
+                            shrapnel.x = getattr(nearest, "x", 0)
+                            shrapnel.y = getattr(nearest, "y", 0)
+                            angle = random.uniform(0, 2 * math.pi)
+                            speed = random.uniform(200.0, 400.0)
+                            shrapnel.vx = math.cos(angle) * speed
+                            shrapnel.vy = math.sin(angle) * speed
+                            shrapnel.radius = 5.0
+                            shrapnel.duration = 5.0
+                            shrapnel.damage = 10.0
+                            self.world.arena.hazards.append(shrapnel)
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
                 elif getattr(nearest, "kind", None) == "bumper_booster":
