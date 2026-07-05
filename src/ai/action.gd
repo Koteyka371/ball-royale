@@ -3393,16 +3393,155 @@ func execute(strategy: String, delta: float):
                                                 b.hp -= hazard.damage * 2.0
                                                 if b.hp <= 0:
                                                     b.alive = false
-                elif hazard.kind == "trap":
-                    var current_tick = 0
-                    if "tick" in self.world:
+                    elif hazard.kind == "trap":
+                        var current_tick = 0
+                        if "tick" in self.world:
                         current_tick = self.world.tick
+
+                    var h_trap_variant = "normal"
+                    if hazard.has_meta("trap_variant"):
+                        h_trap_variant = hazard.get_meta("trap_variant")
+
+                    if h_trap_variant == "hologram":
+                        var hologram_spawned = false
+                        if hazard.has_meta("hologram_spawned"):
+                            hologram_spawned = hazard.get_meta("hologram_spawned")
+
+                        if not hologram_spawned:
+                            hazard.set_meta("hologram_spawned", true)
+                            hazard.set_meta("duration", 0.0)
+                                var target_to_clone = null
+                                var nearest_dist = 9999999.0
+
+                                if "boosters" in self.world:
+                                    for b in self.world.boosters:
+                                        var bx = 0.0
+                                        if "x" in b: bx = float(b.x)
+                                        elif typeof(b) != TYPE_DICTIONARY and b.has_method("get_meta") and b.has_meta("x"): bx = float(b.get_meta("x"))
+
+                                        var by = 0.0
+                                        if "y" in b: by = float(b.y)
+                                        elif typeof(b) != TYPE_DICTIONARY and b.has_method("get_meta") and b.has_meta("y"): by = float(b.get_meta("y"))
+
+                                        var d_sq = (bx - hazard.x)*(bx - hazard.x) + (by - hazard.y)*(by - hazard.y)
+                                        if d_sq < nearest_dist:
+                                            nearest_dist = d_sq
+                                            target_to_clone = b
+
+                            if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                                for h in self.world.arena.hazards:
+                                    var hkind = ""
+                                    if "kind" in h: hkind = h.kind
+                                    elif typeof(h) != TYPE_DICTIONARY and h.has_method("get_meta") and h.has_meta("kind"): hkind = h.get_meta("kind")
+
+                                    if hkind == "healing_spring":
+                                        var hx = 0.0
+                                        if "x" in h: hx = float(h.x)
+                                        elif typeof(h) != TYPE_DICTIONARY and h.has_method("get_meta") and h.has_meta("x"): hx = float(h.get_meta("x"))
+
+                                        var hy = 0.0
+                                        if "y" in h: hy = float(h.y)
+                                        elif typeof(h) != TYPE_DICTIONARY and h.has_method("get_meta") and h.has_meta("y"): hy = float(h.get_meta("y"))
+
+                                        var d_sq = (hx - hazard.x)*(hx - hazard.x) + (hy - hazard.y)*(hy - hazard.y)
+                                        if d_sq < nearest_dist:
+                                            nearest_dist = d_sq
+                                            target_to_clone = h
+
+                            if target_to_clone == null:
+                                if "balls" in self.world:
+                                    for b in self.world.balls:
+                                        var bid = null
+                                        if "id" in b: bid = b.id
+                                        elif b.has_method("get_meta") and b.has_meta("id"): bid = b.get_meta("id")
+
+                                        var hid = null
+                                        if "owner_id" in hazard: hid = hazard.owner_id
+                                        elif hazard.has_method("get_meta") and hazard.has_meta("owner_id"): hid = hazard.get_meta("owner_id")
+
+                                        if bid != null and bid == hid:
+                                            target_to_clone = b
+                                            break
+
+                            if target_to_clone != null:
+                                var holo = null
+                                if typeof(target_to_clone) == TYPE_DICTIONARY:
+                                    holo = target_to_clone.duplicate(true)
+                                elif target_to_clone.has_method("duplicate"):
+                                    holo = target_to_clone.duplicate()
+                                else:
+                                    holo = target_to_clone
+
+                                var n_id = randi() % 90000 + 10000
+                                if "next_id" in self.world:
+                                    n_id = self.world.next_id
+                                    self.world.next_id += 1
+
+                                if "id" in holo: holo.id = n_id
+                                elif typeof(holo) != TYPE_DICTIONARY and holo.has_method("set_meta"): holo.set_meta("id", n_id)
+                                elif typeof(holo) == TYPE_DICTIONARY: holo["id"] = n_id
+
+                                if "x" in holo: holo.x = hazard.x
+                                elif typeof(holo) != TYPE_DICTIONARY and holo.has_method("set_meta"): holo.set_meta("x", hazard.x)
+                                elif typeof(holo) == TYPE_DICTIONARY: holo["x"] = hazard.x
+
+                                if "y" in holo: holo.y = hazard.y
+                                elif typeof(holo) != TYPE_DICTIONARY and holo.has_method("set_meta"): holo.set_meta("y", hazard.y)
+                                elif typeof(holo) == TYPE_DICTIONARY: holo["y"] = hazard.y
+
+                                if "hp" in holo: holo.hp = 10.0
+                                elif typeof(holo) != TYPE_DICTIONARY and holo.has_method("set_meta"): holo.set_meta("hp", 10.0)
+                                elif typeof(holo) == TYPE_DICTIONARY: holo["hp"] = 10.0
+
+                                if "max_hp" in holo: holo.max_hp = 10.0
+                                elif typeof(holo) != TYPE_DICTIONARY and holo.has_method("set_meta"): holo.set_meta("max_hp", 10.0)
+                                elif typeof(holo) == TYPE_DICTIONARY: holo["max_hp"] = 10.0
+
+                                if "is_hologram" in holo: holo.is_hologram = true
+                                elif typeof(holo) != TYPE_DICTIONARY and holo.has_method("set_meta"): holo.set_meta("is_hologram", true)
+                                elif typeof(holo) == TYPE_DICTIONARY: holo["is_hologram"] = true
+
+                                if "hologram_timer" in holo: holo.hologram_timer = 10.0
+                                elif typeof(holo) != TYPE_DICTIONARY and holo.has_method("set_meta"): holo.set_meta("hologram_timer", 10.0)
+                                elif typeof(holo) == TYPE_DICTIONARY: holo["hologram_timer"] = 10.0
+
+                                if "skill" in holo: holo.skill = null
+                                elif typeof(holo) == TYPE_DICTIONARY: holo["skill"] = null
+                                if "active_skill" in holo: holo.active_skill = null
+                                elif typeof(holo) == TYPE_DICTIONARY: holo["active_skill"] = null
+                                if "SKILL" in holo: holo.SKILL = null
+                                elif typeof(holo) == TYPE_DICTIONARY: holo["SKILL"] = null
+
+                                if "vx" in holo: holo.vx = 0.0
+                                elif typeof(holo) != TYPE_DICTIONARY and holo.has_method("set_meta"): holo.set_meta("vx", 0.0)
+                                elif typeof(holo) == TYPE_DICTIONARY: holo["vx"] = 0.0
+
+                                if "vy" in holo: holo.vy = 0.0
+                                elif typeof(holo) != TYPE_DICTIONARY and holo.has_method("set_meta"): holo.set_meta("vy", 0.0)
+                                elif typeof(holo) == TYPE_DICTIONARY: holo["vy"] = 0.0
+
+                                if "damage" in holo: holo.damage = 0.0
+                                elif typeof(holo) != TYPE_DICTIONARY and holo.has_method("set_meta"): holo.set_meta("damage", 0.0)
+                                elif typeof(holo) == TYPE_DICTIONARY: holo["damage"] = 0.0
+
+                                if "alive" in holo: holo.alive = true
+                                elif typeof(holo) != TYPE_DICTIONARY and holo.has_method("set_meta"): holo.set_meta("alive", true)
+                                elif typeof(holo) == TYPE_DICTIONARY: holo["alive"] = true
+
+                                self.world.balls.append(holo)
+
                     if not hazard.has_meta("last_updated_tick") or hazard.get_meta("last_updated_tick") != current_tick:
-                        hazard.set_meta("last_updated_tick", current_tick)
-                        var dur = 5.0
-                        if hazard.has_meta("duration"):
-                            dur = hazard.get_meta("duration")
-                        hazard.set_meta("duration", dur - delta)
+                            hazard.set_meta("last_updated_tick", current_tick)
+
+                            var has_spawned = false
+                            if hazard.has_meta("hologram_spawned"):
+                                has_spawned = hazard.get_meta("hologram_spawned")
+
+                            if not has_spawned:
+                                var dur = 5.0
+                                if hazard.has_meta("duration"):
+                                    dur = hazard.get_meta("duration")
+                                hazard.set_meta("duration", dur - delta)
                 elif hazard.kind == "spinning_laser":
                     var current_tick = 0
                     if "tick" in self.world:
@@ -4339,7 +4478,7 @@ func execute(strategy: String, delta: float):
                                 has_skill = true
                             if speed > 300.0 or hazard_speed > 300.0 or has_skill:
                                 hazard.set_meta("is_exploded", true)
-                    elif hazard.kind == "trap":
+                elif hazard.kind == "trap":
                         var trap_owner_id = null
                         if hazard.has_method("get_meta") and hazard.has_meta("owner_id"):
                             trap_owner_id = hazard.get_meta("owner_id")
@@ -4359,6 +4498,66 @@ func execute(strategy: String, delta: float):
                                     self.ball.hp -= poison_damage
                                     if self.ball.hp <= 0:
                                         self.ball.alive = false
+                            elif trap_variant == "hologram":
+                                var holo_dmg = 15.0
+                                if self.ball.has_method("take_damage"):
+                                    self.ball.take_damage(holo_dmg)
+                                elif "hp" in self.ball:
+                                    self.ball.hp -= holo_dmg
+                                    if self.ball.hp <= 0:
+                                        self.ball.alive = false
+
+                                var is_stunned = false
+                                if "is_stunned" in self.ball: is_stunned = self.ball.is_stunned
+                                elif self.ball.has_method("get_meta") and self.ball.has_meta("is_stunned"): is_stunned = self.ball.get_meta("is_stunned")
+
+                                if not is_stunned:
+                                    if "is_stunned" in self.ball: self.ball.is_stunned = true
+                                    elif self.ball.has_method("set_meta"): self.ball.set_meta("is_stunned", true)
+
+                                if "stun_timer" in self.ball: self.ball.stun_timer = 2.0
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("stun_timer", 2.0)
+
+                                var is_confused = false
+                                if "is_confused" in self.ball: is_confused = self.ball.is_confused
+                                elif self.ball.has_method("get_meta") and self.ball.has_meta("is_confused"): is_confused = self.ball.get_meta("is_confused")
+
+                                if not is_confused:
+                                    if "is_confused" in self.ball: self.ball.is_confused = true
+                                    elif self.ball.has_method("set_meta"): self.ball.set_meta("is_confused", true)
+
+                                if "confusion_timer" in self.ball: self.ball.confusion_timer = 3.0
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("confusion_timer", 3.0)
+                            elif trap_variant == "hologram":
+                                var holo_dmg = 15.0
+                                if self.ball.has_method("take_damage"):
+                                    self.ball.take_damage(holo_dmg)
+                                elif "hp" in self.ball:
+                                    self.ball.hp -= holo_dmg
+                                    if self.ball.hp <= 0:
+                                        self.ball.alive = false
+
+                                var is_stunned = false
+                                if "is_stunned" in self.ball: is_stunned = self.ball.is_stunned
+                                elif self.ball.has_method("get_meta") and self.ball.has_meta("is_stunned"): is_stunned = self.ball.get_meta("is_stunned")
+
+                                if not is_stunned:
+                                    if "is_stunned" in self.ball: self.ball.is_stunned = true
+                                    elif self.ball.has_method("set_meta"): self.ball.set_meta("is_stunned", true)
+
+                                if "stun_timer" in self.ball: self.ball.stun_timer = 2.0
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("stun_timer", 2.0)
+
+                                var is_confused = false
+                                if "is_confused" in self.ball: is_confused = self.ball.is_confused
+                                elif self.ball.has_method("get_meta") and self.ball.has_meta("is_confused"): is_confused = self.ball.get_meta("is_confused")
+
+                                if not is_confused:
+                                    if "is_confused" in self.ball: self.ball.is_confused = true
+                                    elif self.ball.has_method("set_meta"): self.ball.set_meta("is_confused", true)
+
+                                if "confusion_timer" in self.ball: self.ball.confusion_timer = 3.0
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("confusion_timer", 3.0)
                             elif trap_variant == "blindness":
                                 var is_blinded = false
                                 if "is_blinded" in self.ball:

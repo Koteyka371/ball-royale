@@ -87,3 +87,7 @@ def test_hologram_trap_spawns_hologram_and_explodes():
     # Hologram should be dead, and enemy should take 15 damage
     assert not hologram.alive
     assert enemy.hp == 100.0 - 15.0
+    assert getattr(enemy, "is_stunned", False)
+    assert getattr(enemy, "stun_timer", 0.0) == 2.0
+    assert getattr(enemy, "is_confused", False)
+    assert getattr(enemy, "confusion_timer", 0.0) == 3.0

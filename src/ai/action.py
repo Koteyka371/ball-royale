@@ -1792,8 +1792,16 @@ class Action:
                                             other.take_damage(15.0)
                                         else:
                                             other.hp -= 15.0
-                                        if other.hp <= 0:
+                                        if getattr(other, "hp", 1.0) <= 0:
                                             other.alive = False
+
+                                        if not getattr(other, "is_stunned", False):
+                                            other.is_stunned = True
+                                        other.stun_timer = 2.0
+
+                                        if not getattr(other, "is_confused", False):
+                                            other.is_confused = True
+                                        other.confusion_timer = 3.0
 
         if getattr(self.ball, "is_hologram", False):
             # Erratic movement
@@ -1919,19 +1927,52 @@ class Action:
                         if getattr(hazard, "trap_variant", "normal") == "hologram" and not getattr(hazard, "hologram_spawned", False):
                             hazard.hologram_spawned = True
                             hazard.duration = 0.0
-                            owner = None
-                            if hasattr(self.world, "balls"):
-                                for b in self.world.balls:
-                                    if getattr(b, "id", None) == getattr(hazard, "owner_id", None):
-                                        owner = b
-                                        break
-                            if owner:
+                            target_to_clone = None
+
+                            # Find nearest booster or healing spring
+                            nearest_dist = float('inf')
+                            if hasattr(self.world, "boosters"):
+                                for b in self.world.boosters:
+                                    d_sq = (b.x - hazard.x)**2 + (b.y - hazard.y)**2
+                                    if d_sq < nearest_dist:
+                                        nearest_dist = d_sq
+                                        target_to_clone = b
+
+                            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                                for h in self.world.arena.hazards:
+                                    if getattr(h, "kind", "") == "healing_spring":
+                                        d_sq = (h.x - hazard.x)**2 + (h.y - hazard.y)**2
+                                        if d_sq < nearest_dist:
+                                            nearest_dist = d_sq
+                                            target_to_clone = h
+
+                            # Fallback to owner if no booster/healing spring found
+                            if target_to_clone is None:
+                                if hasattr(self.world, "balls"):
+                                    for b in self.world.balls:
+                                        if getattr(b, "id", None) == getattr(hazard, "owner_id", None):
+                                            target_to_clone = b
+                                            break
+
+                            if target_to_clone:
                                 import copy
-                                holo = copy.copy(owner)
                                 import random
+                                try:
+                                    holo = copy.copy(target_to_clone)
+                                except:
+                                    try:
+                                        import copy
+                                        holo = copy.copy(target_to_clone)
+                                    except:
+                                        class _DummyFallback: pass
+                                        holo = _DummyFallback()
+                                        for attr in dir(target_to_clone):
+                                            if not attr.startswith('_'):
+                                                setattr(holo, attr, getattr(target_to_clone, attr))
+
                                 holo.id = getattr(self.world, "next_id", random.randint(10000, 99999))
                                 if hasattr(self.world, "next_id"):
-                                                        self.world.next_id += 1
+                                    self.world.next_id += 1
                                 holo.x = hazard.x
                                 holo.y = hazard.y
                                 holo.hp = 10.0
@@ -1941,12 +1982,14 @@ class Action:
                                 holo.skill = None
                                 holo.active_skill = None
                                 if hasattr(holo, "SKILL"):
-                                                holo.SKILL = None
+                                    holo.SKILL = None
                                 holo.vx = 0.0
                                 holo.vy = 0.0
                                 holo.damage = 0.0
                                 holo.alive = True
                                 self.world.balls.append(holo)
+
+
 
                         if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
                             hazard.last_updated_tick = current_tick
@@ -2677,6 +2720,18 @@ class Action:
                                         self.ball.hp -= poison_damage
                                         if self.ball.hp <= 0:
                                             self.ball.alive = False
+                                elif trap_variant == "hologram":
+                                    self.ball.hp -= 15.0
+                                    if self.ball.hp <= 0:
+                                        self.ball.alive = False
+
+                                    if not getattr(self.ball, "is_stunned", False):
+                                        self.ball.is_stunned = True
+                                    self.ball.stun_timer = 2.0
+
+                                    if not getattr(self.ball, "is_confused", False):
+                                        self.ball.is_confused = True
+                                    self.ball.confusion_timer = 3.0
                                 elif trap_variant == "blindness":
                                     if not getattr(self.ball, "is_blinded", False):
                                         self.ball.is_blinded = True
