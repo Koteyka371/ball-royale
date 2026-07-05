@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-544] Sinkholes as base modifiers — *2026-07-05 12:13:01 UTC*
+
+Sinkholes can now expand over time, slowly consuming nearby hazards. If a sinkhole merges with a quicksand hazard, it becomes a massive sinkhole with a stronger pull and slower speed debuff.
+
+---
+
 ## [idea-576] Portal Overload Event — *2026-07-05 11:50:47 UTC*
 
 A random arena event where existing portals become unstable. Instead of teleporting players instantly, entering a portal triggers a 2-second 'charging' phase where nearby players (friend or foe) are sucked in. Once charged, all sucked-in players are blasted out of the exit portal at high speeds in random directions.

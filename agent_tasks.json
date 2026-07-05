@@ -9401,7 +9401,7 @@
     },
     {
       "id": "idea-544",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sinkholes as base modifiers",
@@ -16156,6 +16156,40 @@
         "src/ai/hackable_turret.py",
         "src/ai/hackable_turret.gd",
         "tests/test_hackable_turret.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-941",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Unstable core overload",
+      "description": "If too many entities are sucked into a single unstable portal, it overloads early and the blast radius and damage are significantly multiplied based on capacity.",
+      "allowed_paths": [
+        "src/ai/unstable_core_overload.py",
+        "src/ai/unstable_core_overload.gd",
+        "tests/test_unstable_core_overload.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-942",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Portal chaining network",
+      "description": "Portals could link together to form complex routing networks across the map. If a player is blasted out of one portal, they might land directly in another's suction radius.",
+      "allowed_paths": [
+        "src/ai/portal_chaining_network.py",
+        "src/ai/portal_chaining_network.gd",
+        "tests/test_portal_chaining_network.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
