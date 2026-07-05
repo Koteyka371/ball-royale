@@ -7920,9 +7920,24 @@ class ClanTournamentMode(GameMode):
         except ImportError:
             pass
 
+class ReversedInputMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Reversed Input"
+        self.description = "All movement inputs for players and AI are reversed, making movement completely counter-intuitive."
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        for b in balls:
+            if getattr(b, "alive", False):
+                vx = getattr(b, "vx", 0.0)
+                vy = getattr(b, "vy", 0.0)
+                b.x -= vx * delta * 2
+                b.y -= vy * delta * 2
+
 GAME_MODES["rolling_boulders"] = RollingBouldersMode()
 GAME_MODES["soul_link"] = SoulLinkMode()
 GAME_MODES["clan_tournament"] = ClanTournamentMode()
+GAME_MODES["reversed_input"] = ReversedInputMode()
 GAME_MODES["scrambler_drones"] = ScramblerDroneMode()
 
 
