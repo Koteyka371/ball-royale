@@ -8778,6 +8778,19 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "material_magnet_booster":
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("material_magnet_timer", 10.0)
+                else:
+                    self.ball.material_magnet_timer = 10.0
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "emp_immunity_booster":
                 if "emp_immunity_timer" in self.ball:
                     self.ball.emp_immunity_timer = 15.0
@@ -12502,6 +12515,49 @@ func _update_skill_timer(delta: float):
         if self.ball.has_method("set_meta"):
             self.ball.set_meta("nemesis_booster_timer", n_timer)
 
+    var mat_magnet_timer = 0.0
+    if "material_magnet_timer" in self.ball:
+        mat_magnet_timer = float(self.ball.material_magnet_timer)
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("material_magnet_timer"):
+        mat_magnet_timer = self.ball.get_meta("material_magnet_timer")
+
+    if mat_magnet_timer > 0:
+        mat_magnet_timer -= delta
+        if "material_magnet_timer" in self.ball:
+            self.ball.material_magnet_timer = mat_magnet_timer
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("material_magnet_timer", mat_magnet_timer)
+
+        if self.world != null and "arena" in self.world and "items" in self.world.arena:
+            for item in self.world.arena.items:
+                var i_kind = ""
+                if typeof(item) == TYPE_DICTIONARY and item.has("kind"): i_kind = item["kind"]
+                elif typeof(item) == TYPE_OBJECT and "kind" in item: i_kind = item.kind
+
+                if i_kind == "material":
+                    var i_x = 0.0
+                    var i_y = 0.0
+                    if typeof(item) == TYPE_DICTIONARY and item.has("x"): i_x = item["x"]
+                    elif typeof(item) == TYPE_OBJECT and "x" in item: i_x = item.x
+                    if typeof(item) == TYPE_DICTIONARY and item.has("y"): i_y = item["y"]
+                    elif typeof(item) == TYPE_OBJECT and "y" in item: i_y = item.y
+
+                    var dx = self.ball.x - i_x
+                    var dy = self.ball.y - i_y
+                    var dist_sq = dx*dx + dy*dy
+                    if dist_sq < 250000:
+                        var dist = sqrt(dist_sq)
+                        if dist > 0.0001:
+                            var nx = dx / dist
+                            var ny = dy / dist
+                            var pull_strength = 200.0 * delta
+                            if typeof(item) == TYPE_DICTIONARY:
+                                item["x"] = i_x + nx * pull_strength
+                                item["y"] = i_y + ny * pull_strength
+                            elif typeof(item) == TYPE_OBJECT:
+                                if "x" in item: item.x += nx * pull_strength
+                                if "y" in item: item.y += ny * pull_strength
+
     var pull_timer = 0.0
     if "pull_booster_timer" in self.ball:
         pull_timer = float(self.ball.pull_booster_timer)
@@ -12524,7 +12580,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_compass_item", "invert_booster", "reverse_gravity_booster", "anchor_booster"]
+                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_compass_item", "invert_booster", "reverse_gravity_booster", "anchor_booster"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y

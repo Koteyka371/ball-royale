@@ -1,0 +1,4 @@
+{
+  "title": "Blacksmith Ball",
+  "description": "A new ball class that permanently increases its own damage and max health based on the total number of materials it collects during a match."
+}
