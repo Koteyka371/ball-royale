@@ -10015,7 +10015,7 @@
     },
     {
       "id": "idea-580",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mirror Coat Shield",
@@ -16411,6 +16411,40 @@
         "src/ai/mirror_mirage.py",
         "src/ai/mirror_mirage.gd",
         "tests/test_mirror_mirage.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-956",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Laser Gates",
+      "description": "Rotating lasers that slice across the arena.",
+      "allowed_paths": [
+        "src/ai/laser_gates.py",
+        "src/ai/laser_gates.gd",
+        "tests/test_laser_gates.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-957",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sticky Walls",
+      "description": "Balls that hit the wall stick to it for a few seconds.",
+      "allowed_paths": [
+        "src/ai/sticky_walls.py",
+        "src/ai/sticky_walls.gd",
+        "tests/test_sticky_walls.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

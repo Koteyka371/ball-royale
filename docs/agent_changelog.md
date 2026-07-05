@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-580] Mirror Coat Shield — *2026-07-05 14:38:44 UTC*
+
+A new active skill that reflects all projectiles and hazard effects back to their source for a short duration, but lowers movement speed by 50% while active.
+
+---
+
 ## [idea-574] Bouncy Terrain Mutator — *2026-07-05 14:30:53 UTC*
 
 Add a new mutator or game mode 'Bouncy Terrain' where collision with the arena walls or certain hazards doesn't stop or damage the ball, but reflects their velocity dramatically (like a pinball bumper), increasing chaos and requiring balls to adapt their pathfinding.
