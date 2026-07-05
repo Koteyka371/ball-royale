@@ -1885,6 +1885,27 @@ func execute(strategy: String, delta: float):
 				inv.erase("position_swap")
 				self.ball.set_meta("inventory", inv)
 
+	var inv2 = []
+	if "inventory" in self.ball: inv2 = self.ball.inventory
+	elif self.ball.has_method("get_meta") and self.ball.has_meta("inventory"): inv2 = self.ball.get_meta("inventory")
+	if inv2.has("status_absorber"):
+		var stun = self.ball.stun_timer if "stun_timer" in self.ball else (self.ball.get_meta("stun_timer") if self.ball.has_method("has_meta") and self.ball.has_meta("stun_timer") else 0.0)
+		var silence = self.ball.silence_timer if "silence_timer" in self.ball else (self.ball.get_meta("silence_timer") if self.ball.has_method("has_meta") and self.ball.has_meta("silence_timer") else 0.0)
+		var poison = self.ball.poison_timer if "poison_timer" in self.ball else (self.ball.get_meta("poison_timer") if self.ball.has_method("has_meta") and self.ball.has_meta("poison_timer") else 0.0)
+		var slow = self.ball.slow_timer if "slow_timer" in self.ball else (self.ball.get_meta("slow_timer") if self.ball.has_method("has_meta") and self.ball.has_meta("slow_timer") else 0.0)
+		var confusion = self.ball.confusion_timer if "confusion_timer" in self.ball else (self.ball.get_meta("confusion_timer") if self.ball.has_method("has_meta") and self.ball.has_meta("confusion_timer") else 0.0)
+		var blindness = self.ball.blindness_timer if "blindness_timer" in self.ball else (self.ball.get_meta("blindness_timer") if self.ball.has_method("has_meta") and self.ball.has_meta("blindness_timer") else 0.0)
+		var stutter = self.ball.stutter_timer if "stutter_timer" in self.ball else (self.ball.get_meta("stutter_timer") if self.ball.has_method("has_meta") and self.ball.has_meta("stutter_timer") else 0.0)
+
+		if stun > 0 or silence > 0 or poison > 0 or slow > 0 or confusion > 0 or blindness > 0 or stutter > 0:
+			self._absorb_status(delta)
+			var idx = inv2.find("status_absorber")
+			if idx >= 0:
+				inv2.remove_at(idx)
+			if "inventory" in self.ball: self.ball.inventory = inv2
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv2)
+			self._throw_absorbed_status(delta)
+
 	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
 		if inv.has("portal_gun"):
@@ -4197,6 +4218,99 @@ func execute(strategy: String, delta: float):
 
                             self.ball.x += nx * push_strength
                             self.ball.y += ny * push_strength
+                elif hazard.kind == "status_projectile":
+                    var target_id = hazard.get("target_id", -1) if typeof(hazard) == TYPE_DICTIONARY else (hazard.target_id if "target_id" in hazard else -1)
+                    var target = null
+                    for b in self.world.balls:
+                        var b_id = b.id if "id" in b else -1
+                        if b_id == target_id:
+                            target = b
+                            break
+
+                    var target_alive = true
+                    if target != null and "alive" in target:
+                        target_alive = target.alive
+
+                    if target == null or not target_alive:
+                        if typeof(hazard) == TYPE_DICTIONARY:
+                            hazard["active"] = false
+                        else:
+                            hazard.active = false
+                        continue
+
+                    var hx = hazard.get("x", 0.0) if typeof(hazard) == TYPE_DICTIONARY else (hazard.x if "x" in hazard else 0.0)
+                    var hy = hazard.get("y", 0.0) if typeof(hazard) == TYPE_DICTIONARY else (hazard.y if "y" in hazard else 0.0)
+                    var tx = target.x if "x" in target else 0.0
+                    var ty = target.y if "y" in target else 0.0
+                    var speed = (hazard.get("speed", 300.0) if typeof(hazard) == TYPE_DICTIONARY else (hazard.speed if "speed" in hazard else 300.0)) * delta
+
+                    var dist = self.world.math.distance(hx, hy, tx, ty)
+                    var tr = target.radius if "radius" in target else 15.0
+                    var hr = hazard.get("radius", 10.0) if typeof(hazard) == TYPE_DICTIONARY else (hazard.radius if "radius" in hazard else 10.0)
+
+                    if dist <= hr + tr:
+                        var payload = hazard.get("status_payload", {}) if typeof(hazard) == TYPE_DICTIONARY else (hazard.status_payload if "status_payload" in hazard else {})
+
+                        var p_stun = float(payload.get("stun_timer", 0.0))
+                        if p_stun > 0:
+                            var c_stun = target.stun_timer if "stun_timer" in target else 0.0
+                            if "stun_timer" in target: target.stun_timer = max(c_stun, p_stun)
+                            elif target.has_method("set_meta"): target.set_meta("stun_timer", max(c_stun, p_stun))
+                            if "is_stunned" in target: target.is_stunned = true
+                            elif target.has_method("set_meta"): target.set_meta("is_stunned", true)
+
+                        var p_sil = float(payload.get("silence_timer", 0.0))
+                        if p_sil > 0:
+                            var c_sil = target.silence_timer if "silence_timer" in target else 0.0
+                            if "silence_timer" in target: target.silence_timer = max(c_sil, p_sil)
+                            elif target.has_method("set_meta"): target.set_meta("silence_timer", max(c_sil, p_sil))
+
+                        var p_poi = float(payload.get("poison_timer", 0.0))
+                        if p_poi > 0:
+                            var c_poi = target.poison_timer if "poison_timer" in target else 0.0
+                            if "poison_timer" in target: target.poison_timer = max(c_poi, p_poi)
+                            elif target.has_method("set_meta"): target.set_meta("poison_timer", max(c_poi, p_poi))
+
+                        var p_slo = float(payload.get("slow_timer", 0.0))
+                        if p_slo > 0:
+                            var c_slo = target.slow_timer if "slow_timer" in target else 0.0
+                            if "slow_timer" in target: target.slow_timer = max(c_slo, p_slo)
+                            elif target.has_method("set_meta"): target.set_meta("slow_timer", max(c_slo, p_slo))
+
+                        var p_con = float(payload.get("confusion_timer", 0.0))
+                        if p_con > 0:
+                            var c_con = target.confusion_timer if "confusion_timer" in target else 0.0
+                            if "confusion_timer" in target: target.confusion_timer = max(c_con, p_con)
+                            elif target.has_method("set_meta"): target.set_meta("confusion_timer", max(c_con, p_con))
+                            if "is_confused" in target: target.is_confused = true
+                            elif target.has_method("set_meta"): target.set_meta("is_confused", true)
+
+                        var p_bli = float(payload.get("blindness_timer", 0.0))
+                        if p_bli > 0:
+                            var c_bli = target.blindness_timer if "blindness_timer" in target else 0.0
+                            if "blindness_timer" in target: target.blindness_timer = max(c_bli, p_bli)
+                            elif target.has_method("set_meta"): target.set_meta("blindness_timer", max(c_bli, p_bli))
+
+                        var p_stu = float(payload.get("stutter_timer", 0.0))
+                        if p_stu > 0:
+                            var c_stu = target.stutter_timer if "stutter_timer" in target else 0.0
+                            if "stutter_timer" in target: target.stutter_timer = max(c_stu, p_stu)
+                            elif target.has_method("set_meta"): target.set_meta("stutter_timer", max(c_stu, p_stu))
+
+                        if typeof(hazard) == TYPE_DICTIONARY:
+                            hazard["active"] = false
+                        else:
+                            hazard.active = false
+                        continue
+
+                    var angle = self.world.math.angle_between(hx, hy, tx, ty)
+                    if typeof(hazard) == TYPE_DICTIONARY:
+                        hazard["x"] = hx + self.world.math.cos(angle) * speed
+                        hazard["y"] = hy + self.world.math.sin(angle) * speed
+                    else:
+                        hazard.x = hx + self.world.math.cos(angle) * speed
+                        hazard.y = hy + self.world.math.sin(angle) * speed
+
                 elif hazard.kind == "gravity_well":
                     # Cosmetics: gravity anomaly already implemented
                     var dx = hazard.x - self.ball.x
@@ -9283,6 +9397,13 @@ func _collect_booster(delta: float):
                 inv.append("placeable_trap_booster")
                 if "inventory" in self.ball: self.ball.inventory = inv
                 elif self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv)
+            elif "kind" in nearest and nearest.kind == "status_absorber_booster":
+                var inv = []
+                if "inventory" in self.ball: inv = self.ball.inventory
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("inventory"): inv = self.ball.get_meta("inventory")
+                inv.append("status_absorber")
+                if "inventory" in self.ball: self.ball.inventory = inv
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv)
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
@@ -11920,6 +12041,131 @@ func _spawn_skill_particles(skill_name: String = ""):
         if particles.has_signal("finished"):
             particles.finished.connect(particles.queue_free)
 
+
+func _absorb_status(delta: float):
+	var stun = 0.0
+	if "stun_timer" in self.ball: stun = self.ball.stun_timer
+	elif self.ball.has_method("get_meta") and self.ball.has_meta("stun_timer"): stun = self.ball.get_meta("stun_timer")
+
+	var silence = 0.0
+	if "silence_timer" in self.ball: silence = self.ball.silence_timer
+	elif self.ball.has_method("get_meta") and self.ball.has_meta("silence_timer"): silence = self.ball.get_meta("silence_timer")
+
+	var poison = 0.0
+	if "poison_timer" in self.ball: poison = self.ball.poison_timer
+	elif self.ball.has_method("get_meta") and self.ball.has_meta("poison_timer"): poison = self.ball.get_meta("poison_timer")
+
+	var slow = 0.0
+	if "slow_timer" in self.ball: slow = self.ball.slow_timer
+	elif self.ball.has_method("get_meta") and self.ball.has_meta("slow_timer"): slow = self.ball.get_meta("slow_timer")
+
+	var confusion = 0.0
+	if "confusion_timer" in self.ball: confusion = self.ball.confusion_timer
+	elif self.ball.has_method("get_meta") and self.ball.has_meta("confusion_timer"): confusion = self.ball.get_meta("confusion_timer")
+
+	var blindness = 0.0
+	if "blindness_timer" in self.ball: blindness = self.ball.blindness_timer
+	elif self.ball.has_method("get_meta") and self.ball.has_meta("blindness_timer"): blindness = self.ball.get_meta("blindness_timer")
+
+	var stutter = 0.0
+	if "stutter_timer" in self.ball: stutter = self.ball.stutter_timer
+	elif self.ball.has_method("get_meta") and self.ball.has_meta("stutter_timer"): stutter = self.ball.get_meta("stutter_timer")
+
+	var absorbed = {}
+	if "absorbed_status" in self.ball: absorbed = self.ball.absorbed_status
+	elif self.ball.has_method("get_meta") and self.ball.has_meta("absorbed_status"): absorbed = self.ball.get_meta("absorbed_status")
+
+	absorbed["stun_timer"] = max(absorbed.get("stun_timer", 0.0), stun)
+	absorbed["silence_timer"] = max(absorbed.get("silence_timer", 0.0), silence)
+	absorbed["poison_timer"] = max(absorbed.get("poison_timer", 0.0), poison)
+	absorbed["slow_timer"] = max(absorbed.get("slow_timer", 0.0), slow)
+	absorbed["confusion_timer"] = max(absorbed.get("confusion_timer", 0.0), confusion)
+	absorbed["blindness_timer"] = max(absorbed.get("blindness_timer", 0.0), blindness)
+	absorbed["stutter_timer"] = max(absorbed.get("stutter_timer", 0.0), stutter)
+
+	if "absorbed_status" in self.ball: self.ball.absorbed_status = absorbed
+	elif self.ball.has_method("set_meta"): self.ball.set_meta("absorbed_status", absorbed)
+
+	if "stun_timer" in self.ball: self.ball.stun_timer = 0.0
+	elif self.ball.has_method("set_meta"): self.ball.set_meta("stun_timer", 0.0)
+	if "is_stunned" in self.ball: self.ball.is_stunned = false
+	elif self.ball.has_method("set_meta"): self.ball.set_meta("is_stunned", false)
+
+	if "silence_timer" in self.ball: self.ball.silence_timer = 0.0
+	elif self.ball.has_method("set_meta"): self.ball.set_meta("silence_timer", 0.0)
+
+	if "poison_timer" in self.ball: self.ball.poison_timer = 0.0
+	elif self.ball.has_method("set_meta"): self.ball.set_meta("poison_timer", 0.0)
+
+	if "slow_timer" in self.ball: self.ball.slow_timer = 0.0
+	elif self.ball.has_method("set_meta"): self.ball.set_meta("slow_timer", 0.0)
+
+	if "confusion_timer" in self.ball: self.ball.confusion_timer = 0.0
+	elif self.ball.has_method("set_meta"): self.ball.set_meta("confusion_timer", 0.0)
+	if "is_confused" in self.ball: self.ball.is_confused = false
+	elif self.ball.has_method("set_meta"): self.ball.set_meta("is_confused", false)
+
+	if "blindness_timer" in self.ball: self.ball.blindness_timer = 0.0
+	elif self.ball.has_method("set_meta"): self.ball.set_meta("blindness_timer", 0.0)
+
+	if "stutter_timer" in self.ball: self.ball.stutter_timer = 0.0
+	elif self.ball.has_method("set_meta"): self.ball.set_meta("stutter_timer", 0.0)
+
+	self._idle(delta)
+
+func _throw_absorbed_status(delta: float):
+	var target = null
+	var min_dist = 999999.0
+	var my_team = self.ball.team if "team" in self.ball else -1
+	var my_id = self.ball.id if "id" in self.ball else -1
+
+	for b in self.world.balls:
+		var b_id = b.id if "id" in b else -1
+		var b_team = b.team if "team" in b else -2
+		var b_alive = b.alive if "alive" in b else true
+
+		if b_id == my_id or not b_alive or b_team == my_team:
+			continue
+
+		var b_x = b.x if "x" in b else 0.0
+		var b_y = b.y if "y" in b else 0.0
+		var dist = self.world.math.distance(self.ball.x, self.ball.y, b_x, b_y)
+		if dist < min_dist:
+			min_dist = dist
+			target = b
+
+	if target != null:
+		var target_id = target.id if "id" in target else -1
+		var proj_id = 10000
+		if "arena" in self.world and "hazards" in self.world.arena:
+			proj_id = self.world.arena.hazards.size() + 10000
+
+		var payload = {}
+		if "absorbed_status" in self.ball: payload = self.ball.absorbed_status
+		elif self.ball.has_method("get_meta") and self.ball.has_meta("absorbed_status"): payload = self.ball.get_meta("absorbed_status")
+
+		var projectile = {
+			"id": proj_id,
+			"x": self.ball.x,
+			"y": self.ball.y,
+			"kind": "status_projectile",
+			"team": my_team,
+			"owner_id": my_id,
+			"target_id": target_id,
+			"status_payload": payload,
+			"speed": 300,
+			"radius": 10,
+			"active": true
+		}
+		if "arena" in self.world and "hazards" in self.world.arena:
+			self.world.arena.hazards.append(projectile)
+		elif "events" in self.world:
+			self.world.events.append({"type": "projectile_spawn", "data": projectile})
+
+		if "absorbed_status" in self.ball: self.ball.absorbed_status = {}
+		elif self.ball.has_method("set_meta"): self.ball.set_meta("absorbed_status", {})
+
+	self._idle(delta)
 
 func _idle(delta: float):
     var speed = 2.0
