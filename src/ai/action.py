@@ -3319,12 +3319,14 @@ class Action:
                                 nx = math.cos(angle)
                                 ny = math.sin(angle)
 
-                                bounce_strength = 600.0 * delta
+                                bounce_strength = 1200.0 * delta
                                 self.ball.x += nx * bounce_strength
                                 self.ball.y += ny * bounce_strength
                                 # Accelerate ball significantly to create chaotic pinball-like movement
-                                self.ball.vx = nx * 2000.0
-                                self.ball.vy = ny * 2000.0
+                                self.ball.vx = nx * 4000.0
+                                self.ball.vy = ny * 4000.0
+                                # Grant a temporary movement speed boost upon bouncing
+                                self.ball.speed_boost_timer = getattr(self.ball, "speed_boost_timer", 0.0) + 3.0
 
                                 # Apply bumper powerup if present
                                 powerup = getattr(hazard, "powerup_type", None)
