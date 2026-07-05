@@ -10152,7 +10152,7 @@
     },
     {
       "id": "idea-588",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bumper Chaining",
@@ -17110,6 +17110,57 @@
         "src/arena/echoes_of_the_past.py",
         "src/arena/echoes_of_the_past.gd",
         "tests/test_echoes_of_the_past.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-997",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Arena Mode",
+      "description": "A battle royale game mode where the safe zone of the arena periodically shrinks. Entities outside the safe zone take continuous damage. This mode forces encounters, accelerates matches, and creates intense late-game scenarios.",
+      "allowed_paths": [
+        "src/arena/shrinking_arena.py",
+        "src/arena/shrinking_arena.gd",
+        "tests/test_shrinking_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-998",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sniper Only Mode",
+      "description": "All players are forced into a sniper ball class with drastically reduced movement speed, but extremely high bullet velocity and range, encouraging stealth and long-range tactical play.",
+      "allowed_paths": [
+        "src/ai/sniper_only.py",
+        "src/ai/sniper_only.gd",
+        "tests/test_sniper_only.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-999",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Invisible Mines Mode",
+      "description": "A mode where players can randomly drop invisible mines while moving, making navigation dangerous and encouraging players to force opponents into previously traveled paths.",
+      "allowed_paths": [
+        "src/ai/invisible_mines.py",
+        "src/ai/invisible_mines.gd",
+        "tests/test_invisible_mines.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
