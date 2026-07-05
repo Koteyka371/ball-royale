@@ -3445,19 +3445,74 @@ func execute(strategy: String, delta: float):
                     elif hazard.kind == "swap_trap":
                         var valid_targets = []
                         if "balls" in self.world:
+                            var my_team = ""
+                            if "team" in self.ball: my_team = self.ball.team
+                            elif self.ball.has_method("get_meta") and self.ball.has_meta("team"): my_team = self.ball.get_meta("team")
+                            elif "ball_type" in self.ball: my_team = self.ball.ball_type
+                            elif self.ball.has_method("get_meta") and self.ball.has_meta("ball_type"): my_team = self.ball.get_meta("ball_type")
+
                             for b in self.world.balls:
                                 if _get_id(b) != _get_id(self.ball):
                                     var b_alive = true
+                                    var is_decoy = false
                                     if typeof(b) == TYPE_DICTIONARY:
                                         b_alive = b.get("alive", true)
+                                        is_decoy = b.get("is_decoy", false)
                                     else:
                                         b_alive = b.alive if "alive" in b else true
+                                        is_decoy = b.is_decoy if "is_decoy" in b else false
+                                        if not is_decoy and b.has_method("get_meta") and b.has_meta("is_decoy"):
+                                            is_decoy = b.get_meta("is_decoy")
 
-                                    if b_alive:
-                                        valid_targets.append(b)
+                                    if b_alive and not is_decoy:
+                                        var b_team = ""
+                                        if typeof(b) == TYPE_DICTIONARY:
+                                            b_team = b.get("team", b.get("ball_type", ""))
+                                        else:
+                                            if "team" in b: b_team = b.team
+                                            elif b.has_method("get_meta") and b.has_meta("team"): b_team = b.get_meta("team")
+                                            elif "ball_type" in b: b_team = b.ball_type
+                                            elif b.has_method("get_meta") and b.has_meta("ball_type"): b_team = b.get_meta("ball_type")
+
+                                        if b_team != my_team:
+                                            valid_targets.append(b)
+
+                            if valid_targets.size() == 0:
+                                for b in self.world.balls:
+                                    if _get_id(b) != _get_id(self.ball):
+                                        var b_alive = true
+                                        var is_decoy = false
+                                        if typeof(b) == TYPE_DICTIONARY:
+                                            b_alive = b.get("alive", true)
+                                            is_decoy = b.get("is_decoy", false)
+                                        else:
+                                            b_alive = b.alive if "alive" in b else true
+                                            is_decoy = b.is_decoy if "is_decoy" in b else false
+                                            if not is_decoy and b.has_method("get_meta") and b.has_meta("is_decoy"):
+                                                is_decoy = b.get_meta("is_decoy")
+
+                                        if b_alive and not is_decoy:
+                                            valid_targets.append(b)
 
                             if valid_targets.size() > 0:
                                 var rng_target = valid_targets[self.world.math.randi() % valid_targets.size()]
+
+                                var current_tick = 0
+                                if "tick" in self.world: current_tick = self.world.tick
+
+                                if typeof(self.ball) == TYPE_DICTIONARY:
+                                    self.ball["last_teleport_tick"] = current_tick
+                                elif self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("last_teleport_tick", current_tick)
+                                elif "last_teleport_tick" in self.ball:
+                                    self.ball.last_teleport_tick = current_tick
+
+                                if typeof(rng_target) == TYPE_DICTIONARY:
+                                    rng_target["last_teleport_tick"] = current_tick
+                                elif rng_target.has_method("set_meta"):
+                                    rng_target.set_meta("last_teleport_tick", current_tick)
+                                elif "last_teleport_tick" in rng_target:
+                                    rng_target.last_teleport_tick = current_tick
 
                                 var temp_x = _get_x(self.ball)
                                 var temp_y = _get_y(self.ball)

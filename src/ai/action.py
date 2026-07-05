@@ -1946,10 +1946,29 @@ class Action:
                                                 b.alive = False
                     elif hazard.kind == "swap_trap":
                         import random
-                        # find another random ball that is alive
-                        valid_targets = [b for b in getattr(self.world, 'balls', []) if b != self.ball and getattr(b, "alive", True)]
+                        my_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
+                        valid_targets = []
+                        for b in getattr(self.world, 'balls', []):
+                            if b != self.ball and getattr(b, "alive", True) and not getattr(b, "is_decoy", False):
+                                b_team = getattr(b, "team", getattr(b, "ball_type", ""))
+                                if b_team != my_team:
+                                    valid_targets.append(b)
+
+                        if not valid_targets:
+                            valid_targets = [b for b in getattr(self.world, 'balls', []) if b != self.ball and getattr(b, "alive", True) and not getattr(b, "is_decoy", False)]
+
                         if valid_targets:
                             target = random.choice(valid_targets)
+
+                            # update teleport tick
+                            current_tick = getattr(self.world, "tick", 0)
+                            self.ball.last_teleport_tick = current_tick
+                            if hasattr(target, "last_teleport_tick"):
+                                target.last_teleport_tick = current_tick
+                            elif hasattr(target, "set_meta"):
+                                target.set_meta("last_teleport_tick", current_tick)
+                            else:
+                                setattr(target, "last_teleport_tick", current_tick)
 
                             # swap positions
                             temp_x, temp_y = self.ball.x, self.ball.y
