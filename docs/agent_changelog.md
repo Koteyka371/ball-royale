@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-576] Portal Overload Event — *2026-07-05 11:50:47 UTC*
+
+A random arena event where existing portals become unstable. Instead of teleporting players instantly, entering a portal triggers a 2-second 'charging' phase where nearby players (friend or foe) are sucked in. Once charged, all sucked-in players are blasted out of the exit portal at high speeds in random directions.
+
+---
+
 ## [idea-520] Hack-O-Bot Hazard — *2026-07-05 10:57:04 UTC*
 
 A mobile robotic hazard that seeks out players and attempts to attach itself to them, periodically scrambled their targeting until destroyed.
