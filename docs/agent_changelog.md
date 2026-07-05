@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-602] Ping Pong Mode — *2026-07-05 18:11:19 UTC*
+
+A game mode with indestructible paddles at the edges of the arena that periodically sweep across, bouncing all players at high speeds.
+
+---
+
 ## [idea-475] Thunderstorm Conductivity — *2026-07-05 18:11:16 UTC*
 
 During thunderstorms, metal-based or highly armored balls attract lightning strikes more frequently but gain a temporary speed boost or electric aura when hit.
