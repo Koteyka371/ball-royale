@@ -442,6 +442,29 @@ class ProceduralArena:
             # Process hazard-to-hazard combos
             if hasattr(self, "hazards"):
                 for hazard in self.hazards:
+                    if hazard.kind == "sinkhole" or hazard.kind == "massive_sinkhole":
+                        # Expand over time
+                        hazard.radius += 2.0 * delta
+
+                        # Consume nearby hazards
+                        for other_hazard in self.hazards:
+                            if hazard.id == other_hazard.id:
+                                continue
+                            import math
+                            hx_diff = hazard.x - other_hazard.x
+                            hy_diff = hazard.y - other_hazard.y
+                            dist = math.hypot(hx_diff, hy_diff)
+
+                            if dist < hazard.radius + other_hazard.radius:
+                                if other_hazard.kind == "quicksand":
+                                    hazard.kind = "massive_sinkhole"
+                                    hazard.radius += other_hazard.radius * 0.5
+                                    other_hazard.active = False
+                                elif other_hazard.kind not in ("sinkhole", "massive_sinkhole") and getattr(other_hazard, "active", True):
+                                    hazard.radius += other_hazard.radius * 0.1
+                                    other_hazard.active = False
+
+                for hazard in self.hazards:
                     if hazard.kind == "slip_zone":
                         if not hasattr(hazard, "active_timer"):
                             hazard.active_timer = 0.0

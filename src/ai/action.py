@@ -2353,12 +2353,17 @@ class Action:
                                     self.ball.hp = 0
                                     self.ball.killer = "vortex"
                             self.ball._chrono_slow = 0.5
-                    elif hazard.kind == "sinkhole":
+                    elif hazard.kind == "sinkhole" or hazard.kind == "massive_sinkhole":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
                         dist_sq = dx * dx + dy * dy
                         if dist_sq < hazard.radius * hazard.radius:
                             hazard_damage = hazard.damage * delta
+
+                            # Massive sinkhole increases damage
+                            if hazard.kind == "massive_sinkhole":
+                                hazard_damage *= 2.0
+
                             if hasattr(self.ball, "take_damage"):
                                 self.ball.take_damage(hazard_damage)
                             elif hasattr(self.ball, "hp"):
@@ -2367,19 +2372,24 @@ class Action:
                                     self.ball.alive = False
 
                             # Drastically reduce speed unless dashing or kiting
-                            # Wait, the problem says "until they manage to dash or kite their way out."
-                            # So they take damage and have speed reduced. BUT if they are dashing or kiting,
-                            # they have a chance to get out.
-                            # So we reduce speed heavily if they are NOT dashing and NOT kiting.
-                            # We should probably reduce it heavily anyway, but slightly less if kiting/dashing?
-                            # Ah, the instructions say:
-                            # "Balls caught in a sinkhole have their speed reduced drastically and slowly take damage over time until they manage to dash or kite their way out."
-                            # If they are dashing, they use `base_speed * 2.0`, which we might override here.
-                            # If they kite, they move normally?
                             if not getattr(self.ball, "is_dashing", False) and strategy != "kite":
-                                self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.1
+                                speed_mult = 0.1
+                                if hazard.kind == "massive_sinkhole":
+                                    speed_mult = 0.05
+                                self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * speed_mult
                                 if hasattr(self.ball, 'status_effects'):
                                     self.ball.status_effects.append({"type": "slow", "duration": delta})
+
+                            # Pull towards center
+                            pull_strength = 20.0 * delta
+                            if hazard.kind == "massive_sinkhole":
+                                pull_strength = 40.0 * delta
+
+                            dist = math.sqrt(dist_sq) if dist_sq > 0 else 1.0
+                            nx = dx / dist
+                            ny = dy / dist
+                            self.ball.x += nx * pull_strength
+                            self.ball.y += ny * pull_strength
                     elif hazard.kind == "conveyor_belt":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
