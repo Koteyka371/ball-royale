@@ -10441,7 +10441,7 @@
     },
     {
       "id": "idea-605",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Overload Trap",
@@ -16923,6 +16923,40 @@
         "src/ai/explosive_knockback_cascade.py",
         "src/ai/explosive_knockback_cascade.gd",
         "tests/test_explosive_knockback_cascade.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-986",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Polymorph Trap",
+      "description": "A new arena hazard that doesn't deal damage but instead transforms any ball that touches it into a harmless, slow-moving 'chicken' ball for 5 seconds. During this time, the ball cannot use skills or attack, making it highly vulnerable to grouped enemies.",
+      "allowed_paths": [
+        "src/arena/polymorph_trap.py",
+        "src/arena/polymorph_trap.gd",
+        "tests/test_polymorph_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-987",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Stealth Grass Bushes",
+      "description": "Add tall grass or bush terrain patches where balls can hide. Entering a bush reduces movement speed slightly but grants temporary stealth, making the ball invisible to enemies whose perception radius does not directly intersect with the center of the bush. Attacking from inside the bush reveals the ball and applies a 'Surprise Attack' damage multiplier for the first hit.",
+      "allowed_paths": [
+        "src/ai/stealth_grass_bushes.py",
+        "src/ai/stealth_grass_bushes.gd",
+        "tests/test_stealth_grass_bushes.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
