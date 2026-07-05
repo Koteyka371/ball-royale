@@ -8276,6 +8276,164 @@ class MeteorShowerMode extends GameMode:
 			world.arena.hazards.append(meteor)
 
 
+class SoulLinkMode extends GameMode:
+	var prev_state: Dictionary = {}
+	var status_effects: Array = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "frozen_timer"]
+
+	func _init().():
+		name = "Soul Link"
+		description = "Players are randomly paired. Damage and status effects taken by one are shared with the other."
+
+	func _init_prev_state(b) -> void:
+		var state = {"hp": b.hp if "hp" in b else 100.0}
+		for eff in status_effects:
+			if eff in b:
+				state[eff] = b[eff]
+			elif b.has_meta(eff):
+				state[eff] = b.get_meta(eff)
+			else:
+				state[eff] = 0.0
+		if "id" in b:
+			prev_state[b.id] = state
+
+	func setup(world, balls: Array) -> void:
+		.setup(world, balls)
+
+		var alive_balls = []
+		for b in balls:
+			var b_type = b.ball_type if "ball_type" in b else ""
+			if b_type != "spectator":
+				alive_balls.append(b)
+
+		alive_balls.shuffle()
+
+		var i = 0
+		while i < alive_balls.size() - 1:
+			var b1 = alive_balls[i]
+			var b2 = alive_balls[i+1]
+
+			if b1 is Object:
+				b1.set_meta("soul_link_target", b2)
+			else:
+				b1["soul_link_target"] = b2
+
+			if b2 is Object:
+				b2.set_meta("soul_link_target", b1)
+			else:
+				b2["soul_link_target"] = b1
+
+			i += 2
+
+		if alive_balls.size() % 2 != 0:
+			var last_ball = alive_balls[alive_balls.size() - 1]
+			if last_ball is Object:
+				last_ball.set_meta("soul_link_target", null)
+			else:
+				last_ball["soul_link_target"] = null
+
+		prev_state.clear()
+		for b in balls:
+			_init_prev_state(b)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+
+		for b in balls:
+			var is_alive = b.alive if "alive" in b else false
+			if not is_alive:
+				continue
+
+			var b_id = b.id if "id" in b else null
+			if b_id == null:
+				continue
+
+			if not prev_state.has(b_id):
+				_init_prev_state(b)
+
+			var state = prev_state[b_id]
+
+			var target = null
+			if b is Object and b.has_meta("soul_link_target"):
+				target = b.get_meta("soul_link_target")
+			elif typeof(b) == TYPE_DICTIONARY and b.has("soul_link_target"):
+				target = b["soul_link_target"]
+
+			var target_alive = false
+			if target != null:
+				target_alive = target.alive if "alive" in target else false
+
+			if target != null and target_alive:
+				# Check HP
+				var curr_hp = b.hp if "hp" in b else 100.0
+				if curr_hp < state.hp:
+					var damage = state.hp - curr_hp
+					var target_curr_hp = target.hp if "hp" in target else 100.0
+					if target_curr_hp > 0:
+						if target is Object:
+							target.hp = target_curr_hp - damage
+							if target.hp <= 0:
+								target.hp = 0
+								target.alive = false
+								if "killer" in b:
+									target.killer = b.killer
+								else:
+									target.killer = "soul_link"
+						else:
+							target["hp"] = target_curr_hp - damage
+							if target["hp"] <= 0:
+								target["hp"] = 0
+								target["alive"] = false
+								if "killer" in b:
+									target["killer"] = b["killer"]
+								else:
+									target["killer"] = "soul_link"
+
+						var target_id = target.id if "id" in target else null
+						if target_id != null and prev_state.has(target_id):
+							var target_hp_now = target.hp if "hp" in target else 0.0
+							prev_state[target_id].hp = target_hp_now
+
+				# Check Status Effects
+				for eff in status_effects:
+					var prev_val = state[eff] if state.has(eff) else 0.0
+
+					var curr_val = 0.0
+					if eff in b:
+						curr_val = b[eff]
+					elif b.has_meta(eff):
+						curr_val = b.get_meta(eff)
+
+					if curr_val > prev_val:
+						var diff = curr_val - prev_val
+
+						var target_val = 0.0
+						if eff in target:
+							target_val = target[eff]
+						elif target.has_meta(eff):
+							target_val = target.get_meta(eff)
+
+						if target is Object:
+							if eff in target:
+								target[eff] = target_val + diff
+							else:
+								target.set_meta(eff, target_val + diff)
+						else:
+							target[eff] = target_val + diff
+
+						var target_id = target.id if "id" in target else null
+						if target_id != null and prev_state.has(target_id):
+							prev_state[target_id][eff] = target_val + diff
+
+			# Update current state
+			state.hp = b.hp if "hp" in b else 100.0
+			for eff in status_effects:
+				if eff in b:
+					state[eff] = b[eff]
+				elif b.has_meta(eff):
+					state[eff] = b.get_meta(eff)
+				else:
+					state[eff] = 0.0
+
 class CursedBuffZoneMode extends GameMode:
 	var zone_radius: float = 150.0
 
@@ -9442,5 +9600,6 @@ var GAME_MODES = {
 	"hazard_billiards": HazardBilliardsMode.new(),
 	"time_rewind": TimeRewindMode.new(),
 	"rhythm_panels": RhythmPanelsMode.new(),
-	"cursed_buff_zone": CursedBuffZoneMode.new()
+	"cursed_buff_zone": CursedBuffZoneMode.new(),
+	"soul_link": SoulLinkMode.new()
 }
