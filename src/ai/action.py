@@ -1802,6 +1802,19 @@ class Action:
                                                     owner.score = 0
                                                 owner.score += 5  # Give points for a successful decoy trap
 
+                            # Pull enemies in before spawning poison cloud
+                            pull_radius = 150.0
+                            for other in self.world.balls:
+                                if getattr(other, "alive", False) and getattr(other, "team", getattr(b, "team", "")) != getattr(b, "team", "") and getattr(other, "id", None) != getattr(b, "id", None):
+                                    dx = other.x - b.x
+                                    dy = other.y - b.y
+                                    dist = math.sqrt(dx*dx + dy*dy)
+                                    if dist <= pull_radius and dist > 0.0001:
+                                        # Pull effect
+                                        pull_strength = 60.0
+                                        other.x -= (dx/dist) * pull_strength
+                                        other.y -= (dy/dist) * pull_strength
+
                             # Spawn poison cloud
                             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                                 try:
