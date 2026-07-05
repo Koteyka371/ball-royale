@@ -3,8 +3,9 @@ import os
 import pytest
 from unittest.mock import MagicMock
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'src/')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src/')))
 from ai.game_modes import GuildVsGuildTournamentMode
+
 
 class MockBall:
     def __init__(self, id, x, y, alive=True):
