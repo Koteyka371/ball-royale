@@ -28,7 +28,7 @@ class BasicArena:
         cx, cy = self.safe_zone_center
         sz_radius = self.safe_zone_radius
         dist = math.hypot(x - cx, y - cy)
-        return dist <= sz_radius - radius
+        return dist <= max(0.0, sz_radius - radius)
 
     def clamp_position(self, x: float, y: float, radius: float) -> Tuple[float, float, bool]:
         bounced = False
@@ -55,12 +55,12 @@ class BasicArena:
         dist = math.hypot(new_x - cx, new_y - cy)
 
         # If outside the safe zone, push inwards towards safe zone edge
-        if dist > sz_radius - radius:
+        if dist > max(0.0, sz_radius - radius):
             if dist > 0.0001:
                 dir_x = (new_x - cx) / dist
                 dir_y = (new_y - cy) / dist
-                new_x = cx + dir_x * (sz_radius - radius)
-                new_y = cy + dir_y * (sz_radius - radius)
+                new_x = cx + dir_x * max(0.0, sz_radius - radius)
+                new_y = cy + dir_y * max(0.0, sz_radius - radius)
             else:
                 new_x = cx
                 new_y = cy
@@ -71,10 +71,10 @@ class BasicArena:
     def update_zone(self, current_tick: int, delta: float):
         if current_tick != self.last_tick:
             self.last_tick = current_tick
-            if self.safe_zone_radius > 50.0:
+            if self.safe_zone_radius > 0.0:
                 self.safe_zone_radius -= 10.0 * delta
-                if self.safe_zone_radius <= 50.0:
-                    self.safe_zone_radius = 50.0
+                if self.safe_zone_radius <= 0.0:
+                    self.safe_zone_radius = 0.0
             else:
                 if current_tick % 120 == 0:
                     import random

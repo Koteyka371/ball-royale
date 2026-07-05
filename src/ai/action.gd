@@ -3346,13 +3346,16 @@ func execute(strategy: String, delta: float):
                 r = self.world.arena.safe_zone_radius
 
             var dist = sqrt((self.ball.x - cx) * (self.ball.x - cx) + (self.ball.y - cy) * (self.ball.y - cy))
-            if dist > r:
+            var ball_r = 10.0
+            if "radius" in self.ball: ball_r = self.ball.radius
+            elif self.ball.has_method("get_radius"): ball_r = self.ball.get_radius()
+            if dist >= r - ball_r - 0.01:
                 var is_immune = false
                 if self.ball.has_meta("zone_immunity_timer") and self.ball.get_meta("zone_immunity_timer") > 0:
                     is_immune = true
 
                 if not is_immune:
-                    var zone_damage = 10.0 * delta
+                    var zone_damage = 200.0 * delta
                     if self.ball.has_method("take_damage"):
                         self.ball.take_damage(zone_damage)
                     elif "hp" in self.ball:

@@ -30,4 +30,4 @@ def test_battle_royale_shrinking_zone_minimum():
 
     # Clamp to min size 50.0
     arena.update_zone(2, 10.0)
-    assert arena.safe_zone_radius == 50.0
+    assert arena.safe_zone_radius == 0.0

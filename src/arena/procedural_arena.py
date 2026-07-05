@@ -377,7 +377,7 @@ class ProceduralArena:
         sz_cx, sz_cy = self.safe_zone_center
         sz_radius = self.safe_zone_radius
         dist = math.hypot(x - sz_cx, y - sz_cy)
-        if dist > sz_radius - radius:
+        if dist > max(0.0, sz_radius - radius):
             return False
 
         # Check rooms
@@ -422,12 +422,12 @@ class ProceduralArena:
         dist = math.hypot(nearest_x - sz_cx, nearest_y - sz_cy)
 
         # If outside the safe zone, push inwards towards safe zone edge
-        if dist > sz_radius - radius:
+        if dist > max(0.0, sz_radius - radius):
             if dist > 0.0001:
                 dir_x = (nearest_x - sz_cx) / dist
                 dir_y = (nearest_y - sz_cy) / dist
-                nearest_x = sz_cx + dir_x * (sz_radius - radius)
-                nearest_y = sz_cy + dir_y * (sz_radius - radius)
+                nearest_x = sz_cx + dir_x * max(0.0, sz_radius - radius)
+                nearest_y = sz_cy + dir_y * max(0.0, sz_radius - radius)
             else:
                 nearest_x = sz_cx
                 nearest_y = sz_cy
@@ -514,13 +514,13 @@ class ProceduralArena:
 
             # Massive Black Hole Event logic
             has_mbh = any(h.kind == "massive_black_hole" for h in getattr(self, "hazards", []))
-            if self.safe_zone_radius > 50.0:
+            if self.safe_zone_radius > 0.0:
                 if has_mbh:
                     self.safe_zone_radius -= 50.0 * delta
                 else:
                     self.safe_zone_radius -= 10.0 * delta
-                if self.safe_zone_radius <= 50.0:
-                    self.safe_zone_radius = 50.0
+                if self.safe_zone_radius <= 0.0:
+                    self.safe_zone_radius = 0.0
             else:
                 # Spawn supply drop on the edge of the safe zone periodically
                 if current_tick % 300 == 0:

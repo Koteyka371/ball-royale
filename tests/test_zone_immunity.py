@@ -56,7 +56,7 @@ def test_zone_immunity_damage_blocked():
 
     # 1. No immunity
     action.execute("idle", 1.0)
-    assert ball.hp == 90.0
+    assert ball.hp == -100.0
 
     # 2. Immunity
     ball.zone_immunity_timer = 5.0

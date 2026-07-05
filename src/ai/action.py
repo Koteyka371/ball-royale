@@ -1863,10 +1863,11 @@ class Action:
                 cx, cy = getattr(self.world.arena, "safe_zone_center", (0, 0))
                 radius = getattr(self.world.arena, "safe_zone_radius", float('inf'))
                 dist = math.sqrt((self.ball.x - cx)**2 + (self.ball.y - cy)**2)
-                if dist > radius:
+                ball_r = getattr(self.ball, "radius", 10.0)
+                if dist >= radius - ball_r - 0.01:
                     is_immune = getattr(self.ball, "zone_immunity_timer", 0.0) > 0.0
                     if not is_immune:
-                        zone_damage = 10.0 * delta
+                        zone_damage = 200.0 * delta
                         if hasattr(self.ball, "take_damage"):
                             self.ball.take_damage(zone_damage)
                         elif hasattr(self.ball, "hp"):

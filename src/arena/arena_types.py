@@ -1013,10 +1013,10 @@ class BattleRoyaleShrinkingZoneArena(ProceduralArena):
     def update_zone(self, current_tick: int, delta: float):
         if current_tick != self.last_tick:
             self.last_tick = current_tick
-            if self.safe_zone_radius > 50.0:
+            if self.safe_zone_radius > 0.0:
                 self.safe_zone_radius -= 15.0 * delta
-                if self.safe_zone_radius <= 50.0:
-                    self.safe_zone_radius = 50.0
+                if self.safe_zone_radius <= 0.0:
+                    self.safe_zone_radius = 0.0
             else:
                 if current_tick % 120 == 0:
                     import random
