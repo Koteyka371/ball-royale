@@ -2551,6 +2551,10 @@ class Action:
                                 self.ball.x += nx * push_strength
                                 self.ball.y += ny * push_strength
                     elif getattr(hazard, "kind", getattr(hazard, "get", lambda x, y: y)("kind", "")) == "status_projectile":
+                        # Prevent N-updates per frame by only updating it if this ball is the owner
+                        owner_id = hazard.get("owner_id") if type(hazard) == dict else getattr(hazard, "owner_id", None)
+                        if owner_id != getattr(self.ball, "id", None):
+                            continue
                         if type(hazard) == dict:
                             target_id = hazard.get("target_id")
                         else:
@@ -5586,11 +5590,15 @@ class Action:
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
                     self.ball.inventory.append("placeable_trap_booster")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "status_absorber_booster":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
                     self.ball.inventory.append("status_absorber")
-
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)

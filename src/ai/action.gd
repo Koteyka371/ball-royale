@@ -1867,6 +1867,27 @@ func execute(strategy: String, delta: float):
 				inv.erase("position_swap")
 				self.ball.set_meta("inventory", inv)
 
+	var inv2 = []
+	if "inventory" in self.ball: inv2 = self.ball.inventory
+	elif self.ball.has_method("get_meta") and self.ball.has_meta("inventory"): inv2 = self.ball.get_meta("inventory")
+	if inv2.has("status_absorber"):
+		var stun = self.ball.stun_timer if "stun_timer" in self.ball else (self.ball.get_meta("stun_timer") if self.ball.has_method("has_meta") and self.ball.has_meta("stun_timer") else 0.0)
+		var silence = self.ball.silence_timer if "silence_timer" in self.ball else (self.ball.get_meta("silence_timer") if self.ball.has_method("has_meta") and self.ball.has_meta("silence_timer") else 0.0)
+		var poison = self.ball.poison_timer if "poison_timer" in self.ball else (self.ball.get_meta("poison_timer") if self.ball.has_method("has_meta") and self.ball.has_meta("poison_timer") else 0.0)
+		var slow = self.ball.slow_timer if "slow_timer" in self.ball else (self.ball.get_meta("slow_timer") if self.ball.has_method("has_meta") and self.ball.has_meta("slow_timer") else 0.0)
+		var confusion = self.ball.confusion_timer if "confusion_timer" in self.ball else (self.ball.get_meta("confusion_timer") if self.ball.has_method("has_meta") and self.ball.has_meta("confusion_timer") else 0.0)
+		var blindness = self.ball.blindness_timer if "blindness_timer" in self.ball else (self.ball.get_meta("blindness_timer") if self.ball.has_method("has_meta") and self.ball.has_meta("blindness_timer") else 0.0)
+		var stutter = self.ball.stutter_timer if "stutter_timer" in self.ball else (self.ball.get_meta("stutter_timer") if self.ball.has_method("has_meta") and self.ball.has_meta("stutter_timer") else 0.0)
+
+		if stun > 0 or silence > 0 or poison > 0 or slow > 0 or confusion > 0 or blindness > 0 or stutter > 0:
+			self._absorb_status(delta)
+			var idx = inv2.find("status_absorber")
+			if idx >= 0:
+				inv2.remove_at(idx)
+			if "inventory" in self.ball: self.ball.inventory = inv2
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv2)
+			self._throw_absorbed_status(delta)
+
 	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
 		if inv.has("portal_gun"):
@@ -9348,6 +9369,13 @@ func _collect_booster(delta: float):
                 if "inventory" in self.ball: inv = self.ball.inventory
                 elif self.ball.has_method("get_meta") and self.ball.has_meta("inventory"): inv = self.ball.get_meta("inventory")
                 inv.append("placeable_trap_booster")
+                if "inventory" in self.ball: self.ball.inventory = inv
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv)
+            elif "kind" in nearest and nearest.kind == "status_absorber_booster":
+                var inv = []
+                if "inventory" in self.ball: inv = self.ball.inventory
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("inventory"): inv = self.ball.get_meta("inventory")
+                inv.append("status_absorber")
                 if "inventory" in self.ball: self.ball.inventory = inv
                 elif self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv)
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
