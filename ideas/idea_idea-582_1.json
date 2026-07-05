@@ -1,0 +1,4 @@
+{
+  "title": "Reverse Safe Zone",
+  "description": "A mode where the safe zone is an expanding ring. Players must stay inside the ring. The ring slowly expands outward from the center, leaving a deadly zone in the middle and outside it."
+}

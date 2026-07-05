@@ -434,7 +434,22 @@ class BattleRoyaleMode extends GameMode:
             self.set("zone_radius", max(arena_width, arena_height))
             self.set("shrink_rate", 10.0)
 
-        self.set("zone_radius", self.get("zone_radius") - self.get("shrink_rate") * delta)
+        var current_radius = self.get("zone_radius")
+        if current_radius > 50.0:
+            current_radius -= self.get("shrink_rate") * delta
+            if current_radius < 50.0:
+                current_radius = 50.0
+            self.set("zone_radius", current_radius)
+
+        var arena_width_for_dmg = 1000.0
+        var arena_height_for_dmg = 1000.0
+        if "arena" in world and world.arena:
+            if "width" in world.arena: arena_width_for_dmg = float(world.arena.width)
+            if "height" in world.arena: arena_height_for_dmg = float(world.arena.height)
+
+        var max_arena_dim = max(arena_width_for_dmg, arena_height_for_dmg)
+        var shrink_ratio = max(0.0, min(1.0, 1.0 - (current_radius / max_arena_dim)))
+        var zone_damage_per_second = 20.0 + (shrink_ratio * 80.0)
 
         for b in balls:
             if b.alive and b.ball_type != "spectator":
@@ -447,7 +462,7 @@ class BattleRoyaleMode extends GameMode:
 
                 var dist = sqrt(pow(b_x - self.get("zone_x"), 2) + pow(b_y - self.get("zone_y"), 2))
                 if dist > self.get("zone_radius"):
-                    if "hp" in b: b.hp -= 20.0 * delta
+                    if "hp" in b: b.hp -= zone_damage_per_second * delta
 
 
         # Handle decoy_spawners
@@ -4030,7 +4045,16 @@ class ShrinkingDangerZoneMode extends GameMode:
                         b.vy += (dy / dist) * pull_strength * delta
 
         # Apply continuous damage outside the safe zone
-        var damage_this_tick = outside_damage_per_second * (10.0 if collapse_triggered else 1.0) * delta
+        var arena_width_for_dmg = 1000.0
+        var arena_height_for_dmg = 1000.0
+        if "arena" in world and world.arena:
+            if "width" in world.arena: arena_width_for_dmg = float(world.arena.width)
+            if "height" in world.arena: arena_height_for_dmg = float(world.arena.height)
+
+        var max_arena_dim = max(arena_width_for_dmg, arena_height_for_dmg)
+        var shrink_ratio = max(0.0, min(1.0, 1.0 - (zone_radius / max_arena_dim)))
+        var base_dmg = outside_damage_per_second + (shrink_ratio * outside_damage_per_second * 4.0)
+        var damage_this_tick = base_dmg * (10.0 if collapse_triggered else 1.0) * delta
         for b in balls:
             if b.alive and b.ball_type != "spectator":
                 var dx = b.x - zone_x
@@ -4441,7 +4465,16 @@ class SafeZoneMode extends GameMode:
                         b.vy += (dy / dist) * pull_strength * delta
 
         # Apply continuous damage outside the safe zone
-        var damage_this_tick = outside_damage_per_second * (10.0 if collapse_triggered else 1.0) * delta
+        var arena_width_for_dmg = 1000.0
+        var arena_height_for_dmg = 1000.0
+        if "arena" in world and world.arena:
+            if "width" in world.arena: arena_width_for_dmg = float(world.arena.width)
+            if "height" in world.arena: arena_height_for_dmg = float(world.arena.height)
+
+        var max_arena_dim = max(arena_width_for_dmg, arena_height_for_dmg)
+        var shrink_ratio = max(0.0, min(1.0, 1.0 - (zone_radius / max_arena_dim)))
+        var base_dmg = outside_damage_per_second + (shrink_ratio * outside_damage_per_second * 4.0)
+        var damage_this_tick = base_dmg * (10.0 if collapse_triggered else 1.0) * delta
         for b in balls:
             if b.alive and b.ball_type != "spectator":
                 var dx = b.x - zone_x

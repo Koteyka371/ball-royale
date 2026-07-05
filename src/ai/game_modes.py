@@ -327,16 +327,25 @@ class BattleRoyaleMode(GameMode):
             self.zone_radius = max(arena_width, arena_height)
             self.shrink_rate = 10.0
 
-        self.zone_radius -= self.shrink_rate * delta
+        if self.zone_radius > 50.0:
+            self.zone_radius -= self.shrink_rate * delta
+            if self.zone_radius < 50.0:
+                self.zone_radius = 50.0
 
         import math
+
+        # Base damage per second is 20, increasing up to 100 as the zone shrinks
+        max_arena_dim = max(getattr(world.arena, "width", 1000), getattr(world.arena, "height", 1000)) if hasattr(world, "arena") and world.arena else 1000
+        shrink_ratio = max(0.0, min(1.0, 1.0 - (self.zone_radius / max_arena_dim)))
+        zone_damage_per_second = 20.0 + (shrink_ratio * 80.0)
+
         for b in balls:
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 b_x = getattr(b, "x", 0.0)
                 b_y = getattr(b, "y", 0.0)
                 dist = math.hypot(b_x - self.zone_x, b_y - self.zone_y)
                 if dist > self.zone_radius:
-                    b.hp -= 20.0 * delta # damage per second outside safe zone
+                    b.hp -= zone_damage_per_second * delta # damage per second outside safe zone
 
 
         # Handle decoy_spawners
@@ -3403,7 +3412,10 @@ class ShrinkingDangerZoneMode(GameMode):
                         b.vy += (dy / dist) * pull_strength * delta
 
         # Apply continuous damage outside the safe zone
-        damage_this_tick = self.outside_damage_per_second * (10.0 if getattr(self, 'collapse_triggered', False) else 1.0) * delta
+        max_arena_dim = max(getattr(world.arena, "width", 1000), getattr(world.arena, "height", 1000)) if hasattr(world, "arena") and world.arena else 1000
+        shrink_ratio = max(0.0, min(1.0, 1.0 - (self.zone_radius / max_arena_dim)))
+        base_dmg = self.outside_damage_per_second + (shrink_ratio * self.outside_damage_per_second * 4.0)
+        damage_this_tick = base_dmg * (10.0 if getattr(self, 'collapse_triggered', False) else 1.0) * delta
         for b in balls:
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 dx = b.x - self.zone_x
@@ -3742,7 +3754,10 @@ class SafeZoneMode(GameMode):
                         b.vy += (dy / dist) * pull_strength * delta
 
         # Apply continuous damage outside the safe zone
-        damage_this_tick = self.outside_damage_per_second * (10.0 if getattr(self, 'collapse_triggered', False) else 1.0) * delta
+        max_arena_dim = max(getattr(world.arena, "width", 1000), getattr(world.arena, "height", 1000)) if hasattr(world, "arena") and world.arena else 1000
+        shrink_ratio = max(0.0, min(1.0, 1.0 - (self.zone_radius / max_arena_dim)))
+        base_dmg = self.outside_damage_per_second + (shrink_ratio * self.outside_damage_per_second * 4.0)
+        damage_this_tick = base_dmg * (10.0 if getattr(self, 'collapse_triggered', False) else 1.0) * delta
         for b in balls:
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 dx = b.x - self.zone_x
