@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-594] Decoy Mine — *2026-07-05 18:11:23 UTC*
+
+A decoy clone that acts like the mimic clone but instead of just expiring or dying, it explodes and deals massive area of effect damage when it absorbs enough damage.
+
+---
+
 ## [idea-602] Ping Pong Mode — *2026-07-05 18:11:19 UTC*
 
 A game mode with indestructible paddles at the edges of the arena that periodically sweep across, bouncing all players at high speeds.
