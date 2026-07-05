@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-520] Hack-O-Bot Hazard — *2026-07-05 10:57:04 UTC*
+
+A mobile robotic hazard that seeks out players and attempts to attach itself to them, periodically scrambled their targeting until destroyed.
+
+---
+
 ## [idea-545] Bumper enhancements — *2026-07-05 08:33:23 UTC*
 
 Bumpers can now bounce players significantly further, granting a temporary movement speed boost upon landing to reward players for precise positioning.
