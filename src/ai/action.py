@@ -2633,8 +2633,40 @@ class Action:
                                 if hazard.y < 100 or hazard.y > self.world.arena.height - 100:
                                     hazard.vy *= -1
 
+                            h_lifetime = getattr(hazard, "lifetime", 0.0)
+                            if hazard.kind in ("black_hole", "massive_black_hole") and h_lifetime >= 10.0:
+                                hazard.duration = 0.0
+                                if hasattr(self.world, "events"):
+                                    self.world.events.append({"type": "explosion", "x": hazard.x, "y": hazard.y})
+                                for b in getattr(self.world, "balls", []):
+                                    if getattr(b, "alive", False):
+                                        bdx = hazard.x - b.x
+                                        bdy = hazard.y - b.y
+                                        bdist_sq = bdx * bdx + bdy * bdy
+                                        blast_radius = hazard.radius * 6.0
+                                        if bdist_sq < blast_radius * blast_radius and bdist_sq > 0.0001:
+                                            bdist = math.sqrt(bdist_sq)
+                                            bnx, bny = bdx / bdist, bdy / bdist
+                                            # Deal immense damage
+                                            if hasattr(b, "take_damage"):
+                                                b.take_damage(500.0)
+                                            elif hasattr(b, "hp"):
+                                                b.hp -= 500.0
+                                                if b.hp <= 0:
+                                                    b.hp = 0
+                                                    b.alive = False
+                                                    b.killer = "black_hole_explosion"
+                                            # Push outward
+                                            push_strength = 2000.0
+                                            if hasattr(b, "vx") and hasattr(b, "vy"):
+                                                b.vx -= bnx * push_strength
+                                                b.vy -= bny * push_strength
+                                            else:
+                                                b.x -= bnx * push_strength * delta
+                                                b.y -= bny * push_strength * delta
+
                             # Pull balls once per frame
-                            if hazard.kind in ("black_hole", "massive_black_hole", "tornado", "local_tornado"):
+                            if getattr(hazard, "duration", 1.0) > 0 and hazard.kind in ("black_hole", "massive_black_hole", "tornado", "local_tornado"):
                                 for b in getattr(self.world, "balls", []):
                                     if getattr(b, "alive", False):
                                         bdx = hazard.x - b.x
@@ -2678,7 +2710,7 @@ class Action:
 
 
                             # Pull boosters once per frame
-                            if hazard.kind in ("black_hole", "massive_black_hole", "tornado", "local_tornado") and hasattr(self.world, "boosters"):
+                            if getattr(hazard, "duration", 1.0) > 0 and hazard.kind in ("black_hole", "massive_black_hole", "tornado", "local_tornado") and hasattr(self.world, "boosters"):
                                 for b in self.world.boosters:
                                     bdx = hazard.x - b.x
                                     bdy = hazard.y - b.y
@@ -2698,7 +2730,7 @@ class Action:
                                             b.y += ty * orbital_strength
 
                         # Ball specific logic
-                        if hazard.kind in ("black_hole", "massive_black_hole", "tornado", "local_tornado"):
+                        if getattr(hazard, "duration", 1.0) > 0 and hazard.kind in ("black_hole", "massive_black_hole", "tornado", "local_tornado"):
                             dx = hazard.x - self.ball.x
                             dy = hazard.y - self.ball.y
                             dist_sq = dx * dx + dy * dy

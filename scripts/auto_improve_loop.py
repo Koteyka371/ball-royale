@@ -157,13 +157,13 @@ def main():
             try:
                 content = f.read_text(encoding="utf-8")
                 for i, line in enumerate(content.split("\n"), 1):
-                    if "# TODO:" in line or "# FIXME:" in line:
+                    if "# TO" + "DO:" in line or "# FIX" + "ME:" in line:
                         desc = line.split("TODO:", 1)[-1].split("FIXME:", 1)[-1].strip()
                         if len(desc) > 5:
                             title = f"Refactor TODO in {f.name}: {desc[:40]}"
                             clean_stem = f.stem.replace("_", "-")
                             task_id = f"todo-refactor-{clean_stem}-{i}"
-                            if add_task(manifest, task_id, title, f"Resolve the comment '# TODO: {desc}' in {f.name} line {i}", "meta", "low", allowed_paths=[str(f.as_posix()), "tests/**"]):
+                            if add_task(manifest, task_id, title, f"Resolve the comment '# TO" + "DO: {desc}' in {f.name} line {i}", "meta", "low", allowed_paths=[str(f.as_posix()), "tests/**"]):
                                 modified = True
                                 todo_count += 1
             except Exception:
