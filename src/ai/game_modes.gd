@@ -6619,7 +6619,10 @@ class UnstablePortalsEventMode extends GameMode:
 					"x": 100.0 + randf() * (arena_w - 200.0),
 					"y": 100.0 + randf() * (arena_h - 200.0),
 					"timer": 3.0 + randf() * 4.0,
-					"active": true
+					"active": true,
+					"charging": false,
+					"charge_timer": 0.0,
+					"sucked_balls": []
 				})
 				if world != null and world.has_method("add_event"):
 					world.add_event("portal_spawn", {"message": "An unstable portal has appeared!"})
@@ -6627,18 +6630,15 @@ class UnstablePortalsEventMode extends GameMode:
 		for p in portals:
 			if not p["active"]:
 				continue
-			p["timer"] -= delta
-			if p["timer"] <= 0:
-				p["active"] = false
-				if world != null and world.has_method("add_event"):
-					world.add_event("portal_collapse", {"message": "A portal collapsed!", "x": p["x"], "y": p["y"]})
-					world.add_event("explosion", {"x": p["x"], "y": p["y"], "radius": 150.0, "damage": 30.0})
 
-				var arena_w = 800.0
-				var arena_h = 600.0
-				if world != null and "arena" in world:
-					if "width" in world.arena: arena_w = float(world.arena.width)
-					if "height" in world.arena: arena_h = float(world.arena.height)
+			var arena_w = 800.0
+			var arena_h = 600.0
+			if world != null and "arena" in world:
+				if "width" in world.arena: arena_w = float(world.arena.width)
+				if "height" in world.arena: arena_h = float(world.arena.height)
+
+			if p.has("charging") and p["charging"]:
+				p["charge_timer"] += delta
 
 				for b in balls:
 					var alive = false
@@ -6648,6 +6648,17 @@ class UnstablePortalsEventMode extends GameMode:
 						alive = b.alive
 
 					if not alive:
+						continue
+
+					var b_id = -1
+					if typeof(b) == TYPE_DICTIONARY:
+						b_id = b.get("id", -1)
+					elif "id" in b:
+						b_id = b.id
+					elif b.has_method("get_meta") and b.has_meta("id"):
+						b_id = b.get_meta("id")
+
+					if b_id in p["sucked_balls"]:
 						continue
 
 					var bx = 0.0
@@ -6665,30 +6676,181 @@ class UnstablePortalsEventMode extends GameMode:
 					var dist = sqrt(dx * dx + dy * dy)
 
 					if dist < 150.0:
-						var damage = 30.0
-						if typeof(b) == TYPE_DICTIONARY:
-							if b.has("hp"):
-								b["hp"] -= damage
-						else:
-							if b.has_method("take_damage"):
-								b.take_damage(damage)
-							elif "hp" in b:
-								b.hp -= damage
-
-						if dist > 0.0001:
+						if dist > 10.0:
 							var nx = dx / dist
 							var ny = dy / dist
-							var knockback = 500.0 * (1.0 - dist / 150.0)
+							var pull_speed = 300.0
+							bx -= nx * pull_speed * delta
+							by -= ny * pull_speed * delta
+							if typeof(b) == TYPE_DICTIONARY:
+								b["x"] = bx
+								b["y"] = by
+							else:
+								b.x = bx
+								b.y = by
+						else:
+							if b_id != -1:
+								p["sucked_balls"].append(b_id)
+								if typeof(b) == TYPE_DICTIONARY:
+									pass
+								elif "visible" in b:
+									b.visible = false
 
-							var new_x = max(0.0, min(arena_w, bx + nx * knockback * delta))
-							var new_y = max(0.0, min(arena_h, by + ny * knockback * delta))
+				if p["charge_timer"] >= 2.0:
+					p["active"] = false
+					if world != null and world.has_method("add_event"):
+						world.add_event("portal_blast", {"message": "A portal blasted!", "x": p["x"], "y": p["y"]})
+
+					for b in balls:
+						var alive = false
+						if typeof(b) == TYPE_DICTIONARY:
+							alive = b.get("alive", false)
+						else:
+							alive = b.alive
+
+						if not alive:
+							continue
+
+						var b_id = -1
+						if typeof(b) == TYPE_DICTIONARY:
+							b_id = b.get("id", -1)
+						elif "id" in b:
+							b_id = b.id
+						elif b.has_method("get_meta") and b.has_meta("id"):
+							b_id = b.get_meta("id")
+
+						if b_id in p["sucked_balls"]:
+							if typeof(b) != TYPE_DICTIONARY and "visible" in b:
+								b.visible = true
+
+							var angle = randf() * 2.0 * PI
+							var blast_speed = 1000.0
+							var bx = 0.0
+							var by = 0.0
 
 							if typeof(b) == TYPE_DICTIONARY:
-								b["x"] = new_x
-								b["y"] = new_y
+								bx = float(b.get("x", 0.0))
+								by = float(b.get("y", 0.0))
 							else:
-								b.x = new_x
-								b.y = new_y
+								bx = float(b.x)
+								by = float(b.y)
+
+							bx += cos(angle) * blast_speed * delta
+							by += sin(angle) * blast_speed * delta
+							bx = max(0.0, min(arena_w, bx))
+							by = max(0.0, min(arena_h, by))
+
+							if typeof(b) == TYPE_DICTIONARY:
+								b["x"] = bx
+								b["y"] = by
+								if b.has("hp"): b["hp"] -= 20.0
+							else:
+								b.x = bx
+								b.y = by
+								if b.has_method("take_damage"): b.take_damage(20.0)
+								elif "hp" in b: b.hp -= 20.0
+
+					p["sucked_balls"] = []
+
+			else:
+				p["timer"] -= delta
+				if p["timer"] <= 0:
+					p["active"] = false
+					if world != null and world.has_method("add_event"):
+						world.add_event("portal_collapse", {"message": "A portal collapsed!", "x": p["x"], "y": p["y"]})
+						world.add_event("explosion", {"x": p["x"], "y": p["y"], "radius": 150.0, "damage": 30.0})
+
+					for b in balls:
+						var alive = false
+						if typeof(b) == TYPE_DICTIONARY:
+							alive = b.get("alive", false)
+						else:
+							alive = b.alive
+
+						if not alive:
+							continue
+
+						var bx = 0.0
+						var by = 0.0
+
+						if typeof(b) == TYPE_DICTIONARY:
+							bx = float(b.get("x", 0.0))
+							by = float(b.get("y", 0.0))
+						else:
+							bx = float(b.x)
+							by = float(b.y)
+
+						var dx = bx - p["x"]
+						var dy = by - p["y"]
+						var dist = sqrt(dx * dx + dy * dy)
+
+						if dist < 150.0:
+							var damage = 30.0
+							if typeof(b) == TYPE_DICTIONARY:
+								if b.has("hp"):
+									b["hp"] -= damage
+							else:
+								if b.has_method("take_damage"):
+									b.take_damage(damage)
+								elif "hp" in b:
+									b.hp -= damage
+
+							if dist > 0.0001:
+								var nx = dx / dist
+								var ny = dy / dist
+								var knockback = 500.0 * (1.0 - dist / 150.0)
+
+								var new_x = max(0.0, min(arena_w, bx + nx * knockback * delta))
+								var new_y = max(0.0, min(arena_h, by + ny * knockback * delta))
+
+								if typeof(b) == TYPE_DICTIONARY:
+									b["x"] = new_x
+									b["y"] = new_y
+								else:
+									b.x = new_x
+									b.y = new_y
+				else:
+					for b in balls:
+						var alive = false
+						if typeof(b) == TYPE_DICTIONARY:
+							alive = b.get("alive", false)
+						else:
+							alive = b.alive
+
+						if not alive:
+							continue
+
+						var b_id = -1
+						if typeof(b) == TYPE_DICTIONARY:
+							b_id = b.get("id", -1)
+						elif "id" in b:
+							b_id = b.id
+						elif b.has_method("get_meta") and b.has_meta("id"):
+							b_id = b.get_meta("id")
+
+						var bx = 0.0
+						var by = 0.0
+
+						if typeof(b) == TYPE_DICTIONARY:
+							bx = float(b.get("x", 0.0))
+							by = float(b.get("y", 0.0))
+						else:
+							bx = float(b.x)
+							by = float(b.y)
+
+						var dx = bx - p["x"]
+						var dy = by - p["y"]
+						var dist = sqrt(dx * dx + dy * dy)
+
+						if dist < 30.0:
+							p["charging"] = true
+							p["charge_timer"] = 0.0
+							if not p.has("sucked_balls"): p["sucked_balls"] = []
+							if b_id != -1:
+								p["sucked_balls"].append(b_id)
+								if typeof(b) != TYPE_DICTIONARY and "visible" in b:
+									b.visible = false
+							break
 
 		var new_portals = []
 		for p in portals:

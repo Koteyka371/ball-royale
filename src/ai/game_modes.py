@@ -5516,7 +5516,10 @@ class UnstablePortalsEventMode(GameMode):
                     "x": random.uniform(100, arena_w - 100),
                     "y": random.uniform(100, arena_h - 100),
                     "timer": random.uniform(3.0, 7.0),
-                    "active": True
+                    "active": True,
+                    "charging": False,
+                    "charge_timer": 0.0,
+                    "sucked_balls": []
                 })
                 if hasattr(world, "add_event"):
                     world.add_event("portal_spawn", {"message": "An unstable portal has appeared!"})
@@ -5524,35 +5527,110 @@ class UnstablePortalsEventMode(GameMode):
         for p in self.portals:
             if not p["active"]:
                 continue
-            p["timer"] -= delta
-            if p["timer"] <= 0:
-                p["active"] = False
-                if hasattr(world, "add_event"):
-                    world.add_event("portal_collapse", {"message": "A portal collapsed!", "x": p["x"], "y": p["y"]})
-                    world.add_event("explosion", {"x": p["x"], "y": p["y"], "radius": 150.0, "damage": 30.0})
 
-                arena_w = getattr(world.arena, "width", 800) if hasattr(world, "arena") else 800
-                arena_h = getattr(world.arena, "height", 600) if hasattr(world, "arena") else 600
+            arena_w = getattr(world.arena, "width", 800) if hasattr(world, "arena") else 800
+            arena_h = getattr(world.arena, "height", 600) if hasattr(world, "arena") else 600
 
+            if p.get("charging", False):
+                p["charge_timer"] += delta
+
+                # Suck in nearby players
                 for b in balls:
                     if not getattr(b, "alive", False):
+                        continue
+                    b_id = getattr(b, "id", None)
+                    if b_id in p.get("sucked_balls", []):
                         continue
                     dx = b.x - p["x"]
                     dy = b.y - p["y"]
                     dist = math.hypot(dx, dy)
                     if dist < 150.0:
-                        damage = 30.0
-                        if hasattr(b, "take_damage"):
-                            b.take_damage(damage)
-                        elif hasattr(b, "hp"):
-                            b.hp -= damage
-
-                        if dist > 0.0001:
+                        if dist > 10.0:
+                            # Pull towards center
                             nx = dx / dist
                             ny = dy / dist
-                            knockback = 500.0 * (1.0 - dist / 150.0)
-                            b.x = max(0.0, min(arena_w, b.x + nx * knockback * delta))
-                            b.y = max(0.0, min(arena_h, b.y + ny * knockback * delta))
+                            pull_speed = 300.0
+                            b.x -= nx * pull_speed * delta
+                            b.y -= ny * pull_speed * delta
+                        else:
+                            # Sucked in
+                            if b_id is not None:
+                                p.setdefault("sucked_balls", []).append(b_id)
+                            # Hide or disable them temporarily
+                            if hasattr(b, "visible"):
+                                b.visible = False
+
+                if p["charge_timer"] >= 2.0:
+                    p["active"] = False
+                    if hasattr(world, "add_event"):
+                        world.add_event("portal_blast", {"message": "A portal blasted!", "x": p["x"], "y": p["y"]})
+
+                    # Blast sucked players out
+                    for b in balls:
+                        b_id = getattr(b, "id", None)
+                        if b_id in p.get("sucked_balls", []):
+                            if hasattr(b, "visible"):
+                                b.visible = True
+
+                            angle = random.uniform(0, 2 * math.pi)
+                            blast_speed = 1000.0
+                            b.x += math.cos(angle) * blast_speed * delta
+                            b.y += math.sin(angle) * blast_speed * delta
+                            b.x = max(0.0, min(arena_w, b.x))
+                            b.y = max(0.0, min(arena_h, b.y))
+
+                            if hasattr(b, "take_damage"):
+                                b.take_damage(20.0)
+                            elif hasattr(b, "hp"):
+                                b.hp -= 20.0
+
+                    p["sucked_balls"] = []
+            else:
+                p["timer"] -= delta
+                if p["timer"] <= 0:
+                    p["active"] = False
+                    if hasattr(world, "add_event"):
+                        world.add_event("portal_collapse", {"message": "A portal collapsed!", "x": p["x"], "y": p["y"]})
+                        world.add_event("explosion", {"x": p["x"], "y": p["y"], "radius": 150.0, "damage": 30.0})
+
+                    for b in balls:
+                        if not getattr(b, "alive", False):
+                            continue
+                        dx = b.x - p["x"]
+                        dy = b.y - p["y"]
+                        dist = math.hypot(dx, dy)
+                        if dist < 150.0:
+                            damage = 30.0
+                            if hasattr(b, "take_damage"):
+                                b.take_damage(damage)
+                            elif hasattr(b, "hp"):
+                                b.hp -= damage
+
+                            if dist > 0.0001:
+                                nx = dx / dist
+                                ny = dy / dist
+                                knockback = 500.0 * (1.0 - dist / 150.0)
+                                b.x = max(0.0, min(arena_w, b.x + nx * knockback * delta))
+                                b.y = max(0.0, min(arena_h, b.y + ny * knockback * delta))
+
+                else:
+                    # Check if anyone enters to trigger charging
+                    for b in balls:
+                        if not getattr(b, "alive", False):
+                            continue
+                        dx = b.x - p["x"]
+                        dy = b.y - p["y"]
+                        dist = math.hypot(dx, dy)
+                        if dist < 30.0:  # Portal radius
+                            p["charging"] = True
+                            p["charge_timer"] = 0.0
+                            if "sucked_balls" not in p: p["sucked_balls"] = []
+                            b_id = getattr(b, "id", None)
+                            if b_id is not None:
+                                p["sucked_balls"].append(b_id)
+                                if hasattr(b, "visible"):
+                                    b.visible = False
+                            break
 
         self.portals = [p for p in self.portals if p["active"]]
 

@@ -1,0 +1,4 @@
+{
+    "title": "Unstable core overload",
+    "description": "If too many entities are sucked into a single unstable portal, it overloads early and the blast radius and damage are significantly multiplied based on capacity."
+}
