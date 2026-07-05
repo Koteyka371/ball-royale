@@ -640,6 +640,14 @@ class BattleRoyaleMode(GameMode):
                     setattr(ice, 'vx', getattr(self, "random", __import__("random")).uniform(-20.0, 20.0))
                     setattr(ice, 'vy', getattr(self, "random", __import__("random")).uniform(-20.0, 20.0))
                     world.arena.hazards.append(ice)
+
+                # Convert existing puddles to ice patches
+                for h in getattr(world.arena, "hazards", []):
+                    if getattr(h, "kind", "") == "puddle":
+                        h.kind = "ice_patch"
+                        h.radius = max(50.0, getattr(h, "radius", 50.0))
+                        # Keep the same duration, but mark it as ice
+
             if self.weather in ["snow", "blizzard"] and season_num == 4:
                 if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
                     from arena.procedural_arena import Hazard
@@ -657,12 +665,18 @@ class BattleRoyaleMode(GameMode):
                 is_dirt_sand = "sand" in arena_name or "dirt" in arena_name or "summer" in arena_name or getattr(world.arena, "is_sandstorming", False)
                 if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
                     from arena.procedural_arena import Hazard
-                    # Spawn mud pit
+                    # Spawn mud pit or puddle
                     x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
                     y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
-                    mud_pit = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=60.0, kind="quicksand", damage=0.0)
-                    setattr(mud_pit, 'duration', 15.0)
-                    world.arena.hazards.append(mud_pit)
+
+                    if is_dirt_sand:
+                        mud_pit = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=60.0, kind="quicksand", damage=0.0)
+                        setattr(mud_pit, 'duration', 15.0)
+                        world.arena.hazards.append(mud_pit)
+                    else:
+                        puddle = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=50.0, kind="puddle", damage=0.0)
+                        setattr(puddle, 'duration', 20.0)
+                        world.arena.hazards.append(puddle)
                 if season_num == 3:
                     if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
                         from arena.procedural_arena import Hazard
@@ -2027,6 +2041,14 @@ class WeatherChaosMode(GameMode):
                     setattr(ice, 'vx', getattr(self, "random", __import__("random")).uniform(-20.0, 20.0))
                     setattr(ice, 'vy', getattr(self, "random", __import__("random")).uniform(-20.0, 20.0))
                     world.arena.hazards.append(ice)
+
+                # Convert existing puddles to ice patches
+                for h in getattr(world.arena, "hazards", []):
+                    if getattr(h, "kind", "") == "puddle":
+                        h.kind = "ice_patch"
+                        h.radius = max(50.0, getattr(h, "radius", 50.0))
+                        # Keep the same duration, but mark it as ice
+
             if self.weather in ["snow", "blizzard"] and season_num == 4:
                 if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
                     from arena.procedural_arena import Hazard
@@ -2044,12 +2066,18 @@ class WeatherChaosMode(GameMode):
                 is_dirt_sand = "sand" in arena_name or "dirt" in arena_name or "summer" in arena_name or getattr(world.arena, "is_sandstorming", False)
                 if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
                     from arena.procedural_arena import Hazard
-                    # Spawn mud pit
+                    # Spawn mud pit or puddle
                     x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
                     y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
-                    mud_pit = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=60.0, kind="quicksand", damage=0.0)
-                    setattr(mud_pit, 'duration', 15.0)
-                    world.arena.hazards.append(mud_pit)
+
+                    if is_dirt_sand:
+                        mud_pit = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=60.0, kind="quicksand", damage=0.0)
+                        setattr(mud_pit, 'duration', 15.0)
+                        world.arena.hazards.append(mud_pit)
+                    else:
+                        puddle = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=50.0, kind="puddle", damage=0.0)
+                        setattr(puddle, 'duration', 20.0)
+                        world.arena.hazards.append(puddle)
                 if season_num == 3:
                     if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
                         from arena.procedural_arena import Hazard
