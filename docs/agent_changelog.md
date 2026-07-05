@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-475] Thunderstorm Conductivity — *2026-07-05 18:11:16 UTC*
+
+During thunderstorms, metal-based or highly armored balls attract lightning strikes more frequently but gain a temporary speed boost or electric aura when hit.
+
+---
+
 ## [idea-554] Quantum Swap Hazard — *2026-07-05 17:33:46 UTC*
 
 A hazard that triggers a positional swap between two random balls when activated, causing disorientation and opening up new strategic attacks or sudden escapes.

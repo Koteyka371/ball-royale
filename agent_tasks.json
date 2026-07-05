@@ -8193,7 +8193,7 @@
     },
     {
       "id": "idea-475",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Thunderstorm Conductivity",
@@ -16753,6 +16753,40 @@
         "src/ai/shrinking_safe_zones_within_safe_zones.py",
         "src/ai/shrinking_safe_zones_within_safe_zones.gd",
         "tests/test_shrinking_safe_zones_within_safe_zones.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-976",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Controls Anomaly",
+      "description": "An arena hazard or temporary weather event that inverses the movement controls for all players or AI entities caught within its radius, forcing them to quickly adapt their evasion and attack strategies.",
+      "allowed_paths": [
+        "src/ai/reverse_controls_anomaly.py",
+        "src/ai/reverse_controls_anomaly.gd",
+        "tests/test_reverse_controls_anomaly.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-977",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Lightning Tether",
+      "description": "A new skill or booster item that shoots a tether of lightning to an enemy. As long as the player stays within range, it continuously deals damage and also chains to nearby enemies for reduced damage.",
+      "allowed_paths": [
+        "src/ai/chain_lightning_tether.py",
+        "src/ai/chain_lightning_tether.gd",
+        "tests/test_chain_lightning_tether.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
