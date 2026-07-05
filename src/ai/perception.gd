@@ -226,7 +226,7 @@ func scan() -> Dictionary:
             var dist = calc_dist.call(h)
 
             if dist <= perception_radius:
-                if "kind" in h and h.kind == "fake_booster":
+                if "kind" in h and (h.kind == "fake_booster" or h.kind == "cursed_booster"):
                     var is_scout = ("ball_type" in self.ball and self.ball.ball_type == "scout")
                     var has_drone = ("has_drone" in self.ball and self.ball.has_drone)
                     var p_score = 0.0

@@ -206,7 +206,7 @@ class Perception:
                 dist = calc_dist(h)
                 # Check if within perception radius and not already in traps
                 if dist <= perception_radius:
-                    if getattr(h, "kind", "") == "fake_booster":
+                    if getattr(h, "kind", "") in ["fake_booster", "cursed_booster"]:
                         is_scout = getattr(self.ball, "ball_type", "") == "scout"
                         has_drone = getattr(self.ball, "has_drone", False)
                         perception_score = getattr(self.ball, "perception_score", 0.0)

@@ -50,6 +50,8 @@ def test_collect_vision_booster():
 
     # Mock Action methods
     action._get_boosters = lambda: [h for h in world.arena.hazards if getattr(h, "active", True)]
+    ball.x = 510.0
+    ball.y = 500.0
     action._get_enemies = lambda: []
     action._get_allies = lambda: []
 
