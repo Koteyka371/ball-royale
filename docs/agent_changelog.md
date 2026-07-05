@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-572] Day/Night specific bosses — *2026-07-05 12:13:05 UTC*
+
+Spawn nocturnal bosses only at night and diurnal bosses during the day.
+
+---
+
 ## [idea-544] Sinkholes as base modifiers — *2026-07-05 12:13:01 UTC*
 
 Sinkholes can now expand over time, slowly consuming nearby hazards. If a sinkhole merges with a quicksand hazard, it becomes a massive sinkhole with a stronger pull and slower speed debuff.
