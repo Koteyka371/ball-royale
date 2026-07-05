@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-512] Idea 1: Ice Patches — *2026-07-05 16:28:26 UTC*
+
+Hazards that remove friction, causing balls to slide continuously and bounce off walls faster.
+
+---
+
 ## [idea-571] Bumper Chains — *2026-07-05 15:59:14 UTC*
 
 Allow bumpers to link to one another creating long chains that sweep across the arena, functioning as a moving wall.

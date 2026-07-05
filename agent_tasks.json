@@ -8857,7 +8857,7 @@
     },
     {
       "id": "idea-512",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Idea 1: Ice Patches",
@@ -16583,6 +16583,40 @@
         "src/ai/phantom_juggernaut.py",
         "src/ai/phantom_juggernaut.gd",
         "tests/test_phantom_juggernaut.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-966",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bumper Synergy Booster",
+      "description": "Add a new 'bumper_synergy' booster that allows a ball to absorb the impact energy of bumping into bumpers and temporarily increase its own attack speed and movement speed.",
+      "allowed_paths": [
+        "src/ai/bumper_synergy_booster.py",
+        "src/ai/bumper_synergy_booster.gd",
+        "tests/test_bumper_synergy_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-967",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Pinball Flipper Traps",
+      "description": "Introduce dynamic pinball flippers in the arena that players can control (or AI logic triggers) to bat enemy balls across the map, combining well with bumper chains.",
+      "allowed_paths": [
+        "src/arena/pinball_flipper_traps.py",
+        "src/arena/pinball_flipper_traps.gd",
+        "tests/test_pinball_flipper_traps.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
