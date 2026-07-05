@@ -16280,6 +16280,57 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-948",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Danger Zones with random debuffs",
+      "description": "Being outside the safe zone randomly applies a debuff (e.g. slowed, poisoned, confused) in addition to taking continuous damage, heavily discouraging staying outside the zone.",
+      "allowed_paths": [
+        "src/ai/danger_zones_with_random_debuffs.py",
+        "src/ai/danger_zones_with_random_debuffs.gd",
+        "tests/test_danger_zones_with_random_debuffs.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-949",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Juggernaut Game Mode",
+      "description": "One player is randomly chosen as the Juggernaut, receiving massive HP, damage, and size buffs. All other players are teamed up to take down the Juggernaut. If the Juggernaut is killed, the player who dealt the finishing blow becomes the next Juggernaut, and their health is restored.",
+      "allowed_paths": [
+        "src/ai/juggernaut_game.py",
+        "src/ai/juggernaut_game.gd",
+        "tests/test_juggernaut_game.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-950",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Mutator",
+      "description": "A random event where a massive black hole spawns in the center of the arena, slowly pulling all balls towards it. Balls closer to the center take increasing damage, encouraging players to fight on the edges or use speed boosters to escape.",
+      "allowed_paths": [
+        "src/ai/black_hole_mutator.py",
+        "src/ai/black_hole_mutator.gd",
+        "tests/test_black_hole_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
