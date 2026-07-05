@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-451] Decoy Illusion Traps — *2026-07-05 12:24:19 UTC*
+
+Add a new trap type that creates a holographic duplicate of a booster or healing spring. When a ball touches it, the hologram explodes, dealing damage and applying a 'stunned/confused' debuff.
+
+---
+
 ## [idea-572] Day/Night specific bosses — *2026-07-05 12:13:05 UTC*
 
 Spawn nocturnal bosses only at night and diurnal bosses during the day.

@@ -7785,7 +7785,7 @@
     },
     {
       "id": "idea-451",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Illusion Traps",
@@ -16190,6 +16190,40 @@
         "src/ai/portal_chaining_network.py",
         "src/ai/portal_chaining_network.gd",
         "tests/test_portal_chaining_network.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-943",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Eclipse Events during DayNightMode",
+      "description": "A rare Eclipse event occurs when day transitions into night or vice versa. During the Eclipse, all balls temporarily gain both nocturnal and diurnal abilities (if their class has them), and hazards become entirely invisible.",
+      "allowed_paths": [
+        "src/ai/eclipse_events_during_daynightmode.py",
+        "src/ai/eclipse_events_during_daynightmode.gd",
+        "tests/test_eclipse_events_during_daynightmode.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-944",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Seasonal Boss Rotations",
+      "description": "Introduce bosses that are seasonally locked, such as a 'Blizzard Boss' that only spawns during winter (or when the arena has a snow biome active) and a 'Heatwave Boss' that only spawns in desert maps.",
+      "allowed_paths": [
+        "src/ai/seasonal_boss_rotations.py",
+        "src/ai/seasonal_boss_rotations.gd",
+        "tests/test_seasonal_boss_rotations.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
