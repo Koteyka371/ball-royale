@@ -10220,7 +10220,7 @@
     },
     {
       "id": "idea-592",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Entanglement Mode",
@@ -16479,6 +16479,93 @@
         "src/ai/elemental_crafter_npc.py",
         "src/ai/elemental_crafter_npc.gd",
         "tests/test_elemental_crafter_npc.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-960",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Clone Powerup",
+      "description": "A powerup that instantly spawns 2 visually identical AI-controlled clones of the player. They deal no damage but confuse enemies and absorb hits until destroyed.",
+      "allowed_paths": [
+        "src/ai/decoy_clone_powerup.py",
+        "src/ai/decoy_clone_powerup.gd",
+        "tests/test_decoy_clone_powerup.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-961",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "New Hazard: Time Bomb",
+      "description": "A hazard that spawns on the map and slowly ticks down. When it reaches 0, it explodes in a massive radius, damaging anyone caught inside.",
+      "allowed_paths": [
+        "src/arena/new_time_bomb.py",
+        "src/arena/new_time_bomb.gd",
+        "tests/test_new_time_bomb.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-962",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild Headquarters Cosmetics",
+      "description": "Allow guilds to spend their Guild XP on aesthetic upgrades for their Headquarters that are visible when checking their profile, such as new flags, backgrounds, or custom announcer voices for guild members.",
+      "allowed_paths": [
+        "src/ui/guild_headquarters_cosmetics.py",
+        "src/ui/guild_headquarters_cosmetics.gd",
+        "src/ai/guild_headquarters_cosmetics.py",
+        "tests/test_guild_headquarters_cosmetics.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-963",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild Perks: Active Abilities",
+      "description": "Expand the perk system to include single-use 'Active Abilities' (e.g. Mass Heal, Global Speed Boost) that guild members can purchase before a match and deploy once during the Battle Royale to turn the tide.",
+      "allowed_paths": [
+        "src/ui/guild_perks_active_abilities.py",
+        "src/ui/guild_perks_active_abilities.gd",
+        "src/ai/guild_perks_active_abilities.py",
+        "tests/test_guild_perks_active_abilities.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-964",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "New Weapon: Repulsor Ray",
+      "description": "A new weapon that pushes enemies away from the user, giving them breathing room and control over positioning.",
+      "allowed_paths": [
+        "src/ai/new_weapon_repulsor_ray.py",
+        "src/ai/new_weapon_repulsor_ray.gd",
+        "tests/test_new_weapon_repulsor_ray.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
