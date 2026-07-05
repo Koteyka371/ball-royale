@@ -8806,7 +8806,7 @@
     },
     {
       "id": "idea-338-2",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Pinball Game Mode",
@@ -16224,6 +16224,57 @@
         "src/ai/seasonal_boss_rotations.py",
         "src/ai/seasonal_boss_rotations.gd",
         "tests/test_seasonal_boss_rotations.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-945",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrapnel Aggregation Mechanic",
+      "description": "If two or more shrapnel hazards collide or stop moving very close to each other, they merge into a larger, higher-damage shrapnel pile that lasts longer.",
+      "allowed_paths": [
+        "src/ai/shrapnel_aggregation_mechanic.py",
+        "src/ai/shrapnel_aggregation_mechanic.gd",
+        "tests/test_shrapnel_aggregation_mechanic.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-946",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Overcharge Game Mode",
+      "description": "A mode where all stats (speed, health, damage) start at 200% but slowly decay down to 50% over the course of the match. Healing items become rare, forcing players to play aggressively early on to secure a lead.",
+      "allowed_paths": [
+        "src/ai/overcharge_game.py",
+        "src/ai/overcharge_game.gd",
+        "tests/test_overcharge_game.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-947",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncy Shrapnel Trait",
+      "description": "Give shrapnel hazards the ability to bounce off walls instead of just slowing down and stopping, extending their danger zone.",
+      "allowed_paths": [
+        "src/ai/bouncy_shrapnel_trait.py",
+        "src/ai/bouncy_shrapnel_trait.gd",
+        "tests/test_bouncy_shrapnel_trait.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

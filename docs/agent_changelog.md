@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-338-2] Pinball Game Mode — *2026-07-05 12:40:45 UTC*
+
+A game mode where the arena is mostly filled with bumpers, bounce pads, and flippers. Balls deal reduced damage with basic attacks, but slamming an enemy into a hazard deals massive bonus damage.
+
+---
+
 ## [idea-565] Decoy Explosion Shrapnel — *2026-07-05 12:24:23 UTC*
 
 When a fake booster explodes, it should shoot out smaller shrapnel hazards in random directions that linger for 5 seconds and deal minor damage over time to anyone who touches them.
