@@ -5367,21 +5367,32 @@ func execute(strategy: String, delta: float):
                             nx = cos(angle)
                             ny = sin(angle)
 
-                            var bounce_strength = 600.0 * delta
+                            var bounce_strength = 1200.0 * delta
                             self.ball.x += nx * bounce_strength
                             self.ball.y += ny * bounce_strength
 
                             if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
                                 # If it's a Dictionary with set_meta method from python mock or actual godot node, update both property and meta
                                 if "vx" in self.ball:
-                                    self.ball.vx = nx * 2000.0
-                                    self.ball.vy = ny * 2000.0
+                                    self.ball.vx = nx * 4000.0
+                                    self.ball.vy = ny * 4000.0
                                 else:
-                                    self.ball.set_meta("vx", nx * 2000.0)
-                                    self.ball.set_meta("vy", ny * 2000.0)
+                                    self.ball.set_meta("vx", nx * 4000.0)
+                                    self.ball.set_meta("vy", ny * 4000.0)
                             elif "vx" in self.ball:
-                                self.ball.vx = nx * 2000.0
-                                self.ball.vy = ny * 2000.0
+                                self.ball.vx = nx * 4000.0
+                                self.ball.vy = ny * 4000.0
+
+                            var cur_speed = 0.0
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("speed_boost_timer"):
+                                cur_speed = self.ball.get_meta("speed_boost_timer")
+                            elif "speed_boost_timer" in self.ball:
+                                cur_speed = self.ball.speed_boost_timer
+
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                self.ball.set_meta("speed_boost_timer", cur_speed + 3.0)
+                            if "speed_boost_timer" in self.ball:
+                                self.ball.speed_boost_timer = cur_speed + 3.0
 
                             var powerup = null
                             if typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("powerup_type"):
