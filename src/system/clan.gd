@@ -161,6 +161,23 @@ func get_clan_quests(clan_name: String) -> Array:
         return data["clans"][clan_name]["quests"]
     return []
 
+func add_clan_points(clan_name: String, amount: int) -> bool:
+    if data["clans"].has(clan_name):
+        data["clans"][clan_name]["points"] += amount
+        save_clans()
+        return true
+    return false
+
+func unlock_cosmetic(clan_name: String, cosmetic: String) -> bool:
+    if data["clans"].has(clan_name):
+        if not data["clans"][clan_name].has("cosmetics"):
+            data["clans"][clan_name]["cosmetics"] = []
+        if not data["clans"][clan_name]["cosmetics"].has(cosmetic):
+            data["clans"][clan_name]["cosmetics"].append(cosmetic)
+            save_clans()
+            return true
+    return false
+
 func get_clan_leaderboard() -> Array:
     var clans_list = []
     for clan_name in data["clans"].keys():
