@@ -1,0 +1,4 @@
+{
+  "title": "Magnetic Mine",
+  "description": "A deployable hazard that sticks to the first ball that approaches it, ticking down before exploding. Passing close to another ball transfers the mine."
+}

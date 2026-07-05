@@ -5195,6 +5195,13 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "material_magnet_booster":
+                    self.ball.material_magnet_timer = 10.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "aura_booster":
                     self.ball.aura_booster_timer = 15.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -7331,11 +7338,35 @@ class Action:
             self.ball.nemesis_booster_timer -= delta
             if self.ball.nemesis_booster_timer < 0:
                 self.ball.nemesis_booster_timer = 0.0
+        if hasattr(self.ball, "material_magnet_timer") and self.ball.material_magnet_timer > 0:
+            self.ball.material_magnet_timer -= delta
+            if self.ball.material_magnet_timer < 0:
+                self.ball.material_magnet_timer = 0.0
+
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "items"):
+                for item in self.world.arena.items:
+                    if getattr(item, "kind", item.get("kind", "") if isinstance(item, dict) else "") == "material":
+                        item_x = getattr(item, "x", item.get("x", 0.0) if isinstance(item, dict) else 0.0)
+                        item_y = getattr(item, "y", item.get("y", 0.0) if isinstance(item, dict) else 0.0)
+                        dist_sq = (item_x - self.ball.x)**2 + (item_y - self.ball.y)**2
+                        if dist_sq < 250000: # 500 range
+                            import math
+                            dist = math.sqrt(dist_sq)
+                            if dist > 0.0001:
+                                nx, ny = (self.ball.x - item_x) / dist, (self.ball.y - item_y) / dist
+                                pull_strength = 200.0 * delta
+                                if isinstance(item, dict):
+                                    item["x"] = item_x + nx * pull_strength
+                                    item["y"] = item_y + ny * pull_strength
+                                else:
+                                    if hasattr(item, "x"): item.x += nx * pull_strength
+                                    if hasattr(item, "y"): item.y += ny * pull_strength
+
         if hasattr(self.ball, "pull_booster_timer") and self.ball.pull_booster_timer > 0:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "aura_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "aura_booster"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math
