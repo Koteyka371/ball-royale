@@ -7271,7 +7271,62 @@ class ArtifactUpgraderMode(GameMode):
 
 
 
+class SweepingPaddlesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Sweeping Paddles"
+        self.description = "Indestructible paddles sweep across the arena, bouncing all players at high speeds."
+        self.sweep_timer = 0.0
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if hasattr(world, "arena") and world.arena:
+            if not hasattr(world.arena, "hazards"):
+                world.arena.hazards = []
+
+            arena_width = getattr(world.arena, "width", 1000)
+            arena_height = getattr(world.arena, "height", 1000)
+
+            try:
+                from arena.procedural_arena import Hazard
+                def create_hazard(hid, hx, hy, r, k):
+                    return Hazard(id=hid, x=hx, y=hy, radius=r, kind=k, damage=0.0)
+            except ImportError:
+                class FallbackHazard:
+                    def __init__(self, hid, hx, hy, r, k):
+                        self.id = hid
+                        self.x = hx
+                        self.y = hy
+                        self.radius = r
+                        self.kind = k
+                        self.damage = 0.0
+                def create_hazard(hid, hx, hy, r, k):
+                    return FallbackHazard(hid, hx, hy, r, k)
+
+            self.sweep_timer = 0.0
+            paddle_top = create_hazard(15001, arena_width / 2.0, 50, 150.0, "sweeping_paddle")
+            paddle_bottom = create_hazard(15002, arena_width / 2.0, arena_height - 50, 150.0, "sweeping_paddle")
+
+            world.arena.hazards.append(paddle_top)
+            world.arena.hazards.append(paddle_bottom)
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import math
+
+        self.sweep_timer += delta
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        center_x = arena_width / 2.0
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "sweeping_paddle":
+                    # Sweep left and right
+                    h.x = center_x + math.sin(self.sweep_timer * 2.0) * (arena_width / 2.0 - 150.0)
+
+
 GAME_MODES = {
+    "sweeping_paddles": SweepingPaddlesMode(),
     "artifact_upgrader": ArtifactUpgraderMode(),
     "meteor_shower": MeteorShowerMode(),
     "blizzard_mode": BlizzardMode(),

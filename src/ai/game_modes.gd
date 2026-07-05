@@ -9692,7 +9692,58 @@ class ClanTournamentMode extends GameMode:
             if cm.has_method("unlock_cosmetic"):
                 cm.unlock_cosmetic(w_clan, "Tournament_Champion_Aura")
 
+class SweepingPaddlesMode extends GameMode:
+	var sweep_timer: float = 0.0
+
+	func _init() -> void:
+		name = "Sweeping Paddles"
+		description = "Indestructible paddles sweep across the arena, bouncing all players at high speeds."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if "arena" in world and world.arena != null:
+			if not "hazards" in world.arena:
+				world.arena.hazards = []
+
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if "width" in world.arena: arena_width = world.arena.width
+			if "height" in world.arena: arena_height = world.arena.height
+
+			sweep_timer = 0.0
+			var ProceduralArena = load("res://src/arena/procedural_arena.gd")
+
+			var paddle_top = ProceduralArena.Hazard.new(15001, arena_width / 2.0, 50.0, 150.0, "sweeping_paddle", 0.0)
+			var paddle_bottom = ProceduralArena.Hazard.new(15002, arena_width / 2.0, arena_height - 50.0, 150.0, "sweeping_paddle", 0.0)
+
+			world.arena.hazards.append(paddle_top)
+			world.arena.hazards.append(paddle_bottom)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		sweep_timer += delta
+		var arena_width = 1000.0
+		if typeof(world) == TYPE_DICTIONARY:
+			if world.has("arena") and world.arena != null:
+				arena_width = world.arena.get("width", 1000.0)
+		else:
+			if world.get("arena") != null:
+				arena_width = world.arena.width
+		var center_x = arena_width / 2.0
+
+		if "hazards" in world.arena:
+			for h in world.arena.hazards:
+				var kind = h.get("kind", "") if typeof(h) == TYPE_DICTIONARY else h.kind
+				if kind == "sweeping_paddle":
+					if typeof(h) == TYPE_DICTIONARY:
+						h["x"] = center_x + sin(sweep_timer * 2.0) * (arena_width / 2.0 - 150.0)
+					else:
+						h.x = center_x + sin(sweep_timer * 2.0) * (arena_width / 2.0 - 150.0)
+
+
 var GAME_MODES = {
+	"sweeping_paddles": SweepingPaddlesMode.new(),
 	"artifact_upgrader": ArtifactUpgraderMode.new(),
 	"meteor_shower": MeteorShowerMode.new(),
 	"rolling_boulders": RollingBouldersMode.new(),

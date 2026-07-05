@@ -5777,6 +5777,29 @@ func execute(strategy: String, delta: float):
                                 self.ball.x += nx * 50.0 * delta
                                 self.ball.y += ny * 50.0 * delta
 
+                    elif hazard.kind == "sweeping_paddle":
+                        var dx = self.ball.x - hazard.x
+                        var dy = self.ball.y - hazard.y
+                        var d = sqrt(dx*dx + dy*dy)
+                        if d < 0.0001: d = 0.0001
+
+                        var b_rad = 10.0
+                        if "radius" in self.ball:
+                            b_rad = self.ball.radius
+
+                        if d < (b_rad + hazard.radius):
+                            var nx = dx / d
+                            var ny = dy / d
+
+                            var bounce_strength = 2000.0 * delta
+                            self.ball.x += nx * bounce_strength
+                            self.ball.y += ny * bounce_strength
+
+                            if not "vx" in self.ball: self.ball.vx = 0.0
+                            if not "vy" in self.ball: self.ball.vy = 0.0
+
+                            self.ball.vx = nx * 3000.0
+                            self.ball.vy = ny * 3000.0
                     elif hazard.kind == "bumper":
 
                         var dx = self.ball.x - hazard.x
