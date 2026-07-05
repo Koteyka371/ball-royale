@@ -7566,3 +7566,79 @@ class SoulLinkMode(GameMode):
 GAME_MODES["rolling_boulders"] = RollingBouldersMode()
 GAME_MODES["soul_link"] = SoulLinkMode()
 GAME_MODES["scrambler_drones"] = ScramblerDroneMode()
+
+class GuildVsGuildTournamentMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Guild vs Guild Tournament"
+        self.description = "Two clans face off in a multi-round tournament. Winning yields special clan cosmetics and bonus clan points."
+        self.current_round = 1
+        self.max_rounds = 3
+        self.team_wins = {"Red": 0, "Blue": 0}
+        self.round_active = True
+        self.round_delay = 0.0
+        self.initial_positions = {}
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        mid = len(valid_balls) // 2
+        for i, b in enumerate(valid_balls):
+            b.team = "Red" if i < mid else "Blue"
+            b.alive = True
+            b.hp = getattr(b, "max_hp", 100.0)
+            self.initial_positions[b.id] = (b.x, b.y)
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        if not self.round_active:
+            self.round_delay -= delta
+            if self.round_delay <= 0:
+                self.current_round += 1
+                self.round_active = True
+                if hasattr(world, "dead_balls"):
+                    world.dead_balls = []
+                for b in balls:
+                    if getattr(b, "ball_type", None) != "spectator":
+                        b.alive = True
+                        b.hp = getattr(b, "max_hp", 100.0)
+                        if b.id in self.initial_positions:
+                            b.x, b.y = self.initial_positions[b.id]
+            return
+
+        alive_red = [b for b in balls if getattr(b, "team", "") == "Red" and getattr(b, "alive", False)]
+        alive_blue = [b for b in balls if getattr(b, "team", "") == "Blue" and getattr(b, "alive", False)]
+
+        round_winner = None
+        if not alive_red and not alive_blue:
+            round_winner = "Draw"
+        elif not alive_red:
+            round_winner = "Blue"
+        elif not alive_blue:
+            round_winner = "Red"
+
+        if round_winner:
+            if round_winner in self.team_wins:
+                self.team_wins[round_winner] += 1
+            self.round_active = False
+            self.round_delay = 3.0
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        target_wins = self.max_rounds // 2 + 1
+        for team, wins in self.team_wins.items():
+            if wins >= target_wins:
+                if hasattr(world, "profile_manager") and world.profile_manager is not None:
+                    world.profile_manager.add_cosmetic("Tournament Champion")
+                    world.profile_manager.add_title("Clan Legend")
+                    if hasattr(world.profile_manager, "leaderboard_manager") and world.profile_manager.leaderboard_manager is not None:
+                        world.profile_manager.leaderboard_manager.data.setdefault("clan_points", {})
+                        world.profile_manager.leaderboard_manager.data["clan_points"][team] = world.profile_manager.leaderboard_manager.data["clan_points"].get(team, 0) + 100
+                        world.profile_manager.leaderboard_manager.save()
+                return team
+        return None
+
+GAME_MODES["gvg_tournament"] = GuildVsGuildTournamentMode()
