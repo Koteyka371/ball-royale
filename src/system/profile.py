@@ -83,7 +83,19 @@ class ProfileManager:
             quest = self.data["quests"][quest_index]
             if not quest.get("completed", False):
                 quest["completed"] = True
-                self.add_skill_points(quest["reward"])
+                reward = quest.get("reward", 0)
+                if isinstance(reward, dict):
+                    if "skill_points" in reward:
+                        self.add_skill_points(reward["skill_points"])
+                    if "cosmetic" in reward:
+                        self.add_cosmetic(reward["cosmetic"])
+                    if "prestige_tokens" in reward:
+                        self.data["prestige_tokens"] = self.data.get("prestige_tokens", 0) + reward["prestige_tokens"]
+                    if "material" in reward and "material_amount" in reward:
+                        self.add_material(reward["material"], reward["material_amount"])
+                else:
+                    self.add_skill_points(reward)
+                self.save()
                 return True
         return False
 
