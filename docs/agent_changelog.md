@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-565] Decoy Explosion Shrapnel — *2026-07-05 12:24:23 UTC*
+
+When a fake booster explodes, it should shoot out smaller shrapnel hazards in random directions that linger for 5 seconds and deal minor damage over time to anyone who touches them.
+
+---
+
 ## [idea-451] Decoy Illusion Traps — *2026-07-05 12:24:19 UTC*
 
 Add a new trap type that creates a holographic duplicate of a booster or healing spring. When a ball touches it, the hologram explodes, dealing damage and applying a 'stunned/confused' debuff.
