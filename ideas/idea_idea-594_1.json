@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Confusion Aura",
+  "description": "An area of effect aura around decoy clones that periodically scrambles the AI logic (flips targeting priorities from enemy to closest ally) of enemies caught within it, causing temporary friendly fire instances during chaotic brawls."
+}
