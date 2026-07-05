@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-554] Quantum Swap Hazard — *2026-07-05 17:33:46 UTC*
+
+A hazard that triggers a positional swap between two random balls when activated, causing disorientation and opening up new strategic attacks or sudden escapes.
+
+---
+
 ## [idea-579] Black Hole Collapse Mechanic — *2026-07-05 17:09:56 UTC*
 
 Black holes now collapse into massive explosions after a certain amount of time, sending everything they sucked in flying outward and dealing immense damage to nearby entities.

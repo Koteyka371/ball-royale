@@ -9571,7 +9571,7 @@
     },
     {
       "id": "idea-554",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Swap Hazard",
@@ -16719,6 +16719,40 @@
         "src/ai/clan_perks_and_upgrades.py",
         "src/ai/clan_perks_and_upgrades.gd",
         "tests/test_clan_perks_and_upgrades.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-974",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Clan Headquarters Customization",
+      "description": "Clans can unlock and decorate a shared hub. Decorations can provide passive buffs or simply show off prestige, with unique furniture earned from clan tournaments.",
+      "allowed_paths": [
+        "src/ai/clan_headquarters_customization.py",
+        "src/ai/clan_headquarters_customization.gd",
+        "tests/test_clan_headquarters_customization.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-975",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Safe Zones within Safe Zones",
+      "description": "In the late game, instead of the primary safe zone just shrinking steadily, micro safe zones start appearing inside it, while the rest of the primary safe zone gets flooded with toxic gas. Entities must bounce between these micro zones to survive.",
+      "allowed_paths": [
+        "src/ai/shrinking_safe_zones_within_safe_zones.py",
+        "src/ai/shrinking_safe_zones_within_safe_zones.gd",
+        "tests/test_shrinking_safe_zones_within_safe_zones.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
