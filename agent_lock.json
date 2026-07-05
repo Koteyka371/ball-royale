@@ -35,9 +35,9 @@
     "agent-5": {
       "name": "Jules Meta",
       "area": "meta",
-      "task_id": "idea-512",
-      "status": "working",
-      "started_at": "2026-07-05T15:53:40.651264+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 3
     },
     "agent-6": {
@@ -195,9 +195,9 @@
     "agent-24": {
       "name": "Jules Worker 24",
       "area": "content",
-      "status": "working",
-      "task_id": "idea-593",
-      "started_at": "2026-07-05T15:56:09.223297+00:00",
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
       "cycles_today": 6
     },
     "agent-25": {
@@ -235,9 +235,9 @@
     "agent-29": {
       "name": "Jules Worker 29",
       "area": "behaviors",
-      "status": "working",
-      "task_id": "idea-596",
-      "started_at": "2026-07-05T15:49:41.723276+00:00",
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
       "cycles_today": 2
     },
     "agent-30": {
