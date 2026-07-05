@@ -19,9 +19,9 @@
     "agent-3": {
       "name": "Jules Tests",
       "area": "tests",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "idea-498",
+      "status": "assigned",
+      "started_at": "2026-07-05T18:30:21.797536+00:00",
       "cycles_today": 3
     },
     "agent-4": {
@@ -43,9 +43,9 @@
     "agent-6": {
       "name": "Jules Innovation",
       "area": "innovation",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "idea-533",
+      "status": "assigned",
+      "started_at": "2026-07-05T18:30:21.797536+00:00",
       "cycles_today": 1
     },
     "supervisor": {
@@ -91,9 +91,9 @@
     "agent-11": {
       "name": "Jules Worker 11",
       "area": "innovation",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "idea-575",
+      "status": "assigned",
+      "started_at": "2026-07-05T18:30:21.797536+00:00",
       "cycles_today": 1
     },
     "agent-12": {
@@ -131,9 +131,9 @@
     "agent-16": {
       "name": "Jules Worker 16",
       "area": "innovation",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-585",
+      "started_at": "2026-07-05T18:30:21.797536+00:00",
       "cycles_today": 2
     },
     "agent-17": {
@@ -171,9 +171,9 @@
     "agent-21": {
       "name": "Jules Worker 21",
       "area": "ai-core",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-589",
+      "started_at": "2026-07-05T18:30:21.797536+00:00",
       "cycles_today": 0
     },
     "agent-22": {
@@ -187,9 +187,9 @@
     "agent-23": {
       "name": "Jules Worker 23",
       "area": "tests",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-590",
+      "started_at": "2026-07-05T18:30:21.797536+00:00",
       "cycles_today": 2
     },
     "agent-24": {
