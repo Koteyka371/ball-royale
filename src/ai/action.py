@@ -3743,7 +3743,11 @@ class Action:
                 # Reverse velocity, add random slight angle variation for trick shots, and multiply speed
                 import random
                 angle = _math.atan2(-vy, -vx) + random.uniform(-0.2, 0.2)
-                new_speed = min(speed * 1.5, 2000.0)  # Increase speed, cap at 2000
+                gm = getattr(self.world, "game_mode", None)
+                if gm and getattr(gm, "name", "") == "Bouncy Terrain":
+                    new_speed = min(speed * 2.0, 3000.0)
+                else:
+                    new_speed = min(speed * 1.5, 2000.0)
 
                 # Save the reflection velocity to be set after execution
                 self.ball._reflection_vx = math.cos(angle) * new_speed
@@ -3752,13 +3756,17 @@ class Action:
                 # Punishing players who get too close to the edge with high speed
                 gm = getattr(self.world, "game_mode", None)
                 is_mirror_walls = False
+                is_bouncy_terrain = False
                 if gm and getattr(gm, "name", "") == "Mirror Walls":
+                    is_mirror_walls = True
+                elif gm and getattr(gm, "name", "") == "Bouncy Terrain":
+                    is_bouncy_terrain = True
                     is_mirror_walls = True
 
                 b_type = getattr(self.ball, "ball_type", getattr(type(self.ball), "BALL_TYPE", "")).lower()
                 is_agile_bouncer = b_type in ["ninja", "assassin", "rogue"]
 
-                if speed > 500 and not is_mirror_walls and not is_agile_bouncer:
+                if speed > 500 and not is_mirror_walls and not is_agile_bouncer and not is_bouncy_terrain:
                     damage = speed * 0.05
 
                     # Apply additional damage based on velocity if the ball was recently knocked back

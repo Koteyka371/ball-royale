@@ -6284,7 +6284,15 @@ func execute(strategy: String, delta: float):
                 nvx = -vx
                 nvy = -vy
 
-            var new_speed = min(speed * 1.5, 2000.0)
+            var is_bouncy_terrain = false
+            if "game_mode" in self.world and self.world.game_mode != null:
+                if "name" in self.world.game_mode and self.world.game_mode.name == "Bouncy Terrain":
+                    is_bouncy_terrain = true
+            var new_speed = 0.0
+            if is_bouncy_terrain:
+                new_speed = min(speed * 2.0, 3000.0)
+            else:
+                new_speed = min(speed * 1.5, 2000.0)
             var angle = atan2(nvy, nvx) + randf_range(-0.1, 0.1)
 
             nvx = cos(angle) * new_speed
@@ -6325,7 +6333,7 @@ func execute(strategy: String, delta: float):
 
             var is_agile_bouncer = b_type in ["ninja", "assassin", "rogue"]
 
-            if speed > 500 and not is_mirror_walls and not is_agile_bouncer:
+            if speed > 500 and not is_mirror_walls and not is_agile_bouncer and not is_bouncy_terrain:
                 var dmg = speed * 0.05
 
                 var was_knocked_back = false

@@ -770,6 +770,7 @@ def test_floor_is_lava_mode():
     ball.x = 900
     ball.y = 900
     ball.hp = 100
+    ball.radius = 15.0
 
     mode.setup(world, [ball])
     assert len(mode.platforms) > 0
@@ -931,3 +932,43 @@ def test_battle_royale_meteor_shower():
     mode.tick(world, balls, 2.0)
     assert len(world.arena.hazards) > 0
     assert world.arena.hazards[0].kind == "wall"
+
+def test_bouncy_terrain_mode():
+    from ai.game_modes import GAME_MODES
+    mode = GAME_MODES.get("bouncy_terrain")
+    assert mode is not None, "BouncyTerrainMode should be registered in GAME_MODES"
+    assert mode.name == "Bouncy Terrain"
+
+    # Check that action logic is handling it properly.
+    from ai.action import Action
+    world = MockWorld()
+    world.game_mode = mode
+    world.width = 1000
+    world.height = 1000
+    world.arena = type('MockArena', (), {'clamp_position': lambda self, x, y, r: (x, y, False)})()
+    ball = MockBall(1, "warrior")
+    ball.x = 0  # To trigger bounce
+    ball.y = 500
+    ball.vx = -100
+    ball.vy = 0
+    ball.hp = 100
+    ball.radius = 15.0
+
+    action = Action(ball, world)
+
+    # Overwrite the _clamp_position method for testing reflection
+    def override_clamp():
+        # Force a bounce on the left wall
+        if action.ball.x <= action.ball.radius:
+            action.ball.x = action.ball.radius
+            return True
+        return False
+
+    action._clamp_position = override_clamp
+
+    action.execute("idle", 0.016)
+
+    # The new speed should be multiplied by 2.0 (200), because it's Bouncy Terrain
+    # and not deal damage
+    assert ball.hp == 100
+    assert abs(ball.vx) > 150 # speed multiplied by 2.0 and randomized angle slightly, so abs(vx) should be significantly higher than 100
