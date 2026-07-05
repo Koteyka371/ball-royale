@@ -7091,6 +7091,12 @@ class Action:
                 self.ball.reflect_shield_capacity = float('inf')  # Reflects all damage
                 if hasattr(self, "_spawn_skill_particles"):
                     self._spawn_skill_particles("shield")
+            elif skill_name == "holy_shield":
+                self.ball.reflect_shield_active = True
+                self.ball.reflect_shield_timer = 5.0 + getattr(self.ball, "bonus_reflect_shield_duration", 0.0)
+                self.ball.reflect_shield_capacity = 100.0 + getattr(self.ball, "bonus_reflect_shield_capacity", 0.0)
+                if hasattr(self, "_spawn_skill_particles"):
+                    self._spawn_skill_particles("shield")
             elif skill_name == "mirror_stance":
                 self.ball.reflect_shield_active = True
                 self.ball.reflect_shield_timer = 3.0 + getattr(self.ball, "bonus_reflect_shield_duration", 0.0)
