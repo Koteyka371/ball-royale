@@ -9769,7 +9769,34 @@ class SweepingPaddlesMode extends GameMode:
 						h.x = center_x + sin(sweep_timer * 2.0) * (arena_width / 2.0 - 150.0)
 
 
+class ReversedInputMode extends GameMode:
+	func _init() -> void:
+		name = "Reversed Input"
+		description = "All movement inputs for players and AI are reversed, making movement completely counter-intuitive."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		for b in balls:
+			var alive = false
+			if "alive" in b: alive = b.alive
+			elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive"): alive = b.get_meta("alive")
+			elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): alive = b.alive
+
+			if alive:
+				var vx = 0.0
+				var vy = 0.0
+				if "vx" in b: vx = b.vx
+				elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("vx"): vx = b.get_meta("vx")
+				elif typeof(b) == TYPE_DICTIONARY and b.has("vx"): vx = b.vx
+
+				if "vy" in b: vy = b.vy
+				elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("vy"): vy = b.get_meta("vy")
+				elif typeof(b) == TYPE_DICTIONARY and b.has("vy"): vy = b.vy
+
+				b.x -= vx * delta * 2
+				b.y -= vy * delta * 2
+
 var GAME_MODES = {
+	"reversed_input": ReversedInputMode.new(),
 	"sweeping_paddles": SweepingPaddlesMode.new(),
 	"artifact_upgrader": ArtifactUpgraderMode.new(),
 	"meteor_shower": MeteorShowerMode.new(),
