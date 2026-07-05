@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-564] Black Hole Trap — *2026-07-05 15:20:32 UTC*
+
+A trap that slowly pulls players in before exploding.
+
+---
+
 ## [idea-583] Guild Perks Tree — *2026-07-05 15:20:28 UTC*
 
 Expand the guild system to include a progression tree where the guild master can spend 'Guild XP' earned from GvG matches to unlock permanent passive bonuses for all members (e.g. +5% HP, +10% move speed).
