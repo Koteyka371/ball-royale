@@ -3442,6 +3442,46 @@ func execute(strategy: String, delta: float):
                                                 b.hp -= hazard.damage * 2.0
                                                 if b.hp <= 0:
                                                     b.alive = false
+                    elif hazard.kind == "swap_trap":
+                        var valid_targets = []
+                        if "balls" in self.world:
+                            for b in self.world.balls:
+                                if _get_id(b) != _get_id(self.ball):
+                                    var b_alive = true
+                                    if typeof(b) == TYPE_DICTIONARY:
+                                        b_alive = b.get("alive", true)
+                                    else:
+                                        b_alive = b.alive if "alive" in b else true
+
+                                    if b_alive:
+                                        valid_targets.append(b)
+
+                            if valid_targets.size() > 0:
+                                var rng_target = valid_targets[self.world.math.randi() % valid_targets.size()]
+
+                                var temp_x = _get_x(self.ball)
+                                var temp_y = _get_y(self.ball)
+                                var target_x = _get_x(rng_target)
+                                var target_y = _get_y(rng_target)
+
+                                _set_x(self.ball, target_x)
+                                _set_y(self.ball, target_y)
+                                _set_x(rng_target, temp_x)
+                                _set_y(rng_target, temp_y)
+
+                                if "events" in self.world:
+                                    self.world.events.append({
+                                        "type": "swap",
+                                        "source": _get_id(self.ball),
+                                        "target": _get_id(rng_target),
+                                        "x": target_x,
+                                        "y": target_y
+                                    })
+
+                        if typeof(hazard) == TYPE_DICTIONARY:
+                            hazard["duration"] = 0.0
+                        else:
+                            hazard.duration = 0.0
                     elif hazard.kind == "trap":
                         var current_tick = 0
                         if "tick" in self.world:

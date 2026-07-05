@@ -147,7 +147,9 @@ func generate():
     for i in range(num_hazards):
         var r = rng.randf()
         var kind = "spikes"
-        if r < 0.25:
+        if r < 0.05:
+            kind = "swap_trap"
+        elif r < 0.25:
             kind = "lava"
         elif r < 0.34:
             kind = "hidden_mine"
