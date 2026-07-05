@@ -3800,6 +3800,67 @@ class SafeZoneMode(GameMode):
 
 
 
+
+class InverseMirrorArenaMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Inverse Mirror Arena"
+        self.description = "Players spawn with permanent mirror clones that track their movement inversely on the opposite side of the map."
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        import copy
+        import random
+
+        arena_width = getattr(getattr(world, "arena", None), "width", 2000.0)
+        arena_height = getattr(getattr(world, "arena", None), "height", 2000.0)
+
+        new_clones = []
+        for b in balls:
+            clone = copy.copy(b)
+            clone.id = getattr(world, "next_id", random.randint(10000, 99999))
+            if hasattr(world, "next_id"):
+                world.next_id += 1
+
+            clone.x = arena_width - b.x
+            clone.y = arena_height - b.y
+
+            clone.is_clone = True
+            clone.clone_owner = b.id
+            clone.team = "mirror_team_" + str(getattr(b, "team", "mirror"))
+
+            # Disable AI and make permanent
+            clone.ai_disabled = True
+            clone.invulnerable = True
+
+            new_clones.append(clone)
+
+        if hasattr(world, "balls"):
+            world.balls.extend(new_clones)
+
+    def tick(self, world, balls, delta=0.016):
+        arena_width = getattr(getattr(world, "arena", None), "width", 2000.0)
+        arena_height = getattr(getattr(world, "arena", None), "height", 2000.0)
+
+        # Build map of owners to clones
+        owner_to_clone = {}
+        for b in balls:
+            if getattr(b, "is_clone", False) and getattr(b, "clone_owner", None):
+                owner_to_clone[b.clone_owner] = b
+
+        for b in balls:
+            if not getattr(b, "is_clone", False):
+                if b.id in owner_to_clone:
+                    clone = owner_to_clone[b.id]
+                    # Track movement inversely
+                    target_x = arena_width - b.x
+                    target_y = arena_height - b.y
+
+                    clone.x = target_x
+                    clone.y = target_y
+                    clone.vx = -getattr(b, "vx", 0.0)
+                    clone.vy = -getattr(b, "vy", 0.0)
+
 class MirrorMatchMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -7277,6 +7338,7 @@ GAME_MODES = {
     "moving_safe_zone": MovingSafeZoneMode(),
     "bounty_hunt": BountyHuntMode(),
     "earthquake": EarthquakeMode(),
+    "inverse_mirror_arena": InverseMirrorArenaMode(),
     "mirror_match": MirrorMatchMode(),
     "clone_chaos": CloneChaosMode(),
     "volatile_clones": VolatileClonesMode(),

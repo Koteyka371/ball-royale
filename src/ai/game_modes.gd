@@ -4516,6 +4516,91 @@ class SafeZoneMode extends GameMode:
 
 
 
+
+class InverseMirrorArenaMode extends GameMode:
+	func _init() -> void:
+		name = "Inverse Mirror Arena"
+		description = "Players spawn with permanent mirror clones that track their movement inversely on the opposite side of the map."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+
+		var arena_width = 2000.0
+		var arena_height = 2000.0
+		if "arena" in world and world.arena != null:
+			if "width" in world.arena: arena_width = world.arena.width
+			if "height" in world.arena: arena_height = world.arena.height
+
+		var new_clones = []
+		for b in balls:
+			if b.has_method("duplicate"):
+				var clone = b.duplicate()
+				var next_id = randi() % 90000 + 10000
+				if "next_id" in world:
+					next_id = world.next_id
+					world.next_id += 1
+				if "id" in clone: clone.id = next_id
+
+				if "x" in clone and "x" in b: clone.x = arena_width - b.x
+				if "y" in clone and "y" in b: clone.y = arena_height - b.y
+
+				if clone.has_method("set_meta"):
+					clone.set_meta("is_clone", true)
+					if "id" in b: clone.set_meta("clone_owner", b.id)
+
+				if "team" in clone and "team" in b:
+					clone.team = "mirror_team_" + str(b.team)
+
+				# Disable AI and make permanent
+				clone.ai_disabled = true
+				if "invulnerable" in clone:
+					clone.invulnerable = true
+				elif clone.has_method("set_meta"):
+					clone.set_meta("invulnerable", true)
+
+				new_clones.append(clone)
+
+		if "balls" in world:
+			for c in new_clones:
+				world.balls.append(c)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		var arena_width = 2000.0
+		var arena_height = 2000.0
+		if "arena" in world and world.arena != null:
+			if "width" in world.arena: arena_width = world.arena.width
+			if "height" in world.arena: arena_height = world.arena.height
+
+		var owner_to_clone = {}
+		for b in balls:
+			var is_c = false
+			if "is_clone" in b: is_c = b.is_clone
+			elif b.has_method("has_meta") and b.has_meta("is_clone"): is_c = b.get_meta("is_clone")
+
+			if is_c:
+				var owner_id = null
+				if "clone_owner" in b: owner_id = b.clone_owner
+				elif b.has_method("has_meta") and b.has_meta("clone_owner"): owner_id = b.get_meta("clone_owner")
+
+				if owner_id != null:
+					owner_to_clone[owner_id] = b
+
+		for b in balls:
+			var is_c = false
+			if "is_clone" in b: is_c = b.is_clone
+			elif b.has_method("has_meta") and b.has_meta("is_clone"): is_c = b.get_meta("is_clone")
+
+			if not is_c:
+				var b_id = null
+				if "id" in b: b_id = b.id
+
+				if b_id != null and owner_to_clone.has(b_id):
+					var clone = owner_to_clone[b_id]
+					if "x" in b and "x" in clone: clone.x = arena_width - b.x
+					if "y" in b and "y" in clone: clone.y = arena_height - b.y
+					if "vx" in b and "vx" in clone: clone.vx = -b.vx
+					if "vy" in b and "vy" in clone: clone.vy = -b.vy
+
 class MirrorMatchMode extends GameMode:
 	func _init() -> void:
 		name = "Mirror Match"
@@ -9591,6 +9676,7 @@ var GAME_MODES = {
     "moving_safe_zone": MovingSafeZoneMode.new(),
     "bounty_hunt": BountyHuntMode.new(),
     "earthquake": EarthquakeMode.new(),
+    "inverse_mirror_arena": InverseMirrorArenaMode.new(),
     "mirror_match": MirrorMatchMode.new(),
 	"clone_chaos": CloneChaosMode.new(),
 	"volatile_clones": VolatileClonesMode.new(),
