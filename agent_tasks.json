@@ -10322,7 +10322,7 @@
     },
     {
       "id": "idea-598",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Clan Vault",
@@ -16617,6 +16617,74 @@
         "src/arena/pinball_flipper_traps.py",
         "src/arena/pinball_flipper_traps.gd",
         "tests/test_pinball_flipper_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-968",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Paintball Mode",
+      "description": "A new game mode where attacks do not deal conventional damage. Instead, balls shoot paint splatters that cover the arena floor and other balls. Balls regenerate health rapidly when rolling over their own team's color, and slowly lose health while standing on enemy colors. Walls that are bounced off of also take on the color, creating speed boosts for the owning team.",
+      "allowed_paths": [
+        "src/ai/paintball.py",
+        "src/ai/paintball.gd",
+        "tests/test_paintball.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-969",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chrono-Stutter Hazard",
+      "description": "A hazard that periodically saves the position, velocity, and health of any entity that enters it. Every 5 seconds, all affected entities are forcefully rewound back to their saved state, creating a localized 'time stutter' effect that disrupts momentum and strategies.",
+      "allowed_paths": [
+        "src/arena/chrono_stutter.py",
+        "src/arena/chrono_stutter.gd",
+        "tests/test_chrono_stutter.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-970",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Slingshot Hazard",
+      "description": "A hazard zone that functions as a powerful, omni-directional elastic band. Balls that enter the zone are grabbed, stretched backward towards the center over a short duration based on their momentum, and then violently launched back out in the opposite direction they entered from with significantly increased speed.",
+      "allowed_paths": [
+        "src/arena/slingshot.py",
+        "src/arena/slingshot.gd",
+        "tests/test_slingshot.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-971",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Entanglement Arena",
+      "description": "An arena mode where random pairs of players become 'entangled'. Damage taken by one is partially shared with the other, but they also share healing and buffs. They can choose to cooperate to take down enemies together or risk hurting themselves by attacking their entangled partner.",
+      "allowed_paths": [
+        "src/arena/quantum_entanglement_arena.py",
+        "src/arena/quantum_entanglement_arena.gd",
+        "tests/test_quantum_entanglement_arena.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

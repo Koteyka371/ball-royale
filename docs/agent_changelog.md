@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-598] Clan Vault — *2026-07-05 17:01:08 UTC*
+
+A shared storage space where clan members can deposit and withdraw crafting materials or unwanted items, with rank-based access controls.
+
+---
+
 ## [idea-593] Mirror Dimension Arena — *2026-07-05 16:28:30 UTC*
 
 A new arena that spawns permanent mirror clones on the exact opposite side of the map for every player, tracking their movement inversely.
