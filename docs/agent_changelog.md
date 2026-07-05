@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-604] Season-Based Boss Spawns — *2026-07-05 19:20:01 UTC*
+
+Introduce a random boss entity (like 'Yeti' in Winter season or 'Sandworm' in Desert season) that spawns in the center of the arena during the final zone closure, forcing players to either defeat the boss for massive points or use it to grief opponents.
+
+---
+
 ## [idea-608] Tag Team Mode — *2026-07-05 19:19:57 UTC*
 
 A new game mode where players queue as a team of two balls but only one is active at a time. The active ball can swap with their teammate using a tag mechanism, which could have a cooldown or require returning to a specific zone. This allows for strategic combinations of different ball types and requires careful management of both balls' health.
