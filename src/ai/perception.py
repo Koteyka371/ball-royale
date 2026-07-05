@@ -216,7 +216,7 @@ class Perception:
                             identified = True
 
                         if identified:
-                            if not any(getattr(t, "id", None) == h.id for t in data["traps"]):
+                            if not any(getattr(t, "id", None) == getattr(h, "id", None) for t in data["traps"]):
                                 data["traps"].append(h)
                         else:
                             if not any(getattr(b, "id", None) == h.id for b in data["boosters"]):
@@ -227,7 +227,7 @@ class Perception:
                             if not any(getattr(b, "id", None) == h.id for b in data["boosters"]):
                                 data["boosters"].append(h)
                         else:
-                            if not any(getattr(t, "id", None) == h.id for t in data["traps"]):
+                            if not any(getattr(t, "id", None) == getattr(h, "id", None) for t in data["traps"]):
                                 data["traps"].append(h)
 
         for enemy in data["enemies"]:

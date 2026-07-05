@@ -2142,6 +2142,29 @@ class Action:
                                     axe = Hazard(trap_id, hazard.x, hazard.y, 60.0, "spinning_laser", 40.0)
                                     axe.duration = 8.0
                                     self.world.arena.hazards.append(axe)
+                    elif hazard.kind == "random_swap_hazard" and getattr(hazard, "active", True):
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            import random
+                            hazard.active = False
+
+                            # Find all other alive entities
+                            other_balls = [b for b in self.world.balls if b != self.ball and getattr(b, "alive", True)]
+                            if other_balls:
+                                target = random.choice(other_balls)
+
+                                # Swap positions
+                                temp_x, temp_y = self.ball.x, self.ball.y
+                                self.ball.x, self.ball.y = target.x, target.y
+                                target.x, target.y = temp_x, temp_y
+
+                                # Visual effect
+                                if hasattr(self.world, "events"):
+                                    self.world.events.append({"type": "teleport", "x": self.ball.x, "y": self.ball.y})
+                                    self.world.events.append({"type": "teleport", "x": target.x, "y": target.y})
+
                     elif hazard.kind == "swap_portal":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
@@ -3086,6 +3109,29 @@ class Action:
                                 if self.ball.hp <= 0:
                                     self.ball.alive = False
                             continue
+                        elif hazard.kind == "random_swap_hazard" and getattr(hazard, "active", True):
+                            dx = hazard.x - self.ball.x
+                            dy = hazard.y - self.ball.y
+                            dist_sq = dx * dx + dy * dy
+                            if dist_sq < hazard.radius * hazard.radius:
+                                import random
+                                hazard.active = False
+
+                                # Find all other alive entities
+                                other_balls = [b for b in self.world.balls if b != self.ball and getattr(b, "alive", True)]
+                                if other_balls:
+                                    target = random.choice(other_balls)
+
+                                    # Swap positions
+                                    temp_x, temp_y = self.ball.x, self.ball.y
+                                    self.ball.x, self.ball.y = target.x, target.y
+                                    target.x, target.y = temp_x, temp_y
+
+                                    # Visual effect
+                                    if hasattr(self.world, "events"):
+                                        self.world.events.append({"type": "teleport", "x": self.ball.x, "y": self.ball.y})
+                                        self.world.events.append({"type": "teleport", "x": target.x, "y": target.y})
+
                         elif hazard.kind == "meteor":
                             hazard_damage = hazard.damage * delta
                             if getattr(self.ball, "is_in_quicksand", False):

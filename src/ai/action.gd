@@ -3704,6 +3704,38 @@ func execute(strategy: String, delta: float):
                                 var axe = HazardClass.new(trap_id, hazard.x, hazard.y, 60.0, "spinning_laser", 40.0)
                                 axe.set_meta("duration", 8.0)
                                 self.world.arena.hazards.append(axe)
+                elif hazard.kind == "random_swap_hazard" and (not hazard.has_meta("active") or hazard.get_meta("active") != false):
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    if dist_sq < hazard.radius * hazard.radius:
+                        if hazard.has_method("set_meta"):
+                            hazard.set_meta("active", false)
+                        elif "active" in hazard:
+                            hazard.active = false
+
+                        # Find all other alive entities
+                        var other_balls = []
+                        for b in self.world.balls:
+                            if b != self.ball and b.get("alive") == true:
+                                other_balls.append(b)
+
+                        if other_balls.size() > 0:
+                            # Simple predictable random choice based on ball ID if available, else first
+                            var target = other_balls[randi() % other_balls.size()]
+
+                            # Swap positions
+                            var temp_x = self.ball.x
+                            var temp_y = self.ball.y
+                            self.ball.x = target.x
+                            self.ball.y = target.y
+                            target.x = temp_x
+                            target.y = temp_y
+
+                            if self.world.get("events") != null:
+                                self.world.events.append({"type": "teleport", "x": self.ball.x, "y": self.ball.y})
+                                self.world.events.append({"type": "teleport", "x": target.x, "y": target.y})
+
                 elif hazard.kind == "swap_portal":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
@@ -5188,6 +5220,38 @@ func execute(strategy: String, delta: float):
                             if self.ball.hp <= 0:
                                 self.ball.alive = false
                         continue
+                    elif hazard.kind == "random_swap_hazard" and (not hazard.has_meta("active") or hazard.get_meta("active") != false):
+                        var dx = hazard.x - self.ball.x
+                        var dy = hazard.y - self.ball.y
+                        var dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            if hazard.has_method("set_meta"):
+                                hazard.set_meta("active", false)
+                            elif "active" in hazard:
+                                hazard.active = false
+
+                            # Find all other alive entities
+                            var other_balls = []
+                            for b in self.world.balls:
+                                if b != self.ball and b.get("alive") == true:
+                                    other_balls.append(b)
+
+                            if other_balls.size() > 0:
+                                # Simple predictable random choice based on ball ID if available, else first
+                                var target = other_balls[randi() % other_balls.size()]
+
+                                # Swap positions
+                                var temp_x = self.ball.x
+                                var temp_y = self.ball.y
+                                self.ball.x = target.x
+                                self.ball.y = target.y
+                                target.x = temp_x
+                                target.y = temp_y
+
+                                if self.world.get("events") != null:
+                                    self.world.events.append({"type": "teleport", "x": self.ball.x, "y": self.ball.y})
+                                    self.world.events.append({"type": "teleport", "x": target.x, "y": target.y})
+
                     elif hazard.kind == "meteor":
                         var hd = hazard.damage * delta
                         var is_qs = false

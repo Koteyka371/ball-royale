@@ -120,7 +120,7 @@ class ProceduralArena:
         # Generate hazards
         num_hazards = self.num_rooms * 2
         for i in range(num_hazards):
-            kind = random.choice(["spikes", "lava", "fake_booster", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "lightning_storm", "hidden_trap", "hidden_mine", "silence_booster", "freeze_booster", "switch", "magnet", "quicksand", "magnet_booster", "material_magnet_booster", "breakable_wall", "portal_gun_item", "wormhole", "clone_booster", "stealth_zone", "invert_booster", "reverse_gravity_booster", "stamina_drain_zone", "tether_trap", "slip_zone", "tall_grass", "vortex"])
+            kind = random.choice(["spikes", "lava", "fake_booster", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "lightning_storm", "hidden_trap", "hidden_mine", "silence_booster", "freeze_booster", "switch", "magnet", "quicksand", "magnet_booster", "material_magnet_booster", "breakable_wall", "portal_gun_item", "wormhole", "clone_booster", "stealth_zone", "invert_booster", "reverse_gravity_booster", "stamina_drain_zone", "tether_trap", "slip_zone", "tall_grass", "vortex", "random_swap_hazard"])
             if kind == "switch":
                 radius = 20.0
                 damage = 0.0
@@ -448,7 +448,7 @@ class ProceduralArena:
 
                         # Consume nearby hazards
                         for other_hazard in self.hazards:
-                            if hazard.id == other_hazard.id:
+                            if getattr(hazard, 'id', None) == getattr(other_hazard, 'id', None):
                                 continue
                             import math
                             hx_diff = hazard.x - other_hazard.x
@@ -476,7 +476,7 @@ class ProceduralArena:
                 for hazard in self.hazards:
                     if hazard.kind == "magnet":
                         for other_hazard in self.hazards:
-                            if hazard.id == other_hazard.id:
+                            if getattr(hazard, 'id', None) == getattr(other_hazard, 'id', None):
                                 continue
                             if other_hazard.kind in ("explosive_barrel", "flare"):
                                 hx_diff = hazard.x - other_hazard.x
@@ -699,7 +699,7 @@ class ProceduralArena:
                                 self.rooms.append(new_room)
                             except ImportError:
                                 pass
-                elif h.id >= 1000 and hasattr(h, "target_radius"):
+                elif getattr(h, "id", 0) >= 1000 and hasattr(h, "target_radius"):
                     if h.radius < h.target_radius:
                         # Grow proportionally to reach target in roughly 600 ticks
                         h.radius += (h.target_radius / 600.0) * delta * 60.0 # Assuming 60 ticks per second
