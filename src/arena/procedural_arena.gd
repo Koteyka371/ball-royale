@@ -489,6 +489,35 @@ func update_zone(current_tick: int, delta: float) -> void:
     if current_tick != last_tick:
         if "hazards" in self:
             for hazard in hazards:
+                if hazard.kind == "sinkhole" or hazard.kind == "massive_sinkhole":
+                    hazard.radius += 2.0 * delta
+                    for other_hazard in hazards:
+                        if hazard.id == other_hazard.id:
+                            continue
+                        var dist = Vector2(hazard.x, hazard.y).distance_to(Vector2(other_hazard.x, other_hazard.y))
+                        if dist < hazard.radius + other_hazard.radius:
+                            if other_hazard.kind == "quicksand":
+                                hazard.kind = "massive_sinkhole"
+                                hazard.radius += other_hazard.radius * 0.5
+                                if other_hazard.has_method("set_meta"):
+                                    other_hazard.set_meta("active", false)
+                                else:
+                                    other_hazard.active = false
+                            elif other_hazard.kind != "sinkhole" and other_hazard.kind != "massive_sinkhole":
+                                var is_active = true
+                                if other_hazard.has_method("has_meta") and other_hazard.has_meta("active"):
+                                    is_active = other_hazard.get_meta("active")
+                                elif "active" in other_hazard:
+                                    is_active = other_hazard.active
+
+                                if is_active:
+                                    hazard.radius += other_hazard.radius * 0.1
+                                    if other_hazard.has_method("set_meta"):
+                                        other_hazard.set_meta("active", false)
+                                    else:
+                                        other_hazard.active = false
+
+            for hazard in hazards:
                 if hazard.kind == "slip_zone":
                     if not "active_timer" in hazard:
                         if hazard.has_method("set_meta"):
