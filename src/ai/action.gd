@@ -1115,6 +1115,24 @@ func execute(strategy: String, delta: float):
     elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("_chrono_slow"):
         self.ball.erase("_chrono_slow")
 
+    var mirror_timer = 0.0
+    if "mirror_stance_timer" in self.ball:
+        mirror_timer = self.ball.mirror_stance_timer
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("mirror_stance_timer"):
+        mirror_timer = self.ball.get_meta("mirror_stance_timer")
+
+    if mirror_timer > 0:
+        mirror_timer -= delta
+        if "mirror_stance_timer" in self.ball:
+            self.ball.mirror_stance_timer = mirror_timer
+        else:
+            self.ball.set_meta("mirror_stance_timer", mirror_timer)
+
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+            self.ball.set_meta("_chrono_slow", 0.5)
+        elif typeof(self.ball) == TYPE_DICTIONARY:
+            self.ball["_chrono_slow"] = 0.5
+
 
     var is_orbiting_accelerator = false
     if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("is_orbiting_accelerator"):
@@ -11548,6 +11566,23 @@ func _use_skill():
                 elif self.ball.has_method("get_meta") and self.ball.has_meta("bonus_reflect_shield_duration"): bonus_dur3 = self.ball.get_meta("bonus_reflect_shield_duration")
                 self.ball.reflect_shield_timer = 3.0 + bonus_dur3
                 self.ball.reflect_shield_capacity = 999999.0
+        elif skill_name == "mirror_stance":
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("reflect_shield_active", true)
+                var bonus_dur2 = 0.0
+                if "bonus_reflect_shield_duration" in self.ball: bonus_dur2 = self.ball.bonus_reflect_shield_duration
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("bonus_reflect_shield_duration"): bonus_dur2 = self.ball.get_meta("bonus_reflect_shield_duration")
+                self.ball.set_meta("reflect_shield_timer", 3.0 + bonus_dur2)
+                self.ball.set_meta("reflect_shield_capacity", 999999.0)
+                self.ball.set_meta("mirror_stance_timer", 3.0 + bonus_dur2)
+            else:
+                self.ball.reflect_shield_active = true
+                var bonus_dur3 = 0.0
+                if "bonus_reflect_shield_duration" in self.ball: bonus_dur3 = self.ball.bonus_reflect_shield_duration
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("bonus_reflect_shield_duration"): bonus_dur3 = self.ball.get_meta("bonus_reflect_shield_duration")
+                self.ball.reflect_shield_timer = 3.0 + bonus_dur3
+                self.ball.reflect_shield_capacity = 999999.0
+                self.ball.mirror_stance_timer = 3.0 + bonus_dur3
 
             if self.has_method("_spawn_skill_particles"):
                 self._spawn_skill_particles("shield")

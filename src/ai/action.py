@@ -661,6 +661,10 @@ class Action:
         if hasattr(self.ball, "_chrono_slow"):
             delattr(self.ball, "_chrono_slow")
 
+        if getattr(self.ball, "mirror_stance_timer", 0.0) > 0:
+            self.ball.mirror_stance_timer -= delta
+            self.ball._chrono_slow = 0.5
+
 
 
         if getattr(self.ball, "is_orbiting_accelerator", False):
@@ -6878,6 +6882,13 @@ class Action:
                 self.ball.reflect_shield_active = True
                 self.ball.reflect_shield_timer = 3.0 + getattr(self.ball, "bonus_reflect_shield_duration", 0.0)
                 self.ball.reflect_shield_capacity = float('inf')  # Reflects all damage
+                if hasattr(self, "_spawn_skill_particles"):
+                    self._spawn_skill_particles("shield")
+            elif skill_name == "mirror_stance":
+                self.ball.reflect_shield_active = True
+                self.ball.reflect_shield_timer = 3.0 + getattr(self.ball, "bonus_reflect_shield_duration", 0.0)
+                self.ball.reflect_shield_capacity = float('inf')
+                self.ball.mirror_stance_timer = 3.0 + getattr(self.ball, "bonus_reflect_shield_duration", 0.0)
                 if hasattr(self, "_spawn_skill_particles"):
                     self._spawn_skill_particles("shield")
             elif skill_name == "orbital_shield":

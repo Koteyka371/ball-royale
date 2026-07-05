@@ -1,0 +1,4 @@
+{
+  "title": "Chain Lightning Hazard",
+  "description": "A new hazard type that periodically discharges a chain lightning effect, jumping up to 3 nearby entities regardless of team and dealing moderate damage."
+}
