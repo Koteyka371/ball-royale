@@ -16144,6 +16144,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-940",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Hackable Turret Mode",
+      "description": "Stationary turrets periodically spawn in the arena. They have a capture radius, and standing inside them captures them for your team, allowing the turret to fire on enemies automatically. If an enemy stands inside, they can hack it back.",
+      "allowed_paths": [
+        "src/ai/hackable_turret.py",
+        "src/ai/hackable_turret.gd",
+        "tests/test_hackable_turret.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
