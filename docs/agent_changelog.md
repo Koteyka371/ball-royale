@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-584] Black Hole Gravity Anomaly Hazard — *2026-07-05 13:30:48 UTC*
+
+Introduce a rare Black Hole hazard that appears periodically in the center of the arena. It slowly pulls all balls towards it. Balls that get too close take heavy continuous damage, but skilled players can use the black hole's gravitational pull to slingshot themselves at high speeds toward enemies or objectives.
+
+---
+
 ## [idea-541] Kamikaze Clones — *2026-07-05 13:11:33 UTC*
 
 An upgraded version of the mimic clone that, instead of vanishing upon expiring, aggressively charges at the nearest enemy and detonates for a small amount of damage.

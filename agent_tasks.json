@@ -10084,7 +10084,7 @@
     },
     {
       "id": "idea-584",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Gravity Anomaly Hazard",
@@ -16360,6 +16360,40 @@
         "src/ai/blacksmith_ball.py",
         "src/ai/blacksmith_ball.gd",
         "tests/test_blacksmith_ball.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-953",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mimic Clone Chain Reaction Mechanic",
+      "description": "If a mimic clone detonation kills an enemy, it spawns a second, smaller mimic clone that continues the charge with reduced stats, creating a cascading chain reaction if grouped enemies are weak.",
+      "allowed_paths": [
+        "src/ai/mimic_clone_chain_reaction_mechanic.py",
+        "src/ai/mimic_clone_chain_reaction_mechanic.gd",
+        "tests/test_mimic_clone_chain_reaction_mechanic.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-954",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mimic Clone Explosion Visual Effect Upgrade",
+      "description": "Add a distinct visual explosion particle effect specifically for the mimic clone detonation to differentiate it from normal bomber explosions or elemental traps, giving players a clear visual cue.",
+      "allowed_paths": [
+        "src/ai/mimic_clone_explosion_visual_effect_upgrade.py",
+        "src/ai/mimic_clone_explosion_visual_effect_upgrade.gd",
+        "tests/test_mimic_clone_explosion_visual_effect_upgrade.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
