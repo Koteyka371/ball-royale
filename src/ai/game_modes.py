@@ -6810,6 +6810,117 @@ class LunarEclipseEventMode(GameMode):
                 if hasattr(world, "add_event"):
                     world.add_event("lunar_eclipse_end", {"type": "weather_warning", "message": "The lunar eclipse has ended."})
 
+
+class ScramblerDroneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Scrambler Drones"
+        self.description = "Mobile robotic hazards seek out players, attach to them, and periodically scramble their targeting until destroyed."
+        self.spawn_timer = 0.0
+
+    def setup(self, world, balls) -> None:
+        super().setup(world, balls)
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+        self.spawn_timer = 0.0
+
+    def tick(self, world, balls, delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import math, random
+
+        self.spawn_timer -= delta
+        if self.spawn_timer <= 0:
+            self.spawn_timer = 15.0
+            num_drones = len([h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") == "scrambler_drone"])
+            if num_drones < 5:
+                arena_width = getattr(world.arena, "width", 1000)
+                arena_height = getattr(world.arena, "height", 1000)
+                try:
+                    from arena.procedural_arena import Hazard
+                except ImportError:
+                    class Hazard:
+                        def __init__(self, id, x, y, radius, kind, damage):
+                            self.id = id
+                            self.x = x
+                            self.y = y
+                            self.radius = radius
+                            self.kind = kind
+                            self.damage = damage
+
+                x = random.uniform(100, arena_width - 100)
+                y = random.uniform(100, arena_height - 100)
+                h_id = 50000 + len(world.arena.hazards) + random.randint(0, 10000)
+                drone = Hazard(id=h_id, x=x, y=y, radius=15.0, kind="scrambler_drone", damage=0.0)
+                setattr(drone, "hp", 150.0)
+                setattr(drone, "attached_id", None)
+                setattr(drone, "scramble_timer", 0.0)
+                world.arena.hazards.append(drone)
+
+        hazards_to_remove = []
+        for h in getattr(world.arena, "hazards", []):
+            if getattr(h, "kind", "") == "scrambler_drone":
+                if getattr(h, "hp", 0.0) <= 0:
+                    hazards_to_remove.append(h)
+                    continue
+
+                attached_id = getattr(h, "attached_id", None)
+                target_ball = None
+
+                # Damage taken from overlapping balls (struggling)
+                for b in balls:
+                    if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                        dx = b.x - h.x
+                        dy = b.y - h.y
+                        dist = math.hypot(dx, dy)
+                        if dist <= h.radius + getattr(b, "radius", 15.0):
+                            h.hp -= getattr(b, "damage", 10.0) * delta
+                            if getattr(h, "hp", 0.0) <= 0:
+                                break
+
+                if getattr(h, "hp", 0.0) <= 0:
+                    hazards_to_remove.append(h)
+                    continue
+
+                if attached_id is not None:
+                    target_ball = next((b for b in balls if getattr(b, "id", None) == attached_id and getattr(b, "alive", False)), None)
+                    if target_ball is None:
+                        h.attached_id = None
+                    else:
+                        h.x = target_ball.x
+                        h.y = target_ball.y
+                        h.scramble_timer -= delta
+                        if h.scramble_timer <= 0:
+                            h.scramble_timer = 4.0
+                            target_ball.is_confused = True
+                            target_ball.confusion_timer = 2.0
+                else:
+                    # Seek nearest ball
+                    min_dist = float('inf')
+                    for b in balls:
+                        if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                            dx = b.x - h.x
+                            dy = b.y - h.y
+                            dist = math.hypot(dx, dy)
+                            if dist < min_dist:
+                                min_dist = dist
+                                target_ball = b
+
+                    if target_ball:
+                        dx = target_ball.x - h.x
+                        dy = target_ball.y - h.y
+                        dist = math.hypot(dx, dy)
+                        if dist <= h.radius + getattr(target_ball, "radius", 15.0):
+                            h.attached_id = getattr(target_ball, "id", None)
+                            h.scramble_timer = 0.0 # Trigger immediately on attach
+                        elif dist > 0:
+                            speed = 120.0
+                            h.x += (dx / dist) * speed * delta
+                            h.y += (dy / dist) * speed * delta
+
+        for h in hazards_to_remove:
+            if h in world.arena.hazards:
+                world.arena.hazards.remove(h)
+
 GAME_MODES = {
     "meteor_shower": MeteorShowerMode(),
     "blizzard_mode": BlizzardMode(),
@@ -7079,3 +7190,4 @@ class RollingBouldersMode(GameMode):
 
 
 GAME_MODES["rolling_boulders"] = RollingBouldersMode()
+GAME_MODES["scrambler_drones"] = ScramblerDroneMode()

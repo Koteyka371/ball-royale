@@ -8610,9 +8610,227 @@ class RollingBouldersMode extends GameMode:
 			world.arena.hazards.append(h)
 
 
+
+class ScramblerDroneMode extends GameMode:
+	func _init():
+		name = "Scrambler Drones"
+		description = "Mobile robotic hazards seek out players, attach to them, and periodically scramble their targeting until destroyed."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if not "hazards" in world.arena:
+			world.arena.hazards = []
+		set_meta("spawn_timer", 0.0)
+
+	func tick(world, balls, delta: float = 0.016):
+		super.tick(world, balls, delta)
+
+		var spawn_timer = get_meta("spawn_timer") - delta
+		if spawn_timer <= 0:
+			spawn_timer = 15.0
+			var num_drones = 0
+			for h in world.arena.hazards:
+				if typeof(h) != TYPE_DICTIONARY and "kind" in h and h.kind == "scrambler_drone":
+					num_drones += 1
+			if num_drones < 5:
+				var aw = 1000
+				if "width" in world.arena: aw = world.arena.width
+				var ah = 1000
+				if "height" in world.arena: ah = world.arena.height
+				var rng = RandomNumberGenerator.new()
+				rng.randomize()
+				var arena_class = load("res://src/arena/procedural_arena.gd")
+				var new_hazard = null
+				if arena_class != null and arena_class.const_defined("Hazard"):
+					new_hazard = arena_class.Hazard.new(50000 + world.arena.hazards.size() + rng.randi_range(0, 10000), rng.randf_range(100, aw - 100), rng.randf_range(100, ah - 100), 15.0, "scrambler_drone", 0.0)
+				else:
+					new_hazard = {"id": 50000 + world.arena.hazards.size(), "x": rng.randf_range(100, aw - 100), "y": rng.randf_range(100, ah - 100), "radius": 15.0, "kind": "scrambler_drone", "damage": 0.0}
+
+				if typeof(new_hazard) != TYPE_DICTIONARY:
+					if new_hazard.has_method("set_meta"):
+						new_hazard.set_meta("hp", 150.0)
+						new_hazard.set_meta("attached_id", -1)
+						new_hazard.set_meta("scramble_timer", 0.0)
+					world.arena.hazards.append(new_hazard)
+		set_meta("spawn_timer", spawn_timer)
+
+		var hazards_to_remove = []
+		for h in world.arena.hazards:
+			if typeof(h) != TYPE_DICTIONARY and "kind" in h and h.kind == "scrambler_drone":
+				var h_hp = 0.0
+				if h.has_method("has_meta") and h.has_meta("hp"):
+					h_hp = h.get_meta("hp")
+				if h_hp <= 0:
+					hazards_to_remove.append(h)
+					continue
+
+				var attached_id = -1
+				if h.has_method("has_meta") and h.has_meta("attached_id"):
+					attached_id = h.get_meta("attached_id")
+				var target_ball = null
+
+				for b in balls:
+					var b_alive = false
+					if typeof(b) == TYPE_DICTIONARY:
+						b_alive = b.get("alive", false)
+					else:
+						b_alive = b.alive if "alive" in b else false
+					var b_type = ""
+					if typeof(b) == TYPE_DICTIONARY:
+						b_type = b.get("ball_type", "")
+					elif "ball_type" in b:
+						b_type = b.ball_type
+
+					if b_alive and b_type != "spectator":
+						var bx = 0.0
+						var by = 0.0
+						var br = 15.0
+						var b_dmg = 10.0
+						if typeof(b) == TYPE_DICTIONARY:
+							bx = b.get("x", 0.0)
+							by = b.get("y", 0.0)
+							br = b.get("radius", 15.0)
+							b_dmg = b.get("damage", 10.0)
+						else:
+							bx = b.x if "x" in b else 0.0
+							by = b.y if "y" in b else 0.0
+							br = b.radius if "radius" in b else 15.0
+							b_dmg = b.damage if "damage" in b else 10.0
+
+						var dx = bx - h.x
+						var dy = by - h.y
+						var dist = sqrt(dx*dx + dy*dy)
+						if dist <= h.radius + br:
+							h_hp -= b_dmg * delta
+							if h.has_method("set_meta"):
+								h.set_meta("hp", h_hp)
+							if h_hp <= 0:
+								break
+
+				if h_hp <= 0:
+					hazards_to_remove.append(h)
+					continue
+
+				if attached_id != -1:
+					for b in balls:
+						var b_id = -1
+						var b_alive = false
+						if typeof(b) == TYPE_DICTIONARY:
+							b_id = b.get("id", -1)
+							b_alive = b.get("alive", false)
+						else:
+							b_id = b.id if "id" in b else -1
+							b_alive = b.alive if "alive" in b else false
+						if b_id == attached_id and b_alive:
+							target_ball = b
+							break
+					if target_ball == null:
+						if h.has_method("set_meta"):
+							h.set_meta("attached_id", -1)
+					else:
+						var bx = 0.0
+						var by = 0.0
+						if typeof(target_ball) == TYPE_DICTIONARY:
+							bx = target_ball.get("x", 0.0)
+							by = target_ball.get("y", 0.0)
+						else:
+							bx = target_ball.x if "x" in target_ball else 0.0
+							by = target_ball.y if "y" in target_ball else 0.0
+						h.x = bx
+						h.y = by
+						var stimer = 0.0
+						if h.has_method("has_meta") and h.has_meta("scramble_timer"):
+							stimer = h.get_meta("scramble_timer")
+						stimer -= delta
+						if stimer <= 0:
+							stimer = 4.0
+							if typeof(target_ball) == TYPE_DICTIONARY:
+								target_ball["is_confused"] = true
+								target_ball["confusion_timer"] = 2.0
+							else:
+								if "is_confused" in target_ball:
+									target_ball.is_confused = true
+								elif target_ball.has_method("set_meta"):
+									target_ball.set_meta("is_confused", true)
+								if "confusion_timer" in target_ball:
+									target_ball.confusion_timer = 2.0
+								elif target_ball.has_method("set_meta"):
+									target_ball.set_meta("confusion_timer", 2.0)
+						if h.has_method("set_meta"):
+							h.set_meta("scramble_timer", stimer)
+				else:
+					var min_dist = 999999.0
+					for b in balls:
+						var b_alive = false
+						if typeof(b) == TYPE_DICTIONARY:
+							b_alive = b.get("alive", false)
+						else:
+							b_alive = b.alive if "alive" in b else false
+						var b_type = ""
+						if typeof(b) == TYPE_DICTIONARY:
+							b_type = b.get("ball_type", "")
+						elif "ball_type" in b:
+							b_type = b.ball_type
+						if b_alive and b_type != "spectator":
+							var bx = 0.0
+							var by = 0.0
+							if typeof(b) == TYPE_DICTIONARY:
+								bx = b.get("x", 0.0)
+								by = b.get("y", 0.0)
+							else:
+								bx = b.x if "x" in b else 0.0
+								by = b.y if "y" in b else 0.0
+							var dx = bx - h.x
+							var dy = by - h.y
+							var dist = sqrt(dx*dx + dy*dy)
+							if dist < min_dist:
+								min_dist = dist
+								target_ball = b
+					if target_ball != null:
+						var bx = 0.0
+						var by = 0.0
+						var br = 15.0
+						var b_id = -1
+						if typeof(target_ball) == TYPE_DICTIONARY:
+							bx = target_ball.get("x", 0.0)
+							by = target_ball.get("y", 0.0)
+							br = target_ball.get("radius", 15.0)
+							b_id = target_ball.get("id", -1)
+						else:
+							bx = target_ball.x if "x" in target_ball else 0.0
+							by = target_ball.y if "y" in target_ball else 0.0
+							br = target_ball.radius if "radius" in target_ball else 15.0
+							b_id = target_ball.id if "id" in target_ball else -1
+
+						var dx = bx - h.x
+						var dy = by - h.y
+						var dist = sqrt(dx*dx + dy*dy)
+						if dist <= h.radius + br:
+							if h.has_method("set_meta"):
+								h.set_meta("attached_id", b_id)
+								h.set_meta("scramble_timer", 0.0)
+						elif dist > 0:
+							var speed = 120.0
+							h.x += (dx / dist) * speed * delta
+							h.y += (dy / dist) * speed * delta
+
+		if hazards_to_remove.size() > 0:
+			var new_hazards = []
+			for h in world.arena.hazards:
+				var remove = false
+				for r in hazards_to_remove:
+					if typeof(h) == typeof(r) and h == r:
+						remove = true
+						break
+				if not remove:
+					new_hazards.append(h)
+			world.arena.hazards = new_hazards
+
 var GAME_MODES = {
 	"meteor_shower": MeteorShowerMode.new(),
 	"rolling_boulders": RollingBouldersMode.new(),
+	"scrambler_drones": ScramblerDroneMode.new()
+,
 	"blizzard_mode": BlizzardMode.new(),
 
 	"black_market": BlackMarketMode.new(),

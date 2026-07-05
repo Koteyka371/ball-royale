@@ -1,0 +1,4 @@
+{
+  "title": "Hackable Turret Mode",
+  "description": "Stationary turrets periodically spawn in the arena. They have a capture radius, and standing inside them captures them for your team, allowing the turret to fire on enemies automatically. If an enemy stands inside, they can hack it back."
+}
