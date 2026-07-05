@@ -80,10 +80,10 @@ func update_zone(current_tick: int, delta: float) -> void:
 		else:
 			if current_tick % 120 == 0:
 				if has_method("_trigger_event"):
-					var event_types = ["meteor_shower", "gravity_shift", "orbital_strike", "anomaly_zone"]
+					var event_types = ["meteor_shower", "gravity_shift", "orbital_strike", "anomaly_zone", "massive_black_hole_event"]
 					call("_trigger_event", event_types[randi() % event_types.size()], current_tick)
 				else:
-					var event_types = ["meteor_shower", "gravity_shift", "anomaly_zone"]
+					var event_types = ["meteor_shower", "gravity_shift", "anomaly_zone", "massive_black_hole_event"]
 					var event_type = event_types[randi() % event_types.size()]
 					if event_type == "meteor_shower":
 						for i in range(10):
@@ -97,6 +97,13 @@ func update_zone(current_tick: int, delta: float) -> void:
 						var zone = preload("res://src/arena/procedural_arena.gd").Hazard.new(hazards.size() + (randi() % 9000) + 1000, width/2, height/2, width/2, "anomaly_zone", 0.0)
 						zone.set_meta("duration", 10.0)
 						hazards.append(zone)
+					elif event_type == "massive_black_hole_event":
+						var h_id = 9000 + hazards.size()
+						var mbh = preload("res://src/arena/procedural_arena.gd").Hazard.new(h_id, width/2, height/2, 100.0, "massive_black_hole", 10.0)
+						mbh.target_radius = 500.0
+						mbh.set_meta("duration", 20.0)
+						mbh.set_meta("pull_strength", 100.0)
+						hazards.append(mbh)
 					elif event_type == "gravity_shift":
 						var gw = preload("res://src/arena/procedural_arena.gd").Hazard.new(hazards.size() + (randi() % 9000) + 1000, width/2, height/2, width/2, "gravity_well", 10.0)
 						gw.set_meta("duration", 10.0)

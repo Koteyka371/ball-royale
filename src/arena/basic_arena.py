@@ -79,9 +79,9 @@ class BasicArena:
                 if current_tick % 120 == 0:
                     import random
                     if hasattr(self, "_trigger_event"):
-                        self._trigger_event(random.choice(["meteor_shower", "gravity_shift", "orbital_strike", "anomaly_zone"]), current_tick)
+                        self._trigger_event(random.choice(["meteor_shower", "gravity_shift", "orbital_strike", "anomaly_zone", "massive_black_hole_event"]), current_tick)
                     else:
-                        event_type = random.choice(["meteor_shower", "gravity_shift", "anomaly_zone"])
+                        event_type = random.choice(["meteor_shower", "gravity_shift", "anomaly_zone", "massive_black_hole_event"])
                         if event_type == "meteor_shower":
                             for _ in range(10):
                                 x = random.uniform(50, self.width - 50)
@@ -92,6 +92,13 @@ class BasicArena:
                                 m.target_radius = 30.0
                                 setattr(m, "duration", 5.0)
                                 self.hazards.append(m)
+                        elif event_type == "massive_black_hole_event":
+                            h_id = 9000 + len(self.hazards)
+                            mbh = Hazard(id=h_id, x=self.width/2, y=self.height/2, radius=100.0, kind="massive_black_hole", damage=10.0)
+                            mbh.target_radius = 500.0
+                            setattr(mbh, "duration", 20.0)
+                            setattr(mbh, "pull_strength", 100.0)
+                            self.hazards.append(mbh)
                         elif event_type == "anomaly_zone":
                             zone = Hazard(id=len(self.hazards) + random.randint(3000, 9999), x=self.width/2, y=self.height/2, radius=self.width/2, kind="anomaly_zone", damage=0.0)
                             setattr(zone, "duration", 10.0)
