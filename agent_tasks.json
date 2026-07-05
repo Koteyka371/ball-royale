@@ -9913,7 +9913,7 @@
     },
     {
       "id": "idea-574",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bouncy Terrain Mutator",
@@ -16394,6 +16394,23 @@
         "src/ai/mimic_clone_explosion_visual_effect_upgrade.py",
         "src/ai/mimic_clone_explosion_visual_effect_upgrade.gd",
         "tests/test_mimic_clone_explosion_visual_effect_upgrade.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-955",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirror Mirage",
+      "description": "A new ball skill that creates a perfect mirror image clone that mirrors the player's inputs exactly but across the center axis of the arena.",
+      "allowed_paths": [
+        "src/ai/mirror_mirage.py",
+        "src/ai/mirror_mirage.gd",
+        "tests/test_mirror_mirage.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

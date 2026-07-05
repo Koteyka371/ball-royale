@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-574] Bouncy Terrain Mutator — *2026-07-05 14:30:53 UTC*
+
+Add a new mutator or game mode 'Bouncy Terrain' where collision with the arena walls or certain hazards doesn't stop or damage the ball, but reflects their velocity dramatically (like a pinball bumper), increasing chaos and requiring balls to adapt their pathfinding.
+
+---
+
 ## [idea-584] Black Hole Gravity Anomaly Hazard — *2026-07-05 13:30:48 UTC*
 
 Introduce a rare Black Hole hazard that appears periodically in the center of the arena. It slowly pulls all balls towards it. Balls that get too close take heavy continuous damage, but skilled players can use the black hole's gravitational pull to slingshot themselves at high speeds toward enemies or objectives.
