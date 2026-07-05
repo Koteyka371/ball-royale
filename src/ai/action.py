@@ -1944,6 +1944,29 @@ class Action:
                                             b.hp -= hazard.damage * 2.0
                                             if b.hp <= 0:
                                                 b.alive = False
+                    elif hazard.kind == "swap_trap":
+                        import random
+                        # find another random ball that is alive
+                        valid_targets = [b for b in getattr(self.world, 'balls', []) if b != self.ball and getattr(b, "alive", True)]
+                        if valid_targets:
+                            target = random.choice(valid_targets)
+
+                            # swap positions
+                            temp_x, temp_y = self.ball.x, self.ball.y
+                            self.ball.x, self.ball.y = target.x, target.y
+                            target.x, target.y = temp_x, temp_y
+
+                            # give a visual effect or small cooldown (optional)
+                            if hasattr(self.world, 'events'):
+                                self.world.events.append({
+                                    "type": "swap",
+                                    "source": getattr(self.ball, 'id', None),
+                                    "target": getattr(target, 'id', None),
+                                    "x": target.x,
+                                    "y": target.y
+                                })
+
+                        hazard.duration = 0.0 # Destroy the trap after use
                     elif hazard.kind == "trap":
                         current_tick = getattr(self.world, "tick", 0)
 
