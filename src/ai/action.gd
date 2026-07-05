@@ -6094,6 +6094,20 @@ func execute(strategy: String, delta: float):
                             if "speed_boost_timer" in self.ball:
                                 self.ball.speed_boost_timer = cur_speed + 3.0
 
+                            var bumper_combo = 0
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("bumper_combo"):
+                                bumper_combo = self.ball.get_meta("bumper_combo")
+                            elif "bumper_combo" in self.ball:
+                                bumper_combo = self.ball.bumper_combo
+
+                            bumper_combo += 1
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                self.ball.set_meta("bumper_combo", bumper_combo)
+                            if "bumper_combo" in self.ball:
+                                self.ball.bumper_combo = bumper_combo
+
+                            var combo_multiplier = 1.0 + (float(bumper_combo) * 0.5)
+
                             var powerup = null
                             if typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("powerup_type"):
                                 powerup = hazard.get_meta("powerup_type")
@@ -6111,20 +6125,20 @@ func execute(strategy: String, delta: float):
                                 if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("hp"): hp = self.ball.get_meta("hp")
                                 elif "hp" in self.ball: hp = self.ball.hp
 
-                                hp = min(max_hp, hp + 10.0)
+                                hp = min(max_hp, hp + (10.0 * combo_multiplier))
                                 if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("hp", hp)
                                 if "hp" in self.ball: self.ball.hp = hp
 
                             elif powerup == "speed":
-                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("speed_boost_timer", 3.0)
-                                if "speed_boost_timer" in self.ball: self.ball.speed_boost_timer = 3.0
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("speed_boost_timer", 3.0 * combo_multiplier)
+                                if "speed_boost_timer" in self.ball: self.ball.speed_boost_timer = 3.0 * combo_multiplier
 
                             elif powerup == "shield":
                                 var shield = 0.0
                                 if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("shield"): shield = self.ball.get_meta("shield")
                                 elif "shield" in self.ball: shield = self.ball.shield
 
-                                shield += 20.0
+                                shield += (20.0 * combo_multiplier)
                                 if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("shield", shield)
                                 var bonus_dur = 0.0
                                 if "bonus_reflect_shield_duration" in self.ball: bonus_dur = self.ball.bonus_reflect_shield_duration
@@ -6151,7 +6165,7 @@ func execute(strategy: String, delta: float):
                                 if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("stamina"): stam = self.ball.get_meta("stamina")
                                 elif "stamina" in self.ball: stam = self.ball.stamina
 
-                                stam = min(max_stam, stam + 20.0)
+                                stam = min(max_stam, stam + (20.0 * combo_multiplier))
                                 if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("stamina", stam)
                                 if "stamina" in self.ball: self.ball.stamina = stam
                         continue
@@ -6682,6 +6696,11 @@ func execute(strategy: String, delta: float):
     var bounced_wall = _clamp_position()
 
     if bounced_wall:
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+            self.ball.set_meta("bumper_combo", 0)
+        if "bumper_combo" in self.ball:
+            self.ball.bumper_combo = 0
+
         var vx = 0.0
         var vy = 0.0
         if "vx" in self.ball: vx = self.ball.vx
@@ -6973,12 +6992,24 @@ func execute(strategy: String, delta: float):
                 regen_mult *= 2.0
 
         if is_dash:
+            if typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("set_meta"):
+                my_ball.set_meta("bumper_combo", 0)
+            elif typeof(my_ball) == TYPE_DICTIONARY:
+                my_ball["bumper_combo"] = 0
             if infinite_stamina <= 0:
                 my_ball.set_meta("stamina", max(0.0, act_stamina - (50.0 * drain_mult) * delta))
         elif my_ball.has_meta("_is_wind_riding") and my_ball.get_meta("_is_wind_riding") == true:
+            if typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("set_meta"):
+                my_ball.set_meta("bumper_combo", 0)
+            elif typeof(my_ball) == TYPE_DICTIONARY:
+                my_ball["bumper_combo"] = 0
             if infinite_stamina <= 0:
                 my_ball.set_meta("stamina", max(0.0, act_stamina - (15.0 * drain_mult) * delta))
         elif "_is_wind_riding" in my_ball and my_ball._is_wind_riding == true:
+            if typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("set_meta"):
+                my_ball.set_meta("bumper_combo", 0)
+            elif typeof(my_ball) == TYPE_DICTIONARY:
+                my_ball["bumper_combo"] = 0
             if infinite_stamina <= 0:
                 my_ball.set_meta("stamina", max(0.0, act_stamina - (15.0 * drain_mult) * delta))
         elif act_dist / max(0.0001, delta * 60) < act_base_speed * 0.5:
