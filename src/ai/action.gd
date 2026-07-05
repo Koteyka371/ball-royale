@@ -12029,6 +12029,27 @@ func _use_skill():
                 elif self.ball.has_method("get_meta") and self.ball.has_meta("bonus_reflect_shield_duration"): bonus_dur3 = self.ball.get_meta("bonus_reflect_shield_duration")
                 self.ball.reflect_shield_timer = 3.0 + bonus_dur3
                 self.ball.reflect_shield_capacity = 999999.0
+        elif skill_name == "holy_shield":
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("reflect_shield_active", true)
+                var bonus_dur_hs = 0.0
+                if "bonus_reflect_shield_duration" in self.ball: bonus_dur_hs = self.ball.bonus_reflect_shield_duration
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("bonus_reflect_shield_duration"): bonus_dur_hs = self.ball.get_meta("bonus_reflect_shield_duration")
+                self.ball.set_meta("reflect_shield_timer", 5.0 + bonus_dur_hs)
+                var bonus_cap_hs = 0.0
+                if "bonus_reflect_shield_capacity" in self.ball: bonus_cap_hs = self.ball.bonus_reflect_shield_capacity
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("bonus_reflect_shield_capacity"): bonus_cap_hs = self.ball.get_meta("bonus_reflect_shield_capacity")
+                self.ball.set_meta("reflect_shield_capacity", 100.0 + bonus_cap_hs)
+            else:
+                self.ball.reflect_shield_active = true
+                var bonus_dur_hs = 0.0
+                if "bonus_reflect_shield_duration" in self.ball: bonus_dur_hs = self.ball.bonus_reflect_shield_duration
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("bonus_reflect_shield_duration"): bonus_dur_hs = self.ball.get_meta("bonus_reflect_shield_duration")
+                self.ball.reflect_shield_timer = 5.0 + bonus_dur_hs
+                var bonus_cap_hs = 0.0
+                if "bonus_reflect_shield_capacity" in self.ball: bonus_cap_hs = self.ball.bonus_reflect_shield_capacity
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("bonus_reflect_shield_capacity"): bonus_cap_hs = self.ball.get_meta("bonus_reflect_shield_capacity")
+                self.ball.reflect_shield_capacity = 100.0 + bonus_cap_hs
         elif skill_name == "mirror_stance":
             if self.ball.has_method("set_meta"):
                 self.ball.set_meta("reflect_shield_active", true)
