@@ -1,0 +1,4 @@
+{
+  "title": "Mimic Clone Chain Reaction Mechanic",
+  "description": "If a mimic clone detonation kills an enemy, it spawns a second, smaller mimic clone that continues the charge with reduced stats, creating a cascading chain reaction if grouped enemies are weak."
+}

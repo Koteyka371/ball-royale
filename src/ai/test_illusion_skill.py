@@ -94,6 +94,10 @@ def test_mimic_clone_movement():
     assert clone.mimic_timer == 9.0
 
 def test_mimic_clone_does_not_explode():
+    """
+    Tests the upgraded mimic clone behavior where instead of vanishing upon expiring,
+    it aggressively charges at the nearest enemy and detonates for a small amount of damage.
+    """
     world = MockWorld()
     clone = MockBall(50, 50, "red")
     clone.is_mimic_clone = True
