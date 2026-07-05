@@ -16127,6 +16127,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-939",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Electric Bumpers",
+      "description": "Certain bumpers in the arena become electrified, shocking and stunning players who bounce off them instead of granting a speed boost.",
+      "allowed_paths": [
+        "src/ai/electric_bumpers.py",
+        "src/ai/electric_bumpers.gd",
+        "tests/test_electric_bumpers.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
