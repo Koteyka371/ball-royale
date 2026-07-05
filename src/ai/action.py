@@ -919,6 +919,23 @@ class Action:
                 self.world.arena.hazards.append(p1)
                 self.world.arena.hazards.append(p2)
                 self.ball.inventory.remove("portal_gun")
+        if hasattr(self.ball, "inventory") and "status_absorber" in self.ball.inventory:
+            # Automatically absorb if we have statuses
+            stun = getattr(self.ball, "stun_timer", 0.0)
+            silence = getattr(self.ball, "silence_timer", 0.0)
+            poison = getattr(self.ball, "poison_timer", 0.0)
+            slow = getattr(self.ball, "slow_timer", 0.0)
+            confusion = getattr(self.ball, "confusion_timer", 0.0)
+            blindness = getattr(self.ball, "blindness_timer", 0.0)
+            stutter = getattr(self.ball, "stutter_timer", 0.0)
+
+            if stun > 0 or silence > 0 or poison > 0 or slow > 0 or confusion > 0 or blindness > 0 or stutter > 0:
+                self._absorb_status(delta)
+                self.ball.inventory.remove("status_absorber")
+
+                # Now we have statuses, let's throw them if there's a target
+                self._throw_absorbed_status(delta)
+
 
         # Max HP draining hazard logic
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -2533,6 +2550,69 @@ class Action:
                                     push_strength *= 0.5
                                 self.ball.x += nx * push_strength
                                 self.ball.y += ny * push_strength
+                    elif getattr(hazard, "kind", getattr(hazard, "get", lambda x, y: y)("kind", "")) == "status_projectile":
+                        if type(hazard) == dict:
+                            target_id = hazard.get("target_id")
+                        else:
+                            target_id = getattr(hazard, "target_id", None)
+
+                        target = next((b for b in self.world.balls if getattr(b, "id", None) == target_id), None)
+                        if not target or not getattr(target, "alive", True):
+                            if type(hazard) == dict:
+                                hazard["active"] = False
+                            else:
+                                hazard.active = False
+                            continue
+
+                        if type(hazard) == dict:
+                            hx, hy = hazard.get("x", 0), hazard.get("y", 0)
+                            speed = hazard.get("speed", 300) * delta
+                            radius = hazard.get("radius", 10)
+                        else:
+                            hx, hy = getattr(hazard, "x", 0), getattr(hazard, "y", 0)
+                            speed = getattr(hazard, "speed", 300) * delta
+                            radius = getattr(hazard, "radius", 10)
+
+                        tx, ty = target.x, target.y
+
+                        dist = self.world.math.distance(hx, hy, tx, ty)
+                        if dist <= radius + getattr(target, "radius", 15):
+                            if type(hazard) == dict:
+                                payload = hazard.get("status_payload", {})
+                            else:
+                                payload = getattr(hazard, "status_payload", {})
+
+                            if payload.get("stun_timer", 0) > 0:
+                                target.stun_timer = max(getattr(target, "stun_timer", 0), payload["stun_timer"])
+                                target.is_stunned = True
+                            if payload.get("silence_timer", 0) > 0:
+                                target.silence_timer = max(getattr(target, "silence_timer", 0), payload["silence_timer"])
+                            if payload.get("poison_timer", 0) > 0:
+                                target.poison_timer = max(getattr(target, "poison_timer", 0), payload["poison_timer"])
+                            if payload.get("slow_timer", 0) > 0:
+                                target.slow_timer = max(getattr(target, "slow_timer", 0), payload["slow_timer"])
+                            if payload.get("confusion_timer", 0) > 0:
+                                target.confusion_timer = max(getattr(target, "confusion_timer", 0), payload["confusion_timer"])
+                                target.is_confused = True
+                            if payload.get("blindness_timer", 0) > 0:
+                                target.blindness_timer = max(getattr(target, "blindness_timer", 0), payload["blindness_timer"])
+                            if payload.get("stutter_timer", 0) > 0:
+                                target.stutter_timer = max(getattr(target, "stutter_timer", 0), payload["stutter_timer"])
+
+                            if type(hazard) == dict:
+                                hazard["active"] = False
+                            else:
+                                hazard.active = False
+                            continue
+
+                        angle = self.world.math.angle_between(hx, hy, tx, ty)
+                        hx += self.world.math.cos(angle) * speed
+                        hy += self.world.math.sin(angle) * speed
+                        if type(hazard) == dict:
+                            hazard["x"], hazard["y"] = hx, hy
+                        else:
+                            hazard.x, hazard.y = hx, hy
+
                     elif hazard.kind == "gravity_well":
                         # Cosmetics: gravity anomaly already implemented
                         dx = hazard.x - self.ball.x
@@ -3587,7 +3667,8 @@ class Action:
             stun_timer = getattr(self.ball, "stun_timer", 0.0)
             if stun_timer > 0:
                 self.ball.stun_timer -= delta
-                return  # Skip movement if stunned
+                if strategy not in ("absorb_status", "throw_absorbed_status"):
+                    return  # Skip movement if stunned
             else:
                 self.ball.is_stunned = False
 
@@ -3688,6 +3769,7 @@ class Action:
             self._hold_zone(delta)
         elif strategy in ("opportunistic", "collect_booster", "collect booster"):
             self._collect_booster(delta)
+
         elif strategy == "use_sub_skill":
             skill_name = getattr(self.ball, "active_skill", getattr(self.ball, "SKILL", None))
             if skill_name == "clone":
@@ -5504,6 +5586,11 @@ class Action:
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
                     self.ball.inventory.append("placeable_trap_booster")
+                elif getattr(nearest, "kind", None) == "status_absorber_booster":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("status_absorber")
+
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
@@ -6944,6 +7031,83 @@ class Action:
             "skill": skill_name,
             "multiplier": tier_multiplier
         })
+
+
+    def _absorb_status(self, delta):
+        stun = getattr(self.ball, "stun_timer", 0.0)
+        silence = getattr(self.ball, "silence_timer", 0.0)
+        poison = getattr(self.ball, "poison_timer", 0.0)
+        slow = getattr(self.ball, "slow_timer", 0.0)
+        confusion = getattr(self.ball, "confusion_timer", 0.0)
+        blindness = getattr(self.ball, "blindness_timer", 0.0)
+        stutter = getattr(self.ball, "stutter_timer", 0.0)
+
+        # Calculate max durations absorbed
+        absorbed = getattr(self.ball, "absorbed_status", {})
+        absorbed["stun_timer"] = max(absorbed.get("stun_timer", 0.0), stun)
+        absorbed["silence_timer"] = max(absorbed.get("silence_timer", 0.0), silence)
+        absorbed["poison_timer"] = max(absorbed.get("poison_timer", 0.0), poison)
+        absorbed["slow_timer"] = max(absorbed.get("slow_timer", 0.0), slow)
+        absorbed["confusion_timer"] = max(absorbed.get("confusion_timer", 0.0), confusion)
+        absorbed["blindness_timer"] = max(absorbed.get("blindness_timer", 0.0), blindness)
+        absorbed["stutter_timer"] = max(absorbed.get("stutter_timer", 0.0), stutter)
+        self.ball.absorbed_status = absorbed
+
+        # Clear current statuses
+        self.ball.stun_timer = 0.0
+        self.ball.is_stunned = False
+        self.ball.silence_timer = 0.0
+        self.ball.poison_timer = 0.0
+        self.ball.slow_timer = 0.0
+        self.ball.confusion_timer = 0.0
+        self.ball.is_confused = False
+        self.ball.blindness_timer = 0.0
+        self.ball.stutter_timer = 0.0
+
+        # Idle after absorbing
+        self._idle(delta)
+
+    def _throw_absorbed_status(self, delta):
+        # We need to find a target. If there's a specific target, throw at them.
+        # Otherwise find nearest enemy.
+        target = None
+        min_dist = float('inf')
+        for b in self.world.balls:
+            if getattr(b, "id", None) == getattr(self.ball, "id", None) or not getattr(b, "alive", True):
+                continue
+            if getattr(b, "team", None) == getattr(self.ball, "team", None):
+                continue
+            dist = self.world.math.distance(self.ball.x, self.ball.y, b.x, b.y)
+            if dist < min_dist:
+                min_dist = dist
+                target = b
+
+        if target:
+            # Create a projectile to throw statuses
+            proj_id = len(self.world.arena.hazards) + 10000 if hasattr(self.world, 'arena') and hasattr(self.world.arena, 'hazards') else 0
+
+            projectile = {
+                "id": proj_id,
+                "x": self.ball.x,
+                "y": self.ball.y,
+                "kind": "status_projectile",
+                "team": getattr(self.ball, "team", 0),
+                "owner_id": getattr(self.ball, "id", 0),
+                "target_id": getattr(target, "id", 0),
+                "status_payload": getattr(self.ball, "absorbed_status", {}),
+                "speed": 300,
+                "radius": 10,
+                "active": True
+            }
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                self.world.arena.hazards.append(projectile)
+            elif hasattr(self.world, "events"):
+                self.world.events.append({"type": "projectile_spawn", "data": projectile})
+
+            # Clear absorbed statuses
+            self.ball.absorbed_status = {}
+
+        self._idle(delta)
 
     def _idle(self, delta: float) -> None:
         speed = getattr(self.ball, "speed", 2.0)
