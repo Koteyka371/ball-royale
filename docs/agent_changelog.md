@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-601] Reverse Controls Mode — *2026-07-05 19:20:59 UTC*
+
+A game mode where all movement inputs for players (and AI logic calculations) are reversed, making movement completely counter-intuitive.
+
+---
+
 ## [idea-604] Season-Based Boss Spawns — *2026-07-05 19:20:01 UTC*
 
 Introduce a random boss entity (like 'Yeti' in Winter season or 'Sandworm' in Desert season) that spawns in the center of the arena during the final zone closure, forcing players to either defeat the boss for massive points or use it to grief opponents.

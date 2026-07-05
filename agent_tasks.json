@@ -10373,7 +10373,7 @@
     },
     {
       "id": "idea-601",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Reverse Controls Mode",
@@ -16991,6 +16991,108 @@
         "src/ai/radioactive_poison_cloud.py",
         "src/ai/radioactive_poison_cloud.gd",
         "tests/test_radioactive_poison_cloud.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-990",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Grid Lockdown Mode",
+      "description": "A game mode where the arena is divided into a grid, and specific grid cells are randomly locked down, dealing immense damage to players who enter them. The locked cells change every few seconds, requiring constant repositioning.",
+      "allowed_paths": [
+        "src/ai/grid_lockdown.py",
+        "src/ai/grid_lockdown.gd",
+        "tests/test_grid_lockdown.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-991",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Gravitational Pull Mutator",
+      "description": "A mutator that intermittently reverses the gravitational pull of hazards and game modes, causing elements that usually attract (like Black Holes or Inverse Safe Zones) to suddenly repel for short, chaotic durations.",
+      "allowed_paths": [
+        "src/ai/reverse_gravitational_pull_mutator.py",
+        "src/ai/reverse_gravitational_pull_mutator.gd",
+        "tests/test_reverse_gravitational_pull_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-992",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tag-Team Resuscitation",
+      "description": "Instead of immediately eliminating a tag-team partner when their HP hits zero, they enter a 'downed' state. The active partner can stand in a small aura around the downed player for a specific duration to revive them with a portion of their HP.",
+      "allowed_paths": [
+        "src/ai/tag_team_resuscitation.py",
+        "src/ai/tag_team_resuscitation.gd",
+        "tests/test_tag_team_resuscitation.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-993",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weapon Attachments System",
+      "description": "Introduce weapon attachments that can be found in the arena, allowing players to customize their attacks on the fly, such as adding elemental damage (fire/ice) or altering attack patterns (spread/pierce) to their primary weapons.",
+      "allowed_paths": [
+        "src/ai/weapon_attachments.py",
+        "src/ai/weapon_attachments.gd",
+        "tests/test_weapon_attachments.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-994",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounty Hunter Mode Modifier",
+      "description": "Add a dynamic bounty system during matches where the player with the most kills is marked for all to see. Defeating the marked player grants special buffs or permanent loadout fragments, incentivizing high-risk engagements.",
+      "allowed_paths": [
+        "src/ai/bounty_hunter.py",
+        "src/ai/bounty_hunter.gd",
+        "tests/test_bounty_hunter.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-995",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Double Tap Combo Ability",
+      "description": "Introduce a new game mechanic where active tag-team partners can unleash a powerful combination ability if they swap rapidly within 2 seconds of successfully hitting an enemy.",
+      "allowed_paths": [
+        "src/ai/double_tap_combo_ability.py",
+        "src/ai/double_tap_combo_ability.gd",
+        "tests/test_double_tap_combo_ability.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
