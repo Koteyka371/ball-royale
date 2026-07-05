@@ -1468,6 +1468,18 @@ class Action:
                         break
         self.ball.in_anomaly_zone = in_anomaly_zone
 
+        # Ice patch processing (zero friction, slide fast)
+        in_ice_patch = False
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            for hazard in self.world.arena.hazards:
+                if getattr(hazard, "kind", "") == "ice_patch" and getattr(hazard, "active", True):
+                    dx = hazard.x - self.ball.x
+                    dy = hazard.y - self.ball.y
+                    if (dx*dx + dy*dy) <= getattr(hazard, "radius", 0)**2:
+                        in_ice_patch = True
+                        break
+        self.ball.in_ice_patch = in_ice_patch
+
         gm = getattr(self.world, "game_mode", None)
         is_zero_gravity = False
         if in_anomaly_zone:
@@ -1484,6 +1496,14 @@ class Action:
             if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
                 self.ball.vx *= (1.0 - 0.5 * delta)
                 self.ball.vy *= (1.0 - 0.5 * delta)
+                self.ball.x += self.ball.vx * delta
+                self.ball.y += self.ball.vy * delta
+
+        # Wait, if we just want them to slide without friction... the problem is standard movement commands (like chase, attack, idle) normally move the ball towards a target. Then at the end dx/delta becomes vx.
+        # So "friction" in a kinematic system is just not storing velocity. To "slide continuously", they should keep moving in the direction of their last velocity instead of fully following the new AI command, or blending them.
+        if in_ice_patch:
+            # Apply momentum (slide continuously)
+            if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
                 self.ball.x += self.ball.vx * delta
                 self.ball.y += self.ball.vy * delta
 
@@ -3706,6 +3726,12 @@ class Action:
         else:
             self._idle(delta)
 
+        if getattr(self.ball, "in_ice_patch", False):
+            # Apply momentum and override AI steering with slide
+            if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+                self.ball.x = old_x + self.ball.vx * delta
+                self.ball.y = old_y + self.ball.vy * delta
+
         bounced_col = self._resolve_collisions()
         bounced_wall = self._clamp_position()
 
@@ -3724,6 +3750,8 @@ class Action:
                 import random
                 angle = _math.atan2(-vy, -vx) + random.uniform(-0.2, 0.2)
                 new_speed = min(speed * 1.5, 2000.0)  # Increase speed, cap at 2000
+                if getattr(self.ball, "in_ice_patch", False):
+                    new_speed = min(speed * 2.0, 3000.0)
 
                 # Save the reflection velocity to be set after execution
                 self.ball._reflection_vx = math.cos(angle) * new_speed
@@ -3801,6 +3829,13 @@ class Action:
                                 self.ball.y = old_y + dy
             self.ball.vx = dx / delta
             self.ball.vy = dy / delta
+
+            if getattr(self.ball, "in_ice_patch", False):
+                # When in ice patch, we do not want the new position (dx/delta) to override the velocity if they are just sliding
+                # Actually, the sliding is self.ball.x += vx * delta. Then old_x to x is exactly vx * delta.
+                # BUT when they use a skill or move normally, we override vx.
+                # We need to maintain velocity momentum rather than decaying it.
+                pass
 
             if hasattr(self.ball, "_reflection_vx"):
                 self.ball.vx = self.ball._reflection_vx
@@ -6956,12 +6991,20 @@ class Action:
             self.ball.x, self.ball.y, bounced_arena = self.world.arena.clamp_position(self.ball.x, self.ball.y, radius)
             if bounced_arena:
                 bounced = True
+
+                in_ice_patch = getattr(self.ball, "in_ice_patch", False)
+                if in_ice_patch:
+                    knockback_multiplier = 2.0
         elif hasattr(self.world, "width") and hasattr(self.world, "height"):
             old_x, old_y = self.ball.x, self.ball.y
             self.ball.x = max(radius, min(self.world.width - radius, self.ball.x))
             self.ball.y = max(radius, min(self.world.height - radius, self.ball.y))
             if old_x != self.ball.x or old_y != self.ball.y:
                 bounced = True
+
+                in_ice_patch = getattr(self.ball, "in_ice_patch", False)
+                if in_ice_patch:
+                    knockback_multiplier = 2.0
 
         return bounced
 
@@ -7026,6 +7069,10 @@ class Action:
                     setattr(self.ball, "_last_hit_by_timer", 2.0)
 
                 bounced = True
+
+                in_ice_patch = getattr(self.ball, "in_ice_patch", False)
+                if in_ice_patch:
+                    knockback_multiplier = 2.0
 
                 gm = getattr(self.world, "game_mode", None)
                 if gm and getattr(gm, "name", "") == "Custom Match":

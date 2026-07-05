@@ -149,6 +149,8 @@ func generate():
         var kind = "spikes"
         if r < 0.25:
             kind = "lava"
+        elif r < 0.28:
+            kind = "ice_patch"
         elif r < 0.34:
             kind = "hidden_mine"
         elif r < 0.35:

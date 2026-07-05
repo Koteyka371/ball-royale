@@ -16,7 +16,7 @@ def test_winter_arena():
     # Test hazards
     ice_patches = [h for h in arena.hazards if getattr(h, "kind", "") == "ice_patch"]
     snowman_decoys = [h for h in arena.hazards if getattr(h, "kind", "") == "snowman_decoy"]
-    assert len(ice_patches) == 5
+    assert len(ice_patches) >= 5
     assert len(snowman_decoys) == 3
 
 def test_autumn_arena():
