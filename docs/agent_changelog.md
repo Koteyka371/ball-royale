@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-545] Bumper enhancements — *2026-07-05 08:33:23 UTC*
+
+Bumpers can now bounce players significantly further, granting a temporary movement speed boost upon landing to reward players for precise positioning.
+
+---
+
 ## [idea-514] Clone Illusion Switch — *2026-07-04 21:31:12 UTC*
 
 Players can manually swap positions with one of their static clones using a sub-skill, allowing for advanced deception and sudden repositioning.
