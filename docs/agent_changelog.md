@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-578] Material Magnet Booster — *2026-07-05 13:01:14 UTC*
+
+A temporary power-up that pulls all dropped materials within a 500-radius towards the player for 10 seconds, helping safe collection in danger zones.
+
+---
+
 ## [idea-582] Shrinking Safe Zones — *2026-07-05 12:40:49 UTC*
 
 Introduce a shrinking safe zone mechanic over time, forcing players towards the center of the arena. Taking damage when outside the zone increases as the zone shrinks.
