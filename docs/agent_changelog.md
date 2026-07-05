@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-590] Interactive Puddles and Ice Patches — *2026-07-05 20:01:13 UTC*
+
+Dynamically generate interactive puddles during rain that eventually turn into ice patches if the weather switches to snow. Puddles reduce steering and increase dash distance, while ice patches cause a brief slide without any directional control.
+
+---
+
 ## [idea-595] Reverse Controls Mutator — *2026-07-05 19:59:04 UTC*
 
 A mutator for custom matches where all movement inputs and AI logic for movement direction are periodically reversed for 5 seconds.

@@ -10186,7 +10186,7 @@
     },
     {
       "id": "idea-590",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Interactive Puddles and Ice Patches",
@@ -17229,6 +17229,23 @@
         "src/ai/chain_reaction_bumpers.py",
         "src/ai/chain_reaction_bumpers.gd",
         "tests/test_chain_reaction_bumpers.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1004",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bumper Arena Boundaries",
+      "description": "The arena boundaries are lined with extreme bounciness instead of standard walls, causing balls to reflect at high velocity when touching the edges, making positioning significantly more challenging.",
+      "allowed_paths": [
+        "src/arena/bumper_arena_boundaries.py",
+        "src/arena/bumper_arena_boundaries.gd",
+        "tests/test_bumper_arena_boundaries.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
