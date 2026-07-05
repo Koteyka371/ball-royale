@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-595] Reverse Controls Mutator — *2026-07-05 19:59:04 UTC*
+
+A mutator for custom matches where all movement inputs and AI logic for movement direction are periodically reversed for 5 seconds.
+
+---
+
 ## [idea-588] Bumper Chaining — *2026-07-05 19:55:01 UTC*
 
 If a ball hits multiple bumpers in a row without hitting a wall or using stamina, the bumper powerups are multiplied or enhanced, encouraging skilled pinball-style navigation.
