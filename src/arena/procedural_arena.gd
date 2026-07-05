@@ -197,6 +197,8 @@ func generate():
             kind = "stamina_drain_zone"
         elif r < 0.9998:
             kind = "slip_zone"
+        elif r < 0.99982:
+            kind = "frictionless_zone"
         elif r < 0.99985:
             kind = "vortex"
         elif r < 0.9999:
@@ -295,6 +297,9 @@ func generate():
             radius = rng.randf_range(40.0, 80.0)
             damage = 0.0
         elif kind == "slip_zone":
+            radius = rng.randf_range(40.0, 80.0)
+            damage = 0.0
+        elif kind == "frictionless_zone":
             radius = rng.randf_range(40.0, 80.0)
             damage = 0.0
         elif kind == "tall_grass":
