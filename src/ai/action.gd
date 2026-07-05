@@ -4420,7 +4420,71 @@ func execute(strategy: String, delta: float):
                         if hazard.y < 100 or hazard.y > self.world.arena.height - 100:
                             hazard.set_meta("vy", -hvy)
 
-                        if hazard.kind in ["black_hole", "massive_black_hole", "tornado", "local_tornado"] and "boosters" in self.world:
+                        var h_lifetime = 0.0
+                        if hazard.has_meta("lifetime"):
+                            h_lifetime = hazard.get_meta("lifetime")
+
+                        if hazard.kind in ["black_hole", "massive_black_hole"] and h_lifetime >= 10.0:
+                            hazard.set_meta("duration", 0.0)
+
+                            if "events" in self.world:
+                                self.world.events.append({"type": "explosion", "x": hazard.x, "y": hazard.y})
+
+                            var balls_list = []
+                            if "balls" in self.world: balls_list = self.world.balls
+
+                            for b in balls_list:
+                                var is_alive = false
+                                if "alive" in b: is_alive = b.alive
+                                elif typeof(b) == TYPE_OBJECT and b.has_method("get"): is_alive = b.get("alive")
+
+                                if is_alive:
+                                    var bdx = hazard.x - b.x
+                                    var bdy = hazard.y - b.y
+                                    var bdist_sq = bdx * bdx + bdy * bdy
+                                    var blast_radius = hazard.radius * 6.0
+
+                                    if bdist_sq < blast_radius * blast_radius and bdist_sq > 0.0001:
+                                        var bdist = sqrt(bdist_sq)
+                                        var bnx = bdx / bdist
+                                        var bny = bdy / bdist
+
+                                        if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+                                            b.take_damage(500.0)
+                                        elif "hp" in b:
+                                            b.hp -= 500.0
+                                            if b.hp <= 0:
+                                                b.hp = 0
+                                                b.alive = false
+                                                if "killer" in b: b.killer = "black_hole_explosion"
+
+                                        var push_strength = 2000.0
+                                        var has_vx = false
+                                        if "vx" in b: has_vx = true
+                                        elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("vx"): has_vx = true
+                                        var has_vy = false
+                                        if "vy" in b: has_vy = true
+                                        elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("vy"): has_vy = true
+
+                                        if has_vx and has_vy:
+                                            var b_vx = 0.0
+                                            if "vx" in b: b.vx -= bnx * push_strength
+                                            elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta"):
+                                                b_vx = b.get_meta("vx")
+                                                b.set_meta("vx", b_vx - bnx * push_strength)
+                                            var b_vy = 0.0
+                                            if "vy" in b: b.vy -= bny * push_strength
+                                            elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta"):
+                                                b_vy = b.get_meta("vy")
+                                                b.set_meta("vy", b_vy - bny * push_strength)
+                                        else:
+                                            b.x -= bnx * push_strength * delta
+                                            b.y -= bny * push_strength * delta
+
+                        var h_dur = 1.0
+                        if hazard.has_meta("duration"): h_dur = hazard.get_meta("duration")
+
+                        if h_dur > 0 and hazard.kind in ["black_hole", "massive_black_hole", "tornado", "local_tornado"] and "boosters" in self.world:
                             for b in self.world.boosters:
                                 var bdx = hazard.x - b.x
                                 var bdy = hazard.y - b.y
@@ -4470,7 +4534,10 @@ func execute(strategy: String, delta: float):
                                         b.x += tx * orbital_strength
                                         b.y += ty * orbital_strength
 
-                    if hazard.kind in ["black_hole", "massive_black_hole", "tornado", "local_tornado"]:
+                    var h_dur = 1.0
+                    if hazard.has_meta("duration"): h_dur = hazard.get_meta("duration")
+
+                    if h_dur > 0 and hazard.kind in ["black_hole", "massive_black_hole", "tornado", "local_tornado"]:
                         var dx = hazard.x - self.ball.x
                         var dy = hazard.y - self.ball.y
                         var dist_sq = dx * dx + dy * dy
