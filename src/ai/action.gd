@@ -4417,6 +4417,31 @@ func execute(strategy: String, delta: float):
                                     var bpull_strength = (hazard.radius * 2.0 / bmin_dist) * 50.0 * delta * lifetime_mult
                                     b.x += bnx * bpull_strength
                                     b.y += bny * bpull_strength
+                                    if hazard.kind in ["black_hole", "massive_black_hole"]:
+                                        var has_vx = false
+                                        if "vx" in b: has_vx = true
+                                        elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("vx"): has_vx = true
+                                        var has_vy = false
+                                        if "vy" in b: has_vy = true
+                                        elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("vy"): has_vy = true
+
+                                        if has_vx and has_vy:
+                                            var b_vx = 0.0
+                                            if "vx" in b: b_vx = b.vx
+                                            elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta"): b_vx = b.get_meta("vx")
+                                            var b_vy = 0.0
+                                            if "vy" in b: b_vy = b.vy
+                                            elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta"): b_vy = b.get_meta("vy")
+
+                                            var speed = sqrt(b_vx * b_vx + b_vy * b_vy)
+                                            if speed > 20.0:
+                                                var slingshot_strength = bpull_strength * 2.0 / delta
+                                                var dot = bnx * b_vx + bny * b_vy
+                                                if dot > -speed * 0.8:
+                                                    if "vx" in b: b.vx += bnx * slingshot_strength * delta
+                                                    elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("vx", b_vx + bnx * slingshot_strength * delta)
+                                                    if "vy" in b: b.vy += bny * slingshot_strength * delta
+                                                    elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("vy", b_vy + bny * slingshot_strength * delta)
                                     if hazard.kind in ["tornado", "local_tornado"]:
                                         var tx = -bny
                                         var ty = bnx
@@ -4441,6 +4466,31 @@ func execute(strategy: String, delta: float):
                             var pull_strength = (hazard.radius * 2.0 / min_dist) * 50.0 * delta * lifetime_mult
                             self.ball.x += nx * pull_strength
                             self.ball.y += ny * pull_strength
+                            if hazard.kind in ["black_hole", "massive_black_hole"]:
+                                var has_vx = false
+                                if "vx" in self.ball: has_vx = true
+                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("vx"): has_vx = true
+                                var has_vy = false
+                                if "vy" in self.ball: has_vy = true
+                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("vy"): has_vy = true
+
+                                if has_vx and has_vy:
+                                    var b_vx = 0.0
+                                    if "vx" in self.ball: b_vx = self.ball.vx
+                                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta"): b_vx = self.ball.get_meta("vx")
+                                    var b_vy = 0.0
+                                    if "vy" in self.ball: b_vy = self.ball.vy
+                                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta"): b_vy = self.ball.get_meta("vy")
+
+                                    var speed = sqrt(b_vx * b_vx + b_vy * b_vy)
+                                    if speed > 20.0:
+                                        var slingshot_strength = pull_strength * 2.0 / delta
+                                        var dot = nx * b_vx + ny * b_vy
+                                        if dot > -speed * 0.8:
+                                            if "vx" in self.ball: self.ball.vx += nx * slingshot_strength * delta
+                                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("vx", b_vx + nx * slingshot_strength * delta)
+                                            if "vy" in self.ball: self.ball.vy += ny * slingshot_strength * delta
+                                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("vy", b_vy + ny * slingshot_strength * delta)
                             if hazard.kind in ["tornado", "local_tornado"]:
                                 var tx = -ny
                                 var ty = nx

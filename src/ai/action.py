@@ -2631,6 +2631,16 @@ class Action:
                                                 pull_strength = (hazard.radius * 2.0 / max(10.0, bdist)) * 80.0 * delta * lifetime_mult
                                                 b.x += bnx * pull_strength
                                                 b.y += bny * pull_strength
+                                                if hazard.kind in ("black_hole", "massive_black_hole") and hasattr(b, "vx") and hasattr(b, "vy"):
+                                                    # Slingshot velocity addition
+                                                    import math as _math
+                                                    speed = _math.hypot(b.vx, b.vy)
+                                                    if speed > 20.0:
+                                                        slingshot_strength = pull_strength * 2.0 / delta
+                                                        dot = bnx * b.vx + bny * b.vy
+                                                        if dot > -speed * 0.8: # If not flying directly into it
+                                                            b.vx += bnx * slingshot_strength * delta
+                                                            b.vy += bny * slingshot_strength * delta
                                                 if hazard.kind in ("tornado", "local_tornado"):
                                                     # Wind physics: tangential orbital pull
                                                     tx, ty = -bny, bnx
@@ -2682,6 +2692,16 @@ class Action:
                                 pull_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 50.0 * delta * lifetime_mult
                                 self.ball.x += nx * pull_strength
                                 self.ball.y += ny * pull_strength
+                                if hazard.kind in ("black_hole", "massive_black_hole") and hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+                                    # Slingshot velocity addition
+                                    import math as _math
+                                    speed = _math.hypot(self.ball.vx, self.ball.vy)
+                                    if speed > 20.0:
+                                        slingshot_strength = pull_strength * 2.0 / delta
+                                        dot = nx * self.ball.vx + ny * self.ball.vy
+                                        if dot > -speed * 0.8: # If not flying directly into it
+                                            self.ball.vx += nx * slingshot_strength * delta
+                                            self.ball.vy += ny * slingshot_strength * delta
                                 if hazard.kind in ("tornado", "local_tornado"):
                                     # Wind physics: tangential orbital pull
                                     tx, ty = -ny, nx
