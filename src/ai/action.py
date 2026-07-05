@@ -152,10 +152,26 @@ class Action:
             is_nemesis_active = pm.is_nemesis(attacker.ball_type, target.ball_type)
 
         if getattr(target, "energy_shield_active", False):
+            import math
+            a_x = getattr(attacker, 'x', 0.0)
+            a_y = getattr(attacker, 'y', 0.0)
+            t_x = getattr(target, 'x', 0.0)
+            t_y = getattr(target, 'y', 0.0)
+            dist = math.hypot(a_x - t_x, a_y - t_y)
+            a_rad = getattr(attacker, 'radius', 10.0)
+            t_rad = getattr(target, 'radius', 10.0)
+
+            if dist > (a_rad + t_rad + 20.0):
+                reflection_mult = 1.5
+            else:
+                reflection_mult = 0.5
+
+            refl_dmg = getattr(attacker, "damage", 10.0) * reflection_mult
+
             if hasattr(attacker, "take_damage"):
-                attacker.take_damage(getattr(attacker, "damage", 10.0) * 0.5)
+                attacker.take_damage(refl_dmg)
             elif hasattr(attacker, "hp"):
-                attacker.hp -= getattr(attacker, "damage", 10.0) * 0.5
+                attacker.hp -= refl_dmg
             return
         old_hp = getattr(target, "hp", 0.0)
         original_damage = getattr(attacker, "damage", 10.0)

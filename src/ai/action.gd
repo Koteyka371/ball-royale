@@ -233,15 +233,37 @@ func _attempt_damage(attacker, target) -> void:
 		target_es = true
 
 	if target_es:
+		var a_x = 0.0
+		if "x" in attacker: a_x = float(attacker.x)
+		var a_y = 0.0
+		if "y" in attacker: a_y = float(attacker.y)
+		var t_x = 0.0
+		if "x" in target: t_x = float(target.x)
+		var t_y = 0.0
+		if "y" in target: t_y = float(target.y)
+		var dx = a_x - t_x
+		var dy = a_y - t_y
+		var dist = sqrt(dx*dx + dy*dy)
+		var a_rad = 10.0
+		if "radius" in attacker: a_rad = float(attacker.radius)
+		var t_rad = 10.0
+		if "radius" in target: t_rad = float(target.radius)
+
+		var reflection_mult = 0.5
+		if dist > (a_rad + t_rad + 20.0):
+			reflection_mult = 1.5
+
 		var dmg = 10.0
 		if "damage" in attacker: dmg = float(attacker.damage)
+		var refl_dmg = dmg * reflection_mult
+
 		if attacker.has_method("take_damage"):
-			attacker.take_damage(dmg * 0.5)
+			attacker.take_damage(refl_dmg)
 		elif "hp" in attacker:
 			if typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("set_meta"):
-				attacker.set_meta("hp", attacker.hp - dmg * 0.5)
+				attacker.set_meta("hp", attacker.hp - refl_dmg)
 			else:
-				attacker.hp -= dmg * 0.5
+				attacker.hp -= refl_dmg
 		return
 
 	var old_hp = 0.0
