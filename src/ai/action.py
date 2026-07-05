@@ -3475,6 +3475,23 @@ class Action:
                                     ny = dy / dist
                                     self.ball.x += nx * 50.0 * delta
                                     self.ball.y += ny * 50.0 * delta
+                        elif hazard.kind == "sweeping_paddle":
+                            dx = self.ball.x - hazard.x
+                            dy = self.ball.y - hazard.y
+                            dist2 = dx*dx + dy*dy
+                            dist = math.sqrt(dist2) if dist2 > 0 else 0.0001
+                            b_rad = getattr(self.ball, "radius", 10.0)
+
+                            if dist < (b_rad + getattr(hazard, "radius", 150.0)):
+                                nx = dx / dist
+                                ny = dy / dist
+
+                                bounce_strength = 2000.0 * delta
+                                self.ball.x += nx * bounce_strength
+                                self.ball.y += ny * bounce_strength
+
+                                self.ball.vx = nx * 3000.0
+                                self.ball.vy = ny * 3000.0
                         elif hazard.kind == "bumper":
 
                             dx = self.ball.x - hazard.x
