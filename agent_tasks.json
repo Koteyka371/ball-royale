@@ -17285,6 +17285,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1007",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Clan Wars",
+      "description": "Weekly clan vs clan tournaments where clans compete for a shared pool of points. Top clans receive exclusive cosmetics and currency boosts for the week.",
+      "allowed_paths": [
+        "src/ai/clan_wars.py",
+        "src/ai/clan_wars.gd",
+        "tests/test_clan_wars.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }

@@ -1,4 +1,0 @@
-{
-  "title": "Temporal Loop Zone",
-  "description": "A field that, when entered, records the player's position and HP for 3 seconds, then suddenly rewinds their state back to where they started the loop."
-}
