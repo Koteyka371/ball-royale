@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-593] Mirror Dimension Arena — *2026-07-05 16:28:30 UTC*
+
+A new arena that spawns permanent mirror clones on the exact opposite side of the map for every player, tracking their movement inversely.
+
+---
+
 ## [idea-512] Idea 1: Ice Patches — *2026-07-05 16:28:26 UTC*
 
 Hazards that remove friction, causing balls to slide continuously and bounce off walls faster.
