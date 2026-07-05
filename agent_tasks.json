@@ -10509,7 +10509,7 @@
     },
     {
       "id": "idea-609",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Reverse Safe Zone",
@@ -16957,6 +16957,40 @@
         "src/ai/stealth_grass_bushes.py",
         "src/ai/stealth_grass_bushes.gd",
         "tests/test_stealth_grass_bushes.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-988",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Transference Swap",
+      "description": "An action or active item where throwing a decoy not only distracts enemies but also enables a secondary 'swap' cast. This allows the player to immediately teleport to the decoy's current position, trading places with it and confounding tracking spells.",
+      "allowed_paths": [
+        "src/ai/decoy_transference_swap.py",
+        "src/ai/decoy_transference_swap.gd",
+        "tests/test_decoy_transference_swap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-989",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Radioactive Poison Cloud",
+      "description": "Enhancement to the decoy poison cloud. When enemies stand in the cloud, they do not just take DoT but instead accumulate a 'Radiation' debuff that increases the damage they take from all other sources until the debuff fades. Useful for softening tank builds.",
+      "allowed_paths": [
+        "src/ai/radioactive_poison_cloud.py",
+        "src/ai/radioactive_poison_cloud.gd",
+        "tests/test_radioactive_poison_cloud.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

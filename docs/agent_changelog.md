@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-609] Reverse Safe Zone — *2026-07-05 19:19:53 UTC*
+
+A game mode where the safe zone expands outward from the center, and the center becomes dangerous. It forces players to move towards the edges of the map as the game progresses, completely changing standard battle royale dynamics.
+
+---
+
 ## [idea-605] Decoy Overload Trap — *2026-07-05 19:05:19 UTC*
 
 When a decoy explodes, it pulls in all enemies within a small radius before applying the poison cloud, ensuring the damage over time is harder to escape.
