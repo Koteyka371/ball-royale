@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-583] Guild Perks Tree — *2026-07-05 15:20:28 UTC*
+
+Expand the guild system to include a progression tree where the guild master can spend 'Guild XP' earned from GvG matches to unlock permanent passive bonuses for all members (e.g. +5% HP, +10% move speed).
+
+---
+
 ## [idea-591] Shrinking Walls of Fire — *2026-07-05 15:20:25 UTC*
 
 The edges of the arena slowly burn inwards. Any player touching the flaming boundary takes massive continuous damage. The safe zone shrinks down to a tiny dot by the end of the match.
