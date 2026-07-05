@@ -1,0 +1,4 @@
+{
+  "title": "Chrono-Lock Field",
+  "description": "A new hazard that temporarily freezes the cooldowns and stamina regeneration of all balls that enter its radius. While trapped, entities cannot use skills or regenerate stamina, forcing them to rely on pure positioning and physics to survive until they escape."
+}

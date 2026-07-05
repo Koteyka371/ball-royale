@@ -3851,6 +3851,37 @@ func execute(strategy: String, delta: float):
                             self.ball.set_meta("is_in_quicksand", true)
                         else:
                             self.ball.is_in_quicksand = true
+                elif hazard.kind == "abyssal_vortex":
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    if dist_sq < hazard.radius * hazard.radius:
+                        var dist = sqrt(dist_sq)
+                        if dist > 0.1:
+                            var nx = dx / dist
+                            var ny = dy / dist
+                            var pull_strength = 75.0 * delta
+                            if "x" in self.ball: self.ball.x += nx * pull_strength
+                            elif self.ball.has_method("set_meta") and self.ball.has_meta("x"): self.ball.set_meta("x", self.ball.get_meta("x") + nx * pull_strength)
+                            if "y" in self.ball: self.ball.y += ny * pull_strength
+                            elif self.ball.has_method("set_meta") and self.ball.has_meta("y"): self.ball.set_meta("y", self.ball.get_meta("y") + ny * pull_strength)
+
+                        var dmg = 10.0 * delta
+                        if "damage" in hazard: dmg = hazard.damage * delta
+                        elif hazard.has_method("get_meta") and hazard.has_meta("damage"): dmg = hazard.get_meta("damage") * delta
+
+                        if "hp" in self.ball:
+                            self.ball.hp -= dmg
+                            if self.ball.hp <= 0:
+                                self.ball.alive = false
+                                self.ball.hp = 0
+                                if "killer" in self.ball:
+                                    self.ball.killer = "abyssal_vortex"
+
+                        if self.ball.has_method("set_meta"):
+                            self.ball.set_meta("_chrono_slow", 0.3)
+                        elif typeof(self.ball) == TYPE_DICTIONARY:
+                            self.ball["_chrono_slow"] = 0.3
                 elif hazard.kind == "vortex":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
