@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Entanglement Hazard",
+  "description": "A new arena hazard that spawns two linked vortexes. If a player falls into one, their movement inputs are temporarily applied in reverse, and any damage they take is amplified but visually appears as numbers on the other vortex to confuse enemies."
+}

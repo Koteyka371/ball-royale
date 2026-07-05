@@ -7480,5 +7480,89 @@ class RollingBouldersMode(GameMode):
 
 
 
+class SoulLinkMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Soul Link"
+        self.description = "Players are randomly paired. Damage and status effects taken by one are shared with the other."
+        self.prev_state = {}
+        self.status_effects = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "frozen_timer"]
+
+    class BallState:
+        def __init__(self, hp):
+            self.hp = hp
+
+    def _init_prev_state(self, b):
+        state = self.BallState(getattr(b, "hp", 100.0))
+        for eff in self.status_effects:
+            setattr(state, eff, getattr(b, eff, 0.0))
+        self.prev_state[b.id] = state
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        import random
+        alive_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        random.shuffle(alive_balls)
+
+        for i in range(0, len(alive_balls) - 1, 2):
+            b1 = alive_balls[i]
+            b2 = alive_balls[i+1]
+            b1.soul_link_target = b2
+            b2.soul_link_target = b1
+
+        if len(alive_balls) % 2 != 0:
+            alive_balls[-1].soul_link_target = None
+
+        self.prev_state = {}
+        for b in balls:
+            self._init_prev_state(b)
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            if getattr(b, "id", None) not in self.prev_state:
+                self._init_prev_state(b)
+
+            state = self.prev_state[b.id]
+            target = getattr(b, "soul_link_target", None)
+
+            if target and getattr(target, "alive", False):
+                # Check HP
+                curr_hp = getattr(b, "hp", 100.0)
+                if curr_hp < state.hp:
+                    damage = state.hp - curr_hp
+                    target_curr_hp = getattr(target, "hp", 100.0)
+                    if target_curr_hp > 0:
+                        target.hp = target_curr_hp - damage
+                        if target.hp <= 0:
+                            target.hp = 0
+                            target.alive = False
+                            target.killer = getattr(b, "killer", "soul_link")
+
+                        if target.id in self.prev_state:
+                            self.prev_state[target.id].hp = target.hp
+
+                # Check Status Effects
+                for eff in self.status_effects:
+                    prev_val = getattr(state, eff, 0.0)
+                    curr_val = getattr(b, eff, 0.0)
+                    if curr_val > prev_val:
+                        diff = curr_val - prev_val
+                        target_val = getattr(target, eff, 0.0)
+                        setattr(target, eff, target_val + diff)
+                        if target.id in self.prev_state:
+                            setattr(self.prev_state[target.id], eff, target_val + diff)
+
+            # Update current state
+            state.hp = getattr(b, "hp", 100.0)
+            for eff in self.status_effects:
+                setattr(state, eff, getattr(b, eff, 0.0))
+
+
 GAME_MODES["rolling_boulders"] = RollingBouldersMode()
+GAME_MODES["soul_link"] = SoulLinkMode()
 GAME_MODES["scrambler_drones"] = ScramblerDroneMode()
