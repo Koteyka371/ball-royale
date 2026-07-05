@@ -7442,6 +7442,33 @@ class Action:
                                             owner.damage = getattr(hazard, "damage", 10.0) * delta
                                             self.world._deal_damage(owner, self.ball)
                                             owner.damage = old_dmg
+
+                                    # Check distance for explosion
+                                    if dist < (getattr(self.ball, "radius", 10.0) + getattr(hazard, "radius", 40.0) * 0.25):
+                                        # Trigger AoE explosion
+                                        if hasattr(self.world, "balls"):
+                                            for b in self.world.balls:
+                                                if getattr(b, "alive", True) and getattr(b, "id", None) != getattr(hazard, "owner_id", None):
+                                                    b_dist_sq = (hazard.x - b.x)**2 + (hazard.y - b.y)**2
+                                                    # Check if caught in explosion radius (which is the trap's full trigger radius)
+                                                    if b_dist_sq < getattr(hazard, "radius", 40.0) * getattr(hazard, "radius", 40.0) * 2.25: # explosion radius (1.5x trap radius)
+                                                        if hasattr(self.world, "_deal_damage"):
+                                                            if owner:
+                                                                old_dmg = getattr(owner, "damage", 10.0)
+                                                                owner.damage = 50.0 # Explosion damage
+                                                                self.world._deal_damage(owner, b)
+                                                                owner.damage = old_dmg
+                                                            else:
+                                                                b.hp -= 50.0
+                                                                if b.hp <= 0:
+                                                                    b.alive = False
+                                                                    b.killer = "pull_trap"
+                                                        elif hasattr(b, "hp"):
+                                                            b.hp -= 50.0
+                                                            if b.hp <= 0:
+                                                                b.alive = False
+                                                                b.killer = "pull_trap"
+                                        hazard.duration = 0.0 # Destroy trap
         bumper_booster_timer = getattr(self.ball, "bumper_booster_timer", 0.0)
         if bumper_booster_timer > 0:
             self.ball.bumper_booster_timer -= delta

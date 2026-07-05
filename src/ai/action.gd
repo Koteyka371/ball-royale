@@ -12758,6 +12758,80 @@ func _update_skill_timer(delta: float):
                                             if typeof(owner) == TYPE_OBJECT and owner.has_method("set"): owner.set("damage", old_dmg)
                                             elif "damage" in owner: owner.damage = old_dmg
 
+                                    var b_rad = 10.0
+                                    if "radius" in self.ball: b_rad = self.ball.radius
+                                    elif self.ball.has_method("get_meta") and self.ball.has_meta("radius"): b_rad = self.ball.get_meta("radius")
+
+                                    var h_rad = 40.0
+                                    if "radius" in hazard: h_rad = hazard.radius
+                                    elif hazard.has_method("get_meta") and hazard.has_meta("radius"): h_rad = hazard.get_meta("radius")
+
+                                    if dist < (b_rad + h_rad * 0.25):
+                                        # Trigger AoE Explosion
+                                        if self.world != null and "balls" in self.world:
+                                            var trap_owner = null
+                                            if owner_id != null:
+                                                for ob in self.world.balls:
+                                                    var ob_id = null
+                                                    if "id" in ob: ob_id = ob.id
+                                                    elif ob.has_method("get_meta") and ob.has_meta("id"): ob_id = ob.get_meta("id")
+                                                    if ob_id == owner_id:
+                                                        trap_owner = ob
+                                                        break
+
+                                            for b in self.world.balls:
+                                                var b_alive = true
+                                                if "alive" in b: b_alive = b.alive
+                                                elif b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+                                                var b_id_curr = null
+                                                if "id" in b: b_id_curr = b.id
+                                                elif b.has_method("get_meta") and b.has_meta("id"): b_id_curr = b.get_meta("id")
+
+                                                if b_alive and b_id_curr != owner_id:
+                                                    var bx = 0.0
+                                                    if "x" in b: bx = b.x
+                                                    elif b.has_method("get_meta") and b.has_meta("x"): bx = b.get_meta("x")
+                                                    var by = 0.0
+                                                    if "y" in b: by = b.y
+                                                    elif b.has_method("get_meta") and b.has_meta("y"): by = b.get_meta("y")
+
+                                                    var b_dist_sq = (h_x - bx)*(h_x - bx) + (h_y - by)*(h_y - by)
+                                                    if b_dist_sq < (h_rad * h_rad * 2.25):
+                                                        if trap_owner != null and self.world.has_method("_deal_damage"):
+                                                            var old_trap_dmg = 10.0
+                                                            if "damage" in trap_owner: old_trap_dmg = trap_owner.damage
+                                                            elif trap_owner.has_method("get_meta") and trap_owner.has_meta("damage"): old_trap_dmg = trap_owner.get_meta("damage")
+
+                                                            if "damage" in trap_owner: trap_owner.damage = 50.0
+                                                            elif trap_owner.has_method("set_meta") and trap_owner.has_meta("damage"): trap_owner.set_meta("damage", 50.0)
+                                                            elif typeof(trap_owner) == TYPE_OBJECT and trap_owner.has_method("set"): trap_owner.set("damage", 50.0)
+
+                                                            self.world._deal_damage(trap_owner, b)
+
+                                                            if typeof(trap_owner) == TYPE_OBJECT and trap_owner.has_method("set"): trap_owner.set("damage", old_trap_dmg)
+                                                            elif "damage" in trap_owner: trap_owner.damage = old_trap_dmg
+                                                            elif trap_owner.has_method("set_meta") and trap_owner.has_meta("damage"): trap_owner.set_meta("damage", old_trap_dmg)
+                                                        else:
+                                                            var b_hp = 100.0
+                                                            if "hp" in b:
+                                                                b.hp -= 50.0
+                                                                b_hp = b.hp
+                                                            elif b.has_method("get_meta") and b.has_meta("hp"):
+                                                                b_hp = b.get_meta("hp") - 50.0
+                                                                b.set_meta("hp", b_hp)
+
+                                                            if b_hp <= 0:
+                                                                if "alive" in b: b.alive = false
+                                                                elif b.has_method("set_meta"): b.set_meta("alive", false)
+
+                                                                if "killer" in b: b.killer = "pull_trap"
+                                                                elif b.has_method("set_meta"): b.set_meta("killer", "pull_trap")
+
+                                        if "duration" in hazard: hazard.duration = 0.0
+                                        elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
+                                        elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("duration", 0.0)
+
     var weather_timer = 0.0
     if "weather_control_timer" in self.ball:
         weather_timer = float(self.ball.weather_control_timer)
