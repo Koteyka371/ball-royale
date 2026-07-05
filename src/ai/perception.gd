@@ -25,7 +25,13 @@ func scan() -> Dictionary:
             has_night_vision = true
         if "ball_type" in self.ball and self.ball.ball_type == "vampire":
             has_night_vision = true
-        if "cosmetic" in self.ball and str(self.ball.cosmetic).to_lower().replace(" ", "_") == "night_vision_goggles":
+        if "cosmetic" in self.ball:
+            var c_val = str(self.ball.cosmetic).to_lower().replace(" ", "_")
+            if c_val == "night_vision_goggles" or c_val == "lantern":
+                has_night_vision = true
+        if "light_source_booster_timer" in self.ball and float(self.ball.light_source_booster_timer) > 0.0:
+            has_night_vision = true
+        elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("get_meta") and self.ball.has_meta("light_source_booster_timer") and float(self.ball.get_meta("light_source_booster_timer")) > 0.0:
             has_night_vision = true
 
         if "is_lunar_eclipse" in self.world.arena and self.world.arena.is_lunar_eclipse:
@@ -34,7 +40,12 @@ func scan() -> Dictionary:
             perception_radius = min(perception_radius, 20.0)
         elif self.world.arena.is_night:
             if not has_night_vision:
-                perception_radius = min(perception_radius, 100.0)
+                var night_ratio = 1.0
+                if "night_ratio" in self.world.arena:
+                    night_ratio = float(self.world.arena.night_ratio)
+                elif typeof(self.world.arena) != TYPE_DICTIONARY and self.world.arena.has_method("get_meta") and self.world.arena.has_meta("night_ratio"):
+                    night_ratio = float(self.world.arena.get_meta("night_ratio"))
+                perception_radius = max(100.0, perception_radius * (1.0 - night_ratio * 0.8))
         else:
             perception_radius = max(perception_radius, 2000.0)
 

@@ -5822,6 +5822,11 @@ class DayNightMode extends GameMode:
             if "is_night" in world.arena:
                 is_night = world.arena.is_night
 
+            if is_night:
+                world.arena.night_ratio = timer / max(0.1, phase_duration)
+            else:
+                world.arena.night_ratio = 0.0
+
             var active_beams = []
             for i in range(active_sunlight_beams.size()):
                 var beam = active_sunlight_beams[i]

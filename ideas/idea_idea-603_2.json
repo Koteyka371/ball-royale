@@ -1,0 +1,4 @@
+{
+    "title": "Dynamic Map Flooding",
+    "description": "Introduce a Flood Weather Event where water levels gradually rise from the edges of the map. As water floods in, movement speed drops and friction drastically changes. Certain balls with 'Aquatic' traits excel here, while heavier balls sink faster. Floating debris acts as temporary dynamic terrain or hazards that players can push."
+}

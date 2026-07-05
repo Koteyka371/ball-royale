@@ -659,6 +659,7 @@ const ARENAS = [
 
 class DayNightArena extends ProceduralArena:
     var is_night = false
+    var night_ratio = 0.0
     var day_night_timer = 0.0
     var phase_duration = 10.0
     var is_eclipse = false
@@ -687,6 +688,11 @@ class DayNightArena extends ProceduralArena:
         if day_night_timer >= phase_duration:
             day_night_timer = 0.0
             is_night = not is_night
+
+        if is_night:
+            night_ratio = day_night_timer / max(0.1, phase_duration)
+        else:
+            night_ratio = 0.0
 
         if is_eclipse:
             eclipse_timer -= delta
