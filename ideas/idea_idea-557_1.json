@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Entanglement Hazard",
+  "description": "A hazard that spawns in pairs. When a ball enters one, any damage or status effects applied to it are mirrored to any ball currently inside the other entangled hazard."
+}

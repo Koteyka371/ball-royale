@@ -2568,6 +2568,27 @@ class Action:
                                     self.ball.hp = 0
                                     self.ball.killer = "vortex"
                             self.ball._chrono_slow = 0.5
+                    elif hazard.kind == "singularity":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            dist = math.sqrt(dist_sq)
+                            if dist > 0.1:
+                                nx = dx / dist
+                                ny = dy / dist
+                                pull_strength = 80.0 * delta
+                                self.ball.x += nx * pull_strength
+                                self.ball.y += ny * pull_strength
+
+                            dmg = getattr(hazard, "damage", 30.0) * delta
+                            if hasattr(self.ball, "hp"):
+                                self.ball.hp -= dmg
+                                if self.ball.hp <= 0:
+                                    self.ball.alive = False
+                                    self.ball.hp = 0
+                                    self.ball.killer = "singularity"
+                            self.ball._chrono_slow = 0.4
                     elif hazard.kind == "sinkhole" or hazard.kind == "massive_sinkhole":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
