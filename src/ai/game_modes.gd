@@ -6109,6 +6109,12 @@ class StaminaRegenMode extends GameMode:
         name = "Stamina Regen modifier"
         description = "A game mode modifier where stamina regenerates twice as fast, allowing more frequent use of stamina-based skills."
 
+
+class BouncyTerrainMode extends GameMode:
+    func _init() -> void:
+        name = "Bouncy Terrain"
+        description = "Collision with arena boundaries dramatically reflects velocity without dealing damage."
+
 class ZeroGravityMode extends GameMode:
     func _init() -> void:
         name = "Zero Gravity"
@@ -9192,6 +9198,7 @@ var GAME_MODES = {
     "draft_royale": DraftRoyaleMode.new(),
     "tournament": TournamentMode.new(),
     "bumper_balls": BumperBallsMode.new(),
+	"bouncy_terrain": BouncyTerrainMode.new(),
 	"pinball": PinballMode.new(),
     "portal_node": PortalNodeMode.new(),
 	"memory_traps": MemoryTrapsMode.new(),

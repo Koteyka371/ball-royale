@@ -5092,6 +5092,13 @@ class StaminaRegenMode(GameMode):
         self.name = "Stamina Regen modifier"
         self.description = "A game mode modifier where stamina regenerates twice as fast, allowing more frequent use of stamina-based skills."
 
+
+class BouncyTerrainMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Bouncy Terrain"
+        self.description = "Collision with arena boundaries dramatically reflects velocity without dealing damage."
+
 class ZeroGravityMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -7092,6 +7099,7 @@ GAME_MODES = {
     "escort": EscortMode(),
     "tournament": TournamentMode(),
     "bumper_balls": BumperBallsMode(),
+    "bouncy_terrain": BouncyTerrainMode(),
     "pinball": PinballMode(),
     "portal_node": PortalNodeMode(),
     "memory_traps": MemoryTrapsMode(),
