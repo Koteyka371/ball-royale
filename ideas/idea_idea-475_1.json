@@ -1,0 +1,4 @@
+{
+  "title": "Corrosive Acid Rain Weather",
+  "description": "Introduce a new 'acid_rain' weather condition that slowly degrades the armor and max HP of metallic or heavily armored balls over time, while occasionally spawning neutralizing puddles that players can fight over to wash off the acid."
+}

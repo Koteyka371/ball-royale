@@ -755,6 +755,28 @@ class BattleRoyaleMode extends GameMode:
                     var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
                     var x = randf_range(100.0, world.arena.width - 100.0)
                     var y = randf_range(100.0, world.arena.height - 100.0)
+                    # Attract lightning to metal/armored balls
+                    var metal_balls = []
+                    for b in balls:
+                        if typeof(b) == TYPE_OBJECT and b.get("alive") and b.get("ball_type") != "spectator":
+                            var btype = str(b.get("ball_type")).to_lower() if b.get("ball_type") != null else ""
+                            var traits = b.get("traits") if b.get("traits") != null else []
+                            if "metal" in btype or "armor" in btype or "metal" in traits or "armor" in traits:
+                                metal_balls.append(b)
+                        elif typeof(b) == TYPE_DICTIONARY and b.get("alive", false) and b.get("ball_type", "") != "spectator":
+                            var btype = str(b.get("ball_type", "")).to_lower()
+                            var traits = b.get("traits", [])
+                            if "metal" in btype or "armor" in btype or "metal" in traits or "armor" in traits:
+                                metal_balls.append(b)
+                    if metal_balls.size() > 0 and randf() < 0.6:
+                        var target_b = metal_balls[randi() % metal_balls.size()]
+                        if typeof(target_b) == TYPE_OBJECT:
+                            x = target_b.x
+                            y = target_b.y
+                        else:
+                            x = target_b["x"]
+                            y = target_b["y"]
+
                     var lightning = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 30.0, "lightning_strike", 50.0)
                     lightning.set_meta("duration", 1.0)
                     world.arena.hazards.append(lightning)

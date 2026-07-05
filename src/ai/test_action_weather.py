@@ -94,3 +94,73 @@ def test_elemental_burst_weather():
 if __name__ == "__main__":
     test_lightning_strike_weather()
     test_elemental_burst_weather()
+
+def test_lightning_strike_metal_ball():
+    from ai.action import Action
+
+    class MockHazard:
+        def __init__(self, kind, x, y, radius, damage):
+            self.kind = kind
+            self.x = x
+            self.y = y
+            self.radius = radius
+            self.damage = damage
+            self.duration = 1.0
+            self.active = True
+            self.hit_targets = False
+
+    class MockBall:
+        def __init__(self):
+            self.id = 1
+            self.x = 0.0
+            self.y = 0.0
+            self.radius = 10.0
+            self.alive = True
+            self.hp = 100
+            self.max_hp = 100
+            self.ball_type = "metal_ball"
+            self.traits = ["metal"]
+            self.supercharge_timer = 0.0
+            self.speed_buff_timer = 0.0
+            self.speed = 100.0
+            self.base_speed = 100.0
+            self.mass = 1.0
+            self.invulnerable_timer = 0.0
+
+        def take_damage(self, damage):
+            self.hp -= damage
+            if self.hp <= 0:
+                self.alive = False
+
+    class MockWorld:
+        def __init__(self):
+            self.balls = []
+            self.time = 0.0
+            class Arena:
+                def __init__(self):
+                    self.hazards = []
+                    self.width = 1000
+                    self.height = 1000
+                def update_zone(self, tick, delta=None): pass
+                def clamp_position(self, x, y, radius=0): return x, y, False
+            self.arena = Arena()
+
+    world = MockWorld()
+    ball = MockBall()
+    world.balls.append(ball)
+
+    lightning = MockHazard(kind="lightning_strike", x=0.0, y=0.0, radius=30.0, damage=50.0)
+    world.arena.hazards.append(lightning)
+
+    action = Action(ball, world)
+    action._base_speed_set = True
+    action.execute("idle", 1.0)
+
+    # Metal ball should get supercharge and speed buff instead of taking damage/stun
+    assert ball.hp == 45
+    assert ball.supercharge_timer == 4.0
+    assert ball.speed_buff_timer == 3.0
+    print("Success lightning_strike_metal_ball")
+
+if __name__ == "__main__":
+    test_lightning_strike_metal_ball()
