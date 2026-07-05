@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-577] Blacksmith NPC — *2026-07-05 14:56:43 UTC*
+
+A neutral NPC that wanders the arena and can upgrade your crafted artifacts if you protect them from hazards for 30 seconds.
+
+---
+
 ## [idea-580] Mirror Coat Shield — *2026-07-05 14:38:44 UTC*
 
 A new active skill that reflects all projectiles and hazard effects back to their source for a short duration, but lowers movement speed by 50% while active.
