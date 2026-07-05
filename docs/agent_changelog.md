@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-557] Black Hole Generator Hazard — *2026-07-05 21:21:31 UTC*
+
+A new procedural hazard that pulls nearby balls towards its center, slowing them down and dealing damage over time.
+
+---
+
 ## [idea-590] Interactive Puddles and Ice Patches — *2026-07-05 20:01:13 UTC*
 
 Dynamically generate interactive puddles during rain that eventually turn into ice patches if the weather switches to snow. Puddles reduce steering and increase dash distance, while ice patches cause a brief slide without any directional control.
