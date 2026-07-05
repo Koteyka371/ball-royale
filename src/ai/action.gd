@@ -11525,6 +11525,21 @@ func _use_skill():
                 self.ball.x += cos(angle) * 150.0
                 self.ball.y += sin(angle) * 150.0
 
+        elif skill_name == "mirror_stance":
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("mirror_stance_active", true)
+                self.ball.set_meta("mirror_stance_timer", 4.0)
+                self.ball.set_meta("reflect_shield_active", true)
+                self.ball.set_meta("reflect_shield_timer", 4.0)
+                self.ball.set_meta("reflect_shield_capacity", 999999.0)
+            elif "reflect_shield_active" in self.ball:
+                self.ball.mirror_stance_active = true
+                self.ball.mirror_stance_timer = 4.0
+                self.ball.reflect_shield_active = true
+                self.ball.reflect_shield_timer = 4.0
+                self.ball.reflect_shield_capacity = 999999.0
+
+            _spawn_skill_particles("shield")
         elif skill_name == "reflect_shield":
             if self.ball.has_method("set_meta"):
                 self.ball.set_meta("reflect_shield_active", true)
@@ -12970,6 +12985,29 @@ func _update_skill_timer(delta: float):
     if "skill_timer" in self.ball and self.ball.skill_timer > 0:
         self.ball.skill_timer -= delta
 
+    var mirror_timer = 0.0
+    if "mirror_stance_timer" in self.ball: mirror_timer = self.ball.mirror_stance_timer
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("mirror_stance_timer"): mirror_timer = self.ball.get_meta("mirror_stance_timer")
+
+    if mirror_timer > 0.0:
+        var new_m_timer = mirror_timer - delta
+        if self.ball.has_method("set_meta"): self.ball.set_meta("mirror_stance_timer", new_m_timer)
+        if "mirror_stance_timer" in self.ball: self.ball.mirror_stance_timer = new_m_timer
+
+        var base_sp = 2.0
+        if "base_speed" in self.ball: base_sp = self.ball.base_speed
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"): base_sp = self.ball.get_meta("base_speed")
+
+        if "speed" in self.ball: self.ball.speed = base_sp * 0.5
+        elif self.ball.has_method("set_meta"): self.ball.set_meta("speed", base_sp * 0.5)
+
+        if new_m_timer <= 0.0:
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("mirror_stance_active", false)
+                self.ball.set_meta("speed", base_sp)
+            if "mirror_stance_active" in self.ball:
+                self.ball.mirror_stance_active = false
+                self.ball.speed = base_sp
     var reflect_shield_timer = 0.0
     if "reflect_shield_timer" in self.ball:
         reflect_shield_timer = self.ball.reflect_shield_timer

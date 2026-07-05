@@ -6865,6 +6865,14 @@ class Action:
                     self._spawn_skill_particles("toggle_polarity")
 
 
+            elif skill_name == "mirror_stance":
+                self.ball.mirror_stance_active = True
+                self.ball.mirror_stance_timer = 4.0
+                self.ball.reflect_shield_active = True
+                self.ball.reflect_shield_timer = 4.0
+                self.ball.reflect_shield_capacity = float('inf')
+                if hasattr(self, "_spawn_skill_particles"):
+                    self._spawn_skill_particles("shield")
             elif skill_name == "reflect_shield":
                 # Activate reflect shield
                 self.ball.reflect_shield_active = True
@@ -7616,6 +7624,12 @@ class Action:
                     self.world.arena.hazards.append(hazard)
             if self.ball.speed_boost_timer <= 0:
                 self.ball.speed_boost_timer = 0.0
+                self.ball.speed = getattr(self.ball, "base_speed", 2.0)
+        if getattr(self.ball, "mirror_stance_timer", 0.0) > 0:
+            self.ball.mirror_stance_timer -= delta
+            self.ball.speed = getattr(self.ball, "base_speed", 2.0) * 0.5
+            if self.ball.mirror_stance_timer <= 0:
+                self.ball.mirror_stance_active = False
                 self.ball.speed = getattr(self.ball, "base_speed", 2.0)
         if hasattr(self.ball, "reflect_shield_timer") and self.ball.reflect_shield_timer > 0:
             self.ball.reflect_shield_timer -= delta
