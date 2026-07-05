@@ -26,6 +26,10 @@ func load_guilds():
                         "banners": [],
                         "training_arena_unlocked": false
                     }
+                if not data["guilds"][g_name].has("guild_xp"):
+                    data["guilds"][g_name]["guild_xp"] = 0
+                if not data["guilds"][g_name].has("perks"):
+                    data["guilds"][g_name]["perks"] = []
             return
 
     data = {"guilds": {}, "territories": {}}
@@ -48,6 +52,8 @@ func create_guild(guild_name: String, creator_id: String) -> bool:
             "bonus_damage": 0
         },
         "gvg_points": 0,
+        "guild_xp": 0,
+        "perks": [],
         "chat_history": [],
         "vault": [],
         "boss_progress": {},
@@ -106,13 +112,38 @@ func record_gvg_match(guild1_name: String, guild2_name: String, winner_name: Str
     if data["guilds"].has(guild1_name) and data["guilds"].has(guild2_name):
         if winner_name == guild1_name:
             data["guilds"][guild1_name]["gvg_points"] += 10
+            data["guilds"][guild1_name]["guild_xp"] += 50
             data["guilds"][guild2_name]["gvg_points"] = max(0, data["guilds"][guild2_name]["gvg_points"] - 5)
+            data["guilds"][guild2_name]["guild_xp"] += 10
         elif winner_name == guild2_name:
             data["guilds"][guild2_name]["gvg_points"] += 10
+            data["guilds"][guild2_name]["guild_xp"] += 50
             data["guilds"][guild1_name]["gvg_points"] = max(0, data["guilds"][guild1_name]["gvg_points"] - 5)
+            data["guilds"][guild1_name]["guild_xp"] += 10
         save_guilds()
         return true
     return false
+
+func unlock_perk(guild_name: String, perk_name: String, cost: int, required_perk: String = "") -> bool:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        if guild["guild_xp"] >= cost:
+            if not guild.has("perks"):
+                guild["perks"] = []
+            if not guild["perks"].has(perk_name):
+                if required_perk == "" or guild["perks"].has(required_perk):
+                    guild["guild_xp"] -= cost
+                    guild["perks"].append(perk_name)
+                    save_guilds()
+                    return true
+    return false
+
+func get_guild_perks(guild_name: String) -> Array:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        if guild.has("perks"):
+            return guild["perks"]
+    return []
 
 func get_guild(guild_name: String) -> Dictionary:
     if data["guilds"].has(guild_name):

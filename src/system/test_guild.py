@@ -179,3 +179,35 @@ def test_hq_customization(temp_guild_file):
     assert hq_status is not None
     assert "golden_ball" in hq_status["statues"]
     assert hq_status["training_arena_unlocked"] == True
+
+def test_guild_perk_progression(temp_guild_file):
+    gm = GuildManager(temp_guild_file)
+    gm.create_guild("PerkGuild", "p1")
+    gm.create_guild("OtherGuild", "p2")
+
+    # Give some XP via GvG
+    gm.record_gvg_match("PerkGuild", "OtherGuild", "PerkGuild") # PerkGuild +50 XP
+    gm.record_gvg_match("PerkGuild", "OtherGuild", "PerkGuild") # PerkGuild +50 XP, total 100
+
+    guild = gm.get_guild("PerkGuild")
+    assert guild["guild_xp"] == 100
+
+    # Try unlocking a perk
+    assert gm.unlock_perk("PerkGuild", "hp_5_percent", 50) == True
+    assert guild["guild_xp"] == 50
+    assert "hp_5_percent" in gm.get_guild_perks("PerkGuild")
+
+    # Try unlocking same perk again
+    assert gm.unlock_perk("PerkGuild", "hp_5_percent", 10) == False
+
+    # Try unlocking with insufficient XP
+    assert gm.unlock_perk("PerkGuild", "hp_10_percent", 100) == False
+
+    # Try unlocking with missing dependency
+    # Let's say hp_10_percent requires hp_5_percent, but damage_10_percent requires damage_5_percent
+    assert gm.unlock_perk("PerkGuild", "damage_10_percent", 50, required_perk="damage_5_percent") == False
+
+    # Get more XP
+    gm.record_gvg_match("PerkGuild", "OtherGuild", "PerkGuild") # +50 XP, total 100
+    assert gm.unlock_perk("PerkGuild", "hp_10_percent", 100, required_perk="hp_5_percent") == True
+    assert "hp_10_percent" in gm.get_guild_perks("PerkGuild")

@@ -37,17 +37,34 @@ func _init(ball_ref, world_ref):
     if pm.data.has("guild_name") and pm.data["guild_name"] != "":
         var gm = load("res://src/system/guild.gd").new()
         var guild_buffs = gm.get_guild_buffs(pm.data["guild_name"])
-        if guild_buffs.size() > 0:
+        var guild_perks = gm.get_guild_perks(pm.data["guild_name"])
+
+        var hp_multi = 1.0
+        var speed_multi = 1.0
+        var dmg_multi = 1.0
+
+        for perk in guild_perks:
+            if perk == "hp_5_percent": hp_multi += 0.05
+            elif perk == "hp_10_percent": hp_multi += 0.10
+            elif perk == "speed_5_percent": speed_multi += 0.05
+            elif perk == "speed_10_percent": speed_multi += 0.10
+            elif perk == "dmg_5_percent": dmg_multi += 0.05
+            elif perk == "dmg_10_percent": dmg_multi += 0.10
+
+        if guild_buffs.size() > 0 or guild_perks.size() > 0:
             if "max_hp" in self.ball:
                 var hp_percent = 1.0
                 if self.ball.max_hp > 0:
                     hp_percent = float(self.ball.hp) / float(self.ball.max_hp)
                 self.ball.max_hp += guild_buffs.get("bonus_hp", 0) * 10
+                self.ball.max_hp *= hp_multi
                 self.ball.hp = self.ball.max_hp * hp_percent
             if "speed" in self.ball:
                 self.ball.speed += guild_buffs.get("bonus_speed", 0) * 5
+                self.ball.speed *= speed_multi
             if "damage" in self.ball:
                 self.ball.damage += guild_buffs.get("bonus_damage", 0) * 2
+                self.ball.damage *= dmg_multi
 
     # Apply prestige upgrades (from prestige tokens)
     var prestige_upgrades = pm.data.get("prestige_upgrades", {})

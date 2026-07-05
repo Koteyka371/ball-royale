@@ -20,6 +20,10 @@ class GuildManager:
                             "banners": [],
                             "training_arena_unlocked": False
                         }
+                    if "guild_xp" not in guild:
+                        guild["guild_xp"] = 0
+                    if "perks" not in guild:
+                        guild["perks"] = []
                 return data
         except (FileNotFoundError, json.JSONDecodeError):
             return {"guilds": {}, "territories": {}}
@@ -41,6 +45,8 @@ class GuildManager:
                 "bonus_damage": 0
             },
             "gvg_points": 0,
+            "guild_xp": 0,
+            "perks": [],
             "chat_history": [],
             "vault": [],
             "boss_progress": {},
@@ -99,13 +105,34 @@ class GuildManager:
         if guild1_name in self.data["guilds"] and guild2_name in self.data["guilds"]:
             if winner_name == guild1_name:
                 self.data["guilds"][guild1_name]["gvg_points"] += 10
+                self.data["guilds"][guild1_name]["guild_xp"] += 50
                 self.data["guilds"][guild2_name]["gvg_points"] = max(0, self.data["guilds"][guild2_name]["gvg_points"] - 5)
+                self.data["guilds"][guild2_name]["guild_xp"] += 10
             elif winner_name == guild2_name:
                 self.data["guilds"][guild2_name]["gvg_points"] += 10
+                self.data["guilds"][guild2_name]["guild_xp"] += 50
                 self.data["guilds"][guild1_name]["gvg_points"] = max(0, self.data["guilds"][guild1_name]["gvg_points"] - 5)
+                self.data["guilds"][guild1_name]["guild_xp"] += 10
             self.save()
             return True
         return False
+
+    def unlock_perk(self, guild_name, perk_name, cost, required_perk=None):
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            if guild["guild_xp"] >= cost:
+                if perk_name not in guild.get("perks", []):
+                    if required_perk is None or required_perk in guild.get("perks", []):
+                        guild["guild_xp"] -= cost
+                        guild.setdefault("perks", []).append(perk_name)
+                        self.save()
+                        return True
+        return False
+
+    def get_guild_perks(self, guild_name):
+        if guild_name in self.data["guilds"]:
+            return self.data["guilds"][guild_name].get("perks", [])
+        return []
 
     def get_guild(self, guild_name):
         return self.data["guilds"].get(guild_name)
