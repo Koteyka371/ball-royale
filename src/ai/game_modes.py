@@ -1157,8 +1157,20 @@ class BossFightMode(GameMode):
         if not valid_balls:
             return
 
-        # First ball is the boss
+        is_night = getattr(getattr(world, "arena", None), "is_night", False)
+        nocturnal_types = ["vampire", "assassin", "phantom", "warlock", "necromancer", "chaos", "mimic", "rogue", "ninja"]
+        diurnal_types = ["paladin", "templar", "guardian", "warrior", "healer", "monk", "king", "sniper", "ranger"]
+
         boss = valid_balls[0]
+        for b in valid_balls:
+            b_type = getattr(b, "ball_type", "").lower()
+            if is_night and b_type in diurnal_types:
+                continue
+            if not is_night and b_type in nocturnal_types:
+                continue
+            boss = b
+            break
+
         boss.team = "Boss"
         boss.max_hp = getattr(boss, "max_hp", 100) * 10.0
         boss.hp = boss.max_hp
@@ -1176,7 +1188,9 @@ class BossFightMode(GameMode):
         boss.y = arena_height / 2.0
 
         # The rest are hunters
-        for b in valid_balls[1:]:
+        for b in valid_balls:
+            if b == boss:
+                continue
             b.team = "Hunters"
             b.max_hp = getattr(b, "max_hp", 100) * 0.8
             b.hp = b.max_hp
