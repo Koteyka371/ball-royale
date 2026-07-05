@@ -3544,9 +3544,9 @@ func execute(strategy: String, delta: float):
                                 if paired_hazard != null:
                                     var entity_to_swap = null
                                     for b in self.world.balls:
-                                        if b != self.ball and b.get("alive") == true:
-                                            var b_dx = paired_hazard.x - b.x
-                                            var b_dy = paired_hazard.y - b.y
+                                        if b != self.ball and (not "alive" in b or b.alive):
+                                            var b_dx = b.x - paired_hazard.x
+                                            var b_dy = b.y - paired_hazard.y
                                             if b_dx * b_dx + b_dy * b_dy < paired_hazard.radius * paired_hazard.radius:
                                                 entity_to_swap = b
                                                 break
@@ -3563,6 +3563,47 @@ func execute(strategy: String, delta: float):
                                             self.ball.set_meta("last_teleport_tick", current_tick)
                                         if entity_to_swap.has_method("set_meta"):
                                             entity_to_swap.set_meta("last_teleport_tick", current_tick)
+
+                elif hazard.kind == "position_swap_trap":
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    if dist_sq < hazard.radius * hazard.radius:
+                        var is_active = true
+                        if hazard.has_meta("active"):
+                            is_active = hazard.get_meta("active")
+                        elif "active" in hazard:
+                            is_active = hazard.active
+
+                        if is_active:
+                            if hazard.has_method("set_meta"):
+                                hazard.set_meta("active", false)
+                                hazard.set_meta("duration", 0.0)
+                            else:
+                                hazard.active = false
+                                hazard.duration = 0.0
+
+                            var living_balls = []
+                            for b in self.world.balls:
+                                if b != self.ball and (not "alive" in b or b.alive):
+                                    living_balls.append(b)
+
+                            if living_balls.size() > 0:
+                                var rng = RandomNumberGenerator.new()
+                                rng.randomize()
+                                var target_idx = rng.randi() % living_balls.size()
+                                var target_ball = living_balls[target_idx]
+
+                                var temp_x = self.ball.x
+                                var temp_y = self.ball.y
+                                self.ball.x = target_ball.x
+                                self.ball.y = target_ball.y
+                                target_ball.x = temp_x
+                                target_ball.y = temp_y
+
+                                if self.world.has_method("add_event"):
+                                    self.world.add_event("visual_effect", {"type": "teleport", "x": self.ball.x, "y": self.ball.y})
+                                    self.world.add_event("visual_effect", {"type": "teleport", "x": target_ball.x, "y": target_ball.y})
                 elif hazard.kind == "portal" or hazard.kind == "teleporter" or hazard.kind == "one_way_teleporter" or hazard.kind == "wormhole":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
@@ -11104,7 +11145,7 @@ func _use_skill():
                     elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
                     elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
 
-                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_compass_item", "reverse_gravity_booster", "anchor_booster", "disruptor_booster"]:
+                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "position_swap_trap", "nemesis_booster", "nemesis_compass_item", "reverse_gravity_booster", "anchor_booster", "disruptor_booster"]:
                         var hx = 0.0
                         var hy = 0.0
                         if "x" in h: hx = h.x

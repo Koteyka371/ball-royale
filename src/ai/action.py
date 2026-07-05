@@ -2098,24 +2098,47 @@ class Action:
                                     entity_to_swap = None
                                     for b in self.world.balls:
                                         if b != self.ball and getattr(b, "alive", True):
-                                            b_dx = paired_hazard.x - getattr(b, "x", 0)
-                                            b_dy = paired_hazard.y - getattr(b, "y", 0)
-                                            if b_dx * b_dx + b_dy * b_dy < paired_hazard.radius * paired_hazard.radius:
+                                            b_dx = b.x - paired_hazard.x
+                                            b_dy = b.y - paired_hazard.y
+                                            b_dist_sq = b_dx * b_dx + b_dy * b_dy
+                                            if b_dist_sq < paired_hazard.radius * paired_hazard.radius:
                                                 entity_to_swap = b
                                                 break
 
                                     if entity_to_swap:
-                                        # Swap positions
-                                        temp_x = self.ball.x
-                                        temp_y = self.ball.y
+                                        # Swap!
+                                        temp_x, temp_y = self.ball.x, self.ball.y
                                         self.ball.x = entity_to_swap.x
                                         self.ball.y = entity_to_swap.y
                                         entity_to_swap.x = temp_x
                                         entity_to_swap.y = temp_y
-
                                         self.ball.last_teleport_tick = current_tick
                                         entity_to_swap.last_teleport_tick = current_tick
 
+                    elif hazard.kind == "position_swap_trap":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            if getattr(hazard, "active", True):
+                                hazard.active = False
+                                hazard.duration = 0.0
+
+                                living_balls = [b for b in self.world.balls if getattr(b, "alive", True) and b != self.ball]
+                                if living_balls:
+                                    import random
+                                    target_ball = random.choice(living_balls)
+
+                                    # Swap!
+                                    temp_x, temp_y = self.ball.x, self.ball.y
+                                    self.ball.x = target_ball.x
+                                    self.ball.y = target_ball.y
+                                    target_ball.x = temp_x
+                                    target_ball.y = temp_y
+
+                                    if hasattr(self.world, "add_event"):
+                                        self.world.add_event("visual_effect", {"type": "teleport", "x": self.ball.x, "y": self.ball.y})
+                                        self.world.add_event("visual_effect", {"type": "teleport", "x": target_ball.x, "y": target_ball.y})
                     elif hazard.kind in ("portal", "teleporter", "one_way_teleporter", "wormhole"):
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
@@ -6111,7 +6134,7 @@ class Action:
                     target_hazard = None
                     min_dist_sq = 22500.0  # Range 150
                     for h in hazards:
-                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster"]:
+                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "position_swap_trap", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster"]:
                             dx = h.x - self.ball.x
                             dy = h.y - self.ball.y
                             dist_sq = dx*dx + dy*dy
@@ -7231,7 +7254,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "aura_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "position_swap_trap", "magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "aura_booster"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math

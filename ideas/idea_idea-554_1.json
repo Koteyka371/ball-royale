@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Trap Hazard",
+  "description": "A new hazard type that projects a hologram or decoy of a player. When a player attacks or comes too close to the decoy, it explodes or applies a debuff like blindness."
+}
