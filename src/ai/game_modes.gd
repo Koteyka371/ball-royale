@@ -10026,6 +10026,215 @@ class ReversedInputMode extends GameMode:
 				b.x -= vx * delta * 2
 				b.y -= vy * delta * 2
 
+
+class MazeSafeZoneMode extends GameMode:
+	var walls: Array = []
+	var wall_damage_per_second: float = 50.0
+
+	var collapse_triggered: bool = false
+	var zone_x: float = 500.0
+	var zone_y: float = 500.0
+	var zone_radius: float = 500.0
+	var min_zone_radius: float = 50.0
+	var zone_shrink_rate: float = 10.0
+	var zone_target_x: float = 500.0
+	var zone_target_y: float = 500.0
+	var outside_damage_per_second: float = 20.0
+
+	func _init() -> void:
+		super._init()
+		name = "Maze Safe Zone"
+		description = "Navigate a shifting maze while the safe area gets smaller."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		collapse_triggered = false
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if "arena" in world and world.arena != null:
+			if "width" in world.arena: arena_width = float(world.arena.width)
+			if "height" in world.arena: arena_height = float(world.arena.height)
+
+		zone_x = arena_width / 2.0
+		zone_y = arena_height / 2.0
+		zone_target_x = zone_x
+		zone_target_y = zone_y
+		zone_radius = min(arena_width, arena_height) / 2.0
+		min_zone_radius = 50.0
+
+		walls.clear()
+		var cell_size = 200.0
+		var cols = int(arena_width / cell_size)
+		var rows = int(arena_height / cell_size)
+
+		for c in range(cols):
+			for r in range(rows):
+				if randf() > 0.5:
+					walls.append({
+						"x": c * cell_size,
+						"y": r * cell_size,
+						"width": cell_size,
+						"height": 20.0,
+						"dx": randf_range(-10.0, 10.0),
+						"dy": randf_range(-10.0, 10.0)
+					})
+				else:
+					walls.append({
+						"x": c * cell_size,
+						"y": r * cell_size,
+						"width": 20.0,
+						"height": cell_size,
+						"dx": randf_range(-10.0, 10.0),
+						"dy": randf_range(-10.0, 10.0)
+					})
+
+		var valid_balls = []
+		for b in balls:
+			if b.ball_type != "spectator":
+				valid_balls.append(b)
+		for i in range(valid_balls.size()):
+			var b = valid_balls[i]
+			if i >= 20:
+				b.ball_type = "spectator"
+				b.alive = false
+			else:
+				b.team = b.ball_type
+
+		if not "dead_balls" in world:
+			if world.has_method("set_meta"):
+				world.set_meta("dead_balls", [])
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		if not "dead_balls" in world:
+			if world.has_method("set_meta"):
+				world.set_meta("dead_balls", [])
+
+		for b in balls:
+			if not b.alive:
+				if world.has_method("get_meta") and not world.get_meta("dead_balls").has(b):
+					if b.has_method("set_meta"):
+						b.set_meta("time_since_death", 0.0)
+					world.get_meta("dead_balls").append(b)
+				else:
+					if b.has_method("get_meta") and b.has_meta("time_since_death"):
+						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if "arena" in world and world.arena != null:
+			if "width" in world.arena: arena_width = float(world.arena.width)
+			if "height" in world.arena: arena_height = float(world.arena.height)
+
+		# Move the safe zone
+		var zdx = zone_target_x - zone_x
+		var zdy = zone_target_y - zone_y
+		var zdist = sqrt(zdx*zdx + zdy*zdy)
+		if zdist > 5.0:
+			var move_speed = 15.0
+			zone_x += (zdx / zdist) * move_speed * delta
+			zone_y += (zdy / zdist) * move_speed * delta
+		else:
+			var buffer = max(100.0, zone_radius * 0.5)
+			zone_target_x = randf_range(buffer, arena_width - buffer)
+			zone_target_y = randf_range(buffer, arena_height - buffer)
+
+		# Shrink the safe zone
+		if zone_radius > min_zone_radius:
+			zone_radius -= zone_shrink_rate * delta
+			if zone_radius <= min_zone_radius:
+				zone_radius = min_zone_radius
+				if not collapse_triggered:
+					collapse_triggered = true
+					if world.has_method("add_event"):
+						world.add_event("collapse_event", {"type": "collapse_event", "message": "COLLAPSE EVENT! The zone collapses!"})
+		elif collapse_triggered:
+			if zone_radius > 0:
+				zone_radius -= zone_shrink_rate * delta
+				if zone_radius < 0:
+					zone_radius = 0.0
+
+			for b in balls:
+				if b.alive and b.ball_type != "spectator":
+					var b_x = b.get("position").x if b.get("position") != null else b.get("x")
+					var b_y = b.get("position").y if b.get("position") != null else b.get("y")
+					var dist_x = zone_x - b_x
+					var dist_y = zone_y - b_y
+					var dist_val = sqrt(dist_x*dist_x + dist_y*dist_y)
+					if dist_val > 0:
+						var pull_strength = 2000.0
+						if not "vx" in b: b.vx = 0.0
+						if not "vy" in b: b.vy = 0.0
+						b.vx += (dist_x / dist_val) * pull_strength * delta
+						b.vy += (dist_y / dist_val) * pull_strength * delta
+
+		# Move walls
+		for w in walls:
+			w["x"] += w["dx"] * delta
+			w["y"] += w["dy"] * delta
+
+		# Apply damage and wall collisions
+		var max_arena_dim = max(arena_width, arena_height)
+		var shrink_ratio = max(0.0, min(1.0, 1.0 - (zone_radius / max_arena_dim)))
+		var base_dmg = outside_damage_per_second + (shrink_ratio * outside_damage_per_second * 4.0)
+		var damage_this_tick = base_dmg * (10.0 if collapse_triggered else 1.0) * delta
+
+		for b in balls:
+			if b.alive and b.ball_type != "spectator":
+				var bx = 0.0
+				var by = 0.0
+				if "x" in b: bx = float(b.x)
+				if "y" in b: by = float(b.y)
+				var br = 20.0
+				if "radius" in b: br = float(b.radius)
+
+				# Safe zone damage
+				var sz_dx = bx - zone_x
+				var sz_dy = by - zone_y
+				var sz_dist = sqrt(sz_dx*sz_dx + sz_dy*sz_dy)
+				if sz_dist > zone_radius:
+					if "hp" in b:
+						b.hp -= damage_this_tick
+					if "hp" in b and b.hp <= 0:
+						b.alive = false
+						b.hp = 0
+
+				if b.alive:
+					var touching_wall = false
+					for w in walls:
+						var nearest_x = clamp(bx, w["x"], w["x"] + w["width"])
+						var nearest_y = clamp(by, w["y"], w["y"] + w["height"])
+						var dist_sq = (bx - nearest_x)*(bx - nearest_x) + (by - nearest_y)*(by - nearest_y)
+						if dist_sq < br * br:
+							touching_wall = true
+							break
+
+					if touching_wall:
+						var dmg = wall_damage_per_second * delta
+						if b.has_method("take_damage"):
+							b.take_damage(dmg, "maze_wall")
+						else:
+							if "hp" in b:
+								b.hp -= dmg
+						if "hp" in b and b.hp <= 0:
+							b.alive = false
+
+	func check_winner(world, balls: Array):
+		var alive_count = 0
+		var last_alive = null
+		for b in balls:
+			if b.alive and b.ball_type != "spectator":
+				alive_count += 1
+				last_alive = b
+
+		if alive_count == 1:
+			if "ball_type" in last_alive:
+				return last_alive.ball_type
+			return "Unknown"
+		elif alive_count == 0:
+			return "Draw"
+
 var GAME_MODES = {
 	"reversed_input": ReversedInputMode.new(),
 	"sweeping_paddles": SweepingPaddlesMode.new(),
@@ -10050,6 +10259,7 @@ var GAME_MODES = {
     "polarity_shift": PolarityShiftMode.new(),
 	"day_night_mode": DayNightMode.new(),
 	"shifting_maze": ShiftingMazeMode.new(),
+	"maze_safe_zone": MazeSafeZoneMode.new(),
 	"stamina_speed": StaminaSpeedMode.new(),
 
 	"blackout": BlackoutMode.new(),

@@ -7488,6 +7488,198 @@ class SweepingPaddlesMode(GameMode):
                     h.x = center_x + math.sin(self.sweep_timer * 2.0) * (arena_width / 2.0 - 150.0)
 
 
+
+class MazeSafeZoneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Maze Safe Zone"
+        self.description = "Navigate a shifting maze while the safe area gets smaller."
+
+        # Maze props
+        self.walls = []
+        self.wall_damage_per_second = 50.0
+
+        # Safe zone props
+        self.collapse_triggered = False
+        self.zone_x = 500.0
+        self.zone_y = 500.0
+        self.zone_radius = 500.0
+        self.min_zone_radius = 50.0
+        self.zone_shrink_rate = 10.0
+        self.zone_target_x = 500.0
+        self.zone_target_y = 500.0
+        self.outside_damage_per_second = 20.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.world = world
+        self.collapse_triggered = False
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        self.zone_x = arena_width / 2.0
+        self.zone_y = arena_height / 2.0
+        self.zone_target_x = self.zone_x
+        self.zone_target_y = self.zone_y
+        self.zone_radius = min(arena_width, arena_height) / 2.0
+        self.min_zone_radius = 50.0
+
+        self.walls = []
+
+        cell_size = 200
+        cols = int(arena_width / cell_size)
+        rows = int(arena_height / cell_size)
+
+        import random
+        rng = random.Random(42)
+        for c in range(cols):
+            for r in range(rows):
+                if rng.random() > 0.5:
+                    self.walls.append({
+                        "x": c * cell_size,
+                        "y": r * cell_size,
+                        "width": cell_size,
+                        "height": 20,
+                        "dx": rng.uniform(-10, 10),
+                        "dy": rng.uniform(-10, 10)
+                    })
+                else:
+                    self.walls.append({
+                        "x": c * cell_size,
+                        "y": r * cell_size,
+                        "width": 20,
+                        "height": cell_size,
+                        "dx": rng.uniform(-10, 10),
+                        "dy": rng.uniform(-10, 10)
+                    })
+
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        for i, b in enumerate(valid_balls):
+            if i >= 20:
+                b.ball_type = "spectator"
+                b.alive = False
+            else:
+                b.team = b.ball_type
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        import random
+
+        super().tick(world, balls, delta)
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        # Move safe zone
+        dx = self.zone_target_x - self.zone_x
+        dy = self.zone_target_y - self.zone_y
+        dist = math.sqrt(dx*dx + dy*dy)
+        if dist > 5.0:
+            move_speed = 15.0
+            self.zone_x += (dx / dist) * move_speed * delta
+            self.zone_y += (dy / dist) * move_speed * delta
+        else:
+            buffer = max(100.0, self.zone_radius * 0.5)
+            self.zone_target_x = random.uniform(buffer, arena_width - buffer)
+            self.zone_target_y = random.uniform(buffer, arena_height - buffer)
+
+        # Shrink safe zone
+        if self.zone_radius > self.min_zone_radius:
+            self.zone_radius -= self.zone_shrink_rate * delta
+            if self.zone_radius <= self.min_zone_radius:
+                self.zone_radius = self.min_zone_radius
+                if not self.collapse_triggered:
+                    self.collapse_triggered = True
+                    if hasattr(world, "add_event"):
+                        world.add_event("collapse_event", {"type": "collapse_event", "message": "COLLAPSE EVENT! The zone collapses!"})
+        elif getattr(self, "collapse_triggered", False):
+            if self.zone_radius > 0:
+                self.zone_radius -= self.zone_shrink_rate * delta
+                if self.zone_radius < 0:
+                    self.zone_radius = 0.0
+
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                    bdx = self.zone_x - b.x
+                    bdy = self.zone_y - b.y
+                    bdist = math.sqrt(bdx*bdx + bdy*bdy)
+                    if bdist > 0:
+                        pull_strength = 2000.0
+                        if not hasattr(b, "vx"): b.vx = 0.0
+                        if not hasattr(b, "vy"): b.vy = 0.0
+                        b.vx += (bdx / bdist) * pull_strength * delta
+                        b.vy += (bdy / bdist) * pull_strength * delta
+
+        # Update walls
+        for w in self.walls:
+            w["x"] += w["dx"] * delta
+            w["y"] += w["dy"] * delta
+
+        # Apply continuous damage outside the safe zone and check wall collisions
+        max_arena_dim = max(arena_width, arena_height)
+        shrink_ratio = max(0.0, min(1.0, 1.0 - (self.zone_radius / max_arena_dim)))
+        base_dmg = self.outside_damage_per_second + (shrink_ratio * self.outside_damage_per_second * 4.0)
+        damage_this_tick = base_dmg * (10.0 if getattr(self, 'collapse_triggered', False) else 1.0) * delta
+
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                # Safe zone damage
+                bdx = b.x - self.zone_x
+                bdy = b.y - self.zone_y
+                bdist = math.sqrt(bdx*bdx + bdy*bdy)
+
+                if bdist > self.zone_radius:
+                    b.hp -= damage_this_tick
+                    if b.hp <= 0:
+                        b.alive = False
+                        b.hp = 0
+
+                if getattr(b, "alive", False):
+                    bx = getattr(b, "x", 0.0)
+                    by = getattr(b, "y", 0.0)
+                    br = getattr(b, "radius", 20.0)
+
+                    touching_wall = False
+                    for w in self.walls:
+                        nearest_x = max(w["x"], min(bx, w["x"] + w["width"]))
+                        nearest_y = max(w["y"], min(by, w["y"] + w["height"]))
+
+                        dist_sq = (bx - nearest_x)**2 + (by - nearest_y)**2
+                        if dist_sq < br**2:
+                            touching_wall = True
+                            break
+
+                    if touching_wall:
+                        dmg = self.wall_damage_per_second * delta
+                        if hasattr(b, "take_damage"):
+                            b.take_damage(dmg, "maze_wall")
+                        else:
+                            b.hp = getattr(b, "hp", 100) - dmg
+                        if getattr(b, "hp", 100) <= 0:
+                            b.alive = False
+
+    def check_winner(self, world, balls):
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if len(alive) == 1:
+            return alive[0].ball_type
+        if len(alive) == 0:
+            return "Draw"
+
+
 GAME_MODES = {
     "sweeping_paddles": SweepingPaddlesMode(),
     "artifact_upgrader": ArtifactUpgraderMode(),
@@ -7508,6 +7700,7 @@ GAME_MODES = {
     "polarity_shift": PolarityShiftMode(),
     "day_night_mode": DayNightMode(),
     "shifting_maze": ShiftingMazeMode(),
+    "maze_safe_zone": MazeSafeZoneMode(),
     "stamina_speed": StaminaSpeedMode(),
 
     "blackout": BlackoutMode(),
