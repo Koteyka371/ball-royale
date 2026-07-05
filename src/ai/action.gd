@@ -4021,7 +4021,7 @@ func execute(strategy: String, delta: float):
                                             self.ball.set_meta("last_teleport_tick", current_tick)
                                         if entity_to_swap.has_method("set_meta"):
                                             entity_to_swap.set_meta("last_teleport_tick", current_tick)
-                elif hazard.kind == "portal" or hazard.kind == "teleporter" or hazard.kind == "one_way_teleporter" or hazard.kind == "wormhole":
+                elif hazard.kind == "portal" or hazard.kind == "teleporter" or hazard.kind == "one_way_teleporter" or hazard.kind == "wormhole" or hazard.kind == "quantum_teleporter":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
                     var dist_sq = dx * dx + dy * dy
@@ -4032,7 +4032,24 @@ func execute(strategy: String, delta: float):
                         var last_teleport = -100
                         if self.ball.has_meta("last_teleport_tick"):
                             last_teleport = self.ball.get_meta("last_teleport_tick")
-                        if current_tick - last_teleport > 10:
+                        var cooldown = 10
+                        if hazard.kind == "quantum_teleporter":
+                            cooldown = 30
+                        if current_tick - last_teleport > cooldown:
+                            if hazard.kind == "quantum_teleporter":
+                                if hazard.has_meta("target_x") and hazard.has_meta("target_y"):
+                                    var old_x = self.ball.x
+                                    var old_y = self.ball.y
+                                    self.ball.x = hazard.get_meta("target_x")
+                                    self.ball.y = hazard.get_meta("target_y")
+
+                                    if self.world.get("events") != null:
+                                        var eff = {"type": "visual_effect", "data": {"x": old_x, "y": old_y, "target_x": self.ball.x, "target_y": self.ball.y, "kind": "quantum_trail"}}
+                                        self.world.events.append(eff)
+
+                                    if self.ball.has_method("set_meta"):
+                                        self.ball.set_meta("last_teleport_tick", current_tick)
+                                    break
                             if hazard.kind == "wormhole":
                                 if hazard.has_meta("target_x") and hazard.has_meta("target_y"):
                                     self.ball.x = hazard.get_meta("target_x")
