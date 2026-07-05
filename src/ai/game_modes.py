@@ -7625,6 +7625,82 @@ class SoulLinkMode(GameMode):
                 setattr(state, eff, getattr(b, eff, 0.0))
 
 
+class ClanTournamentMode(GameMode):
+    """Two clans face off against each other in a multi-round tournament. Winning yields special clan cosmetics and bonus clan points."""
+    def __init__(self):
+        super().__init__()
+        self.name = "clan_tournament"
+        self.desc = "Multi-round clan tournament"
+        self.clans = {}
+        self.scores = {}
+        self.current_round = 1
+        self.max_wins_needed = 2  # Best of 3
+        self.tournament_over = False
+        self.winner_clan = None
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.world = world
+        self.clans = {}
+        self.scores = {"ClanA": 0, "ClanB": 0}
+        self.current_round = 1
+        self.tournament_over = False
+        self.winner_clan = None
+
+        if len(balls) >= 2:
+            guild1_balls = balls[:len(balls)//2]
+            guild2_balls = balls[len(balls)//2:]
+            self.clans["ClanA"] = [b.id for b in guild1_balls]
+            self.clans["ClanB"] = [b.id for b in guild2_balls]
+
+    def _tick(self, delta):
+        if self.tournament_over:
+            return
+
+        alive_counts = {"ClanA": 0, "ClanB": 0}
+        for clan, members in self.clans.items():
+            for ball in self.world.balls:
+                if ball.id in members and getattr(ball, "alive", False):
+                    alive_counts[clan] += 1
+
+        # Check if a round has ended
+        round_winner = None
+        if alive_counts["ClanA"] > 0 and alive_counts["ClanB"] == 0:
+            round_winner = "ClanA"
+        elif alive_counts["ClanB"] > 0 and alive_counts["ClanA"] == 0:
+            round_winner = "ClanB"
+        elif alive_counts["ClanA"] == 0 and alive_counts["ClanB"] == 0:
+            round_winner = "Draw"
+
+        if round_winner:
+            if round_winner != "Draw":
+                self.scores[round_winner] += 1
+
+            if self.scores.get("ClanA", 0) >= self.max_wins_needed:
+                self._end_tournament("ClanA")
+            elif self.scores.get("ClanB", 0) >= self.max_wins_needed:
+                self._end_tournament("ClanB")
+            else:
+                self.current_round += 1
+                self._reset_round()
+
+    def _reset_round(self):
+        for ball in self.world.balls:
+            ball.alive = True
+            ball.hp = getattr(ball, "max_hp", 100.0)
+
+    def _end_tournament(self, winner_clan):
+        self.tournament_over = True
+        self.winner_clan = winner_clan
+        try:
+            from system.clan import ClanManager
+            cm = ClanManager()
+            cm.add_clan_points(winner_clan, 500)
+            cm.unlock_cosmetic(winner_clan, "Tournament_Champion_Aura")
+        except ImportError:
+            pass
+
 GAME_MODES["rolling_boulders"] = RollingBouldersMode()
 GAME_MODES["soul_link"] = SoulLinkMode()
+GAME_MODES["clan_tournament"] = ClanTournamentMode()
 GAME_MODES["scrambler_drones"] = ScramblerDroneMode()

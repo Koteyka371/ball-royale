@@ -84,6 +84,23 @@ class ClanManager:
             return self.data["clans"][clan_name]["quests"]
         return []
 
+    def add_clan_points(self, clan_name, amount):
+        if clan_name in self.data["clans"]:
+            self.data["clans"][clan_name]["points"] += amount
+            self.save()
+            return True
+        return False
+
+    def unlock_cosmetic(self, clan_name, cosmetic):
+        if clan_name in self.data["clans"]:
+            if "cosmetics" not in self.data["clans"][clan_name]:
+                self.data["clans"][clan_name]["cosmetics"] = []
+            if cosmetic not in self.data["clans"][clan_name]["cosmetics"]:
+                self.data["clans"][clan_name]["cosmetics"].append(cosmetic)
+                self.save()
+                return True
+        return False
+
     def get_clan_leaderboard(self):
         clans = []
         for name, info in self.data["clans"].items():

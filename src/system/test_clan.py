@@ -57,6 +57,20 @@ def test_clan_quests(temp_clan_file):
     assert quests[0]["completed"] == True
     assert cm.data["clans"]["QuestClan"]["points"] == 10
 
+def test_clan_points_and_cosmetics(temp_clan_file):
+    cm = ClanManager(temp_clan_file)
+    cm.create_clan("WinClan", "p1")
+
+    assert cm.add_clan_points("WinClan", 500) == True
+    assert cm.data["clans"]["WinClan"]["points"] == 500
+
+    assert cm.unlock_cosmetic("WinClan", "Tournament_Champion_Aura") == True
+    assert "Tournament_Champion_Aura" in cm.data["clans"]["WinClan"]["cosmetics"]
+
+    # unlock again shouldn't duplicate
+    assert cm.unlock_cosmetic("WinClan", "Tournament_Champion_Aura") == False
+    assert len(cm.data["clans"]["WinClan"]["cosmetics"]) == 1
+
 def test_clan_leaderboard(temp_clan_file):
     cm = ClanManager(temp_clan_file)
     cm.create_clan("Clan1", "p1")

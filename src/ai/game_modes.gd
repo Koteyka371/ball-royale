@@ -9605,6 +9605,93 @@ class ArtifactUpgraderMode extends GameMode:
 									b["speed"] = bspd
 
 
+class ClanTournamentMode extends GameMode:
+    var clans = {}
+    var scores = {}
+    var current_round = 1
+    var max_wins_needed = 2
+    var tournament_over = false
+    var winner_clan = null
+
+    func _init():
+        name = "clan_tournament"
+        desc = "Multi-round clan tournament"
+
+    func setup(world_ref, balls_ref: Array):
+        super.setup(world_ref, balls_ref)
+        clans = {}
+        scores = {"ClanA": 0, "ClanB": 0}
+        current_round = 1
+        tournament_over = false
+        winner_clan = null
+
+        if balls.size() >= 2:
+            var mid = balls.size() / 2
+            var g1 = []
+            var g2 = []
+            for i in range(mid):
+                g1.append(balls[i].get_meta("id") if balls[i].has_method("get_meta") and balls[i].has_meta("id") else balls[i].id)
+            for i in range(mid, balls.size()):
+                g2.append(balls[i].get_meta("id") if balls[i].has_method("get_meta") and balls[i].has_meta("id") else balls[i].id)
+            clans["ClanA"] = g1
+            clans["ClanB"] = g2
+
+    func _tick(delta: float):
+        super._tick(delta)
+        if tournament_over:
+            return
+
+        var alive_counts = {"ClanA": 0, "ClanB": 0}
+        for clan in clans.keys():
+            for ball in world.balls:
+                var bid = ball.get_meta("id") if ball.has_method("get_meta") and ball.has_meta("id") else ball.id
+                var balive = ball.get_meta("alive") if ball.has_method("get_meta") and ball.has_meta("alive") else ball.alive
+                if clans[clan].has(bid) and balive:
+                    alive_counts[clan] += 1
+
+        var round_winner = null
+        if alive_counts["ClanA"] > 0 and alive_counts["ClanB"] == 0:
+            round_winner = "ClanA"
+        elif alive_counts["ClanB"] > 0 and alive_counts["ClanA"] == 0:
+            round_winner = "ClanB"
+        elif alive_counts["ClanA"] == 0 and alive_counts["ClanB"] == 0:
+            round_winner = "Draw"
+
+        if round_winner != null:
+            if round_winner != "Draw":
+                scores[round_winner] += 1
+
+            if scores["ClanA"] >= max_wins_needed:
+                _end_tournament("ClanA")
+            elif scores["ClanB"] >= max_wins_needed:
+                _end_tournament("ClanB")
+            else:
+                current_round += 1
+                _reset_round()
+
+    func _reset_round():
+        for ball in world.balls:
+            if ball.has_method("set_meta"):
+                ball.set_meta("alive", true)
+                var max_hp = ball.get_meta("max_hp") if ball.has_meta("max_hp") else 100.0
+                ball.set_meta("hp", max_hp)
+            else:
+                if "alive" in ball:
+                    ball.alive = true
+                if "hp" in ball:
+                    ball.hp = ball.max_hp if "max_hp" in ball else 100.0
+
+    func _end_tournament(w_clan: String):
+        tournament_over = true
+        winner_clan = w_clan
+        var ClanManagerClass = load("res://src/system/clan.gd")
+        if ClanManagerClass:
+            var cm = ClanManagerClass.new()
+            if cm.has_method("add_clan_points"):
+                cm.add_clan_points(w_clan, 500)
+            if cm.has_method("unlock_cosmetic"):
+                cm.unlock_cosmetic(w_clan, "Tournament_Champion_Aura")
+
 var GAME_MODES = {
 	"artifact_upgrader": ArtifactUpgraderMode.new(),
 	"meteor_shower": MeteorShowerMode.new(),
@@ -9687,5 +9774,6 @@ var GAME_MODES = {
 	"time_rewind": TimeRewindMode.new(),
 	"rhythm_panels": RhythmPanelsMode.new(),
 	"cursed_buff_zone": CursedBuffZoneMode.new(),
-	"soul_link": SoulLinkMode.new()
+	"soul_link": SoulLinkMode.new(),
+	"clan_tournament": ClanTournamentMode.new()
 }
