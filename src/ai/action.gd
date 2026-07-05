@@ -2125,7 +2125,30 @@ func execute(strategy: String, delta: float):
 
 	if world != null and "arena" in world and "hazards" in world.arena:
 		for hazard in world.arena.hazards:
-			if hazard.get("kind") == "vampiric_puddle":
+			if hazard.get("kind") == "shrapnel":
+				if "duration" in hazard and hazard.duration > 0:
+					hazard.duration -= delta
+					if hazard.duration <= 0:
+						hazard.duration = 0.0
+				if "x" in hazard and "vx" in hazard: hazard.x += hazard.vx * delta
+				if "y" in hazard and "vy" in hazard: hazard.y += hazard.vy * delta
+				if "vx" in hazard: hazard.vx *= (1.0 - 2.0 * delta)
+				if "vy" in hazard: hazard.vy *= (1.0 - 2.0 * delta)
+
+				var h_rad = hazard.radius if "radius" in hazard else 5.0
+				var b_rad = self.ball.radius if "radius" in self.ball else (self.ball.get_meta("radius") if self.ball.has_method("has_meta") and self.ball.has_meta("radius") else 10.0)
+				var bx = self.ball.x if "x" in self.ball else (self.ball.get_meta("x") if self.ball.has_method("has_meta") and self.ball.has_meta("x") else 0.0)
+				var by = self.ball.y if "y" in self.ball else (self.ball.get_meta("y") if self.ball.has_method("has_meta") and self.ball.has_meta("y") else 0.0)
+				var hx = hazard.x if "x" in hazard else 0.0
+				var hy = hazard.y if "y" in hazard else 0.0
+
+				var dist = sqrt(pow(bx - hx, 2) + pow(by - hy, 2))
+				if dist <= h_rad + b_rad:
+					if self.ball.has_method("take_damage"):
+						var dmg = hazard.damage if "damage" in hazard else 10.0
+						self.ball.take_damage(dmg * delta)
+
+			elif hazard.get("kind") == "vampiric_puddle":
 				var my_rad = 10.0
 				if "radius" in self.ball:
 					my_rad = float(self.ball.radius)
@@ -8882,6 +8905,21 @@ func _collect_booster(delta: float):
                                         b.set_meta("y", b.get_meta("y") + (dy / dist) * 15.0)
 
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var num_shrapnel = randi() % 3 + 3 # 3 to 5
+                    for i in range(num_shrapnel):
+                        var shrapnel = {}
+                        shrapnel.kind = "shrapnel"
+                        shrapnel.x = nearest.x if "x" in nearest else 0.0
+                        shrapnel.y = nearest.y if "y" in nearest else 0.0
+                        var angle = randf() * 2.0 * PI
+                        var speed = randf() * 200.0 + 200.0 # 200 to 400
+                        shrapnel.vx = cos(angle) * speed
+                        shrapnel.vy = sin(angle) * speed
+                        shrapnel.radius = 5.0
+                        shrapnel.duration = 5.0
+                        shrapnel.damage = 10.0
+                        self.world.arena.hazards.append(shrapnel)
+
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)

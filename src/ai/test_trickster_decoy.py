@@ -61,6 +61,10 @@ def test_fake_booster_knockback():
     # verify knockback
     assert enemy.x != 5 or enemy.y != 0
 
+    # verify shrapnel spawned
+    shrapnels = [h for h in arena.hazards if getattr(h, "kind", "") == "shrapnel"]
+    assert 3 <= len(shrapnels) <= 5
+
 def test_trickster_decoy_mirroring():
     # Test that the decoy perfectly mirrors the Trickster's movements in the opposite direction
     owner = Trickster(1, 100, 100)
