@@ -1018,3 +1018,30 @@ def test_battle_royale_final_boss_spawn():
     assert len(defeated_events) == 1
     assert defeated_events[0][1]["killer_id"] == 1
     assert defeated_events[0][1]["points"] == 5000
+
+def test_invisible_decoys_mode():
+    from ai.game_modes import GAME_MODES
+    mode = GAME_MODES.get("invisible_decoys")
+    assert mode is not None
+    assert mode.name == "Invisible Decoys"
+
+    class MockArena:
+        def __init__(self):
+            self.width = 1000
+            self.height = 1000
+            self.hazards = []
+
+    world = MockWorld()
+    world.arena = MockArena()
+    world.balls = [MockBall(1, "warrior")]
+
+    mode.setup(world, world.balls)
+
+    # Check that decoys were spawned
+    decoys = [b for b in world.balls if getattr(b, "is_decoy", False)]
+    assert len(decoys) == 20
+
+    decoy = decoys[0]
+    assert decoy.invisible is True
+    assert decoy.decoy_type == "explosive"
+    assert decoy.team == "neutral"

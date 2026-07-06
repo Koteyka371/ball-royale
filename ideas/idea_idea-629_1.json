@@ -1,0 +1,4 @@
+{
+  "title": "Doppelganger Match Mode",
+  "description": "Every player spawns with a clone that perfectly mimics their inputs, but it only deals half damage and takes double damage. If the real player is killed, they immediately swap into their clone, reviving but with halved stats for the rest of the game."
+}

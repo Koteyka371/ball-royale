@@ -190,6 +190,7 @@ def test_collect_decoy_booster():
     # Ensure decoy timer decrements and kills decoy
     decoy.hp = 10
     decoy.alive = True
+    ball.hp = 100
     decoy.decoy_timer = 0.05
     action_decoy = Action(decoy, world)
     action_decoy.execute("idle", 0.1)
