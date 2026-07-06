@@ -10799,7 +10799,7 @@
     },
     {
       "id": "idea-626",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Illusionists",
@@ -17620,6 +17620,40 @@
         "src/arena/flooded_arena_phase.py",
         "src/arena/flooded_arena_phase.gd",
         "tests/test_flooded_arena_phase.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1027",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Flare Mechanic",
+      "description": "A new skill that deploys a fake flare. When enemies approach it to gain vision or out of curiosity, it explodes, dealing damage in an area of effect.",
+      "allowed_paths": [
+        "src/ai/decoy_flare_mechanic.py",
+        "src/ai/decoy_flare_mechanic.gd",
+        "tests/test_decoy_flare_mechanic.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1028",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Acoustic Mine Trap",
+      "description": "A new type of hazard that is invisible by default but triggers a high-damage explosion if a ball uses Dash, Sonar Ping, or other noisy skills within its radius.",
+      "allowed_paths": [
+        "src/arena/acoustic_mine_trap.py",
+        "src/arena/acoustic_mine_trap.gd",
+        "tests/test_acoustic_mine_trap.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

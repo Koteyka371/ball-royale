@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-626] Decoy Illusionists — *2026-07-06 17:16:54 UTC*
+
+A new ball type that can create up to 3 different types of decoys simultaneously - one that explodes, one that stuns, and one that heals nearby allies when it is destroyed.
+
+---
+
 ## [idea-628] Sonar Pulse Ability — *2026-07-06 16:46:18 UTC*
 
 A new AI ability that temporarily increases the ball's perception radius significantly, emitting a ping that reveals the location of nearby enemies and items, particularly useful in dark or low-visibility game modes.
