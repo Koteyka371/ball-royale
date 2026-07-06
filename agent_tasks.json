@@ -10918,7 +10918,7 @@
     },
     {
       "id": "idea-633",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Dynamic Arena Padding",
@@ -18011,6 +18011,23 @@
         "src/ai/laser_walls.py",
         "src/ai/laser_walls.gd",
         "tests/test_laser_walls.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1050",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Molten Rock Hazard",
+      "description": "A new hazard that acts oppositely to ice patches. Passing over molten rock severely increases friction (slowing the ball down) but applies a lingering burn effect that deals damage over time for a few seconds after exiting the hazard.",
+      "allowed_paths": [
+        "src/arena/molten_rock.py",
+        "src/arena/molten_rock.gd",
+        "tests/test_molten_rock.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-633] Dynamic Arena Padding — *2026-07-06 20:17:19 UTC*
+
+Add an arena mutator or interactive element where parts of the boundary become 'Bouncy' (drastically increasing reflection speed) while other parts become 'Sticky' (catching and stopping balls), changing periodically during a match to keep players constantly aware of their positioning relative to the edges.
+
+---
+
 ## [idea-498] New Hazard: Ice Patch — *2026-07-06 20:12:10 UTC*
 
 Ice patches spawn randomly. When balls enter them, friction is reduced to nearly 0, causing them to slide uncontrollably until they hit a wall or exit the patch. Damage taken while on ice is slightly reduced, but they are vulnerable to environmental hazards if they slide into them.
