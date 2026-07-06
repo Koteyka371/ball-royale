@@ -1956,7 +1956,7 @@ class Action:
                 for hazard in self.world.arena.hazards:
                     if hazard.kind == "temporal_rift":
                         continue
-                    if hazard.kind == "explosive_barrel":
+                    if hazard.kind in ("explosive_barrel", "volatile_barrel"):
                         current_tick = getattr(self.world, "tick", 0)
                         if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
                             hazard.last_updated_tick = current_tick
@@ -1978,7 +1978,7 @@ class Action:
 
                             # Collide with other explosive barrels or hazards
                             for other_hazard in self.world.arena.hazards:
-                                if hazard.id != getattr(other_hazard, "id", None) and getattr(other_hazard, "kind", "") == "explosive_barrel":
+                                if hazard.id != getattr(other_hazard, "id", None) and getattr(other_hazard, "kind", "") in ("explosive_barrel", "volatile_barrel"):
                                     dx_b = hazard.x - other_hazard.x
                                     dy_b = hazard.y - other_hazard.y
                                     dist_b = math.hypot(dx_b, dy_b)
@@ -2010,6 +2010,11 @@ class Action:
 
                             if getattr(hazard, "is_exploded", False):
                                 hazard.duration = 0.0
+                                if hazard.kind == "volatile_barrel":
+                                    for oh in getattr(self.world.arena, "hazards", []):
+                                        if getattr(oh, "id", None) != getattr(hazard, "id", None) and getattr(oh, "kind", "") == "volatile_barrel" and not getattr(oh, "is_exploded", False):
+                                            if math.hypot(oh.x - hazard.x, oh.y - hazard.y) < hazard.radius * 6:
+                                                oh.is_exploded = True
                                 for b in getattr(self.world, "balls", []):
                                     if getattr(b, "alive", False) and math.hypot(b.x - hazard.x, b.y - hazard.y) < hazard.radius * 4:
                                         if hasattr(b, "take_damage"):
@@ -2926,7 +2931,7 @@ class Action:
                     if dist < (self.ball.radius + hazard.radius):
                         if hazard.kind == "temporal_rift":
                             continue
-                        if hazard.kind == "explosive_barrel":
+                        if hazard.kind in ("explosive_barrel", "volatile_barrel"):
                             if not getattr(hazard, "is_exploded", False):
                                 bvx = getattr(self.ball, "vx", 0.0)
                                 bvy = getattr(self.ball, "vy", 0.0)
@@ -5883,7 +5888,7 @@ class Action:
 
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if hazard.kind == "explosive_barrel" and not getattr(hazard, "is_exploded", False):
+                    if hazard.kind in ("explosive_barrel", "volatile_barrel") and not getattr(hazard, "is_exploded", False):
                         if math.hypot(hazard.x - self.ball.x, hazard.y - self.ball.y) < 200.0:
                             hazard.is_exploded = True
 

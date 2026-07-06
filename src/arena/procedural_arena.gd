@@ -614,7 +614,7 @@ func update_zone(current_tick: int, delta: float) -> void:
                         var oh_id = other_hazard.get_instance_id() if typeof(other_hazard) == TYPE_OBJECT else hash(other_hazard)
                         if h_id == oh_id:
                             continue
-                        if other_hazard.kind == "explosive_barrel" or other_hazard.kind == "flare":
+                        if other_hazard.kind in ["explosive_barrel", "volatile_barrel", "flare"]:
                             var hx_diff = hazard.x - other_hazard.x
                             var hy_diff = hazard.y - other_hazard.y
                             var hdist_sq = hx_diff * hx_diff + hy_diff * hy_diff
@@ -634,7 +634,7 @@ func update_zone(current_tick: int, delta: float) -> void:
 
                                 var other_rad = other_hazard.radius if "radius" in other_hazard else 10.0
                                 if hdist < hazard.radius + other_rad:
-                                    if other_hazard.kind == "explosive_barrel":
+                                    if other_hazard.kind in ["explosive_barrel", "volatile_barrel"]:
                                         var is_exploded = other_hazard.is_exploded if "is_exploded" in other_hazard else false
                                         if not is_exploded:
                                             if typeof(other_hazard) == TYPE_OBJECT and not other_hazard is Dictionary:
@@ -976,6 +976,9 @@ func update_zone(current_tick: int, delta: float) -> void:
                     h.damage = 0.0
                 elif randf() < 0.1:
                     h.kind = "explosive_barrel"
+                    h.damage = 0.0
+                elif randf() < 0.05:
+                    h.kind = "volatile_barrel"
                     h.damage = 0.0
                 elif randf() < 0.05:
                     h.kind = "stealth_drone_item"

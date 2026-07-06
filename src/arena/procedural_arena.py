@@ -536,7 +536,7 @@ class ProceduralArena:
                         for other_hazard in self.hazards:
                             if getattr(hazard, "id", None) == getattr(other_hazard, "id", None):
                                 continue
-                            if other_hazard.kind in ("explosive_barrel", "flare"):
+                            if other_hazard.kind in ("explosive_barrel", "volatile_barrel", "flare"):
                                 hx_diff = hazard.x - other_hazard.x
                                 hy_diff = hazard.y - other_hazard.y
                                 hdist_sq = hx_diff * hx_diff + hy_diff * hy_diff
@@ -553,7 +553,7 @@ class ProceduralArena:
                                     other_hazard.y += hny * pull_strength
 
                                     if hdist < hazard.radius + getattr(other_hazard, "radius", 10.0):
-                                        if other_hazard.kind == "explosive_barrel":
+                                        if other_hazard.kind in ("explosive_barrel", "volatile_barrel"):
                                             if not getattr(other_hazard, "is_exploded", False):
                                                 other_hazard.is_exploded = True
                                                 other_hazard.radius = getattr(other_hazard, "radius", 50.0) * 3.0
@@ -828,6 +828,9 @@ class ProceduralArena:
                     damage = 0.0
                 elif random.random() < 0.1:
                     kind = "explosive_barrel"
+                    damage = 0.0
+                elif random.random() < 0.05:
+                    kind = "volatile_barrel"
                     damage = 0.0
                 elif random.random() < 0.05:
                     kind = "stealth_drone_item"
