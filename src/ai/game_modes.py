@@ -677,6 +677,15 @@ class BattleRoyaleMode(GameMode):
                         puddle = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=50.0, kind="puddle", damage=0.0)
                         setattr(puddle, 'duration', 20.0)
                         world.arena.hazards.append(puddle)
+
+                if self.weather == "rain" and getattr(self, "weather_timer", 0.0) > 5.0 and getattr(self, "random", __import__("random")).random() < 0.02 * delta:
+                    from arena.procedural_arena import Hazard
+                    # Prolonged rain causes flood zones
+                    x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                    y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                    flood = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=100.0, kind="flood_zone", damage=0.0)
+                    setattr(flood, 'duration', 10.0)
+                    world.arena.hazards.append(flood)
                 if season_num == 3:
                     if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
                         from arena.procedural_arena import Hazard
@@ -2078,6 +2087,15 @@ class WeatherChaosMode(GameMode):
                         puddle = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=50.0, kind="puddle", damage=0.0)
                         setattr(puddle, 'duration', 20.0)
                         world.arena.hazards.append(puddle)
+
+                if self.weather == "rain" and getattr(self, "weather_timer", 0.0) > 5.0 and getattr(self, "random", __import__("random")).random() < 0.02 * delta:
+                    from arena.procedural_arena import Hazard
+                    # Prolonged rain causes flood zones
+                    x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                    y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                    flood = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=100.0, kind="flood_zone", damage=0.0)
+                    setattr(flood, 'duration', 10.0)
+                    world.arena.hazards.append(flood)
                 if season_num == 3:
                     if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
                         from arena.procedural_arena import Hazard

@@ -819,6 +819,23 @@ class BattleRoyaleMode extends GameMode:
                     var mud = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 60.0, "quicksand", 0.0)
                     mud.set_meta("duration", 15.0)
                     world.arena.hazards.append(mud)
+                elif not is_dirt_sand and self.weather == "rain" and randf() < 0.05 * delta:
+                    var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
+                    var x = randf_range(100.0, world.arena.width - 100.0)
+                    var y = randf_range(100.0, world.arena.height - 100.0)
+                    var puddle = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 50.0, "puddle", 0.0)
+                    puddle.set_meta("duration", 20.0)
+                    world.arena.hazards.append(puddle)
+
+                var w_timer = 0.0
+                if "weather_timer" in self: w_timer = self.weather_timer
+                if self.weather == "rain" and w_timer > 5.0 and randf() < 0.02 * delta:
+                    var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
+                    var x = randf_range(100.0, world.arena.width - 100.0)
+                    var y = randf_range(100.0, world.arena.height - 100.0)
+                    var flood = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 100.0, "flood_zone", 0.0)
+                    flood.set_meta("duration", 10.0)
+                    world.arena.hazards.append(flood)
                 var chance = 0.05
                 if self.weather == "thunderstorm":
                     chance = 0.2
@@ -2544,6 +2561,17 @@ class WeatherChaosMode extends GameMode:
 							var puddle = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 50.0, "puddle", 0.0)
 							puddle.set_meta("duration", 20.0)
 							world.arena.hazards.append(puddle)
+
+				var w_timer = 0.0
+				if "weather_timer" in self: w_timer = self.weather_timer
+				if w_timer > 5.0 and randf() < 0.02 * delta:
+					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
+					if Hazard:
+						var x = randf_range(100.0, world.arena.width - 100.0)
+						var y = randf_range(100.0, world.arena.height - 100.0)
+						var flood = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 100.0, "flood_zone", 0.0)
+						flood.set_meta("duration", 10.0)
+						world.arena.hazards.append(flood)
 
 			if weather == "sandstorm":
 				if randf() < 0.05 * delta:
@@ -6164,6 +6192,17 @@ class MagneticCollisionsMode extends GameMode:
 							puddle.set_meta("duration", 20.0)
 							world.arena.hazards.append(puddle)
 
+				var w_timer = 0.0
+				if "weather_timer" in self: w_timer = self.weather_timer
+				if w_timer > 5.0 and randf() < 0.02 * delta:
+					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
+					if Hazard:
+						var x = randf_range(100.0, world.arena.width - 100.0)
+						var y = randf_range(100.0, world.arena.height - 100.0)
+						var flood = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 100.0, "flood_zone", 0.0)
+						flood.set_meta("duration", 10.0)
+						world.arena.hazards.append(flood)
+
 			var arena_width = 1000.0
 			var arena_height = 1000.0
 			if "width" in world.arena:
@@ -6402,6 +6441,17 @@ class PinballMode extends GameMode:
 							var puddle = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 50.0, "puddle", 0.0)
 							puddle.set_meta("duration", 20.0)
 							world.arena.hazards.append(puddle)
+
+				var w_timer = 0.0
+				if "weather_timer" in self: w_timer = self.weather_timer
+				if w_timer > 5.0 and randf() < 0.02 * delta:
+					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
+					if Hazard:
+						var x = randf_range(100.0, world.arena.width - 100.0)
+						var y = randf_range(100.0, world.arena.height - 100.0)
+						var flood = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 100.0, "flood_zone", 0.0)
+						flood.set_meta("duration", 10.0)
+						world.arena.hazards.append(flood)
 
 			var arena_width = 1000.0
 			var arena_height = 1000.0

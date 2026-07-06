@@ -2563,6 +2563,18 @@ class Action:
                         if dist_sq < hazard.radius * hazard.radius:
                             # Apply slow effect
                             self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.3
+                    elif hazard.kind == "flood_zone":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            b_type = str(getattr(self.ball, "ball_type", "")).lower()
+                            traits = getattr(self.ball, "traits", [])
+                            has_water_trait = "water" in b_type or "swamp" in b_type or "hover" in b_type or "floating" in b_type or "aquatic" in b_type or any(t.lower() in ["water", "swamp", "hover", "floating", "aquatic"] for t in [str(t) for t in traits])
+                            if not has_water_trait:
+                                self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.2 # Drastically slow down
+                            else:
+                                self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 1.2 # Slight speed boost for aquatic
                     elif hazard.kind == "puddle":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
