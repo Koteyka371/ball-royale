@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-632] Shrinking Nightmares — *2026-07-06 22:02:40 UTC*
+
+During dark phases in Battle Royale, shadow monsters spawn randomly outside players' vision. The monsters aggressively hunt down players and despawn when the dark phase ends. Surviving players gain a significant score boost.
+
+---
+
 ## [idea-639] Obstacle Course Mode — *2026-07-06 21:34:46 UTC*
 
 A survival mode where players must navigate an increasingly difficult obstacle course filled with moving lasers, rotating bumpers, and collapsing floors.
