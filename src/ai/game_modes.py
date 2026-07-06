@@ -1662,7 +1662,7 @@ class SurvivalMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Survival"
-        self.description = "Players team up to survive against waves of enemies (simulated by having many enemies)."
+        self.description = "Players must navigate an increasingly difficult obstacle course filled with moving lasers, rotating bumpers, and collapsing floors."
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -1675,6 +1675,79 @@ class SurvivalMode(GameMode):
                     b.team = "Players"
                 else:
                     b.team = "Enemies"
+
+    def tick(self, world: Any, balls: List[Any], delta: float) -> None:
+        super().tick(world, balls, delta)
+        import random
+        current_tick = getattr(world, "tick", 0)
+        # Periodic obstacle generation
+        if current_tick % 60 == 0 and hasattr(world, "arena"):
+            w = getattr(world.arena, "width", 1000)
+            h = getattr(world.arena, "height", 1000)
+            if hasattr(world.arena, "hazards"):
+                from arena.procedural_arena import Hazard
+                h_id = 10000 + len(world.arena.hazards)
+                # Randomly spawn a moving laser, rotating bumper, or collapsing floor
+                choice = random.choice(["moving_laser", "rotating_bumper", "collapsing_floor"])
+                if choice == "moving_laser":
+                    y = random.uniform(50, h - 50)
+                    hz = Hazard(h_id, w/2, y, w, "moving_laser", 20.0)
+                    hz.vy = random.choice([-100.0, 100.0])
+                    hz.vx = 0.0
+                    hz.duration = 10.0
+                    world.arena.hazards.append(hz)
+                elif choice == "rotating_bumper":
+                    x = random.uniform(100, w - 100)
+                    y = random.uniform(100, h - 100)
+                    hz = Hazard(h_id, x, y, 60.0, "rotating_bumper", 10.0)
+                    hz.vx = 0.0
+                    hz.vy = 0.0
+                    hz.duration = 15.0
+                    world.arena.hazards.append(hz)
+                elif choice == "collapsing_floor":
+                    x = random.uniform(200, w - 200)
+                    y = random.uniform(200, h - 200)
+                    hz = Hazard(h_id, x, y, 150.0, "collapsing_floor", 50.0)
+                    hz.vx = 0.0
+                    hz.vy = 0.0
+                    hz.duration = 5.0
+                    hz.warning_timer = 2.0
+                    world.arena.hazards.append(hz)
+
+        # Update custom hazards
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            hazards_to_remove = []
+            for hz in world.arena.hazards:
+                if hz.kind == "moving_laser":
+                    hz.y += getattr(hz, "vy", 0.0) * delta
+                    if hz.y < 0 or hz.y > getattr(world.arena, "height", 1000):
+                        hz.vy = getattr(hz, "vy", 0.0) * -1
+                    if hasattr(hz, "duration"):
+                        hz.duration -= delta
+                        if hz.duration <= 0:
+                            hazards_to_remove.append(hz)
+                elif hz.kind == "rotating_bumper":
+                    if hasattr(hz, "duration"):
+                        hz.duration -= delta
+                        if hz.duration <= 0:
+                            hazards_to_remove.append(hz)
+                elif hz.kind == "collapsing_floor":
+                    if hasattr(hz, "warning_timer"):
+                        hz.warning_timer -= delta
+                        if hz.warning_timer <= 0:
+                            hz.kind = "lava" # Turns into lava (deals damage)
+                    if hasattr(hz, "duration"):
+                        hz.duration -= delta
+                        if hz.duration <= 0:
+                            hazards_to_remove.append(hz)
+                elif hz.kind == "lava":
+                    if hasattr(hz, "duration"):
+                        hz.duration -= delta
+                        if hz.duration <= 0:
+                            hazards_to_remove.append(hz)
+            for hz in hazards_to_remove:
+                if hz in world.arena.hazards:
+                    world.arena.hazards.remove(hz)
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
