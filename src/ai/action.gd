@@ -10868,6 +10868,47 @@ func _use_skill():
                 self.ball.set_meta("team_message", {"type": "buff_command", "radius": 200})
             elif "team_message" in self.ball:
                 self.ball.team_message = {"type": "buff_command", "radius": 200}
+        elif skill_name == "black_hole_summon":
+            var enemies = _get_enemies()
+            var nx = 1.0
+            var ny = 0.0
+            if enemies.size() > 0:
+                var target = null
+                var min_dist_sq = 99999999.0
+                for e in enemies:
+                    var e_x = e.x if "x" in e else e.get("position").x if e.get("position") != null else 0.0
+                    var e_y = e.y if "y" in e else e.get("position").y if e.get("position") != null else 0.0
+                    var d_sq = (e_x - self.ball.x) * (e_x - self.ball.x) + (e_y - self.ball.y) * (e_y - self.ball.y)
+                    if d_sq < min_dist_sq:
+                        min_dist_sq = d_sq
+                        target = e
+
+                if target != null:
+                    var t_x = target.x if "x" in target else target.get("position").x if target.get("position") != null else 0.0
+                    var t_y = target.y if "y" in target else target.get("position").y if target.get("position") != null else 0.0
+                    var dx = t_x - self.ball.x
+                    var dy = t_y - self.ball.y
+                    var dist = sqrt(dx * dx + dy * dy)
+                    if dist > 0.0001:
+                        nx = dx / dist
+                        ny = dy / dist
+            else:
+                var angle = randf_range(0, 2 * PI)
+                nx = cos(angle)
+                ny = sin(angle)
+
+            var arena = world.call("get_arena") if world != null and world.has_method("get_arena") else null
+            if arena == null and "arena" in world:
+                arena = world.arena
+            if arena != null and "hazards" in arena:
+                var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
+                var trap_id = 16000 + arena.hazards.size() + (randi() % 1000)
+                var bh = ProceduralArenaScript.Hazard.new(trap_id, self.ball.x, self.ball.y, 40.0, "black_hole", 20.0)
+                bh.set_meta("vx", nx * 50.0)
+                bh.set_meta("vy", ny * 50.0)
+                bh.set_meta("duration", 5.0)
+                if typeof(arena.hazards) == TYPE_ARRAY:
+                    arena.hazards.append(bh)
         elif skill_name == "meteor_strike":
             var enemies = _get_enemies()
             var arena = world.call("get_arena") if world != null and world.has_method("get_arena") else null

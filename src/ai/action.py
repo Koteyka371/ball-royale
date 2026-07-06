@@ -6425,6 +6425,40 @@ class Action:
                 self.ball.energy_shield_timer = 3.0
             elif skill_name == "command":
                 self.ball.team_message = {"type": "buff_command", "radius": 200}
+            elif skill_name == "black_hole_summon":
+                enemies = self._get_enemies()
+                nx, ny = 1.0, 0.0
+                if enemies:
+                    target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                    dx = target.x - self.ball.x
+                    dy = target.y - self.ball.y
+                    dist = math.hypot(dx, dy)
+                    if dist > 0.0001:
+                        nx, ny = dx / dist, dy / dist
+                else:
+                    import random as _rnd
+                    angle = _rnd.uniform(0, 2 * math.pi)
+                    nx, ny = math.cos(angle), math.sin(angle)
+
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    try:
+                        from arena.procedural_arena import Hazard
+                    except ImportError:
+                        class Hazard:
+                            def __init__(self, id, x, y, radius, kind, damage):
+                                self.id = id
+                                self.x = x
+                                self.y = y
+                                self.radius = radius
+                                self.kind = kind
+                                self.damage = damage
+
+                    trap_id = 16000 + len(self.world.arena.hazards) + random.randint(0, 1000)
+                    bh = Hazard(trap_id, self.ball.x, self.ball.y, 40.0, "black_hole", 20.0)
+                    bh.vx = nx * 50.0
+                    bh.vy = ny * 50.0
+                    bh.duration = 5.0
+                    self.world.arena.hazards.append(bh)
             elif skill_name == "meteor_strike":
                 enemies = self._get_enemies()
                 if enemies and hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
