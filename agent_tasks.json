@@ -9930,7 +9930,7 @@
     },
     {
       "id": "idea-575",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chain Reaction Explosives",
@@ -17314,6 +17314,40 @@
         "src/arena/dynamic_map_hazards_avalanche.py",
         "src/arena/dynamic_map_hazards_avalanche.gd",
         "tests/test_dynamic_map_hazards_avalanche.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1009",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Engineer Synergies: Overclock",
+      "description": "If an Engineer is near one of their deployed turrets and activates their skill while it is on cooldown, the turret gets 'overclocked'—firing twice as fast but slowly losing HP over time.",
+      "allowed_paths": [
+        "src/ai/engineer_synergies_overclock.py",
+        "src/ai/engineer_synergies_overclock.gd",
+        "tests/test_engineer_synergies_overclock.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1010",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Orbital Strike Coordinator",
+      "description": "A new hazard or booster that links to turrets. When collected by an Engineer, all active turrets fire a simultaneous laser blast at the nearest enemy with infinite range.",
+      "allowed_paths": [
+        "src/ai/orbital_strike_coordinator.py",
+        "src/ai/orbital_strike_coordinator.gd",
+        "tests/test_orbital_strike_coordinator.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

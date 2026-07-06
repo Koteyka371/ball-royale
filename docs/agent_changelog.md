@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-575] Chain Reaction Explosives — *2026-07-06 12:59:37 UTC*
+
+Introduce a new arena hazard 'volatile_barrel' that explodes when taking damage. If multiple barrels are near each other, one explosion triggers the others, creating a massive chain reaction that can wipe out grouped enemies or be tactically detonated by sniper balls.
+
+---
+
 ## [idea-615] Turret Deployment — *2026-07-06 12:57:34 UTC*
 
 Allow players to deploy temporary turrets that shoot nearby enemies autonomously.
