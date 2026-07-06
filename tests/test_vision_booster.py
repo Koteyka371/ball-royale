@@ -34,7 +34,7 @@ class MockHazard:
         self.x = x
         self.y = y
         self.radius = radius
-        self.active = True
+        self.id = 9999
         self.active = True
 
 
@@ -47,14 +47,22 @@ def test_collect_vision_booster():
     # Spawn a vision booster near the ball
     h = MockHazard("vision_booster", 510.0, 500.0, 30.0)
     world.arena.hazards.append(h)
+    world.boosters = [h]
 
     # Mock Action methods
     action._get_boosters = lambda: [h for h in world.arena.hazards if getattr(h, "active", True)]
     action._get_enemies = lambda: []
     action._get_allies = lambda: []
 
+    world.get_nearby_entities = lambda b, r: {"boosters": [h for h in world.arena.hazards if getattr(h, "active", True)], "enemies": [], "allies": []}
+
+
     # Execute collect_booster
-    for _ in range(100): action._collect_booster(0.1)
+    for _ in range(100):
+        # Move ball to hazard to trigger collection logic
+        ball.x = 510.0
+        ball.y = 500.0
+        action._collect_booster(0.1)
     print("has_timer:", hasattr(ball, "vision_booster_timer"))
     print("ball.x:", ball.x)
 

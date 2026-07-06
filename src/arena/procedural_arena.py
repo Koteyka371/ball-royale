@@ -48,6 +48,7 @@ class ProceduralArena:
         self.safe_zone_center = (arena_size / 2, arena_size / 2)
         self.last_tick = -1
         self.danger_grid: dict[tuple[int, int], float] = {}
+        self.boundary_states = {"top": "normal", "bottom": "normal", "left": "normal", "right": "normal"}
 
         self.generate()
 
@@ -499,6 +500,16 @@ class ProceduralArena:
 
     def update_zone(self, current_tick: int, delta: float):
         if current_tick != self.last_tick:
+            import random
+            if current_tick % 400 == 0:
+                states = ["normal", "normal", "bouncy", "sticky"]
+                random.shuffle(states)
+                self.boundary_states = {
+                    "top": states[0],
+                    "bottom": states[1],
+                    "left": states[2],
+                    "right": states[3]
+                }
             import math
             # Process hazard-to-hazard combos
             if hasattr(self, "hazards"):
@@ -837,7 +848,7 @@ class ProceduralArena:
             import random
 
             # Clear old dynamic hazards
-            self.hazards = [h for h in self.hazards if h.id < 1000]
+            self.hazards = [h for h in self.hazards if getattr(h, 'id', 9999) < 1000]
 
             # Periodically trigger random arena-wide events
             event_type = random.choice(["meteor_shower", "gravity_shift", "moving_walls", "orbital_strike", "fire_ring", "anomaly_zone", "massive_black_hole_event", "none"])
