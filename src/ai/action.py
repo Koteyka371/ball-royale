@@ -980,7 +980,7 @@ class Action:
 
                     dist = math.hypot(self.ball.x - hazard.x, self.ball.y - hazard.y)
                     if dist <= getattr(hazard, "radius", 5.0) + getattr(self.ball, "radius", 10.0):
-                        if hasattr(self.ball, "take_damage"):
+                        if hasattr(self.ball, "take_damage") and not getattr(self, "_has_hazard_immunity", False):
                             self.ball.take_damage(getattr(hazard, "damage", 10.0) * delta)
 
                 elif getattr(hazard, "kind", "") == "vampiric_puddle":
@@ -1400,9 +1400,9 @@ class Action:
         # Apply Damage Over Time (DOT)
         if getattr(self.ball, "dot_duration", 0.0) > 0:
             dot_dmg = self.ball.dot_damage_per_tick * delta
-            if hasattr(self.ball, "take_damage"):
+            if hasattr(self.ball, "take_damage") and not getattr(self, "_has_hazard_immunity", False):
                 self.ball.take_damage(dot_dmg)
-            elif hasattr(self.ball, "hp"):
+            elif hasattr(self.ball, "hp") and not getattr(self, "_has_hazard_immunity", False):
                 self.ball.hp -= dot_dmg
                 if self.ball.hp <= 0:
                     self.ball.alive = False
@@ -1968,14 +1968,21 @@ class Action:
                     is_immune = getattr(self.ball, "zone_immunity_timer", 0.0) > 0.0
                     if not is_immune:
                         zone_damage = 200.0 * delta
-                        if hasattr(self.ball, "take_damage"):
+                        if hasattr(self.ball, "take_damage") and not getattr(self, "_has_hazard_immunity", False):
                             self.ball.take_damage(zone_damage)
-                        elif hasattr(self.ball, "hp"):
+                        elif hasattr(self.ball, "hp") and not getattr(self, "_has_hazard_immunity", False):
                             self.ball.hp -= zone_damage
                             if self.ball.hp <= 0:
                                 self.ball.alive = False
 
             # Apply hazard damage
+
+            self._has_hazard_immunity = False
+            if hasattr(self.ball, "hazard_immunity_timer") and self.ball.hazard_immunity_timer > 0:
+                self._has_hazard_immunity = True
+                self.ball.hazard_immunity_timer -= delta
+                if self.ball.hazard_immunity_timer < 0:
+                    self.ball.hazard_immunity_timer = 0.0
 
             if hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
@@ -2223,9 +2230,9 @@ class Action:
                                         remainder_damage = -capacity
                                         # take remainder damage
                                         remainder_damage = remainder_damage * 2.0 if getattr(self.ball, "is_in_quicksand", False) else remainder_damage
-                                        if hasattr(self.ball, "take_damage"):
+                                        if hasattr(self.ball, "take_damage") and not getattr(self, "_has_hazard_immunity", False):
                                             self.ball.take_damage(remainder_damage)
-                                        elif hasattr(self.ball, "hp"):
+                                        elif hasattr(self.ball, "hp") and not getattr(self, "_has_hazard_immunity", False):
                                             self.ball.hp -= remainder_damage
                                             if self.ball.hp <= 0:
                                                 self.ball.alive = False
@@ -2252,9 +2259,9 @@ class Action:
                                                             if other.hp <= 0:
                                                                 other.alive = False
                                 else:
-                                    if hasattr(self.ball, "take_damage"):
+                                    if hasattr(self.ball, "take_damage") and not getattr(self, "_has_hazard_immunity", False):
                                         self.ball.take_damage(hazard.damage * 2.0 if getattr(self.ball, "is_in_quicksand", False) else hazard.damage)
-                                    elif hasattr(self.ball, "hp"):
+                                    elif hasattr(self.ball, "hp") and not getattr(self, "_has_hazard_immunity", False):
                                         self.ball.hp -= (hazard.damage * 2.0 if getattr(self.ball, "is_in_quicksand", False) else hazard.damage)
                                         if self.ball.hp <= 0:
                                             self.ball.alive = False
@@ -2555,9 +2562,9 @@ class Action:
                         if dist_sq < hazard.radius * hazard.radius:
                             import random
                             hazard_damage = hazard.damage * delta
-                            if hasattr(self.ball, "take_damage"):
+                            if hasattr(self.ball, "take_damage") and not getattr(self, "_has_hazard_immunity", False):
                                 self.ball.take_damage(hazard_damage)
-                            elif hasattr(self.ball, "hp"):
+                            elif hasattr(self.ball, "hp") and not getattr(self, "_has_hazard_immunity", False):
                                 self.ball.hp -= hazard_damage
                                 if self.ball.hp <= 0:
                                     self.ball.alive = False
@@ -2630,9 +2637,9 @@ class Action:
                             if hazard.kind == "massive_sinkhole":
                                 hazard_damage *= 2.0
 
-                            if hasattr(self.ball, "take_damage"):
+                            if hasattr(self.ball, "take_damage") and not getattr(self, "_has_hazard_immunity", False):
                                 self.ball.take_damage(hazard_damage)
-                            elif hasattr(self.ball, "hp"):
+                            elif hasattr(self.ball, "hp") and not getattr(self, "_has_hazard_immunity", False):
                                 self.ball.hp -= hazard_damage
                                 if self.ball.hp <= 0:
                                     self.ball.alive = False
@@ -2695,9 +2702,9 @@ class Action:
                                 hazard_damage = hazard.damage * delta
                                 if getattr(self.ball, "is_in_quicksand", False):
                                     hazard_damage *= 2.0
-                                if hasattr(self.ball, "take_damage"):
+                                if hasattr(self.ball, "take_damage") and not getattr(self, "_has_hazard_immunity", False):
                                     self.ball.take_damage(hazard_damage)
-                                elif hasattr(self.ball, "hp"):
+                                elif hasattr(self.ball, "hp") and not getattr(self, "_has_hazard_immunity", False):
                                     self.ball.hp -= hazard_damage
                                     if self.ball.hp <= 0:
                                         self.ball.alive = False
@@ -2721,9 +2728,9 @@ class Action:
                                 hazard_damage = hazard.damage * delta
                                 if getattr(self.ball, "is_in_quicksand", False):
                                     hazard_damage *= 2.0
-                                if hasattr(self.ball, "take_damage"):
+                                if hasattr(self.ball, "take_damage") and not getattr(self, "_has_hazard_immunity", False):
                                     self.ball.take_damage(hazard_damage)
-                                elif hasattr(self.ball, "hp"):
+                                elif hasattr(self.ball, "hp") and not getattr(self, "_has_hazard_immunity", False):
                                     self.ball.hp -= hazard_damage
                                     if self.ball.hp <= 0:
                                         self.ball.alive = False
@@ -2773,9 +2780,9 @@ class Action:
                                     self.ball.last_teleport_tick = current_tick
 
                                     temp_damage = 5.0
-                                    if hasattr(self.ball, "take_damage"):
+                                    if hasattr(self.ball, "take_damage") and not getattr(self, "_has_hazard_immunity", False):
                                         self.ball.take_damage(temp_damage)
-                                    elif hasattr(self.ball, "hp"):
+                                    elif hasattr(self.ball, "hp") and not getattr(self, "_has_hazard_immunity", False):
                                         self.ball.hp -= temp_damage
                                         if self.ball.hp <= 0:
                                             self.ball.alive = False
@@ -2989,9 +2996,9 @@ class Action:
                                 if trap_variant == "poison":
                                     # Poison: no slow, but take DoT (e.g. 5 damage per second)
                                     poison_damage = 10.0 * delta if getattr(self.ball, "is_in_quicksand", False) else 5.0 * delta
-                                    if hasattr(self.ball, "take_damage"):
+                                    if hasattr(self.ball, "take_damage") and not getattr(self, "_has_hazard_immunity", False):
                                         self.ball.take_damage(poison_damage)
-                                    elif hasattr(self.ball, "hp"):
+                                    elif hasattr(self.ball, "hp") and not getattr(self, "_has_hazard_immunity", False):
                                         self.ball.hp -= poison_damage
                                         if self.ball.hp <= 0:
                                             self.ball.alive = False
@@ -3038,9 +3045,9 @@ class Action:
                                     self.ball.y = old_y
                                 elif trap_variant == "mine":
                                     # Mine: large damage
-                                    if hasattr(self.ball, "take_damage"):
+                                    if hasattr(self.ball, "take_damage") and not getattr(self, "_has_hazard_immunity", False):
                                         self.ball.take_damage(50.0)
-                                    elif hasattr(self.ball, "hp"):
+                                    elif hasattr(self.ball, "hp") and not getattr(self, "_has_hazard_immunity", False):
                                         self.ball.hp -= 50.0
                                         if self.ball.hp <= 0:
                                             self.ball.alive = False
@@ -3249,9 +3256,9 @@ class Action:
                                 hazard_damage = hazard.damage * delta
                                 if getattr(self.ball, "is_in_quicksand", False):
                                     hazard_damage *= 2.0
-                                if hasattr(self.ball, "take_damage"):
+                                if hasattr(self.ball, "take_damage") and not getattr(self, "_has_hazard_immunity", False):
                                     self.ball.take_damage(hazard_damage)
-                                elif hasattr(self.ball, "hp"):
+                                elif hasattr(self.ball, "hp") and not getattr(self, "_has_hazard_immunity", False):
                                     self.ball.hp -= hazard_damage
                                     if self.ball.hp <= 0:
                                         self.ball.alive = False
@@ -3266,9 +3273,9 @@ class Action:
                                 hazard_damage = hazard.damage * delta
                                 if getattr(self.ball, "is_in_quicksand", False):
                                     hazard_damage *= 2.0
-                                if hasattr(self.ball, "take_damage"):
+                                if hasattr(self.ball, "take_damage") and not getattr(self, "_has_hazard_immunity", False):
                                     self.ball.take_damage(hazard_damage)
-                                elif hasattr(self.ball, "hp"):
+                                elif hasattr(self.ball, "hp") and not getattr(self, "_has_hazard_immunity", False):
                                     self.ball.hp -= hazard_damage
                                     if self.ball.hp <= 0:
                                         self.ball.alive = False
@@ -3288,9 +3295,9 @@ class Action:
                                         break
                             if shielded:
                                 hazard_damage *= 0.1
-                            if hasattr(self.ball, "take_damage"):
+                            if hasattr(self.ball, "take_damage") and not getattr(self, "_has_hazard_immunity", False):
                                 self.ball.take_damage(hazard_damage)
-                            elif hasattr(self.ball, "hp"):
+                            elif hasattr(self.ball, "hp") and not getattr(self, "_has_hazard_immunity", False):
                                 self.ball.hp -= hazard_damage
                                 if self.ball.hp <= 0:
                                     self.ball.alive = False
@@ -3312,9 +3319,9 @@ class Action:
                             continue
                         elif hazard.kind == "fire_zone":
                             hazard_damage = hazard.damage * delta
-                            if hasattr(self.ball, "take_damage"):
+                            if hasattr(self.ball, "take_damage") and not getattr(self, "_has_hazard_immunity", False):
                                 self.ball.take_damage(hazard_damage)
-                            elif hasattr(self.ball, "hp"):
+                            elif hasattr(self.ball, "hp") and not getattr(self, "_has_hazard_immunity", False):
                                 self.ball.hp -= hazard_damage
                                 if self.ball.hp <= 0:
                                     self.ball.alive = False
@@ -3333,9 +3340,9 @@ class Action:
                                         break
                             if shielded:
                                 hazard_damage *= 0.1
-                            if hasattr(self.ball, "take_damage"):
+                            if hasattr(self.ball, "take_damage") and not getattr(self, "_has_hazard_immunity", False):
                                 self.ball.take_damage(hazard_damage)
-                            elif hasattr(self.ball, "hp"):
+                            elif hasattr(self.ball, "hp") and not getattr(self, "_has_hazard_immunity", False):
                                 self.ball.hp -= hazard_damage
                                 if self.ball.hp <= 0:
                                     self.ball.alive = False
@@ -3345,9 +3352,9 @@ class Action:
                             hazard_damage = hazard.damage * delta
                             if getattr(self.ball, "is_in_quicksand", False):
                                 hazard_damage *= 2.0
-                            if hasattr(self.ball, "take_damage"):
+                            if hasattr(self.ball, "take_damage") and not getattr(self, "_has_hazard_immunity", False):
                                 self.ball.take_damage(hazard_damage)
-                            elif hasattr(self.ball, "hp"):
+                            elif hasattr(self.ball, "hp") and not getattr(self, "_has_hazard_immunity", False):
                                 self.ball.hp -= hazard_damage
                                 if self.ball.hp <= 0:
                                     self.ball.alive = False
@@ -3384,9 +3391,9 @@ class Action:
                                         hazard_damage = hazard.damage * delta
                                         if getattr(self.ball, "is_in_quicksand", False):
                                             hazard_damage *= 2.0
-                                        if hasattr(self.ball, "take_damage"):
+                                        if hasattr(self.ball, "take_damage") and not getattr(self, "_has_hazard_immunity", False):
                                             self.ball.take_damage(hazard_damage)
-                                        elif hasattr(self.ball, "hp"):
+                                        elif hasattr(self.ball, "hp") and not getattr(self, "_has_hazard_immunity", False):
                                             self.ball.hp -= hazard_damage
                                             if self.ball.hp <= 0:
                                                 self.ball.alive = False
@@ -3416,9 +3423,9 @@ class Action:
                                     self.ball.silence_timer = max(getattr(self.ball, "silence_timer", 0.0), 5.0)
 
                                     # Damage
-                                    if hasattr(self.ball, "take_damage"):
+                                    if hasattr(self.ball, "take_damage") and not getattr(self, "_has_hazard_immunity", False):
                                         self.ball.take_damage(hazard.damage * 2.0 if getattr(self.ball, "is_in_quicksand", False) else hazard.damage)
-                                    elif hasattr(self.ball, "hp"):
+                                    elif hasattr(self.ball, "hp") and not getattr(self, "_has_hazard_immunity", False):
                                         self.ball.hp -= (hazard.damage * 2.0 if getattr(self.ball, "is_in_quicksand", False) else hazard.damage)
                                         if self.ball.hp <= 0:
                                             self.ball.alive = False
@@ -3435,9 +3442,9 @@ class Action:
                             hazard_damage = hazard.damage * delta
                             if getattr(self.ball, "is_in_quicksand", False):
                                 hazard_damage *= 2.0
-                            if hasattr(self.ball, "take_damage"):
+                            if hasattr(self.ball, "take_damage") and not getattr(self, "_has_hazard_immunity", False):
                                 self.ball.take_damage(hazard_damage)
-                            elif hasattr(self.ball, "hp"):
+                            elif hasattr(self.ball, "hp") and not getattr(self, "_has_hazard_immunity", False):
                                 self.ball.hp -= hazard_damage
                                 if self.ball.hp <= 0:
                                     self.ball.alive = False
@@ -3485,9 +3492,9 @@ class Action:
                                 self.ball.y += _math.sin(angle) * launch_dist
                                 # Deal damage upon landing
                                 hazard_damage = hazard.damage
-                                if hasattr(self.ball, "take_damage"):
+                                if hasattr(self.ball, "take_damage") and not getattr(self, "_has_hazard_immunity", False):
                                     self.ball.take_damage(hazard_damage)
-                                elif hasattr(self.ball, "hp"):
+                                elif hasattr(self.ball, "hp") and not getattr(self, "_has_hazard_immunity", False):
                                     self.ball.hp -= hazard_damage
                                     if getattr(self.ball, "hp", 0) <= 0:
                                         self.ball.alive = False
@@ -3511,9 +3518,9 @@ class Action:
                                     if is_qs:
                                         dmg *= 2.0
 
-                                    if hasattr(self.ball, "take_damage"):
+                                    if hasattr(self.ball, "take_damage") and not getattr(self, "_has_hazard_immunity", False):
                                         self.ball.take_damage(dmg)
-                                    elif hasattr(self.ball, "hp"):
+                                    elif hasattr(self.ball, "hp") and not getattr(self, "_has_hazard_immunity", False):
                                         self.ball.hp -= dmg
                                         if self.ball.hp <= 0:
                                             self.ball.alive = False
@@ -3537,9 +3544,9 @@ class Action:
                                     if hasattr(self, "_spawn_skill_particles"):
                                         self._spawn_skill_particles("lightning")
                                 else:
-                                    if hasattr(self.ball, "take_damage"):
+                                    if hasattr(self.ball, "take_damage") and not getattr(self, "_has_hazard_immunity", False):
                                         self.ball.take_damage(hazard.damage * 2.0 if getattr(self.ball, "is_in_quicksand", False) else hazard.damage)
-                                    elif hasattr(self.ball, "hp"):
+                                    elif hasattr(self.ball, "hp") and not getattr(self, "_has_hazard_immunity", False):
                                         self.ball.hp -= (hazard.damage * 2.0 if getattr(self.ball, "is_in_quicksand", False) else hazard.damage)
                                         if self.ball.hp <= 0:
                                             self.ball.alive = False
@@ -3740,18 +3747,18 @@ class Action:
                             self.ball.glitch_timer = 2.0
                             continue
                         elif hazard.kind == "tall_grass":
-                            if hasattr(self.ball, "take_damage"):
+                            if hasattr(self.ball, "take_damage") and not getattr(self, "_has_hazard_immunity", False):
                                 self.ball.take_damage(hazard.damage * delta)
-                            elif hasattr(self.ball, "hp"):
+                            elif hasattr(self.ball, "hp") and not getattr(self, "_has_hazard_immunity", False):
                                 self.ball.hp -= hazard.damage * delta
                                 if self.ball.hp <= 0:
                                     self.ball.alive = False
                             continue
                         elif hazard.kind == "vampiric_puddle":
                             hazard_damage = hazard.damage * delta
-                            if hasattr(self.ball, "take_damage"):
+                            if hasattr(self.ball, "take_damage") and not getattr(self, "_has_hazard_immunity", False):
                                 self.ball.take_damage(hazard_damage)
-                            elif hasattr(self.ball, "hp"):
+                            elif hasattr(self.ball, "hp") and not getattr(self, "_has_hazard_immunity", False):
                                 self.ball.hp -= hazard_damage
                                 if self.ball.hp <= 0:
                                     self.ball.alive = False
@@ -3801,9 +3808,9 @@ class Action:
                         hazard_damage = hazard.damage * delta
                         if getattr(self.ball, "is_in_quicksand", False):
                             hazard_damage *= 2.0
-                        if hasattr(self.ball, "take_damage"):
+                        if hasattr(self.ball, "take_damage") and not getattr(self, "_has_hazard_immunity", False):
                             self.ball.take_damage(hazard_damage)
-                        elif hasattr(self.ball, "hp"):
+                        elif hasattr(self.ball, "hp") and not getattr(self, "_has_hazard_immunity", False):
                             self.ball.hp -= hazard_damage
                             if self.ball.hp <= 0:
                                 self.ball.alive = False
@@ -4039,9 +4046,9 @@ class Action:
                         damage += speed * 0.1
                         self.ball._knockback_timer = 0.0
 
-                    if hasattr(self.ball, "take_damage"):
+                    if hasattr(self.ball, "take_damage") and not getattr(self, "_has_hazard_immunity", False):
                         self.ball.take_damage(damage)
-                    elif hasattr(self.ball, "hp"):
+                    elif hasattr(self.ball, "hp") and not getattr(self, "_has_hazard_immunity", False):
                         self.ball.hp -= damage
                         if self.ball.hp <= 0:
                             self.ball.alive = False
@@ -5805,6 +5812,13 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "hazard_immunity_booster":
+                    self.ball.hazard_immunity_timer = 15.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "stamina_booster":
                     current_stamina = getattr(self.ball, "stamina", 0.0)
                     max_stamina = getattr(self.ball, "max_stamina", 100.0)
@@ -6613,7 +6627,7 @@ class Action:
                     target_hazard = None
                     min_dist_sq = 22500.0  # Range 150
                     for h in hazards:
-                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster"]:
+                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "hazard_immunity_booster"]:
                             dx = h.x - self.ball.x
                             dy = h.y - self.ball.y
                             dist_sq = dx*dx + dy*dy
@@ -7447,9 +7461,9 @@ class Action:
                 gm = getattr(self.world, "game_mode", None)
                 if gm and getattr(gm, "name", "") == "Custom Match":
                     if getattr(gm, "mutators_active", False) and "explosive_collisions" in getattr(gm, "mutators", []):
-                        if hasattr(self.ball, "take_damage"):
+                        if hasattr(self.ball, "take_damage") and not getattr(self, "_has_hazard_immunity", False):
                             self.ball.take_damage(5.0)
-                        elif hasattr(self.ball, "hp"):
+                        elif hasattr(self.ball, "hp") and not getattr(self, "_has_hazard_immunity", False):
                             self.ball.hp -= 5.0
                             if self.ball.hp <= 0:
                                 self.ball.alive = False
@@ -7663,9 +7677,9 @@ class Action:
         if getattr(self.ball, "supercharge_timer", 0.0) > 0:
             self.ball.supercharge_timer -= delta
             drain_amount = 5.0 * delta
-            if hasattr(self.ball, "take_damage"):
+            if hasattr(self.ball, "take_damage") and not getattr(self, "_has_hazard_immunity", False):
                 self.ball.take_damage(drain_amount)
-            elif hasattr(self.ball, "hp"):
+            elif hasattr(self.ball, "hp") and not getattr(self, "_has_hazard_immunity", False):
                 self.ball.hp -= drain_amount
                 if self.ball.hp <= 0:
                     self.ball.alive = False
@@ -7776,7 +7790,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "aura_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "aura_booster", "hazard_immunity_booster"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math
