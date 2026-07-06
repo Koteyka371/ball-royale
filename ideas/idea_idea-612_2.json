@@ -1,0 +1,4 @@
+{
+  "title": "Kinetic Rebound Hazard",
+  "description": "A dynamic hazard that spawns and expands across the arena. Any projectile or moving entity that hits its boundary gets reflected perfectly but with 2x velocity and increased damage potential."
+}

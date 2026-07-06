@@ -4015,6 +4015,149 @@ func execute(strategy: String, delta: float):
                                 self.ball.set_meta("stutter_timer", current_stutter + 2.0)
 
 
+                elif hazard.kind == "laser_tripwire":
+                    var is_active = true
+                    if typeof(hazard) == TYPE_DICTIONARY:
+                        is_active = hazard.get("active", true)
+                    else:
+                        is_active = hazard.get("active") if "active" in hazard else true
+
+                    var h_team = ""
+                    if typeof(hazard) == TYPE_DICTIONARY:
+                        h_team = hazard.get("team", "")
+                    else:
+                        h_team = hazard.get("team") if "team" in hazard else ""
+
+                    var b_team = ""
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        b_team = self.ball.get("team", "")
+                    else:
+                        b_team = self.ball.team
+
+                    if is_active and h_team != b_team:
+                        var x1 = 0.0
+                        var y1 = 0.0
+                        var x2 = 0.0
+                        var y2 = 0.0
+
+                        if typeof(hazard) == TYPE_DICTIONARY:
+                            x1 = hazard.get("start_x", hazard.x)
+                            y1 = hazard.get("start_y", hazard.y)
+                            x2 = hazard.get("end_x", hazard.x)
+                            y2 = hazard.get("end_y", hazard.y)
+                        else:
+                            x1 = hazard.get("start_x") if "start_x" in hazard else hazard.x
+                            y1 = hazard.get("start_y") if "start_y" in hazard else hazard.y
+                            x2 = hazard.get("end_x") if "end_x" in hazard else hazard.x
+                            y2 = hazard.get("end_y") if "end_y" in hazard else hazard.y
+
+                        var px = 0.0
+                        var py = 0.0
+                        var b_radius = 10.0
+                        var b_id = 0
+
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            px = self.ball.x
+                            py = self.ball.y
+                            b_radius = self.ball.get("radius", 10.0)
+                            b_id = self.ball.get("id", 0)
+                        else:
+                            px = self.ball.x
+                            py = self.ball.y
+                            b_radius = self.ball.radius
+                            b_id = self.ball.id
+
+                        var l2 = (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)
+                        var dist = 0.0
+                        if l2 == 0.0:
+                            var dx_p = px - x1
+                            var dy_p = py - y1
+                            dist = sqrt(dx_p * dx_p + dy_p * dy_p)
+                        else:
+                            var t_proj = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / l2
+                            var t = max(0.0, min(1.0, t_proj))
+                            var proj_x = x1 + t * (x2 - x1)
+                            var proj_y = y1 + t * (y2 - y1)
+                            var dx_p = px - proj_x
+                            var dy_p = py - proj_y
+                            dist = sqrt(dx_p * dx_p + dy_p * dy_p)
+
+                        if dist < b_radius:
+                            var hit_ids = []
+                            if typeof(hazard) == TYPE_DICTIONARY:
+                                hit_ids = hazard.get("hit_ids", [])
+                            else:
+                                hit_ids = hazard.get("hit_ids") if "hit_ids" in hazard else []
+
+                            var already_hit = false
+                            for h_id in hit_ids:
+                                if h_id == b_id:
+                                    already_hit = true
+                                    break
+
+                            if not already_hit:
+                                hit_ids.append(b_id)
+                                if typeof(hazard) == TYPE_DICTIONARY:
+                                    hazard["hit_ids"] = hit_ids
+                                else:
+                                    hazard.hit_ids = hit_ids
+
+                                var hazard_damage = 30.0
+                                if typeof(hazard) == TYPE_DICTIONARY:
+                                    hazard_damage = hazard.get("damage", 30.0)
+                                else:
+                                    hazard_damage = hazard.get("damage") if "damage" in hazard else 30.0
+
+                                var ref_shield = false
+                                if typeof(self.ball) == TYPE_DICTIONARY:
+                                    ref_shield = self.ball.get("reflect_shield_active", false)
+                                else:
+                                    ref_shield = self.ball.get("reflect_shield_active") if "reflect_shield_active" in self.ball else false
+
+                                if ref_shield:
+                                    var capacity = 50.0
+                                    if typeof(self.ball) == TYPE_DICTIONARY:
+                                        capacity = self.ball.get("reflect_shield_capacity", 50.0)
+                                    else:
+                                        capacity = self.ball.get("reflect_shield_capacity") if "reflect_shield_capacity" in self.ball else 50.0
+
+                                    capacity -= hazard_damage
+                                    if capacity <= 0.0:
+                                        if typeof(self.ball) == TYPE_DICTIONARY:
+                                            self.ball["reflect_shield_active"] = false
+                                            self.ball["reflect_shield_capacity"] = 0.0
+                                        else:
+                                            self.ball.reflect_shield_active = false
+                                            self.ball.reflect_shield_capacity = 0.0
+                                    else:
+                                        if typeof(self.ball) == TYPE_DICTIONARY:
+                                            self.ball["reflect_shield_capacity"] = capacity
+                                        else:
+                                            self.ball.reflect_shield_capacity = capacity
+                                else:
+                                    var mitigation = 0.0
+                                    if typeof(self.ball) == TYPE_DICTIONARY:
+                                        mitigation = self.ball.get("damage_mitigation", 0.0)
+                                    else:
+                                        mitigation = self.ball.get("damage_mitigation") if "damage_mitigation" in self.ball else 0.0
+
+                                    if typeof(self.ball) == TYPE_DICTIONARY:
+                                        var current_hp = self.ball.get("hp", 100.0)
+                                        self.ball["hp"] = current_hp - hazard_damage * (1.0 - mitigation)
+                                    else:
+                                        self.ball.hp -= hazard_damage * (1.0 - mitigation)
+
+                                var current_stun = 0.0
+                                if typeof(self.ball) == TYPE_DICTIONARY:
+                                    current_stun = self.ball.get("stun_timer", 0.0)
+                                    self.ball["stun_timer"] = max(current_stun, 2.0)
+                                else:
+                                    current_stun = self.ball.get("stun_timer") if "stun_timer" in self.ball else 0.0
+                                    self.ball.stun_timer = max(current_stun, 2.0)
+
+                                if self.world.has_method("add_event"):
+                                    self.world.add_event("stun", {"id": b_id, "duration": 2.0})
+
                 elif hazard.kind == "switch":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
@@ -12254,6 +12397,77 @@ func _use_skill():
                         self.ball.set_meta("ricochet_barrier_timer", 3.0)
 
                 self.world.arena.hazards.append(trap)
+        elif skill_name == "laser_tripwire":
+            var enemies = _get_enemies()
+            var target = null
+            var min_dist = 9999999.0
+            for e in enemies:
+                if typeof(e) == TYPE_DICTIONARY:
+                    var d2 = (e.x - self.ball.x) * (e.x - self.ball.x) + (e.y - self.ball.y) * (e.y - self.ball.y)
+                    if d2 < min_dist:
+                        min_dist = d2
+                        target = e
+                else:
+                    var d2 = (e.x - self.ball.x) * (e.x - self.ball.x) + (e.y - self.ball.y) * (e.y - self.ball.y)
+                    if d2 < min_dist:
+                        min_dist = d2
+                        target = e
+
+            var end_x = 0.0
+            var end_y = 0.0
+
+            if target != null:
+                var dx = target.x - self.ball.x
+                var dy = target.y - self.ball.y
+                var dist = sqrt(dx * dx + dy * dy)
+                var nx = 1.0
+                var ny = 0.0
+                if dist > 0.0:
+                    nx = dx / dist
+                    ny = dy / dist
+                end_x = self.ball.x + nx * 300.0
+                end_y = self.ball.y + ny * 300.0
+            else:
+                end_x = self.ball.x + 300.0
+                end_y = self.ball.y
+
+            var t_team = ""
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                t_team = self.ball.get("team", "")
+            else:
+                t_team = self.ball.team
+
+            var b_id = 0
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                b_id = self.ball.get("id", 0)
+            else:
+                b_id = self.ball.id
+
+            var tripwire = {
+                "id": "tripwire_" + str(b_id) + "_" + str(self.world.tick),
+                "kind": "laser_tripwire",
+                "x": self.ball.x,
+                "y": self.ball.y,
+                "start_x": self.ball.x,
+                "start_y": self.ball.y,
+                "end_x": end_x,
+                "end_y": end_y,
+                "radius": 10.0,
+                "damage": 30.0,
+                "team": t_team,
+                "timer": 15.0,
+                "active": true,
+                "hit_ids": []
+            }
+            if "arena" in self.world and self.world.arena != null:
+                if "hazards" in self.world.arena:
+                    self.world.arena.hazards.append(tripwire)
+
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball.skill_timer = 10.0
+            else:
+                self.ball.skill_timer = 10.0
+
         elif skill_name == "mind_control":
             var enemies = _get_enemies()
             if enemies.size() > 0:
