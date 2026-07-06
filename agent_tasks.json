@@ -10714,7 +10714,7 @@
     },
     {
       "id": "idea-621",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gravity Inversion Modifier",
@@ -17467,6 +17467,23 @@
         "src/ai/ghost_wall_mechanic.py",
         "src/ai/ghost_wall_mechanic.gd",
         "tests/test_ghost_wall_mechanic.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1018",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Kinetic Rebound Hazard",
+      "description": "A dynamic hazard that spawns and expands across the arena. Any projectile or moving entity that hits its boundary gets reflected perfectly but with 2x velocity and increased damage potential.",
+      "allowed_paths": [
+        "src/arena/kinetic_rebound.py",
+        "src/arena/kinetic_rebound.gd",
+        "tests/test_kinetic_rebound.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

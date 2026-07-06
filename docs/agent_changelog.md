@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-621] Gravity Inversion Modifier — *2026-07-06 13:29:18 UTC*
+
+A random arena event that periodically reverses gravity, sending all balls bouncing towards the center instead of outwards.
+
+---
+
 ## [idea-612] Laser Tripwire Trap — *2026-07-06 13:22:08 UTC*
 
 A deployable skill that sets a laser tripwire between two points. Enemies crossing the tripwire take heavy damage and are briefly stunned.
