@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-540] Chain Reaction Traps — *2026-07-06 13:19:24 UTC*
+
+Introduce a new type of hazard called Chain Reaction Traps. When one trap is triggered by a ball, it sends out a shockwave that activates all other traps within a certain radius. This creates a domino effect that can quickly engulf a large portion of the arena in damage or debuffs, requiring players to carefully navigate around clusters of traps.
+
+---
+
 ## [idea-611] Shrinking Labyrinth — *2026-07-06 13:19:19 UTC*
 
 Combine the shifting maze with the shrinking safe zone. Walls dynamically shift and crush players while the safe area gets smaller, forcing players to quickly navigate dead ends before the storm catches them.
