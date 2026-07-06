@@ -240,7 +240,7 @@ func generate():
             var s = get_random_spawn_point(radius)
             var new_hazard = Hazard.new(i, s[0], s[1], radius, kind, damage)
             if rng.randf() < 0.4:
-                var powerups = ["heal", "speed", "shield", "stamina"]
+                var powerups = ["heal", "speed", "shield", "stamina", "cursed"]
                 new_hazard.set_meta("powerup_type", powerups[rng.randi() % powerups.size()])
             if kind == "breakable_wall":
                 new_hazard.set_meta("hp", 100.0)

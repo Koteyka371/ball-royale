@@ -697,6 +697,13 @@ class Action:
         import math
         self.ball.is_frictionless = False
 
+        if getattr(self.ball, "cursed_bumper_active", False):
+            if hasattr(self.ball, "hp"):
+                self.ball.hp -= delta * 5.0
+                if self.ball.hp <= 0:
+                    self.ball.alive = False
+            if hasattr(self.ball, "stamina"):
+                self.ball.stamina = max(0.0, self.ball.stamina - delta * 10.0)
 
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             hazards_to_remove = []
@@ -4042,6 +4049,17 @@ class Action:
                                     self.ball.shield = getattr(self.ball, "shield", 0.0) + (20.0 * combo_multiplier)
                                 elif powerup == "stamina":
                                     self.ball.stamina = min(getattr(self.ball, "max_stamina", 100.0), getattr(self.ball, "stamina", 100.0) + (20.0 * combo_multiplier))
+                                elif powerup == "cursed":
+                                    self.ball.cursed_bumper_active = True
+                                    self.ball.speed_boost_timer = getattr(self.ball, "speed_boost_timer", 0.0) + 5.0
+                                    if not hasattr(self.ball, "base_damage_multiplier"):
+                                        self.ball.base_damage_multiplier = getattr(self.ball, "damage_multiplier", 1.0)
+                                    self.ball.damage_multiplier = self.ball.base_damage_multiplier * 2.0
+
+                            if getattr(hazard, "powerup_type", None) != "cursed" and getattr(self.ball, "cursed_bumper_active", False):
+                                self.ball.cursed_bumper_active = False
+                                if hasattr(self.ball, "base_damage_multiplier"):
+                                    self.ball.damage_multiplier = self.ball.base_damage_multiplier
 
                             continue
                         elif hazard.kind == "healing_spring":
@@ -5358,7 +5376,9 @@ class Action:
                             target_mem = getattr(target, "memory", {})
                             target_mem[self.ball.id] = {"relation": "rival"}
                             target.memory = target_mem
-                        self.ball.attack_timer = max(0.2, 2.0 / getattr(self.ball, "speed", 2.0))
+                        speed = getattr(self.ball, "speed", 2.0)
+                        if speed <= 0: speed = 0.001
+                        self.ball.attack_timer = max(0.2, 2.0 / speed)
                         if self.ball.attack_timer >= 0.8:
                             self.ball.stutter_timer = min(self.ball.attack_timer * 0.4, 0.4)
                 return
