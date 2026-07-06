@@ -1173,6 +1173,31 @@ func execute(strategy: String, delta: float):
 	elif self.ball.has_method("set_meta"):
 		self.ball.set_meta("is_frictionless", false)
 
+	var in_qs = false
+	if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+		for h in self.world.arena.hazards:
+			var hk = ""
+			if "kind" in h: hk = h.kind
+			elif h.has_method("get_meta") and h.has_meta("kind"): hk = h.get_meta("kind")
+			if hk == "quicksand":
+				var hx = float(h.x) if "x" in h else float(h.get_meta("x"))
+				var hy = float(h.y) if "y" in h else float(h.get_meta("y"))
+				var hr = float(h.radius) if "radius" in h else float(h.get_meta("radius"))
+				var bx = float(self.ball.x) if "x" in self.ball else float(self.ball.get_meta("x"))
+				var by = float(self.ball.y) if "y" in self.ball else float(self.ball.get_meta("y"))
+				var dist_sq = (bx - hx)*(bx - hx) + (by - hy)*(by - hy)
+				if dist_sq < hr * hr:
+					var anc_t = 0.0
+					if "anchor_booster_timer" in self.ball: anc_t = float(self.ball.anchor_booster_timer)
+					elif self.ball.has_method("get_meta") and self.ball.has_meta("anchor_booster_timer"): anc_t = float(self.ball.get_meta("anchor_booster_timer"))
+					if anc_t <= 0.0:
+						in_qs = true
+					break
+	if typeof(self.ball) == TYPE_DICTIONARY: self.ball["is_in_quicksand"] = in_qs
+	elif self.ball.has_method("set_meta"): self.ball.set_meta("is_in_quicksand", in_qs)
+	else: self.ball.is_in_quicksand = in_qs
+
+
 	var leech_booster_t = 0.0
 	if "leech_booster_timer" in self.ball: leech_booster_t = float(self.ball.leech_booster_timer)
 	elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("get_meta") and self.ball.has_meta("leech_booster_timer"): leech_booster_t = float(self.ball.get_meta("leech_booster_timer"))
@@ -2790,7 +2815,14 @@ func execute(strategy: String, delta: float):
                 my_ball.x += my_ball.vx * delta * 0.2
                 my_ball.y += my_ball.vy * delta * 0.2
         var b_type_slip = my_ball.get("ball_type") if typeof(my_ball) == TYPE_OBJECT or (typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("ball_type")) else ""
-        if world.arena.get("is_snowing") == true and not is_wind_riding_f and b_type_slip != "snow_yeti":
+        var cosmetic_slip = ""
+        if my_ball.has_method("get_meta") and my_ball.has_meta("cosmetic"):
+            cosmetic_slip = str(my_ball.get_meta("cosmetic")).to_lower().replace(" ", "_")
+        elif typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("cosmetic"):
+            cosmetic_slip = str(my_ball["cosmetic"]).to_lower().replace(" ", "_")
+        elif "cosmetic" in my_ball:
+            cosmetic_slip = str(my_ball.cosmetic).to_lower().replace(" ", "_")
+        if world.arena.get("is_snowing") == true and not is_wind_riding_f and b_type_slip != "snow_yeti" and cosmetic_slip != "snowshoes":
             if "vx" in my_ball and "vy" in my_ball:
                 my_ball.x += my_ball.vx * delta * 0.4
                 my_ball.y += my_ball.vy * delta * 0.4
@@ -4610,19 +4642,25 @@ func execute(strategy: String, delta: float):
                         var dy = hazard.y - self.ball.y
                         var dist_sq = dx * dx + dy * dy
                         if dist_sq < hazard.radius * hazard.radius:
-                            if "vx" in self.ball and "vy" in self.ball:
-                                self.ball.x += self.ball.vx * delta
-                                self.ball.y += self.ball.vy * delta
-                            var base_s = 100.0
-                            if self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"):
-                                base_s = self.ball.get_meta("base_speed")
-                            elif "base_speed" in self.ball:
-                                base_s = self.ball.base_speed
-                            self.ball.speed = base_s * 0.0
-                            if typeof(self.ball) == TYPE_DICTIONARY:
-                                self.ball["is_frictionless"] = true
-                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
-                                self.ball.set_meta("is_frictionless", true)
+                            var cosmetic = ""
+                            if self.ball.has_method("get_meta") and self.ball.has_meta("cosmetic"):
+                                cosmetic = str(self.ball.get_meta("cosmetic")).to_lower().replace(" ", "_")
+                            elif "cosmetic" in self.ball:
+                                cosmetic = str(self.ball.cosmetic).to_lower().replace(" ", "_")
+                            if cosmetic != "snowshoes":
+                                if "vx" in self.ball and "vy" in self.ball:
+                                    self.ball.x += self.ball.vx * delta
+                                    self.ball.y += self.ball.vy * delta
+                                var base_s = 100.0
+                                if self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"):
+                                    base_s = self.ball.get_meta("base_speed")
+                                elif "base_speed" in self.ball:
+                                    base_s = self.ball.base_speed
+                                self.ball.speed = base_s * 0.0
+                                if typeof(self.ball) == TYPE_DICTIONARY:
+                                    self.ball["is_frictionless"] = true
+                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("is_frictionless", true)
                 elif hazard.kind == "fire_zone":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
@@ -4683,7 +4721,19 @@ func execute(strategy: String, delta: float):
                                     base_speed = self.ball.get_meta("base_speed")
                                 elif "base_speed" in self.ball:
                                     base_speed = self.ball.base_speed
-                                self.ball.speed = base_speed * 0.3
+
+                                var cosmetic = ""
+                                if self.ball.has_method("get_meta") and self.ball.has_meta("cosmetic"):
+                                    cosmetic = str(self.ball.get_meta("cosmetic")).to_lower().replace(" ", "_")
+                                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("cosmetic"):
+                                    cosmetic = str(self.ball["cosmetic"]).to_lower().replace(" ", "_")
+                                elif "cosmetic" in self.ball:
+                                    cosmetic = str(self.ball.cosmetic).to_lower().replace(" ", "_")
+
+                                if cosmetic == "spiked_tires":
+                                    self.ball.speed = base_speed * 0.8
+                                else:
+                                    self.ball.speed = base_speed * 0.3
 
                             if self.ball.has_method("set_meta"):
                                 self.ball.set_meta("quicksand_debuff_timer", debuff_timer)
@@ -4789,18 +4839,26 @@ func execute(strategy: String, delta: float):
                             else:
                                 self.ball.is_slipping = false
                         else:
-                            self.ball.steering_mult = 0.0
-                            if "vx" in self.ball and "vy" in self.ball:
-                                var speed_mult = 1.5
-                                self.ball.x += self.ball.vx * delta * speed_mult
-                                self.ball.y += self.ball.vy * delta * speed_mult
+                            var cosmetic = ""
+                            if self.ball.has_method("get_meta") and self.ball.has_meta("cosmetic"):
+                                cosmetic = str(self.ball.get_meta("cosmetic")).to_lower().replace(" ", "_")
+                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("cosmetic"):
+                                cosmetic = str(self.ball["cosmetic"]).to_lower().replace(" ", "_")
+                            elif "cosmetic" in self.ball:
+                                cosmetic = str(self.ball.cosmetic).to_lower().replace(" ", "_")
+                            if cosmetic != "snowshoes":
+                                self.ball.steering_mult = 0.0
+                                if "vx" in self.ball and "vy" in self.ball:
+                                    var speed_mult = 1.5
+                                    self.ball.x += self.ball.vx * delta * speed_mult
+                                    self.ball.y += self.ball.vy * delta * speed_mult
 
-                            var base_s = 100.0
-                            if self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"):
-                                base_s = float(self.ball.get_meta("base_speed"))
-                            elif "base_speed" in self.ball:
-                                base_s = float(self.ball.base_speed)
-                            self.ball.speed = base_s * 1.5
+                                var base_s = 100.0
+                                if self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"):
+                                    base_s = float(self.ball.get_meta("base_speed"))
+                                elif "base_speed" in self.ball:
+                                    base_s = float(self.ball.base_speed)
+                                self.ball.speed = base_s * 1.5
                 elif hazard.kind == "singularity":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y

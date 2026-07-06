@@ -865,6 +865,12 @@ class Action:
                     if dist_sq < h.radius**2:
                         if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
                             self.ball.is_in_quicksand = True
+
+                        cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+                        if cosmetic == "spiked_tires":
+                            self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.8
+                        else:
+                            self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.3
                         break
 
         # Magnet passive: pull boosters and smaller entities
@@ -1579,7 +1585,7 @@ class Action:
                 # Slippery: apply momentum (friction slide)
                 self.ball.x += getattr(self.ball, "vx", 0.0) * delta * 0.5
                 self.ball.y += getattr(self.ball, "vy", 0.0) * delta * 0.5
-            if getattr(self.world.arena, "is_snowing", False) and not is_wind_riding:
+            if getattr(self.world.arena, "is_snowing", False) and not is_wind_riding and getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") != "snowshoes":
                 if getattr(self.ball, "ball_type", "") != "snow_yeti":
                     # Extra slippery: apply even more momentum (reduced friction)
                     self.ball.x += getattr(self.ball, "vx") * delta * 0.4
@@ -2721,11 +2727,13 @@ class Action:
                             dy = hazard.y - self.ball.y
                             dist_sq = dx * dx + dy * dy
                             if dist_sq < hazard.radius * hazard.radius:
-                                self.ball.is_frictionless = True
-                                if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
-                                    self.ball.x += self.ball.vx * delta
-                                    self.ball.y += self.ball.vy * delta
-                                self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.0
+                                cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+                                if cosmetic != "snowshoes":
+                                    self.ball.is_frictionless = True
+                                    if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+                                        self.ball.x += self.ball.vx * delta
+                                        self.ball.y += self.ball.vy * delta
+                                    self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.0
                     elif hazard.kind == "fire_zone":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
@@ -2744,7 +2752,11 @@ class Action:
                         dist_sq = dx * dx + dy * dy
                         if dist_sq < hazard.radius * hazard.radius:
                             # Apply slow effect
-                            self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.3
+                            cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+                            if cosmetic == "spiked_tires":
+                                self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.8
+                            else:
+                                self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.3
                     elif hazard.kind == "flood_zone":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
@@ -2774,17 +2786,19 @@ class Action:
                                 if hasattr(self.ball, "is_slipping"):
                                     self.ball.is_slipping = False
                             else:
-                                self.ball.steering_mult = 0.0
-                                if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
-                                    # Keep sliding in the current direction, drastically reducing steering
-                                    speed_mult = 1.5 # Slight speed boost while slipping
-                                    self.ball.x += self.ball.vx * delta * speed_mult
-                                    self.ball.y += self.ball.vy * delta * speed_mult
+                                cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+                                if cosmetic != "snowshoes":
+                                    self.ball.steering_mult = 0.0
+                                    if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+                                        # Keep sliding in the current direction, drastically reducing steering
+                                        speed_mult = 1.5 # Slight speed boost while slipping
+                                        self.ball.x += self.ball.vx * delta * speed_mult
+                                        self.ball.y += self.ball.vy * delta * speed_mult
 
-                                # Decrease turning capability by essentially locking in movement
-                                self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 1.5
-                                if not hasattr(self.ball, "is_slipping"):
-                                    self.ball.is_slipping = True
+                                    # Decrease turning capability by essentially locking in movement
+                                    self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 1.5
+                                    if not hasattr(self.ball, "is_slipping"):
+                                        self.ball.is_slipping = True
 
                     elif hazard.kind == "quicksand":
                         dx = hazard.x - self.ball.x
