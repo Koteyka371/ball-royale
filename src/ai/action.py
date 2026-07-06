@@ -1731,6 +1731,9 @@ class Action:
                 if owner_id is not None and hasattr(self.world, "balls"):
                     owner = next((b for b in self.world.balls if getattr(b, "id", None) == owner_id and getattr(b, "alive", True)), None)
                     if owner:
+                        if getattr(self.ball, "is_turret", False):
+                            self._chase(delta)
+                            return
                         if getattr(self.ball, "is_orbiting", False):
                             import math
                             # Orbit speed
@@ -6281,6 +6284,32 @@ class Action:
                     self.world.arena.hazards.append(p1)
                     self.world.arena.hazards.append(p2)
                     self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 5.0)
+            elif skill_name == "deploy_turret":
+                import copy
+                import random
+                if hasattr(self.world, "balls"):
+                    turret = copy.copy(self.ball)
+                    turret.owner_id = getattr(self.ball, "id", None)
+                    self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 15.0)
+                    turret.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                    if hasattr(self.world, "next_id"):
+                        self.world.next_id += 1
+
+                    turret.hp = 50.0
+                    turret.max_hp = 50.0
+                    turret.damage = 15.0
+                    turret.speed = 0.0
+                    turret.skill_timer = 9999.0
+                    turret.attack_timer = 0.0
+                    turret.is_decoy = True
+                    turret.is_turret = True
+                    turret.decoy_timer = 15.0
+                    turret.attack_range = 250.0
+                    turret.SKILL = None
+                    turret.skill = None
+                    turret.active_skill = None
+                    self.world.balls.append(turret)
+
             elif skill_name == "deploy_decoy":
                 import copy
                 active_decoys = [b for b in getattr(self.world, "balls", []) if getattr(b, "is_decoy", False) and getattr(b, "owner_id", None) == self.ball.id and getattr(b, "alive", True)]

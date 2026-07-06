@@ -3133,6 +3133,14 @@ func execute(strategy: String, delta: float):
                         break
 
                 if owner != null:
+                    var is_turret = false
+                    if "is_turret" in my_ball: is_turret = my_ball.is_turret
+                    elif my_ball.has_method("get_meta") and my_ball.has_meta("is_turret"): is_turret = my_ball.get_meta("is_turret")
+
+                    if is_turret:
+                        self._chase(delta)
+                        return
+
                     var is_orbiting = false
                     if "is_orbiting" in my_ball: is_orbiting = my_ball.is_orbiting
                     elif my_ball.has_method("get_meta") and my_ball.has_meta("is_orbiting"): is_orbiting = my_ball.get_meta("is_orbiting")
@@ -10669,6 +10677,58 @@ func _use_skill():
                     self.ball.skill_timer = cd
                 else:
                     self.ball.skill_timer = 5.0
+        elif skill_name == "deploy_turret":
+            var turret = null
+            if self.ball.has_method("duplicate"): turret = self.ball.duplicate()
+            elif typeof(self.ball) == TYPE_DICTIONARY: turret = self.ball.duplicate()
+
+            if turret != null:
+                if "id" in turret:
+                    turret.id = randi() % 90000 + 10000
+                if "hp" in turret and "max_hp" in turret:
+                    turret.max_hp = 50.0
+                    turret.hp = 50.0
+                if "damage" in turret:
+                    turret.damage = 15.0
+                if "speed" in turret:
+                    turret.speed = 0.0
+                if "attack_range" in turret:
+                    turret.attack_range = 250.0
+
+                var self_id_stat = -2
+                if "id" in self.ball: self_id_stat = self.ball.id
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): self_id_stat = self.ball.get_meta("id")
+
+                if turret.has_method("set_meta"):
+                    turret.set_meta("owner_id", self_id_stat)
+                    turret.set_meta("is_decoy", true)
+                    turret.set_meta("is_turret", true)
+                    turret.set_meta("decoy_timer", 15.0)
+                    turret.set_meta("skill_timer", 9999.0)
+                    turret.set_meta("attack_timer", 0.0)
+                    turret.set_meta("SKILL", null)
+                    turret.set_meta("skill", null)
+                    turret.set_meta("active_skill", null)
+                elif typeof(turret) == TYPE_DICTIONARY:
+                    turret["owner_id"] = self_id_stat
+                    turret["is_decoy"] = true
+                    turret["is_turret"] = true
+                    turret["decoy_timer"] = 15.0
+                    turret["skill_timer"] = 9999.0
+                    turret["attack_timer"] = 0.0
+                    turret["SKILL"] = null
+                    turret["skill"] = null
+                    turret["active_skill"] = null
+
+                if self.world != null and "balls" in self.world:
+                    self.world.balls.append(turret)
+                    var cooldown = 15.0
+                    if "SKILL_COOLDOWN" in self.ball: cooldown = float(self.ball.SKILL_COOLDOWN)
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("SKILL_COOLDOWN"): cooldown = float(self.ball.get_meta("SKILL_COOLDOWN"))
+
+                    if "skill_timer" in self.ball: self.ball.skill_timer = cooldown
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cooldown)
+
         elif skill_name == "deploy_decoy":
             var active_decoys = []
             var has_swapped_any = false
