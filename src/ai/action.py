@@ -228,7 +228,19 @@ class Action:
                 attacker.hp -= refl_dmg
             return
         old_hp = getattr(target, "hp", 0.0)
-        original_damage = getattr(attacker, "damage", 10.0)
+
+        # Slight damage reduction if target is on ice patch
+        damage_reduction = 1.0
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            for h in self.world.arena.hazards:
+                if getattr(h, "kind", "") in ("ice_patch", "ice_patches") and getattr(h, "active", True):
+                    dx = h.x - getattr(target, "x", 0.0)
+                    dy = h.y - getattr(target, "y", 0.0)
+                    if dx*dx + dy*dy < getattr(h, "radius", 0.0)**2:
+                        damage_reduction = 0.8
+                        break
+
+        original_damage = getattr(attacker, "damage", 10.0) * damage_reduction
 
         if random.random() > attack_accuracy:
             return

@@ -325,7 +325,42 @@ func _attempt_damage(attacker, target) -> void:
 
 	var old_hp = 0.0
 	if "hp" in target: old_hp = float(target.hp)
-	var original_damage = 10.0
+	# Slight damage reduction if target is on ice patch
+	var damage_reduction = 1.0
+	if "arena" in world and world.arena != null and "hazards" in world.arena:
+		for h in world.arena.hazards:
+			var h_kind = ""
+			if "kind" in h: h_kind = h.kind
+			elif h.has_method("get_meta") and h.has_meta("kind"): h_kind = h.get_meta("kind")
+			if h_kind == "ice_patch" or h_kind == "ice_patches":
+				var h_active = true
+				if "active" in h: h_active = h.active
+				elif h.has_method("get_meta") and h.has_meta("active"): h_active = h.get_meta("active")
+				if h_active:
+					var hx = 0.0
+					var hy = 0.0
+					var hr = 0.0
+					if "x" in h: hx = h.x
+					elif h.has_method("get_meta") and h.has_meta("x"): hx = h.get_meta("x")
+					if "y" in h: hy = h.y
+					elif h.has_method("get_meta") and h.has_meta("y"): hy = h.get_meta("y")
+					if "radius" in h: hr = h.radius
+					elif h.has_method("get_meta") and h.has_meta("radius"): hr = h.get_meta("radius")
+
+					var tx = 0.0
+					var ty = 0.0
+					if "x" in target: tx = target.x
+					elif target.has_method("get_meta") and target.has_meta("x"): tx = target.get_meta("x")
+					if "y" in target: ty = target.y
+					elif target.has_method("get_meta") and target.has_meta("y"): ty = target.get_meta("y")
+
+					var dx = hx - tx
+					var dy = hy - ty
+					if dx*dx + dy*dy < hr*hr:
+						damage_reduction = 0.8
+						break
+
+	var original_damage = 10.0 * damage_reduction
 	if "damage" in attacker: original_damage = float(attacker.damage)
 
 	if "attack_accuracy" in attacker:
@@ -4713,6 +4748,43 @@ func execute(strategy: String, delta: float):
                             self.ball.set_meta("_chrono_slow", 0.5)
                         elif typeof(self.ball) == TYPE_DICTIONARY:
                             self.ball["_chrono_slow"] = 0.5
+                elif hazard.kind == "ice_patch":
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    if dist_sq < hazard.radius * hazard.radius:
+                        var bt = ""
+                        if self.ball.has_method("get_meta") and self.ball.has_meta("ball_type"):
+                            bt = str(self.ball.get_meta("ball_type"))
+                        elif "ball_type" in self.ball:
+                            bt = str(self.ball.ball_type)
+
+                        if bt == "snow_yeti":
+                            var base_s = 100.0
+                            if self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"):
+                                base_s = float(self.ball.get_meta("base_speed"))
+                            elif "base_speed" in self.ball:
+                                base_s = float(self.ball.base_speed)
+                            self.ball.speed = base_s * 2.0
+                            if self.ball.has_method("set_meta"):
+                                self.ball.set_meta("is_slipping", false)
+                            elif typeof(self.ball) == TYPE_DICTIONARY:
+                                self.ball["is_slipping"] = false
+                            else:
+                                self.ball.is_slipping = false
+                        else:
+                            self.ball.steering_mult = 0.0
+                            if "vx" in self.ball and "vy" in self.ball:
+                                var speed_mult = 1.5
+                                self.ball.x += self.ball.vx * delta * speed_mult
+                                self.ball.y += self.ball.vy * delta * speed_mult
+
+                            var base_s = 100.0
+                            if self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"):
+                                base_s = float(self.ball.get_meta("base_speed"))
+                            elif "base_speed" in self.ball:
+                                base_s = float(self.ball.base_speed)
+                            self.ball.speed = base_s * 1.5
                 elif hazard.kind == "singularity":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
