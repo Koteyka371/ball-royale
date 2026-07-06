@@ -9828,7 +9828,7 @@
     },
     {
       "id": "idea-569",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Collapse Event",
@@ -17365,6 +17365,23 @@
         "src/arena/decoy_barrel_trap.py",
         "src/arena/decoy_barrel_trap.gd",
         "tests/test_decoy_barrel_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1012",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Breakable Grapple Points",
+      "description": "Introduce specific grapple nodes floating in the arena that players can hook onto, but they break after one use, dropping materials.",
+      "allowed_paths": [
+        "src/ai/breakable_grapple_points.py",
+        "src/ai/breakable_grapple_points.gd",
+        "tests/test_breakable_grapple_points.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

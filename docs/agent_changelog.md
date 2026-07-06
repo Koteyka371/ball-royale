@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-569] Black Hole Collapse Event — *2026-07-06 13:03:16 UTC*
+
+When the safe zone radius becomes very small, black holes start spawning and slowly merging, pulling players towards the center.
+
+---
+
 ## [idea-617] Grappling Hook Environmental Traversal — *2026-07-06 13:00:40 UTC*
 
 Expand the magnet tether mechanic into an environmental grappling hook, allowing players to hook onto walls or specific nodes to swing across hazards quickly.
