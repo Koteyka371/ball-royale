@@ -19,6 +19,11 @@ class Perception:
         """
         perception_radius = getattr(self.ball, "perception_radius", 300.0)
 
+        has_sonar = getattr(self.ball, "sonar_ping_timer", 0.0) > 0
+        if has_sonar:
+            perception_radius = max(perception_radius, 1500.0)
+
+
         is_lunar = hasattr(self.world, "arena") and getattr(self.world.arena, "is_lunar_eclipse", False)
         if is_lunar:
             perception_radius = 999999.0
@@ -114,6 +119,8 @@ class Perception:
 
         entities = self.world.get_nearby_entities(self.ball, perception_radius)
         def intersects_smoke(ent):
+            if has_sonar:
+                return False
             ex, ey = getattr(ent, "x", 0), getattr(ent, "y", 0)
             for h in smoke_hazards:
                 hx, hy, hr = getattr(h, "x", 0), getattr(h, "y", 0), getattr(h, "radius", 0)
@@ -141,6 +148,10 @@ class Perception:
 
         for e in entities.get("enemies", []):
             if intersects_smoke(e):
+                continue
+
+            if has_sonar:
+                filtered_enemies.append(e)
                 continue
 
             # Check if enemy is revealed by flare

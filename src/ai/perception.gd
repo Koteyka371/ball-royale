@@ -13,6 +13,17 @@ func scan() -> Dictionary:
     if "perception_radius" in self.ball:
         perception_radius = self.ball.perception_radius
 
+    var has_sonar = false
+    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("sonar_ping_timer"):
+        has_sonar = float(self.ball.get_meta("sonar_ping_timer")) > 0
+    elif typeof(self.ball) == TYPE_DICTIONARY and "sonar_ping_timer" in self.ball:
+        has_sonar = float(self.ball["sonar_ping_timer"]) > 0
+    elif "sonar_ping_timer" in self.ball and self.ball.sonar_ping_timer != null:
+        has_sonar = float(self.ball.sonar_ping_timer) > 0
+
+    if has_sonar:
+        perception_radius = max(perception_radius, 1500.0)
+
     var is_lunar = false
     if self.world != null and "arena" in self.world and "is_lunar_eclipse" in self.world.arena:
         is_lunar = self.world.arena.is_lunar_eclipse
@@ -115,6 +126,7 @@ func scan() -> Dictionary:
     var entities = self.world.get_nearby_entities(self.ball, perception_radius)
 
     var intersects_smoke = func(ent):
+        if has_sonar: return false
         var ex = 0.0
         var ey = 0.0
         if "x" in ent: ex = ent.x
