@@ -775,6 +775,21 @@ class Action:
                 if self.ball.hp <= 0:
                     self.ball.alive = False
 
+
+        if getattr(self.ball, "skill_swap_timer", 0.0) > 0.0:
+            self.ball.skill_swap_timer -= delta
+            if self.ball.skill_swap_timer <= 0.0:
+                if hasattr(self.ball, "original_skill"):
+                    self.ball.skill = self.ball.original_skill
+                if hasattr(self.ball, "original_active_skill"):
+                    self.ball.active_skill = self.ball.original_active_skill
+                if hasattr(self.ball, "original_SKILL"):
+                    self.ball.SKILL = self.ball.original_SKILL
+                if hasattr(self.ball, "original_inventory"):
+                    self.ball.inventory = self.ball.original_inventory
+
+                self.ball.skill_swap_timer = 0.0
+
         if getattr(self.ball, "glitch_timer", 0.0) > 0.0:
             self.ball.glitch_timer -= delta
             if random.random() < 0.2:
@@ -6331,6 +6346,54 @@ class Action:
                                 break
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
                         self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "skill_swap_trap":
+                    import random
+                    valid_targets = []
+                    my_id = getattr(self.ball, "id", None)
+                    if hasattr(self.world, "balls"):
+                        for b in self.world.balls:
+                            if getattr(b, "id", None) != my_id and getattr(b, "alive", True) and not getattr(b, "is_decoy", False):
+                                dist = (b.x - self.ball.x)**2 + (b.y - self.ball.y)**2
+                                if dist < 22500: # 150 radius
+                                    valid_targets.append(b)
+
+                    if valid_targets:
+                        target = random.choice(valid_targets)
+
+                        # Only store originals if not already swapped
+                        if getattr(self.ball, "skill_swap_timer", 0.0) <= 0:
+                            self.ball.original_skill = getattr(self.ball, "skill", None)
+                            self.ball.original_active_skill = getattr(self.ball, "active_skill", None)
+                            self.ball.original_SKILL = getattr(self.ball, "SKILL", None)
+                            self.ball.original_inventory = getattr(self.ball, "inventory", []).copy() if hasattr(self.ball, "inventory") else []
+                        if getattr(target, "skill_swap_timer", 0.0) <= 0:
+                            target.original_skill = getattr(target, "skill", None)
+                            target.original_active_skill = getattr(target, "active_skill", None)
+                            target.original_SKILL = getattr(target, "SKILL", None)
+                            target.original_inventory = getattr(target, "inventory", []).copy() if hasattr(target, "inventory") else []
+
+
+
+                        # Swap skills
+                        self.ball.skill = target.original_skill
+                        self.ball.active_skill = target.original_active_skill
+                        self.ball.SKILL = target.original_SKILL
+                        self.ball.inventory = target.original_inventory.copy()
+
+                        target.skill = self.ball.original_skill
+                        target.active_skill = self.ball.original_active_skill
+                        target.SKILL = self.ball.original_SKILL
+                        target.inventory = self.ball.original_inventory.copy()
+
+                        # Set timers
+                        self.ball.skill_swap_timer = 10.0
+                        target.skill_swap_timer = 10.0
+
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "link_booster":

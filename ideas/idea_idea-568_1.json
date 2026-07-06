@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Trap Hazard",
+  "description": "A new trap type that spawns 3 aggressive decoys of the player who triggers it, but the decoys have 1 HP and constantly target the triggering player to create chaos and confusion."
+}

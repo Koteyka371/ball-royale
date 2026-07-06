@@ -1,0 +1,4 @@
+{
+  "title": "Shrinking Safe Zone Hazard",
+  "description": "A hazard that slowly expands and pushes players into a smaller area, dealing continuous damage to anyone outside the safe zone, similar to standard battle royale mechanics but localized to a specific room."
+}

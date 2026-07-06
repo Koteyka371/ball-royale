@@ -151,6 +151,8 @@ func generate():
             kind = "swap_trap"
         elif r < 0.25:
             kind = "lava"
+        elif r < 0.30:
+            kind = "skill_swap_trap"
         elif r < 0.34:
             kind = "hidden_mine"
         elif r < 0.35:
@@ -297,6 +299,9 @@ func generate():
         elif kind == "hidden_mine":
             radius = 15.0
             damage = 30.0
+        elif kind == "skill_swap_trap":
+            radius = 15.0
+            damage = 0.0
         elif kind == "silence_booster":
             radius = 15.0
             damage = 0.0
