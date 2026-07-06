@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-639] Obstacle Course Mode — *2026-07-06 21:34:46 UTC*
+
+A survival mode where players must navigate an increasingly difficult obstacle course filled with moving lasers, rotating bumpers, and collapsing floors.
+
+---
+
 ## [idea-589] Weather Predictor Booster — *2026-07-06 21:20:55 UTC*
 
 A new booster that spawns occasionally. Collecting it gives the player a 10-second warning before the weather changes and grants them temporary immunity to negative weather effects (like slow movement in mud/snow or lightning strikes in thunderstorms) for the first 15 seconds of the new weather phase.

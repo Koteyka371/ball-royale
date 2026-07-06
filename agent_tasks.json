@@ -11020,7 +11020,7 @@
     },
     {
       "id": "idea-639",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Obstacle Course Mode",
@@ -18147,6 +18147,23 @@
         "src/ai/quantum_teleportation_booster.py",
         "src/ai/quantum_teleportation_booster.gd",
         "tests/test_quantum_teleportation_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1058",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tornado Core Booster",
+      "description": "A booster that allows the player to briefly become a mini-tornado, ignoring mud slows and pulling enemies toward them.",
+      "allowed_paths": [
+        "src/ai/tornado_core_booster.py",
+        "src/ai/tornado_core_booster.gd",
+        "tests/test_tornado_core_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
