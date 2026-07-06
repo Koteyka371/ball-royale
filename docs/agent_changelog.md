@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-637] Tornado Hazard Event — *2026-07-06 19:52:34 UTC*
+
+Periodically spawn a Tornado hazard that roams around the arena and pulls nearby balls toward it, dealing damage over time.
+
+---
+
 ## [idea-635] Weather Mastery Mode — *2026-07-06 19:26:18 UTC*
 
 A new game mode where the arena dynamically cycles through extreme weather events every 15 seconds. Players must collect specific weather-resistant boosters to survive the changing environments, encouraging mobility and map control.

@@ -10986,7 +10986,7 @@
     },
     {
       "id": "idea-637",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Tornado Hazard Event",
@@ -17960,6 +17960,40 @@
         "src/ai/starlight_celestial_boss.py",
         "src/ai/starlight_celestial_boss.gd",
         "tests/test_starlight_celestial_boss.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1047",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Well Arena",
+      "description": "An arena with a massive gravity well in the center that slowly pulls everything towards it, requiring players to constantly fight the pull or use it for slingshot maneuvers.",
+      "allowed_paths": [
+        "src/arena/gravity_well_arena.py",
+        "src/arena/gravity_well_arena.gd",
+        "tests/test_gravity_well_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1048",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "EMP Pulse Item",
+      "description": "A new active item that disables the abilities and HUD of nearby enemies for a short duration when triggered, allowing for tactical ambushes.",
+      "allowed_paths": [
+        "src/ai/emp_pulse_item.py",
+        "src/ai/emp_pulse_item.gd",
+        "tests/test_emp_pulse_item.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
