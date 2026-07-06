@@ -227,10 +227,10 @@
     "agent-28": {
       "name": "Jules Worker 28",
       "area": "tests",
-      "status": "working",
-      "task_id": "idea-651",
-      "started_at": "2026-07-06T21:42:59.098083+00:00",
-      "cycles_today": 5
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 4
     },
     "agent-29": {
       "name": "Jules Worker 29",
