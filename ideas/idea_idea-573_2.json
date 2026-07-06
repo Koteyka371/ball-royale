@@ -1,0 +1,4 @@
+{
+  "title": "Kinetic Energy Shields",
+  "description": "Add a new booster 'kinetic_shield' that absorbs physical impacts from hazards (like bumpers or moving walls) and converts a percentage of the blocked knockback force into movement speed or temporary HP shielding, incentivizing players to intentionally crash into high-impact elements for offensive bursts."
+}

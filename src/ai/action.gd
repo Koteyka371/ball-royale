@@ -6474,6 +6474,72 @@ func execute(strategy: String, delta: float):
                             b_rad = self.ball.radius
 
                         if d < (b_rad + hazard.radius):
+                            var bvx = 0.0
+                            if "vx" in self.ball:
+                                bvx = self.ball.vx
+                            elif self.ball.has_method("has_meta") and self.ball.has_meta("vx"):
+                                bvx = self.ball.get_meta("vx")
+
+                            var bvy = 0.0
+                            if "vy" in self.ball:
+                                bvy = self.ball.vy
+                            elif self.ball.has_method("has_meta") and self.ball.has_meta("vy"):
+                                bvy = self.ball.get_meta("vy")
+
+                            var speed = sqrt(bvx * bvx + bvy * bvy)
+                            if speed > 500.0:
+                                if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"):
+                                    hazard.set_meta("duration", 0.0)
+                                if "duration" in hazard:
+                                    hazard.duration = 0.0
+
+                                if self.world != null and "events" in self.world:
+                                    self.world.events.append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': hazard.x, 'y': hazard.y, 'radius': 100.0, 'color': 'orange'}})
+
+                                var b_list = []
+                                if self.world != null and "balls" in self.world:
+                                    b_list = self.world.balls
+                                elif self.world != null and "entities" in self.world:
+                                    b_list = self.world.entities
+
+                                for b in b_list:
+                                    var is_alive = false
+                                    if "alive" in b:
+                                        is_alive = b.alive
+                                    elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive"):
+                                        is_alive = b.get_meta("alive")
+
+                                    var b_type = ""
+                                    if "ball_type" in b:
+                                        b_type = b.ball_type
+                                    elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("ball_type"):
+                                        b_type = b.get_meta("ball_type")
+
+                                    if is_alive and b_type != "spectator":
+                                        var b_x = b.x if "x" in b else (b.get_meta("x") if b.has_method("get_meta") else 0)
+                                        var b_y = b.y if "y" in b else (b.get_meta("y") if b.has_method("get_meta") else 0)
+
+                                        var h_dx = b_x - hazard.x
+                                        var h_dy = b_y - hazard.y
+                                        var dist = sqrt(h_dx*h_dx + h_dy*h_dy)
+
+                                        if dist <= 100.0:
+                                            if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+                                                b.take_damage(30.0)
+                                            else:
+                                                var b_hp = 0.0
+                                                if "hp" in b:
+                                                    b_hp = b.hp
+                                                    b.hp = b_hp - 30.0
+                                                    if b.hp <= 0:
+                                                        b.alive = false
+                                                elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("hp"):
+                                                    b_hp = b.get_meta("hp")
+                                                    b.set_meta("hp", b_hp - 30.0)
+                                                    if (b_hp - 30.0) <= 0:
+                                                        b.set_meta("alive", false)
+                                continue
+
                             var nx = dx / d
                             var ny = dy / d
 

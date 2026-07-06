@@ -431,6 +431,103 @@ def test_time_stop_freeze():
     assert h1.frozen_timer == 2.0
 
 
+def test_bumper_detonation():
+    from ai.action import Action
+
+    class MockBall:
+        def __init__(self, id, x, y):
+            self.id = id
+            self.x = x
+            self.y = y
+            self.vx = 0.0
+            self.vy = 0.0
+            self.hp = 100.0
+            self.max_hp = 100.0
+            self.radius = 10.0
+            self.alive = True
+            self.team = "team1"
+            self.ball_type = "easy"
+            self.speed = 100.0
+            self.base_speed = 100.0
+            self.damage = 10.0
+            self.base_damage = 10.0
+            self.perception_radius = 200.0
+            self.state = "idle"
+            self.cooldowns = {}
+            self.active_skills = {}
+            self.inventory = []
+
+        def take_damage(self, amount):
+            self.hp -= amount
+            if self.hp <= 0:
+                self.alive = False
+
+    class MockHazard:
+        def __init__(self, x, y):
+            self.x = x
+            self.y = y
+            self.radius = 30.0
+            self.damage = 0.0
+            self.kind = "bumper"
+            self.duration = 1.0
+            self.id = 1
+
+    class MockArena:
+        def __init__(self, hazard):
+            self.hazards = [hazard]
+            self.items = []
+            self.modifier_zones = []
+            self.width = 1000
+            self.height = 1000
+            self.update_zone = lambda *args: None
+            self.clamp_position = lambda *args: (0, 0, False)
+
+    class MockGameMode:
+        pass
+
+    class MockWorld:
+        def __init__(self, arena, balls):
+            self.arena = arena
+            self.balls = balls
+            self.game_mode = MockGameMode()
+            self.events = []
+            self.tick = 1
+            self.boosters = []
+
+        def get_nearby_entities(self, ball, radius):
+            return {"enemies": [], "allies": []}
+
+    # Setup
+    fast_ball = MockBall(1, 40.0, 50.0) # dx = -10, dy = 0, dist = 10, dist < b_rad(10) + h_rad(10) = 20
+    fast_ball.vx = 600.0 # High speed
+    fast_ball.vy = 0.0
+
+    bystander_ball = MockBall(2, 60.0, 50.0) # Very close to bumper
+    far_ball = MockBall(3, 200.0, 50.0) # Out of blast radius
+
+    bumper = MockHazard(50.0, 50.0)
+    bumper.radius = 10.0
+
+    arena = MockArena(bumper)
+    world = MockWorld(arena, [fast_ball, bystander_ball, far_ball])
+
+    action = Action(fast_ball, world)
+    action._process_physics = lambda delta: None # Mock out physics
+
+    # Execute
+    action.execute("none", 0.016)
+
+    # Assertions
+    assert bumper.duration == 0.0 # Bumper should be destroyed
+
+    # Check visual effect
+    assert any(e.get("type") == "visual_effect" and e.get("data", {}).get("type") == "explosion" for e in world.events)
+
+    # Check damage
+    assert bystander_ball.hp == 70.0 # bystander took 30 damage
+    assert fast_ball.hp == 70.0 # fast ball also within 100 range of bumper
+    assert far_ball.hp == 100.0 # far ball untouched
+
 def test_bumper_hazard():
     from ai.action import Action
 

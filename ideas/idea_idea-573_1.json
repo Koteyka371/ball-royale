@@ -1,0 +1,4 @@
+{
+  "title": "Magnetic Bumpers",
+  "description": "Introduce a new 'magnetic_bumper' hazard variant that slightly attracts balls moving slowly nearby towards it, but aggressively repels them once they make contact. This would create gravity-well-like traps that fling unwary players into other hazards or force them to burn skills to escape the pull."
+}

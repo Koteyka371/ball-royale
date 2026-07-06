@@ -3877,6 +3877,27 @@ class Action:
                             b_rad = getattr(self.ball, "radius", 10.0)
 
                             if dist < (b_rad + getattr(hazard, "radius", 10.0)):
+                                bvx = getattr(self.ball, "vx", 0.0)
+                                bvy = getattr(self.ball, "vy", 0.0)
+                                speed = math.hypot(bvx, bvy)
+
+                                if speed > 500.0:
+                                    hazard.duration = 0.0
+
+                                    if hasattr(self.world, "events"):
+                                        self.world.events.append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': hazard.x, 'y': hazard.y, 'radius': 100.0, 'color': 'orange'}})
+
+                                    for b in getattr(self.world, "balls", []):
+                                        if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                                            if math.hypot(b.x - hazard.x, b.y - hazard.y) <= 100.0:
+                                                if hasattr(b, "take_damage"):
+                                                    b.take_damage(30.0)
+                                                else:
+                                                    b.hp -= 30.0
+                                                    if b.hp <= 0:
+                                                        b.alive = False
+                                    continue
+
                                 # Normalize direction
                                 nx = dx / dist
                                 ny = dy / dist
