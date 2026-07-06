@@ -280,8 +280,24 @@ class Action:
                                         if other.hp <= 0:
                                             other.alive = False
             else:
+                old_dmg = getattr(attacker, "damage", original_damage)
+                is_on_ice = False
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    for hazard in self.world.arena.hazards:
+                        if getattr(hazard, "kind", "") == "ice_patch":
+                            dx = hazard.x - getattr(target, "x", 0)
+                            dy = hazard.y - getattr(target, "y", 0)
+                            if dx*dx + dy*dy < hazard.radius*hazard.radius:
+                                is_on_ice = True
+                                break
+                if is_on_ice:
+                    attacker.damage = old_dmg * 0.8
+
                 if hasattr(self.world, "_deal_damage"):
                     self.world._deal_damage(attacker, target)
+
+                if is_on_ice:
+                    attacker.damage = old_dmg
 
             if getattr(attacker, "leech_booster_timer", 0.0) > 0:
                 target.leech_seed_timer = 5.0
@@ -2601,6 +2617,7 @@ class Action:
 
                                 # Decrease turning capability by essentially locking in movement
                                 self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 1.5
+                                self.ball.is_frictionless = True
                                 if not hasattr(self.ball, "is_slipping"):
                                     self.ball.is_slipping = True
 

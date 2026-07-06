@@ -483,8 +483,39 @@ func _attempt_damage(attacker, target) -> void:
 										if "alive" in other: other.alive = false
 										elif other.has_method("set_meta"): other.set_meta("alive", false)
 		else:
+			var old_dmg_norm = original_damage
+			if "damage" in attacker: old_dmg_norm = float(attacker.damage)
+			var is_on_ice = false
+			if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+				var target_x = 0.0
+				if "x" in target: target_x = float(target.x)
+				var target_y = 0.0
+				if "y" in target: target_y = float(target.y)
+				for hazard in self.world.arena.hazards:
+					var h_kind = ""
+					if "kind" in hazard: h_kind = str(hazard.kind)
+					elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = str(hazard.get_meta("kind"))
+					if h_kind == "ice_patch":
+						var h_x = 0.0
+						if "x" in hazard: h_x = float(hazard.x)
+						var h_y = 0.0
+						if "y" in hazard: h_y = float(hazard.y)
+						var h_r = 0.0
+						if "radius" in hazard: h_r = float(hazard.radius)
+						var dx = h_x - target_x
+						var dy = h_y - target_y
+						if dx*dx + dy*dy < h_r*h_r:
+							is_on_ice = true
+							break
+
+			if is_on_ice and "damage" in attacker:
+				attacker.damage = old_dmg_norm * 0.8
+
 			if self.world != null and self.world.has_method("_deal_damage"):
 				self.world._deal_damage(attacker, target)
+
+			if is_on_ice and "damage" in attacker:
+				attacker.damage = old_dmg_norm
 
 		var leech_timer = 0.0
 		if "leech_booster_timer" in attacker: leech_timer = float(attacker.leech_booster_timer)
@@ -4493,6 +4524,10 @@ func execute(strategy: String, delta: float):
                             base_s = self.ball.base_speed
 
                         self.ball.speed = base_s * 1.5
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            self.ball["is_frictionless"] = true
+                        elif self.ball.has_method("set_meta"):
+                            self.ball.set_meta("is_frictionless", true)
                         if self.ball.has_method("set_meta"):
                             self.ball.set_meta("is_slipping", true)
 
