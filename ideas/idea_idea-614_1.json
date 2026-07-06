@@ -1,4 +1,4 @@
 {
-  "title": "Mimic Ball (AI Type)",
-  "description": "An AI type that perfectly mimics the visual appearance (color, name, even team tag) of the player or another AI for a short duration to get close, before reverting and exploding or attacking at point-blank range."
+  "title": "Decoy Booster Trap",
+  "description": "Introduce a new 'decoy booster' hazard that looks exactly like a high-value booster (like speed or damage). When a player tries to collect it, it explodes into a cluster of temporary mini-bombs, dealing damage and pushing players away instead of providing a buff."
 }

@@ -1,4 +1,4 @@
 {
-  "title": "Magnetic Minefield",
-  "description": "A hazard zone where proximity mines are strongly attracted to nearby moving entities (players and AI alike). If you move quickly through it, they pull towards you; if you move slowly, their tracking distance is significantly reduced."
+  "title": "Mimic Booster Box",
+  "description": "Add a new 'mimic' entity that disguises itself as a normal booster drop. When a player gets within collection range, the mimic reveals its true form and actively chases the player for a short duration, dealing continuous bite damage on contact."
 }

@@ -155,6 +155,8 @@ func generate():
             kind = "hidden_mine"
         elif r < 0.35:
             kind = "fake_booster"
+        elif r < 0.37:
+            kind = "cursed_booster"
         elif r < 0.4:
             kind = "decoy_item"
         elif r < 0.42:
