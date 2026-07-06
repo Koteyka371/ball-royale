@@ -10629,7 +10629,7 @@
     },
     {
       "id": "idea-616",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Laser Fence Hazards",
@@ -17484,6 +17484,40 @@
         "src/arena/kinetic_rebound.py",
         "src/arena/kinetic_rebound.gd",
         "tests/test_kinetic_rebound.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1019",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Slingshot Arena Hazards",
+      "description": "Elastic bands or physical slingshots placed around the edge of the arena. When a ball hits them with high velocity, they get launched back towards the center with massively increased speed, turning them into deadly projectiles for a short duration.",
+      "allowed_paths": [
+        "src/arena/slingshot_arena_hazards.py",
+        "src/arena/slingshot_arena_hazards.gd",
+        "tests/test_slingshot_arena_hazards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1020",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Collapses",
+      "description": "Instead of a single stationary black hole, smaller temporary gravity wells spawn around the map and 'collapse' after a few seconds, exploding outwards and dealing damage while launching balls that were pulled in.",
+      "allowed_paths": [
+        "src/ai/black_hole_collapses.py",
+        "src/ai/black_hole_collapses.gd",
+        "tests/test_black_hole_collapses.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

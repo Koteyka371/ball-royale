@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-616] Laser Fence Hazards — *2026-07-06 13:31:16 UTC*
+
+Add placeable laser fences that link together between nodes. Passing through the laser deals high damage and applies a short slow effect, encouraging positional counterplay.
+
+---
+
 ## [idea-621] Gravity Inversion Modifier — *2026-07-06 13:29:18 UTC*
 
 A random arena event that periodically reverses gravity, sending all balls bouncing towards the center instead of outwards.
