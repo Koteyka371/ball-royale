@@ -1,0 +1,4 @@
+{
+  "title": "Mimic Ball (AI Type)",
+  "description": "An AI type that perfectly mimics the visual appearance (color, name, even team tag) of the player or another AI for a short duration to get close, before reverting and exploding or attacking at point-blank range."
+}

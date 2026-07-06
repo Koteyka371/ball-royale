@@ -1,0 +1,4 @@
+{
+  "title": "Magnetic Minefield",
+  "description": "A hazard zone where proximity mines are strongly attracted to nearby moving entities (players and AI alike). If you move quickly through it, they pull towards you; if you move slowly, their tracking distance is significantly reduced."
+}
