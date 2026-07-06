@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-386] Dynamic Map Flooding — *2026-07-06 15:42:54 UTC*
+
+During prolonged 'rain' weather events, low areas of the arena could slowly flood, creating water hazards that drastically slow non-aquatic or non-floating entities.
+
+---
+
 ## [idea-623] Shrinking Safe Zone based on Player Proximity — *2026-07-06 13:53:55 UTC*
 
 Instead of purely time-based shrinking, the safe zone shrinks faster if multiple players are camping inside it, forcing them to fight or move out.

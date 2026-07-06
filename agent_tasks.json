@@ -6678,7 +6678,7 @@
     },
     {
       "id": "idea-386",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Dynamic Map Flooding",
@@ -17552,6 +17552,40 @@
         "src/ai/magnetic_minefield.py",
         "src/ai/magnetic_minefield.gd",
         "tests/test_magnetic_minefield.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1023",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Flare Gadget",
+      "description": "A new gadget that creates a flare that functions like a decoy. It continuously pings on radar systems, attracting heat-seeking projectiles and certain AI behaviors, while slightly illuminating a small area for players using stealth.",
+      "allowed_paths": [
+        "src/ai/decoy_flare_gadget.py",
+        "src/ai/decoy_flare_gadget.gd",
+        "tests/test_decoy_flare_gadget.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1024",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirage Hazard",
+      "description": "A procedural hazard that looks like an active Safe Zone or high-tier loot crate from a distance but dissipates upon entering, sometimes revealing a trap (like a snare or minor explosion).",
+      "allowed_paths": [
+        "src/arena/mirage.py",
+        "src/arena/mirage.gd",
+        "tests/test_mirage.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
