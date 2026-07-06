@@ -3821,6 +3821,19 @@ class Action:
                                         self._spawn_skill_particles("lightning")
 
                             continue
+                        elif hazard.kind == "lightning":
+                            if not hasattr(hazard, "hit_ids"):
+                                hazard.hit_ids = []
+                            if self.ball.id not in hazard.hit_ids:
+                                hazard.hit_ids.append(self.ball.id)
+                                if hasattr(self.ball, "take_damage"):
+                                    self.ball.take_damage(hazard.damage)
+                                elif hasattr(self.ball, "hp"):
+                                    self.ball.hp -= hazard.damage
+                                    if self.ball.hp <= 0:
+                                        self.ball.alive = False
+                                self.ball.stutter_timer = max(getattr(self.ball, "stutter_timer", 0.0), 2.0)
+                            continue
                         elif hazard.kind == "lightning_strike":
                             if not getattr(hazard, "hit_targets", False):
                                 hazard.hit_targets = True
@@ -5358,7 +5371,10 @@ class Action:
                             target_mem = getattr(target, "memory", {})
                             target_mem[self.ball.id] = {"relation": "rival"}
                             target.memory = target_mem
-                        self.ball.attack_timer = max(0.2, 2.0 / getattr(self.ball, "speed", 2.0))
+                        safe_speed = getattr(self.ball, "speed", 2.0)
+                        if safe_speed <= 0:
+                            safe_speed = 2.0
+                        self.ball.attack_timer = max(0.2, 2.0 / safe_speed)
                         if self.ball.attack_timer >= 0.8:
                             self.ball.stutter_timer = min(self.ball.attack_timer * 0.4, 0.4)
                 return

@@ -1,0 +1,4 @@
+{
+  "title": "Weather Controller Ball Type",
+  "description": "A new ball type that can manipulate the arena weather for a short duration. It can summon small localized rain clouds that slow down enemies and periodically strike them with minor lightning bolts, while providing a speed boost to allies."
+}

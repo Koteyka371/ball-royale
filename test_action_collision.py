@@ -49,6 +49,7 @@ class MockHazard:
         self.x = x
         self.y = y
         self.radius = 40
+        self.damage = 10.0
 
 w = MockWorld()
 b1 = MockBall(0, 0, "A")

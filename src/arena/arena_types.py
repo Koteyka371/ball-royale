@@ -1397,24 +1397,34 @@ class ThunderstormArena(ProceduralArena):
         if self.lightning_timer >= self.strike_interval:
             self.lightning_timer = 0.0
             import random
-            # Spawn lightning strike
+            # Spawn lightning warning
             x = random.uniform(50, self.width - 50)
             y = random.uniform(50, self.height - 50)
             h_id = 9000 + len(self.hazards) + random.randint(0, 1000)
-            lightning = Hazard(id=h_id, x=x, y=y, radius=60.0, kind="lightning", damage=300.0)
-            lightning.target_radius = 60.0
-            setattr(lightning, "duration", 0.5)  # Very short duration
-            self.hazards.append(lightning)
+            warning = Hazard(id=h_id, x=x, y=y, radius=60.0, kind="lightning_warning", damage=0.0)
+            warning.target_radius = 60.0
+            setattr(warning, "duration", 1.0)
+            self.hazards.append(warning)
 
-        # Clean up expired lightning
+        # Clean up expired lightning and transition warnings
         surviving_hazards = []
         for h in self.hazards:
-            if getattr(h, "kind", "") == "lightning":
+            kind = getattr(h, "kind", "")
+            if kind == "lightning":
                 duration = getattr(h, "duration", 0.0)
                 duration -= delta
                 setattr(h, "duration", duration)
                 if duration > 0:
                     surviving_hazards.append(h)
+            elif kind == "lightning_warning":
+                duration = getattr(h, "duration", 0.0)
+                duration -= delta
+                setattr(h, "duration", duration)
+                if duration <= 0:
+                    setattr(h, "kind", "lightning")
+                    setattr(h, "duration", 0.5)
+                    setattr(h, "damage", 300.0)
+                surviving_hazards.append(h)
             else:
                 surviving_hazards.append(h)
         self.hazards = surviving_hazards

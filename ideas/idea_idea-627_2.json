@@ -1,0 +1,4 @@
+{
+  "title": "Lightning Rod Booster",
+  "description": "An equipable item/booster that temporarily gives a ball the 'lightning_rod' trait. When equipped, it attracts all lightning strikes to the player but prevents damage and instead grants a significant supercharge buff, allowing strategic plays during Thunderstorm matches."
+}

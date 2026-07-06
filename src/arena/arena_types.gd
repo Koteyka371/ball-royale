@@ -562,10 +562,10 @@ class ThunderstormArena extends ProceduralArena:
 			var x = randf_range(50.0, width - 50.0)
 			var y = randf_range(50.0, height - 50.0)
 			var h_id = 9000 + hazards.size() + (randi() % 1000)
-			var lightning = ProceduralArena.Hazard.new(h_id, x, y, 60.0, "lightning", 300.0)
-			lightning.set_meta("target_radius", 60.0)
-			lightning.set_meta("duration", 0.5)
-			hazards.append(lightning)
+			var warning = ProceduralArena.Hazard.new(h_id, x, y, 60.0, "lightning_warning", 0.0)
+			warning.set_meta("target_radius", 60.0)
+			warning.set_meta("duration", 1.0)
+			hazards.append(warning)
 
 		var surviving_hazards = []
 		for h in hazards:
@@ -575,6 +575,15 @@ class ThunderstormArena extends ProceduralArena:
 				h.set_meta("duration", duration)
 				if duration > 0:
 					surviving_hazards.append(h)
+			elif h.kind == "lightning_warning":
+				var duration = h.get_meta("duration", 0.0)
+				duration -= delta
+				h.set_meta("duration", duration)
+				if duration <= 0:
+					h.kind = "lightning"
+					h.set_meta("duration", 0.5)
+					h.damage = 300.0
+				surviving_hazards.append(h)
 			else:
 				surviving_hazards.append(h)
 		hazards = surviving_hazards

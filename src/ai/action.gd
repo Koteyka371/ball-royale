@@ -6369,6 +6369,34 @@ func execute(strategy: String, delta: float):
                                 pass
                             else:
                                 self.ball.confusion_timer = 3.0
+                    elif hazard.kind == "lightning":
+                        var hit_ids = []
+                        if hazard.has_meta("hit_ids"):
+                            hit_ids = hazard.get_meta("hit_ids")
+
+                        var b_id = null
+                        if "id" in self.ball:
+                            b_id = self.ball.id
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("id"):
+                            b_id = self.ball.get_meta("id")
+
+                        if b_id != null and not (b_id in hit_ids):
+                            hit_ids.append(b_id)
+                            hazard.set_meta("hit_ids", hit_ids)
+                            if self.ball.has_method("take_damage"):
+                                self.ball.take_damage(hazard.damage)
+                            elif "hp" in self.ball:
+                                self.ball.hp -= hazard.damage
+                                if self.ball.hp <= 0:
+                                    self.ball.alive = false
+
+                            var current_stutter = 0.0
+                            if "stutter_timer" in self.ball:
+                                current_stutter = self.ball.stutter_timer
+                            elif self.ball.has_method("has_meta") and self.ball.has_meta("stutter_timer"):
+                                current_stutter = self.ball.get_meta("stutter_timer")
+                            self.ball.stutter_timer = max(current_stutter, 2.0)
+                        continue
                     elif hazard.kind == "lightning_strike":
                         if not hazard.has_meta("hit_targets") or not hazard.get_meta("hit_targets"):
                             hazard.set_meta("hit_targets", true)

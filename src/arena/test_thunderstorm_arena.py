@@ -17,6 +17,15 @@ def test_thunderstorm_arena_spawns_lightning():
     # Tick past interval
     arena.update_zone(current_tick=2, delta=0.2)
 
+    # Initially it spawns a warning
+    warnings = [h for h in arena.hazards if getattr(h, "kind", "") == "lightning_warning"]
+    assert len(warnings) > 0
+    assert warnings[-1].damage == 0.0
+    assert getattr(warnings[-1], "duration", None) > 0
+
+    # Tick past the warning duration
+    arena.update_zone(current_tick=3, delta=1.5)
+
     # Verify the new hazard is lightning
     lightning = [h for h in arena.hazards if getattr(h, "kind", "") == "lightning"]
     assert len(lightning) > lightning_hazards
