@@ -43,6 +43,8 @@ class MockBall:
         self.pull_immune_timer = 0
 
 class MockHazard:
+    damage = 10
+
     def __init__(self, x, y, team):
         self.kind = "energy_barrier"
         self.team = team

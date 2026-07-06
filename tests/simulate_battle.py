@@ -18,6 +18,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../s
 
 from ai.ball_brain import BallBrain # type: ignore
 from ai.neural_network_brain import NeuralNetworkBrain # type: ignore
+from ai.ball_types_chaos_lord import ChaosLord
+
 from arena.arena_types import get_arena # type: ignore
 
 
@@ -97,7 +99,8 @@ BALL_TYPES = {
               "skill": "random", "skill_cooldown": 2.0},
     "hard": {"hp": 150, "speed": 3.5, "damage": 20, "radius": 11,
              "perception_radius": 300, "aggression": 0.8, "color": "darkred",
-             "skill": "perfect_strike", "skill_cooldown": 4.0}
+             "skill": "perfect_strike", "skill_cooldown": 4.0},
+    "chaos_lord": {"hp": 120, "speed": 5.0, "damage": 15, "radius": 10, "perception_radius": 300, "aggression": 0.5, "color": "black", "skill": "global_confusion", "skill_cooldown": 20.0}
 }
 
 import json  # noqa: E402

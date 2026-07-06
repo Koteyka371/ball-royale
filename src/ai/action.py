@@ -6968,6 +6968,41 @@ class Action:
                         clone.skill_timer = 9999.0
 
                         self.world.balls.append(clone)
+
+            elif skill_name == "global_confusion":
+                import copy
+                import math
+                import random
+                if hasattr(self.world, "balls"):
+                    for ball in list(self.world.balls):
+                        if not getattr(ball, "alive", True):
+                            continue
+                        if getattr(ball, "is_decoy", False) or getattr(ball, "is_illusion", False) or getattr(ball, "is_active_clone", False):
+                            continue
+
+                        clone = copy.copy(ball)
+                        clone.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                        if hasattr(self.world, "next_id"):
+                            self.world.next_id += 1
+
+                        clone.hp = getattr(ball, "max_hp", 100) * 0.1
+                        clone.max_hp = clone.hp
+                        clone.damage = getattr(ball, "damage", 10) * 0.1
+
+                        clone.is_active_clone = True
+                        clone.is_illusion = True
+                        clone.illusion_timer = 15.0
+
+                        clone.x += 15.0
+                        clone.y += 15.0
+
+                        clone.skill_timer = 9999.0
+                        clone.skill = None
+                        clone.SKILL = None
+                        if hasattr(clone, "active_skill"):
+                            clone.active_skill = None
+
+                        self.world.balls.append(clone)
             elif skill_name == "mass_illusion":
                 import copy
                 import math

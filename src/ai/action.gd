@@ -11817,6 +11817,76 @@ func _use_skill():
                             clone["skill_timer"] = 9999.0
 
                         self.world.balls.append(clone)
+
+        elif skill_name == "global_confusion":
+            if "balls" in self.world:
+                var original_balls = []
+                for b in self.world.balls:
+                    original_balls.append(b)
+
+                for b in original_balls:
+                    var is_alive = true
+                    if "alive" in b: is_alive = b.alive
+                    elif b is Dictionary and b.has("alive"): is_alive = b["alive"]
+                    if not is_alive: continue
+
+                    var is_clone = false
+                    if typeof(b) == TYPE_OBJECT and b.has_method("has_meta"):
+                        if b.has_meta("is_decoy") and b.get_meta("is_decoy"): is_clone = true
+                        if b.has_meta("is_illusion") and b.get_meta("is_illusion"): is_clone = true
+                        if b.has_meta("is_active_clone") and b.get_meta("is_active_clone"): is_clone = true
+                    elif b is Dictionary:
+                        if b.has("is_decoy") and b["is_decoy"]: is_clone = true
+                        if b.has("is_illusion") and b["is_illusion"]: is_clone = true
+                        if b.has("is_active_clone") and b["is_active_clone"]: is_clone = true
+
+                    if is_clone: continue
+
+                    var clone = null
+                    if typeof(b) == TYPE_OBJECT and b.has_method("duplicate"):
+                        clone = b.duplicate()
+                    elif b is Dictionary:
+                        clone = b.duplicate()
+
+                    if clone != null:
+                        var next_id = randi() % 90000 + 10000
+                        if "next_id" in self.world:
+                            next_id = self.world.next_id
+                            self.world.next_id += 1
+
+                        if "id" in clone: clone.id = next_id
+
+                        var mhp = 100.0
+                        if "max_hp" in b: mhp = b.max_hp
+                        elif b is Dictionary and b.has("max_hp"): mhp = b["max_hp"]
+
+                        if "hp" in clone and "max_hp" in clone:
+                            clone.max_hp = mhp * 0.1
+                            clone.hp = clone.max_hp
+
+                        if "damage" in clone:
+                            var dam = 10.0
+                            if "damage" in b: dam = b.damage
+                            elif b is Dictionary and b.has("damage"): dam = b["damage"]
+                            clone.damage = dam * 0.1
+
+                        if "x" in clone: clone.x += 15.0
+                        if "y" in clone: clone.y += 15.0
+
+                        if "skill" in clone: clone.skill = ""
+                        if "SKILL" in clone: clone.SKILL = ""
+                        if "skill_timer" in clone: clone.skill_timer = 9999.0
+
+                        if typeof(clone) == TYPE_OBJECT and clone.has_method("set_meta"):
+                            clone.set_meta("is_illusion", true)
+                            clone.set_meta("is_active_clone", true)
+                            clone.set_meta("illusion_timer", 15.0)
+                        elif clone is Dictionary:
+                            clone["is_illusion"] = true
+                            clone["is_active_clone"] = true
+                            clone["illusion_timer"] = 15.0
+
+                        self.world.balls.append(clone)
         elif skill_name == "mass_illusion":
             if "balls" in self.world:
                 for i in range(3):
