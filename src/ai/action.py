@@ -2234,6 +2234,50 @@ class Action:
 
 
 
+                    elif hazard.kind == "laser_tripwire":
+                        if getattr(hazard, "active", True) and getattr(hazard, "team", "") != getattr(self.ball, "team", ""):
+                            # Line segment distance
+                            x1, y1 = getattr(hazard, "start_x", hazard.x), getattr(hazard, "start_y", hazard.y)
+                            x2, y2 = getattr(hazard, "end_x", hazard.x), getattr(hazard, "end_y", hazard.y)
+                            px, py = self.ball.x, self.ball.y
+
+                            l2 = (x1 - x2)**2 + (y1 - y2)**2
+                            if l2 == 0:
+                                dist = math.hypot(px - x1, py - y1)
+                            else:
+                                t = max(0, min(1, ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / l2))
+                                proj_x = x1 + t * (x2 - x1)
+                                proj_y = y1 + t * (y2 - y1)
+                                dist = math.hypot(px - proj_x, py - proj_y)
+
+                            if dist < self.ball.radius:
+                                b_id = getattr(self.ball, "id", None)
+                                hit_ids = getattr(hazard, "hit_ids", [])
+                                if b_id not in hit_ids:
+                                    # Deal damage and stun
+                                    hazard.hit_ids.append(b_id)
+                                    hazard_damage = getattr(hazard, "damage", 30.0)
+
+                                    # Simple damage logic if _deal_damage isn't trivially applicable here, but we can do inline damage
+                                    if getattr(self.ball, "reflect_shield_active", False):
+                                        capacity = getattr(self.ball, "reflect_shield_capacity", 50.0)
+                                        damage_to_reflect = min(capacity, hazard_damage)
+                                        capacity -= hazard_damage
+                                        if capacity <= 0:
+                                            self.ball.reflect_shield_active = False
+                                            self.ball.reflect_shield_capacity = 0.0
+                                        else:
+                                            self.ball.reflect_shield_capacity = capacity
+                                    else:
+                                        mitigation = getattr(self.ball, "damage_mitigation", 0.0)
+                                        self.ball.hp -= hazard_damage * (1.0 - mitigation)
+
+                                    # Stun
+                                    self.ball.stun_timer = max(getattr(self.ball, "stun_timer", 0.0), 2.0)
+
+                                    if hasattr(self.world, "add_event"):
+                                        self.world.add_event("stun", {"id": b_id, "duration": 2.0})
+
                     elif hazard.kind == "switch":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
@@ -7072,6 +7116,52 @@ class Action:
                         self.world.arena.rooms.append(new_room)
                     except ImportError:
                         pass
+
+            elif skill_name == "laser_tripwire":
+                enemies = self._get_enemies()
+                target = None
+                if enemies:
+                    target = sorted(enemies, key=lambda b: (b.x - self.ball.x)**2 + (b.y - self.ball.y)**2)[0]
+
+                if target:
+                    # Place toward nearest enemy
+                    dx = target.x - self.ball.x
+                    dy = target.y - self.ball.y
+                    dist = math.hypot(dx, dy)
+                    if dist == 0:
+                        nx, ny = 1, 0
+                    else:
+                        nx, ny = dx / dist, dy / dist
+                    end_x = self.ball.x + nx * 300.0
+                    end_y = self.ball.y + ny * 300.0
+                else:
+                    # Just place horizontally
+                    end_x = self.ball.x + 300.0
+                    end_y = self.ball.y
+
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    from arena.procedural_arena import Hazard
+                    # We can use Hazard object or just an object with correct properties
+                    # We will create a local class if Hazard is not available, but Hazard is already imported above in _use_skill usually, actually no, let's just make a mock object.
+                    class LaserTripwireNode:
+                        pass
+                    node = LaserTripwireNode()
+                    node.id = f"tripwire_{self.ball.id}_{self.world.tick}"
+                    node.kind = "laser_tripwire"
+                    node.x = self.ball.x # Start node pos (needed for basic hazard logic)
+                    node.y = self.ball.y
+                    node.radius = 10.0 # Bounding radius could be midpoint + length/2, but we'll do line distance anyway
+                    node.damage = 30.0
+                    node.start_x = self.ball.x
+                    node.start_y = self.ball.y
+                    node.end_x = end_x
+                    node.end_y = end_y
+                    node.team = getattr(self.ball, "team", "")
+                    node.timer = 15.0
+                    node.active = True
+                    node.hit_ids = []
+                    self.world.arena.hazards.append(node)
+                self.ball.skill_timer = 10.0
 
             elif skill_name == "mind_control":
                 enemies = self._get_enemies()
