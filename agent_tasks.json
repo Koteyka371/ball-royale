@@ -18203,6 +18203,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1061",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shadow Monster Pet",
+      "description": "If a player survives multiple dark phases, they can unlock a 'Shadow Monster Pet' cosmetic that follows them around and occasionally boosts their speed in dark areas.",
+      "allowed_paths": [
+        "src/ai/shadow_monster_pet.py",
+        "src/ai/shadow_monster_pet.gd",
+        "tests/test_shadow_monster_pet.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1062",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Day/Night Vision Modules",
+      "description": "Add vision enhancement modules that dynamically adjust player's perception radius during different weather and time of day (e.g. night vision goggles for dark phases, thermal vision for finding invisible hazards).",
+      "allowed_paths": [
+        "src/ai/daynight_vision_modules.py",
+        "src/ai/daynight_vision_modules.gd",
+        "tests/test_daynight_vision_modules.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
