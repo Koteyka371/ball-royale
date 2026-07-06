@@ -10525,7 +10525,92 @@ class InvisibleDecoysMode extends GameMode:
 			elif typeof(world) == TYPE_OBJECT and "balls" in world:
 				world.balls.append(decoy)
 
+
+class ExtremeWeatherMode extends GameMode:
+	var weather_timer: float = 0.0
+	var current_weather: String = "clear"
+	var weathers: Array = ["blizzard", "heatwave", "acid_rain", "hurricane"]
+
+	func _init():
+		name = "Extreme Weather"
+		description = "Dynamic arena cycles through extreme weather events every 15 seconds. Collect weather-resistant boosters to survive!"
+
+	func setup(world, balls: Array):
+		super.setup(world, balls)
+		for b in balls:
+			if not b.has_meta("base_speed"):
+				var spd = 100.0
+				if "speed" in b: spd = b.speed
+				b.set_meta("base_speed", spd)
+			if not b.has_meta("base_damage"):
+				var dmg = 10.0
+				if "damage" in b: dmg = b.damage
+				b.set_meta("base_damage", dmg)
+
+	func tick(world, balls: Array, delta: float = 0.016):
+		super.tick(world, balls, delta)
+		weather_timer += delta
+
+		if weather_timer >= 15.0:
+			weather_timer = 0.0
+			var old_weather = current_weather
+			current_weather = weathers[randi() % weathers.size()]
+
+			if world != null and world.has_method("add_event"):
+				world.add_event("weather_change", {"weather": current_weather})
+
+			var booster_kind = ""
+			if current_weather == "blizzard": booster_kind = "thermal_booster"
+			elif current_weather == "heatwave": booster_kind = "cooling_booster"
+			elif current_weather == "acid_rain": booster_kind = "hazmat_booster"
+			elif current_weather == "hurricane": booster_kind = "heavy_anchor_booster"
+
+			if booster_kind != "" and world != null and "boosters" in world:
+				var arena_w = 1000
+				var arena_h = 1000
+				if "arena" in world and world.arena != null:
+					if "width" in world.arena: arena_w = world.arena.width
+					if "height" in world.arena: arena_h = world.arena.height
+
+				for i in range(balls.size()):
+					var bx = randf_range(100, arena_w - 100)
+					var by = randf_range(100, arena_h - 100)
+					var booster = {"kind": booster_kind, "x": bx, "y": by, "active": true, "radius": 15.0}
+					world.boosters.append(booster)
+
+		for b in balls:
+			if not b.alive or b.ball_type == "spectator" or b.get("is_decoy", false):
+				continue
+
+			if b.has_meta("base_speed"): b.speed = b.get_meta("base_speed")
+			if b.has_meta("base_damage"): b.damage = b.get_meta("base_damage")
+
+			var has_thermal = b.has_meta("thermal_booster_timer") and b.get_meta("thermal_booster_timer") > 0.0
+			var has_cooling = b.has_meta("cooling_booster_timer") and b.get_meta("cooling_booster_timer") > 0.0
+			var has_hazmat = b.has_meta("hazmat_booster_timer") and b.get_meta("hazmat_booster_timer") > 0.0
+			var has_anchor = b.has_meta("heavy_anchor_booster_timer") and b.get_meta("heavy_anchor_booster_timer") > 0.0
+
+			if current_weather == "blizzard":
+				if not has_thermal:
+					b.speed = b.get_meta("base_speed") * 0.2
+					b.hp -= 5.0 * delta
+			elif current_weather == "heatwave":
+				if not has_cooling:
+					b.hp -= 15.0 * delta
+			elif current_weather == "acid_rain":
+				if not has_hazmat:
+					b.damage = b.get_meta("base_damage") * 1.5
+					b.hp -= 10.0 * delta
+			elif current_weather == "hurricane":
+				if not has_anchor:
+					b.dash_range_mult = 0.0
+					b.steering_mult = 0.2
+					var angle = randf_range(0, 2 * PI)
+					b.x += cos(angle) * 100.0 * delta
+					b.y += sin(angle) * 100.0 * delta
+
 var GAME_MODES = {
+	"extreme_weather": ExtremeWeatherMode.new(),
 	"invisible_decoys": InvisibleDecoysMode.new(),
 	"reversed_input": ReversedInputMode.new(),
 	"sweeping_paddles": SweepingPaddlesMode.new(),

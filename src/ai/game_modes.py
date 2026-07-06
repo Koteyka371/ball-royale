@@ -7877,7 +7877,102 @@ class InvisibleDecoysMode(GameMode):
                 world.balls = []
             world.balls.append(decoy)
 
+
+class ExtremeWeatherMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Extreme Weather"
+        self.description = "Dynamic arena cycles through extreme weather events every 15 seconds. Collect weather-resistant boosters to survive!"
+        self.weather_timer = 0.0
+        self.current_weather = "clear"
+        self.weathers = ["blizzard", "heatwave", "acid_rain", "hurricane"]
+        import random
+        self.random = random
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        for b in balls:
+            if not getattr(b, "base_speed", None):
+                b.base_speed = getattr(b, "speed", 100.0)
+            if not getattr(b, "base_damage", None):
+                b.base_damage = getattr(b, "damage", 10.0)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        self.weather_timer += delta
+
+        if self.weather_timer >= 15.0:
+            self.weather_timer = 0.0
+            old_weather = self.current_weather
+            self.current_weather = self.random.choice(self.weathers)
+
+            if hasattr(world, "add_event"):
+                world.add_event("weather_change", {"weather": self.current_weather})
+
+            # Spawn the corresponding booster
+            booster_kind = None
+            if self.current_weather == "blizzard": booster_kind = "thermal_booster"
+            elif self.current_weather == "heatwave": booster_kind = "cooling_booster"
+            elif self.current_weather == "acid_rain": booster_kind = "hazmat_booster"
+            elif self.current_weather == "hurricane": booster_kind = "heavy_anchor_booster"
+
+            if booster_kind and hasattr(world, "boosters"):
+                arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
+                arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") else 1000
+
+                class TempBooster:
+                    def __init__(self, kind, x, y):
+                        self.kind = kind
+                        self.x = x
+                        self.y = y
+                        self.active = True
+                        self.radius = 15.0
+
+                for _ in range(len(balls)):
+                    bx = self.random.uniform(100, arena_w - 100)
+                    by = self.random.uniform(100, arena_h - 100)
+                    world.boosters.append(TempBooster(booster_kind, bx, by))
+
+        # Apply effects
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator" or getattr(b, "is_decoy", False):
+                continue
+
+            b.speed = getattr(b, "base_speed", 100.0)
+            b.damage = getattr(b, "base_damage", 10.0)
+
+            has_thermal = getattr(b, "thermal_booster_timer", 0.0) > 0
+            has_cooling = getattr(b, "cooling_booster_timer", 0.0) > 0
+            has_hazmat = getattr(b, "hazmat_booster_timer", 0.0) > 0
+            has_anchor = getattr(b, "heavy_anchor_booster_timer", 0.0) > 0
+
+            if self.current_weather == "blizzard":
+                if not has_thermal:
+                    b.speed = b.base_speed * 0.2
+                    if hasattr(b, "take_damage"): b.take_damage(5.0 * delta)
+                    elif hasattr(b, "hp"): b.hp -= 5.0 * delta
+            elif self.current_weather == "heatwave":
+                if not has_cooling:
+                    if hasattr(b, "take_damage"): b.take_damage(15.0 * delta)
+                    elif hasattr(b, "hp"): b.hp -= 15.0 * delta
+            elif self.current_weather == "acid_rain":
+                if not has_hazmat:
+                    b.damage = b.base_damage * 1.5
+                    if hasattr(b, "take_damage"): b.take_damage(10.0 * delta)
+                    elif hasattr(b, "hp"): b.hp -= 10.0 * delta
+            elif self.current_weather == "hurricane":
+                if not has_anchor:
+                    b.dash_range_mult = 0.0
+                    b.steering_mult = 0.2
+                    # Push random direction
+                    if hasattr(b, "x") and hasattr(b, "y"):
+                        import math
+                        angle = self.random.uniform(0, 2 * math.pi)
+                        b.x += math.cos(angle) * 100.0 * delta
+                        b.y += math.sin(angle) * 100.0 * delta
+
 GAME_MODES = {
+    "extreme_weather": ExtremeWeatherMode(),
     "invisible_decoys": InvisibleDecoysMode(),
     "sweeping_paddles": SweepingPaddlesMode(),
     "artifact_upgrader": ArtifactUpgraderMode(),

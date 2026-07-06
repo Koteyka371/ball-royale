@@ -10420,7 +10420,63 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
-            elif "kind" in nearest and nearest.kind == "weather_booster":
+			elif "kind" in nearest and nearest.kind == "thermal_booster":
+				if self.ball.has_method("set_meta"):
+					self.ball.set_meta("thermal_booster_timer", 15.0)
+				else:
+					self.ball.thermal_booster_timer = 15.0
+
+				if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+					var idx = self.world.arena.hazards.find(nearest)
+					if idx != -1:
+						self.world.arena.hazards.remove_at(idx)
+				if self.world != null and "boosters" in self.world:
+					var idx = self.world.boosters.find(nearest)
+					if idx != -1:
+						self.world.boosters.remove_at(idx)
+			elif "kind" in nearest and nearest.kind == "cooling_booster":
+				if self.ball.has_method("set_meta"):
+					self.ball.set_meta("cooling_booster_timer", 15.0)
+				else:
+					self.ball.cooling_booster_timer = 15.0
+
+				if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+					var idx = self.world.arena.hazards.find(nearest)
+					if idx != -1:
+						self.world.arena.hazards.remove_at(idx)
+				if self.world != null and "boosters" in self.world:
+					var idx = self.world.boosters.find(nearest)
+					if idx != -1:
+						self.world.boosters.remove_at(idx)
+			elif "kind" in nearest and nearest.kind == "hazmat_booster":
+				if self.ball.has_method("set_meta"):
+					self.ball.set_meta("hazmat_booster_timer", 15.0)
+				else:
+					self.ball.hazmat_booster_timer = 15.0
+
+				if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+					var idx = self.world.arena.hazards.find(nearest)
+					if idx != -1:
+						self.world.arena.hazards.remove_at(idx)
+				if self.world != null and "boosters" in self.world:
+					var idx = self.world.boosters.find(nearest)
+					if idx != -1:
+						self.world.boosters.remove_at(idx)
+			elif "kind" in nearest and nearest.kind == "heavy_anchor_booster":
+				if self.ball.has_method("set_meta"):
+					self.ball.set_meta("heavy_anchor_booster_timer", 15.0)
+				else:
+					self.ball.heavy_anchor_booster_timer = 15.0
+
+				if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+					var idx = self.world.arena.hazards.find(nearest)
+					if idx != -1:
+						self.world.arena.hazards.remove_at(idx)
+				if self.world != null and "boosters" in self.world:
+					var idx = self.world.boosters.find(nearest)
+					if idx != -1:
+						self.world.boosters.remove_at(idx)
+			elif "kind" in nearest and nearest.kind == "weather_booster":
                 if self.ball.has_method("set_meta"):
                     self.ball.set_meta("weather_control_timer", 10.0)
                 else:
