@@ -211,6 +211,63 @@ func _attempt_damage(attacker, target) -> void:
 							else:
 								a.hp -= original_dmg
 							return
+
+	var is_ranged_attack = false
+	var a_rad2 = 10.0
+	if "radius" in attacker: a_rad2 = float(attacker.radius)
+	var t_rad2 = 10.0
+	if "radius" in target: t_rad2 = float(target.radius)
+
+	var a_x2 = 0.0
+	if "x" in attacker: a_x2 = float(attacker.x)
+	var a_y2 = 0.0
+	if "y" in attacker: a_y2 = float(attacker.y)
+	var t_x2 = 0.0
+	if "x" in target: t_x2 = float(target.x)
+	var t_y2 = 0.0
+	if "y" in target: t_y2 = float(target.y)
+
+	var dist2 = sqrt((a_x2-t_x2)*(a_x2-t_x2) + (a_y2-t_y2)*(a_y2-t_y2))
+	if dist2 > (a_rad2 + t_rad2 + 20.0):
+		is_ranged_attack = true
+
+	if is_ranged_attack and world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+		var a_team = ""
+		if "team" in attacker: a_team = attacker.team
+		elif attacker.has_method("has_meta") and attacker.has_meta("team"): a_team = attacker.get_meta("team")
+		else: a_team = attacker.ball_type if "ball_type" in attacker else attacker.get_ball_type()
+
+		for h in world.arena.hazards:
+			var h_kind = h.kind if "kind" in h else (h.get_meta("kind") if h.has_method("has_meta") and h.has_meta("kind") else "")
+			if h_kind == "energy_barrier":
+				var h_team = h.get_meta("team") if h.has_meta("team") else ""
+				if h_team != a_team:
+					var hx = float(h.x if "x" in h else h.get_meta("x"))
+					var hy = float(h.y if "y" in h else h.get_meta("y"))
+					var hr = float(h.radius if "radius" in h else (h.get_meta("radius") if h.has_meta("radius") else 40.0))
+
+					var dx = t_x2 - a_x2
+					var dy = t_y2 - a_y2
+					var fx = a_x2 - hx
+					var fy = a_y2 - hy
+
+					var a = dx*dx + dy*dy
+					var b2 = 2.0 * (fx*dx + fy*dy)
+					var c = (fx*fx + fy*fy) - hr*hr
+
+					if a != 0.0:
+						var disc = b2*b2 - 4.0*a*c
+						if disc >= 0.0:
+							disc = sqrt(disc)
+							var t1 = (-b2 - disc) / (2.0*a)
+							var t2 = (-b2 + disc) / (2.0*a)
+							if (t1 >= 0.0 and t1 <= 1.0) or (t2 >= 0.0 and t2 <= 1.0):
+								# Ranged attack blocked
+								return
+					else:
+						if c <= 0.0:
+							return
+
 	var attack_accuracy = 1.0
 
 	var pm = null
@@ -6463,6 +6520,56 @@ func execute(strategy: String, delta: float):
                                 self.ball.x += nx * 50.0 * delta
                                 self.ball.y += ny * 50.0 * delta
 
+                    elif hazard.kind == "energy_barrier":
+                        var my_team = ""
+                        if "team" in self.ball: my_team = self.ball.team
+                        elif self.ball.has_method("has_meta") and self.ball.has_meta("team"): my_team = self.ball.get_meta("team")
+                        else: my_team = self.ball.ball_type if "ball_type" in self.ball else self.ball.get_ball_type()
+
+                        var h_team = ""
+                        if hazard.has_meta("team"): h_team = hazard.get_meta("team")
+
+                        if my_team != h_team:
+                            var dx = self.ball.x - hazard.x
+                            var dy = self.ball.y - hazard.y
+                            var dist = sqrt(dx*dx + dy*dy)
+                            if dist == 0.0: dist = 0.0001
+                            var b_rad = 10.0
+                            if "radius" in self.ball: b_rad = float(self.ball.radius)
+                            elif self.ball.has_method("has_meta") and self.ball.has_meta("radius"): b_rad = float(self.ball.get_meta("radius"))
+
+                            var h_rad = 40.0
+                            if "radius" in hazard: h_rad = float(hazard.radius)
+                            elif hazard.has_meta("radius"): h_rad = float(hazard.get_meta("radius"))
+
+                            if dist < (b_rad + h_rad):
+                                var overlap = (b_rad + h_rad) - dist
+                                var nx = dx / dist
+                                var ny = dy / dist
+
+                                if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("x", self.ball.get_meta("x") + nx * overlap)
+                                    self.ball.set_meta("y", self.ball.get_meta("y") + ny * overlap)
+                                else:
+                                    self.ball.x += nx * overlap
+                                    self.ball.y += ny * overlap
+
+                                var bvx = 0.0
+                                if "vx" in self.ball: bvx = float(self.ball.vx)
+                                elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("vx"): bvx = float(self.ball.get_meta("vx"))
+
+                                var bvy = 0.0
+                                if "vy" in self.ball: bvy = float(self.ball.vy)
+                                elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("vy"): bvy = float(self.ball.get_meta("vy"))
+
+                                var dot = bvx * nx + bvy * ny
+                                if dot < 0:
+                                    if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                                        self.ball.set_meta("vx", bvx - 2 * dot * nx)
+                                        self.ball.set_meta("vy", bvy - 2 * dot * ny)
+                                    else:
+                                        self.ball.vx = bvx - 2 * dot * nx
+                                        self.ball.vy = bvy - 2 * dot * ny
                     elif hazard.kind == "sweeping_paddle":
                         var dx = self.ball.x - hazard.x
                         var dy = self.ball.y - hazard.y
@@ -7959,6 +8066,51 @@ func _get_enemies_internal() -> Array:
                         enemy_stealth_zones.append(h)
 
         var is_visible = true
+
+        if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+            var my_team_iv = ""
+            if "team" in self.ball: my_team_iv = self.ball.team
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("team"): my_team_iv = self.ball.get_meta("team")
+            else: my_team_iv = self.ball.ball_type if "ball_type" in self.ball else self.ball.get_ball_type()
+
+            var bx = float(self.ball.x)
+            var by = float(self.ball.y)
+
+            for h in self.world.arena.hazards:
+                var h_kind = h.kind if "kind" in h else (h.get_meta("kind") if h.has_method("has_meta") and h.has_meta("kind") else "")
+                if h_kind == "energy_barrier":
+                    var h_team = h.get_meta("team") if h.has_meta("team") else ""
+                    if h_team != my_team_iv:
+                        var hx = float(h.x if "x" in h else h.get_meta("x"))
+                        var hy = float(h.y if "y" in h else h.get_meta("y"))
+                        var hr = float(h.radius if "radius" in h else (h.get_meta("radius") if h.has_meta("radius") else 40.0))
+
+                        var dx = ex - bx
+                        var dy = ey - by
+                        var fx = bx - hx
+                        var fy = by - hy
+
+                        var a = dx*dx + dy*dy
+                        var b2 = 2.0 * (fx*dx + fy*dy)
+                        var c = (fx*fx + fy*fy) - hr*hr
+
+                        if a != 0.0:
+                            var disc = b2*b2 - 4.0*a*c
+                            if disc >= 0.0:
+                                disc = sqrt(disc)
+                                var t1 = (-b2 - disc) / (2.0*a)
+                                var t2 = (-b2 + disc) / (2.0*a)
+                                if (t1 >= 0.0 and t1 <= 1.0) or (t2 >= 0.0 and t2 <= 1.0):
+                                    is_visible = false
+                                    break
+                        else:
+                            if c <= 0.0:
+                                is_visible = false
+                                break
+
+        if not is_visible:
+            continue
+
         if enemy_stealth_zones.size() > 0:
             is_visible = false
             for h in my_stealth_zones:
@@ -12609,6 +12761,54 @@ func _use_skill():
                 elif "skill_timer" in self.ball:
                     self.ball.skill_timer = self.ball.get("skill_cooldown") if "skill_cooldown" in self.ball else 5.0
 
+        elif skill_name == "energy_barrier":
+            if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+                var trap_id = self.world.arena.hazards.size() + (randi() % 9000 + 1000)
+                var enemies = _get_enemies()
+                var target_eb = null
+                if enemies.size() > 0:
+                    target_eb = enemies[0]
+                    var min_d = 9999999.0
+                    for e in enemies:
+                        var ex = e.x if "x" in e else e.get_meta("x")
+                        var ey = e.y if "y" in e else e.get_meta("y")
+                        var d = (ex - self.ball.x)*(ex - self.ball.x) + (ey - self.ball.y)*(ey - self.ball.y)
+                        if d < min_d:
+                            min_d = d
+                            target_eb = e
+
+                var bx = self.ball.x
+                var by = self.ball.y
+                if target_eb != null:
+                    var tx = target_eb.x if "x" in target_eb else target_eb.get_meta("x")
+                    var ty = target_eb.y if "y" in target_eb else target_eb.get_meta("y")
+                    var dx = tx - bx
+                    var dy = ty - by
+                    var dist = sqrt(dx*dx + dy*dy)
+                    if dist > 0.0:
+                        bx = bx + (dx/dist) * 80.0
+                        by = by + (dy/dist) * 80.0
+
+                var ProceduralArenaScriptEB = load("res://src/arena/procedural_arena.gd")
+                var barrier = ProceduralArenaScriptEB.Hazard.new(trap_id, bx, by, 40.0, "energy_barrier", 0.0)
+                barrier.set_meta("duration", 10.0)
+
+                var my_team = ""
+                if "team" in self.ball: my_team = self.ball.team
+                elif self.ball.has_method("has_meta") and self.ball.has_meta("team"): my_team = self.ball.get_meta("team")
+                else: my_team = self.ball.ball_type if "ball_type" in self.ball else self.ball.get_ball_type()
+
+                barrier.set_meta("team", my_team)
+                self.world.arena.hazards.append(barrier)
+
+                var cd = 15.0
+                if "skill_cooldown" in self.ball: cd = float(self.ball.skill_cooldown)
+                elif self.ball.has_method("has_meta") and self.ball.has_meta("skill_cooldown"): cd = float(self.ball.get_meta("skill_cooldown"))
+
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("skill_timer", cd)
+                else:
+                    self.ball.skill_timer = cd
         elif skill_name == "snipe":
             if "arena" in self.world and "hazards" in self.world.arena:
                 var trap_id = self.world.arena.hazards.size() + randi() % 10000
