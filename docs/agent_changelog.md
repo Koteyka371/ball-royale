@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-581] Weapon Attachments — *2026-07-06 20:41:45 UTC*
+
+Add drops for weapon attachments like silencers (reduces visibility on map), extended mags, or modified scopes that augment base abilities temporarily.
+
+---
+
 ## [idea-631] Interactive Weather System — *2026-07-06 20:41:40 UTC*
 
 Weather conditions in different seasonal arenas (like heatwaves, snowstorms, or heavy winds) actively affect ball movement speed, friction, and ability cooldowns.
