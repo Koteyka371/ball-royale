@@ -7829,7 +7829,56 @@ class ReverseGravityEventMode(GameMode):
                         b.x += (dx / dist) * force_mag * direction_mult
                         b.y += (dy / dist) * force_mag * direction_mult
 
+
+class InvisibleDecoysMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Invisible Decoys"
+        self.description = "The arena is seeded with invisible explosive decoys. Be careful not to trigger a chain reaction!"
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        import random
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        class DecoyBall:
+            pass
+
+        for i in range(20):
+            decoy_id = getattr(world, "next_id", random.randint(100000, 999999))
+            if hasattr(world, "next_id"):
+                world.next_id += 1
+
+            decoy = DecoyBall()
+            decoy.id = decoy_id
+            decoy.x = random.uniform(50, arena_width - 50)
+            decoy.y = random.uniform(50, arena_height - 50)
+            decoy.hp = 1.0
+            decoy.max_hp = 1.0
+            decoy.alive = True
+            decoy.is_decoy = True
+            decoy.decoy_type = "explosive"
+            decoy.invisible = True
+            decoy.team = "neutral"
+            decoy.radius = 15.0
+            decoy.ball_type = "decoy"
+
+            # Additional attributes to avoid crashes
+            decoy.vx = 0.0
+            decoy.vy = 0.0
+            decoy.speed = 0.0
+            decoy.damage = 0.0
+            decoy.skill_timer = 9999.0
+            decoy.attack_timer = 9999.0
+
+            if not hasattr(world, "balls"):
+                world.balls = []
+            world.balls.append(decoy)
+
 GAME_MODES = {
+    "invisible_decoys": InvisibleDecoysMode(),
     "sweeping_paddles": SweepingPaddlesMode(),
     "artifact_upgrader": ArtifactUpgraderMode(),
     "meteor_shower": MeteorShowerMode(),

@@ -10466,7 +10466,67 @@ class ReverseGravityEventMode extends GameMode:
 								b.x += move_x
 								b.y += move_y
 
+
+class InvisibleDecoysMode extends GameMode:
+	func _init() -> void:
+		name = "Invisible Decoys"
+		description = "The arena is seeded with invisible explosive decoys. Be careful not to trigger a chain reaction!"
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world != null and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				if world.arena.has("width"): arena_width = world.arena.width
+				if world.arena.has("height"): arena_height = world.arena.height
+			else:
+				if "width" in world.arena: arena_width = world.arena.width
+				if "height" in world.arena: arena_height = world.arena.height
+
+		var NPCBall = null
+		if ResourceLoader.exists("res://src/ai/action.gd"):
+			# Just try to grab something that can act as an object if needed, but a dictionary is standard for many modes as long as we add the right mock methods.
+			# Or we just provide all expected fields.
+			pass
+
+		for i in range(20):
+			var decoy = {}
+			decoy["id"] = 100000 + i
+			decoy["x"] = rand_range(50, arena_width - 50)
+			decoy["y"] = rand_range(50, arena_height - 50)
+			decoy["hp"] = 1.0
+			decoy["max_hp"] = 1.0
+			decoy["alive"] = true
+			decoy["is_decoy"] = true
+			decoy["decoy_type"] = "explosive"
+			decoy["invisible"] = true
+			decoy["team"] = "neutral"
+			decoy["radius"] = 15.0
+			decoy["ball_type"] = "decoy"
+
+			decoy["vx"] = 0.0
+			decoy["vy"] = 0.0
+			decoy["speed"] = 0.0
+			decoy["damage"] = 0.0
+
+			# Fallback for has_method/get/set if engine tries to call object methods on it
+			# We provide Callables for object-like access.
+			decoy["has_method"] = Callable(func(method_name): return false)
+			decoy["get"] = Callable(func(prop, default=null): return decoy[prop] if decoy.has(prop) else default)
+			decoy["set"] = Callable(func(prop, val): decoy[prop] = val)
+			decoy["get_meta"] = Callable(func(meta, default=null): return decoy[meta] if decoy.has(meta) else default)
+			decoy["set_meta"] = Callable(func(meta, val): decoy[meta] = val)
+			decoy["has_meta"] = Callable(func(meta): return decoy.has(meta))
+
+			if typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+				world.balls.append(decoy)
+			elif typeof(world) == TYPE_OBJECT and "balls" in world:
+				world.balls.append(decoy)
+
 var GAME_MODES = {
+	"invisible_decoys": InvisibleDecoysMode.new(),
 	"reversed_input": ReversedInputMode.new(),
 	"sweeping_paddles": SweepingPaddlesMode.new(),
 	"artifact_upgrader": ArtifactUpgraderMode.new(),
