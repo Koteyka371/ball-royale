@@ -6352,6 +6352,14 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "storm_booster":
+                    self.ball.storm_booster_timer = 10.0
+                    self.ball.speed = getattr(self.ball, "base_speed", 2.0) * 1.5
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "leech_booster":
                     self.ball.leech_booster_timer = 10.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -8549,6 +8557,58 @@ class Action:
             if self.ball.orbital_shield_timer <= 0:
                 self.ball.orbital_shield_active = False
 
+
+        if hasattr(self.ball, "storm_booster_timer") and self.ball.storm_booster_timer > 0:
+            self.ball.storm_booster_timer -= delta
+            if self.ball.storm_booster_timer <= 0:
+                self.ball.storm_booster_timer = 0.0
+                if getattr(self.ball, "speed", 0.0) == getattr(self.ball, "base_speed", 2.0) * 1.5:
+                    self.ball.speed = getattr(self.ball, "base_speed", 2.0)
+            else:
+                # Periodic lightning strikes on nearby hazards/enemies
+                if not hasattr(self.ball, "storm_booster_tick"):
+                    self.ball.storm_booster_tick = 0.0
+                self.ball.storm_booster_tick += delta
+                if self.ball.storm_booster_tick >= 1.0:
+                    self.ball.storm_booster_tick = 0.0
+                    import math
+                    strike_radius = 250.0
+                    strike_damage = 30.0
+
+                    targets = []
+                    enemies = self._get_enemies()
+                    if enemies:
+                        for e in enemies:
+                            if math.hypot(e.x - self.ball.x, e.y - self.ball.y) <= strike_radius:
+                                targets.append(e)
+
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        for h in self.world.arena.hazards:
+                            if getattr(h, "active", True):
+                                if math.hypot(h.x - self.ball.x, h.y - self.ball.y) <= strike_radius:
+                                    targets.append(h)
+
+                    if targets:
+                        # Find closest target to strike
+                        target = min(targets, key=lambda t: math.hypot(t.x - self.ball.x, t.y - self.ball.y))
+                        if hasattr(target, "take_damage"):
+                            target.take_damage(strike_damage)
+                        elif hasattr(target, "hp"):
+                            target.hp -= strike_damage
+                            if target.hp <= 0:
+                                target.active = False
+                                if hasattr(target, "alive"):
+                                    target.alive = False
+
+                        if hasattr(target, "stun_timer"):
+                            target.stun_timer = max(getattr(target, "stun_timer", 0.0), 0.5)
+                        else:
+                            target.stun_timer = 0.5
+
+                        if hasattr(self, "_spawn_directed_particles"):
+                            self._spawn_directed_particles(self.ball, target, "lightning")
+                        elif hasattr(self, "_spawn_skill_particles"):
+                            self._spawn_skill_particles("lightning")
         if hasattr(self.ball, "invert_timer") and self.ball.invert_timer > 0:
             self.ball.invert_timer -= delta
             if self.ball.invert_timer < 0:
