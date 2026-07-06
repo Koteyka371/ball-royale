@@ -1018,3 +1018,58 @@ def test_battle_royale_final_boss_spawn():
     assert len(defeated_events) == 1
     assert defeated_events[0][1]["killer_id"] == 1
     assert defeated_events[0][1]["points"] == 5000
+
+
+def test_battle_royale_dark_phase_monsters():
+    from ai.game_modes import BattleRoyaleMode
+    mode = BattleRoyaleMode()
+    world = MockWorld()
+    if not hasattr(world, "events"):
+        world.events = []
+    if not hasattr(world, "add_event"):
+        def add_event(type, data):
+            world.events.append((type, data))
+        world.add_event = add_event
+
+    class MockArena:
+        def __init__(self):
+            self.width = 1000
+            self.height = 1000
+            self.hazards = []
+    world.arena = MockArena()
+    world.balls = []
+    world.next_id = 100
+
+    # 2 players
+    balls = [MockBall(1, "warrior"), MockBall(2, "scout")]
+    for b in balls:
+        b.score = 0
+        b.x = 500.0
+        b.y = 500.0
+    world.balls.extend(balls)
+
+    mode.setup(world, balls)
+
+    # Simulate into dark phase
+    mode.tick(world, world.balls, delta=21.0)
+
+    # Verify shadow monsters spawned
+    monsters = [b for b in world.balls if getattr(b, "is_shadow_monster", False)]
+    assert len(monsters) == 2, "Shadow monsters should have spawned"
+    assert mode.is_dark_phase == True
+
+    events_spawn = [e for e in world.events if e[0] == "shadow_monsters_spawn"]
+    assert len(events_spawn) > 0
+
+    # Simulate end of dark phase
+    mode.tick(world, world.balls, delta=11.0)
+
+    # Verify despawn
+    monsters_alive = [b for b in world.balls if getattr(b, "is_shadow_monster", False) and b.alive]
+    assert len(monsters_alive) == 0, "Shadow monsters should have despawned"
+
+    # Verify score boost
+    assert balls[0].score >= 100
+    assert balls[1].score >= 100
+    events_survive = [e for e in world.events if e[0] == "shadow_phase_survived"]
+    assert len(events_survive) > 0

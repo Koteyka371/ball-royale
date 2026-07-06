@@ -1168,10 +1168,117 @@ class BattleRoyaleMode extends GameMode:
                                         b.x += nx * pull
                                         b.y += ny * pull
 
+        # Shadow monster hunting logic
+        for b in balls:
+            var is_shadow = false
+            if typeof(b) == TYPE_DICTIONARY and "is_shadow_monster" in b and b["is_shadow_monster"]: is_shadow = true
+            elif b.has_method("has_meta") and b.has_meta("is_shadow_monster"): is_shadow = true
+
+            if b.get("alive") and is_shadow:
+                var nearest = null
+                var min_dist = 9999999.0
+                for p in balls:
+                    var p_is_shadow = false
+                    if typeof(p) == TYPE_DICTIONARY and "is_shadow_monster" in p and p["is_shadow_monster"]: p_is_shadow = true
+                    elif p.has_method("has_meta") and p.has_meta("is_shadow_monster"): p_is_shadow = true
+
+                    var p_is_decoy = false
+                    if typeof(p) == TYPE_DICTIONARY and "is_decoy" in p and p["is_decoy"]: p_is_decoy = true
+                    elif p.has_method("has_meta") and p.has_meta("is_decoy"): p_is_decoy = true
+
+                    if p.get("alive") and p.get("ball_type") != "spectator" and not p_is_shadow and not p_is_decoy:
+                        var dx = p.get("x") - b.get("x")
+                        var dy = p.get("y") - b.get("y")
+                        var dist = sqrt(dx*dx + dy*dy)
+                        if dist < min_dist:
+                            min_dist = dist
+                            nearest = p
+                if nearest != null:
+                    var dx = nearest.get("x") - b.get("x")
+                    var dy = nearest.get("y") - b.get("y")
+                    if min_dist > 0.0001:
+                        var b_speed = 200.0
+                        if typeof(b) == TYPE_DICTIONARY and "speed" in b: b_speed = b["speed"]
+                        elif b.get("speed") != null: b_speed = b.get("speed")
+
+                        var b_vx = (dx / min_dist) * b_speed
+                        var b_vy = (dy / min_dist) * b_speed
+                        if typeof(b) == TYPE_DICTIONARY:
+                            b["vx"] = b_vx
+                            b["vy"] = b_vy
+                            b["x"] += b_vx * delta
+                            b["y"] += b_vy * delta
+                        else:
+                            b.vx = b_vx
+                            b.vy = b_vy
+                            b.x += b_vx * delta
+                            b.y += b_vy * delta
+
         # Dark phase cycle: 20s normal, 10s dark
         if not is_dark_phase and dark_phase_timer >= 20.0:
             is_dark_phase = true
             dark_phase_timer = 0.0
+
+            # Spawn shadow monsters
+            for i in range(2):
+                var m_id = randi()
+                if world != null and "next_id" in world:
+                    m_id = world.next_id
+                    world.next_id += 1
+
+                var aw = 1000.0
+                var ah = 1000.0
+                if world != null and "arena" in world and world.arena != null:
+                    if "width" in world.arena: aw = float(world.arena.width)
+                    if "height" in world.arena: ah = float(world.arena.height)
+
+                var sx = randf_range(50.0, aw - 50.0)
+                var sy = randf_range(50.0, ah - 50.0)
+                for attempt in range(10):
+                    var valid = true
+                    for p in balls:
+                        if p.get("alive") and p.get("ball_type") != "spectator":
+                            var p_x = p.get("x")
+                            var p_y = p.get("y")
+                            if p_x != null and p_y != null:
+                                var dx = p_x - sx
+                                var dy = p_y - sy
+                                var dist = sqrt(dx*dx + dy*dy)
+                                var p_rad = 250.0
+                                if p.has_method("get") and p.get("perception_radius") != null:
+                                    p_rad = float(p.get("perception_radius"))
+                                elif typeof(p) == TYPE_DICTIONARY and "perception_radius" in p:
+                                    p_rad = float(p["perception_radius"])
+                                if dist < p_rad + 50.0:
+                                    valid = false
+                                    break
+                    if valid:
+                        break
+                    sx = randf_range(50.0, aw - 50.0)
+                    sy = randf_range(50.0, ah - 50.0)
+
+                var new_monster = {}
+                new_monster["id"] = m_id
+                new_monster["x"] = sx
+                new_monster["y"] = sy
+                new_monster["vx"] = 0.0
+                new_monster["vy"] = 0.0
+                new_monster["radius"] = 20.0
+                new_monster["hp"] = 100.0
+                new_monster["max_hp"] = 100.0
+                new_monster["alive"] = true
+                new_monster["ball_type"] = "shadow_monster"
+                new_monster["team"] = "Shadow"
+                new_monster["speed"] = 200.0
+                new_monster["damage"] = 30.0
+                new_monster["is_shadow_monster"] = true
+                new_monster["has_method"] = Callable(func(method_name): return false)
+
+                if world != null and "balls" in world:
+                    world.balls.append(new_monster)
+
+            if world != null and world.has_method("add_event"):
+                world.add_event("shadow_monsters_spawn", {"message": "Shadow monsters are hunting!"})
 
             # Apply dark phase
             for b in balls:
@@ -1196,6 +1303,34 @@ class BattleRoyaleMode extends GameMode:
         elif is_dark_phase and dark_phase_timer >= 10.0:
             is_dark_phase = false
             dark_phase_timer = 0.0
+
+            # Despawn shadow monsters and reward survivors
+            for b in balls:
+                var is_shadow = false
+                if b.has_method("get_meta") and b.has_meta("is_shadow_monster"):
+                    is_shadow = true
+                elif typeof(b) == TYPE_DICTIONARY and "is_shadow_monster" in b and b["is_shadow_monster"]:
+                    is_shadow = true
+
+                if is_shadow:
+                    if typeof(b) == TYPE_DICTIONARY:
+                        b["alive"] = false
+                    else:
+                        b.alive = false
+                elif b.get("alive") and b.get("ball_type") != "spectator":
+                    var current_score = 0
+                    if b.has_method("has_meta") and b.has_meta("score"):
+                        current_score = b.get_meta("score")
+                    elif typeof(b) == TYPE_DICTIONARY and "score" in b:
+                        current_score = b["score"]
+
+                    if b.has_method("set_meta"):
+                        b.set_meta("score", current_score + 100)
+                    elif typeof(b) == TYPE_DICTIONARY:
+                        b["score"] = current_score + 100
+
+            if world != null and world.has_method("add_event"):
+                world.add_event("shadow_phase_survived", {"message": "You survived the dark phase!"})
 
             # Restore normal phase
             for b in balls:

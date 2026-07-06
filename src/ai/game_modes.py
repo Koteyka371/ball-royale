@@ -1000,12 +1000,89 @@ class BattleRoyaleMode(GameMode):
                                     b.x += nx * pull
                                     b.y += ny * pull
 
+        # Shadow monster hunting logic
+        import math
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "is_shadow_monster", False):
+                nearest = None
+                min_dist = float('inf')
+                for p in balls:
+                    if getattr(p, "alive", False) and getattr(p, "ball_type", None) != "spectator" and not getattr(p, "is_shadow_monster", False) and not getattr(p, "is_decoy", False):
+                        dist = math.hypot(p.x - b.x, p.y - b.y)
+                        if dist < min_dist:
+                            min_dist = dist
+                            nearest = p
+                if nearest:
+                    dx = nearest.x - b.x
+                    dy = nearest.y - b.y
+                    if min_dist > 0.0001:
+                        b.vx = (dx / min_dist) * getattr(b, "speed", 200.0)
+                        b.vy = (dy / min_dist) * getattr(b, "speed", 200.0)
+                        b.x += b.vx * delta
+                        b.y += b.vy * delta
+
         self.dark_phase_timer += delta
 
         # Dark phase cycle: 20s normal, 10s dark
         if not self.is_dark_phase and self.dark_phase_timer >= 20.0:
             self.is_dark_phase = True
             self.dark_phase_timer = 0.0
+
+            # Spawn shadow monsters
+            for _ in range(2):
+                class ShadowMonster:
+                    def __init__(self, id_val, x, y):
+                        self.id = id_val
+                        self.x = x
+                        self.y = y
+                        self.vx = 0.0
+                        self.vy = 0.0
+                        self.radius = 20.0
+                        self.hp = 100.0
+                        self.max_hp = 100.0
+                        self.alive = True
+                        self.ball_type = "shadow_monster"
+                        self.team = "Shadow"
+                        self.speed = 200.0
+                        self.damage = 30.0
+                        self.is_shadow_monster = True
+
+                aw = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+                ah = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+                import random
+                sx = random.uniform(50.0, aw - 50.0)
+                sy = random.uniform(50.0, ah - 50.0)
+
+                # Ensure it spawns outside player vision
+                import math
+                for attempt in range(10):
+                    valid = True
+                    for p in balls:
+                        if getattr(p, "alive", False) and getattr(p, "ball_type", None) != "spectator":
+                            p_x = getattr(p, "x", 0.0)
+                            p_y = getattr(p, "y", 0.0)
+                            dist = math.hypot(p_x - sx, p_y - sy)
+                            if dist < getattr(p, "perception_radius", 250.0) + 50.0:
+                                valid = False
+                                break
+                    if valid:
+                        break
+                    sx = random.uniform(50.0, aw - 50.0)
+                    sy = random.uniform(50.0, ah - 50.0)
+
+                if not hasattr(world, "next_id"):
+                    world.next_id = random.randint(100000, 999999)
+                m_id = world.next_id
+                world.next_id += 1
+
+                monster = ShadowMonster(m_id, sx, sy)
+                if hasattr(world, "balls"):
+                    world.balls.append(monster)
+                    if hasattr(world, "entities") and world.balls is not world.entities:
+                        world.entities.append(monster)
+
+            if hasattr(world, "add_event"):
+                world.add_event("shadow_monsters_spawn", {"message": "Shadow monsters are hunting!"})
 
             # Apply dark phase
             for b in balls:
@@ -1022,6 +1099,23 @@ class BattleRoyaleMode(GameMode):
         elif self.is_dark_phase and self.dark_phase_timer >= 10.0:
             self.is_dark_phase = False
             self.dark_phase_timer = 0.0
+
+            # Despawn shadow monsters and reward survivors
+            for b in balls:
+                if getattr(b, "is_shadow_monster", False):
+                    b.alive = False
+                elif getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                    b.score = getattr(b, "score", 0) + 100
+
+            # Award points for surviving
+            try:
+                from system.profile import ProfileManager
+                pm = ProfileManager("profile.json")
+                pm.add_skill_points(50)
+            except Exception:
+                pass
+            if hasattr(world, "add_event"):
+                world.add_event("shadow_phase_survived", {"message": "You survived the dark phase!"})
 
             # Restore normal phase
             for b in balls:

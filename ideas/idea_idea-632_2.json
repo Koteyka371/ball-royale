@@ -1,0 +1,4 @@
+{
+  "title": "Laser Tripwire Consumable",
+  "description": "A new consumable trap that players can place. It creates an invisible laser line between two walls. If an enemy crosses the line, it detonates for high AoE damage and inflicts a brief stun."
+}
