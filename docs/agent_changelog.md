@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-643] Quantum Swap Skill — *2026-07-06 20:10:11 UTC*
+
+A skill where the ball immediately swaps places with a targeted ally or enemy, causing confusion and transferring any negative status effects (burn, poison) currently on the user to the swapped target.
+
+---
+
 ## [idea-637] Tornado Hazard Event — *2026-07-06 19:52:34 UTC*
 
 Periodically spawn a Tornado hazard that roams around the arena and pulls nearby balls toward it, dealing damage over time.

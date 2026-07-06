@@ -11088,7 +11088,7 @@
     },
     {
       "id": "idea-643",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Swap Skill",
@@ -17994,6 +17994,23 @@
         "src/ai/emp_pulse_item.py",
         "src/ai/emp_pulse_item.gd",
         "tests/test_emp_pulse_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1049",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Laser Walls",
+      "description": "Introduce rotating laser walls that sweep across the arena, forcing players to move in specific patterns to avoid damage.",
+      "allowed_paths": [
+        "src/ai/laser_walls.py",
+        "src/ai/laser_walls.gd",
+        "tests/test_laser_walls.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
