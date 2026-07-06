@@ -10525,7 +10525,106 @@ class InvisibleDecoysMode extends GameMode:
 			elif typeof(world) == TYPE_OBJECT and "balls" in world:
 				world.balls.append(decoy)
 
+
+class ObstacleCourseMode extends GameMode:
+	var timer: float = 0.0
+	var phase: int = 0
+
+	func _init():
+		super._init()
+		self.name = "Obstacle Course"
+		self.description = "Navigate an increasingly difficult obstacle course filled with moving lasers, rotating bumpers, and collapsing floors."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if not ("arena" in world) or not ("hazards" in world.arena):
+			return
+
+		var arena_w = world.get("width", 1000.0)
+		var arena_h = world.get("height", 1000.0)
+		var cx = arena_w / 2.0
+		var cy = arena_h / 2.0
+
+		# 1. Moving Lasers
+		var laser1 = {
+			"id": "laser_" + str(world.arena.hazards.size()),
+			"x": cx - 200, "y": cy, "radius": 30, "kind": "spinning_laser", "damage": 10,
+			"vx": 0.0, "vy": 50.0, "lifetime": 9999.0, "active": true,
+			"has_method": Callable(func(m): return false)
+		}
+		world.arena.hazards.append(laser1)
+
+		var laser2 = {
+			"id": "laser_" + str(world.arena.hazards.size()),
+			"x": cx + 200, "y": cy, "radius": 30, "kind": "spinning_laser", "damage": 10,
+			"vx": 0.0, "vy": -50.0, "lifetime": 9999.0, "active": true,
+			"has_method": Callable(func(m): return false)
+		}
+		world.arena.hazards.append(laser2)
+
+		# 2. Rotating Bumpers
+		var bumper1 = {
+			"id": "bumper_" + str(world.arena.hazards.size()),
+			"x": cx, "y": cy + 200, "radius": 40, "kind": "bumper", "damage": 0,
+			"rotation_speed": 2.0, "lifetime": 9999.0, "active": true,
+			"has_method": Callable(func(m): return false)
+		}
+		world.arena.hazards.append(bumper1)
+
+		var bumper2 = {
+			"id": "bumper_" + str(world.arena.hazards.size()),
+			"x": cx, "y": cy - 200, "radius": 40, "kind": "bumper", "damage": 0,
+			"rotation_speed": -2.0, "lifetime": 9999.0, "active": true,
+			"has_method": Callable(func(m): return false)
+		}
+		world.arena.hazards.append(bumper2)
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+		self.timer += delta
+
+		if not ("arena" in world) or not ("hazards" in world.arena):
+			return
+
+		var arena_w = world.get("width", 1000.0)
+		var arena_h = world.get("height", 1000.0)
+
+		# Move lasers back and forth
+		for h in world.arena.hazards:
+			if h.get("kind", "") == "spinning_laser":
+				var y = h.get("y", 0)
+				var vy = h.get("vy", 0)
+				if y > arena_h - 100:
+					h["vy"] = -abs(vy)
+				elif y < 100:
+					h["vy"] = abs(vy)
+				h["y"] = y + h.get("vy", 0) * delta
+
+		# Collapsing floors
+		if self.timer > 10.0 and self.phase == 0:
+			self.phase = 1
+			var sinkhole = {
+				"id": "sinkhole_" + str(world.arena.hazards.size()),
+				"x": arena_w / 2.0, "y": arena_h / 2.0, "radius": 100.0, "kind": "massive_sinkhole", "damage": 0,
+				"lifetime": 9999.0, "active": true,
+				"has_method": Callable(func(m): return false)
+			}
+			world.arena.hazards.append(sinkhole)
+			if world.has_method("add_event"):
+				world.add_event("floor_collapse", {"message": "Warning: The floor is collapsing in the center!"})
+
+		elif self.timer > 20.0 and self.phase == 1:
+			self.phase = 2
+			# Expand sinkhole
+			for h in world.arena.hazards:
+				if h.get("kind", "") == "massive_sinkhole":
+					h["radius"] = h.get("radius", 100.0) + 100.0
+			if world.has_method("add_event"):
+				world.add_event("floor_collapse", {"message": "Warning: The sinkhole is expanding!"})
+
 var GAME_MODES = {
+
+	"obstacle_course": ObstacleCourseMode.new(),
 	"invisible_decoys": InvisibleDecoysMode.new(),
 	"reversed_input": ReversedInputMode.new(),
 	"sweeping_paddles": SweepingPaddlesMode.new(),

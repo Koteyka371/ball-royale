@@ -8440,7 +8440,100 @@ class TagTeamMode(GameMode):
                         world.add_event("tag_swap", {"type": "tag_swap", "message": "Tag Swap! Players switch!"})
 
 
+
+class ObstacleCourseMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Obstacle Course"
+        self.description = "Navigate an increasingly difficult obstacle course filled with moving lasers, rotating bumpers, and collapsing floors."
+        self.timer = 0.0
+        self.phase = 0
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+
+        try:
+            from arena.procedural_arena import Hazard
+        except ImportError:
+            class Hazard:
+                def __init__(self, id, x, y, radius, kind, damage):
+                    self.id = id
+                    self.x = x
+                    self.y = y
+                    self.radius = radius
+                    self.kind = kind
+                    self.damage = damage
+                    self.active = True
+
+        self.Haz = Hazard
+
+        arena_w = getattr(world, "width", 1000.0)
+        arena_h = getattr(world, "height", 1000.0)
+        cx = arena_w / 2
+        cy = arena_h / 2
+
+        # 1. Moving Lasers
+        world.arena.hazards.append(self.Haz(f"laser_{len(world.arena.hazards)}", cx - 200, cy, 30, "spinning_laser", 10))
+        world.arena.hazards[-1].vx = 0.0
+        world.arena.hazards[-1].vy = 50.0
+        world.arena.hazards[-1].lifetime = 9999.0
+
+        world.arena.hazards.append(self.Haz(f"laser_{len(world.arena.hazards)}", cx + 200, cy, 30, "spinning_laser", 10))
+        world.arena.hazards[-1].vx = 0.0
+        world.arena.hazards[-1].vy = -50.0
+        world.arena.hazards[-1].lifetime = 9999.0
+
+        # 2. Rotating Bumpers
+        world.arena.hazards.append(self.Haz(f"bumper_{len(world.arena.hazards)}", cx, cy + 200, 40, "bumper", 0))
+        world.arena.hazards[-1].rotation_speed = 2.0
+        world.arena.hazards[-1].lifetime = 9999.0
+
+        world.arena.hazards.append(self.Haz(f"bumper_{len(world.arena.hazards)}", cx, cy - 200, 40, "bumper", 0))
+        world.arena.hazards[-1].rotation_speed = -2.0
+        world.arena.hazards[-1].lifetime = 9999.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        self.timer += delta
+
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+
+        arena_w = getattr(world, "width", 1000.0)
+        arena_h = getattr(world, "height", 1000.0)
+
+        # Move lasers back and forth
+        for h in world.arena.hazards:
+            if getattr(h, "kind", "") == "spinning_laser":
+                y = getattr(h, "y", 0)
+                vy = getattr(h, "vy", 0)
+                if y > arena_h - 100:
+                    h.vy = -abs(vy)
+                elif y < 100:
+                    h.vy = abs(vy)
+                h.y = y + h.vy * delta
+
+        # Collapsing floors
+        if self.timer > 10.0 and self.phase == 0:
+            self.phase = 1
+            world.arena.hazards.append(self.Haz(f"sinkhole_{len(world.arena.hazards)}", arena_w/2, arena_h/2, 100, "massive_sinkhole", 0))
+            world.arena.hazards[-1].lifetime = 9999.0
+            if hasattr(world, "add_event"):
+                world.add_event("floor_collapse", {"message": "Warning: The floor is collapsing in the center!"})
+
+        elif self.timer > 20.0 and self.phase == 1:
+            self.phase = 2
+            # Expand sinkhole
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "massive_sinkhole":
+                    h.radius += 100.0
+            if hasattr(world, "add_event"):
+                world.add_event("floor_collapse", {"message": "Warning: The sinkhole is expanding!"})
+
 GAME_MODES["tag_team"] = TagTeamMode()
+GAME_MODES["obstacle_course"] = ObstacleCourseMode()
 
 try:
     from .reverse_friction import ReverseFrictionMode
