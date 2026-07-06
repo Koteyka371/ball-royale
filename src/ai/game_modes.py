@@ -8392,3 +8392,9 @@ class TagTeamMode(GameMode):
 
 
 GAME_MODES["tag_team"] = TagTeamMode()
+
+try:
+    from .reverse_friction import ReverseFrictionMode
+    GAME_MODES["reverse_friction"] = ReverseFrictionMode()
+except ImportError:
+    pass

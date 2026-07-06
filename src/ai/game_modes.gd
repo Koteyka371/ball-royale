@@ -10555,7 +10555,8 @@ var GAME_MODES = {
 	"cursed_buff_zone": CursedBuffZoneMode.new(),
 	"soul_link": SoulLinkMode.new(),
 	"clan_tournament": ClanTournamentMode.new(),
-	"tag_team": TagTeamMode.new()
+	"tag_team": TagTeamMode.new(),
+	"reverse_friction": preload("res://src/ai/reverse_friction.gd").ReverseFrictionMode.new()
 }
 
 class TagTeamMode extends GameMode:
