@@ -630,6 +630,28 @@ class Action:
         import math
         self.ball.is_frictionless = False
 
+        if getattr(self.ball, "is_active_clone", False) and getattr(self.ball, "alive", True):
+            self.ball.mimic_timer = getattr(self.ball, "mimic_timer", 10.0) - delta
+            if self.ball.mimic_timer <= 0 or getattr(self.ball, "hp", 1.0) <= 0:
+                self.ball.alive = False
+                return
+
+            owner_id = getattr(self.ball, "mimic_owner", None)
+            owner = None
+            if hasattr(self.world, "balls"):
+                for b in self.world.balls:
+                    if getattr(b, "id", None) == owner_id:
+                        owner = b
+                        break
+
+            if owner and getattr(owner, "alive", True):
+                strategy = getattr(owner, "current_action", strategy)
+            else:
+                self.ball.alive = False
+                return
+
+
+
         if getattr(self.ball, "leech_booster_timer", 0.0) > 0:
             self.ball.leech_booster_timer -= delta
 
@@ -6394,6 +6416,36 @@ class Action:
                         clone.skill_timer = 9999.0
 
                         self.world.balls.append(clone)
+            elif skill_name == "mass_illusion":
+                import copy
+                import math
+                import random
+                if hasattr(self.world, "balls"):
+                    for i in range(3):
+                        decoy = copy.copy(self.ball)
+                        decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                        if hasattr(self.world, "next_id"):
+                            self.world.next_id += 1
+
+                        decoy.hp = getattr(self.ball, "max_hp", 100) * 0.5
+                        decoy.max_hp = decoy.hp
+                        decoy.damage = getattr(self.ball, "damage", 10) * 0.5
+
+                        decoy.is_active_clone = True
+                        decoy.is_illusion = True
+                        decoy.mimic_owner = getattr(self.ball, "id", None)
+                        decoy.mimic_timer = 10.0
+
+                        angle = (i * 2 * math.pi / 3)
+                        decoy.x += math.cos(angle) * 20.0
+                        decoy.y += math.sin(angle) * 20.0
+
+                        decoy.skill_timer = 9999.0
+                        decoy.skill = None
+                        if hasattr(decoy, "active_skill"):
+                            decoy.active_skill = None
+
+                        self.world.balls.append(decoy)
             elif skill_name == "deploy_illusion":
                 import copy
                 if hasattr(self.world, "balls"):
