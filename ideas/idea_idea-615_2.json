@@ -1,0 +1,4 @@
+{
+  "title": "Orbital Strike Coordinator",
+  "description": "A new hazard or booster that links to turrets. When collected by an Engineer, all active turrets fire a simultaneous laser blast at the nearest enemy with infinite range."
+}
