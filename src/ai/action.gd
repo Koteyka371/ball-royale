@@ -1023,6 +1023,59 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+	var is_active_clone = false
+	if self.ball.has_method("get_meta") and self.ball.get_meta("is_active_clone"): is_active_clone = true
+	elif "is_active_clone" in self.ball and self.ball.is_active_clone: is_active_clone = true
+
+	var is_alive_ac = true
+	if "alive" in self.ball: is_alive_ac = self.ball.alive
+	elif self.ball.has_method("get_meta") and self.ball.has_meta("alive"): is_alive_ac = self.ball.get_meta("alive")
+
+	if is_active_clone and is_alive_ac:
+		var mimic_timer = 0.0
+		if self.ball.has_method("get_meta") and self.ball.has_meta("mimic_timer"): mimic_timer = self.ball.get_meta("mimic_timer")
+		elif "mimic_timer" in self.ball: mimic_timer = self.ball.mimic_timer
+
+		mimic_timer -= delta
+
+		if self.ball.has_method("set_meta"): self.ball.set_meta("mimic_timer", mimic_timer)
+		elif "mimic_timer" in self.ball: self.ball.mimic_timer = mimic_timer
+
+		var hp_ac = 1.0
+		if "hp" in self.ball: hp_ac = self.ball.hp
+
+		if mimic_timer <= 0 or hp_ac <= 0:
+			if "alive" in self.ball: self.ball.alive = false
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("alive", false)
+			return
+
+		var owner_id = null
+		if self.ball.has_method("get_meta") and self.ball.has_meta("mimic_owner"): owner_id = self.ball.get_meta("mimic_owner")
+		elif "mimic_owner" in self.ball: owner_id = self.ball.mimic_owner
+
+		var owner = null
+		if world != null and "balls" in world:
+			for b in world.balls:
+				var bid = null
+				if "id" in b: bid = b.id
+				elif b.has_method("get_meta") and b.has_meta("id"): bid = b.get_meta("id")
+
+				if bid != null and bid == owner_id:
+					owner = b
+					break
+
+		var o_alive = true
+		if owner != null:
+			if "alive" in owner: o_alive = owner.alive
+			elif owner.has_method("get_meta") and owner.has_meta("alive"): o_alive = owner.get_meta("alive")
+
+		if owner != null and o_alive:
+			if "current_action" in owner: strategy = owner.current_action
+		else:
+			if "alive" in self.ball: self.ball.alive = false
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("alive", false)
+			return
+
 	if typeof(self.ball) == TYPE_DICTIONARY:
 		self.ball["is_frictionless"] = false
 	elif self.ball.has_method("set_meta"):
@@ -10888,6 +10941,104 @@ func _use_skill():
                             clone["skill_timer"] = 9999.0
 
                         self.world.balls.append(clone)
+        elif skill_name == "mass_illusion":
+            if "balls" in self.world:
+                for i in range(3):
+                    var decoy = null
+
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        decoy = self.ball.duplicate()
+                    else:
+                        var script = self.ball.get_script()
+                        if script != null:
+                            var bid = 0
+                            var bx = 0.0
+                            var by = 0.0
+                            if "id" in self.ball: bid = self.ball.id
+                            if "x" in self.ball: bx = self.ball.x
+                            if "y" in self.ball: by = self.ball.y
+                            decoy = script.new(bid, bx, by)
+
+                            # copy properties manually
+                            if "hp" in self.ball and "hp" in decoy: decoy.hp = self.ball.hp
+                            if "max_hp" in self.ball and "max_hp" in decoy: decoy.max_hp = self.ball.max_hp
+                            if "damage" in self.ball and "damage" in decoy: decoy.damage = self.ball.damage
+                            if "team" in self.ball and "team" in decoy: decoy.team = self.ball.team
+                        elif self.ball.has_method("duplicate"):
+                            decoy = self.ball.duplicate()
+
+                    if decoy != null:
+                        var next_id = randi() % 90000 + 10000
+                        if "next_id" in self.world:
+                            next_id = self.world.next_id
+                            self.world.next_id += 1
+
+                        if typeof(decoy) == TYPE_DICTIONARY:
+                            decoy["id"] = next_id
+
+                            var mhp = 100.0
+                            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("max_hp"): mhp = self.ball["max_hp"]
+                            elif "max_hp" in self.ball: mhp = self.ball.max_hp
+
+                            decoy["max_hp"] = mhp * 0.5
+                            decoy["hp"] = decoy["max_hp"]
+
+                            var dam = 10.0
+                            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("damage"): dam = self.ball["damage"]
+                            elif "damage" in self.ball: dam = self.ball.damage
+                            decoy["damage"] = dam * 0.5
+
+                            if decoy.has("skill"): decoy["skill"] = ""
+                            if decoy.has("SKILL"): decoy["SKILL"] = ""
+                            if decoy.has("skill_timer"): decoy["skill_timer"] = 9999.0
+
+                            var angle = (i * 2.0 * PI / 3.0)
+                            if decoy.has("x") and decoy.has("y"):
+                                decoy["x"] += cos(angle) * 20.0
+                                decoy["y"] += sin(angle) * 20.0
+
+                            var owner_id = null
+                            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): owner_id = self.ball["id"]
+                            elif "id" in self.ball: owner_id = self.ball.id
+
+                            decoy["is_active_clone"] = true
+                            decoy["is_illusion"] = true
+                            decoy["mimic_owner"] = owner_id
+                            decoy["mimic_timer"] = 10.0
+                        else:
+                            if "id" in decoy: decoy.id = next_id
+
+                            var mhp = 100.0
+                            if "max_hp" in self.ball: mhp = self.ball.max_hp
+
+                            if "hp" in decoy and "max_hp" in decoy:
+                                decoy.max_hp = mhp * 0.5
+                                decoy.hp = decoy.max_hp
+
+                            if "damage" in decoy:
+                                var dam = 10.0
+                                if "damage" in self.ball: dam = self.ball.damage
+                                decoy.damage = dam * 0.5
+
+                            if "skill" in decoy: decoy.skill = ""
+                            if "SKILL" in decoy: decoy.SKILL = ""
+                            if "skill_timer" in decoy: decoy.skill_timer = 9999.0
+
+                            var angle = (i * 2.0 * PI / 3.0)
+                            if "x" in decoy and "y" in decoy:
+                                decoy.x += cos(angle) * 20.0
+                                decoy.y += sin(angle) * 20.0
+
+                            var owner_id = null
+                            if "id" in self.ball: owner_id = self.ball.id
+
+                            if decoy.has_method("set_meta"):
+                                decoy.set_meta("is_active_clone", true)
+                                decoy.set_meta("is_illusion", true)
+                                decoy.set_meta("mimic_owner", owner_id)
+                                decoy.set_meta("mimic_timer", 10.0)
+
+                        self.world.balls.append(decoy)
         elif skill_name == "deploy_illusion":
             if "balls" in self.world:
                 var illusion = null
