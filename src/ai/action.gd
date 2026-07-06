@@ -1295,6 +1295,24 @@ func execute(strategy: String, delta: float):
 	elif self.ball.has_method("set_meta"):
 		self.ball.set_meta("is_frictionless", false)
 
+	var is_cursed_active = false
+	if "cursed_bumper_active" in self.ball: is_cursed_active = self.ball.cursed_bumper_active
+	elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("cursed_bumper_active"): is_cursed_active = self.ball.get_meta("cursed_bumper_active")
+
+	if is_cursed_active:
+		if "stamina" in self.ball:
+			self.ball.stamina = max(0.0, self.ball.stamina - 15.0 * delta)
+			if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("stamina", self.ball.stamina)
+
+		if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("take_damage"):
+			self.ball.take_damage(5.0 * delta)
+		elif "hp" in self.ball:
+			self.ball.hp -= 5.0 * delta
+			if self.ball.hp <= 0:
+				if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("alive", false)
+				if "alive" in self.ball: self.ball.alive = false
+			if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("hp", self.ball.hp)
+
 	var st_timer = 0.0
 	if "storm_booster_timer" in self.ball: st_timer = float(self.ball.storm_booster_timer)
 	elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("get_meta") and self.ball.has_meta("storm_booster_timer"): st_timer = float(self.ball.get_meta("storm_booster_timer"))
@@ -7059,6 +7077,58 @@ func execute(strategy: String, delta: float):
                                 powerup = hazard.powerup_type
                             elif "powerup_type" in hazard:
                                 powerup = hazard.powerup_type
+
+                            if powerup == "cursed":
+                                var is_cursed = false
+                                if "cursed_bumper_active" in self.ball: is_cursed = self.ball.cursed_bumper_active
+                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("cursed_bumper_active"): is_cursed = self.ball.get_meta("cursed_bumper_active")
+
+                                if not is_cursed:
+                                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("cursed_bumper_active", true)
+                                    if "cursed_bumper_active" in self.ball: self.ball.cursed_bumper_active = true
+
+                                    var dmg_mult = 1.0
+                                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("damage_multiplier"): dmg_mult = self.ball.get_meta("damage_multiplier")
+                                    elif "damage_multiplier" in self.ball: dmg_mult = self.ball.damage_multiplier
+
+                                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta") and not self.ball.has_meta("base_damage_multiplier"): self.ball.set_meta("base_damage_multiplier", dmg_mult)
+                                    if "damage_multiplier" in self.ball and not "base_damage_multiplier" in self.ball: self.ball.base_damage_multiplier = dmg_mult
+
+                                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("damage_multiplier", dmg_mult * 3.0)
+                                    if "damage_multiplier" in self.ball: self.ball.damage_multiplier = dmg_mult * 3.0
+
+                                    var spd = 2.0
+                                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("speed"): spd = self.ball.get_meta("speed")
+                                    elif "speed" in self.ball: spd = self.ball.speed
+
+                                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta") and not self.ball.has_meta("base_speed"): self.ball.set_meta("base_speed", spd)
+                                    if "speed" in self.ball and not "base_speed" in self.ball: self.ball.base_speed = spd
+
+                                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("speed", spd * 3.0)
+                                    if "speed" in self.ball: self.ball.speed = spd * 3.0
+
+                            elif powerup != "cursed":
+                                var is_cursed = false
+                                if "cursed_bumper_active" in self.ball: is_cursed = self.ball.cursed_bumper_active
+                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("cursed_bumper_active"): is_cursed = self.ball.get_meta("cursed_bumper_active")
+
+                                if is_cursed:
+                                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("cursed_bumper_active", false)
+                                    if "cursed_bumper_active" in self.ball: self.ball.cursed_bumper_active = false
+
+                                    var base_dmg_mult = 1.0
+                                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("base_damage_multiplier"): base_dmg_mult = self.ball.get_meta("base_damage_multiplier")
+                                    elif "base_damage_multiplier" in self.ball: base_dmg_mult = self.ball.base_damage_multiplier
+
+                                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("damage_multiplier", base_dmg_mult)
+                                    if "damage_multiplier" in self.ball: self.ball.damage_multiplier = base_dmg_mult
+
+                                    var base_spd = 2.0
+                                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("base_speed"): base_spd = self.ball.get_meta("base_speed")
+                                    elif "base_speed" in self.ball: base_spd = self.ball.base_speed
+
+                                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("speed", base_spd)
+                                    if "speed" in self.ball: self.ball.speed = base_spd
 
                             if powerup == "heal":
                                 var max_hp = 100.0

@@ -722,6 +722,16 @@ class Action:
 
         self.ball.is_frictionless = False
 
+        if getattr(self.ball, "cursed_bumper_active", False):
+            if hasattr(self.ball, "stamina"):
+                self.ball.stamina = max(0.0, getattr(self.ball, "stamina", 0.0) - 15.0 * delta)
+            if hasattr(self.ball, "take_damage"):
+                self.ball.take_damage(5.0 * delta)
+            elif hasattr(self.ball, "hp"):
+                self.ball.hp -= 5.0 * delta
+                if self.ball.hp <= 0:
+                    self.ball.alive = False
+
 
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             hazards_to_remove = []
@@ -4063,6 +4073,24 @@ class Action:
 
                                 # Apply bumper powerup if present
                                 powerup = getattr(hazard, "powerup_type", None)
+                                if powerup == "cursed":
+                                    if not getattr(self.ball, "cursed_bumper_active", False):
+                                        self.ball.cursed_bumper_active = True
+
+                                        if not hasattr(self.ball, "base_damage_multiplier"):
+                                            self.ball.base_damage_multiplier = getattr(self.ball, "damage_multiplier", 1.0)
+                                        self.ball.damage_multiplier = self.ball.base_damage_multiplier * 3.0
+
+                                        if not hasattr(self.ball, "base_speed"):
+                                            self.ball.base_speed = getattr(self.ball, "speed", 2.0)
+                                        self.ball.speed = self.ball.base_speed * 3.0
+                                elif powerup != "cursed" and getattr(self.ball, "cursed_bumper_active", False):
+                                    self.ball.cursed_bumper_active = False
+                                    if hasattr(self.ball, "base_damage_multiplier"):
+                                        self.ball.damage_multiplier = self.ball.base_damage_multiplier
+                                    if hasattr(self.ball, "base_speed"):
+                                        self.ball.speed = self.ball.base_speed
+
                                 if powerup == "heal":
                                     self.ball.hp = min(getattr(self.ball, "max_hp", 100.0), getattr(self.ball, "hp", 100.0) + (10.0 * combo_multiplier))
                                 elif powerup == "speed":
