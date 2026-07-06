@@ -1775,9 +1775,21 @@ class Action:
                                         elif decoy_type == "explosive":
                                             other.hp -= explosion_damage
                                             other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 2.0
-                                        else:
+                                        elif decoy_type != "healing_trap":
                                             other.hp -= explosion_damage
                                             other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 2.0
+
+                            decoy_type = getattr(b, "decoy_type", "")
+                            if decoy_type == "healing_trap":
+                                heal_amount = 40.0
+                                for other in self.world.balls:
+                                    if getattr(other, "alive", False) and getattr(other, "team", "") == getattr(b, "team", ""):
+                                        dx = other.x - b.x
+                                        dy = other.y - b.y
+                                        dist = math.sqrt(dx*dx + dy*dy)
+                                        if dist <= radius:
+                                            if hasattr(other, "hp") and hasattr(other, "max_hp"):
+                                                other.hp = min(other.hp + heal_amount, other.max_hp)
 
                                         import random
                                         import math
@@ -6482,6 +6494,52 @@ class Action:
                     turret.skill = None
                     turret.active_skill = None
                     self.world.balls.append(turret)
+
+            elif skill_name == "master_decoy":
+                import copy
+                import random
+                import math
+
+                if hasattr(self.world, "balls"):
+                    for i in range(3):
+                        decoy = copy.copy(self.ball)
+                        decoy.owner_id = getattr(self.ball, "id", None)
+                        decoy.has_swapped = False
+                        self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 10.0)
+                        decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                        if hasattr(self.world, "next_id"):
+                            self.world.next_id += 1
+
+                        decoy.hp = getattr(self.ball, "hp", 100)
+                        decoy.max_hp = getattr(self.ball, "max_hp", 100)
+                        decoy.damage = 0
+                        decoy.speed = getattr(self.ball, "speed", 4.0)
+                        decoy.skill_timer = 9999.0
+                        decoy.attack_timer = 9999.0
+                        decoy.is_decoy = True
+                        decoy.decoy_timer = 5.0
+                        decoy.SKILL = None
+                        decoy.skill = None
+                        decoy.active_skill = None
+
+                        decoy.is_orbiting = False
+                        decoy.is_mirroring = False
+                        decoy.orbit_angle = 0.0
+
+                        angle = (i * 2 * math.pi / 3)
+                        offset_x = math.cos(angle) * 30.0
+                        offset_y = math.sin(angle) * 30.0
+                        decoy.x += offset_x
+                        decoy.y += offset_y
+
+                        if i == 0:
+                            decoy.decoy_type = "explosive"
+                        elif i == 1:
+                            decoy.decoy_type = "stun_trap"
+                        else:
+                            decoy.decoy_type = "healing_trap"
+
+                        self.world.balls.append(decoy)
 
             elif skill_name == "deploy_decoy":
                 import copy

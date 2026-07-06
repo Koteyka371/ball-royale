@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Swap Decoy",
+  "description": "A new decoy type that, when destroyed by an enemy, swaps the position of the enemy who destroyed it with the original caster, disorienting the attacker."
+}

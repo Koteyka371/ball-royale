@@ -84,6 +84,7 @@ BALL_TYPES = {
                 "skill": "none", "skill_cooldown": 999.0},
     "necromancer": {"hp": 90, "speed": 2.0, "damage": 15, "radius": 10, "perception_radius": 320, "aggression": 0.3, "color": "black", "skill": "raise_dead", "skill_cooldown": 8.0},
     "trickster": {"hp": 85, "speed": 4.0, "damage": 14, "radius": 9, "perception_radius": 270, "aggression": 0.6, "color": "pink", "skill": "illusion", "skill_cooldown": 4.0},
+    "master_illusionist": {"hp": 90, "speed": 4.0, "damage": 14, "radius": 9, "perception_radius": 270, "aggression": 0.6, "color": "purple", "skill": "master_decoy", "skill_cooldown": 10.0},
     "elementalist": {"hp": 95, "speed": 2.6, "damage": 24, "radius": 10, "perception_radius": 290, "aggression": 0.5, "color": "cyan", "skill": "elemental_burst", "skill_cooldown": 5.0},
     "vampire": {"hp": 120, "speed": 3.8, "damage": 18, "radius": 11, "perception_radius": 250, "aggression": 0.8, "color": "darkred", "skill": "bite", "skill_cooldown": 4.0},
     "templar": {"hp": 170, "speed": 2.5, "damage": 16, "radius": 15, "perception_radius": 230, "aggression": 0.7, "color": "white", "skill": "smite", "skill_cooldown": 5.5},
