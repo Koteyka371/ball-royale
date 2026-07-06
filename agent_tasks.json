@@ -9794,7 +9794,7 @@
     },
     {
       "id": "idea-567",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Ice Slippage Modifier",
@@ -17722,6 +17722,23 @@
         "src/ai/reflect_booster.py",
         "src/ai/reflect_booster.gd",
         "tests/test_reflect_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1033",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Doppelganger Match Mode",
+      "description": "Every player spawns with a clone that perfectly mimics their inputs, but it only deals half damage and takes double damage. If the real player is killed, they immediately swap into their clone, reviving but with halved stats for the rest of the game.",
+      "allowed_paths": [
+        "src/ai/doppelganger_match.py",
+        "src/ai/doppelganger_match.gd",
+        "tests/test_doppelganger_match.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

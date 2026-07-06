@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-567] Ice Slippage Modifier — *2026-07-06 17:41:25 UTC*
+
+Add an 'ice_patches' hazard type that drastically lowers friction for any ball caught in it, causing their movement/velocity commands to slide uncontrollably until they exit the patch.
+
+---
+
 ## [idea-620] Reverse Friction Mode — *2026-07-06 17:40:10 UTC*
 
 Balls continuously accelerate as long as they are moving, turning the arena into a high-speed ping-pong match. Collisions deal extra damage based on speed.
