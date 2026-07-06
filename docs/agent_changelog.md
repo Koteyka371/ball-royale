@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-563] Gravity Boots Booster — *2026-07-06 17:16:58 UTC*
+
+A booster that gives the player immunity to pulling effects and quicksand.
+
+---
+
 ## [idea-626] Decoy Illusionists — *2026-07-06 17:16:54 UTC*
 
 A new ball type that can create up to 3 different types of decoys simultaneously - one that explodes, one that stuns, and one that heals nearby allies when it is destroyed.
