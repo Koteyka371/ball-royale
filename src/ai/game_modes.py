@@ -8019,7 +8019,56 @@ class ExtremeWeatherMode(GameMode):
                         b.x += math.cos(angle) * 100.0 * delta
                         b.y += math.sin(angle) * 100.0 * delta
 
+class DodgeballMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Dodgeball"
+        self.description = "Two teams are separated by a center line. Players cannot cross the line but can throw hazards and boosters."
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        mid = len(valid_balls) // 2
+        for i, b in enumerate(valid_balls):
+            b.team = "Red" if i < mid else "Blue"
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+        center_x = arena_width / 2.0
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            radius = getattr(b, "radius", 10.0)
+            team = getattr(b, "team", None)
+
+            if team == "Red":
+                if b.x + radius > center_x:
+                    b.x = center_x - radius
+                    b.vx = min(0.0, getattr(b, "vx", 0.0))
+            elif team == "Blue":
+                if b.x - radius < center_x:
+                    b.x = center_x + radius
+                    b.vx = max(0.0, getattr(b, "vx", 0.0))
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+
+        teams_alive = set(getattr(b, "team", b.ball_type) for b in alive)
+        if len(teams_alive) == 1:
+            return list(teams_alive)[0]
+        return None
+
 GAME_MODES = {
+    "dodgeball": DodgeballMode(),
     "extreme_weather": ExtremeWeatherMode(),
     "invisible_decoys": InvisibleDecoysMode(),
     "sweeping_paddles": SweepingPaddlesMode(),

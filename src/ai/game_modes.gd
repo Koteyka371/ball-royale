@@ -10924,3 +10924,87 @@ class TagTeamMode extends GameMode:
 						inactive["y"] = a_y
 						inactive["vx"] = a_vx
 						inactive["vy"] = a_vy
+
+class DodgeballMode extends GameMode:
+    func _init() -> void:
+        name = "Dodgeball"
+        description = "Two teams are separated by a center line. Players cannot cross the line but can throw hazards and boosters."
+
+    func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
+        if not "dead_balls" in world:
+            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+
+        var valid_balls = []
+        for b in balls:
+            if b.ball_type != "spectator":
+                valid_balls.append(b)
+
+        var mid = valid_balls.size() / 2
+        for i in range(valid_balls.size()):
+            var b = valid_balls[i]
+            if i < mid:
+                b.team = "Red"
+            else:
+                b.team = "Blue"
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        super.tick(world, balls, delta)
+
+        var arena_width = 1000.0
+        if "arena" in world and world.arena != null:
+            if "width" in world.arena:
+                arena_width = world.arena.width
+        elif world.has_method("has_meta") and world.has_meta("arena"):
+            var a = world.get_meta("arena")
+            if a != null and "width" in a:
+                arena_width = a.width
+
+        var center_x = arena_width / 2.0
+
+        for b in balls:
+            if not b.alive or b.ball_type == "spectator":
+                continue
+
+            var radius = 10.0
+            if "radius" in b:
+                radius = b.radius
+
+            var team = null
+            if "team" in b:
+                team = b.team
+
+            if team == "Red":
+                if b.x + radius > center_x:
+                    b.x = center_x - radius
+                    if "vx" in b:
+                        b.vx = min(0.0, float(b.vx))
+            elif team == "Blue":
+                if b.x - radius < center_x:
+                    b.x = center_x + radius
+                    if "vx" in b:
+                        b.vx = max(0.0, float(b.vx))
+
+    func check_winner(world, balls: Array):
+        var alive = []
+        for b in balls:
+            if b.alive and b.ball_type != "spectator":
+                alive.append(b)
+
+        if alive.size() == 0:
+            return "Draw"
+
+        var teams_alive = {}
+        for b in alive:
+            var t = null
+            if "team" in b:
+                t = b.team
+            else:
+                t = b.ball_type
+            if t != null:
+                teams_alive[t] = true
+
+        if teams_alive.size() == 1:
+            return teams_alive.keys()[0]
+
+        return null
