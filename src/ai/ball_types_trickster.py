@@ -14,7 +14,7 @@ class Trickster:
     PERCEPTION_RADIUS = 270
     AGGRESSION = 0.6
     COLOR = 'pink'
-    SKILL = 'place_fake_booster'
+    SKILL = 'trickster_swap'
     SKILL_COOLDOWN = 4.0
     ATTACK_RANGE = 20.0
 
