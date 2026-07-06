@@ -7720,6 +7720,61 @@ class MazeSafeZoneMode(GameMode):
             return "Draw"
 
 
+
+class ReverseGravityEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Reverse Gravity Event"
+        self.description = "A random arena event that periodically reverses gravity, sending all balls bouncing towards the center instead of outwards."
+        self.event_timer = 0.0
+        self.event_active = False
+        self.event_duration = 0.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if not self.event_active:
+            self.event_timer += delta
+
+        if not self.event_active and self.event_timer > 20.0:
+            import random
+            if random.random() < 0.2:  # 20% chance every 20s
+                self.event_active = True
+                self.event_duration = 10.0
+                self.event_timer = 0.0
+                if hasattr(world, "add_event"):
+                    world.add_event("reverse_gravity", {"active": True})
+            else:
+                self.event_timer = 0.0
+
+        if self.event_active:
+            self.event_duration -= delta
+            if self.event_duration <= 0:
+                self.event_active = False
+                self.event_timer = 0.0
+                if hasattr(world, "add_event"):
+                    world.add_event("reverse_gravity", {"active": False})
+
+        if hasattr(world, "arena"):
+            arena_width = getattr(world.arena, "width", 1000.0)
+            arena_height = getattr(world.arena, "height", 1000.0)
+            cx = arena_width / 2.0
+            cy = arena_height / 2.0
+
+            force_mag = 400.0 * delta
+            # Inwards if event_active, outwards if not active
+            direction_mult = 1.0 if self.event_active else -1.0
+
+            import math
+            for b in balls:
+                if getattr(b, "alive", True) and getattr(b, "ball_type", None) != "spectator":
+                    bx = getattr(b, "x", cx)
+                    by = getattr(b, "y", cy)
+                    dx = cx - bx
+                    dy = cy - by
+                    dist = math.sqrt(dx*dx + dy*dy)
+                    if dist > 0:
+                        b.x += (dx / dist) * force_mag * direction_mult
+                        b.y += (dy / dist) * force_mag * direction_mult
+
 GAME_MODES = {
     "sweeping_paddles": SweepingPaddlesMode(),
     "artifact_upgrader": ArtifactUpgraderMode(),
@@ -7750,6 +7805,7 @@ GAME_MODES = {
     "draft_royale": DraftRoyaleMode(),
     "dual_payload": DualPayloadMode(),
     "tug_of_war": TugOfWarMode(),
+    "reverse_gravity_event": ReverseGravityEventMode(),
     "escort": EscortMode(),
     "tournament": TournamentMode(),
     "bumper_balls": BumperBallsMode(),
