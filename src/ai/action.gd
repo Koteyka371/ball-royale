@@ -3609,7 +3609,7 @@ func execute(strategy: String, delta: float):
             for hazard in self.world.arena.hazards:
                 if hazard.kind == "temporal_rift":
 			continue
-                if hazard.kind == "explosive_barrel":
+                if hazard.kind in ["explosive_barrel", "volatile_barrel"]:
                     var current_tick = world.get("tick") if world.has_method("get") else 0
                     if not hazard.has_meta("last_updated_tick") or hazard.get_meta("last_updated_tick") != current_tick:
                         hazard.set_meta("last_updated_tick", current_tick)
@@ -3634,7 +3634,7 @@ func execute(strategy: String, delta: float):
                         for other_hazard in world.arena.hazards:
                             var h_id = hazard.get_instance_id() if typeof(hazard) == TYPE_OBJECT else hash(hazard)
                             var oh_id = other_hazard.get_instance_id() if typeof(other_hazard) == TYPE_OBJECT else hash(other_hazard)
-                            if h_id != oh_id and other_hazard.kind == "explosive_barrel":
+                            if h_id != oh_id and other_hazard.kind in ["explosive_barrel", "volatile_barrel"]:
                                 var dx_b = hazard.x - other_hazard.x
                                 var dy_b = hazard.y - other_hazard.y
                                 var dist_b = sqrt(dx_b*dx_b + dy_b*dy_b)
@@ -3667,6 +3667,19 @@ func execute(strategy: String, delta: float):
 
                         if hazard.has_meta("is_exploded") and hazard.get_meta("is_exploded"):
                             hazard.duration = 0.0
+                            if hazard.kind == "volatile_barrel":
+                                var h_arena = world.get("arena") if world.has_method("get") else world.get("arena", null)
+                                if h_arena and typeof(h_arena) == TYPE_OBJECT and h_arena.has_method("get") and h_arena.get("hazards"):
+                                    for oh in h_arena.get("hazards"):
+                                        var h_id2 = hazard.get_instance_id() if typeof(hazard) == TYPE_OBJECT else hash(hazard)
+                                        var oh_id2 = oh.get_instance_id() if typeof(oh) == TYPE_OBJECT else hash(oh)
+                                        if h_id2 != oh_id2 and ("kind" in oh and oh.kind == "volatile_barrel"):
+                                            var oh_exploded = oh.get_meta("is_exploded") if oh.has_meta("is_exploded") else false
+                                            if not oh_exploded:
+                                                var dx_oh = oh.x - hazard.x
+                                                var dy_oh = oh.y - hazard.y
+                                                if sqrt(dx_oh*dx_oh + dy_oh*dy_oh) < hazard.radius * 6:
+                                                    oh.set_meta("is_exploded", true)
                             if "balls" in world:
                                 for b in world.balls:
                                     if b.alive:
@@ -5007,7 +5020,7 @@ func execute(strategy: String, delta: float):
                 if dist < (self.ball.radius + hazard.radius):
                     if hazard.kind == "temporal_rift":
 			continue
-                    if hazard.kind == "explosive_barrel":
+                    if hazard.kind in ["explosive_barrel", "volatile_barrel"]:
                         if not hazard.has_meta("is_exploded") or not hazard.get_meta("is_exploded"):
                             var bvx = 0.0
                             if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("vx"):
