@@ -14,7 +14,7 @@ class LightningRod:
     PERCEPTION_RADIUS = 300
     AGGRESSION = 0.4
     COLOR = 'yellow'
-    SKILL = 'lightning_strike'
+    SKILL = 'bouncing_lightning'
     SKILL_COOLDOWN = 6.0
     ATTACK_RANGE = 30.0
 

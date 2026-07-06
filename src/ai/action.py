@@ -7378,6 +7378,60 @@ class Action:
                     self.ball.skill_timer = 0.0
 
 
+            elif skill_name == "bouncing_lightning":
+                enemies = self._get_enemies()
+                if enemies:
+                    # Find closest enemy
+                    target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                    dist = math.sqrt((target.x - self.ball.x)**2 + (target.y - self.ball.y)**2)
+
+                    strike_range = 250.0
+
+                    if dist <= strike_range:
+                        base_dmg = getattr(self.ball, "damage", 20.0)
+
+                        if hasattr(target, "take_damage"):
+                            target.take_damage(base_dmg)
+                        elif hasattr(target, "hp"):
+                            target.hp -= base_dmg
+
+                        if hasattr(self, "_spawn_skill_particles"):
+                            self._spawn_skill_particles("lightning")
+
+                        hit_entities = [self.ball, target]
+                        current_target = target
+                        chain_damage = base_dmg * 0.5
+                        jumps = 0
+                        max_jumps = 3
+
+                        while jumps < max_jumps:
+                            nearby_entities = []
+                            chain_range = 200.0
+
+                            for e in enemies:
+                                if e not in hit_entities:
+                                    d_sq = (e.x - current_target.x)**2 + (e.y - current_target.y)**2
+                                    if d_sq <= chain_range**2:
+                                        nearby_entities.append((d_sq, e))
+
+                            if not nearby_entities:
+                                break
+
+                            nearby_entities.sort(key=lambda x: x[0])
+                            _, next_entity = nearby_entities[0]
+
+                            if hasattr(next_entity, "take_damage"):
+                                next_entity.take_damage(chain_damage)
+                            elif hasattr(next_entity, "hp"):
+                                next_entity.hp -= chain_damage
+
+                            if hasattr(self, "_spawn_skill_particles"):
+                                self._spawn_skill_particles("lightning")
+
+                            hit_entities.append(next_entity)
+                            current_target = next_entity
+                            chain_damage *= 0.5
+                            jumps += 1
             elif skill_name == "lightning_strike":
                 enemies = self._get_enemies()
 

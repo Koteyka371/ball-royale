@@ -12438,6 +12438,72 @@ func _use_skill():
                     self.ball.set_meta("skill_timer", 0.0)
 
 
+        elif skill_name == "bouncing_lightning":
+            var enemies = _get_enemies()
+
+            if enemies.size() > 0:
+                var target = null
+                var min_dist_sq = INF
+                for e in enemies:
+                    var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                    if dist_sq < min_dist_sq:
+                        min_dist_sq = dist_sq
+                        target = e
+
+                var dist = sqrt(min_dist_sq)
+                var strike_range = 250.0
+
+                if dist <= strike_range:
+                    var dmg = 20.0
+                    if "damage" in self.ball:
+                        dmg = self.ball.damage
+                    elif self.ball.has_method("has_meta") and self.ball.has_meta("damage"):
+                        dmg = self.ball.get_meta("damage")
+
+                    if target.has_method("take_damage"):
+                        target.take_damage(dmg)
+                    elif "hp" in target:
+                        target.hp -= dmg
+
+                    if self.has_method("_spawn_skill_particles"):
+                        self._spawn_skill_particles("lightning")
+
+                    var hit_entities = []
+                    hit_entities.append(self.ball)
+                    hit_entities.append(target)
+                    var current_target = target
+                    var chain_damage = dmg * 0.5
+                    var max_jumps = 3
+                    var jumps = 0
+
+                    while jumps < max_jumps:
+                        var nearby_entities = []
+                        var chain_range = 200.0
+
+                        for e in enemies:
+                            if hit_entities.find(e) == -1:
+                                var d_sq = pow(e.x - current_target.x, 2) + pow(e.y - current_target.y, 2)
+                                if d_sq <= chain_range * chain_range:
+                                    nearby_entities.append({"d_sq": d_sq, "entity": e})
+
+                        if nearby_entities.size() == 0:
+                            break
+
+                        nearby_entities.sort_custom(func(a, b): return a["d_sq"] < b["d_sq"])
+                        var next_entity = nearby_entities[0]["entity"]
+
+                        if next_entity.has_method("take_damage"):
+                            next_entity.take_damage(chain_damage)
+                        elif "hp" in next_entity:
+                            next_entity.hp -= chain_damage
+
+                        if self.has_method("_spawn_skill_particles"):
+                            self._spawn_skill_particles("lightning")
+
+                        hit_entities.append(next_entity)
+                        current_target = next_entity
+                        chain_damage *= 0.5
+                        jumps += 1
         elif skill_name == "lightning_strike":
             var enemies = _get_enemies()
 
@@ -12545,7 +12611,7 @@ func _use_skill():
                         if nearby_entities.size() == 0:
                             break
 
-                        nearby_entities.sort_custom(func(a, b): return a["dist"] < b["dist"])
+                        nearby_entities.sort_custom(func(a, b): return a["d_sq"] < b["d_sq"])
                         var next_entity = nearby_entities[0]["entity"]
                         var e_type = nearby_entities[0]["type"]
 
