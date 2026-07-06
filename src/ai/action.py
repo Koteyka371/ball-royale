@@ -1764,56 +1764,63 @@ class Action:
                             explosion_damage = 80.0 if has_volatile else 30.0
 
                             for other in self.world.balls:
-                                if getattr(other, "alive", False) and getattr(other, "team", getattr(b, "team", "")) != getattr(b, "team", "") and getattr(other, "id", None) != getattr(b, "id", None):
+                                if getattr(other, "alive", False) and getattr(other, "id", None) != getattr(b, "id", None):
+                                    is_enemy = getattr(other, "team", getattr(b, "team", "")) != getattr(b, "team", "")
+                                    is_ally = getattr(other, "team", getattr(b, "team", "")) == getattr(b, "team", "")
+
                                     dx = other.x - b.x
                                     dy = other.y - b.y
                                     dist = math.sqrt(dx*dx + dy*dy)
                                     if dist <= radius:
                                         decoy_type = getattr(b, "decoy_type", "")
-                                        if decoy_type == "stun_trap":
-                                            other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 5.0
-                                        elif decoy_type == "explosive":
-                                            other.hp -= explosion_damage
-                                            other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 2.0
-                                        else:
-                                            other.hp -= explosion_damage
-                                            other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 2.0
+                                        if decoy_type == "healing" and is_ally:
+                                            heal_amount = 30.0
+                                            other.hp = min(getattr(other, "max_hp", 100.0), other.hp + heal_amount)
+                                        elif is_enemy and decoy_type != "healing":
+                                            if decoy_type == "stun_trap":
+                                                other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 5.0
+                                            elif decoy_type == "explosive":
+                                                other.hp -= explosion_damage
+                                                other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 2.0
+                                            else:
+                                                other.hp -= explosion_damage
+                                                other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 2.0
 
-                                        import random
-                                        import math
-                                        b_type = getattr(b, "ball_type", "")
-                                        b_team = getattr(b, "team", "")
+                                            import random
+                                            import math
+                                            b_type = getattr(b, "ball_type", "")
+                                            b_team = getattr(b, "team", "")
 
-                                        if b_type == "trickster" or b_team == "trickster":
-                                            # Trickster decoy specific logic
-                                            other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 1.5
+                                            if b_type == "trickster" or b_team == "trickster":
+                                                # Trickster decoy specific logic
+                                                other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 1.5
 
-                                            # Minor visual noise
-                                            if hasattr(self.world, "events"):
-                                                self.world.events.append({"type": "visual_effect", "data": {"type": "noise", "x": other.x, "y": other.y, "intensity": 0.5}})
+                                                # Minor visual noise
+                                                if hasattr(self.world, "events"):
+                                                    self.world.events.append({"type": "visual_effect", "data": {"type": "noise", "x": other.x, "y": other.y, "intensity": 0.5}})
 
-                                            if random.random() < 0.3:
-                                                other.is_confused = True
-                                                other.confusion_timer = 3.0
+                                                if random.random() < 0.3:
+                                                    other.is_confused = True
+                                                    other.confusion_timer = 3.0
 
-                                            # Generate fragmentation visuals bouncing off other
-                                            if hasattr(self.world, "events"):
-                                                for i in range(4):
-                                                    angle = random.uniform(0, 2 * math.pi)
-                                                    tx = other.x + math.cos(angle) * 150
-                                                    ty = other.y + math.sin(angle) * 150
-                                                    self.world.events.append({
-                                                        "type": "visual_effect",
-                                                        "data": {
-                                                            "type": "fragmentation_projectile",
-                                                            "x": b.x,
-                                                            "y": b.y,
-                                                            "tx": tx,
-                                                            "ty": ty,
-                                                            "bounce": True,
-                                                            "color": "purple"
-                                                        }
-                                                    })
+                                                # Generate fragmentation visuals bouncing off other
+                                                if hasattr(self.world, "events"):
+                                                    for i in range(4):
+                                                        angle = random.uniform(0, 2 * math.pi)
+                                                        tx = other.x + math.cos(angle) * 150
+                                                        ty = other.y + math.sin(angle) * 150
+                                                        self.world.events.append({
+                                                            "type": "visual_effect",
+                                                            "data": {
+                                                                "type": "fragmentation_projectile",
+                                                                "x": b.x,
+                                                                "y": b.y,
+                                                                "tx": tx,
+                                                                "ty": ty,
+                                                                "bounce": True,
+                                                                "color": "purple"
+                                                            }
+                                                        })
 
                                         if other.hp <= 0:
                                             other.alive = False
@@ -6482,6 +6489,46 @@ class Action:
                     turret.skill = None
                     turret.active_skill = None
                     self.world.balls.append(turret)
+
+            elif skill_name == "master_decoys":
+                import copy
+                if hasattr(self.world, "balls"):
+                    import random
+                    import math
+
+                    decoy_types = ["explosive", "stun_trap", "healing"]
+
+                    for i in range(3):
+                        decoy = copy.copy(self.ball)
+                        decoy.owner_id = getattr(self.ball, "id", None)
+                        self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 10.0)
+                        decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                        if hasattr(self.world, "next_id"):
+                            self.world.next_id += 1
+
+                        decoy.hp = getattr(self.ball, "hp", 100) * 0.5
+                        decoy.max_hp = getattr(self.ball, "max_hp", 100) * 0.5
+                        decoy.damage = 0
+                        decoy.speed = getattr(self.ball, "speed", 5.0)
+                        decoy.skill_timer = 9999.0
+                        decoy.attack_timer = 9999.0
+                        decoy.is_decoy = True
+                        decoy.decoy_timer = 6.0
+                        decoy.SKILL = None
+                        decoy.skill = None
+                        decoy.active_skill = None
+
+                        decoy.is_orbiting = True
+                        decoy.orbit_angle = (2 * math.pi / 3) * i
+
+                        offset_x = math.cos(decoy.orbit_angle) * 40.0
+                        offset_y = math.sin(decoy.orbit_angle) * 40.0
+                        decoy.x += offset_x
+                        decoy.y += offset_y
+
+                        decoy.decoy_type = decoy_types[i]
+
+                        self.world.balls.append(decoy)
 
             elif skill_name == "deploy_decoy":
                 import copy
