@@ -10279,6 +10279,21 @@ class MazeSafeZoneMode extends GameMode:
 						if "hp" in b and b.hp <= 0:
 							b.alive = false
 
+						if b.alive:
+							var push_force = 100.0 * delta
+							if bx < nearest_x + 0.1:
+								if "x" in b: b.x -= push_force
+								if "position" in b and b.position != null: b.position.x -= push_force
+							else:
+								if "x" in b: b.x += push_force
+								if "position" in b and b.position != null: b.position.x += push_force
+							if by < nearest_y + 0.1:
+								if "y" in b: b.y -= push_force
+								if "position" in b and b.position != null: b.position.y -= push_force
+							else:
+								if "y" in b: b.y += push_force
+								if "position" in b and b.position != null: b.position.y += push_force
+
 	func check_winner(world, balls: Array):
 		var alive_count = 0
 		var last_alive = null
