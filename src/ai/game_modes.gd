@@ -1698,7 +1698,7 @@ class VIPDefenseMode extends GameMode:
 class SurvivalMode extends GameMode:
     func _init() -> void:
         name = "Survival"
-        description = "Players team up to survive against waves of enemies."
+        description = "Players must navigate an increasingly difficult obstacle course filled with moving lasers, rotating bumpers, and collapsing floors."
 
     func setup(world, balls: Array) -> void:
         super.setup(world, balls)
@@ -1717,6 +1717,99 @@ class SurvivalMode extends GameMode:
                 b.team = "Players"
             else:
                 b.team = "Enemies"
+
+    func tick(world, balls: Array, delta: float) -> void:
+        super.tick(world, balls, delta)
+        var current_tick = 0
+        if "tick" in world:
+            current_tick = world.tick
+        elif world.has_method("get_meta") and world.has_meta("tick"):
+            current_tick = world.get_meta("tick")
+
+        if current_tick % 60 == 0 and "arena" in world:
+            var w = 1000.0
+            var h = 1000.0
+            if "width" in world.arena:
+                w = world.arena.width
+            if "height" in world.arena:
+                h = world.arena.height
+
+            if "hazards" in world.arena:
+                var arena_class = load("res://src/arena/procedural_arena.gd")
+                if arena_class != null:
+                    var Hazard = arena_class.Hazard
+                    var h_id = 10000 + world.arena.hazards.size()
+                    var choice = randi() % 3
+                    var hz = null
+                    if choice == 0:
+                        var y = randf_range(50, h - 50)
+                        hz = Hazard.new(h_id, w/2, y, w, "moving_laser", 20.0)
+                        hz.set_meta("vy", [ -100.0, 100.0 ][randi() % 2])
+                        hz.set_meta("vx", 0.0)
+                        hz.set_meta("duration", 10.0)
+                    elif choice == 1:
+                        var x = randf_range(100, w - 100)
+                        var y = randf_range(100, h - 100)
+                        hz = Hazard.new(h_id, x, y, 60.0, "rotating_bumper", 10.0)
+                        hz.set_meta("vx", 0.0)
+                        hz.set_meta("vy", 0.0)
+                        hz.set_meta("duration", 15.0)
+                    else:
+                        var x = randf_range(200, w - 200)
+                        var y = randf_range(200, h - 200)
+                        hz = Hazard.new(h_id, x, y, 150.0, "collapsing_floor", 50.0)
+                        hz.set_meta("vx", 0.0)
+                        hz.set_meta("vy", 0.0)
+                        hz.set_meta("duration", 5.0)
+                        hz.set_meta("warning_timer", 2.0)
+                    if hz != null:
+                        world.arena.hazards.append(hz)
+
+        if "arena" in world and "hazards" in world.arena:
+            var hazards_to_remove = []
+            for hz in world.arena.hazards:
+                if hz.kind == "moving_laser":
+                    var vy = 0.0
+                    if hz.has_meta("vy"):
+                        vy = hz.get_meta("vy")
+                    hz.y += vy * delta
+                    var h_val = 1000.0
+                    if "height" in world.arena:
+                        h_val = world.arena.height
+                    if hz.y < 0 or hz.y > h_val:
+                        hz.set_meta("vy", vy * -1.0)
+                    if hz.has_meta("duration"):
+                        var d = hz.get_meta("duration") - delta
+                        hz.set_meta("duration", d)
+                        if d <= 0:
+                            hazards_to_remove.append(hz)
+                elif hz.kind == "rotating_bumper":
+                    if hz.has_meta("duration"):
+                        var d = hz.get_meta("duration") - delta
+                        hz.set_meta("duration", d)
+                        if d <= 0:
+                            hazards_to_remove.append(hz)
+                elif hz.kind == "collapsing_floor":
+                    if hz.has_meta("warning_timer"):
+                        var w_t = hz.get_meta("warning_timer") - delta
+                        hz.set_meta("warning_timer", w_t)
+                        if w_t <= 0:
+                            hz.kind = "lava"
+                            hz.remove_meta("warning_timer")
+                    if hz.has_meta("duration"):
+                        var d = hz.get_meta("duration") - delta
+                        hz.set_meta("duration", d)
+                        if d <= 0:
+                            hazards_to_remove.append(hz)
+                elif hz.kind == "lava":
+                    if hz.has_meta("duration"):
+                        var d = hz.get_meta("duration") - delta
+                        hz.set_meta("duration", d)
+                        if d <= 0:
+                            hazards_to_remove.append(hz)
+
+            for hz in hazards_to_remove:
+                world.arena.hazards.erase(hz)
 
     func check_winner(world, balls: Array):
         var alive = []
