@@ -10863,11 +10863,112 @@ func _use_skill():
             else:
                 self.ball.energy_shield_active = true
                 self.ball.energy_shield_timer = 3.0
+        elif skill_name == "trickster_swap":
+            var all_entities = []
+            if "balls" in self.world:
+                all_entities = self.world.balls
+            elif self.world.has_method("get_balls"):
+                all_entities = self.world.get_balls()
+
+            var valid_targets = []
+            var self_id = self.ball.id if "id" in self.ball else self.ball.get("id") if self.ball is Dictionary else self.ball.get_meta("id") if self.ball.has_method("has_meta") else null
+            for e in all_entities:
+                var e_id = e.id if "id" in e else e.get("id") if e is Dictionary else e.get_meta("id") if e.has_method("has_meta") else null
+                var e_alive = e.alive if "alive" in e else e.get("alive", true) if e is Dictionary else e.get_meta("alive") if e.has_method("has_meta") and e.has_meta("alive") else true
+                var e_type = ""
+                if "ball_type" in e: e_type = e.ball_type
+                elif e is Dictionary and e.has("ball_type"): e_type = e.get("ball_type")
+                elif e.has_method("has_meta") and e.has_meta("ball_type"): e_type = e.get_meta("ball_type")
+
+                if e_id != self_id and e_alive and e_type != "spectator":
+                    valid_targets.append(e)
+
+            if valid_targets.size() > 0:
+                var target = null
+                var min_dist_sq = 99999999.0
+                for e in valid_targets:
+                    var e_x = e.x if "x" in e else e.get("position").x if e.get("position") != null else 0.0
+                    var e_y = e.y if "y" in e else e.get("position").y if e.get("position") != null else 0.0
+                    var d_sq = (e_x - self.ball.x) * (e_x - self.ball.x) + (e_y - self.ball.y) * (e_y - self.ball.y)
+                    if d_sq < min_dist_sq:
+                        min_dist_sq = d_sq
+                        target = e
+
+                if target != null:
+                    var t_x = target.x if "x" in target else target.get("position").x if target.get("position") != null else 0.0
+                    var t_y = target.y if "y" in target else target.get("position").y if target.get("position") != null else 0.0
+
+                    # Swap positions
+                    var temp_x = self.ball.x
+                    var temp_y = self.ball.y
+                    self.ball.x = t_x
+                    self.ball.y = t_y
+                    if "x" in target:
+                        target.x = temp_x
+                        target.y = temp_y
+                    else:
+                        target.position.x = temp_x
+                        target.position.y = temp_y
+
+                    # Apply confusion
+                    var cur_confusion = 0.0
+                    if "confusion_timer" in target: cur_confusion = target.confusion_timer
+                    elif target is Dictionary and target.has("confusion_timer"): cur_confusion = target.get("confusion_timer", 0.0)
+                    elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("confusion_timer"): cur_confusion = target.get_meta("confusion_timer")
+
+                    var new_confusion = max(cur_confusion, 3.0)
+                    if "confusion_timer" in target: target.confusion_timer = new_confusion
+                    elif target is Dictionary: target["confusion_timer"] = new_confusion
+                    elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"): target.set_meta("confusion_timer", new_confusion)
+
+                    # Transfer negative status effects
+                    var status_effects = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "slow_timer", "frozen_timer"]
+                    for effect in status_effects:
+                        var ball_effect = 0.0
+                        if effect in self.ball: ball_effect = self.ball.get(effect)
+                        elif self.ball is Dictionary and self.ball.has(effect): ball_effect = self.ball.get(effect, 0.0)
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta(effect): ball_effect = self.ball.get_meta(effect)
+
+                        if ball_effect > 0.0:
+                            var t_effect = 0.0
+                            if effect in target: t_effect = target.get(effect)
+                            elif target is Dictionary and target.has(effect): t_effect = target.get(effect, 0.0)
+                            elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta(effect): t_effect = target.get_meta(effect)
+
+                            var new_val = max(t_effect, ball_effect)
+                            if target is Dictionary: target[effect] = new_val
+                            elif effect in target: target.set(effect, new_val)
+                            elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"): target.set_meta(effect, new_val)
+
+                            if self.ball is Dictionary: self.ball[effect] = 0.0
+                            elif effect in self.ball: self.ball.set(effect, 0.0)
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta(effect, 0.0)
+
+                            if effect == "stun_timer":
+                                if "is_stunned" in target: target.is_stunned = true
+                                elif target is Dictionary: target["is_stunned"] = true
+                                elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"): target.set_meta("is_stunned", true)
+
+                                if "is_stunned" in self.ball: self.ball.is_stunned = false
+                                elif self.ball is Dictionary: self.ball["is_stunned"] = false
+                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("is_stunned", false)
+
+            var cd = 4.0
+            if "SKILL_COOLDOWN" in self.ball: cd = self.ball.SKILL_COOLDOWN
+            elif self.ball is Dictionary and self.ball.has("SKILL_COOLDOWN"): cd = self.ball.get("SKILL_COOLDOWN", 4.0)
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("SKILL_COOLDOWN"): cd = self.ball.get_meta("SKILL_COOLDOWN")
+
+            if "skill_timer" in self.ball: self.ball.skill_timer = cd
+            elif self.ball is Dictionary: self.ball["skill_timer"] = cd
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cd)
+
         elif skill_name == "command":
-            if self.ball.has_method("set_meta"):
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
                 self.ball.set_meta("team_message", {"type": "buff_command", "radius": 200})
             elif "team_message" in self.ball:
                 self.ball.team_message = {"type": "buff_command", "radius": 200}
+            elif self.ball is Dictionary:
+                self.ball["team_message"] = {"type": "buff_command", "radius": 200}
         elif skill_name == "black_hole_summon":
             var enemies = _get_enemies()
             var nx = 1.0

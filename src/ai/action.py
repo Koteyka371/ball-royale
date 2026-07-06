@@ -6426,6 +6426,33 @@ class Action:
             if skill_name == "energy_shield":
                 self.ball.energy_shield_active = True
                 self.ball.energy_shield_timer = 3.0
+            elif skill_name == "trickster_swap":
+                all_entities = getattr(self.world, "balls", [])
+                valid_targets = [e for e in all_entities if getattr(e, "id", None) != self.ball.id and getattr(e, "alive", True) and getattr(e, "ball_type", "") != "spectator"]
+                if valid_targets:
+                    # Find closest valid target (can be enemy or ally)
+                    target = min(valid_targets, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+
+                    # Swap positions
+                    temp_x, temp_y = self.ball.x, self.ball.y
+                    self.ball.x, self.ball.y = target.x, target.y
+                    target.x, target.y = temp_x, temp_y
+
+                    # Apply confusion
+                    target.confusion_timer = max(getattr(target, "confusion_timer", 0.0), 3.0)
+
+                    # Transfer negative status effects
+                    status_effects = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "slow_timer", "frozen_timer"]
+                    for effect in status_effects:
+                        ball_effect = getattr(self.ball, effect, 0.0)
+                        if ball_effect > 0.0:
+                            setattr(target, effect, max(getattr(target, effect, 0.0), ball_effect))
+                            setattr(self.ball, effect, 0.0)
+                            if effect == "stun_timer":
+                                target.is_stunned = True
+                                self.ball.is_stunned = False
+
+                self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 4.0)
             elif skill_name == "command":
                 self.ball.team_message = {"type": "buff_command", "radius": 200}
             elif skill_name == "black_hole_summon":
