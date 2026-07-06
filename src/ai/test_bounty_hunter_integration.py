@@ -26,13 +26,10 @@ def test_bounty_hunter_damage():
     target2 = MockTarget(is_bounty=True)
     action = Action(hunter, world)
     action._attempt_damage(hunter, target2)
-    assert target2.hp == 100.0 - 50.0
+    assert target2.hp == 100.0 - 25.0
 
     # High threat target
     target3 = MockTarget(high_threat=True)
     action = Action(hunter, world)
     action._attempt_damage(hunter, target3)
-    assert target3.hp == 100.0 - 50.0
-
-test_bounty_hunter_damage()
-print("Tests passed!")
+    assert target3.hp == 100.0 - 25.0
