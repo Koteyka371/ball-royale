@@ -10525,6 +10525,20 @@ class InvisibleDecoysMode extends GameMode:
 			elif typeof(world) == TYPE_OBJECT and "balls" in world:
 				world.balls.append(decoy)
 
+
+class BoundaryFluxMode extends GameMode:
+    var timer = 0.0
+    var current_pattern = 0 # 0 = Top/Bottom Bouncy, Left/Right Sticky. 1 = Top/Bottom Sticky, Left/Right Bouncy
+    func _init() -> void:
+        name = "Boundary Flux"
+        description = "Parts of the arena boundary periodically alternate between Bouncy (drastically increasing reflection speed) and Sticky (catching and stopping balls), forcing players to be aware of their edge positioning."
+
+    func execute(world, delta: float) -> void:
+        timer += delta
+        if timer >= 10.0:
+            timer = 0.0
+            current_pattern = 1 - current_pattern
+
 var GAME_MODES = {
 	"invisible_decoys": InvisibleDecoysMode.new(),
 	"reversed_input": ReversedInputMode.new(),
@@ -10616,6 +10630,7 @@ var GAME_MODES = {
 	"soul_link": SoulLinkMode.new(),
 	"clan_tournament": ClanTournamentMode.new(),
 	"tag_team": TagTeamMode.new(),
+    "boundary_flux": BoundaryFluxMode.new(),
 	"reverse_friction": preload("res://src/ai/reverse_friction.gd").ReverseFrictionMode.new()
 }
 

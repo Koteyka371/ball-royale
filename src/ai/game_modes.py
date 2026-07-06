@@ -7877,6 +7877,21 @@ class InvisibleDecoysMode(GameMode):
                 world.balls = []
             world.balls.append(decoy)
 
+
+class BoundaryFluxMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Boundary Flux"
+        self.description = "Parts of the arena boundary periodically alternate between Bouncy (drastically increasing reflection speed) and Sticky (catching and stopping balls), forcing players to be aware of their edge positioning."
+        self.timer = 0.0
+        self.current_pattern = 0  # 0 = Top/Bottom Bouncy, Left/Right Sticky. 1 = Top/Bottom Sticky, Left/Right Bouncy
+
+    def execute(self, world, delta):
+        self.timer += delta
+        if self.timer >= 10.0:
+            self.timer = 0.0
+            self.current_pattern = 1 - self.current_pattern
+
 GAME_MODES = {
     "invisible_decoys": InvisibleDecoysMode(),
     "sweeping_paddles": SweepingPaddlesMode(),
@@ -8441,6 +8456,7 @@ class TagTeamMode(GameMode):
 
 
 GAME_MODES["tag_team"] = TagTeamMode()
+GAME_MODES["boundary_flux"] = BoundaryFluxMode()
 
 try:
     from .reverse_friction import ReverseFrictionMode

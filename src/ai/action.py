@@ -4236,8 +4236,39 @@ class Action:
                 import random
                 angle = _math.atan2(-vy, -vx) + random.uniform(-0.2, 0.2)
                 gm = getattr(self.world, "game_mode", None)
+                w = getattr(self.world, "width", 1000)
+                h = getattr(self.world, "height", 1000)
+                margin = getattr(self.ball, "radius", 10.0) + 5.0
+                hit_horizontal = False
+                hit_vertical = False
+                if self.ball.y <= margin or self.ball.y >= h - margin:
+                    hit_horizontal = True
+                if self.ball.x <= margin or self.ball.x >= w - margin:
+                    hit_vertical = True
+
+                is_bouncy = False
+                is_sticky = False
                 if gm and getattr(gm, "name", "") == "Bouncy Terrain":
+                    is_bouncy = True
+                elif gm and getattr(gm, "name", "") == "Boundary Flux":
+                    pattern = getattr(gm, "current_pattern", 0)
+                    if pattern == 0:
+                        # Top/Bottom Bouncy, Left/Right Sticky
+                        if hit_horizontal and not hit_vertical:
+                            is_bouncy = True
+                        elif hit_vertical and not hit_horizontal:
+                            is_sticky = True
+                    else:
+                        # Top/Bottom Sticky, Left/Right Bouncy
+                        if hit_horizontal and not hit_vertical:
+                            is_sticky = True
+                        elif hit_vertical and not hit_horizontal:
+                            is_bouncy = True
+
+                if is_bouncy:
                     new_speed = min(speed * 2.0, 3000.0)
+                elif is_sticky:
+                    new_speed = 0.0
                 else:
                     new_speed = min(speed * 1.5, 2000.0)
 
@@ -4257,6 +4288,10 @@ class Action:
                 elif gm and getattr(gm, "name", "") == "Bouncy Terrain":
                     is_bouncy_terrain = True
                     is_mirror_walls = True
+                elif gm and getattr(gm, "name", "") == "Boundary Flux":
+                    if is_bouncy:
+                        is_bouncy_terrain = True
+                        is_mirror_walls = True
 
                 b_type = getattr(self.ball, "ball_type", getattr(type(self.ball), "BALL_TYPE", "")).lower()
                 is_agile_bouncer = b_type in ["ninja", "assassin", "rogue"]
@@ -4276,10 +4311,17 @@ class Action:
                         if self.ball.hp <= 0:
                             self.ball.alive = False
 
-                if is_mirror_walls or is_agile_bouncer:
+                if is_mirror_walls or is_agile_bouncer or is_sticky:
                     # Give it a bounce velocity
                     self.ball.vx = self.ball._reflection_vx
                     self.ball.vy = self.ball._reflection_vy
+
+                    if is_sticky:
+                        # Stop the ball completely and prevent any remaining velocity
+                        self.ball.vx = 0.0
+                        self.ball.vy = 0.0
+                        # Also stick it for a moment by resetting knockback/movement if necessary, though velocity 0 is enough
+                        pass
 
 
         if bounced_wall or bounced_col:

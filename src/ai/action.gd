@@ -7236,12 +7236,40 @@ func execute(strategy: String, delta: float):
                 nvy = -vy
 
             var is_bouncy_terrain = false
+            var is_bouncy = false
+            var is_sticky = false
             if "game_mode" in self.world and self.world.game_mode != null:
                 if "name" in self.world.game_mode and self.world.game_mode.name == "Bouncy Terrain":
                     is_bouncy_terrain = true
+                    is_bouncy = true
+                elif "name" in self.world.game_mode and self.world.game_mode.name == "Boundary Flux":
+                    var hit_horizontal = false
+                    var hit_vertical = false
+                    if self.ball.y <= margin or self.ball.y >= h - margin:
+                        hit_horizontal = true
+                    if self.ball.x <= margin or self.ball.x >= w - margin:
+                        hit_vertical = true
+
+                    var pattern = 0
+                    if "current_pattern" in self.world.game_mode:
+                        pattern = self.world.game_mode.current_pattern
+
+                    if pattern == 0:
+                        if hit_horizontal and not hit_vertical:
+                            is_bouncy = true
+                        elif hit_vertical and not hit_horizontal:
+                            is_sticky = true
+                    else:
+                        if hit_horizontal and not hit_vertical:
+                            is_sticky = true
+                        elif hit_vertical and not hit_horizontal:
+                            is_bouncy = true
+
             var new_speed = 0.0
-            if is_bouncy_terrain:
+            if is_bouncy:
                 new_speed = min(speed * 2.0, 3000.0)
+            elif is_sticky:
+                new_speed = 0.0
             else:
                 new_speed = min(speed * 1.5, 2000.0)
 
