@@ -1,28 +1,19 @@
-1. **Understand Goal**: Add placeable energy shields (barrier/wall) that block projectiles (and hitscan attacks), block vision, but allow allies to pass through.
-2. **Implement hazard generation in skill `energy_barrier` (Python and GDScript)**
-    - Check if it's placed via skill or item. We can add a skill `energy_barrier`.
-    - Modify `_use_skill` in `src/ai/action.py` and `src/ai/action.gd`.
-    - Add logic for `elif skill_name == "energy_barrier":`
-    - Creates a new Hazard of `kind="energy_barrier"` at `self.ball.x`, `self.ball.y` or offset toward nearest enemy.
-    - Set `duration=5.0`, `team=self.ball.team`. It should probably be a line/circle hazard.
-3. **Modify `_get_enemies_internal` for Vision Blocking**
-    - In `src/ai/action.py` and `src/ai/action.gd`.
-    - Inside `is_visible(enemy)`, trace line from `self.ball` to `enemy`. If line intersects `energy_barrier` (where `team != self.ball.team`? Or just always block vision except for allies?), block vision. Let's say it blocks vision of enemies if there is a barrier in between. Actually, the prompt says "block vision but allow allies to pass through". Vision of what? Usually, if an enemy is behind the barrier, you can't see them. We can do line-circle intersection.
-4. **Modify `_attempt_damage` and projectile logic**
-    - The prompt mentions "block projectiles". Currently, melee and hitscan/projectiles might just use `_attempt_damage`.
-    - In `_attempt_damage`, we can check if it's a ranged attack (`dist > a_rad + t_rad + 20.0`). If it is, check if line intersects an enemy `energy_barrier`.
-5. **Modify `execute` physics loop for barrier collision**
-    - In `src/ai/action.py` and `src/ai/action.gd`.
-    - Under `elif hazard.kind == "energy_barrier":`
-    - If `self.ball.team != hazard.team` (enemy), act as a wall.
-    - If `self.ball.team == hazard.team` (ally), ignore collision (allow pass through).
-6. **Add test cases**
-    - `src/ai/test_energy_barrier.py` to verify:
-        - `_use_skill` creates the barrier.
-        - Enemy movement is blocked by barrier.
-        - Ally movement is not blocked.
-        - Vision is blocked across the barrier.
-        - Ranged attacks are blocked by the barrier.
-7. **Write Ideas to JSON**
-    - 2 new ideas.
-8. **Pre-commit and submit**
+1. Add new items in Python (`src/ai/action.py`) logic:
+   - Add new weapon attachment boosters:
+     - `silencer_attachment`: Grants `silencer_timer = 15.0`, setting `is_silenced = True` and reducing perception by others.
+     - `extended_mag_attachment`: Grants `extended_mag_timer = 15.0`, which we can use to reduce `attack_timer` faster or give more ammo/projectiles.
+     - `modified_scope_attachment`: Grants `modified_scope_timer = 15.0`, significantly increasing `perception_radius` (similar to `vision_booster`) and maybe increasing attack range/damage slightly.
+   - When one of these is collected in `_collect_booster`, apply the respective effect and remove it from `hazards` and `boosters`.
+
+2. Add new items in GDScript (`src/ai/action.gd`) logic:
+   - Replicate the exact same collection and effect logic for the new weapon attachments in `_collect_booster`.
+
+3. Update core execution loops (`execute` in `action.py` and `action.gd`):
+   - Add timer ticks for the new attachments.
+   - Apply the effects (e.g., if `silencer_timer` > 0, hide from map or make less visible. In this simulation, this would mean ignoring them in `_get_enemies()` or `_get_perception_radius` mechanics, or adding a flag `is_silenced = True`).
+   - Actually, wait, `silencer` reduces visibility on map. We can add a check in `get_nearby_entities` or just rely on a boolean `is_silenced` which other components check.
+
+4. Add a test file `test_weapon_attachments.py` in `src/tests/` or `src/ai/` to ensure these boosters are properly collected and their timers apply.
+
+5. Execute tests and pre-commit checks.
+6. Commit and prepare ideas.

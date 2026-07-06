@@ -8055,7 +8055,13 @@ func _get_enemies_internal() -> Array:
                     var by = b.y if "y" in b else b.get_meta("y")
                     var dx = bx - self.ball.x
                     var dy = by - self.ball.y
-                    if dx*dx + dy*dy <= perception_radius*perception_radius:
+                    var effective_perception_sq = perception_radius * perception_radius
+                    var b_is_silenced = false
+                    if b.has_method("has_meta") and b.has_meta("is_silenced"): b_is_silenced = b.get_meta("is_silenced")
+                    elif "is_silenced" in b: b_is_silenced = b.is_silenced
+                    if b_is_silenced:
+                        effective_perception_sq *= 0.25
+                    if dx*dx + dy*dy <= effective_perception_sq:
                         enemies.append(b)
 
     if self.world != null and "balls" in self.world:
@@ -8078,7 +8084,13 @@ func _get_enemies_internal() -> Array:
                     var by = b.y if "y" in b else b.get_meta("y")
                     var dx = bx - self.ball.x
                     var dy = by - self.ball.y
-                    if dx*dx + dy*dy <= perception_radius*perception_radius:
+                    var effective_perception_sq = perception_radius * perception_radius
+                    var b_is_silenced = false
+                    if b.has_method("has_meta") and b.has_meta("is_silenced"): b_is_silenced = b.get_meta("is_silenced")
+                    elif "is_silenced" in b: b_is_silenced = b.is_silenced
+                    if b_is_silenced:
+                        effective_perception_sq *= 0.25
+                    if dx*dx + dy*dy <= effective_perception_sq:
                         enemies.append(b)
 
     if self.world != null and "balls" in self.world:
@@ -8101,7 +8113,13 @@ func _get_enemies_internal() -> Array:
                     var by = b.y if "y" in b else b.get_meta("y")
                     var dx = bx - self.ball.x
                     var dy = by - self.ball.y
-                    if dx*dx + dy*dy <= perception_radius*perception_radius:
+                    var effective_perception_sq = perception_radius * perception_radius
+                    var b_is_silenced = false
+                    if b.has_method("has_meta") and b.has_meta("is_silenced"): b_is_silenced = b.get_meta("is_silenced")
+                    elif "is_silenced" in b: b_is_silenced = b.is_silenced
+                    if b_is_silenced:
+                        effective_perception_sq *= 0.25
+                    if dx*dx + dy*dy <= effective_perception_sq:
                         enemies.append(b)
 
     if self.world != null and "arena" in self.world and self.world.arena != null:
@@ -10056,6 +10074,76 @@ func _collect_booster(delta: float):
                     if self.ball.has_method("has_meta") and self.ball.has_meta("base_max_hp"):
                         self.ball.max_hp = self.ball.get_meta("base_max_hp")
                     self.ball.remove_meta("zone_modifier_debuff")
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "silencer_attachment":
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("silencer_timer", 15.0)
+                elif "silencer_timer" in self.ball:
+                    self.ball.silencer_timer = 15.0
+                else:
+                    self.ball.silencer_timer = 15.0
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "extended_mag_attachment":
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("extended_mag_timer", 15.0)
+                elif "extended_mag_timer" in self.ball:
+                    self.ball.extended_mag_timer = 15.0
+                else:
+                    self.ball.extended_mag_timer = 15.0
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "modified_scope_attachment":
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("modified_scope_timer", 15.0)
+                elif "modified_scope_timer" in self.ball:
+                    self.ball.modified_scope_timer = 15.0
+                else:
+                    self.ball.modified_scope_timer = 15.0
+
+                var ms_applied = false
+                if "modified_scope_applied" in self.ball:
+                    ms_applied = self.ball.modified_scope_applied
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("modified_scope_applied"):
+                    ms_applied = self.ball.get_meta("modified_scope_applied")
+
+                if not ms_applied:
+                    var base_perc = 250.0
+                    if "perception_radius" in self.ball:
+                        base_perc = float(self.ball.perception_radius)
+                    if self.ball.has_method("get_meta") and self.ball.has_meta("base_perception_radius"):
+                        base_perc = self.ball.get_meta("base_perception_radius")
+
+                    base_perc *= 1.5
+
+                    if self.ball.has_method("set_meta"):
+                        self.ball.set_meta("base_perception_radius", base_perc)
+                        self.ball.set_meta("perception_radius", base_perc)
+                        self.ball.set_meta("modified_scope_applied", true)
+                    else:
+                        self.ball.base_perception_radius = base_perc
+                        self.ball.perception_radius = base_perc
+                        self.ball.modified_scope_applied = true
 
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
@@ -14559,6 +14647,85 @@ func _update_skill_timer(delta: float):
         if self.ball.has_method("set_meta"):
             self.ball.set_meta("nemesis_booster_timer", n_timer)
 
+    var silencer_timer = 0.0
+    if self.ball.has_method("has_meta") and self.ball.has_meta("silencer_timer"):
+        silencer_timer = self.ball.get_meta("silencer_timer")
+    elif "silencer_timer" in self.ball:
+        silencer_timer = self.ball.silencer_timer
+
+    if silencer_timer > 0:
+        silencer_timer -= delta
+        if silencer_timer <= 0:
+            silencer_timer = 0.0
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("is_silenced", false)
+            else:
+                self.ball.is_silenced = false
+        else:
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("is_silenced", true)
+            else:
+                self.ball.is_silenced = true
+        if self.ball.has_method("set_meta"):
+            self.ball.set_meta("silencer_timer", silencer_timer)
+        elif "silencer_timer" in self.ball:
+            self.ball.silencer_timer = silencer_timer
+    else:
+        if self.ball.has_method("set_meta"):
+            self.ball.set_meta("is_silenced", false)
+        else:
+            self.ball.is_silenced = false
+
+    var extended_mag_timer = 0.0
+    if self.ball.has_method("has_meta") and self.ball.has_meta("extended_mag_timer"):
+        extended_mag_timer = self.ball.get_meta("extended_mag_timer")
+    elif "extended_mag_timer" in self.ball:
+        extended_mag_timer = self.ball.extended_mag_timer
+
+    if extended_mag_timer > 0:
+        extended_mag_timer -= delta
+        if extended_mag_timer <= 0:
+            extended_mag_timer = 0.0
+        if self.ball.has_method("set_meta"):
+            self.ball.set_meta("extended_mag_timer", extended_mag_timer)
+        elif "extended_mag_timer" in self.ball:
+            self.ball.extended_mag_timer = extended_mag_timer
+
+    var modified_scope_timer = 0.0
+    if self.ball.has_method("has_meta") and self.ball.has_meta("modified_scope_timer"):
+        modified_scope_timer = self.ball.get_meta("modified_scope_timer")
+    elif "modified_scope_timer" in self.ball:
+        modified_scope_timer = self.ball.modified_scope_timer
+
+    if modified_scope_timer > 0:
+        modified_scope_timer -= delta
+        if modified_scope_timer <= 0:
+            modified_scope_timer = 0.0
+            var ms_applied = false
+            if "modified_scope_applied" in self.ball:
+                ms_applied = self.ball.modified_scope_applied
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("modified_scope_applied"):
+                ms_applied = self.ball.get_meta("modified_scope_applied")
+
+            if ms_applied:
+                var base_perc = 250.0
+                if self.ball.has_method("get_meta") and self.ball.has_meta("base_perception_radius"):
+                    base_perc = self.ball.get_meta("base_perception_radius")
+                base_perc /= 1.5
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("base_perception_radius", base_perc)
+                    self.ball.set_meta("perception_radius", base_perc)
+                    self.ball.set_meta("modified_scope_applied", false)
+                else:
+                    self.ball.base_perception_radius = base_perc
+                    self.ball.perception_radius = base_perc
+                    self.ball.modified_scope_applied = false
+
+        if self.ball.has_method("set_meta"):
+            self.ball.set_meta("modified_scope_timer", modified_scope_timer)
+        elif "modified_scope_timer" in self.ball:
+            self.ball.modified_scope_timer = modified_scope_timer
+
     var mat_magnet_timer = 0.0
     if "material_magnet_timer" in self.ball:
         mat_magnet_timer = float(self.ball.material_magnet_timer)
@@ -15536,6 +15703,10 @@ func _kite(delta: float):
                             optimal_target.memory = mem
 
                 var cooldown = max(0.2, 2.0 / b_speed if b_speed > 0 else 1.0)
+                var has_ext_mag = false
+                if self.ball.has_method("has_meta") and self.ball.has_meta("extended_mag_timer"): has_ext_mag = (self.ball.get_meta("extended_mag_timer") > 0)
+                elif "extended_mag_timer" in self.ball: has_ext_mag = (self.ball.extended_mag_timer > 0)
+                if has_ext_mag: cooldown *= 0.5
                 if "attack_timer" in self.ball:
                     self.ball.attack_timer = cooldown
                     if cooldown >= 0.8:

@@ -4751,7 +4751,10 @@ class Action:
                 if getattr(b, "ball_type", None) != getattr(self.ball, "ball_type", None) and getattr(b, "ball_type", None) != "spectator" and getattr(b, "alive", True) and not getattr(b, "is_decoy", False) and not getattr(b, "is_illusion", False):
                     dx = getattr(b, "x", 0) - getattr(self.ball, "x", 0)
                     dy = getattr(b, "y", 0) - self.ball.y
-                    if dx*dx + dy*dy <= perception_radius*perception_radius:
+                    effective_perception_sq = perception_radius * perception_radius
+                    if getattr(b, "is_silenced", False):
+                        effective_perception_sq *= 0.25 # reduce perception range by half (squared)
+                    if dx*dx + dy*dy <= effective_perception_sq:
                         enemies.append(b)
 
         if hasattr(self.world, "balls"):
@@ -5358,7 +5361,10 @@ class Action:
                             target_mem = getattr(target, "memory", {})
                             target_mem[self.ball.id] = {"relation": "rival"}
                             target.memory = target_mem
-                        self.ball.attack_timer = max(0.2, 2.0 / getattr(self.ball, "speed", 2.0))
+                        base_cooldown = 2.0 / (getattr(self.ball, "speed", 2.0) or 0.1)
+                        if getattr(self.ball, "extended_mag_timer", 0) > 0:
+                            base_cooldown *= 0.5
+                        self.ball.attack_timer = max(0.2, base_cooldown)
                         if self.ball.attack_timer >= 0.8:
                             self.ball.stutter_timer = min(self.ball.attack_timer * 0.4, 0.4)
                 return
@@ -5941,6 +5947,33 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "emp_immunity_booster":
                     self.ball.emp_immunity_timer = 15.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "silencer_attachment":
+                    self.ball.silencer_timer = 15.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "extended_mag_attachment":
+                    self.ball.extended_mag_timer = 15.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "modified_scope_attachment":
+                    self.ball.modified_scope_timer = 15.0
+                    if not getattr(self.ball, "modified_scope_applied", False):
+                        if not hasattr(self.ball, "base_perception_radius"):
+                            self.ball.base_perception_radius = getattr(self.ball, "perception_radius", 250.0)
+                        self.ball.base_perception_radius *= 1.5
+                        self.ball.perception_radius = self.ball.base_perception_radius
+                        self.ball.modified_scope_applied = True
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
@@ -8415,6 +8448,30 @@ class Action:
             self.ball.nemesis_booster_timer -= delta
             if self.ball.nemesis_booster_timer < 0:
                 self.ball.nemesis_booster_timer = 0.0
+
+        if getattr(self.ball, "silencer_timer", 0) > 0:
+            self.ball.silencer_timer -= delta
+            self.ball.is_silenced = True
+            if self.ball.silencer_timer <= 0:
+                self.ball.is_silenced = False
+                self.ball.silencer_timer = 0.0
+        else:
+            self.ball.is_silenced = False
+
+        if getattr(self.ball, "extended_mag_timer", 0) > 0:
+            self.ball.extended_mag_timer -= delta
+            if self.ball.extended_mag_timer <= 0:
+                self.ball.extended_mag_timer = 0.0
+
+        if getattr(self.ball, "modified_scope_timer", 0) > 0:
+            self.ball.modified_scope_timer -= delta
+            if self.ball.modified_scope_timer <= 0:
+                self.ball.modified_scope_timer = 0.0
+                if getattr(self.ball, "modified_scope_applied", False):
+                    if hasattr(self.ball, "base_perception_radius"):
+                        self.ball.base_perception_radius /= 1.5
+                        self.ball.perception_radius = self.ball.base_perception_radius
+                    self.ball.modified_scope_applied = False
         if hasattr(self.ball, "material_magnet_timer") and self.ball.material_magnet_timer > 0:
             self.ball.material_magnet_timer -= delta
             if self.ball.material_magnet_timer < 0:
