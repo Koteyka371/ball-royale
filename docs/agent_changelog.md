@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-623] Shrinking Safe Zone based on Player Proximity — *2026-07-06 13:53:55 UTC*
+
+Instead of purely time-based shrinking, the safe zone shrinks faster if multiple players are camping inside it, forcing them to fight or move out.
+
+---
+
 ## [idea-616] Laser Fence Hazards — *2026-07-06 13:31:16 UTC*
 
 Add placeable laser fences that link together between nodes. Passing through the laser deals high damage and applies a short slow effect, encouraging positional counterplay.

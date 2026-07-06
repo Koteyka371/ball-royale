@@ -10748,7 +10748,7 @@
     },
     {
       "id": "idea-623",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Safe Zone based on Player Proximity",
@@ -17518,6 +17518,40 @@
         "src/ai/black_hole_collapses.py",
         "src/ai/black_hole_collapses.gd",
         "tests/test_black_hole_collapses.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1021",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mimic Ball (AI Type)",
+      "description": "An AI type that perfectly mimics the visual appearance (color, name, even team tag) of the player or another AI for a short duration to get close, before reverting and exploding or attacking at point-blank range.",
+      "allowed_paths": [
+        "src/ai/mimic_ball_ai_type.py",
+        "src/ai/mimic_ball_ai_type.gd",
+        "tests/test_mimic_ball_ai_type.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1022",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Magnetic Minefield",
+      "description": "A hazard zone where proximity mines are strongly attracted to nearby moving entities (players and AI alike). If you move quickly through it, they pull towards you; if you move slowly, their tracking distance is significantly reduced.",
+      "allowed_paths": [
+        "src/ai/magnetic_minefield.py",
+        "src/ai/magnetic_minefield.gd",
+        "tests/test_magnetic_minefield.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
