@@ -143,6 +143,60 @@ class Action:
                                 a.take_damage(original_damage)
                                 return
         import random
+        # Check if blocked by energy barrier for ranged attacks
+        import math
+        a_x = getattr(attacker, 'x', 0.0)
+        a_y = getattr(attacker, 'y', 0.0)
+        t_x = getattr(target, 'x', 0.0)
+        t_y = getattr(target, 'y', 0.0)
+        dist = math.hypot(a_x - t_x, a_y - t_y)
+        a_rad = getattr(attacker, 'radius', 10.0)
+        t_rad = getattr(target, 'radius', 10.0)
+
+        # Consider ranged if distance is greater than melee range + small buffer
+        is_ranged = dist > (a_rad + t_rad + 20.0)
+
+        if is_ranged:
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                a_team = getattr(attacker, "team", getattr(attacker, "ball_type", ""))
+                for h in self.world.arena.hazards:
+                    if getattr(h, "kind", "") == "energy_barrier":
+                        h_team = getattr(h, "team", "")
+                        if h_team != a_team:
+                            hx = h.x
+                            hy = h.y
+                            hr = getattr(h, "radius", 40.0)
+
+                            dx = t_x - a_x
+                            dy = t_y - a_y
+                            fx = a_x - hx
+                            fy = a_y - hy
+
+                            a = dx*dx + dy*dy
+                            b2 = 2 * (fx*dx + fy*dy)
+                            c = (fx*fx + fy*fy) - hr*hr
+
+                            if a != 0:
+                                disc = b2*b2 - 4*a*c
+                                if disc >= 0:
+                                    disc = math.sqrt(disc)
+                                    t1 = (-b2 - disc) / (2*a)
+                                    t2 = (-b2 + disc) / (2*a)
+                                    if (0 <= t1 <= 1) or (0 <= t2 <= 1):
+                                        # Attack is blocked by barrier
+
+                                        # Optional: visual effect for shield blocking projectile
+                                        if hasattr(self.world, "events"):
+                                            intersect_t = t1 if 0 <= t1 <= 1 else t2
+                                            ix = a_x + dx * intersect_t
+                                            iy = a_y + dy * intersect_t
+                                            self.world.events.append({'type': 'visual_effect', 'data': {'type': 'shield_block', 'x': ix, 'y': iy}})
+
+                                        return
+                            else:
+                                if c <= 0:
+                                    return
+
         # Check attack accuracy
         attack_accuracy = getattr(attacker, "attack_accuracy", 1.0)
 
@@ -3850,6 +3904,32 @@ class Action:
                                     ny = dy / dist
                                     self.ball.x += nx * 50.0 * delta
                                     self.ball.y += ny * 50.0 * delta
+                        elif hazard.kind == "energy_barrier":
+                            # Allow allies to pass, block enemies
+                            b_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
+                            h_team = getattr(hazard, "team", "")
+                            if b_team != h_team:
+                                dx = self.ball.x - hazard.x
+                                dy = self.ball.y - hazard.y
+                                dist2 = dx*dx + dy*dy
+                                dist = math.sqrt(dist2) if dist2 > 0 else 0.0001
+                                b_rad = getattr(self.ball, "radius", 10.0)
+
+                                if dist < (b_rad + getattr(hazard, "radius", 40.0)):
+                                    # Push out
+                                    overlap = (b_rad + getattr(hazard, "radius", 40.0)) - dist
+                                    nx = dx / dist
+                                    ny = dy / dist
+                                    self.ball.x += nx * overlap
+                                    self.ball.y += ny * overlap
+
+                                    # Bounce velocity slightly
+                                    bvx = getattr(self.ball, "vx", 0.0)
+                                    bvy = getattr(self.ball, "vy", 0.0)
+                                    dot = bvx * nx + bvy * ny
+                                    if dot < 0:
+                                        self.ball.vx = bvx - 2 * dot * nx
+                                        self.ball.vy = bvy - 2 * dot * ny
                         elif hazard.kind == "sweeping_paddle":
                             dx = self.ball.x - hazard.x
                             dy = self.ball.y - hazard.y
@@ -4563,6 +4643,46 @@ class Action:
                             enemy_stealth_zones.append(h)
 
             # If enemy is in stealth zone, they are hidden unless I am in the SAME stealth zone
+
+            # Check energy barriers
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                ex = getattr(enemy, "x", 0)
+                ey = getattr(enemy, "y", 0)
+                bx = self.ball.x
+                by = self.ball.y
+                my_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
+
+                for h in self.world.arena.hazards:
+                    if getattr(h, "kind", "") == "energy_barrier":
+                        h_team = getattr(h, "team", "")
+                        if h_team != my_team:
+                            hx = h.x
+                            hy = h.y
+                            hr = getattr(h, "radius", 40.0)
+
+                            # line segment (bx, by) to (ex, ey) intersects circle (hx, hy, hr)?
+                            import math
+                            dx = ex - bx
+                            dy = ey - by
+                            fx = bx - hx
+                            fy = by - hy
+
+                            a = dx*dx + dy*dy
+                            b2 = 2 * (fx*dx + fy*dy)
+                            c = (fx*fx + fy*fy) - hr*hr
+
+                            if a != 0:
+                                disc = b2*b2 - 4*a*c
+                                if disc >= 0:
+                                    disc = math.sqrt(disc)
+                                    t1 = (-b2 - disc) / (2*a)
+                                    t2 = (-b2 + disc) / (2*a)
+                                    if (0 <= t1 <= 1) or (0 <= t2 <= 1):
+                                        return False
+                            else:
+                                if c <= 0:
+                                    return False
+
             if enemy_stealth_zones:
                 for h in my_stealth_zones:
                     if h in enemy_stealth_zones:
@@ -7415,6 +7535,36 @@ class Action:
                     smoke = Hazard(trap_id, self.ball.x, self.ball.y, 80.0, "smokescreen", 0.0)
                     setattr(smoke, 'duration', 5.0)
                     self.world.arena.hazards.append(smoke)
+            elif skill_name == "energy_barrier":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    import random
+                    trap_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
+                    from arena.procedural_arena import Hazard
+
+                    # Place barrier exactly between self and nearest enemy, or slightly ahead
+                    enemies = self._get_enemies()
+                    target = None
+                    if enemies:
+                        target = sorted(enemies, key=lambda b: (b.x - self.ball.x)**2 + (b.y - self.ball.y)**2)[0]
+
+                    if target:
+                        import math
+                        dx = target.x - self.ball.x
+                        dy = target.y - self.ball.y
+                        dist = math.hypot(dx, dy)
+                        if dist > 0:
+                            bx = self.ball.x + (dx/dist) * 80.0
+                            by = self.ball.y + (dy/dist) * 80.0
+                        else:
+                            bx, by = self.ball.x, self.ball.y
+                    else:
+                        bx, by = self.ball.x, self.ball.y
+
+                    barrier = Hazard(trap_id, bx, by, 40.0, "energy_barrier", 0.0)
+                    setattr(barrier, 'duration', 10.0)
+                    setattr(barrier, 'team', getattr(self.ball, "team", getattr(self.ball, "ball_type", "")))
+                    self.world.arena.hazards.append(barrier)
+                    self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 15.0)
             elif skill_name == "snipe":
                 # Drop a temporary trap hazard
 
