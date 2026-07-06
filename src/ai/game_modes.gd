@@ -340,6 +340,7 @@ class BattleRoyaleMode extends GameMode:
     var rng = RandomNumberGenerator.new()
     var match_time: float = 0.0
     var sudden_death_black_hole_spawned: bool = false
+    var tornado_spawn_timer: float = 0.0
     var final_boss_spawned: bool = false
 
     func _init() -> void:
@@ -646,6 +647,57 @@ class BattleRoyaleMode extends GameMode:
                             b.vy = vy * 1.5
                             b.x += b.vx * delta
                             b.y += b.vy * delta
+
+        # Tornado roaming and bouncing logic
+        if "arena" in world and world.arena and "hazards" in world.arena:
+            for h in world.arena.hazards:
+                if "kind" in h and h.kind == "tornado":
+                    if h.has_meta("vx") and h.has_meta("vy"):
+                        var vx = h.get_meta("vx")
+                        var vy = h.get_meta("vy")
+                        h.x += vx * delta
+                        h.y += vy * delta
+                        var aw = 1000.0
+                        var ah = 1000.0
+                        if "width" in world.arena: aw = world.arena.width
+                        if "height" in world.arena: ah = world.arena.height
+                        var r = h.radius if "radius" in h else 50.0
+                        if h.x - r < 0:
+                            h.x = r
+                            h.set_meta("vx", -vx)
+                        elif h.x + r > aw:
+                            h.x = aw - r
+                            h.set_meta("vx", -vx)
+                        if h.y - r < 0:
+                            h.y = r
+                            h.set_meta("vy", -vy)
+                        elif h.y + r > ah:
+                            h.y = ah - r
+                            h.set_meta("vy", -vy)
+
+        # Periodic tornado spawn
+        tornado_spawn_timer += delta
+        if tornado_spawn_timer >= 20.0:
+            tornado_spawn_timer = 0.0
+            var aw = 1000.0
+            var ah = 1000.0
+            if "arena" in world and world.arena:
+                if "width" in world.arena: aw = world.arena.width
+                if "height" in world.arena: ah = world.arena.height
+            var tx = rng.randf_range(100.0, aw - 100.0)
+            var ty = rng.randf_range(100.0, ah - 100.0)
+            var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
+            var t_id = 10000 + (rng.randi() % 90000)
+            if "arena" in world and "hazards" in world.arena:
+                t_id += world.arena.hazards.size()
+            var tornado = Hazard.new(t_id, tx, ty, 50.0, "tornado", 10.0)
+            tornado.set_meta("vx", rng.randf_range(-100.0, 100.0))
+            tornado.set_meta("vy", rng.randf_range(-100.0, 100.0))
+            tornado.set_meta("duration", 9999.0)
+            if "arena" in world and world.arena and "hazards" in world.arena:
+                world.arena.hazards.append(tornado)
+                if world.has_method("add_event"):
+                    world.add_event("hazard_spawn", {"message": "A roaming Tornado has appeared!"})
 
         dark_phase_timer += delta
 

@@ -256,6 +256,7 @@ class BattleRoyaleMode(GameMode):
         self.random = random
         self.match_time = 0.0
         self.sudden_death_black_hole_spawned = False
+        self.tornado_spawn_timer = 0.0
         self.final_boss_spawned = False
 
     def setup(self, world: Any, balls: List[Any]) -> None:
@@ -465,6 +466,53 @@ class BattleRoyaleMode(GameMode):
             if getattr(b, "alive", False) and getattr(b, "weather_control_timer", 0.0) > 0:
                 controller = b
                 break
+
+        # Tornado roaming and bouncing logic
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "tornado":
+                    if hasattr(h, "vx") and hasattr(h, "vy"):
+                        h.x += h.vx * delta
+                        h.y += h.vy * delta
+                        # Bounce off walls
+                        arena_width = getattr(world.arena, "width", 1000)
+                        arena_height = getattr(world.arena, "height", 1000)
+                        if h.x - h.radius < 0:
+                            h.x = h.radius
+                            h.vx *= -1
+                        elif h.x + h.radius > arena_width:
+                            h.x = arena_width - h.radius
+                            h.vx *= -1
+                        if h.y - h.radius < 0:
+                            h.y = h.radius
+                            h.vy *= -1
+                        elif h.y + h.radius > arena_height:
+                            h.y = arena_height - h.radius
+                            h.vy *= -1
+
+        # Periodic tornado spawn
+        if hasattr(self, "tornado_spawn_timer"):
+            self.tornado_spawn_timer += delta
+            if self.tornado_spawn_timer >= 20.0:  # Spawn every 20 seconds
+                self.tornado_spawn_timer = 0.0
+                arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+                arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+                rnd = getattr(self, "random", __import__("random"))
+                tx = rnd.uniform(100.0, arena_width - 100.0)
+                ty = rnd.uniform(100.0, arena_height - 100.0)
+                try:
+                    from arena.procedural_arena import Hazard
+                    t_id = len(getattr(world.arena, "hazards", [])) + rnd.randint(10000, 99999)
+                    tornado = Hazard(id=t_id, x=tx, y=ty, radius=50.0, kind="tornado", damage=10.0)
+                    setattr(tornado, "vx", rnd.uniform(-100.0, 100.0))
+                    setattr(tornado, "vy", rnd.uniform(-100.0, 100.0))
+                    setattr(tornado, "duration", 9999.0)
+                    if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                        world.arena.hazards.append(tornado)
+                        if hasattr(world, "add_event"):
+                            world.add_event("hazard_spawn", {"message": "A roaming Tornado has appeared!"})
+                except Exception as e:
+                    pass
 
         # Supply Drop Logic
         self.supply_drop_timer += delta

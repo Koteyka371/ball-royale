@@ -8,6 +8,8 @@ from ai.game_modes import (
 
 class MockBall:
     def __init__(self, id, ball_type="warrior", alive=True):
+        self.x = 0.0
+        self.y = 0.0
         self.id = id
         self.ball_type = ball_type
         self.alive = alive
