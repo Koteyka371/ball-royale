@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-587] Cursed Bumpers — *2026-07-06 23:22:07 UTC*
+
+Some bumpers provide a massive immediate boost to speed and damage, but apply a slow damage-over-time or stamina drain effect that lasts until the ball hits a normal bumper.
+
+---
+
 ## [idea-630] Dynamic Arena Hazards — *2026-07-06 23:17:55 UTC*
 
 Hazards can change their size, shape, and damage dynamically during the game, based on arena-wide events and seasonal modifiers.

@@ -10135,7 +10135,7 @@
     },
     {
       "id": "idea-587",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Cursed Bumpers",
@@ -18232,6 +18232,23 @@
         "src/ai/daynight_vision_modules.py",
         "src/ai/daynight_vision_modules.gd",
         "tests/test_daynight_vision_modules.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1063",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Hazard Weather Synergy",
+      "description": "If a weather event like a thunderstorm hits the arena, puddles become electrified, dealing a new type of 'Shock' damage that stalls the player's movement for 0.5s.",
+      "allowed_paths": [
+        "src/arena/synergy.py",
+        "src/arena/synergy.gd",
+        "tests/test_synergy.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
