@@ -850,8 +850,29 @@ class ProceduralArena:
             # Clear old dynamic hazards
             self.hazards = [h for h in self.hazards if getattr(h, 'id', 9999) < 1000]
 
+            # Process seasonal modifiers for hazards
+            seasonal_modifier = getattr(self, "seasonal_modifier", "none")
+            for h in self.hazards:
+                if seasonal_modifier == "winter" and h.kind == "puddle":
+                    h.kind = "ice_patch"
+                    h.target_radius = h.radius * 1.5
+                    h.damage = getattr(h, "damage", 0) + 5.0
+                elif seasonal_modifier == "summer" and h.kind == "ice_patch":
+                    h.kind = "puddle"
+                    h.target_radius = h.radius * 0.8
+                elif seasonal_modifier == "halloween" and h.kind in ["trap", "explosive_barrel"]:
+                    h.kind = "cursed_trap"
+                    h.damage = getattr(h, "damage", 10.0) * 1.5
+                    h.target_radius = h.radius * 1.2
+
             # Periodically trigger random arena-wide events
-            event_type = random.choice(["meteor_shower", "gravity_shift", "moving_walls", "orbital_strike", "fire_ring", "anomaly_zone", "massive_black_hole_event", "none"])
+            events = ["meteor_shower", "gravity_shift", "moving_walls", "orbital_strike", "fire_ring", "anomaly_zone", "massive_black_hole_event", "none"]
+            if seasonal_modifier == "winter":
+                events.append("blizzard")
+            elif seasonal_modifier == "summer":
+                events.append("heatwave")
+
+            event_type = random.choice(events)
             if event_type != "none":
                 self._trigger_event(event_type, current_tick)
 
@@ -965,6 +986,33 @@ class ProceduralArena:
 
 
     def _trigger_event(self, event_type: str, current_tick: int):
+        import random
+        if event_type == "blizzard":
+            for h in self.hazards:
+                if h.kind == "puddle":
+                    h.kind = "ice_patch"
+                    h.target_radius = h.radius * 2.0
+            for i in range(5):
+                x = random.uniform(50, self.width - 50)
+                y = random.uniform(50, self.height - 50)
+                ice_id = 40000 + len(self.hazards) + i
+                ice = Hazard(id=ice_id, x=x, y=y, radius=10.0, kind="ice_patch", damage=0.0)
+                ice.target_radius = 60.0
+                setattr(ice, "duration", 20.0)
+                self.hazards.append(ice)
+        elif event_type == "heatwave":
+            for h in self.hazards:
+                if h.kind == "ice_patch":
+                    h.kind = "puddle"
+                    h.target_radius = h.radius * 0.5
+            for i in range(3):
+                x = random.uniform(50, self.width - 50)
+                y = random.uniform(50, self.height - 50)
+                fire_id = 41000 + len(self.hazards) + i
+                fire = Hazard(id=fire_id, x=x, y=y, radius=10.0, kind="fire_zone", damage=30.0)
+                fire.target_radius = 80.0
+                setattr(fire, "duration", 15.0)
+                self.hazards.append(fire)
         import random
         if event_type == "orbital_strike":
             h_id = 5000 + len(self.hazards)

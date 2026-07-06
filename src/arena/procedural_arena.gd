@@ -1007,7 +1007,27 @@ func update_zone(current_tick: int, delta: float) -> void:
                     new_hazards.append(h)
             hazards = new_hazards
 
+            var seasonal_modifier = "none"
+            if "seasonal_modifier" in self:
+                seasonal_modifier = self.seasonal_modifier
+            for h in hazards:
+                if seasonal_modifier == "winter" and h.kind == "puddle":
+                    h.kind = "ice_patch"
+                    if "target_radius" in h: h.target_radius = h.radius * 1.5
+                    h.damage += 5.0
+                elif seasonal_modifier == "summer" and h.kind == "ice_patch":
+                    h.kind = "puddle"
+                    if "target_radius" in h: h.target_radius = h.radius * 0.8
+                elif seasonal_modifier == "halloween" and h.kind in ["trap", "explosive_barrel"]:
+                    h.kind = "cursed_trap"
+                    h.damage *= 1.5
+                    if "target_radius" in h: h.target_radius = h.radius * 1.2
+
             var event_types = ["meteor_shower", "gravity_shift", "moving_walls", "orbital_strike", "fire_ring", "anomaly_zone", "massive_black_hole_event", "none"]
+            if seasonal_modifier == "winter":
+                event_types.append("blizzard")
+            elif seasonal_modifier == "summer":
+                event_types.append("heatwave")
             var event_type = event_types[randi() % event_types.size()]
             if event_type != "none":
                 _trigger_event(event_type, current_tick)
@@ -1467,6 +1487,34 @@ class AmbushArena extends ProceduralArena:
 
 
 func _trigger_event(event_type: String, current_tick: int) -> void:
+    if event_type == "blizzard":
+        for h in hazards:
+            if h.kind == "puddle":
+                h.kind = "ice_patch"
+                h.target_radius = h.radius * 2.0
+        var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
+        for i in range(5):
+            var x = randf_range(50, width - 50)
+            var y = randf_range(50, height - 50)
+            var ice_id = 40000 + hazards.size() + i
+            var ice = ProceduralArenaScript.Hazard.new(ice_id, x, y, 10.0, "ice_patch", 0.0)
+            ice.target_radius = 60.0
+            ice.set_meta("duration", 20.0)
+            hazards.append(ice)
+    elif event_type == "heatwave":
+        for h in hazards:
+            if h.kind == "ice_patch":
+                h.kind = "puddle"
+                h.target_radius = h.radius * 0.5
+        var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
+        for i in range(3):
+            var x = randf_range(50, width - 50)
+            var y = randf_range(50, height - 50)
+            var fire_id = 41000 + hazards.size() + i
+            var fire = ProceduralArenaScript.Hazard.new(fire_id, x, y, 10.0, "fire_zone", 30.0)
+            fire.target_radius = 80.0
+            fire.set_meta("duration", 15.0)
+            hazards.append(fire)
     if event_type == "orbital_strike":
         var h_id = 5000 + hazards.size()
         var strike = ProceduralArena.Hazard.new(h_id, width/2, height/2, 400.0, "orbital_strike", 0.0)
