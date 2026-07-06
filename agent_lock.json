@@ -43,10 +43,10 @@
     "agent-6": {
       "name": "Jules Innovation",
       "area": "innovation",
-      "task_id": "idea-563",
-      "status": "working",
-      "started_at": "2026-07-06T12:33:25.556293+00:00",
-      "cycles_today": 2
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
+      "cycles_today": 1
     },
     "supervisor": {
       "name": "Jules Supervisor",
