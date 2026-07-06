@@ -1,4 +1,0 @@
-{
-  "title": "Lightning Strikes in Rain Arenas",
-  "description": "During is_raining or thunderstorm conditions, occasionally strike the arena with lightning. The lightning strike targets the area with the highest cluster of balls. Any ball hit takes massive damage, but gains a temporary movement speed and cooldown buff from being overcharged."
-}

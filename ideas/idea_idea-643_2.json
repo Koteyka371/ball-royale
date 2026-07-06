@@ -1,4 +1,0 @@
-{
-  "title": "Gravity Mine Trap",
-  "description": "A deployable hazard that remains invisible until triggered. When an enemy enters its radius, it explodes, reversing their gravity and causing them to slowly float towards the edge of the arena for 5 seconds."
-}

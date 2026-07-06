@@ -1,4 +1,0 @@
-{
-  "title": "Ghost Wall Mechanic",
-  "description": "In MazeSafeZoneMode, periodically some walls turn 'ghostly' and pass through players without damaging them or pushing them back, allowing them brief moments of escape before solidifying again."
-}

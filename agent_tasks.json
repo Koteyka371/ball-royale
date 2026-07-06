@@ -18169,6 +18169,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1059",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Stealth Espionage Mode",
+      "description": "Players start permanently cloaked and must complete objectives without triggering alarms or laser tripwires. Using skills momentarily reveals their position to guards.",
+      "allowed_paths": [
+        "src/ai/stealth_espionage.py",
+        "src/ai/stealth_espionage.gd",
+        "tests/test_stealth_espionage.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1060",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Platformer Mode",
+      "description": "A side-scrolling platformer mode where balls navigate using bounce pads, grapple points, and low gravity to reach the end of a long, treacherous level.",
+      "allowed_paths": [
+        "src/ai/platformer.py",
+        "src/ai/platformer.gd",
+        "tests/test_platformer.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }

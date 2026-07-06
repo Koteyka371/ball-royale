@@ -1,4 +1,0 @@
-{
-  "title": "Tornado Hazard for Windy Arenas",
-  "description": "Introduce a dynamic Tornado hazard in AutumnArena that spawns occasionally. It pulls nearby balls towards its center, reducing their friction to near zero and launching them in a random direction if they reach the eye of the tornado."
-}
