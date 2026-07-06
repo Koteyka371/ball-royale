@@ -4562,6 +4562,37 @@ func execute(strategy: String, delta: float):
                                 self.ball.set_meta("quicksand_debuff_timer", debuff_timer)
                             else:
                                 self.ball.quicksand_debuff_timer = debuff_timer
+                elif hazard.kind == "flood_zone":
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    if dist_sq < hazard.radius * hazard.radius:
+                        var base_s = 100.0
+                        if self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"):
+                            base_s = self.ball.get_meta("base_speed")
+                        elif "base_speed" in self.ball:
+                            base_s = self.ball.base_speed
+
+                        var bt = "unknown"
+                        if "ball_type" in self.ball: bt = str(self.ball.ball_type).to_lower()
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("ball_type"): bt = str(self.ball.get_meta("ball_type")).to_lower()
+
+                        var tr = []
+                        if "traits" in self.ball: tr = self.ball.traits
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("traits"): tr = self.ball.get_meta("traits")
+
+                        var has_wt = false
+                        if "water" in bt or "swamp" in bt or "hover" in bt or "floating" in bt or "aquatic" in bt: has_wt = true
+                        if typeof(tr) == TYPE_ARRAY:
+                            for t in tr:
+                                var ts = str(t).to_lower()
+                                if "water" in ts or "swamp" in ts or "hover" in ts or "floating" in ts or "aquatic" in ts:
+                                    has_wt = true
+
+                        if not has_wt:
+                            self.ball.speed = base_s * 0.2
+                        else:
+                            self.ball.speed = base_s * 1.2
 
                         if self.ball.has_method("set_meta"):
                             self.ball.set_meta("is_in_quicksand", true)
