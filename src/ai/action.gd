@@ -13339,6 +13339,63 @@ func _resolve_collisions() -> bool:
                     knockback_multiplier = 5.0
                 elif "name" in self.world.game_mode and self.world.game_mode.name == "Magnetic Collisions":
                     knockback_multiplier = -0.5
+                elif "name" in self.world.game_mode and self.world.game_mode.name == "Reverse Friction":
+                    var b_vx = 0.0
+                    var b_vy = 0.0
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        if self.ball.has("vx"): b_vx = self.ball["vx"]
+                        if self.ball.has("vy"): b_vy = self.ball["vy"]
+                    else:
+                        if "vx" in self.ball: b_vx = self.ball.vx
+                        elif self.ball.has_method("has_meta") and self.ball.has_meta("vx"): b_vx = self.ball.get_meta("vx")
+                        if "vy" in self.ball: b_vy = self.ball.vy
+                        elif self.ball.has_method("has_meta") and self.ball.has_meta("vy"): b_vy = self.ball.get_meta("vy")
+
+                    var o_vx = 0.0
+                    var o_vy = 0.0
+                    if typeof(other) == TYPE_DICTIONARY:
+                        if other.has("vx"): o_vx = other["vx"]
+                        if other.has("vy"): o_vy = other["vy"]
+                    else:
+                        if "vx" in other: o_vx = other.vx
+                        elif other.has_method("has_meta") and other.has_meta("vx"): o_vx = other.get_meta("vx")
+                        if "vy" in other: o_vy = other.vy
+                        elif other.has_method("has_meta") and other.has_meta("vy"): o_vy = other.get_meta("vy")
+
+                    var speed_self = sqrt(b_vx * b_vx + b_vy * b_vy)
+                    var speed_other = sqrt(o_vx * o_vx + o_vy * o_vy)
+                    var total_speed = speed_self + speed_other
+                    var damage_amount = total_speed * 0.1
+
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        if self.ball.has("hp"):
+                            self.ball["hp"] -= damage_amount
+                            if self.ball["hp"] <= 0:
+                                self.ball["hp"] = 0
+                                self.ball["alive"] = false
+                    elif typeof(self.ball) == TYPE_OBJECT:
+                        if self.ball.has_method("take_damage"):
+                            self.ball.take_damage(damage_amount)
+                        elif "hp" in self.ball:
+                            self.ball.hp -= damage_amount
+                            if self.ball.hp <= 0:
+                                self.ball.hp = 0
+                                self.ball.alive = false
+
+                    if typeof(other) == TYPE_DICTIONARY:
+                        if other.has("hp"):
+                            other["hp"] -= damage_amount
+                            if other["hp"] <= 0:
+                                other["hp"] = 0
+                                other["alive"] = false
+                    elif typeof(other) == TYPE_OBJECT:
+                        if other.has_method("take_damage"):
+                            other.take_damage(damage_amount)
+                        elif "hp" in other:
+                            other.hp -= damage_amount
+                            if other.hp <= 0:
+                                other.hp = 0
+                                other.alive = false
 
             var cosmetic_val = ""
             if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("cosmetic"):

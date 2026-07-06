@@ -7673,6 +7673,24 @@ class Action:
                     knockback_multiplier = 5.0
                 elif gm and getattr(gm, "name", "") == "Magnetic Collisions":
                     knockback_multiplier = -0.5
+                elif gm and getattr(gm, "name", "") == "Reverse Friction":
+                    speed_self = math.sqrt(getattr(self.ball, "vx", 0.0)**2 + getattr(self.ball, "vy", 0.0)**2)
+                    speed_other = math.sqrt(getattr(other, "vx", 0.0)**2 + getattr(other, "vy", 0.0)**2)
+                    total_speed = speed_self + speed_other
+                    damage_amount = total_speed * 0.1
+                    if hasattr(self.ball, "take_damage"):
+                        self.ball.take_damage(damage_amount)
+                    elif hasattr(self.ball, "hp"):
+                        self.ball.hp -= damage_amount
+                        if self.ball.hp <= 0:
+                            self.ball.alive = False
+
+                    if hasattr(other, "take_damage"):
+                        other.take_damage(damage_amount)
+                    elif hasattr(other, "hp"):
+                        other.hp -= damage_amount
+                        if other.hp <= 0:
+                            other.alive = False
 
                 cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
                 if cosmetic == "magnetic_boots":
