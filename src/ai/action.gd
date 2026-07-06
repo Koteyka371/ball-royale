@@ -12354,6 +12354,23 @@ func _use_skill():
                 var smoke = ProceduralArena.Hazard.new(trap_id, self.ball.x, self.ball.y, 80.0, "smokescreen", 0.0)
                 smoke.set_meta("duration", 5.0)
                 self.world.arena.hazards.append(smoke)
+        elif skill_name == "sonar_ping":
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                self.ball.set_meta("sonar_ping_timer", 5.0)
+            elif typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["sonar_ping_timer"] = 5.0
+            elif "sonar_ping_timer" in self.ball:
+                self.ball.sonar_ping_timer = 5.0
+
+            if self.world.has_method("add_event"):
+                var event_payload = {"x": self.ball.x, "y": self.ball.y, "radius": 1500.0}
+                if "id" in self.ball: event_payload["source_id"] = self.ball.id
+                self.world.add_event("sonar_ping", event_payload)
+
+            var cool = 12.0
+            if "skill_cooldown" in self.ball: cool = self.ball.skill_cooldown
+            if "skill_timer" in self.ball: self.ball.skill_timer = cool
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cool)
         elif skill_name == "flare":
             var arena = null
             if typeof(self.world) == TYPE_OBJECT and self.world.has_method("call"):
@@ -13593,6 +13610,15 @@ func _apply_friendly_aura(delta: float):
 
 
 func _update_skill_timer(delta: float):
+    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("sonar_ping_timer"):
+        var spt = float(self.ball.get_meta("sonar_ping_timer"))
+        if spt > 0: self.ball.set_meta("sonar_ping_timer", spt - delta)
+    elif typeof(self.ball) == TYPE_DICTIONARY and "sonar_ping_timer" in self.ball:
+        var spt = float(self.ball["sonar_ping_timer"])
+        if spt > 0: self.ball["sonar_ping_timer"] = spt - delta
+    elif "sonar_ping_timer" in self.ball and self.ball.sonar_ping_timer != null and self.ball.sonar_ping_timer > 0:
+        self.ball.sonar_ping_timer -= delta
+
     var sc_timer = 0.0
     if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("supercharge_timer"):
         sc_timer = float(self.ball.get_meta("supercharge_timer"))

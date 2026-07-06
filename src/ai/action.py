@@ -6733,6 +6733,11 @@ class Action:
                 if hasattr(self.ball, "hp"):
                     self.ball.hp = min(getattr(self.ball, "max_hp", 100), self.ball.hp + 30)
                 self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
+            elif skill_name == "sonar_ping":
+                setattr(self.ball, "sonar_ping_timer", 5.0)
+                if hasattr(self.world, "add_event"):
+                    self.world.add_event("sonar_ping", {"x": self.ball.x, "y": self.ball.y, "radius": 1500.0, "source_id": getattr(self.ball, "id", None)})
+                self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 12.0)
             elif skill_name == "flare":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     import random as _rnd
@@ -8121,6 +8126,9 @@ class Action:
 
         if hasattr(self.ball, "skill_timer") and self.ball.skill_timer > 0:
             self.ball.skill_timer -= delta
+        if hasattr(self.ball, "sonar_ping_timer") and self.ball.sonar_ping_timer > 0:
+            self.ball.sonar_ping_timer -= delta
+
         if hasattr(self.ball, "attack_timer") and self.ball.attack_timer > 0:
             self.ball.attack_timer -= delta
 
