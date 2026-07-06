@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Entanglement Trap",
+  "description": "A new placeable hazard that links two balls together when stepped on. Any damage or healing applied to one of the entangled balls is shared by both for 5 seconds."
+}
