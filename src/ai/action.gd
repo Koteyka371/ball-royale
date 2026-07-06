@@ -2794,6 +2794,10 @@ func execute(strategy: String, delta: float):
             if "vx" in my_ball and "vy" in my_ball:
                 my_ball.x += my_ball.vx * delta * 0.4
                 my_ball.y += my_ball.vy * delta * 0.4
+        if world.arena.get("is_heatwave") == true:
+            if "vx" in my_ball and "vy" in my_ball:
+                my_ball.vx *= 0.95
+                my_ball.vy *= 0.95
         if wind_dx != 0.0 or wind_dy != 0.0:
             my_ball.x += wind_dx * delta
             my_ball.y += wind_dy * delta
@@ -2876,6 +2880,18 @@ func execute(strategy: String, delta: float):
             cosmetic_val = str(my_ball.get_meta("cosmetic")).to_lower().replace(" ", "_")
 
         if cosmetic_val == "magnetic_boots":
+            base_s *= 0.9
+
+        var arena_ref_sp = self.world.get("arena") if "arena" in self.world else null
+        var is_snowing_sp = arena_ref_sp.get("is_snowing") if arena_ref_sp != null and "is_snowing" in arena_ref_sp else false
+        var is_heatwave_sp = arena_ref_sp.get("is_heatwave") if arena_ref_sp != null and "is_heatwave" in arena_ref_sp else false
+        var is_windy_sp = arena_ref_sp.get("is_windy") if arena_ref_sp != null and "is_windy" in arena_ref_sp else false
+
+        if is_snowing_sp:
+            base_s *= 0.8
+        if is_windy_sp:
+            base_s *= 1.2
+        if is_heatwave_sp:
             base_s *= 0.9
 
         my_ball.set_meta("base_speed", base_s)
@@ -14860,8 +14876,18 @@ func _update_skill_timer(delta: float):
             self.ball.set_meta("health_link_timer", hl_timer)
             self.ball.set_meta("health_link_target", target)
 
+    var arena_obj = self.world.get("arena") if "arena" in self.world else null
+    var is_snowing = arena_obj.get("is_snowing") if arena_obj != null and "is_snowing" in arena_obj else false
+    var is_heatwave = arena_obj.get("is_heatwave") if arena_obj != null and "is_heatwave" in arena_obj else false
+
+    var cooldown_mult = 1.0
+    if is_snowing:
+        cooldown_mult = 0.5
+    elif is_heatwave:
+        cooldown_mult = 1.5
+
     if "skill_timer" in self.ball and self.ball.skill_timer > 0:
-        self.ball.skill_timer -= delta
+        self.ball.skill_timer -= delta * cooldown_mult
 
     var reflect_shield_timer = 0.0
     if "reflect_shield_timer" in self.ball:
@@ -14912,7 +14938,16 @@ func _update_skill_timer(delta: float):
         attack_timer = self.ball.get_meta("attack_timer")
 
     if attack_timer > 0:
-        attack_timer -= delta
+        var arena_obj2 = self.world.get("arena") if "arena" in self.world else null
+        var is_snowing2 = arena_obj2.get("is_snowing") if arena_obj2 != null and "is_snowing" in arena_obj2 else false
+        var is_heatwave2 = arena_obj2.get("is_heatwave") if arena_obj2 != null and "is_heatwave" in arena_obj2 else false
+        var cd_mult2 = 1.0
+        if is_snowing2:
+            cd_mult2 = 0.5
+        elif is_heatwave2:
+            cd_mult2 = 1.5
+
+        attack_timer -= delta * cd_mult2
         if "attack_timer" in self.ball:
             self.ball.attack_timer = attack_timer
         elif self.ball.has_method("set_meta"):
