@@ -1,0 +1,4 @@
+{
+  "title": "Velocity Damage Modifiers",
+  "description": "Introduces a persistent rule to Battle Royale modes where collisions between balls transfer energy. Fast-moving balls deal amplified impact damage, while stationary ones act as sponges but take double damage from high-speed rammings."
+}

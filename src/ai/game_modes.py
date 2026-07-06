@@ -8301,6 +8301,9 @@ GAME_MODES["clan_tournament"] = ClanTournamentMode()
 GAME_MODES["reversed_input"] = ReversedInputMode()
 GAME_MODES["scrambler_drones"] = ScramblerDroneMode()
 
+from ai.reverse_friction import ReverseFrictionMode
+GAME_MODES["reverse_friction"] = ReverseFrictionMode()
+
 
 class TagTeamMode(GameMode):
     def __init__(self):

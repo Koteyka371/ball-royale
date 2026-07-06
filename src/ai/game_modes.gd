@@ -10472,7 +10472,8 @@ var GAME_MODES = {
 	"artifact_upgrader": ArtifactUpgraderMode.new(),
 	"meteor_shower": MeteorShowerMode.new(),
 	"rolling_boulders": RollingBouldersMode.new(),
-	"scrambler_drones": ScramblerDroneMode.new()
+	"scrambler_drones": ScramblerDroneMode.new(),
+	"reverse_friction": load("res://src/ai/reverse_friction.gd").new()
 ,
 	"blizzard_mode": BlizzardMode.new(),
 
