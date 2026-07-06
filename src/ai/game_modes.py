@@ -248,6 +248,22 @@ class DraftRoyaleMode(GameMode):
 
         return None
 
+class ShadowMonster:
+    def __init__(self, id, x, y):
+        self.id = id
+        self.x = x
+        self.y = y
+        self.vx = 0.0
+        self.vy = 0.0
+        self.radius = 15.0
+        self.speed = 180.0
+        self.damage = 30.0
+        self.hp = 100.0
+        self.max_hp = 100.0
+        self.alive = True
+        self.ball_type = "shadow_monster"
+        self.team = "ShadowMonsters"
+
 class BattleRoyaleMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -255,6 +271,8 @@ class BattleRoyaleMode(GameMode):
         self.description = "Last man standing. Everyone for themselves. Includes dynamic weather."
         self.dark_phase_timer = 0.0
         self.is_dark_phase = False
+        self.shadow_monsters = []
+        self.shadow_monster_count_spawned = 0
         self.weather = "clear"
         self.weather_timer = 0.0
         self.next_weather = "clear"
@@ -1087,6 +1105,88 @@ class BattleRoyaleMode(GameMode):
 
         self.dark_phase_timer += delta
 
+        # Manage shadow monsters during tick
+        if self.is_dark_phase:
+            import math
+            import random
+
+            # Spawn logic: Keep a few monsters alive
+            while len(self.shadow_monsters) < 3:
+                # Spawn outside player vision
+                arena_width = getattr(world.arena, "width", 1000)
+                arena_height = getattr(world.arena, "height", 1000)
+
+                spawn_x = random.uniform(50, arena_width - 50)
+                spawn_y = random.uniform(50, arena_height - 50)
+
+                # Check distance to all players
+                valid_spawn = True
+                for b in balls:
+                    if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]:
+                        perc_rad = getattr(b, "perception_radius", 250.0)
+                        dist = math.hypot(b.x - spawn_x, b.y - spawn_y)
+                        if dist <= perc_rad + 50.0: # Add buffer
+                            valid_spawn = False
+                            break
+
+                if valid_spawn or random.random() < 0.1: # Fallback to spawn anyway if no valid spot found quickly
+                    monster_id = getattr(world, "next_id", random.randint(100000, 999999))
+                    if hasattr(world, "next_id"):
+                        world.next_id += 1
+
+                    monster = ShadowMonster(monster_id, spawn_x, spawn_y)
+                    self.shadow_monsters.append(monster)
+                    if monster not in balls:
+                        balls.append(monster)
+
+            # Monster AI
+            for monster in self.shadow_monsters:
+                if not getattr(monster, "alive", True):
+                    continue
+
+                closest_player = None
+                closest_dist = float('inf')
+
+                for b in balls:
+                    if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]:
+                        dist = math.hypot(b.x - monster.x, b.y - monster.y)
+                        if dist < closest_dist:
+                            closest_dist = dist
+                            closest_player = b
+
+                if closest_player:
+                    dx = closest_player.x - monster.x
+                    dy = closest_player.y - monster.y
+                    if closest_dist > 0.0001:
+                        nx = dx / closest_dist
+                        ny = dy / closest_dist
+                        monster.vx = nx * monster.speed
+                        monster.vy = ny * monster.speed
+                else:
+                    monster.vx *= 0.95
+                    monster.vy *= 0.95
+
+                monster.x += monster.vx * delta
+                monster.y += monster.vy * delta
+
+                # Simple collisions with players
+                for b in balls:
+                    if b == monster or not getattr(b, "alive", False) or getattr(b, "ball_type", None) in ["spectator", "shadow_monster"]:
+                        continue
+
+                    dist = math.hypot(b.x - monster.x, b.y - monster.y)
+                    b_rad = getattr(b, "radius", 10.0)
+                    min_dist = monster.radius + (float(b_rad) if isinstance(b_rad, (int, float)) else 10.0)
+                    if dist < min_dist:
+                        # Deal damage
+                        if hasattr(b, "hp"):
+                            b.hp -= monster.damage * delta
+                            if b.hp <= 0:
+                                b.alive = False
+
+            # Clean up dead monsters
+            self.shadow_monsters = [m for m in self.shadow_monsters if getattr(m, "alive", True)]
+
         # Dark phase cycle: 20s normal, 10s dark
         if not self.is_dark_phase and self.dark_phase_timer >= 20.0:
             self.is_dark_phase = True
@@ -1094,7 +1194,7 @@ class BattleRoyaleMode(GameMode):
 
             # Apply dark phase
             for b in balls:
-                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]:
                     if not hasattr(b, "base_perception_radius"):
                         b.base_perception_radius = getattr(b, "perception_radius", 250.0)
                     if getattr(b, "vision_booster_timer", 0) > 0:
@@ -1108,13 +1208,22 @@ class BattleRoyaleMode(GameMode):
             self.is_dark_phase = False
             self.dark_phase_timer = 0.0
 
-            # Restore normal phase
+            # Despawn shadow monsters
+            for m in self.shadow_monsters:
+                m.alive = False
+                if m in balls:
+                    balls.remove(m)
+            self.shadow_monsters = []
+
+            # Restore normal phase and reward survivors
             for b in balls:
-                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]:
                     b.perception_radius = getattr(b, "base_perception_radius", 250.0)
+                    # Reward survivors
+                    b.score = getattr(b, "score", 0) + 100
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
-        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
         if not alive:
             self._award_skill_points()
             return "Draw"
@@ -1162,7 +1271,7 @@ class TeamDeathmatchMode(GameMode):
                 b.team = "Red" if i < mid else "Blue"
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
-        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
         if not alive:
             return "Draw"
 
@@ -1218,7 +1327,7 @@ class ZombieInfectionMode(GameMode):
                 survivor.alive = True
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
-        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
         if not alive:
             return "Draw"
 
@@ -1392,7 +1501,7 @@ class BossFightMode(GameMode):
                 b.hp = min(b.hp + 5.0 * delta, getattr(b, "max_hp", 1000.0))
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
-        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
         if not alive:
             return "Draw"
 
@@ -1750,7 +1859,7 @@ class SurvivalMode(GameMode):
                     world.arena.hazards.remove(hz)
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
-        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
         if not alive:
             return "Draw"
 
@@ -1835,7 +1944,7 @@ class EvolutionarySimulationMode(GameMode):
                 b.team = f"Neural_{i}"
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
-        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
         if not alive:
             return "Draw"
 
@@ -1878,7 +1987,7 @@ class VampireRoyaleMode(GameMode):
                         b.alive = False
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
-        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
         if not alive:
             return "Draw"
 
@@ -1956,7 +2065,7 @@ class KingOfTheHillMode(GameMode):
                         b.score = getattr(b, "score", 0) + 1
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
-        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
         if not alive:
             return "Draw"
 
@@ -2042,7 +2151,7 @@ class BlackHoleMode(GameMode):
                     b.y += (dy / dist) * pull_strength * delta
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
-        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
         if not alive:
             return "Draw"
 
@@ -2621,7 +2730,7 @@ class WeatherChaosMode(GameMode):
 
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
-        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
         if not alive:
             return "Draw"
 
@@ -2790,7 +2899,7 @@ class DominationMode(GameMode):
 
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
-        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
         if not alive:
             return "Draw"
 
@@ -2973,7 +3082,7 @@ class MemoryTrapsMode(GameMode):
                             b.alive = False
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
-        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
         if not alive:
             return "Draw"
 
@@ -3233,7 +3342,7 @@ class EcholocationMode(GameMode):
                         b.perception_radius = 1000.0
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
-        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
         if not alive:
             return "Draw"
 
@@ -3293,7 +3402,7 @@ class PitchBlackMode(GameMode):
                 b.perception_radius = getattr(b, "base_perception_radius", 250.0)
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
-        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
         if not alive:
             return "Draw"
 
@@ -3363,7 +3472,7 @@ class VisionReducedMode(GameMode):
                     b.perception_radius = 50.0
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
-        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
         if not alive:
             return "Draw"
 
@@ -4515,7 +4624,7 @@ class BumperBallsMode(GameMode):
                 b.alive = False
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
-        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
         if not alive:
             return "Draw"
         if len(alive) == 1:
@@ -4531,7 +4640,7 @@ class TournamentMode(GameMode):
         self.tick_timer = 0.0
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
-        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
         if not alive:
             return "Draw"
 
@@ -4723,7 +4832,7 @@ class ModifierZonesMode(GameMode):
                     b.hp = min(getattr(b, "max_hp", 100.0), b.hp + 20.0 * delta)
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
-        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
         if not alive:
             return "Draw"
 
@@ -4814,7 +4923,7 @@ class WindstormMode(GameMode):
                     b.vy += self.push_dir_y * strength * delta
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
-        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
         if not alive:
             return "Draw"
 
@@ -4934,7 +5043,7 @@ class BountyHuntMode(GameMode):
                     world.add_event("bounty_destroyed", {"message": f"{team} Bounty destroyed! {enemy_team} gets massive buff!"})
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
-        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
         if not alive:
             return "Draw"
 

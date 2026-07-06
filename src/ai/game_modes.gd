@@ -326,6 +326,20 @@ class DraftRoyaleMode extends GameMode:
 
         return null
 
+class ShadowMonster:
+    var x = 0.0
+    var y = 0.0
+    var vx = 0.0
+    var vy = 0.0
+    var radius = 15.0
+    var speed = 180.0
+    var damage = 30.0
+    var hp = 100.0
+    var max_hp = 100.0
+    var alive = true
+    var ball_type = "shadow_monster"
+    var team = "ShadowMonsters"
+
 class BattleRoyaleMode extends GameMode:
     var dark_phase_timer: float = 0.0
     var is_dark_phase: bool = false
@@ -346,6 +360,8 @@ class BattleRoyaleMode extends GameMode:
     func _init() -> void:
         name = "Battle Royale"
         description = "Last man standing. Everyone for themselves. Includes periodic dark phases."
+        if not has_meta("shadow_monsters"):
+            set_meta("shadow_monsters", [])
 
     func setup(world, balls: Array) -> void:
         super.setup(world, balls)
@@ -1238,6 +1254,95 @@ class BattleRoyaleMode extends GameMode:
                                         b.x += nx * pull
                                         b.y += ny * pull
 
+        if not self.has_meta("shadow_monsters"):
+            self.set_meta("shadow_monsters", [])
+        var shadow_monsters = self.get_meta("shadow_monsters")
+
+        if is_dark_phase:
+            var arena_width = 1000.0
+            var arena_height = 1000.0
+            if world != null and "arena" in world and world.arena != null:
+                if "width" in world.arena: arena_width = world.arena.width
+                if "height" in world.arena: arena_height = world.arena.height
+
+            while shadow_monsters.size() < 3:
+                var spawn_x = randf_range(50, arena_width - 50)
+                var spawn_y = randf_range(50, arena_height - 50)
+
+                var valid_spawn = true
+                for b in balls:
+                                        if "alive" in b and b.alive and "ball_type" in b and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
+                        var perc_rad = 250.0
+                        if "perception_radius" in b: perc_rad = float(b.perception_radius)
+                        var dx = b.x - spawn_x
+                        var dy = b.y - spawn_y
+                        var dist = sqrt(dx*dx + dy*dy)
+                        if dist <= perc_rad + 50.0:
+                            valid_spawn = false
+                            break
+
+                if valid_spawn or randf() < 0.1:
+                    var monster = ShadowMonster.new()
+                    monster.x = spawn_x
+                    monster.y = spawn_y
+                    shadow_monsters.append(monster)
+                    balls.append(monster)
+
+            for monster in shadow_monsters:
+                if not monster.alive:
+                    continue
+
+                var closest_player = null
+                var closest_dist = 999999.0
+
+                for b in balls:
+                                        if "alive" in b and b.alive and "ball_type" in b and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
+                        var dx = b.x - monster.x
+                        var dy = b.y - monster.y
+                        var dist = sqrt(dx*dx + dy*dy)
+                        if dist < closest_dist:
+                            closest_dist = dist
+                            closest_player = b
+
+                if closest_player != null:
+                    var dx = closest_player.x - monster.x
+                    var dy = closest_player.y - monster.y
+                    if closest_dist > 0.0001:
+                        var nx = dx / closest_dist
+                        var ny = dy / closest_dist
+                        monster.vx = nx * monster.speed
+                        monster.vy = ny * monster.speed
+                else:
+                    monster.vx *= 0.95
+                    monster.vy *= 0.95
+
+                monster.x += monster.vx * delta
+                monster.y += monster.vy * delta
+
+                for b in balls:
+                                        if not ("alive" in b and b.alive) or ("ball_type" in b and (b.ball_type == "spectator" or b.ball_type == "shadow_monster")):
+                        continue
+
+                    var dx = b.x - monster.x
+                    var dy = b.y - monster.y
+                    var dist = sqrt(dx*dx + dy*dy)
+                    var target_radius = 10.0
+                    if "radius" in b: target_radius = float(b.radius)
+                    var min_dist = monster.radius + target_radius
+
+                    if dist < min_dist:
+                        if "hp" in b:
+                            b.hp -= monster.damage * delta
+                            if b.hp <= 0:
+                                b.alive = false
+
+            var new_shadow_monsters = []
+            for m in shadow_monsters:
+                if m.alive:
+                    new_shadow_monsters.append(m)
+            shadow_monsters = new_shadow_monsters
+            self.set_meta("shadow_monsters", shadow_monsters)
+
         # Dark phase cycle: 20s normal, 10s dark
         if not is_dark_phase and dark_phase_timer >= 20.0:
             is_dark_phase = true
@@ -1245,7 +1350,7 @@ class BattleRoyaleMode extends GameMode:
 
             # Apply dark phase
             for b in balls:
-                if b.alive and b.ball_type != "spectator":
+                                if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
                     var current_perc = 250.0
                     if "perception_radius" in b:
                         current_perc = float(b.perception_radius)
@@ -1267,18 +1372,26 @@ class BattleRoyaleMode extends GameMode:
             is_dark_phase = false
             dark_phase_timer = 0.0
 
+            for m in shadow_monsters:
+                m.alive = false
+                balls.erase(m)
+            shadow_monsters.clear()
+            self.set_meta("shadow_monsters", shadow_monsters)
+
             # Restore normal phase
             for b in balls:
-                if b.alive and b.ball_type != "spectator":
+                                if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
                     var base_perc = 250.0
                     if b.has_method("get_meta") and b.has_meta("base_perception_radius"):
                         base_perc = b.get_meta("base_perception_radius")
                     b.perception_radius = base_perc
+                    if "score" in b:
+                        b.score += 100
 
     func check_winner(world, balls: Array):
         var alive = []
         for b in balls:
-            if b.alive and b.ball_type != "spectator":
+            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
                 alive.append(b)
 
         if alive.size() == 0:
@@ -1334,7 +1447,7 @@ class TeamDeathmatchMode extends GameMode:
     func check_winner(world, balls: Array):
         var alive = []
         for b in balls:
-            if b.alive and b.ball_type != "spectator":
+            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
                 alive.append(b)
 
         if alive.size() == 0:
@@ -1414,7 +1527,7 @@ class ZombieInfectionMode extends GameMode:
     func check_winner(world, balls: Array):
         var alive = []
         for b in balls:
-            if b.alive and b.ball_type != "spectator":
+            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
                 alive.append(b)
 
         if alive.size() == 0:
@@ -1640,7 +1753,7 @@ class BossFightMode extends GameMode:
     func check_winner(world, balls: Array):
         var alive = []
         for b in balls:
-            if b.alive and b.ball_type != "spectator":
+            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
                 alive.append(b)
 
         if alive.size() == 0:
@@ -1832,7 +1945,7 @@ class SurvivalMode extends GameMode:
     func check_winner(world, balls: Array):
         var alive = []
         for b in balls:
-            if b.alive and b.ball_type != "spectator":
+            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
                 alive.append(b)
 
         if alive.size() == 0:
@@ -2235,7 +2348,7 @@ class CaptureTheFlagMode extends GameMode:
     func check_winner(world, balls: Array):
         var alive = []
         for b in balls:
-            if b.alive and b.ball_type != "spectator":
+            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
                 alive.append(b)
 
         if alive.size() == 0:
@@ -2276,7 +2389,7 @@ class EvolutionarySimulationMode extends GameMode:
     func check_winner(world, balls: Array):
         var alive = []
         for b in balls:
-            if b.alive and b.ball_type != "spectator":
+            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
                 alive.append(b)
 
         if alive.size() == 0:
@@ -2334,7 +2447,7 @@ class VampireRoyaleMode extends GameMode:
     func check_winner(world, balls: Array):
         var alive = []
         for b in balls:
-            if b.alive and b.ball_type != "spectator":
+            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
                 alive.append(b)
 
         if alive.size() == 0:
@@ -2434,7 +2547,7 @@ class KingOfTheHillMode extends GameMode:
     func check_winner(world, balls: Array):
         var alive = []
         for b in balls:
-            if b.alive and b.ball_type != "spectator":
+            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
                 alive.append(b)
 
         if alive.size() == 0:
@@ -2525,7 +2638,7 @@ class BlackHoleMode extends GameMode:
     func check_winner(world, balls: Array):
         var alive = []
         for b in balls:
-            if b.alive and b.ball_type != "spectator":
+            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
                 alive.append(b)
 
         if alive.size() == 0:
@@ -3219,7 +3332,7 @@ class DominationMode extends GameMode:
     func check_winner(world, balls: Array):
         var alive = []
         for b in balls:
-            if b.alive and b.ball_type != "spectator":
+            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
                 alive.append(b)
 
         if alive.size() == 0:
@@ -3327,7 +3440,7 @@ class MovingZoneMode extends GameMode:
     func check_winner(world, balls: Array):
         var alive = []
         for b in balls:
-            if b.alive and b.ball_type != "spectator":
+            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
                 alive.append(b)
 
         if alive.size() == 0:
@@ -4283,7 +4396,7 @@ class MovingSafeZoneMode extends GameMode:
     func check_winner(world, balls: Array):
         var alive = []
         for b in balls:
-            if b.alive and b.ball_type != "spectator":
+            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
                 alive.append(b)
 
         if alive.size() == 0:
@@ -4690,7 +4803,7 @@ class ModifierZonesSafeZoneMode extends GameMode:
     func check_winner(world, balls: Array):
         var alive = []
         for b in balls:
-            if b.alive and b.ball_type != "spectator":
+            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
                 alive.append(b)
 
         if alive.size() == 0:
@@ -4876,7 +4989,7 @@ class SafeZoneMode extends GameMode:
     func check_winner(world, balls: Array):
         var alive = []
         for b in balls:
-            if b.alive and b.ball_type != "spectator":
+            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
                 alive.append(b)
 
         if alive.size() == 0:
@@ -5215,7 +5328,7 @@ class BumperBallsMode extends GameMode:
     func check_winner(world, balls: Array):
         var alive = []
         for b in balls:
-            if b.alive and b.ball_type != "spectator":
+            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
                 alive.append(b)
 
         if alive.size() == 0:
@@ -5239,7 +5352,7 @@ class TournamentMode extends GameMode:
     func check_winner(world, balls: Array):
         var alive = []
         for b in balls:
-            if b.alive and b.ball_type != "spectator":
+            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
                 alive.append(b)
 
         if alive.size() == 0:
@@ -5367,7 +5480,7 @@ class ToxicEnvironmentMode extends GameMode:
     func check_winner(world, balls: Array):
         var alive = []
         for b in balls:
-            if b.alive and b.ball_type != "spectator":
+            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
                 alive.append(b)
 
         if alive.size() == 0:
@@ -5726,7 +5839,7 @@ class BountyHuntMode extends GameMode:
     func check_winner(world, balls: Array):
         var alive = []
         for b in balls:
-            if b.alive and b.ball_type != "spectator":
+            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
                 alive.append(b)
 
         if alive.size() == 0:
@@ -6111,7 +6224,7 @@ class SupernovaMode extends GameMode:
     func check_winner(world, balls: Array):
         var alive = []
         for b in balls:
-            if b.alive and b.ball_type != "spectator":
+            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
                 alive.append(b)
 
         if alive.size() == 0:
