@@ -4808,6 +4808,18 @@ class Action:
             else:
                 enemies = [e for e in entities if getattr(e, "ball_type", None) != self.ball.ball_type and getattr(e, "ball_type", None) != "spectator" and getattr(e, "alive", True)]
 
+            # Apply silencer logic to these entities
+            silenced_enemies = []
+            for e in enemies:
+                target_pr = perception_radius
+                if getattr(e, "silencer_timer", 0.0) > 0:
+                    target_pr *= 0.5
+                dx = getattr(e, "x", 0) - self.ball.x
+                dy = getattr(e, "y", 0) - self.ball.y
+                if dx*dx + dy*dy <= target_pr*target_pr:
+                    silenced_enemies.append(e)
+            enemies = silenced_enemies
+
         # If entities weren't retrieved properly by get_nearby_entities, retrieve them manually
         filtered_enemies = []
         for e in enemies:
@@ -4823,9 +4835,12 @@ class Action:
         if not enemies and hasattr(self.world, "balls"):
             for b in self.world.balls:
                 if getattr(b, "ball_type", None) != getattr(self.ball, "ball_type", None) and getattr(b, "ball_type", None) != "spectator" and getattr(b, "alive", True) and not getattr(b, "is_decoy", False) and not getattr(b, "is_illusion", False):
+                    target_pr = perception_radius
+                    if getattr(b, "silencer_timer", 0.0) > 0:
+                        target_pr *= 0.5
                     dx = getattr(b, "x", 0) - getattr(self.ball, "x", 0)
                     dy = getattr(b, "y", 0) - self.ball.y
-                    if dx*dx + dy*dy <= perception_radius*perception_radius:
+                    if dx*dx + dy*dy <= target_pr*target_pr:
                         enemies.append(b)
 
         if hasattr(self.world, "balls"):
@@ -5943,6 +5958,31 @@ class Action:
                     self.ball.has_stealth_drone = True
                     self.ball.stealth_drone_timer = 15.0  # Duration of stealth effect
 
+                elif getattr(nearest, "kind", None) == "silencer_attachment":
+                    self.ball.silencer_timer = 15.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
+                        self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "extended_mag_attachment":
+                    self.ball.extended_mag_timer = 15.0
+                    self.ball.stamina = min(getattr(self.ball, "stamina", 100.0) + 50.0, getattr(self.ball, "max_stamina", 100.0) + 50.0)
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
+                        self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "modified_scope_attachment":
+                    self.ball.modified_scope_timer = 15.0
+                    if not getattr(self.ball, "modified_scope_applied", False):
+                        if not hasattr(self.ball, "base_perception_radius"):
+                            self.ball.base_perception_radius = getattr(self.ball, "perception_radius", 250.0)
+                        self.ball.base_perception_radius *= 1.5
+                        self.ball.perception_radius = self.ball.base_perception_radius
+                        self.ball.modified_scope_applied = True
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
+                        self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "disruptor_booster":
                     self.ball.disruptor_aura_timer = 5.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -8744,6 +8784,9 @@ class Action:
         elif is_windy:
             cooldown_mult = 1.2  # Windy speeds up cooldowns slightly
 
+        if getattr(self.ball, "extended_mag_timer", 0.0) > 0:
+            cooldown_mult *= 2.0
+
         if hasattr(self.ball, "skill_timer") and self.ball.skill_timer > 0:
             self.ball.skill_timer -= delta * cooldown_mult
         if hasattr(self.ball, "sonar_ping_timer") and self.ball.sonar_ping_timer > 0:
@@ -8822,6 +8865,20 @@ class Action:
             self.ball.shadow_booster_timer -= delta
             if self.ball.shadow_booster_timer < 0:
                 self.ball.shadow_booster_timer = 0.0
+
+        if getattr(self.ball, "silencer_timer", 0.0) > 0:
+            self.ball.silencer_timer -= delta
+
+        if getattr(self.ball, "extended_mag_timer", 0.0) > 0:
+            self.ball.extended_mag_timer -= delta
+
+        if getattr(self.ball, "modified_scope_timer", 0.0) > 0:
+            self.ball.modified_scope_timer -= delta
+            if self.ball.modified_scope_timer <= 0.0:
+                if hasattr(self.ball, "base_perception_radius") and getattr(self.ball, "modified_scope_applied", False):
+                    self.ball.base_perception_radius /= 1.5
+                    self.ball.perception_radius = self.ball.base_perception_radius
+                    self.ball.modified_scope_applied = False
 
         if hasattr(self.ball, "vision_booster_timer") and self.ball.vision_booster_timer > 0:
             self.ball.vision_booster_timer -= delta

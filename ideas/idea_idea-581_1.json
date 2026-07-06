@@ -1,0 +1,4 @@
+{
+    "title": "Tactical Smoke Grenades",
+    "description": "Add a new item 'smoke_grenade' that creates a temporary smoke zone hazard. While inside the smoke zone, a ball's perception radius is severely reduced, and enemies outside cannot target those inside. It allows for stealthy escapes and tactical ambushes."
+}

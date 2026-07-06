@@ -649,7 +649,7 @@ class ProceduralArena:
                     sx = max(50.0, min(self.width - 50.0, sx))
                     sy = max(50.0, min(self.height - 50.0, sy))
 
-                    item_kind = random.choice(["healing_spring", "damage_link", "emp_burst", "nemesis_booster", "stamina_booster", "vision_booster", "reverse_gravity_booster", "material_magnet_booster"])
+                    item_kind = random.choice(["healing_spring", "damage_link", "emp_burst", "nemesis_booster", "stamina_booster", "vision_booster", "reverse_gravity_booster", "material_magnet_booster", "silencer_attachment", "extended_mag_attachment", "modified_scope_attachment"])
 
                     item_id = 9000 + len(self.hazards) + random.randint(0, 1000)
                     drop = Hazard(id=item_id, x=sx, y=sy, radius=20.0, kind=item_kind, damage=0.0)
