@@ -1763,22 +1763,6 @@ class Action:
                             radius = 150.0 if has_volatile else 100.0
                             explosion_damage = 80.0 if has_volatile else 30.0
 
-                            for other in self.world.balls:
-                                if getattr(other, "alive", False) and getattr(other, "team", getattr(b, "team", "")) != getattr(b, "team", "") and getattr(other, "id", None) != getattr(b, "id", None):
-                                    dx = other.x - b.x
-                                    dy = other.y - b.y
-                                    dist = math.sqrt(dx*dx + dy*dy)
-                                    if dist <= radius:
-                                        decoy_type = getattr(b, "decoy_type", "")
-                                        if decoy_type == "stun_trap":
-                                            other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 5.0
-                                        elif decoy_type == "explosive":
-                                            other.hp -= explosion_damage
-                                            other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 2.0
-                                        elif decoy_type != "healing_trap":
-                                            other.hp -= explosion_damage
-                                            other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 2.0
-
                             decoy_type = getattr(b, "decoy_type", "")
                             if decoy_type == "healing_trap":
                                 heal_amount = 40.0
@@ -1790,6 +1774,21 @@ class Action:
                                         if dist <= radius:
                                             if hasattr(other, "hp") and hasattr(other, "max_hp"):
                                                 other.hp = min(other.hp + heal_amount, other.max_hp)
+
+                            for other in self.world.balls:
+                                if getattr(other, "alive", False) and getattr(other, "team", getattr(b, "team", "")) != getattr(b, "team", "") and getattr(other, "id", None) != getattr(b, "id", None):
+                                    dx = other.x - b.x
+                                    dy = other.y - b.y
+                                    dist = math.sqrt(dx*dx + dy*dy)
+                                    if dist <= radius:
+                                        if decoy_type == "stun_trap":
+                                            other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 5.0
+                                        elif decoy_type == "explosive":
+                                            other.hp -= explosion_damage
+                                            other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 2.0
+                                        elif decoy_type != "healing_trap":
+                                            other.hp -= explosion_damage
+                                            other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 2.0
 
                                         import random
                                         import math
