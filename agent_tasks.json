@@ -10544,7 +10544,7 @@
     },
     {
       "id": "idea-611",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Labyrinth",
@@ -17382,6 +17382,40 @@
         "src/ai/breakable_grapple_points.py",
         "src/ai/breakable_grapple_points.gd",
         "tests/test_breakable_grapple_points.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1013",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Supernova Event",
+      "description": "If a merged black hole exceeds a certain radius, it explodes into a supernova, dealing massive damage to the entire arena before despawning, forcing players to avoid it at all costs.",
+      "allowed_paths": [
+        "src/ai/supernova.py",
+        "src/ai/supernova.gd",
+        "tests/test_supernova.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1014",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Teleport Hazards",
+      "description": "Hazards that randomly teleport entities within a small radius when stepped on, confusing movement algorithms and creating chaotic escapes from the shrinking safe zone.",
+      "allowed_paths": [
+        "src/arena/quantum_teleport_hazards.py",
+        "src/arena/quantum_teleport_hazards.gd",
+        "tests/test_quantum_teleport_hazards.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

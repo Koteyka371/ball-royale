@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-611] Shrinking Labyrinth — *2026-07-06 13:19:19 UTC*
+
+Combine the shifting maze with the shrinking safe zone. Walls dynamically shift and crush players while the safe area gets smaller, forcing players to quickly navigate dead ends before the storm catches them.
+
+---
+
 ## [idea-569] Black Hole Collapse Event — *2026-07-06 13:03:16 UTC*
 
 When the safe zone radius becomes very small, black holes start spawning and slowly merging, pulling players towards the center.
