@@ -1,4 +1,4 @@
 {
-  "title": "Interactive Terrain Reactions",
-  "description": "Arena terrain permanently reacts to weather conditions over time. Snow accumulates making movement slower without specific traits, or heatwaves dry up muddy patches making them solid ground again."
+  "title": "Lightning Strikes in Rain Arenas",
+  "description": "During is_raining or thunderstorm conditions, occasionally strike the arena with lightning. The lightning strike targets the area with the highest cluster of balls. Any ball hit takes massive damage, but gains a temporary movement speed and cooldown buff from being overcharged."
 }

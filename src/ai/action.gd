@@ -2798,6 +2798,16 @@ func execute(strategy: String, delta: float):
             if "vx" in my_ball and "vy" in my_ball:
                 my_ball.vx *= 0.95
                 my_ball.vy *= 0.95
+        if world.arena.get("is_windy") == true:
+            var _is_wr = false
+            if typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("has_meta") and my_ball.has_meta("is_wind_riding"):
+                _is_wr = my_ball.get_meta("is_wind_riding")
+            elif typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("is_wind_riding"):
+                _is_wr = my_ball.is_wind_riding
+            if not _is_wr:
+                if "vx" in my_ball and "vy" in my_ball:
+                    my_ball.x += my_ball.vx * delta * 0.2
+                    my_ball.y += my_ball.vy * delta * 0.2
         if wind_dx != 0.0 or wind_dy != 0.0:
             my_ball.x += wind_dx * delta
             my_ball.y += wind_dy * delta
@@ -15038,12 +15048,15 @@ func _update_skill_timer(delta: float):
     var arena_obj = self.world.get("arena") if "arena" in self.world else null
     var is_snowing = arena_obj.get("is_snowing") if arena_obj != null and "is_snowing" in arena_obj else false
     var is_heatwave = arena_obj.get("is_heatwave") if arena_obj != null and "is_heatwave" in arena_obj else false
+    var is_windy = arena_obj.get("is_windy") if arena_obj != null and "is_windy" in arena_obj else false
 
     var cooldown_mult = 1.0
     if is_snowing:
         cooldown_mult = 0.5
     elif is_heatwave:
         cooldown_mult = 1.5
+    elif is_windy:
+        cooldown_mult = 1.2
 
     if "skill_timer" in self.ball and self.ball.skill_timer > 0:
         self.ball.skill_timer -= delta * cooldown_mult
@@ -15100,11 +15113,14 @@ func _update_skill_timer(delta: float):
         var arena_obj2 = self.world.get("arena") if "arena" in self.world else null
         var is_snowing2 = arena_obj2.get("is_snowing") if arena_obj2 != null and "is_snowing" in arena_obj2 else false
         var is_heatwave2 = arena_obj2.get("is_heatwave") if arena_obj2 != null and "is_heatwave" in arena_obj2 else false
+        var is_windy2 = arena_obj2.get("is_windy") if arena_obj2 != null and "is_windy" in arena_obj2 else false
         var cd_mult2 = 1.0
         if is_snowing2:
             cd_mult2 = 0.5
         elif is_heatwave2:
             cd_mult2 = 1.5
+        elif is_windy2:
+            cd_mult2 = 1.2
 
         attack_timer -= delta * cd_mult2
         if "attack_timer" in self.ball:

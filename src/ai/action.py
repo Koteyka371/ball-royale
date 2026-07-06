@@ -1590,6 +1590,9 @@ class Action:
                 if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
                     self.ball.vx *= 0.95
                     self.ball.vy *= 0.95
+            if getattr(self.world.arena, "is_windy", False) and not getattr(self.ball, "_is_wind_riding", False):
+                self.ball.x += getattr(self.ball, "vx", 0.0) * delta * 0.2
+                self.ball.y += getattr(self.ball, "vy", 0.0) * delta * 0.2
             if getattr(self.world.arena, "is_foggy", False):
                 pass # Fog has no friction effect, snow has speed change
             wind_dx = getattr(self.world.arena, "wind_dx", 0.0)
@@ -8608,6 +8611,8 @@ class Action:
             cooldown_mult = 0.5  # Snow slows down cooldowns (longer wait)
         elif is_heatwave:
             cooldown_mult = 1.5  # Heatwave speeds up cooldowns (faster recovery)
+        elif is_windy:
+            cooldown_mult = 1.2  # Windy speeds up cooldowns slightly
 
         if hasattr(self.ball, "skill_timer") and self.ball.skill_timer > 0:
             self.ball.skill_timer -= delta * cooldown_mult
