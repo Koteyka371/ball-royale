@@ -121,7 +121,7 @@ class ProceduralArena:
         # Generate hazards
         num_hazards = self.num_rooms * 2
         for i in range(num_hazards):
-            kind = random.choice(["spikes", "lava", "fake_booster", "swap_trap", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "lightning_storm", "hidden_trap", "hidden_mine", "silence_booster", "freeze_booster", "switch", "magnet", "quicksand", "magnet_booster", "material_magnet_booster", "breakable_wall", "portal_gun_item", "wormhole", "clone_booster", "stealth_zone", "invert_booster", "reverse_gravity_booster", "stamina_drain_zone", "tether_trap", "slip_zone", "tall_grass", "vortex", "frictionless_zone", "singularity", "ice_patches"])
+            kind = random.choice(["spikes", "lava", "fake_booster", "swap_trap", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "lightning_storm", "hidden_trap", "hidden_mine", "silence_booster", "freeze_booster", "switch", "magnet", "quicksand", "magnet_booster", "material_magnet_booster", "breakable_wall", "portal_gun_item", "wormhole", "clone_booster", "stealth_zone", "invert_booster", "reverse_gravity_booster", "stamina_drain_zone", "tether_trap", "slip_zone", "tall_grass", "vortex", "frictionless_zone", "singularity", "ice_patches", "shuffle_booster"])
             if kind == "switch":
                 radius = 20.0
                 damage = 0.0
@@ -155,7 +155,7 @@ class ProceduralArena:
             elif kind == "link_booster":
                 radius = 15.0
                 damage = 0.0
-            elif kind == "stamina_booster" or kind == "weather_booster" or kind == "magnet_booster" or kind == "material_magnet_booster" or kind == "clone_booster" or kind == "invert_booster" or kind == "freeze_booster" or kind == "reverse_gravity_booster":
+            elif kind == "stamina_booster" or kind == "weather_booster" or kind == "magnet_booster" or kind == "material_magnet_booster" or kind == "clone_booster" or kind == "invert_booster" or kind == "freeze_booster" or kind == "reverse_gravity_booster" or kind == "shuffle_booster":
                 radius = 15.0
                 damage = 0.0
             elif kind == "stealth_zone":

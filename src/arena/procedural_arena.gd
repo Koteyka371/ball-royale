@@ -210,6 +210,8 @@ func generate():
             kind = "singularity"
         elif r < 0.9999:
             kind = "tall_grass"
+        elif r < 0.99995:
+            kind = "shuffle_booster"
         else:
             kind = "switch"
 
@@ -307,7 +309,7 @@ func generate():
         elif kind == "link_booster":
             radius = 15.0
             damage = 0.0
-        elif kind == "stamina_booster" or kind == "weather_booster" or kind == "magnet_booster" or kind == "material_magnet_booster" or kind == "clone_booster" or kind == "invert_booster" or kind == "freeze_booster" or kind == "reverse_gravity_booster":
+        elif kind == "stamina_booster" or kind == "weather_booster" or kind == "magnet_booster" or kind == "material_magnet_booster" or kind == "clone_booster" or kind == "invert_booster" or kind == "freeze_booster" or kind == "reverse_gravity_booster" or kind == "shuffle_booster":
             radius = 15.0
             damage = 0.0
         elif kind == "stealth_zone":

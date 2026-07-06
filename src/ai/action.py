@@ -704,6 +704,22 @@ class Action:
 
     def execute(self, strategy: str, delta: float) -> None:
         import math
+
+        if getattr(self.ball, "shuffle_booster_timer", 0.0) > 0:
+            self.ball.shuffle_booster_timer -= delta
+            if self.ball.shuffle_booster_timer <= 0:
+                target = getattr(self.ball, "shuffle_booster_target", None)
+                if target and getattr(target, "alive", True):
+                    temp_inv = getattr(self.ball, "inventory", [])
+                    temp_skill = getattr(self.ball, "active_skill", None)
+
+                    self.ball.inventory = getattr(target, "inventory", [])
+                    self.ball.active_skill = getattr(target, "active_skill", None)
+
+                    target.inventory = temp_inv
+                    target.active_skill = temp_skill
+                self.ball.shuffle_booster_target = None
+
         self.ball.is_frictionless = False
 
 
@@ -6155,6 +6171,38 @@ class Action:
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
                     self.ball.inventory.append("position_swap")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "shuffle_booster":
+                    import random
+                    import math
+                    radius = getattr(nearest, "radius", 300.0)
+                    nearby_players = []
+                    if hasattr(self.world, "balls"):
+                        for b in self.world.balls:
+                            if b != self.ball and getattr(b, "alive", True):
+                                dist = math.sqrt((b.x - self.ball.x)**2 + (b.y - self.ball.y)**2)
+                                if dist <= radius:
+                                    nearby_players.append(b)
+
+                    if nearby_players:
+                        target = random.choice(nearby_players)
+
+                        temp_inv = getattr(self.ball, "inventory", [])
+                        temp_skill = getattr(self.ball, "active_skill", None)
+
+                        self.ball.inventory = getattr(target, "inventory", [])
+                        self.ball.active_skill = getattr(target, "active_skill", None)
+
+                        target.inventory = temp_inv
+                        target.active_skill = temp_skill
+
+                        self.ball.shuffle_booster_timer = 10.0
+                        self.ball.shuffle_booster_target = target
+
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
