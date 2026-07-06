@@ -1295,6 +1295,103 @@ func execute(strategy: String, delta: float):
 	elif self.ball.has_method("set_meta"):
 		self.ball.set_meta("is_frictionless", false)
 
+	var st_timer = 0.0
+	if "storm_booster_timer" in self.ball: st_timer = float(self.ball.storm_booster_timer)
+	elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("get_meta") and self.ball.has_meta("storm_booster_timer"): st_timer = float(self.ball.get_meta("storm_booster_timer"))
+
+	if st_timer > 0.0:
+		var new_st = max(0.0, st_timer - delta)
+		if "storm_booster_timer" in self.ball: self.ball.storm_booster_timer = new_st
+		elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("storm_booster_timer", new_st)
+
+		if new_st <= 0.0:
+			var cur_s = 0.0
+			var bas_s = 200.0
+			if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("get_meta"):
+				cur_s = self.ball.get_meta("speed") if self.ball.has_meta("speed") else 200.0
+				bas_s = self.ball.get_meta("base_speed") if self.ball.has_meta("base_speed") else 200.0
+				if cur_s == bas_s * 1.5:
+					self.ball.set_meta("speed", bas_s)
+			else:
+				cur_s = self.ball.get("speed", 200.0)
+				bas_s = self.ball.get("base_speed", 200.0)
+				if cur_s == bas_s * 1.5:
+					self.ball.speed = bas_s
+		else:
+			var tick = 0.0
+			if "storm_booster_tick" in self.ball: tick = float(self.ball.storm_booster_tick)
+			elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("get_meta") and self.ball.has_meta("storm_booster_tick"): tick = float(self.ball.get_meta("storm_booster_tick"))
+
+			tick += delta
+			if tick >= 1.0:
+				tick = 0.0
+				var strike_radius = 250.0
+				var strike_damage = 30.0
+				var targets = []
+				var enemies = _get_enemies()
+				if enemies:
+					for e in enemies:
+						var e_pos = Vector2(e.get("x") if typeof(e) == TYPE_DICTIONARY else e.x, e.get("y") if typeof(e) == TYPE_DICTIONARY else e.y)
+						var b_pos = Vector2(self.ball.get("x") if typeof(self.ball) == TYPE_DICTIONARY else self.ball.x, self.ball.get("y") if typeof(self.ball) == TYPE_DICTIONARY else self.ball.y)
+						if e_pos.distance_to(b_pos) <= strike_radius:
+							targets.append(e)
+
+				if self.world.has_method("get_node"):
+					var arena = self.world.get_node_or_null("Arena")
+					if arena and arena.has_method("get_hazards"):
+						var hazards = arena.get_hazards()
+						for h in hazards:
+							if h.get("active", true):
+								var h_pos = Vector2(h.get("x") if typeof(h) == TYPE_DICTIONARY else h.x, h.get("y") if typeof(h) == TYPE_DICTIONARY else h.y)
+								var b_pos = Vector2(self.ball.get("x") if typeof(self.ball) == TYPE_DICTIONARY else self.ball.x, self.ball.get("y") if typeof(self.ball) == TYPE_DICTIONARY else self.ball.y)
+								if h_pos.distance_to(b_pos) <= strike_radius:
+									targets.append(h)
+
+				if targets.size() > 0:
+					var closest_target = targets[0]
+					var closest_dist = INF
+					var b_pos = Vector2(self.ball.get("x") if typeof(self.ball) == TYPE_DICTIONARY else self.ball.x, self.ball.get("y") if typeof(self.ball) == TYPE_DICTIONARY else self.ball.y)
+					for t_obj in targets:
+						var t_pos = Vector2(t_obj.get("x") if typeof(t_obj) == TYPE_DICTIONARY else t_obj.x, t_obj.get("y") if typeof(t_obj) == TYPE_DICTIONARY else t_obj.y)
+						var d = t_pos.distance_to(b_pos)
+						if d < closest_dist:
+							closest_dist = d
+							closest_target = t_obj
+
+					if typeof(closest_target) != TYPE_DICTIONARY and closest_target.has_method("take_damage"):
+						closest_target.take_damage(strike_damage)
+					elif "hp" in closest_target:
+						var old_hp = closest_target.get("hp") if typeof(closest_target) == TYPE_DICTIONARY else closest_target.hp
+						var new_hp = old_hp - strike_damage
+						if typeof(closest_target) == TYPE_DICTIONARY:
+							closest_target["hp"] = new_hp
+							if new_hp <= 0:
+								closest_target["active"] = false
+								if "alive" in closest_target:
+									closest_target["alive"] = false
+						else:
+							closest_target.hp = new_hp
+							if new_hp <= 0:
+								if "active" in closest_target: closest_target.active = false
+								if "alive" in closest_target: closest_target.alive = false
+
+					if typeof(closest_target) != TYPE_DICTIONARY and closest_target.has_method("set_meta"):
+						var stun_t = closest_target.get_meta("stun_timer") if closest_target.has_meta("stun_timer") else 0.0
+						closest_target.set_meta("stun_timer", max(stun_t, 0.5))
+					elif "stun_timer" in closest_target:
+						if typeof(closest_target) == TYPE_DICTIONARY:
+							closest_target["stun_timer"] = max(closest_target.get("stun_timer", 0.0), 0.5)
+						else:
+							closest_target.stun_timer = max(closest_target.stun_timer, 0.5)
+
+					if has_method("_spawn_directed_particles"):
+						_spawn_directed_particles(self.ball, closest_target, "lightning")
+					elif has_method("_spawn_skill_particles"):
+						_spawn_skill_particles("lightning")
+
+			if "storm_booster_tick" in self.ball: self.ball.storm_booster_tick = tick
+			elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("storm_booster_tick", tick)
+
 	var leech_booster_t = 0.0
 	if "leech_booster_timer" in self.ball: leech_booster_t = float(self.ball.leech_booster_timer)
 	elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("get_meta") and self.ball.has_meta("leech_booster_timer"): leech_booster_t = float(self.ball.get_meta("leech_booster_timer"))
@@ -10797,6 +10894,28 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+			elif "kind" in nearest and nearest.kind == "storm_booster":
+				if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+					self.ball.set_meta("storm_booster_timer", 10.0)
+					var base_s = self.ball.get_meta("base_speed") if self.ball.has_meta("base_speed") else 200.0
+					self.ball.set_meta("speed", base_s * 1.5)
+				else:
+					self.ball.storm_booster_timer = 10.0
+					var base_s = self.ball.get("base_speed", 200.0)
+					self.ball.speed = base_s * 1.5
+				if self.world.has_method("get_node"):
+					var arena = self.world.get_node_or_null("Arena")
+					if arena and arena.has_method("get_hazards"):
+						var hazards = arena.get_hazards()
+						if hazards.has(nearest):
+							hazards.erase(nearest)
+							if typeof(nearest) != TYPE_DICTIONARY and nearest.has_method("queue_free"):
+								nearest.queue_free()
+				var b_list = self.world.get("boosters")
+				if typeof(b_list) == TYPE_ARRAY and b_list.has(nearest):
+					b_list.erase(nearest)
+					if typeof(nearest) != TYPE_DICTIONARY and nearest.has_method("queue_free"):
+						nearest.queue_free()
 			elif "kind" in nearest and nearest.kind == "leech_booster":
 				if self.ball.has_method("set_meta"):
 					self.ball.set_meta("leech_booster_timer", 10.0)
