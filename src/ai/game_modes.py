@@ -3477,9 +3477,21 @@ class ShrinkingDangerZoneMode(GameMode):
             self.zone_target_x = random.uniform(buffer, arena_width - buffer)
             self.zone_target_y = random.uniform(buffer, arena_height - buffer)
 
+        # Count players inside the safe zone to calculate shrink multiplier
+        players_in_zone = 0
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                dx_b = b.x - self.zone_x
+                dy_b = b.y - self.zone_y
+                dist_b = math.sqrt(dx_b*dx_b + dy_b*dy_b)
+                if dist_b <= self.zone_radius:
+                    players_in_zone += 1
+
+        shrink_multiplier = max(1.0, float(players_in_zone))
+
         # Shrink the safe zone
         if self.zone_radius > self.min_zone_radius:
-            self.zone_radius -= self.shrink_rate * delta
+            self.zone_radius -= self.shrink_rate * shrink_multiplier * delta
             if self.zone_radius <= self.min_zone_radius:
                 self.zone_radius = self.min_zone_radius
                 if not self.collapse_triggered:
@@ -3489,7 +3501,7 @@ class ShrinkingDangerZoneMode(GameMode):
         elif getattr(self, "collapse_triggered", False):
             # Continue shrinking beyond min_zone_radius towards 0
             if self.zone_radius > 0:
-                self.zone_radius -= self.shrink_rate * delta
+                self.zone_radius -= self.shrink_rate * shrink_multiplier * delta
                 if self.zone_radius < 0:
                     self.zone_radius = 0.0
 
@@ -3618,9 +3630,21 @@ class ModifierZonesSafeZoneMode(GameMode):
             self.zone_target_x = random.uniform(buffer, arena_width - buffer)
             self.zone_target_y = random.uniform(buffer, arena_height - buffer)
 
+        # Count players inside the safe zone to calculate shrink multiplier
+        players_in_zone = 0
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                dx_b = b.x - self.zone_x
+                dy_b = b.y - self.zone_y
+                dist_b = math.sqrt(dx_b*dx_b + dy_b*dy_b)
+                if dist_b <= self.zone_radius:
+                    players_in_zone += 1
+
+        shrink_multiplier = max(1.0, float(players_in_zone))
+
         # Shrink the safe zone
         if self.zone_radius > self.min_zone_radius:
-            self.zone_radius -= self.shrink_rate * delta
+            self.zone_radius -= self.shrink_rate * shrink_multiplier * delta
             if self.zone_radius <= self.min_zone_radius:
                 self.zone_radius = self.min_zone_radius
                 if not self.collapse_triggered:
@@ -3629,7 +3653,7 @@ class ModifierZonesSafeZoneMode(GameMode):
                         world.add_event("collapse_event", {"type": "collapse_event", "message": "COLLAPSE EVENT! The zone collapses!"})
         elif getattr(self, "collapse_triggered", False):
             if self.zone_radius > 0:
-                self.zone_radius -= self.shrink_rate * delta
+                self.zone_radius -= self.shrink_rate * shrink_multiplier * delta
                 if self.zone_radius < 0:
                     self.zone_radius = 0.0
 
@@ -3819,9 +3843,21 @@ class SafeZoneMode(GameMode):
             self.zone_target_x = random.uniform(buffer, arena_width - buffer)
             self.zone_target_y = random.uniform(buffer, arena_height - buffer)
 
+        # Count players inside the safe zone to calculate shrink multiplier
+        players_in_zone = 0
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                dx_b = b.x - self.zone_x
+                dy_b = b.y - self.zone_y
+                dist_b = math.sqrt(dx_b*dx_b + dy_b*dy_b)
+                if dist_b <= self.zone_radius:
+                    players_in_zone += 1
+
+        shrink_multiplier = max(1.0, float(players_in_zone))
+
         # Shrink the safe zone
         if self.zone_radius > self.min_zone_radius:
-            self.zone_radius -= self.shrink_rate * delta
+            self.zone_radius -= self.shrink_rate * shrink_multiplier * delta
             if self.zone_radius <= self.min_zone_radius:
                 self.zone_radius = self.min_zone_radius
                 if not self.collapse_triggered:
@@ -3831,7 +3867,7 @@ class SafeZoneMode(GameMode):
         elif getattr(self, "collapse_triggered", False):
             # Continue shrinking beyond min_zone_radius towards 0
             if self.zone_radius > 0:
-                self.zone_radius -= self.shrink_rate * delta
+                self.zone_radius -= self.shrink_rate * shrink_multiplier * delta
                 if self.zone_radius < 0:
                     self.zone_radius = 0.0
 

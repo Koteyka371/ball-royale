@@ -3954,8 +3954,22 @@ class MovingSafeZoneMode extends GameMode:
             zone_target_y = rng.randf_range(buffer, arena_height - buffer)
 
         # Shrink safe zone
+        # Count players inside the safe zone to calculate shrink multiplier
+        var players_in_zone = 0
+        for b in balls:
+            if b.alive and b.ball_type != "spectator":
+                var b_x = b.get("position").x if b.get("position") != null else b.get("x")
+                var b_y = b.get("position").y if b.get("position") != null else b.get("y")
+                var dx_b = b_x - zone_x
+                var dy_b = b_y - zone_y
+                var dist_b = sqrt(dx_b*dx_b + dy_b*dy_b)
+                if dist_b <= zone_radius:
+                    players_in_zone += 1
+
+        var shrink_multiplier = max(1.0, float(players_in_zone))
+
         if zone_radius > min_zone_radius:
-            zone_radius -= shrink_rate * delta
+            zone_radius -= shrink_rate * shrink_multiplier * delta
             if zone_radius <= min_zone_radius:
                 zone_radius = min_zone_radius
                 if not collapse_triggered:
@@ -3964,7 +3978,7 @@ class MovingSafeZoneMode extends GameMode:
                         world.add_event("collapse_event", {"type": "collapse_event", "message": "COLLAPSE EVENT! The zone collapses!"})
         elif collapse_triggered:
             if zone_radius > 0:
-                zone_radius -= shrink_rate * delta
+                zone_radius -= shrink_rate * shrink_multiplier * delta
                 if zone_radius < 0:
                     zone_radius = 0.0
 
@@ -4128,9 +4142,23 @@ class ShrinkingDangerZoneMode extends GameMode:
             zone_target_x = rng.randf_range(buffer, arena_width - buffer)
             zone_target_y = rng.randf_range(buffer, arena_height - buffer)
 
+        # Count players inside the safe zone to calculate shrink multiplier
+        var players_in_zone = 0
+        for b in balls:
+            if b.alive and b.ball_type != "spectator":
+                var b_x = b.get("position").x if b.get("position") != null else b.get("x")
+                var b_y = b.get("position").y if b.get("position") != null else b.get("y")
+                var dx_b = b_x - zone_x
+                var dy_b = b_y - zone_y
+                var dist_b = sqrt(dx_b*dx_b + dy_b*dy_b)
+                if dist_b <= zone_radius:
+                    players_in_zone += 1
+
+        var shrink_multiplier = max(1.0, float(players_in_zone))
+
         # Shrink the safe zone
         if zone_radius > min_zone_radius:
-            zone_radius -= shrink_rate * delta
+            zone_radius -= shrink_rate * shrink_multiplier * delta
             if zone_radius <= min_zone_radius:
                 zone_radius = min_zone_radius
                 if not collapse_triggered:
@@ -4139,7 +4167,7 @@ class ShrinkingDangerZoneMode extends GameMode:
                         world.add_event("collapse_event", {"type": "collapse_event", "message": "COLLAPSE EVENT! The zone collapses!"})
         elif collapse_triggered:
             if zone_radius > 0:
-                zone_radius -= shrink_rate * delta
+                zone_radius -= shrink_rate * shrink_multiplier * delta
                 if zone_radius < 0:
                     zone_radius = 0.0
 
