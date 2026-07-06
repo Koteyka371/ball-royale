@@ -262,6 +262,56 @@ class BattleRoyaleShrinkingZoneArena extends ProceduralArena:
                 safe_zone_radius -= 15.0 * delta
                 if safe_zone_radius <= 0.0:
                     safe_zone_radius = 0.0
+
+                # Black hole spawning and merging when safe zone is very small
+                if safe_zone_radius <= 100.0:
+                    # Spawn new black holes occasionally
+                    if current_tick % 60 == 0 and randf() < 0.5:
+                        var angle = randf_range(0, PI * 2)
+                        var dist = randf_range(0, max(1.0, safe_zone_radius))
+                        var cx = width / 2.0
+                        var cy = height / 2.0
+                        var hx = cx + cos(angle) * dist
+                        var hy = cy + sin(angle) * dist
+                        var bh_id = 20000 + (randi() % 1000)
+                        if "hazards" in self:
+                            bh_id += self.hazards.size()
+
+                        var bh = ProceduralArena.Hazard.new(bh_id, hx, hy, 20.0, "black_hole", 15.0)
+                        bh.duration = 1000.0
+                        if "hazards" in self:
+                            self.hazards.append(bh)
+
+                    if "hazards" in self:
+                        # Pull all black holes towards the center and merge them
+                        var bhs = []
+                        for h in self.hazards:
+                            if "kind" in h and h.kind == "black_hole":
+                                bhs.append(h)
+
+                        var cx = width / 2.0
+                        var cy = height / 2.0
+                        for h in bhs:
+                            var dx = cx - h.x
+                            var dy = cy - h.y
+                            var dist = sqrt(dx*dx + dy*dy)
+                            if dist > 0.0001:
+                                h.x += (dx/dist) * 10.0 * delta
+                                h.y += (dy/dist) * 10.0 * delta
+
+                            # Merge logic
+                            for other in bhs:
+                                if h.id != other.id and other.duration > 0.0 and h.duration > 0.0:
+                                    var ddx = other.x - h.x
+                                    var ddy = other.y - h.y
+                                    var ddist2 = ddx*ddx + ddy*ddy
+                                    var hr = h.radius
+                                    var orad = other.radius
+                                    if ddist2 < pow(hr + orad, 2) * 0.25:
+                                        # Merge other into h
+                                        h.radius = min(150.0, hr + orad * 0.5)
+                                        h.damage = h.damage + other.damage * 0.2
+                                        other.duration = 0.0 # Mark for destruction
             else:
                 if current_tick % 120 == 0:
                     if has_method("_trigger_event"):

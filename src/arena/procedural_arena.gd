@@ -688,6 +688,50 @@ func update_zone(current_tick: int, delta: float) -> void:
                 safe_zone_radius -= 10.0 * delta
             if safe_zone_radius <= 0.0:
                 safe_zone_radius = 0.0
+
+            # Black hole spawning and merging when safe zone is very small
+            if safe_zone_radius <= 100.0:
+                # Spawn new black holes occasionally
+                if current_tick % 60 == 0 and randf() < 0.5:
+                    var angle = randf_range(0, PI * 2)
+                    var dist = randf_range(0, max(1.0, safe_zone_radius))
+                    var cx = safe_zone_center.x if typeof(safe_zone_center) == TYPE_VECTOR2 else safe_zone_center[0]
+                    var cy = safe_zone_center.y if typeof(safe_zone_center) == TYPE_VECTOR2 else safe_zone_center[1]
+                    var hx = cx + cos(angle) * dist
+                    var hy = cy + sin(angle) * dist
+                    var bh_id = 20000 + hazards.size() + (randi() % 1000)
+                    var bh = Hazard.new(bh_id, hx, hy, 20.0, "black_hole", 15.0)
+                    bh.duration = 1000.0 # Effectively infinite
+                    hazards.append(bh)
+
+                # Pull all black holes towards the center and merge them
+                var bhs = []
+                for h in hazards:
+                    if h.kind == "black_hole":
+                        bhs.append(h)
+
+                var cx = safe_zone_center.x if typeof(safe_zone_center) == TYPE_VECTOR2 else safe_zone_center[0]
+                var cy = safe_zone_center.y if typeof(safe_zone_center) == TYPE_VECTOR2 else safe_zone_center[1]
+
+                for h in bhs:
+                    var dx = cx - h.x
+                    var dy = cy - h.y
+                    var dist = sqrt(dx*dx + dy*dy)
+                    if dist > 0.0001:
+                        h.x += (dx/dist) * 10.0 * delta
+                        h.y += (dy/dist) * 10.0 * delta
+
+                    # Merge logic
+                    for other in bhs:
+                        if h.id != other.id and other.duration > 0.0 and h.duration > 0.0:
+                            var ddx = other.x - h.x
+                            var ddy = other.y - h.y
+                            var ddist2 = ddx*ddx + ddy*ddy
+                            if ddist2 < pow(h.radius + other.radius, 2) * 0.25:
+                                # Merge other into h
+                                h.radius = min(150.0, h.radius + other.radius * 0.5)
+                                h.damage = h.damage + other.damage * 0.2
+                                other.duration = 0.0 # Mark for destruction
         else:
             if current_tick % 300 == 0:
                 var angle = randf_range(0, PI * 2)

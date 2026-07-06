@@ -1,4 +1,5 @@
 from arena.procedural_arena import Hazard
+
 import random
 
 from typing import Tuple
@@ -75,6 +76,50 @@ class BasicArena:
                 self.safe_zone_radius -= 10.0 * delta
                 if self.safe_zone_radius <= 0.0:
                     self.safe_zone_radius = 0.0
+
+                # Black hole spawning and merging when safe zone is very small
+                if self.safe_zone_radius <= 100.0:
+                    import random
+                    import math
+                    # Spawn new black holes occasionally
+                    if current_tick % 60 == 0 and random.random() < 0.5:
+                        angle = random.uniform(0, math.pi * 2)
+                        dist = random.uniform(0, max(1.0, self.safe_zone_radius))
+                        cx = self.width / 2
+                        cy = self.height / 2
+                        hx = cx + math.cos(angle) * dist
+                        hy = cy + math.sin(angle) * dist
+                        bh_id = 20000 + len(getattr(self, "hazards", [])) + random.randint(0, 1000)
+
+                        bh = Hazard(id=bh_id, x=hx, y=hy, radius=20.0, kind="black_hole", damage=15.0)
+                        bh.duration = 1000.0 # Effectively infinite
+                        if not hasattr(self, "hazards"):
+                            self.hazards = []
+                        self.hazards.append(bh)
+
+                    # Pull all black holes towards the center and merge them
+                    bhs = [h for h in getattr(self, "hazards", []) if getattr(h, "kind", "") == "black_hole"]
+                    cx = self.width / 2
+                    cy = self.height / 2
+                    for h in bhs:
+                        dx = cx - h.x
+                        dy = cy - h.y
+                        dist = math.sqrt(dx*dx + dy*dy)
+                        if dist > 0.0001:
+                            h.x += (dx/dist) * 10.0 * delta
+                            h.y += (dy/dist) * 10.0 * delta
+
+                        # Merge logic
+                        for other in bhs:
+                            if h.id != other.id and getattr(other, "duration", 1.0) > 0.0 and getattr(h, "duration", 1.0) > 0.0:
+                                ddx = other.x - h.x
+                                ddy = other.y - h.y
+                                ddist2 = ddx*ddx + ddy*ddy
+                                if ddist2 < (getattr(h, "radius", 20.0) + getattr(other, "radius", 20.0))**2 * 0.25:
+                                    # Merge other into h
+                                    h.radius = min(150.0, getattr(h, "radius", 20.0) + getattr(other, "radius", 20.0) * 0.5)
+                                    h.damage = getattr(h, "damage", 15.0) + getattr(other, "damage", 15.0) * 0.2
+                                    other.duration = 0.0 # Mark for destruction
             else:
                 if current_tick % 120 == 0:
                     import random
