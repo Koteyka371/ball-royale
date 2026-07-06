@@ -3087,6 +3087,58 @@ class Action:
                                         bh.duration = 3.0 # Short duration
                                         self.world.arena.hazards.append(bh)
                                     hazard.duration = 0.0 # Destroy trap
+                                elif trap_variant == "chain_reaction":
+                                    # Chain Reaction trap: trigger all nearby chain reaction traps in a domino effect
+                                    import collections
+                                    queue = collections.deque([hazard])
+                                    triggered_traps = {id(hazard)}
+                                    traps_to_detonate = [hazard]
+
+                                    while queue:
+                                        current_trap = queue.popleft()
+
+                                        # Find other chain reaction traps within radius
+                                        for other in self.world.arena.hazards:
+                                            if getattr(other, "kind", "") == "trap" and getattr(other, "trap_variant", "") == "chain_reaction":
+                                                if getattr(other, "duration", 0) > 0 and id(other) not in triggered_traps:
+                                                    dist_sq = (other.x - current_trap.x)**2 + (other.y - current_trap.y)**2
+                                                    if dist_sq < 150.0 * 150.0:  # 150 radius for domino effect
+                                                        triggered_traps.add(id(other))
+                                                        queue.append(other)
+                                                        traps_to_detonate.append(other)
+
+                                    # Detonate all found traps
+                                    for t in traps_to_detonate:
+                                        t.duration = 0.0 # Destroy trap
+
+                                        # Visuals
+                                        if hasattr(self.world, "events"):
+                                            self.world.events.append(('visual_effect', {'type': 'explosion', 'x': t.x, 'y': t.y, 'radius': 100, 'color': 'orange'}))
+
+                                        # AoE damage
+                                        balls = getattr(self.world, "balls", getattr(self.world, "entities", []))
+                                        owner_id = getattr(t, "owner_id", None)
+                                        trap_damage = getattr(t, "damage", 30.0)
+                                        if trap_damage <= 0:
+                                            trap_damage = 30.0
+
+                                        for b in balls:
+                                            if not getattr(b, "alive", True):
+                                                continue
+
+                                            dist_sq = (b.x - t.x)**2 + (b.y - t.y)**2
+                                            if dist_sq < 100.0 * 100.0: # 100 radius explosion
+                                                if hasattr(self.world, "_deal_damage"):
+                                                    old_dmg = getattr(t, "damage", 30.0)
+                                                    t.damage = trap_damage
+                                                    self.world._deal_damage(t, b)
+                                                    t.damage = old_dmg
+                                                else:
+                                                    b.hp = getattr(b, "hp", 100) - trap_damage
+                                                    if b.hp <= 0:
+                                                        b.alive = False
+                                                        if hasattr(self.world, "add_event"):
+                                                            self.world.add_event("kill", {"killer_id": owner_id if owner_id is not None else -1, "victim_id": getattr(b, "id", -1)})
                                 elif trap_variant == "chain_lightning":
                                     # Chain Lightning trap: zap the triggering ball and then jump to nearest enemy
                                     if hasattr(self.world, "_deal_damage"):

@@ -5396,6 +5396,73 @@ func execute(strategy: String, delta: float):
                                     hazard.set_meta("duration", 0.0)
                                 elif "duration" in hazard:
                                     hazard.duration = 0.0
+                            elif trap_variant == "chain_reaction":
+                                # Chain Reaction trap: trigger all nearby chain reaction traps in a domino effect
+                                var queue = [hazard]
+                                var triggered_traps = {hazard.get_instance_id() if typeof(hazard) == TYPE_OBJECT else hazard.id: true}
+                                var traps_to_detonate = [hazard]
+
+                                while queue.size() > 0:
+                                    var current_trap = queue.pop_front()
+
+                                    # Find other chain reaction traps within radius
+                                    if world != null and world.has_method("get_arena"):
+                                        var arena = world.get_arena()
+                                        if "hazards" in arena:
+                                            for other in arena.hazards:
+                                                var other_kind = other.kind if "kind" in other else (other.get_meta("kind") if typeof(other) == TYPE_OBJECT and other.has_meta("kind") else "")
+                                                var other_variant = ""
+                                                if "trap_variant" in other: other_variant = other.trap_variant
+                                                elif typeof(other) == TYPE_OBJECT and other.has_meta("trap_variant"): other_variant = other.get_meta("trap_variant")
+
+                                                if other_kind == "trap" and other_variant == "chain_reaction":
+                                                    var other_dur = other.duration if "duration" in other else (other.get_meta("duration") if typeof(other) == TYPE_OBJECT and other.has_meta("duration") else 0.0)
+                                                    if other_dur > 0:
+                                                        var other_id = other.get_instance_id() if typeof(other) == TYPE_OBJECT else other.id
+                                                        if not triggered_traps.has(other_id):
+                                                            var dist_sq = (other.x - current_trap.x) * (other.x - current_trap.x) + (other.y - current_trap.y) * (other.y - current_trap.y)
+                                                            if dist_sq < 150.0 * 150.0: # 150 radius for domino effect
+                                                                triggered_traps[other_id] = true
+                                                                queue.append(other)
+                                                                traps_to_detonate.append(other)
+
+                                # Detonate all found traps
+                                for t in traps_to_detonate:
+                                    if typeof(t) == TYPE_OBJECT and t.has_method("set_meta"):
+                                        t.set_meta("duration", 0.0)
+                                    elif "duration" in t:
+                                        t.duration = 0.0
+
+                                    if world != null and world.has_method("add_event"):
+                                        world.add_event("visual_effect", {"type": "explosion", "x": t.x, "y": t.y, "radius": 100, "color": "orange"})
+
+                                    var balls_list = []
+                                    if world != null and "balls" in world:
+                                        balls_list = world.balls
+                                    elif world != null and "entities" in world:
+                                        balls_list = world.entities
+
+                                    var owner_id = null
+                                    if "owner_id" in t: owner_id = t.owner_id
+                                    elif typeof(t) == TYPE_OBJECT and t.has_meta("owner_id"): owner_id = t.get_meta("owner_id")
+
+                                    var trap_damage = 30.0
+                                    if "damage" in t and t.damage > 0: trap_damage = t.damage
+                                    elif typeof(t) == TYPE_OBJECT and t.has_meta("damage") and t.get_meta("damage") > 0: trap_damage = t.get_meta("damage")
+
+                                    for b in balls_list:
+                                        var is_alive = b.alive if "alive" in b else true
+                                        if not is_alive:
+                                            continue
+
+                                        var dist_sq = (b.x - t.x) * (b.x - t.x) + (b.y - t.y) * (b.y - t.y)
+                                        if dist_sq < 100.0 * 100.0:
+                                            if "hp" in b:
+                                                b.hp -= trap_damage
+                                                if b.hp <= 0:
+                                                    b.alive = false
+                                                    if world != null and world.has_method("add_event"):
+                                                        world.add_event("kill", {"killer_id": owner_id if owner_id != null else -1, "victim_id": b.id if "id" in b else -1})
                             elif trap_variant == "chain_lightning":
                                 var current_damage = 25.0
                                 if "damage" in hazard and hazard.damage > 0:
