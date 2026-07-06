@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-620] Reverse Friction Mode — *2026-07-06 17:40:10 UTC*
+
+Balls continuously accelerate as long as they are moving, turning the arena into a high-speed ping-pong match. Collisions deal extra damage based on speed.
+
+---
+
 ## [idea-629] Decoy Minefield Arena — *2026-07-06 17:40:06 UTC*
 
 A new game mode where the arena is randomly seeded with invisible decoys. Players must carefully navigate the map or use vision-revealing abilities to avoid setting off massive chain reactions.
