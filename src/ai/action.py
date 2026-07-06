@@ -1582,8 +1582,8 @@ class Action:
             if getattr(self.world.arena, "is_snowing", False) and not is_wind_riding:
                 if getattr(self.ball, "ball_type", "") != "snow_yeti":
                     # Extra slippery: apply even more momentum (reduced friction)
-                    self.ball.x += getattr(self.ball, "vx") * delta * 0.4
-                    self.ball.y += getattr(self.ball, "vy") * delta * 0.4
+                    self.ball.x += getattr(self.ball, "vx", 0.0) * delta * 0.4
+                    self.ball.y += getattr(self.ball, "vy", 0.0) * delta * 0.4
 
             if getattr(self.world.arena, "is_heatwave", False):
                 # Heatwave: higher friction, momentum stops faster (counteract vx/vy if any is present, or just decrease speed dynamically)

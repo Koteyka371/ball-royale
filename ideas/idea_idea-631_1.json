@@ -1,4 +1,1 @@
-{
-  "title": "Weather-Specific Consumables",
-  "description": "Introduce items that spawn exclusively during specific weather conditions. For example, a 'Snow Globe' in a blizzard that grants brief freezing immunity, or an 'Umbrella Booster' in rain that prevents the slippery status effect."
-}
+{"title": "Weather specific hazards", "description": "Hazards like tornadoes or icicles that only spawn in certain weather conditions."}
