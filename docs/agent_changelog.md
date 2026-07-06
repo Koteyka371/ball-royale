@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-617] Grappling Hook Environmental Traversal — *2026-07-06 13:00:40 UTC*
+
+Expand the magnet tether mechanic into an environmental grappling hook, allowing players to hook onto walls or specific nodes to swing across hazards quickly.
+
+---
+
 ## [idea-575] Chain Reaction Explosives — *2026-07-06 12:59:37 UTC*
 
 Introduce a new arena hazard 'volatile_barrel' that explodes when taking damage. If multiple barrels are near each other, one explosion triggers the others, creating a massive chain reaction that can wipe out grouped enemies or be tactically detonated by sniper balls.

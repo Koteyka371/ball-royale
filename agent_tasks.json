@@ -10646,7 +10646,7 @@
     },
     {
       "id": "idea-617",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Grappling Hook Environmental Traversal",
@@ -17348,6 +17348,23 @@
         "src/ai/orbital_strike_coordinator.py",
         "src/ai/orbital_strike_coordinator.gd",
         "tests/test_orbital_strike_coordinator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1011",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Barrel Trap",
+      "description": "A player-deployable trap that looks exactly like a volatile_barrel but has a much larger explosion radius and detonates on contact, rather than taking damage.",
+      "allowed_paths": [
+        "src/arena/decoy_barrel_trap.py",
+        "src/arena/decoy_barrel_trap.gd",
+        "tests/test_decoy_barrel_trap.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
