@@ -10305,7 +10305,7 @@
     },
     {
       "id": "idea-597",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Stormcaller Booster",
@@ -18062,6 +18062,74 @@
         "src/ai/dynamic_wind_currents.py",
         "src/ai/dynamic_wind_currents.gd",
         "tests/test_dynamic_wind_currents.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1053",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tactical Smoke Grenades",
+      "description": "Add a new item 'smoke_grenade' that creates a temporary smoke zone hazard. While inside the smoke zone, a ball's perception radius is severely reduced, and enemies outside cannot target those inside. It allows for stealthy escapes and tactical ambushes.",
+      "allowed_paths": [
+        "src/ai/tactical_smoke_grenades.py",
+        "src/ai/tactical_smoke_grenades.gd",
+        "tests/test_tactical_smoke_grenades.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1054",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Lightning Strikes in Rain Arenas",
+      "description": "During is_raining or thunderstorm conditions, occasionally strike the arena with lightning. The lightning strike targets the area with the highest cluster of balls. Any ball hit takes massive damage, but gains a temporary movement speed and cooldown buff from being overcharged.",
+      "allowed_paths": [
+        "src/arena/lightning_strikes_in_rain_arenas.py",
+        "src/arena/lightning_strikes_in_rain_arenas.gd",
+        "tests/test_lightning_strikes_in_rain_arenas.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1055",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tornado Hazard for Windy Arenas",
+      "description": "Introduce a dynamic Tornado hazard in AutumnArena that spawns occasionally. It pulls nearby balls towards its center, reducing their friction to near zero and launching them in a random direction if they reach the eye of the tornado.",
+      "allowed_paths": [
+        "src/arena/tornado_for_windy_arenas.py",
+        "src/arena/tornado_for_windy_arenas.gd",
+        "tests/test_tornado_for_windy_arenas.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1056",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Laser Sight Attachment",
+      "description": "Introduce a 'laser_sight_attachment' drop that increases the ball's attack range or accuracy for its abilities. When collected, the skill cooldown slightly decreases on successful hits, rewarding precise gameplay.",
+      "allowed_paths": [
+        "src/ai/laser_sight_attachment.py",
+        "src/ai/laser_sight_attachment.gd",
+        "tests/test_laser_sight_attachment.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

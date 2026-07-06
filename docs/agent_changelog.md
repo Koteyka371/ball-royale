@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-597] Stormcaller Booster — *2026-07-06 21:12:03 UTC*
+
+A rare booster that upon collection surrounds the player with a mini lightning storm for 10 seconds. It grants a speed boost and periodically strikes nearby hazards or enemies to clear a path.
+
+---
+
 ## [idea-581] Weapon Attachments — *2026-07-06 20:41:45 UTC*
 
 Add drops for weapon attachments like silencers (reduces visibility on map), extended mags, or modified scopes that augment base abilities temporarily.
