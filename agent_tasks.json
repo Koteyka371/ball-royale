@@ -10561,7 +10561,7 @@
     },
     {
       "id": "idea-612",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Laser Tripwire Trap",
@@ -17416,6 +17416,57 @@
         "src/arena/quantum_teleport_hazards.py",
         "src/arena/quantum_teleport_hazards.gd",
         "tests/test_quantum_teleport_hazards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1015",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sticky Bomb Booster",
+      "description": "A booster item that, when collected, allows a ball's next attack to attach a timed explosive to an enemy ball. The enemy then has to run away from their team to avoid blowing them up in a chain reaction.",
+      "allowed_paths": [
+        "src/ai/sticky_bomb_booster.py",
+        "src/ai/sticky_bomb_booster.gd",
+        "tests/test_sticky_bomb_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1016",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Orbital Minefield Hazard",
+      "description": "A new hazard type that constantly orbits the center of the arena (or around a central massive black hole). Unlike static traps, these mines are hard to track and add an element of bullet-hell dodgery to the center area.",
+      "allowed_paths": [
+        "src/arena/orbital_minefield.py",
+        "src/arena/orbital_minefield.gd",
+        "tests/test_orbital_minefield.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1017",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Ghost Wall Mechanic",
+      "description": "In MazeSafeZoneMode, periodically some walls turn 'ghostly' and pass through players without damaging them or pushing them back, allowing them brief moments of escape before solidifying again.",
+      "allowed_paths": [
+        "src/ai/ghost_wall_mechanic.py",
+        "src/ai/ghost_wall_mechanic.gd",
+        "tests/test_ghost_wall_mechanic.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

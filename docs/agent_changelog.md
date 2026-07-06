@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-612] Laser Tripwire Trap — *2026-07-06 13:22:08 UTC*
+
+A deployable skill that sets a laser tripwire between two points. Enemies crossing the tripwire take heavy damage and are briefly stunned.
+
+---
+
 ## [idea-540] Chain Reaction Traps — *2026-07-06 13:19:24 UTC*
 
 Introduce a new type of hazard called Chain Reaction Traps. When one trap is triggered by a ball, it sends out a shockwave that activates all other traps within a certain radius. This creates a domino effect that can quickly engulf a large portion of the arena in damage or debuffs, requiring players to carefully navigate around clusters of traps.
