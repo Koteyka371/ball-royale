@@ -7971,7 +7971,106 @@ class ExtremeWeatherMode(GameMode):
                         b.x += math.cos(angle) * 100.0 * delta
                         b.y += math.sin(angle) * 100.0 * delta
 
+
+class RubberBandsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Rubber Bands"
+        self.description = "Teams of balls are tethered together. If they move too far apart, they are snapped back with massive force, dealing damage to anything in their path."
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+
+        teams = {}
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator" and getattr(b, "alive", True):
+                t = getattr(b, "team", None)
+                if t not in teams:
+                    teams[t] = []
+                teams[t].append(b)
+                b.rubber_band_immune_timer = 0.0
+                b.is_snapping_rubber_band = False
+                b.rubber_band_target = None
+
+        for t, team_balls in teams.items():
+            if len(team_balls) > 1:
+                for i in range(len(team_balls)):
+                    # Ring topology
+                    b1 = team_balls[i]
+                    b2 = team_balls[(i + 1) % len(team_balls)]
+                    b1.rubber_band_target = b2
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        # Decrement immune timers
+        for b in balls:
+            if getattr(b, "alive", False):
+                timer = getattr(b, "rubber_band_immune_timer", 0.0)
+                if timer > 0:
+                    b.rubber_band_immune_timer = timer - delta
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            target = getattr(b, "rubber_band_target", None)
+
+            # Target must be alive to snap
+            if target and getattr(target, "alive", False):
+                dx = target.x - b.x
+                dy = target.y - b.y
+                dist = (dx**2 + dy**2)**0.5
+
+                if dist > 250.0:
+                    b.is_snapping_rubber_band = True
+                    snap_speed = 800.0
+
+                    b.vx = (dx / dist) * snap_speed
+                    b.vy = (dy / dist) * snap_speed
+                else:
+                    b.is_snapping_rubber_band = False
+            else:
+                b.is_snapping_rubber_band = False
+
+            if getattr(b, "is_snapping_rubber_band", False):
+                # Check for enemies in path
+                for enemy in balls:
+                    if not getattr(enemy, "alive", False) or getattr(enemy, "ball_type", None) == "spectator":
+                        continue
+                    if getattr(b, "team", None) == getattr(enemy, "team", None):
+                        continue
+
+                    ex = enemy.x - b.x
+                    ey = enemy.y - b.y
+                    edist = (ex**2 + ey**2)**0.5
+
+                    rad_sum = getattr(b, "radius", 10.0) + getattr(enemy, "radius", 10.0)
+                    if edist < rad_sum + 5.0: # small margin
+                        enemy_timer = getattr(enemy, "rubber_band_immune_timer", 0.0)
+                        if enemy_timer <= 0:
+                            damage = 30.0
+                            # Temporary set b's damage to 30 to use _deal_damage properly
+                            orig_damage = getattr(b, "damage", 10.0)
+                            b.damage = damage
+                            if hasattr(world, "_deal_damage"):
+                                world._deal_damage(b, enemy)
+                            else:
+                                enemy.hp = getattr(enemy, "hp", 100.0) - damage
+                                if enemy.hp <= 0:
+                                    enemy.hp = 0
+                                    enemy.alive = False
+                                    enemy.killer = b.id
+                            b.damage = orig_damage
+
+                            enemy.rubber_band_immune_timer = 0.5
+
+                            if hasattr(world, "add_event"):
+                                world.add_event("rubber_band_hit", {"attacker": b.id, "target": enemy.id})
+
+
 GAME_MODES = {
+    "rubber_bands": RubberBandsMode(),
     "extreme_weather": ExtremeWeatherMode(),
     "invisible_decoys": InvisibleDecoysMode(),
     "sweeping_paddles": SweepingPaddlesMode(),

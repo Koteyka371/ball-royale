@@ -10609,7 +10609,247 @@ class ExtremeWeatherMode extends GameMode:
 					b.x += cos(angle) * 100.0 * delta
 					b.y += sin(angle) * 100.0 * delta
 
+
+class RubberBandsMode extends GameMode:
+	func _init().():
+		name = "Rubber Bands"
+		description = "Teams of balls are tethered together. If they move too far apart, they are snapped back with massive force, dealing damage to anything in their path."
+
+	func setup(world, balls: Array) -> void:
+		.setup(world, balls)
+
+		var teams = {}
+		for b in balls:
+			var is_alive = b.alive if "alive" in b else false
+			var b_type = b.ball_type if "ball_type" in b else ""
+			if is_alive and b_type != "spectator":
+				var t = b.team if "team" in b else -1
+				if not teams.has(t):
+					teams[t] = []
+				teams[t].append(b)
+
+				if b is Object:
+					if b.has_method("set_meta"):
+						b.set_meta("rubber_band_immune_timer", 0.0)
+						b.set_meta("is_snapping_rubber_band", false)
+						b.set_meta("rubber_band_target", null)
+					elif "rubber_band_immune_timer" in b:
+						b.rubber_band_immune_timer = 0.0
+						b.is_snapping_rubber_band = false
+						b.rubber_band_target = null
+				elif typeof(b) == TYPE_DICTIONARY:
+					b["rubber_band_immune_timer"] = 0.0
+					b["is_snapping_rubber_band"] = false
+					b["rubber_band_target"] = null
+
+		for t in teams.keys():
+			var team_balls = teams[t]
+			if team_balls.size() > 1:
+				for i in range(team_balls.size()):
+					var b1 = team_balls[i]
+					var b2 = team_balls[(i + 1) % team_balls.size()]
+
+					if b1 is Object:
+						if b1.has_method("set_meta"):
+							b1.set_meta("rubber_band_target", b2)
+						elif "rubber_band_target" in b1:
+							b1.rubber_band_target = b2
+					elif typeof(b1) == TYPE_DICTIONARY:
+						b1["rubber_band_target"] = b2
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+
+		for b in balls:
+			var is_alive = b.alive if "alive" in b else false
+			if not is_alive:
+				continue
+
+			var timer = 0.0
+			if b is Object:
+				if b.has_method("get_meta") and b.has_meta("rubber_band_immune_timer"):
+					timer = b.get_meta("rubber_band_immune_timer")
+				elif "rubber_band_immune_timer" in b:
+					timer = b.rubber_band_immune_timer
+			elif typeof(b) == TYPE_DICTIONARY and b.has("rubber_band_immune_timer"):
+				timer = b["rubber_band_immune_timer"]
+
+			if timer > 0:
+				timer -= delta
+				if b is Object:
+					if b.has_method("set_meta"):
+						b.set_meta("rubber_band_immune_timer", timer)
+					elif "rubber_band_immune_timer" in b:
+						b.rubber_band_immune_timer = timer
+				elif typeof(b) == TYPE_DICTIONARY:
+					b["rubber_band_immune_timer"] = timer
+
+		for b in balls:
+			var is_alive = b.alive if "alive" in b else false
+			var b_type = b.ball_type if "ball_type" in b else ""
+
+			if not is_alive or b_type == "spectator":
+				continue
+
+			var target = null
+			if b is Object:
+				if b.has_method("get_meta") and b.has_meta("rubber_band_target"):
+					target = b.get_meta("rubber_band_target")
+				elif "rubber_band_target" in b:
+					target = b.rubber_band_target
+			elif typeof(b) == TYPE_DICTIONARY and b.has("rubber_band_target"):
+				target = b["rubber_band_target"]
+
+			var target_alive = false
+			if target != null:
+				if target is Object:
+					target_alive = target.alive if "alive" in target else false
+				elif typeof(target) == TYPE_DICTIONARY:
+					target_alive = target.get("alive", false)
+
+			var is_snapping = false
+			if target != null and target_alive:
+				var bx = 0.0
+				var by = 0.0
+				var tx = 0.0
+				var ty = 0.0
+
+				if b is Object:
+					bx = b.x if "x" in b else 0.0
+					by = b.y if "y" in b else 0.0
+				elif typeof(b) == TYPE_DICTIONARY:
+					bx = b.get("x", 0.0)
+					by = b.get("y", 0.0)
+
+				if target is Object:
+					tx = target.x if "x" in target else 0.0
+					ty = target.y if "y" in target else 0.0
+				elif typeof(target) == TYPE_DICTIONARY:
+					tx = target.get("x", 0.0)
+					ty = target.get("y", 0.0)
+
+				var dx = tx - bx
+				var dy = ty - by
+				var dist = sqrt(dx * dx + dy * dy)
+
+				if dist > 250.0:
+					is_snapping = true
+					var snap_speed = 800.0
+
+					var nvx = (dx / dist) * snap_speed
+					var nvy = (dy / dist) * snap_speed
+
+					if b is Object:
+						if "vx" in b: b.vx = nvx
+						if "vy" in b: b.vy = nvy
+					elif typeof(b) == TYPE_DICTIONARY:
+						b["vx"] = nvx
+						b["vy"] = nvy
+
+			if b is Object:
+				if b.has_method("set_meta"):
+					b.set_meta("is_snapping_rubber_band", is_snapping)
+				elif "is_snapping_rubber_band" in b:
+					b.is_snapping_rubber_band = is_snapping
+			elif typeof(b) == TYPE_DICTIONARY:
+				b["is_snapping_rubber_band"] = is_snapping
+
+			if is_snapping:
+				for enemy in balls:
+					var e_alive = enemy.alive if "alive" in enemy else false
+					var e_type = enemy.ball_type if "ball_type" in enemy else ""
+					if not e_alive or e_type == "spectator":
+						continue
+
+					var b_team = b.team if "team" in b else -1
+					var e_team = enemy.team if "team" in enemy else -2
+
+					if b_team == e_team:
+						continue
+
+					var bx = b.x if "x" in b else 0.0
+					var by = b.y if "y" in b else 0.0
+					var ex = enemy.x if "x" in enemy else 0.0
+					var ey = enemy.y if "y" in enemy else 0.0
+
+					if typeof(b) == TYPE_DICTIONARY:
+						bx = b.get("x", 0.0)
+						by = b.get("y", 0.0)
+					if typeof(enemy) == TYPE_DICTIONARY:
+						ex = enemy.get("x", 0.0)
+						ey = enemy.get("y", 0.0)
+
+					var dx2 = ex - bx
+					var dy2 = ey - by
+					var edist = sqrt(dx2 * dx2 + dy2 * dy2)
+
+					var b_rad = b.radius if "radius" in b else 10.0
+					var e_rad = enemy.radius if "radius" in enemy else 10.0
+
+					if typeof(b) == TYPE_DICTIONARY: b_rad = b.get("radius", 10.0)
+					if typeof(enemy) == TYPE_DICTIONARY: e_rad = enemy.get("radius", 10.0)
+
+					if edist < b_rad + e_rad + 5.0:
+						var e_timer = 0.0
+						if enemy is Object:
+							if enemy.has_method("get_meta") and enemy.has_meta("rubber_band_immune_timer"):
+								e_timer = enemy.get_meta("rubber_band_immune_timer")
+							elif "rubber_band_immune_timer" in enemy:
+								e_timer = enemy.rubber_band_immune_timer
+						elif typeof(enemy) == TYPE_DICTIONARY and enemy.has("rubber_band_immune_timer"):
+							e_timer = enemy["rubber_band_immune_timer"]
+
+						if e_timer <= 0:
+							var damage = 30.0
+							var orig_damage = 10.0
+
+							if b is Object and "damage" in b:
+								orig_damage = b.damage
+								b.damage = damage
+							elif typeof(b) == TYPE_DICTIONARY and b.has("damage"):
+								orig_damage = b["damage"]
+								b["damage"] = damage
+
+							if world.has_method("_deal_damage"):
+								world._deal_damage(b, enemy)
+							else:
+								var e_hp = 100.0
+								if enemy is Object and "hp" in enemy:
+									e_hp = enemy.hp
+								elif typeof(enemy) == TYPE_DICTIONARY and enemy.has("hp"):
+									e_hp = enemy["hp"]
+
+								e_hp -= damage
+								if e_hp <= 0:
+									e_hp = 0
+									if enemy is Object:
+										if "alive" in enemy: enemy.alive = false
+										if "killer" in enemy: enemy.killer = b.id if "id" in b else "rubber_band"
+									elif typeof(enemy) == TYPE_DICTIONARY:
+										enemy["alive"] = false
+										enemy["killer"] = b.get("id", "rubber_band")
+
+								if enemy is Object and "hp" in enemy:
+									enemy.hp = e_hp
+								elif typeof(enemy) == TYPE_DICTIONARY:
+									enemy["hp"] = e_hp
+
+							if b is Object and "damage" in b:
+								b.damage = orig_damage
+							elif typeof(b) == TYPE_DICTIONARY and b.has("damage"):
+								b["damage"] = orig_damage
+
+							if enemy is Object:
+								if enemy.has_method("set_meta"):
+									enemy.set_meta("rubber_band_immune_timer", 0.5)
+								elif "rubber_band_immune_timer" in enemy:
+									enemy.rubber_band_immune_timer = 0.5
+							elif typeof(enemy) == TYPE_DICTIONARY:
+								enemy["rubber_band_immune_timer"] = 0.5
+
+
 var GAME_MODES = {
+	"rubber_bands": RubberBandsMode.new(),
 	"extreme_weather": ExtremeWeatherMode.new(),
 	"invisible_decoys": InvisibleDecoysMode.new(),
 	"reversed_input": ReversedInputMode.new(),
