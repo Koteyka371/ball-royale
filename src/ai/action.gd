@@ -10283,6 +10283,45 @@ func _use_skill():
                 if self.ball.has_method("set_meta"):
                     self.ball.set_meta("magnet_tether_target", target)
                     self.ball.set_meta("magnet_tether_timer", 1.0)
+            else:
+                var arena_w = 1000.0
+                var arena_h = 1000.0
+                if "arena" in self.world and self.world.arena != null:
+                    if "width" in self.world.arena: arena_w = float(self.world.arena.width)
+                    if "height" in self.world.arena: arena_h = float(self.world.arena.height)
+                elif "width" in self.world: arena_w = float(self.world.width)
+                elif "height" in self.world: arena_h = float(self.world.height)
+
+                var bx = self.ball.x
+                var by = self.ball.y
+                if self.ball.has_method("has_meta") and self.ball.has_meta("x"):
+                    bx = self.ball.get_meta("x")
+                elif "x" in self.ball:
+                    bx = self.ball.x
+                if self.ball.has_method("has_meta") and self.ball.has_meta("y"):
+                    by = self.ball.get_meta("y")
+                elif "y" in self.ball:
+                    by = self.ball.y
+
+                var d_left = bx
+                var d_right = arena_w - bx
+                var d_top = by
+                var d_bottom = arena_h - by
+
+                var min_d = min(min(d_left, d_right), min(d_top, d_bottom))
+                var tx = bx
+                var ty = by
+                if min_d == d_left: tx = 0.0
+                elif min_d == d_right: tx = arena_w
+                elif min_d == d_top: ty = 0.0
+                else: ty = arena_h
+
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("magnet_tether_target", {"x": tx, "y": ty, "alive": true})
+                    self.ball.set_meta("magnet_tether_timer", 1.0)
+                elif typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball.magnet_tether_target = {"x": tx, "y": ty, "alive": true}
+                    self.ball.magnet_tether_timer = 1.0
         elif skill_name == "holographic_clone":
             var clone = self.ball.duplicate()
             var next_id = randi() % 90000 + 10000
