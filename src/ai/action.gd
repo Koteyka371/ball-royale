@@ -360,8 +360,9 @@ func _attempt_damage(attacker, target) -> void:
 						damage_reduction = 0.8
 						break
 
-	var original_damage = 10.0 * damage_reduction
-	if "damage" in attacker: original_damage = float(attacker.damage)
+	var base_dmg = 10.0
+	if "damage" in attacker: base_dmg = float(attacker.damage)
+	var original_damage = base_dmg * damage_reduction
 
 	if "attack_accuracy" in attacker:
 		attack_accuracy = float(attacker.attack_accuracy)
@@ -576,7 +577,21 @@ func _attempt_damage(attacker, target) -> void:
 										elif other.has_method("set_meta"): other.set_meta("alive", false)
 		else:
 			if self.world != null and self.world.has_method("_deal_damage"):
+				var old_dmg_final = 10.0
+				if "damage" in attacker:
+					old_dmg_final = float(attacker.damage)
+					attacker.damage = original_damage
+				elif typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("set_meta"):
+					attacker.set_meta("damage", original_damage)
+				elif typeof(attacker) == TYPE_DICTIONARY:
+					attacker["damage"] = original_damage
 				self.world._deal_damage(attacker, target)
+				if "damage" in attacker:
+					attacker.damage = old_dmg_final
+				elif typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("set_meta"):
+					attacker.set_meta("damage", old_dmg_final)
+				elif typeof(attacker) == TYPE_DICTIONARY:
+					attacker["damage"] = old_dmg_final
 
 		var leech_timer = 0.0
 		if "leech_booster_timer" in attacker: leech_timer = float(attacker.leech_booster_timer)
@@ -4789,18 +4804,30 @@ func execute(strategy: String, delta: float):
                             else:
                                 self.ball.is_slipping = false
                         else:
-                            self.ball.steering_mult = 0.0
                             if "vx" in self.ball and "vy" in self.ball:
-                                var speed_mult = 1.5
-                                self.ball.x += self.ball.vx * delta * speed_mult
-                                self.ball.y += self.ball.vy * delta * speed_mult
+                                self.ball.x += self.ball.vx * delta
+                                self.ball.y += self.ball.vy * delta
 
                             var base_s = 100.0
                             if self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"):
                                 base_s = float(self.ball.get_meta("base_speed"))
                             elif "base_speed" in self.ball:
                                 base_s = float(self.ball.base_speed)
-                            self.ball.speed = base_s * 1.5
+                            self.ball.speed = base_s * 0.0
+
+                            if typeof(self.ball) == TYPE_DICTIONARY:
+                                self.ball["is_frictionless"] = true
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                self.ball.set_meta("is_frictionless", true)
+                            elif "is_frictionless" in self.ball:
+                                self.ball.is_frictionless = true
+
+                            if typeof(self.ball) == TYPE_DICTIONARY:
+                                self.ball["is_slipping"] = true
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                self.ball.set_meta("is_slipping", true)
+                            elif "is_slipping" in self.ball:
+                                self.ball.is_slipping = true
                 elif hazard.kind == "singularity":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y

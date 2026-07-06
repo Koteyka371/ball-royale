@@ -347,7 +347,16 @@ class Action:
                                             other.alive = False
             else:
                 if hasattr(self.world, "_deal_damage"):
+                    old_dmg = getattr(attacker, "damage", 10.0)
+                    try:
+                        attacker.damage = original_damage
+                    except AttributeError:
+                        setattr(attacker, "damage", original_damage)
                     self.world._deal_damage(attacker, target)
+                    try:
+                        attacker.damage = old_dmg
+                    except AttributeError:
+                        setattr(attacker, "damage", old_dmg)
 
             if getattr(attacker, "leech_booster_timer", 0.0) > 0:
                 target.leech_seed_timer = 5.0
@@ -2774,15 +2783,11 @@ class Action:
                                 if hasattr(self.ball, "is_slipping"):
                                     self.ball.is_slipping = False
                             else:
-                                self.ball.steering_mult = 0.0
+                                self.ball.is_frictionless = True
                                 if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
-                                    # Keep sliding in the current direction, drastically reducing steering
-                                    speed_mult = 1.5 # Slight speed boost while slipping
-                                    self.ball.x += self.ball.vx * delta * speed_mult
-                                    self.ball.y += self.ball.vy * delta * speed_mult
-
-                                # Decrease turning capability by essentially locking in movement
-                                self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 1.5
+                                    self.ball.x += self.ball.vx * delta
+                                    self.ball.y += self.ball.vy * delta
+                                self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.0
                                 if not hasattr(self.ball, "is_slipping"):
                                     self.ball.is_slipping = True
 
