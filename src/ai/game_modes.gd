@@ -10924,3 +10924,97 @@ class TagTeamMode extends GameMode:
 						inactive["y"] = a_y
 						inactive["vx"] = a_vx
 						inactive["vy"] = a_vy
+
+class SweepingBlackHoleMode extends GameMode:
+	var black_hole_radius = 100.0
+	var black_hole_x = 0.0
+	var black_hole_y = 500.0
+	var move_speed = 30.0
+	var direction_x = 1.0
+	var direction_y = 0.0
+	var initialized = false
+
+	func _init() -> void:
+		name = "Sweeping Black Hole"
+		description = "A massive black hole slowly sweeps across the arena, sucking in anything in its path."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
+			var crowd = world.get_node("CrowdSystem")
+			var kill_log = []
+			if "kill_log" in world:
+				kill_log = world.kill_log
+			var current_tick = 0
+			if "tick" in world:
+				current_tick = world.tick
+			crowd.tick(balls, kill_log, current_tick)
+
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+		for b in balls:
+			if not b.alive:
+				if not world.get_meta("dead_balls").has(b):
+					if b.has_method("set_meta"):
+						b.set_meta("time_since_death", 0.0)
+					world.get_meta("dead_balls").append(b)
+				else:
+					if b.has_method("get_meta") and b.has_meta("time_since_death"):
+						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world != null and "arena" in world and world.arena != null:
+			if "width" in world.arena:
+				arena_width = world.arena.width
+			if "height" in world.arena:
+				arena_height = world.arena.height
+
+		if not initialized:
+			black_hole_x = 0.0
+			black_hole_y = arena_height / 2.0
+			initialized = true
+
+		black_hole_x += direction_x * move_speed * delta
+		black_hole_y += direction_y * move_speed * delta
+
+		black_hole_radius += 1.0 * delta
+
+		for b in balls:
+			if b.alive and b.get("ball_type") != "spectator":
+				var dx = black_hole_x - b.x
+				var dy = black_hole_y - b.y
+				var dist = sqrt(dx * dx + dy * dy)
+
+				if dist < black_hole_radius:
+					b.hp = 0
+					b.alive = false
+				elif dist > 0:
+					var pull_strength = 20000.0 / (dist * dist)
+					var radius_multiplier = black_hole_radius / 50.0
+					pull_strength *= radius_multiplier
+					pull_strength = min(pull_strength, 150.0 * radius_multiplier)
+					b.x += (dx / dist) * pull_strength * delta
+					b.y += (dy / dist) * pull_strength * delta
+
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.alive and b.get("ball_type") != "spectator":
+				alive.append(b)
+
+		if alive.size() == 0:
+			return "Draw"
+
+		var teams_alive = {}
+		for b in alive:
+			var t = b.get("team")
+			if t == null:
+				t = b.get("ball_type")
+			teams_alive[t] = true
+
+		if teams_alive.size() == 1:
+			return teams_alive.keys()[0]
+
+		if alive.size() == 1:
+			return alive[0].get("ball_type")
+
+		return null

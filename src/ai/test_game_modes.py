@@ -2,6 +2,7 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 from ai.game_modes import (
+    SweepingBlackHoleMode,
     BattleRoyaleMode, TeamDeathmatchMode, ZombieInfectionMode,
     BossFightMode, VIPDefenseMode, SurvivalMode, MemoryTrapsMode
 )
@@ -1047,3 +1048,37 @@ def test_invisible_decoys_mode():
     assert decoy.invisible is True
     assert decoy.decoy_type == "explosive"
     assert decoy.team == "neutral"
+
+class SweepingMockWorld:
+    def __init__(self):
+        self.arena = SweepingMockArena()
+
+class SweepingMockArena:
+    def __init__(self):
+        self.width = 1000.0
+        self.height = 1000.0
+
+class SweepingMockBall:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.hp = 100
+        self.alive = True
+        self.ball_type = "normal"
+
+def test_sweeping_black_hole_mode():
+    world = SweepingMockWorld()
+    b1 = SweepingMockBall(50, 500)
+    b2 = SweepingMockBall(800, 500)
+    b3 = SweepingMockBall(300, 500)
+    mode = SweepingBlackHoleMode()
+
+    # Initialize
+    mode.tick(world, [], delta=0.0)
+
+    # Tick with balls
+    mode.tick(world, [b1, b2, b3], delta=0.5)
+
+    assert not b1.alive  # Eaten immediately
+    assert b2.x < 800    # Pulled slightly
+    assert b3.x < 300    # Pulled stronger

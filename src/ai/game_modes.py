@@ -8590,3 +8590,73 @@ try:
     GAME_MODES["reverse_friction"] = ReverseFrictionMode()
 except ImportError:
     pass
+
+class SweepingBlackHoleMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Sweeping Black Hole"
+        self.description = "A massive black hole slowly sweeps across the arena, sucking in anything in its path."
+        self.black_hole_radius = 100.0
+        self.black_hole_x = 0.0
+        self.black_hole_y = 500.0
+        self.move_speed = 30.0
+        self.direction_x = 1.0
+        self.direction_y = 0.0
+        self.initialized = False
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+        import math
+        arena_width = 1000.0
+        arena_height = 1000.0
+        if hasattr(world, "arena") and world.arena:
+            arena_width = getattr(world.arena, "width", 1000.0)
+            arena_height = getattr(world.arena, "height", 1000.0)
+
+        if not self.initialized:
+            self.black_hole_x = 0.0
+            self.black_hole_y = arena_height / 2.0
+            self.initialized = True
+
+        self.black_hole_x += self.direction_x * self.move_speed * delta
+        self.black_hole_y += self.direction_y * self.move_speed * delta
+
+        # Grow slowly
+        self.black_hole_radius += 1.0 * delta
+
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                dx = self.black_hole_x - b.x
+                dy = self.black_hole_y - b.y
+                dist = math.hypot(dx, dy)
+
+                if dist < self.black_hole_radius:
+                    b.hp = 0
+                    b.alive = False
+                elif dist > 0:
+                    pull_strength = 20000.0 / (dist * dist)
+                    radius_multiplier = self.black_hole_radius / 50.0
+                    pull_strength *= radius_multiplier
+                    pull_strength = min(pull_strength, 150.0 * radius_multiplier)
+
+                    b.x += (dx / dist) * pull_strength * delta
+                    b.y += (dy / dist) * pull_strength * delta
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
+        if len(teams_alive) == 1:
+            return list(teams_alive)[0]
+        if len(alive) == 1:
+            return alive[0].ball_type
+        return None

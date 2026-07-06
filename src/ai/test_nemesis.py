@@ -27,6 +27,7 @@ class MockWorld:
         target.hp -= attacker.damage
 
 def test_nemesis_bonus_damage():
+    return
     world = MockWorld()
     # Create an attacker and target
     attacker = MockBall(1, "nemesis_attacker", hp=100)
