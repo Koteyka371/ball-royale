@@ -4986,6 +4986,113 @@ func execute(strategy: String, delta: float):
                                 has_skill = true
                             if speed > 300.0 or hazard_speed > 300.0 or has_skill:
                                 hazard.set_meta("is_exploded", true)
+                elif hazard.kind == "chain_reaction_trap":
+                    var h_owner_id = null
+                    if hazard.has_method("get_meta") and hazard.has_meta("owner_id"):
+                        h_owner_id = hazard.get_meta("owner_id")
+                    elif "owner_id" in hazard:
+                        h_owner_id = hazard.owner_id
+
+                    if h_owner_id != null and h_owner_id == self.ball.id:
+                        continue
+
+                    if typeof(hazard) == TYPE_DICTIONARY:
+                        hazard["duration"] = 0.0
+                    else:
+                        hazard.duration = 0.0
+
+                    var traps_to_explode = [hazard]
+                    var exploded_traps = [hazard]
+
+                    while traps_to_explode.size() > 0:
+                        var current_trap = traps_to_explode.pop_front()
+
+                        var trap_rad = 40.0
+                        if typeof(current_trap) == TYPE_DICTIONARY and current_trap.has("radius"):
+                            trap_rad = current_trap["radius"]
+                        elif "radius" in current_trap:
+                            trap_rad = current_trap.radius
+                        elif typeof(current_trap) == TYPE_OBJECT and current_trap.has_method("get_meta") and current_trap.has_meta("radius"):
+                            trap_rad = current_trap.get_meta("radius")
+
+                        var exp_radius = trap_rad * 2.0
+                        var exp_damage = 25.0
+                        if typeof(current_trap) == TYPE_DICTIONARY and current_trap.has("damage"):
+                            exp_damage = current_trap["damage"]
+                        elif "damage" in current_trap:
+                            exp_damage = current_trap.damage
+                        elif typeof(current_trap) == TYPE_OBJECT and current_trap.has_method("get_meta") and current_trap.has_meta("damage"):
+                            exp_damage = current_trap.get_meta("damage")
+
+                        if self.world != null and "events" in self.world:
+                            self.world.events.append({
+                                "type": "visual_effect",
+                                "effect_type": "explosion",
+                                "x": current_trap.x,
+                                "y": current_trap.y,
+                                "radius": exp_radius,
+                                "color": "orange"
+                            })
+
+                        if self.world != null and "balls" in self.world:
+                            for b in self.world.balls:
+                                if not ("alive" in b and b.alive):
+                                    continue
+
+                                var b_id = null
+                                if "id" in b: b_id = b.id
+
+                                var curr_owner = null
+                                if typeof(current_trap) == TYPE_DICTIONARY and current_trap.has("owner_id"): curr_owner = current_trap["owner_id"]
+                                elif "owner_id" in current_trap: curr_owner = current_trap.owner_id
+                                elif typeof(current_trap) == TYPE_OBJECT and current_trap.has_method("get_meta") and current_trap.has_meta("owner_id"): curr_owner = current_trap.get_meta("owner_id")
+
+                                if curr_owner != null and b_id != null and curr_owner == b_id:
+                                    continue
+
+                                var d_sq = pow(b.x - current_trap.x, 2) + pow(b.y - current_trap.y, 2)
+                                if d_sq <= exp_radius * exp_radius:
+                                    if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+                                        b.take_damage(exp_damage)
+                                    elif "hp" in b:
+                                        b.hp -= exp_damage
+                                        if b.hp <= 0:
+                                            b.alive = false
+                                            if typeof(self.world) == TYPE_OBJECT and self.world.has_method("add_event"):
+                                                var v_id = -1
+                                                if "id" in b: v_id = b.id
+                                                self.world.add_event("kill", {"killer_id": curr_owner if curr_owner != null else -1, "victim_id": v_id})
+
+                        var chain_rad = 200.0
+                        if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+                            for h in self.world.arena.hazards:
+                                var h_kind = ""
+                                if typeof(h) == TYPE_DICTIONARY and h.has("kind"): h_kind = h["kind"]
+                                elif "kind" in h: h_kind = h.kind
+                                elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("kind"): h_kind = h.get_meta("kind")
+
+                                var is_exploded = false
+                                for et in exploded_traps:
+                                    if h == et:
+                                        is_exploded = true
+                                        break
+
+                                if not is_exploded and h_kind == "chain_reaction_trap":
+                                    var h_dur = 1.0
+                                    if typeof(h) == TYPE_DICTIONARY and h.has("duration"): h_dur = h["duration"]
+                                    elif "duration" in h: h_dur = h.duration
+                                    elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("duration"): h_dur = h.get_meta("duration")
+
+                                    if h_dur > 0:
+                                        var hd_sq = pow(h.x - current_trap.x, 2) + pow(h.y - current_trap.y, 2)
+                                        if hd_sq <= chain_rad * chain_rad:
+                                            if typeof(h) == TYPE_DICTIONARY:
+                                                h["duration"] = 0.0
+                                            else:
+                                                h.duration = 0.0
+                                            exploded_traps.append(h)
+                                            traps_to_explode.append(h)
+
                 elif hazard.kind == "trap":
                         var trap_owner_id = null
                         if hazard.has_method("get_meta") and hazard.has_meta("owner_id"):

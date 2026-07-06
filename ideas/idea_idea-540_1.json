@@ -1,0 +1,4 @@
+{
+  "title": "Orbital Minefield Hazard",
+  "description": "A new hazard type that constantly orbits the center of the arena (or around a central massive black hole). Unlike static traps, these mines are hard to track and add an element of bullet-hell dodgery to the center area."
+}
