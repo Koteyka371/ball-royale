@@ -762,7 +762,8 @@ class Action:
                 if getattr(h, "kind", "") == "quicksand":
                     dist_sq = (self.ball.x - h.x)**2 + (self.ball.y - h.y)**2
                     if dist_sq < h.radius**2:
-                        self.ball.is_in_quicksand = True
+                        if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
+                            self.ball.is_in_quicksand = True
                         break
 
         # Magnet passive: pull boosters and smaller entities
@@ -2631,15 +2632,17 @@ class Action:
                             has_water_trait = "water" in b_type or "swamp" in b_type or any("water" in str(t).lower() or "swamp" in str(t).lower() for t in traits)
 
                             if not has_water_trait:
-                                if getattr(self.ball, "quicksand_debuff_timer", 0.0) <= 0:
-                                    if random.random() < 0.1:  # 10% chance per tick to apply debuff
-                                        self.ball.quicksand_debuff_timer = 2.0
+                                if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
+                                    if getattr(self.ball, "quicksand_debuff_timer", 0.0) <= 0:
+                                        if random.random() < 0.1:  # 10% chance per tick to apply debuff
+                                            self.ball.quicksand_debuff_timer = 2.0
 
-                                if getattr(self.ball, "quicksand_debuff_timer", 0.0) > 0:
-                                    self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.3
-                                    self.ball.quicksand_debuff_timer -= delta
+                                    if getattr(self.ball, "quicksand_debuff_timer", 0.0) > 0:
+                                        self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.3
+                                        self.ball.quicksand_debuff_timer -= delta
 
-                            self.ball.is_in_quicksand = True
+                            if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
+                                self.ball.is_in_quicksand = True
                     elif hazard.kind == "vortex":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
@@ -2650,8 +2653,9 @@ class Action:
                                 nx = dx / dist
                                 ny = dy / dist
                                 pull_strength = 50.0 * delta
-                                self.ball.x += nx * pull_strength
-                                self.ball.y += ny * pull_strength
+                                if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
+                                    self.ball.x += nx * pull_strength
+                                    self.ball.y += ny * pull_strength
 
                             dmg = getattr(hazard, "damage", 10.0) * delta
                             if hasattr(self.ball, "hp"):
@@ -2671,8 +2675,9 @@ class Action:
                                 nx = dx / dist
                                 ny = dy / dist
                                 pull_strength = 80.0 * delta
-                                self.ball.x += nx * pull_strength
-                                self.ball.y += ny * pull_strength
+                                if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
+                                    self.ball.x += nx * pull_strength
+                                    self.ball.y += ny * pull_strength
 
                             dmg = getattr(hazard, "damage", 30.0) * delta
                             if hasattr(self.ball, "hp"):

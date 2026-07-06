@@ -4623,10 +4623,18 @@ func execute(strategy: String, delta: float):
                             var nx = dx / dist
                             var ny = dy / dist
                             var pull_strength = 50.0 * delta
-                            if "x" in self.ball: self.ball.x += nx * pull_strength
-                            elif self.ball.has_method("set_meta") and self.ball.has_meta("x"): self.ball.set_meta("x", self.ball.get_meta("x") + nx * pull_strength)
-                            if "y" in self.ball: self.ball.y += ny * pull_strength
-                            elif self.ball.has_method("set_meta") and self.ball.has_meta("y"): self.ball.set_meta("y", self.ball.get_meta("y") + ny * pull_strength)
+
+                            var anchor_t = 0.0
+                            if "anchor_booster_timer" in self.ball:
+                                anchor_t = float(self.ball.anchor_booster_timer)
+                            elif self.ball.has_method("has_meta") and self.ball.has_meta("anchor_booster_timer"):
+                                anchor_t = float(self.ball.get_meta("anchor_booster_timer"))
+
+                            if anchor_t <= 0.0:
+                                if "x" in self.ball: self.ball.x += nx * pull_strength
+                                elif self.ball.has_method("set_meta") and self.ball.has_meta("x"): self.ball.set_meta("x", self.ball.get_meta("x") + nx * pull_strength)
+                                if "y" in self.ball: self.ball.y += ny * pull_strength
+                                elif self.ball.has_method("set_meta") and self.ball.has_meta("y"): self.ball.set_meta("y", self.ball.get_meta("y") + ny * pull_strength)
 
                         var dmg = 10.0 * delta
                         if "damage" in hazard: dmg = hazard.damage * delta
@@ -4654,10 +4662,18 @@ func execute(strategy: String, delta: float):
                             var nx = dx / dist
                             var ny = dy / dist
                             var pull_strength = 80.0 * delta
-                            if "x" in self.ball: self.ball.x += nx * pull_strength
-                            elif self.ball.has_method("set_meta") and self.ball.has_meta("x"): self.ball.set_meta("x", self.ball.get_meta("x") + nx * pull_strength)
-                            if "y" in self.ball: self.ball.y += ny * pull_strength
-                            elif self.ball.has_method("set_meta") and self.ball.has_meta("y"): self.ball.set_meta("y", self.ball.get_meta("y") + ny * pull_strength)
+
+                            var anchor_t = 0.0
+                            if "anchor_booster_timer" in self.ball:
+                                anchor_t = float(self.ball.anchor_booster_timer)
+                            elif self.ball.has_method("has_meta") and self.ball.has_meta("anchor_booster_timer"):
+                                anchor_t = float(self.ball.get_meta("anchor_booster_timer"))
+
+                            if anchor_t <= 0.0:
+                                if "x" in self.ball: self.ball.x += nx * pull_strength
+                                elif self.ball.has_method("set_meta") and self.ball.has_meta("x"): self.ball.set_meta("x", self.ball.get_meta("x") + nx * pull_strength)
+                                if "y" in self.ball: self.ball.y += ny * pull_strength
+                                elif self.ball.has_method("set_meta") and self.ball.has_meta("y"): self.ball.set_meta("y", self.ball.get_meta("y") + ny * pull_strength)
 
                         var dmg = 30.0 * delta
                         if "damage" in hazard: dmg = hazard.damage * delta
