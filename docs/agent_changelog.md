@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-636] Mass Clone Skill — *2026-07-06 18:50:33 UTC*
+
+A rare skill or ultimate ability that creates a decoy clone for every ball currently in the arena to cause massive confusion during big fights.
+
+---
+
 ## [idea-573] Bumper Explosions — *2026-07-06 18:16:35 UTC*
 
 Bumpers could detonate on impact if a ball has enough velocity when striking them, damaging nearby players.
