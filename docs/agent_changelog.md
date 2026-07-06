@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-629] Decoy Minefield Arena — *2026-07-06 17:40:06 UTC*
+
+A new game mode where the arena is randomly seeded with invisible decoys. Players must carefully navigate the map or use vision-revealing abilities to avoid setting off massive chain reactions.
+
+---
+
 ## [idea-563] Gravity Boots Booster — *2026-07-06 17:16:58 UTC*
 
 A booster that gives the player immunity to pulling effects and quicksand.

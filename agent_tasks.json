@@ -10850,7 +10850,7 @@
     },
     {
       "id": "idea-629",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Minefield Arena",
@@ -17654,6 +17654,74 @@
         "src/arena/acoustic_mine_trap.py",
         "src/arena/acoustic_mine_trap.gd",
         "tests/test_acoustic_mine_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1029",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Time Rift Hazard",
+      "description": "A new procedural hazard called 'Time Rift' that periodically reverses the direction of all projectiles and halves the movement speed of any ball caught in its radius for a few seconds. The effect visually looks like a distorted purple bubble.",
+      "allowed_paths": [
+        "src/arena/time_rift.py",
+        "src/arena/time_rift.gd",
+        "tests/test_time_rift.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1030",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Transmutation",
+      "description": "A new skill that allows a player to swap the types of decoys currently on the field dynamically. For example, changing a healing decoy into an explosive decoy to trap enemies who think it is safe.",
+      "allowed_paths": [
+        "src/ai/decoy_transmutation.py",
+        "src/ai/decoy_transmutation.gd",
+        "tests/test_decoy_transmutation.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1031",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Synergies",
+      "description": "Introduce combo effects when two different decoys explode simultaneously near an enemy. For instance, if an explosive decoy and a stun decoy detonate near each other, it creates an EMP blast that silences enemies instead of just stunning them.",
+      "allowed_paths": [
+        "src/ai/decoy_synergies.py",
+        "src/ai/decoy_synergies.gd",
+        "tests/test_decoy_synergies.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1032",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reflect Booster",
+      "description": "A new booster that grants temporary damage reflection. For 5 seconds after collection, any melee or projectile damage taken by the player is reduced by 50% and the remaining 50% is instantly reflected back to the attacker.",
+      "allowed_paths": [
+        "src/ai/reflect_booster.py",
+        "src/ai/reflect_booster.gd",
+        "tests/test_reflect_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
