@@ -51,3 +51,17 @@ def test_safe_zone_mode_movement():
     mode.zone_x = 596.0
     mode.tick(world, balls, delta=1.0)
     assert mode.zone_target_x != 600.0 or mode.zone_target_y != 500.0
+
+def test_camping_shrink():
+    world = MockWorld()
+    mode = SafeZoneMode()
+    balls = [MockBall(500, 500), MockBall(500, 500)]
+
+    mode.setup(world, balls)
+    mode.shrink_rate = 10.0
+    initial_radius = mode.zone_radius
+
+    mode.tick(world, balls, delta=1.0)
+
+    # 2 players in zone: multiplier = 2.0 => shrink_rate = 20.0
+    assert mode.zone_radius == initial_radius - 20.0
