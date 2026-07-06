@@ -6059,6 +6059,29 @@ class Action:
                     target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
                     self.ball.magnet_tether_target = target
                     self.ball.magnet_tether_timer = 1.0  # Duration of the pull
+                else:
+                    arena_width = float(getattr(self.world.arena, "width", 1000.0) if hasattr(self.world, "arena") and self.world.arena else getattr(self.world, "width", 1000.0))
+                    arena_height = float(getattr(self.world.arena, "height", 1000.0) if hasattr(self.world, "arena") and self.world.arena else getattr(self.world, "height", 1000.0))
+
+                    d_left = self.ball.x
+                    d_right = arena_width - self.ball.x
+                    d_top = self.ball.y
+                    d_bottom = arena_height - self.ball.y
+
+                    min_d = min(d_left, d_right, d_top, d_bottom)
+                    target_x, target_y = self.ball.x, self.ball.y
+
+                    if min_d == d_left:
+                        target_x = 0.0
+                    elif min_d == d_right:
+                        target_x = arena_width
+                    elif min_d == d_top:
+                        target_y = 0.0
+                    else:
+                        target_y = arena_height
+
+                    self.ball.magnet_tether_target = type("WallTarget", (), {"x": target_x, "y": target_y, "alive": True})()
+                    self.ball.magnet_tether_timer = 1.0
             elif skill_name == "holographic_clone":
                 import copy
                 import random
