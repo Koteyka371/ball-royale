@@ -8542,3 +8542,109 @@ try:
     GAME_MODES["reverse_friction"] = ReverseFrictionMode()
 except ImportError:
     pass
+
+class RubberBandTetherMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Rubber Band Tether"
+        self.description = "Teams of balls are tethered together by invisible rubber bands. If they move too far apart, they are snapped back together with massive force, dealing damage to anything in their path."
+        self.max_distance = 300.0
+        self.snap_force = 15.0
+        self.snap_damage = 50.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+
+        # Group balls by team
+        teams = {}
+        for b in balls:
+            if getattr(b, "ball_type", None) == "spectator":
+                continue
+            t = getattr(b, "team", "unknown")
+            if t not in teams:
+                teams[t] = []
+            teams[t].append(b)
+
+        # Pair them up
+        import random
+        for t, team_balls in teams.items():
+            random.shuffle(team_balls)
+            for i in range(0, len(team_balls) - 1, 2):
+                team_balls[i].tether_target = team_balls[i+1]
+                team_balls[i+1].tether_target = team_balls[i]
+            if len(team_balls) % 2 != 0:
+                team_balls[-1].tether_target = None
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math
+
+        # Check tether distances
+        processed = set()
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            if getattr(b, "id", None) in processed:
+                continue
+
+            target = getattr(b, "tether_target", None)
+            if not target or not getattr(target, "alive", False):
+                b.tether_target = None
+                continue
+
+            # Both are alive and tethered
+            dist = math.hypot(target.x - b.x, target.y - b.y)
+
+            if dist > self.max_distance:
+                # Snap back
+                dx = target.x - b.x
+                dy = target.y - b.y
+                nx = dx / dist
+                ny = dy / dist
+
+                # Apply immense snap force
+                b.vx = getattr(b, "vx", 0.0) + nx * self.snap_force * 60 * delta
+                b.vy = getattr(b, "vy", 0.0) + ny * self.snap_force * 60 * delta
+
+                target.vx = getattr(target, "vx", 0.0) - nx * self.snap_force * 60 * delta
+                target.vy = getattr(target, "vy", 0.0) - ny * self.snap_force * 60 * delta
+
+                # Deal damage to anyone in the line between them
+                for other in balls:
+                    if other == b or other == target or not getattr(other, "alive", False) or getattr(other, "ball_type", None) == "spectator":
+                        continue
+
+                    if getattr(other, "team", None) == getattr(b, "team", None):
+                        continue
+
+                    # Line-circle intersection
+                    lx = target.x - b.x
+                    ly = target.y - b.y
+                    l2 = lx*lx + ly*ly
+
+                    if l2 > 0:
+                        t = max(0.0, min(1.0, ((other.x - b.x) * lx + (other.y - b.y) * ly) / l2))
+                        proj_x = b.x + t * lx
+                        proj_y = b.y + t * ly
+
+                        dist_to_line = math.hypot(other.x - proj_x, other.y - proj_y)
+
+                        if dist_to_line <= getattr(other, "radius", 10.0) + 5.0: # hit detection with slight buffer
+                            # Only apply damage once per tick
+                            if hasattr(world, "_deal_damage"):
+                                old_dmg = getattr(b, "damage", 10.0)
+                                b.damage = self.snap_damage * delta
+                                world._deal_damage(b, other)
+                                b.damage = old_dmg
+                            else:
+                                other.hp -= self.snap_damage * delta
+                                if other.hp <= 0:
+                                    other.alive = False
+                                    other.current_action = "explode"
+
+            processed.add(getattr(b, "id", None))
+            processed.add(getattr(target, "id", None))
+
+GAME_MODES["rubber_band_tether"] = RubberBandTetherMode()

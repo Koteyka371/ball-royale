@@ -10610,6 +10610,7 @@ class ExtremeWeatherMode extends GameMode:
 					b.y += sin(angle) * 100.0 * delta
 
 var GAME_MODES = {
+	"rubber_band_tether": RubberBandTetherMode.new(),
 	"extreme_weather": ExtremeWeatherMode.new(),
 	"invisible_decoys": InvisibleDecoysMode.new(),
 	"reversed_input": ReversedInputMode.new(),
@@ -10872,3 +10873,185 @@ class TagTeamMode extends GameMode:
 						inactive["y"] = a_y
 						inactive["vx"] = a_vx
 						inactive["vy"] = a_vy
+
+class RubberBandTetherMode extends GameMode:
+	var max_distance: float = 300.0
+	var snap_force: float = 15.0
+	var snap_damage: float = 50.0
+
+	func _init().():
+		name = "Rubber Band Tether"
+		description = "Teams of balls are tethered together by invisible rubber bands. If they move too far apart, they are snapped back together with massive force, dealing damage to anything in their path."
+
+	func setup(world, balls: Array) -> void:
+		.setup(world, balls)
+
+		# Group balls by team
+		var teams = {}
+		for b in balls:
+			var b_type = b.ball_type if "ball_type" in b else ""
+			if b_type == "spectator":
+				continue
+
+			var t = b.team if "team" in b else "unknown"
+			if not teams.has(t):
+				teams[t] = []
+			teams[t].append(b)
+
+		for t in teams.keys():
+			var team_balls = teams[t]
+			team_balls.shuffle()
+
+			var i = 0
+			while i < team_balls.size() - 1:
+				var b1 = team_balls[i]
+				var b2 = team_balls[i+1]
+
+				if typeof(b1) == TYPE_OBJECT:
+					b1.set_meta("tether_target", b2)
+				elif typeof(b1) == TYPE_DICTIONARY:
+					b1["tether_target"] = b2
+
+				if typeof(b2) == TYPE_OBJECT:
+					b2.set_meta("tether_target", b1)
+				elif typeof(b2) == TYPE_DICTIONARY:
+					b2["tether_target"] = b1
+
+				i += 2
+
+			if team_balls.size() % 2 != 0:
+				var last_ball = team_balls[team_balls.size() - 1]
+				if typeof(last_ball) == TYPE_OBJECT:
+					last_ball.set_meta("tether_target", null)
+				elif typeof(last_ball) == TYPE_DICTIONARY:
+					last_ball["tether_target"] = null
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+
+		var processed = {}
+
+		for b in balls:
+			var is_alive = b.alive if "alive" in b else false
+			var b_type = b.ball_type if "ball_type" in b else ""
+			if not is_alive or b_type == "spectator":
+				continue
+
+			var b_id = b.id if "id" in b else null
+			if b_id != null and processed.has(b_id):
+				continue
+
+			var target = null
+			if typeof(b) == TYPE_OBJECT:
+				target = b.get_meta("tether_target") if b.has_meta("tether_target") else null
+			elif typeof(b) == TYPE_DICTIONARY:
+				target = b["tether_target"] if b.has("tether_target") else null
+
+			if target == null:
+				continue
+
+			var target_alive = target.alive if "alive" in target else false
+			if not target_alive:
+				if typeof(b) == TYPE_OBJECT:
+					b.set_meta("tether_target", null)
+				elif typeof(b) == TYPE_DICTIONARY:
+					b["tether_target"] = null
+				continue
+
+			var bx = b.x if "x" in b else 0.0
+			var by = b.y if "y" in b else 0.0
+			var tx = target.x if "x" in target else 0.0
+			var ty = target.y if "y" in target else 0.0
+
+			var dx = tx - bx
+			var dy = ty - by
+			var dist = sqrt(dx*dx + dy*dy)
+
+			if dist > max_distance:
+				var nx = dx / dist if dist > 0 else 0.0
+				var ny = dy / dist if dist > 0 else 0.0
+
+				var snap_amt = snap_force * 60 * delta
+
+				# Apply snap force
+				if typeof(b) == TYPE_OBJECT:
+					b.set("vx", (b.get("vx") if "vx" in b else 0.0) + nx * snap_amt)
+					b.set("vy", (b.get("vy") if "vy" in b else 0.0) + ny * snap_amt)
+				elif typeof(b) == TYPE_DICTIONARY:
+					b["vx"] = (b["vx"] if b.has("vx") else 0.0) + nx * snap_amt
+					b["vy"] = (b["vy"] if b.has("vy") else 0.0) + ny * snap_amt
+
+				if typeof(target) == TYPE_OBJECT:
+					target.set("vx", (target.get("vx") if "vx" in target else 0.0) - nx * snap_amt)
+					target.set("vy", (target.get("vy") if "vy" in target else 0.0) - ny * snap_amt)
+				elif typeof(target) == TYPE_DICTIONARY:
+					target["vx"] = (target["vx"] if target.has("vx") else 0.0) - nx * snap_amt
+					target["vy"] = (target["vy"] if target.has("vy") else 0.0) - ny * snap_amt
+
+				# Deal damage to balls between them
+				var b_team = b.team if "team" in b else ""
+
+				for other in balls:
+					if other == b or other == target:
+						continue
+
+					var other_alive = other.alive if "alive" in other else false
+					var other_type = other.ball_type if "ball_type" in other else ""
+					if not other_alive or other_type == "spectator":
+						continue
+
+					var other_team = other.team if "team" in other else ""
+					if other_team == b_team:
+						continue
+
+					var ox = other.x if "x" in other else 0.0
+					var oy = other.y if "y" in other else 0.0
+
+					var lx = tx - bx
+					var ly = ty - by
+					var l2 = lx*lx + ly*ly
+
+					if l2 > 0:
+						var t = clamp(((ox - bx) * lx + (oy - by) * ly) / l2, 0.0, 1.0)
+						var proj_x = bx + t * lx
+						var proj_y = by + t * ly
+
+						var d_line = sqrt((ox - proj_x)*(ox - proj_x) + (oy - proj_y)*(oy - proj_y))
+						var o_radius = other.radius if "radius" in other else 10.0
+
+						if d_line <= o_radius + 5.0:
+							if world.has_method("_deal_damage"):
+								var old_dmg = b.damage if "damage" in b else 10.0
+
+								if typeof(b) == TYPE_OBJECT:
+									b.set("damage", snap_damage * delta)
+								elif typeof(b) == TYPE_DICTIONARY:
+									b["damage"] = snap_damage * delta
+
+								world._deal_damage(b, other)
+
+								if typeof(b) == TYPE_OBJECT:
+									b.set("damage", old_dmg)
+								elif typeof(b) == TYPE_DICTIONARY:
+									b["damage"] = old_dmg
+							else:
+								var hp = other.hp if "hp" in other else 100.0
+								hp -= snap_damage * delta
+								if typeof(other) == TYPE_OBJECT:
+									other.set("hp", hp)
+								elif typeof(other) == TYPE_DICTIONARY:
+									other["hp"] = hp
+
+								if hp <= 0:
+									if typeof(other) == TYPE_OBJECT:
+										other.set("alive", false)
+										other.set("current_action", "explode")
+									elif typeof(other) == TYPE_DICTIONARY:
+										other["alive"] = false
+										other["current_action"] = "explode"
+
+			var target_id = target.id if "id" in target else null
+			if b_id != null:
+				processed[b_id] = true
+			if target_id != null:
+				processed[target_id] = true
