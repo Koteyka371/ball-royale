@@ -6968,6 +6968,45 @@ class Action:
                         clone.skill_timer = 9999.0
 
                         self.world.balls.append(clone)
+            elif skill_name == "global_mirage":
+                import copy
+                import random
+                if hasattr(self.world, "balls"):
+                    new_decoys = []
+                    for b in self.world.balls:
+                        if not getattr(b, "alive", True):
+                            continue
+                        # don't clone decoys or illusions
+                        if getattr(b, "is_decoy", False) or getattr(b, "is_illusion", False) or getattr(b, "is_active_clone", False):
+                            continue
+                        decoy = copy.copy(b)
+                        decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                        if hasattr(self.world, "next_id"):
+                            self.world.next_id += 1
+
+                        decoy.hp = getattr(b, "max_hp", 100) * 0.5
+                        decoy.max_hp = decoy.hp
+                        decoy.damage = getattr(b, "damage", 10) * 0.5
+
+                        # Add a small random offset to spawn position
+                        decoy.x += random.uniform(-15, 15)
+                        decoy.y += random.uniform(-15, 15)
+
+                        decoy.is_active_clone = True
+                        decoy.is_illusion = True
+                        decoy.mimic_owner = getattr(b, "id", None)
+                        decoy.mimic_timer = 15.0
+
+                        # Clear skills so the decoy doesn't spawn more things
+                        decoy.skill = None
+                        decoy.SKILL = None
+                        if hasattr(decoy, "active_skill"):
+                            decoy.active_skill = None
+                        decoy.skill_timer = 9999.0
+
+                        new_decoys.append(decoy)
+
+                    self.world.balls.extend(new_decoys)
             elif skill_name == "mass_illusion":
                 import copy
                 import math
