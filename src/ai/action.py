@@ -1439,9 +1439,15 @@ class Action:
                 self.ball.y += getattr(self.ball, "vy", 0.0) * delta * 0.5
             if getattr(self.world.arena, "is_snowing", False) and not is_wind_riding:
                 if getattr(self.ball, "ball_type", "") != "snow_yeti":
-                    # Extra slippery: apply even more momentum
+                    # Extra slippery: apply even more momentum (reduced friction)
                     self.ball.x += getattr(self.ball, "vx") * delta * 0.4
                     self.ball.y += getattr(self.ball, "vy") * delta * 0.4
+
+            if getattr(self.world.arena, "is_heatwave", False):
+                # Heatwave: higher friction, momentum stops faster (counteract vx/vy if any is present, or just decrease speed dynamically)
+                if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+                    self.ball.vx *= 0.95
+                    self.ball.vy *= 0.95
             if getattr(self.world.arena, "is_foggy", False):
                 pass # Fog has no friction effect, snow has speed change
             wind_dx = getattr(self.world.arena, "wind_dx", 0.0)
@@ -1591,6 +1597,19 @@ class Action:
             cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
             if cosmetic == "magnetic_boots":
                 self.ball.base_speed *= 0.9
+
+            # Weather effects on base speed
+            arena = getattr(self.world, 'arena', None)
+            is_snowing = getattr(arena, 'is_snowing', False) if arena else False
+            is_heatwave = getattr(arena, 'is_heatwave', False) if arena else False
+            is_windy = getattr(arena, 'is_windy', False) if arena else False
+
+            if is_snowing:
+                self.ball.base_speed *= 0.8  # Snow slows down
+            if is_windy:
+                self.ball.base_speed *= 1.2  # Windy speeds up
+            if is_heatwave:
+                self.ball.base_speed *= 0.9  # Heatwave slightly slows down due to exhaustion
 
             self.ball.base_damage = getattr(self.ball, "damage", 10.0)
             self.ball._base_speed_set = True
@@ -8205,13 +8224,24 @@ class Action:
                 self.ball.link_booster_timer = 0
                 self.ball.link_booster_target = None
 
+        arena = getattr(self.world, 'arena', None)
+        is_snowing = getattr(arena, 'is_snowing', False) if arena else False
+        is_heatwave = getattr(arena, 'is_heatwave', False) if arena else False
+        is_windy = getattr(arena, 'is_windy', False) if arena else False
+
+        cooldown_mult = 1.0
+        if is_snowing:
+            cooldown_mult = 0.5  # Snow slows down cooldowns (longer wait)
+        elif is_heatwave:
+            cooldown_mult = 1.5  # Heatwave speeds up cooldowns (faster recovery)
+
         if hasattr(self.ball, "skill_timer") and self.ball.skill_timer > 0:
-            self.ball.skill_timer -= delta
+            self.ball.skill_timer -= delta * cooldown_mult
         if hasattr(self.ball, "sonar_ping_timer") and self.ball.sonar_ping_timer > 0:
-            self.ball.sonar_ping_timer -= delta
+            self.ball.sonar_ping_timer -= delta * cooldown_mult
 
         if hasattr(self.ball, "attack_timer") and self.ball.attack_timer > 0:
-            self.ball.attack_timer -= delta
+            self.ball.attack_timer -= delta * cooldown_mult
 
         if hasattr(self.ball, "chaos_link_timer") and self.ball.chaos_link_timer > 0:
             self.ball.chaos_link_timer -= delta
