@@ -10294,6 +10294,85 @@ class MazeSafeZoneMode extends GameMode:
 		elif alive_count == 0:
 			return "Draw"
 
+
+class ReverseGravityEventMode extends GameMode:
+	var event_timer: float = 0.0
+	var event_active: bool = false
+	var event_duration: float = 0.0
+
+	func _init() -> void:
+		name = "Reverse Gravity Event"
+		description = "A random arena event that periodically reverses gravity, sending all balls bouncing towards the center instead of outwards."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if not event_active:
+			event_timer += delta
+
+		if not event_active and event_timer > 20.0:
+			if randf() < 0.2:  # 20% chance every 20s
+				event_active = true
+				event_duration = 10.0
+				event_timer = 0.0
+				if world.has_method("add_event"):
+					world.add_event("reverse_gravity", {"active": true})
+			else:
+				event_timer = 0.0
+
+		if event_active:
+			event_duration -= delta
+			if event_duration <= 0:
+				event_active = false
+				event_timer = 0.0
+				if world.has_method("add_event"):
+					world.add_event("reverse_gravity", {"active": false})
+
+		if "arena" in world and world.arena != null:
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if "width" in world.arena: arena_width = world.arena.width
+			if "height" in world.arena: arena_height = world.arena.height
+			var cx = arena_width / 2.0
+			var cy = arena_height / 2.0
+
+			var force_mag = 400.0 * delta
+			var direction_mult = 1.0 if event_active else -1.0
+
+			for b in balls:
+				if b.alive:
+					var b_type = ""
+					if typeof(b) == TYPE_DICTIONARY:
+						if b.has("ball_type"): b_type = b["ball_type"]
+					elif "ball_type" in b:
+						b_type = b.ball_type
+					elif b.has_method("has_meta") and b.has_meta("ball_type"):
+						b_type = b.get_meta("ball_type")
+					elif "BALL_TYPE" in b:
+						b_type = b.BALL_TYPE
+
+					if str(b_type).to_lower() != "spectator":
+						var bx = cx
+						var by = cy
+						if typeof(b) == TYPE_DICTIONARY:
+							if b.has("x"): bx = b.x
+							if b.has("y"): by = b.y
+						else:
+							if "x" in b: bx = b.x
+							if "y" in b: by = b.y
+
+						var dx = cx - bx
+						var dy = cy - by
+						var dist = sqrt(dx*dx + dy*dy)
+						if dist > 0:
+							var move_x = (dx / dist) * force_mag * direction_mult
+							var move_y = (dy / dist) * force_mag * direction_mult
+
+							if typeof(b) == TYPE_DICTIONARY:
+								b.x += move_x
+								b.y += move_y
+							else:
+								b.x += move_x
+								b.y += move_y
+
 var GAME_MODES = {
 	"reversed_input": ReversedInputMode.new(),
 	"sweeping_paddles": SweepingPaddlesMode.new(),
@@ -10324,6 +10403,7 @@ var GAME_MODES = {
 	"blackout": BlackoutMode.new(),
 	"dual_payload": DualPayloadMode.new(),
 	"tug_of_war": TugOfWarMode.new(),
+	"reverse_gravity_event": ReverseGravityEventMode.new(),
 	"escort": EscortMode.new(),
 	"windstorm": WindstormMode.new(),
 	"modifier_zones": ModifierZonesMode.new(),
