@@ -277,7 +277,7 @@ class Action:
                                         other.take_damage(remainder_damage)
                                     elif hasattr(other, "hp"):
                                         other.hp -= remainder_damage
-                                        if other.hp <= 0:
+                                        if hasattr(other, 'hp') and other.hp <= 0:
                                             other.alive = False
             else:
                 if hasattr(self.world, "_deal_damage"):
@@ -542,6 +542,7 @@ class Action:
                                                 elif hasattr(other, "hp"):
                                                     other.hp -= remainder_damage
                                                     if other.hp <= 0:
+
                                                         other.alive = False
                         else:
                             if hasattr(self.world, "_deal_damage"):
@@ -629,6 +630,40 @@ class Action:
     def execute(self, strategy: str, delta: float) -> None:
         import math
         self.ball.is_frictionless = False
+
+
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            hazards_to_remove = []
+            for hazard in self.world.arena.hazards:
+                if getattr(hazard, "kind", "") == "thrown_status_absorber":
+                    if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
+                        dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
+                        if dist_sq < (getattr(hazard, "radius", 15.0) + getattr(self.ball, "radius", 10.0))**2:
+                            # Apply damage
+                            if hasattr(self.ball, "hp"):
+                                dmg = getattr(hazard, "damage", 10.0)
+                                if getattr(hazard, "owner_id", None) is not None and hasattr(self.world, "balls"):
+                                    owner = next((b for b in self.world.balls if getattr(b, "id", None) == hazard.owner_id), None)
+                                    if owner and hasattr(self.world, "_deal_damage"):
+                                        self.world._deal_damage(owner, self.ball, dmg)
+                                    else:
+                                        self.ball.hp -= dmg
+                                else:
+                                    self.ball.hp -= dmg
+                                if self.ball.hp <= 0:
+                                    self.ball.alive = False
+
+                            # Apply absorbed effects
+                            if hasattr(hazard, "absorbed_effects"):
+                                for eff, val in hazard.absorbed_effects.items():
+                                    current_val = getattr(self.ball, eff, 0.0)
+                                    setattr(self.ball, eff, max(current_val, val))
+
+                            hazards_to_remove.append(hazard)
+
+            for h in hazards_to_remove:
+                if h in self.world.arena.hazards:
+                    self.world.arena.hazards.remove(h)
 
         if getattr(self.ball, "is_active_clone", False) and getattr(self.ball, "alive", True):
             self.ball.mimic_timer = getattr(self.ball, "mimic_timer", 10.0) - delta
@@ -809,6 +844,47 @@ class Action:
                 self.ball.inventory.remove("deployable_flare")
 
         # Check inventory for traps to place if fleeing or defending
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "status_absorber_item" in self.ball.inventory:
+            enemies = self._get_enemies()
+            if enemies:
+                closest_enemy = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                import math
+                if math.sqrt((closest_enemy.x - self.ball.x)**2 + (closest_enemy.y - self.ball.y)**2) < 250.0:
+                    # Absorb effects
+                    absorbed_effects = {}
+                    status_effects = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "frozen_timer"]
+                    for eff in status_effects:
+                        val = getattr(self.ball, eff, 0.0)
+                        if val > 0:
+                            absorbed_effects[eff] = val
+                            setattr(self.ball, eff, 0.0) # Cleanse self
+
+                    if absorbed_effects:
+                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                            dx = closest_enemy.x - self.ball.x
+                            dy = closest_enemy.y - self.ball.y
+                            dist = max(0.0001, (dx*dx + dy*dy)**0.5)
+                            nx, ny = dx/dist, dy/dist
+
+                            from arena.procedural_arena import Hazard
+                            import random as _rnd
+                            thrown_hazard = Hazard(
+                                id=len(self.world.arena.hazards) + _rnd.randint(10000, 99999),
+                                x=self.ball.x + nx * (getattr(self.ball, "radius", 10.0) + 5.0),
+                                y=self.ball.y + ny * (getattr(self.ball, "radius", 10.0) + 5.0),
+                                radius=15.0,
+                                kind="thrown_status_absorber",
+                                damage=10.0
+                            )
+                            setattr(thrown_hazard, "vx", nx * 600.0)
+                            setattr(thrown_hazard, "vy", ny * 600.0)
+                            setattr(thrown_hazard, "duration", 2.0)
+                            setattr(thrown_hazard, "owner_id", getattr(self.ball, "id", None))
+                            setattr(thrown_hazard, "absorbed_effects", absorbed_effects)
+                            self.world.arena.hazards.append(thrown_hazard)
+
+                        self.ball.inventory.remove("status_absorber_item")
+
         if strategy in ("flee", "defend") and hasattr(self.ball, "inventory") and "placeable_trap" in self.ball.inventory:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
 
@@ -1823,7 +1899,7 @@ class Action:
                                                             }
                                                         })
 
-                                        if other.hp <= 0:
+                                        if hasattr(other, 'hp') and other.hp <= 0:
                                             other.alive = False
 
                                         # Reward the owner for hitting enemies with a decoy explosion
@@ -1886,6 +1962,7 @@ class Action:
                                         else:
                                             other.hp -= 20.0
                                             if other.hp <= 0:
+
                                                 other.alive = False
 
         if getattr(self.ball, "stutter_timer", 0.0) > 0.0:
@@ -2258,6 +2335,7 @@ class Action:
                                                         elif hasattr(other, "hp"):
                                                             other.hp -= remainder_damage
                                                             if other.hp <= 0:
+
                                                                 other.alive = False
                                 else:
                                     if hasattr(self.ball, "take_damage"):
@@ -5703,6 +5781,15 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "status_absorber_item":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("status_absorber_item")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "nemesis_compass_item":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
@@ -6826,7 +6913,7 @@ class Action:
                     target_hazard = None
                     min_dist_sq = 22500.0  # Range 150
                     for h in hazards:
-                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "cursed_booster"]:
+                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "cursed_booster", "status_absorber_item"]:
                             dx = h.x - self.ball.x
                             dy = h.y - self.ball.y
                             dist_sq = dx*dx + dy*dy
