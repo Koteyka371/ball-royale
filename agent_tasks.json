@@ -10612,7 +10612,7 @@
     },
     {
       "id": "idea-615",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Turret Deployment",
@@ -17297,6 +17297,23 @@
         "src/ai/clan_wars.py",
         "src/ai/clan_wars.gd",
         "tests/test_clan_wars.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1008",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Map Hazards: Avalanche",
+      "description": "Add a new random weather/event to the procedural arena: Avalanche. A sweeping zone of slow-moving snow covers part of the map, significantly slowing movement speed and hiding traps, forcing players to adapt their positioning.",
+      "allowed_paths": [
+        "src/arena/dynamic_map_hazards_avalanche.py",
+        "src/arena/dynamic_map_hazards_avalanche.gd",
+        "tests/test_dynamic_map_hazards_avalanche.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

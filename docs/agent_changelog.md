@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-615] Turret Deployment — *2026-07-06 12:57:34 UTC*
+
+Allow players to deploy temporary turrets that shoot nearby enemies autonomously.
+
+---
+
 ## [idea-533] Mirror Image Ultimate — *2026-07-06 12:56:20 UTC*
 
 Introduce a new ball class (Illusionist) whose ultimate skill spawns multiple decoys that actively mimic the player's inputs (movement and basic attacks) but deal reduced damage.
