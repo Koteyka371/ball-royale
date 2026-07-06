@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-498] New Hazard: Ice Patch — *2026-07-06 20:12:10 UTC*
+
+Ice patches spawn randomly. When balls enter them, friction is reduced to nearly 0, causing them to slide uncontrollably until they hit a wall or exit the patch. Damage taken while on ice is slightly reduced, but they are vulnerable to environmental hazards if they slide into them.
+
+---
+
 ## [idea-643] Quantum Swap Skill — *2026-07-06 20:10:11 UTC*
 
 A skill where the ball immediately swaps places with a targeted ally or enemy, causing confusion and transferring any negative status effects (burn, poison) currently on the user to the swapped target.
