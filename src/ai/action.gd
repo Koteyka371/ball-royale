@@ -2774,7 +2774,7 @@ func execute(strategy: String, delta: float):
         var cosmetic = ""
         if "cosmetic" in my_ball:
             cosmetic = str(my_ball.cosmetic).to_lower().replace(" ", "_")
-        var ignores_mud = cosmetic == "mud_tires"
+        var ignores_mud = cosmetic in ["mud_tires", "spiked_tires"]
 
         # Reset flag every frame
         if typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("set_meta"):
@@ -4579,17 +4579,21 @@ func execute(strategy: String, delta: float):
                         var dy = hazard.y - self.ball.y
                         var dist_sq = dx * dx + dy * dy
                         if dist_sq < hazard.radius * hazard.radius:
-                            if "vx" in self.ball and "vy" in self.ball:
-                                self.ball.x += self.ball.vx * delta
-                                self.ball.y += self.ball.vy * delta
-                            var base_s = 100.0
-                            if self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"):
-                                base_s = self.ball.get_meta("base_speed")
-                            elif "base_speed" in self.ball:
-                                base_s = self.ball.base_speed
-                            self.ball.speed = base_s * 0.01
-                            if self.ball.has_method("set_meta"):
-                                self.ball.set_meta("is_slipping", true)
+                            var cos_slip = ""
+                            if "cosmetic" in self.ball:
+                                cos_slip = str(self.ball.cosmetic).to_lower().replace(" ", "_")
+                            if cos_slip != "snowshoes":
+                                if "vx" in self.ball and "vy" in self.ball:
+                                    self.ball.x += self.ball.vx * delta
+                                    self.ball.y += self.ball.vy * delta
+                                var base_s = 100.0
+                                if self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"):
+                                    base_s = self.ball.get_meta("base_speed")
+                                elif "base_speed" in self.ball:
+                                    base_s = self.ball.base_speed
+                                self.ball.speed = base_s * 0.01
+                                if self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("is_slipping", true)
                 elif hazard.kind == "frictionless_zone":
                     var active = true
                     if hazard.has_method("get_meta") and hazard.has_meta("active"):
