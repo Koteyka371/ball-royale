@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-631] Interactive Weather System — *2026-07-06 20:41:40 UTC*
+
+Weather conditions in different seasonal arenas (like heatwaves, snowstorms, or heavy winds) actively affect ball movement speed, friction, and ability cooldowns.
+
+---
+
 ## [idea-633] Dynamic Arena Padding — *2026-07-06 20:17:19 UTC*
 
 Add an arena mutator or interactive element where parts of the boundary become 'Bouncy' (drastically increasing reflection speed) while other parts become 'Sticky' (catching and stopping balls), changing periodically during a match to keep players constantly aware of their positioning relative to the edges.

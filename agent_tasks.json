@@ -10884,7 +10884,7 @@
     },
     {
       "id": "idea-631",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Interactive Weather System",
@@ -18028,6 +18028,40 @@
         "src/arena/molten_rock.py",
         "src/arena/molten_rock.gd",
         "tests/test_molten_rock.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1051",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirror Dimension Mode",
+      "description": "A game mode where periodically the arena splits into two parallel dimensions. Players in the mirror dimension cannot be seen or damaged by those in the normal dimension, but they can collect mirror-exclusive powerups that apply permanent buffs when dimensions merge back together.",
+      "allowed_paths": [
+        "src/ai/mirror_dimension.py",
+        "src/ai/mirror_dimension.gd",
+        "tests/test_mirror_dimension.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1052",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Wind Currents",
+      "description": "Introduce dynamic wind currents into arenas that alter the trajectory of projectiles and affect movement speed based on ball weight traits, creating new positional strategies.",
+      "allowed_paths": [
+        "src/ai/dynamic_wind_currents.py",
+        "src/ai/dynamic_wind_currents.gd",
+        "tests/test_dynamic_wind_currents.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
