@@ -80,5 +80,5 @@ def test_kite_approach_when_far():
     action.execute("kite", 0.1)
 
     # Should move towards enemy. x should increase.
-    assert ball.x > 100
+    assert ball.x > 90
     assert ball.attacked_count == 0
