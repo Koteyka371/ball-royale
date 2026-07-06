@@ -10952,7 +10952,7 @@
     },
     {
       "id": "idea-635",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather Mastery Mode",
@@ -17943,6 +17943,23 @@
         "src/arena/gravity_well.py",
         "src/arena/gravity_well.gd",
         "tests/test_gravity_well.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1046",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Starlight Celestial Boss",
+      "description": "A new neutral boss entity that spawns during the 'Celestial Alignment' weather event. The Starlight Boss fires tracking star projectiles and drops a permanent movement speed boost for the entire team that defeats it.",
+      "allowed_paths": [
+        "src/ai/starlight_celestial_boss.py",
+        "src/ai/starlight_celestial_boss.gd",
+        "tests/test_starlight_celestial_boss.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
