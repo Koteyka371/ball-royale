@@ -503,7 +503,7 @@ class BattleRoyaleMode extends GameMode:
             var boss_type = "juggernaut"
             if weather in ["snow", "blizzard"]:
                 boss_type = "yeti"
-            elif weather == "sandstorm":
+            elif weather == "sandstorm" and not is_imm:
                 boss_type = "sandworm"
 
             var new_boss = {}
@@ -795,15 +795,33 @@ class BattleRoyaleMode extends GameMode:
                 var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm", "lunar_eclipse"]
                 var old_weather = self.weather
                 self.weather = weathers[randi() % weathers.size()]
-                if old_weather != self.weather and world != null and world.has_method("add_event"):
-                    world.add_event("weather_change", {"weather": self.weather})
+                if old_weather != self.weather:
+                    for b in balls:
+                        if "forecast_booster_active" in b and b.forecast_booster_active:
+                            if b.has_method("set_meta"):
+                                b.set_meta("forecast_booster_active", false)
+                                b.set_meta("weather_immunity_timer", 15.0)
+                                b.set_meta("forecast_warning_issued", false)
+                            else:
+                                b.forecast_booster_active = false
+                                b.weather_immunity_timer = 15.0
+                                b.forecast_warning_issued = false
+                        elif typeof(b) != TYPE_DICTIONARY and b.has_method("get_meta") and b.has_meta("forecast_booster_active") and b.get_meta("forecast_booster_active"):
+                            b.set_meta("forecast_booster_active", false)
+                            b.set_meta("weather_immunity_timer", 15.0)
+                            b.set_meta("forecast_warning_issued", false)
+                    if world != null and world.has_method("add_event"):
+                        world.add_event("weather_change", {"weather": self.weather})
                 if self.weather == "wind":
                     if has_method("set_meta"):
                         set_meta("wind_dx", (randf() * 100.0) - 50.0)
                         set_meta("wind_dy", (randf() * 100.0) - 50.0)
 
         if world != null and "arena" in world and world.arena != null:
-            if self.weather == "fog" or self.weather in ["snow", "blizzard"]:
+            var is_imm = false
+            if "weather_immunity_timer" in b and float(b.weather_immunity_timer) > 0.0: is_imm = true
+            elif typeof(b) != TYPE_DICTIONARY and b.has_method("get_meta") and b.has_meta("weather_immunity_timer") and float(b.get_meta("weather_immunity_timer")) > 0.0: is_imm = true
+            if (self.weather == "fog" or self.weather in ["snow", "blizzard"]) and not is_imm:
                 world.arena.is_foggy = true
             else:
                 world.arena.is_foggy = false
@@ -811,11 +829,11 @@ class BattleRoyaleMode extends GameMode:
                 world.arena.is_raining = true
             else:
                 world.arena.is_raining = false
-            if self.weather == "sandstorm":
+            if self.weather == "sandstorm" and not is_imm:
                 world.arena.is_sandstorming = true
             else:
                 world.arena.is_sandstorming = false
-            if self.weather == "heatwave":
+            if self.weather == "heatwave" and not is_imm:
                 world.arena.is_heatwave = true
             else:
                 world.arena.is_heatwave = false
@@ -824,7 +842,7 @@ class BattleRoyaleMode extends GameMode:
             else:
                 world.arena.is_snowing = false
 
-            if self.weather == "lunar_eclipse":
+            if self.weather == "lunar_eclipse" and not is_imm:
                 world.arena.is_lunar_eclipse = true
                 world.arena.is_eclipse = true
             else:
@@ -889,7 +907,7 @@ class BattleRoyaleMode extends GameMode:
                     flood.set_meta("duration", 10.0)
                     world.arena.hazards.append(flood)
                 var chance = 0.05
-                if self.weather == "thunderstorm":
+                if self.weather == "thunderstorm" and not is_imm:
                     chance = 0.2
                 if randf() < chance * delta:
                     var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
@@ -1013,7 +1031,7 @@ class BattleRoyaleMode extends GameMode:
                     if b.has_method("set_meta"):
                         b.set_meta("dash_range_mult", 1.0)
                         b.set_meta("steering_mult", 1.0)
-                elif self.weather in ["snow", "blizzard"]:
+                elif self.weather in ["snow", "blizzard"] and not is_imm:
 			if "speed" in b: b.speed = base_spd * 0.5
 			if "damage" in b: b.damage = base_dmg * 1.2
 			var sk_s = ""
@@ -1054,13 +1072,13 @@ class BattleRoyaleMode extends GameMode:
                         wind_dy = get_meta("wind_dy")
                     b.x += wind_dx * delta
                     b.y += wind_dy * delta
-                elif self.weather == "thunderstorm":
+                elif self.weather == "thunderstorm" and not is_imm:
                     if "speed" in b: b.speed = base_spd * 1.1
                     if "damage" in b: b.damage = base_dmg * 1.5
                     if b.has_method("set_meta"):
                         b.set_meta("dash_range_mult", 1.0)
                         b.set_meta("steering_mult", 1.0)
-                elif self.weather == "sandstorm":
+                elif self.weather == "sandstorm" and not is_imm:
                     if "speed" in b: b.speed = base_spd * 0.7
                     if "damage" in b: b.damage = base_dmg
                     if b.has_method("set_meta"):
@@ -2514,6 +2532,41 @@ class WeatherChaosMode extends GameMode:
 
 			var warning_threshold = 7.0 # 3s warning
 			var warning_issued = false
+			for b in balls:
+				var is_active = false
+				var is_issued = false
+				if "forecast_booster_active" in b and b.forecast_booster_active: is_active = true
+				elif typeof(b) != TYPE_DICTIONARY and b.has_method("get_meta") and b.has_meta("forecast_booster_active") and b.get_meta("forecast_booster_active"): is_active = true
+
+				if "forecast_warning_issued" in b and b.forecast_warning_issued: is_issued = true
+				elif typeof(b) != TYPE_DICTIONARY and b.has_method("get_meta") and b.has_meta("forecast_warning_issued") and b.get_meta("forecast_warning_issued"): is_issued = true
+
+				if is_active and not is_issued and (10.0 - weather_timer) <= 10.0:
+					if b.has_method("set_meta"):
+						b.set_meta("forecast_warning_issued", true)
+					else:
+						b.forecast_warning_issued = true
+					if world != null and world.has_method("add_event"):
+						world.add_event("weather_warning", {"type": "weather_warning", "message": "Forecast warns: Weather change incoming!"})
+
+			var time_until = 10.0 - weather_timer
+			for b in balls:
+				var is_active = false
+				var is_issued = false
+				if "forecast_booster_active" in b and b.forecast_booster_active: is_active = true
+				elif typeof(b) != TYPE_DICTIONARY and b.has_method("get_meta") and b.has_meta("forecast_booster_active") and b.get_meta("forecast_booster_active"): is_active = true
+				if "forecast_warning_issued" in b and b.forecast_warning_issued: is_issued = true
+				elif typeof(b) != TYPE_DICTIONARY and b.has_method("get_meta") and b.has_meta("forecast_warning_issued") and b.get_meta("forecast_warning_issued"): is_issued = true
+				if is_active and not is_issued and time_until <= 10.0:
+					if b.has_method("set_meta"):
+						b.set_meta("forecast_warning_issued", true)
+					else:
+						b.forecast_warning_issued = true
+					var next_w = "unknown"
+					if has_meta("next_weather"): next_w = get_meta("next_weather")
+					if world != null and world.has_method("add_event"):
+						world.add_event("weather_warning", {"type": "weather_warning", "message": "Forecast warns: " + next_w.to_upper() + " incoming in " + str(int(time_until)) + "s!"})
+
 			if has_meta("weather_warning_issued"):
 				warning_issued = get_meta("weather_warning_issued")
 			if weather_timer >= warning_threshold and not warning_issued:
@@ -2540,15 +2593,33 @@ class WeatherChaosMode extends GameMode:
 				weather = get_meta("next_weather")
 				set_meta("next_weather", weathers[randi() % weathers.size()])
 				set_meta("weather_warning_issued", false)
-				if old_weather != weather and world != null and world.has_method("add_event"):
-					world.add_event("weather_change", {"weather": weather})
+				if old_weather != weather:
+					for b in balls:
+						if "forecast_booster_active" in b and b.forecast_booster_active:
+							if b.has_method("set_meta"):
+								b.set_meta("forecast_booster_active", false)
+								b.set_meta("weather_immunity_timer", 15.0)
+								b.set_meta("forecast_warning_issued", false)
+							else:
+								b.forecast_booster_active = false
+								b.weather_immunity_timer = 15.0
+								b.forecast_warning_issued = false
+						elif typeof(b) != TYPE_DICTIONARY and b.has_method("get_meta") and b.has_meta("forecast_booster_active") and b.get_meta("forecast_booster_active"):
+							b.set_meta("forecast_booster_active", false)
+							b.set_meta("weather_immunity_timer", 15.0)
+							b.set_meta("forecast_warning_issued", false)
+					if world != null and world.has_method("add_event"):
+						world.add_event("weather_change", {"weather": weather})
 				if weather == "wind":
 					if has_method("set_meta"):
 						set_meta("wind_dx", (randf() * 100.0) - 50.0)
 						set_meta("wind_dy", (randf() * 100.0) - 50.0)
 
 		if world != null and "arena" in world:
-			if weather == "fog" or weather in ["snow", "blizzard"]:
+			var is_imm = false
+			if "weather_immunity_timer" in b and float(b.weather_immunity_timer) > 0.0: is_imm = true
+			elif typeof(b) != TYPE_DICTIONARY and b.has_method("get_meta") and b.has_meta("weather_immunity_timer") and float(b.get_meta("weather_immunity_timer")) > 0.0: is_imm = true
+			if (weather == "fog" or weather in ["snow", "blizzard"]) and not is_imm:
 				world.arena.is_foggy = true
 			else:
 				world.arena.is_foggy = false
@@ -2556,11 +2627,11 @@ class WeatherChaosMode extends GameMode:
 				world.arena.is_raining = true
 			else:
 				world.arena.is_raining = false
-			if weather == "sandstorm":
+			if weather == "sandstorm" and not is_imm:
 				world.arena.is_sandstorming = true
 			else:
 				world.arena.is_sandstorming = false
-			if weather == "heatwave":
+			if weather == "heatwave" and not is_imm:
 				world.arena.is_heatwave = true
 			else:
 				world.arena.is_heatwave = false
@@ -2584,7 +2655,7 @@ class WeatherChaosMode extends GameMode:
 			if not "hazards" in world.arena:
 				world.arena.hazards = []
 
-			if weather == "heatwave":
+			if weather == "heatwave" and not is_imm:
 				if randf() < 0.05 * delta:
 					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
 					if Hazard:
@@ -2625,7 +2696,7 @@ class WeatherChaosMode extends GameMode:
 						flood.set_meta("duration", 10.0)
 						world.arena.hazards.append(flood)
 
-			if weather == "sandstorm":
+			if weather == "sandstorm" and not is_imm:
 				if randf() < 0.05 * delta:
 					var BallClass = load("res://src/ai/ball_types_swarm.gd")
 					if BallClass:
@@ -2741,7 +2812,7 @@ class WeatherChaosMode extends GameMode:
 					if b.has_method("set_meta"):
 						b.set_meta("dash_range_mult", 1.0)
 						b.set_meta("steering_mult", 1.0)
-				elif weather == "thunderstorm":
+				elif weather == "thunderstorm" and not is_imm:
 					if typeof(b) == TYPE_OBJECT: b.set("cosmetic", "lightning_rod")
 					elif typeof(b) == TYPE_DICTIONARY: b["cosmetic"] = "lightning_rod"
 					if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius") * 0.8
@@ -2752,7 +2823,7 @@ class WeatherChaosMode extends GameMode:
 					if b.has_method("set_meta"):
 						b.set_meta("dash_range_mult", 1.0)
 						b.set_meta("steering_mult", 1.0)
-				elif weather == "sandstorm":
+				elif weather == "sandstorm" and not is_imm:
 					if typeof(b) == TYPE_OBJECT: b.set("cosmetic", "dust_mask")
 					elif typeof(b) == TYPE_DICTIONARY: b["cosmetic"] = "dust_mask"
 					var b_type = ""
@@ -2839,7 +2910,7 @@ class WeatherChaosMode extends GameMode:
 							if "hp" in b: b.hp -= 20.0
 
 					if "attack_accuracy" in b: b.attack_accuracy = 0.5
-				elif weather == "heatwave":
+				elif weather == "heatwave" and not is_imm:
 					if typeof(b) == TYPE_OBJECT: b.set("cosmetic", "sunglasses")
 					elif typeof(b) == TYPE_DICTIONARY: b["cosmetic"] = "sunglasses"
 					if b.has_method("get_meta") and b.has_meta("base_perception_radius"): b.perception_radius = b.get_meta("base_perception_radius") * 0.7
@@ -6214,7 +6285,7 @@ class MagneticCollisionsMode extends GameMode:
 			if not "hazards" in world.arena:
 				world.arena.hazards = []
 
-			if weather == "heatwave":
+			if weather == "heatwave" and not is_imm:
 				if randf() < 0.05 * delta:
 					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
 					if Hazard:
@@ -6464,7 +6535,7 @@ class PinballMode extends GameMode:
 			if not "hazards" in world.arena:
 				world.arena.hazards = []
 
-			if weather == "heatwave":
+			if weather == "heatwave" and not is_imm:
 				if randf() < 0.05 * 0.016:
 					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
 					if Hazard:
@@ -10603,11 +10674,56 @@ class ExtremeWeatherMode extends GameMode:
 		super.tick(world, balls, delta)
 		weather_timer += delta
 
+		for b in balls:
+			var is_active = false
+			var is_issued = false
+			if "forecast_booster_active" in b and b.forecast_booster_active: is_active = true
+			elif typeof(b) != TYPE_DICTIONARY and b.has_method("get_meta") and b.has_meta("forecast_booster_active") and b.get_meta("forecast_booster_active"): is_active = true
+
+			if "forecast_warning_issued" in b and b.forecast_warning_issued: is_issued = true
+			elif typeof(b) != TYPE_DICTIONARY and b.has_method("get_meta") and b.has_meta("forecast_warning_issued") and b.get_meta("forecast_warning_issued"): is_issued = true
+
+			if is_active and not is_issued and (15.0 - weather_timer) <= 10.0:
+				if b.has_method("set_meta"):
+					b.set_meta("forecast_warning_issued", true)
+				else:
+					b.forecast_warning_issued = true
+				if world != null and world.has_method("add_event"):
+					world.add_event("weather_warning", {"type": "weather_warning", "message": "Forecast warns: Weather change incoming!"})
+
 		if weather_timer >= 15.0:
 			weather_timer = 0.0
 			var old_weather = current_weather
 			current_weather = weathers[randi() % weathers.size()]
 
+			for b in balls:
+				if "forecast_booster_active" in b and b.forecast_booster_active:
+					if b.has_method("set_meta"):
+						b.set_meta("forecast_booster_active", false)
+						b.set_meta("weather_immunity_timer", 15.0)
+						b.set_meta("forecast_warning_issued", false)
+					else:
+						b.forecast_booster_active = false
+						b.weather_immunity_timer = 15.0
+						b.forecast_warning_issued = false
+				elif typeof(b) != TYPE_DICTIONARY and b.has_method("get_meta") and b.has_meta("forecast_booster_active") and b.get_meta("forecast_booster_active"):
+					b.set_meta("forecast_booster_active", false)
+					b.set_meta("weather_immunity_timer", 15.0)
+					b.set_meta("forecast_warning_issued", false)
+
+			for b in balls:
+				var is_active = false
+				if "forecast_booster_active" in b and b.forecast_booster_active: is_active = true
+				elif typeof(b) != TYPE_DICTIONARY and b.has_method("get_meta") and b.has_meta("forecast_booster_active") and b.get_meta("forecast_booster_active"): is_active = true
+				if is_active:
+					if b.has_method("set_meta"):
+						b.set_meta("forecast_booster_active", false)
+						b.set_meta("weather_immunity_timer", 15.0)
+						b.set_meta("forecast_warning_issued", false)
+					else:
+						b.forecast_booster_active = false
+						b.weather_immunity_timer = 15.0
+						b.forecast_warning_issued = false
 			if world != null and world.has_method("add_event"):
 				world.add_event("weather_change", {"weather": current_weather})
 

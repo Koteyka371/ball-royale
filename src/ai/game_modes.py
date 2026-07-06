@@ -11,6 +11,10 @@ class GameMode:
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
+            w_timer = getattr(b, "weather_immunity_timer", 0.0)
+            if isinstance(w_timer, (int, float)) and w_timer > 0.0:
+                b.weather_immunity_timer = max(0.0, w_timer - delta)
+
             if hasattr(b, "sponsor"):
                 if b.sponsor == "aggressor":
                     b.max_hp = getattr(b, "max_hp", 100.0) * 0.8
@@ -56,6 +60,7 @@ class GameMode:
 
 
         for b in balls:
+
             if getattr(b, "ball_type", None) != "spectator":
                 b.experience = getattr(b, "experience", 0.0)
                 b.level = getattr(b, "level", 1)
@@ -89,6 +94,11 @@ class GameMode:
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
+            w_timer = getattr(b, "weather_immunity_timer", 0.0)
+            if isinstance(w_timer, (int, float)) and w_timer > 0.0:
+                b.weather_immunity_timer = max(0.0, w_timer - delta)
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
                     b.time_since_death = 0.0
@@ -139,6 +149,7 @@ class DraftRoyaleMode(GameMode):
 
         # Initialize balls as spectators during draft
         for b in balls:
+
             b.original_type = getattr(b, "ball_type", "tank")
             b.ball_type = "spectator"
             b.team = "spectator"
@@ -215,6 +226,8 @@ class DraftRoyaleMode(GameMode):
 
         # Make remaining balls spectators
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "team", "spectator") == "spectator":
                 b.ball_type = "spectator"
                 b.alive = False
@@ -312,6 +325,11 @@ class BattleRoyaleMode(GameMode):
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
+            w_timer = getattr(b, "weather_immunity_timer", 0.0)
+            if isinstance(w_timer, (int, float)) and w_timer > 0.0:
+                b.weather_immunity_timer = max(0.0, w_timer - delta)
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
                     b.time_since_death = 0.0
@@ -342,6 +360,8 @@ class BattleRoyaleMode(GameMode):
         zone_damage_per_second = 20.0 + (shrink_ratio * 80.0)
 
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 b_x = getattr(b, "x", 0.0)
                 b_y = getattr(b, "y", 0.0)
@@ -428,6 +448,8 @@ class BattleRoyaleMode(GameMode):
 
         # Check boss death
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "is_final_boss", False):
                 if not getattr(b, "alive", False) and not getattr(b, "reward_given", False):
                     b.reward_given = True
@@ -463,6 +485,8 @@ class BattleRoyaleMode(GameMode):
         # Weather logic
         controller = None
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "alive", False) and getattr(b, "weather_control_timer", 0.0) > 0:
                 controller = b
                 break
@@ -582,6 +606,13 @@ class BattleRoyaleMode(GameMode):
                     self.wind_dy = rnd.uniform(-50.0, 50.0)
         else:
             self.weather_timer += delta
+            time_until = 15.0 - self.weather_timer
+            for b in balls:
+                if getattr(b, "forecast_booster_active", False) and time_until <= 10.0 and not getattr(b, "forecast_warning_issued", False):
+                    b.forecast_warning_issued = True
+                    if hasattr(world, "add_event"):
+                        world.add_event("weather_warning", {"type": "weather_warning", "message": f"Forecast warns: Weather change incoming in {int(time_until)}s!"})
+
             if self.weather_timer > 15.0:
                 self.weather_timer = 0.0
                 weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm", "lunar_eclipse"]
@@ -589,8 +620,14 @@ class BattleRoyaleMode(GameMode):
                 old_weather = self.weather
                 self.weather = rnd.choice(weathers)
 
-                if old_weather != self.weather and hasattr(world, "add_event"):
-                    world.add_event("weather_change", {"weather": self.weather})
+                if old_weather != self.weather:
+                    for b in balls:
+                        if getattr(b, "forecast_booster_active", False):
+                            b.forecast_booster_active = False
+                            b.weather_immunity_timer = 15.0
+                        b.forecast_warning_issued = False
+                    if hasattr(world, "add_event"):
+                        world.add_event("weather_change", {"weather": self.weather})
 
                 if self.weather == "wind":
                     self.wind_dx = rnd.uniform(-50.0, 50.0)
@@ -1161,6 +1198,11 @@ class ZombieInfectionMode(GameMode):
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
+            w_timer = getattr(b, "weather_immunity_timer", 0.0)
+            if isinstance(w_timer, (int, float)) and w_timer > 0.0:
+                b.weather_immunity_timer = max(0.0, w_timer - delta)
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
                     b.time_since_death = 0.0
@@ -1248,6 +1290,8 @@ class GuildBossFightMode(GameMode):
 
         boss = None
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if b.id == self.boss_id:
                 boss = b
                 break
@@ -1263,6 +1307,8 @@ class GuildBossFightMode(GameMode):
 
         # Unique mechanic: pull hunters in
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if b.id != self.boss_id and getattr(b, "alive", False):
                 dx = boss.x - b.x
                 dy = boss.y - b.y
@@ -1340,6 +1386,8 @@ class BossFightMode(GameMode):
         super().tick(world, balls, delta)
         # Boss slowly regenerates health
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "team", "") == "Boss" and getattr(b, "alive", False):
                 b.hp = min(b.hp + 5.0 * delta, getattr(b, "max_hp", 1000.0))
 
@@ -1420,6 +1468,11 @@ class DualPayloadMode(GameMode):
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
+            w_timer = getattr(b, "weather_immunity_timer", 0.0)
+            if isinstance(w_timer, (int, float)) and w_timer > 0.0:
+                b.weather_immunity_timer = max(0.0, w_timer - delta)
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
                     b.time_since_death = 0.0
@@ -1731,6 +1784,11 @@ class VampireRoyaleMode(GameMode):
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
+            w_timer = getattr(b, "weather_immunity_timer", 0.0)
+            if isinstance(w_timer, (int, float)) and w_timer > 0.0:
+                b.weather_immunity_timer = max(0.0, w_timer - delta)
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
                     b.time_since_death = 0.0
@@ -1779,6 +1837,7 @@ class KingOfTheHillMode(GameMode):
             world.dead_balls = []
         self.game_time = 0.0
         for b in balls:
+
             if getattr(b, "ball_type", None) != "spectator":
                 b.score = 0
 
@@ -1787,6 +1846,11 @@ class KingOfTheHillMode(GameMode):
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
+            w_timer = getattr(b, "weather_immunity_timer", 0.0)
+            if isinstance(w_timer, (int, float)) and w_timer > 0.0:
+                b.weather_immunity_timer = max(0.0, w_timer - delta)
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
                     b.time_since_death = 0.0
@@ -1826,6 +1890,8 @@ class KingOfTheHillMode(GameMode):
         best_score = -1
         best_team = None
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "ball_type", None) != "spectator":
                 score = getattr(b, "score", 0)
                 if score >= 100:
@@ -1851,6 +1917,11 @@ class BlackHoleMode(GameMode):
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
+            w_timer = getattr(b, "weather_immunity_timer", 0.0)
+            if isinstance(w_timer, (int, float)) and w_timer > 0.0:
+                b.weather_immunity_timer = max(0.0, w_timer - delta)
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
                     b.time_since_death = 0.0
@@ -1871,6 +1942,8 @@ class BlackHoleMode(GameMode):
         self.black_hole_radius += 2.0 * delta
 
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 dx = center_x - b.x
                 dy = center_y - b.y
@@ -1942,6 +2015,11 @@ class WeatherChaosMode(GameMode):
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
+            w_timer = getattr(b, "weather_immunity_timer", 0.0)
+            if isinstance(w_timer, (int, float)) and w_timer > 0.0:
+                b.weather_immunity_timer = max(0.0, w_timer - delta)
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
                     b.time_since_death = 0.0
@@ -1950,6 +2028,8 @@ class WeatherChaosMode(GameMode):
                     b.time_since_death += delta
         controller = None
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "alive", False) and getattr(b, "weather_control_timer", 0.0) > 0:
                 controller = b
                 break
@@ -1980,6 +2060,23 @@ class WeatherChaosMode(GameMode):
             self.weather_timer += delta
 
             warning_threshold = 7.0  # 3s warning
+            for b in balls:
+                if getattr(b, "forecast_booster_active", False):
+                    time_until = 10.0 - self.weather_timer
+                    if time_until <= 10.0 and not getattr(b, "forecast_warning_issued", False):
+                        b.forecast_warning_issued = True
+                        next_w = getattr(self, "next_weather", "unknown")
+                        if hasattr(world, "add_event"):
+                            world.add_event("weather_warning", {"type": "weather_warning", "message": f"Forecast warns: {next_w.upper()} incoming in {int(time_until)}s!"})
+
+            time_until = 10.0 - self.weather_timer
+            for b in balls:
+                if getattr(b, "forecast_booster_active", False) and time_until <= 10.0 and not getattr(b, "forecast_warning_issued", False):
+                    b.forecast_warning_issued = True
+                    next_w = getattr(self, "next_weather", "unknown")
+                    if hasattr(world, "add_event"):
+                        world.add_event("weather_warning", {"type": "weather_warning", "message": f"Forecast warns: {next_w.upper()} incoming in {int(time_until)}s!"})
+
             if self.weather_timer >= warning_threshold and not getattr(self, "weather_warning_issued", False):
                 if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
                     scanners = [h for h in world.arena.hazards if getattr(h, "kind", "") == "weather_scanner" and getattr(h, "active", True)]
@@ -1999,8 +2096,14 @@ class WeatherChaosMode(GameMode):
                 self.next_weather = rnd.choice(weathers)
                 self.weather_warning_issued = False
 
-                if old_weather != self.weather and hasattr(world, "add_event"):
-                    world.add_event("weather_change", {"weather": self.weather})
+                if old_weather != self.weather:
+                    for b in balls:
+                        if getattr(b, "forecast_booster_active", False):
+                            b.forecast_booster_active = False
+                            b.weather_immunity_timer = 15.0
+                        b.forecast_warning_issued = False
+                    if hasattr(world, "add_event"):
+                        world.add_event("weather_change", {"weather": self.weather})
 
                 if self.weather == "wind":
                     self.wind_dx = rnd.uniform(-50.0, 50.0)
@@ -2501,6 +2604,11 @@ class DominationMode(GameMode):
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
+            w_timer = getattr(b, "weather_immunity_timer", 0.0)
+            if isinstance(w_timer, (int, float)) and w_timer > 0.0:
+                b.weather_immunity_timer = max(0.0, w_timer - delta)
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
                     b.time_since_death = 0.0
@@ -2636,6 +2744,8 @@ class MovingZoneMode(GameMode):
         super().setup(world, balls)
         self.world = world
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "ball_type", None) != "spectator":
                 b.score = 0
         arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
@@ -2681,6 +2791,8 @@ class MovingZoneMode(GameMode):
             return "Draw"
 
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "ball_type", None) != "spectator":
                 if getattr(b, "score", 0) >= 100:
                     return getattr(b, "team", b.ball_type)
@@ -2755,6 +2867,11 @@ class MemoryTrapsMode(GameMode):
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
+            w_timer = getattr(b, "weather_immunity_timer", 0.0)
+            if isinstance(w_timer, (int, float)) and w_timer > 0.0:
+                b.weather_immunity_timer = max(0.0, w_timer - delta)
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
                     b.time_since_death = 0.0
@@ -2822,6 +2939,11 @@ class CustomMatchMode(GameMode):
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
+            w_timer = getattr(b, "weather_immunity_timer", 0.0)
+            if isinstance(w_timer, (int, float)) and w_timer > 0.0:
+                b.weather_immunity_timer = max(0.0, w_timer - delta)
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
                     b.time_since_death = 0.0
@@ -2991,6 +3113,7 @@ class EcholocationMode(GameMode):
             world.dead_balls = []
 
         for b in balls:
+
             if getattr(b, "ball_type", None) != "spectator":
                 b.base_perception_radius = getattr(b, "perception_radius", 250.0)
                 b.team = getattr(b, "team", b.ball_type)
@@ -3001,6 +3124,8 @@ class EcholocationMode(GameMode):
             world.dead_balls = []
 
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
                     b.time_since_death = 0.0
@@ -3062,6 +3187,10 @@ class PitchBlackMode(GameMode):
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
+            w_timer = getattr(b, "weather_immunity_timer", 0.0)
+            if isinstance(w_timer, (int, float)) and w_timer > 0.0:
+                b.weather_immunity_timer = max(0.0, w_timer - delta)
+
             if getattr(b, "ball_type", None) != "spectator":
                 b.base_perception_radius = getattr(b, "perception_radius", 250)
                 b.team = b.ball_type
@@ -3071,6 +3200,11 @@ class PitchBlackMode(GameMode):
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
+            w_timer = getattr(b, "weather_immunity_timer", 0.0)
+            if isinstance(w_timer, (int, float)) and w_timer > 0.0:
+                b.weather_immunity_timer = max(0.0, w_timer - delta)
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
                     b.time_since_death = 0.0
@@ -3080,6 +3214,8 @@ class PitchBlackMode(GameMode):
 
         # Ensure it matches their actual base perception radius
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 b.perception_radius = getattr(b, "base_perception_radius", 250.0)
 
@@ -3109,6 +3245,10 @@ class VisionReducedMode(GameMode):
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
+            w_timer = getattr(b, "weather_immunity_timer", 0.0)
+            if isinstance(w_timer, (int, float)) and w_timer > 0.0:
+                b.weather_immunity_timer = max(0.0, w_timer - delta)
+
             if getattr(b, "ball_type", None) != "spectator":
                 b.base_perception_radius = getattr(b, "perception_radius", 250)
                 b.perception_radius = 50.0  # Severely reduced base visibility
@@ -3119,6 +3259,11 @@ class VisionReducedMode(GameMode):
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
+            w_timer = getattr(b, "weather_immunity_timer", 0.0)
+            if isinstance(w_timer, (int, float)) and w_timer > 0.0:
+                b.weather_immunity_timer = max(0.0, w_timer - delta)
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
                     b.time_since_death = 0.0
@@ -3135,6 +3280,8 @@ class VisionReducedMode(GameMode):
                 is_pulse_active = True
 
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 # Sonar-like pulses temporarily restore or enhance perception
                 if is_pulse_active:
@@ -3284,6 +3431,8 @@ class PortalNodeMode(GameMode):
         self.world = world
         self.team_scores = {}
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             team = getattr(b, "team", "Solo")
             if team not in self.team_scores:
                 self.team_scores[team] = 1000.0
@@ -3311,6 +3460,8 @@ class PortalNodeMode(GameMode):
         # Count balls in portal radius per team
         teams_in_radius = {}
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False):
                 continue
             dx = b.position.x - self.portal_x
@@ -3427,6 +3578,8 @@ class MovingSafeZoneMode(GameMode):
                         b.vy += (dy / dist) * pull_strength * delta
 
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
                     b.time_since_death = 0.0
@@ -3521,6 +3674,8 @@ class ShrinkingDangerZoneMode(GameMode):
             world.dead_balls = []
 
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
                     b.time_since_death = 0.0
@@ -3546,6 +3701,8 @@ class ShrinkingDangerZoneMode(GameMode):
         # Count players inside the safe zone to calculate shrink multiplier
         players_in_zone = 0
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 dx_b = b.x - self.zone_x
                 dy_b = b.y - self.zone_y
@@ -3590,6 +3747,8 @@ class ShrinkingDangerZoneMode(GameMode):
         base_dmg = self.outside_damage_per_second + (shrink_ratio * self.outside_damage_per_second * 4.0)
         damage_this_tick = base_dmg * (10.0 if getattr(self, 'collapse_triggered', False) else 1.0) * delta
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 dx = b.x - self.zone_x
                 dy = b.y - self.zone_y
@@ -3674,6 +3833,8 @@ class ModifierZonesSafeZoneMode(GameMode):
             world.dead_balls = []
 
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
                     b.time_since_death = 0.0
@@ -3699,6 +3860,8 @@ class ModifierZonesSafeZoneMode(GameMode):
         # Count players inside the safe zone to calculate shrink multiplier
         players_in_zone = 0
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 dx_b = b.x - self.zone_x
                 dy_b = b.y - self.zone_y
@@ -3748,6 +3911,8 @@ class ModifierZonesSafeZoneMode(GameMode):
 
         # Apply modifier logic
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
                 continue
 
@@ -3884,6 +4049,8 @@ class SafeZoneMode(GameMode):
             world.dead_balls = []
 
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
                     b.time_since_death = 0.0
@@ -3912,6 +4079,8 @@ class SafeZoneMode(GameMode):
         # Count players inside the safe zone to calculate shrink multiplier
         players_in_zone = 0
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 dx_b = b.x - self.zone_x
                 dy_b = b.y - self.zone_y
@@ -3956,6 +4125,8 @@ class SafeZoneMode(GameMode):
         base_dmg = self.outside_damage_per_second + (shrink_ratio * self.outside_damage_per_second * 4.0)
         damage_this_tick = base_dmg * (10.0 if getattr(self, 'collapse_triggered', False) else 1.0) * delta
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 dx = b.x - self.zone_x
                 dy = b.y - self.zone_y
@@ -4014,6 +4185,8 @@ class InverseMirrorArenaMode(GameMode):
 
         new_clones = []
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             clone = copy.copy(b)
             clone.id = getattr(world, "next_id", random.randint(10000, 99999))
             if hasattr(world, "next_id"):
@@ -4042,10 +4215,14 @@ class InverseMirrorArenaMode(GameMode):
         # Build map of owners to clones
         owner_to_clone = {}
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "is_clone", False) and getattr(b, "clone_owner", None):
                 owner_to_clone[b.clone_owner] = b
 
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "is_clone", False):
                 if b.id in owner_to_clone:
                     clone = owner_to_clone[b.id]
@@ -4078,6 +4255,7 @@ class MirrorMatchMode(GameMode):
         arena_height = getattr(getattr(world, "arena", None), "height", 2000.0)
 
         for b in balls:
+
             clone = copy.copy(b)
             clone.id = getattr(world, "next_id", random.randint(10000, 99999))
             if hasattr(world, "next_id"):
@@ -4108,6 +4286,7 @@ class VolatileClonesMode(GameMode):
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         for b in balls:
+
             b.skill = "clone"
             b.active_skill = "clone"
             b.SKILL = "clone"
@@ -4165,6 +4344,7 @@ class CloneChaosMode(GameMode):
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         for b in balls:
+
             b.skill = "clone"
             b.active_skill = "clone"
             b.SKILL = "clone"
@@ -4220,6 +4400,10 @@ class BumperBallsMode(GameMode):
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
+            w_timer = getattr(b, "weather_immunity_timer", 0.0)
+            if isinstance(w_timer, (int, float)) and w_timer > 0.0:
+                b.weather_immunity_timer = max(0.0, w_timer - delta)
+
             if hasattr(b, "sponsor"):
                 if b.sponsor == "aggressor":
                     b.max_hp = getattr(b, "max_hp", 100.0) * 0.8
@@ -4232,6 +4416,7 @@ class BumperBallsMode(GameMode):
                     b.max_hp = getattr(b, "max_hp", 100.0) * 0.9
                     b.hp = min(getattr(b, "hp", 100.0), b.max_hp)
         for b in balls:
+
             b.damage = 0.0
             # We can use a special flag or mutator to handle the knockback in action.py
             if not hasattr(b, "mutators"):
@@ -4245,6 +4430,8 @@ class BumperBallsMode(GameMode):
         arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else getattr(world, "height", 1000)
 
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
                 continue
 
@@ -4323,6 +4510,8 @@ class ToxicEnvironmentMode(GameMode):
                 })
 
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
                     b.time_since_death = 0.0
@@ -4387,6 +4576,7 @@ class ModifierZonesMode(GameMode):
         ]
 
         for b in balls:
+
             if getattr(b, "ball_type", None) != "spectator":
                 b.team = getattr(b, "team", b.ball_type)
 
@@ -4396,6 +4586,8 @@ class ModifierZonesMode(GameMode):
         import math
 
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
                 continue
 
@@ -4503,6 +4695,11 @@ class WindstormMode(GameMode):
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
+            w_timer = getattr(b, "weather_immunity_timer", 0.0)
+            if isinstance(w_timer, (int, float)) and w_timer > 0.0:
+                b.weather_immunity_timer = max(0.0, w_timer - delta)
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
                     b.time_since_death = 0.0
@@ -4573,6 +4770,8 @@ class BlackoutMode(GameMode):
         self.timer = 0.0
         self.is_blackout = False
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "ball_type", None) != "spectator":
                 b.base_perception_radius = getattr(b, "perception_radius", 250)
                 b.team = b.ball_type
@@ -4587,6 +4786,8 @@ class BlackoutMode(GameMode):
                 world.add_event("weather_warning", {"type": "weather_warning", "message": msg})
 
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 if self.is_blackout:
                     b.perception_radius = 50.0
@@ -4684,6 +4885,11 @@ class EarthquakeMode(GameMode):
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
+            w_timer = getattr(b, "weather_immunity_timer", 0.0)
+            if isinstance(w_timer, (int, float)) and w_timer > 0.0:
+                b.weather_immunity_timer = max(0.0, w_timer - delta)
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
                     b.time_since_death = 0.0
@@ -4791,6 +4997,8 @@ class ShiftingMazeMode(GameMode):
             w["y"] += w["dy"] * delta
 
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False):
                 continue
 
@@ -4898,6 +5106,11 @@ class SupernovaMode(GameMode):
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
+            w_timer = getattr(b, "weather_immunity_timer", 0.0)
+            if isinstance(w_timer, (int, float)) and w_timer > 0.0:
+                b.weather_immunity_timer = max(0.0, w_timer - delta)
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
                     b.time_since_death = 0.0
@@ -4935,6 +5148,8 @@ class SupernovaMode(GameMode):
                             b.vy = getattr(b, "vy", 0.0) + (dy / dist) * knockback
 
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 dx = center_x - b.x
                 dy = center_y - b.y
@@ -5249,6 +5464,7 @@ class MagneticCollisionsMode(GameMode):
 
         # Assign random polarities to balls
         for b in balls:
+
             if getattr(b, "alive", True) and getattr(b, "ball_type", None) != "spectator":
                 b.polarity = random.choice(["positive", "negative"])
 
@@ -5406,6 +5622,7 @@ class PinballMode(GameMode):
 
         # Reduce damage of basic attacks
         for b in balls:
+
             b._original_damage = getattr(b, "damage", 10.0)
             b.damage = b._original_damage * 0.25
             b.base_damage = getattr(b, "base_damage", getattr(b, "damage", 10.0)) * 0.25
@@ -5419,6 +5636,8 @@ class PinballMode(GameMode):
             hazards = [h for h in world.arena.hazards if getattr(h, "kind", "") in ["bumper", "bounce_pad", "pinball_flipper"]]
 
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "alive", False):
                 if getattr(b, "_last_hit_by_timer", 0.0) > 0:
                     b._last_hit_by_timer -= delta
@@ -5535,6 +5754,8 @@ class GeometricZoneMode(GameMode):
             world.dead_balls = []
 
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
                     b.time_since_death = 0.0
@@ -5632,6 +5853,8 @@ class GeometricZoneMode(GameMode):
 
         damage_this_tick = self.outside_damage_per_second * (10.0 if getattr(self, 'collapse_triggered', False) else 1.0) * delta
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 safe = False
                 if self.current_shape == "split":
@@ -5669,6 +5892,8 @@ class BodySwapMode(GameMode):
             world.dead_balls = []
 
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
                     b.time_since_death = 0.0
@@ -6041,6 +6266,7 @@ class StaminaSpeedMode(GameMode):
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         for b in balls:
+
             b.max_stamina = 200.0
             b.stamina = 200.0
             b.base_speed = 200.0
@@ -6050,6 +6276,8 @@ class StaminaSpeedMode(GameMode):
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             current_hp = getattr(b, 'hp', 100.0)
             prev_hp = getattr(b, 'prev_hp', current_hp)
             if current_hp < prev_hp:
@@ -6115,6 +6343,7 @@ class HazardBilliardsMode(GameMode):
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         for b in balls:
+
             b.damage = 0.0
             b.reflect_shield_active = True
             b.reflect_shield_timer = 99999.0
@@ -6130,6 +6359,8 @@ class HazardBilliardsMode(GameMode):
 
         # Keep reflect shield alive
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False): continue
             b.reflect_shield_active = True
             b.reflect_shield_timer = 99999.0
@@ -6203,6 +6434,8 @@ class HazardBilliardsMode(GameMode):
 
         # Ball pushes Hazard
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False):
                 continue
 
@@ -6323,6 +6556,8 @@ class InverseSafeZoneMode(GameMode):
             world.dead_balls = []
 
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
                     b.time_since_death = 0.0
@@ -6339,6 +6574,8 @@ class InverseSafeZoneMode(GameMode):
         damage_this_tick = self.inside_damage_per_second * delta
 
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 dx = b.x - self.zone_x
                 dy = b.y - self.zone_y
@@ -6425,6 +6662,8 @@ class DynamicSafeZoneMode(GameMode):
             world.dead_balls = []
 
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
                     b.time_since_death = 0.0
@@ -6481,6 +6720,8 @@ class DynamicSafeZoneMode(GameMode):
         damage_this_tick = self.outside_damage_per_second * (10.0 if self.collapse_triggered else 1.0) * delta
 
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
                 continue
 
@@ -6567,6 +6808,7 @@ class DailyMutatorMode(GameMode):
         self.mutators = mutator_combinations[current_day % len(mutator_combinations)]
 
         for b in balls:
+
             if getattr(b, "ball_type", None) != "spectator":
                 if "low_gravity" in self.mutators:
                     b.mass = getattr(b, "mass", 1.0) * 0.5
@@ -6592,6 +6834,8 @@ class DailyMutatorMode(GameMode):
         teams_alive = set()
         balls_alive = []
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "alive", True) and getattr(b, "ball_type", None) != "spectator":
                 teams_alive.add(getattr(b, "team", b.ball_type))
                 balls_alive.append(b)
@@ -6645,6 +6889,7 @@ class BlackMarketMode(GameMode):
             })
 
         for b in balls:
+
             if getattr(b, "ball_type", None) != "spectator":
                 b.currency = getattr(b, "currency", 0)
                 b.team = getattr(b, "team", b.ball_type)
@@ -6683,6 +6928,8 @@ class BlackMarketMode(GameMode):
 
         # Ball interactions
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
                 continue
 
@@ -6837,6 +7084,8 @@ class FloorIsLavaMode(GameMode):
 
         # Damage logic
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
                 continue
 
@@ -6925,6 +7174,8 @@ class BlizzardMode(GameMode):
 
         # Apply effects
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
                 continue
 
@@ -7052,6 +7303,8 @@ class CursedBuffZoneMode(GameMode):
         zones = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") == "cursed_buff_zone"]
 
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
                 continue
 
@@ -7137,6 +7390,8 @@ class RhythmPanelsMode(GameMode):
 
         import math
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
                 continue
 
@@ -7175,6 +7430,8 @@ class TimeRewindMode(GameMode):
         self.rewind_timer += delta
 
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
                 continue
             b_id = getattr(b, "id", str(id(b)))
@@ -7240,6 +7497,8 @@ class PolarityShiftMode(GameMode):
 
         # Move balls
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "alive", True) and getattr(b, "ball_type", None) != "spectator":
                 bx = getattr(b, "x", cx)
                 by = getattr(b, "y", cy)
@@ -7474,6 +7733,7 @@ class ArtifactUpgraderMode(GameMode):
             world.arena.hazards.append(SimpleHazard())
 
         for b in balls:
+
             if getattr(b, "ball_type", None) != "spectator":
                 b.npc_protection_time = 0.0
                 b.artifact_upgraded = False
@@ -7482,6 +7742,11 @@ class ArtifactUpgraderMode(GameMode):
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
+            w_timer = getattr(b, "weather_immunity_timer", 0.0)
+            if isinstance(w_timer, (int, float)) and w_timer > 0.0:
+                b.weather_immunity_timer = max(0.0, w_timer - delta)
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
                     b.time_since_death = 0.0
@@ -7704,6 +7969,8 @@ class MazeSafeZoneMode(GameMode):
             world.dead_balls = []
 
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
                     b.time_since_death = 0.0
@@ -7766,6 +8033,8 @@ class MazeSafeZoneMode(GameMode):
         damage_this_tick = base_dmg * (10.0 if getattr(self, 'collapse_triggered', False) else 1.0) * delta
 
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 # Safe zone damage
                 bdx = b.x - self.zone_x
@@ -7940,6 +8209,7 @@ class ExtremeWeatherMode(GameMode):
     def setup(self, world, balls):
         super().setup(world, balls)
         for b in balls:
+
             if not getattr(b, "base_speed", None):
                 b.base_speed = getattr(b, "speed", 100.0)
             if not getattr(b, "base_damage", None):
@@ -7949,10 +8219,32 @@ class ExtremeWeatherMode(GameMode):
         super().tick(world, balls, delta)
         self.weather_timer += delta
 
+        for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
+            if getattr(b, "forecast_booster_active", False):
+                time_until = 15.0 - self.weather_timer
+                if time_until <= 10.0 and not getattr(b, "forecast_warning_issued", False):
+                    b.forecast_warning_issued = True
+                    if hasattr(world, "add_event"):
+                        world.add_event("weather_warning", {"type": "weather_warning", "message": f"Forecast warns: Weather change incoming in {int(time_until)}s!"})
+
         if self.weather_timer >= 15.0:
             self.weather_timer = 0.0
             old_weather = self.current_weather
             self.current_weather = self.random.choice(self.weathers)
+
+            for b in balls:
+                if getattr(b, "forecast_booster_active", False):
+                    b.forecast_booster_active = False
+                    b.weather_immunity_timer = 15.0
+                b.forecast_warning_issued = False
+
+            for b in balls:
+                if getattr(b, "forecast_booster_active", False):
+                    b.forecast_booster_active = False
+                    b.weather_immunity_timer = 15.0
+                b.forecast_warning_issued = False
 
             if hasattr(world, "add_event"):
                 world.add_event("weather_change", {"weather": self.current_weather})
@@ -7983,6 +8275,8 @@ class ExtremeWeatherMode(GameMode):
 
         # Apply effects
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator" or getattr(b, "is_decoy", False):
                 continue
 
@@ -8332,12 +8626,15 @@ class SoulLinkMode(GameMode):
 
         self.prev_state = {}
         for b in balls:
+
             self._init_prev_state(b)
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
 
         for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False):
                 continue
 
