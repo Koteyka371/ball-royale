@@ -7700,6 +7700,18 @@ class MazeSafeZoneMode(GameMode):
                         if getattr(b, "hp", 100) <= 0:
                             b.alive = False
 
+                        # Push the ball out of the wall and apply crush mechanics
+                        if getattr(b, "alive", False):
+                            push_force = 100.0 * delta
+                            if bx < nearest_x + 0.1:
+                                if hasattr(b, "x"): b.x -= push_force
+                            else:
+                                if hasattr(b, "x"): b.x += push_force
+                            if by < nearest_y + 0.1:
+                                if hasattr(b, "y"): b.y -= push_force
+                            else:
+                                if hasattr(b, "y"): b.y += push_force
+
     def check_winner(self, world, balls):
         alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
         if len(alive) == 1:
