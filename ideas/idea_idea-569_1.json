@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Teleport Hazards",
+  "description": "Hazards that randomly teleport entities within a small radius when stepped on, confusing movement algorithms and creating chaotic escapes from the shrinking safe zone."
+}
