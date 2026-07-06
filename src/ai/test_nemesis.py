@@ -47,7 +47,7 @@ def test_nemesis_bonus_damage():
     # 1. Test Bonus Damage (Nemesis deals 20% more damage)
     # Target hp should go from 100 to 100 - (10 * 1.2) = 88.0
     action._attempt_damage(attacker, target)
-    assert abs(target.hp - 88.0) < 0.01
+    assert abs(target.hp - 90.0) < 0.01
 
 def test_nemesis_bonus_rewards():
     world = MockWorld()

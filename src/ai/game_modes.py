@@ -8019,6 +8019,91 @@ class ExtremeWeatherMode(GameMode):
                         b.x += math.cos(angle) * 100.0 * delta
                         b.y += math.sin(angle) * 100.0 * delta
 
+
+class PoisonGasMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Poison Gas"
+        self.description = "A poisonous gas cloud gradually engulfs the arena, shrinking and moving the safe zone, forcing players together and dealing severe damage outside."
+        self.zone_x = 500.0
+        self.zone_y = 500.0
+        self.zone_radius = 500.0
+        self.min_zone_radius = 50.0
+        self.shrink_rate = 10.0
+        self.zone_target_x = 500.0
+        self.zone_target_y = 500.0
+        self.outside_damage_per_second = 25.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.world = world
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.zone_x = arena_width / 2.0
+        self.zone_y = arena_height / 2.0
+        self.zone_target_x = self.zone_x
+        self.zone_target_y = self.zone_y
+        self.zone_radius = min(arena_width, arena_height) / 2.0
+        self.min_zone_radius = 50.0
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        import random
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
+
+        # Move safe zone
+        dx = self.zone_target_x - self.zone_x
+        dy = self.zone_target_y - self.zone_y
+        dist_zone = math.sqrt(dx*dx + dy*dy)
+        if dist_zone > 5.0:
+            move_speed = 15.0
+            self.zone_x += (dx / dist_zone) * move_speed * delta
+            self.zone_y += (dy / dist_zone) * move_speed * delta
+        else:
+            arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+            arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+            buffer = max(100.0, self.zone_radius * 0.5)
+            self.zone_target_x = random.uniform(buffer, arena_width - buffer)
+            self.zone_target_y = random.uniform(buffer, arena_height - buffer)
+
+        # Shrink safe zone
+        if self.zone_radius > self.min_zone_radius:
+            self.zone_radius -= self.shrink_rate * delta
+            if self.zone_radius < self.min_zone_radius:
+                self.zone_radius = self.min_zone_radius
+
+        # Apply poison gas damage outside the safe zone
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                dist_to_center = math.sqrt((b.x - self.zone_x)**2 + (b.y - self.zone_y)**2)
+                if dist_to_center > self.zone_radius:
+                    damage = self.outside_damage_per_second * delta
+                    # First damage shield, then hp
+                    if hasattr(b, "shield") and b.shield > 0:
+                        if b.shield >= damage:
+                            b.shield -= damage
+                            damage = 0
+                        else:
+                            damage -= b.shield
+                            b.shield = 0
+                    if damage > 0:
+                        b.hp -= damage
+                        if b.hp <= 0:
+                            b.hp = 0
+                            b.alive = False
+                            if hasattr(world, "add_event"):
+                                world.add_event("poison_gas_kill", {"type": "kill", "victim": getattr(b, "team", "unknown"), "message": "Player succumbed to the poison gas."})
+
 GAME_MODES = {
     "extreme_weather": ExtremeWeatherMode(),
     "invisible_decoys": InvisibleDecoysMode(),
@@ -8075,6 +8160,7 @@ GAME_MODES = {
     "king_of_the_hill": KingOfTheHillMode(),
     "moving_zone": MovingZoneMode(),
     "vampire_royale": VampireRoyaleMode(),
+    "poison_gas": PoisonGasMode(),
     "battle_royale": BattleRoyaleMode(),
     "team_deathmatch": TeamDeathmatchMode(),
     "zombie_infection": ZombieInfectionMode(),

@@ -10661,6 +10661,100 @@ class ExtremeWeatherMode extends GameMode:
 					b.x += cos(angle) * 100.0 * delta
 					b.y += sin(angle) * 100.0 * delta
 
+
+class PoisonGasMode extends GameMode:
+	var zone_x: float = 500.0
+	var zone_y: float = 500.0
+	var zone_radius: float = 500.0
+	var min_zone_radius: float = 50.0
+	var shrink_rate: float = 10.0
+	var zone_target_x: float = 500.0
+	var zone_target_y: float = 500.0
+	var outside_damage_per_second: float = 25.0
+
+	func _init() -> void:
+		name = "Poison Gas"
+		description = "A poisonous gas cloud gradually engulfs the arena, shrinking and moving the safe zone, forcing players together and dealing severe damage outside."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world != null and "arena" in world and world.arena != null:
+			if "width" in world.arena: arena_width = float(world.arena.width)
+			if "height" in world.arena: arena_height = float(world.arena.height)
+
+		zone_x = arena_width / 2.0
+		zone_y = arena_height / 2.0
+		zone_target_x = zone_x
+		zone_target_y = zone_y
+		zone_radius = min(arena_width, arena_height) / 2.0
+		min_zone_radius = 50.0
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if world != null and not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+
+		for b in balls:
+			if not b.alive:
+				var dead_balls = []
+				if world != null and "dead_balls" in world:
+					dead_balls = world.dead_balls
+				if not b in dead_balls:
+					b.set_meta("time_since_death", 0.0) if b.has_method("set_meta") else null
+					dead_balls.append(b)
+				else:
+					var tsd = b.time_since_death if "time_since_death" in b else 0.0
+					b.set_meta("time_since_death", tsd + delta) if b.has_method("set_meta") else null
+
+		# Move safe zone
+		var dx = zone_target_x - zone_x
+		var dy = zone_target_y - zone_y
+		var dist_zone = sqrt(dx*dx + dy*dy)
+		if dist_zone > 5.0:
+			var move_speed = 15.0
+			zone_x += (dx / dist_zone) * move_speed * delta
+			zone_y += (dy / dist_zone) * move_speed * delta
+		else:
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if world != null and "arena" in world and world.arena != null:
+				if "width" in world.arena: arena_width = float(world.arena.width)
+				if "height" in world.arena: arena_height = float(world.arena.height)
+			var buffer = max(100.0, zone_radius * 0.5)
+			zone_target_x = randf_range(buffer, arena_width - buffer)
+			zone_target_y = randf_range(buffer, arena_height - buffer)
+
+		# Shrink safe zone
+		if zone_radius > min_zone_radius:
+			zone_radius -= shrink_rate * delta
+			if zone_radius < min_zone_radius:
+				zone_radius = min_zone_radius
+
+		# Apply poison gas damage outside the safe zone
+		for b in balls:
+			if b.alive and b.ball_type != "spectator":
+				var bx = b.x if "x" in b else 0.0
+				var by = b.y if "y" in b else 0.0
+				var dist_to_center = sqrt(pow(bx - zone_x, 2) + pow(by - zone_y, 2))
+				if dist_to_center > zone_radius:
+					var damage = outside_damage_per_second * delta
+					if "shield" in b and b.shield > 0:
+						if b.shield >= damage:
+							b.shield -= damage
+							damage = 0
+						else:
+							damage -= b.shield
+							b.shield = 0
+					if damage > 0:
+						b.hp -= damage
+						if b.hp <= 0:
+							b.hp = 0
+							b.alive = false
+							if world != null and world.has_method("add_event"):
+								var team = b.team if "team" in b else "unknown"
+								world.add_event("poison_gas_kill", {"type": "kill", "victim": team, "message": "Player succumbed to the poison gas."})
+
 var GAME_MODES = {
 	"extreme_weather": ExtremeWeatherMode.new(),
 	"invisible_decoys": InvisibleDecoysMode.new(),
@@ -10721,6 +10815,7 @@ var GAME_MODES = {
     "king_of_the_hill": KingOfTheHillMode.new(),
     "moving_zone": MovingZoneMode.new(),
     "vampire_royale": VampireRoyaleMode.new(),
+    "poison_gas": PoisonGasMode.new(),
     "battle_royale": BattleRoyaleMode.new(),
     "team_deathmatch": TeamDeathmatchMode.new(),
     "zombie_infection": ZombieInfectionMode.new(),
