@@ -1,0 +1,4 @@
+{
+  "title": "Sliding Momentum Bash",
+  "description": "Introduce a new damage multiplier mechanic where a ball sliding on an ice_patches hazard deals significantly more damage upon collision, proportional to its current velocity, rewarding players for successfully targeting enemies while sliding."
+}

@@ -2552,6 +2552,17 @@ class Action:
                                     self.ball.x += self.ball.vx * delta
                                     self.ball.y += self.ball.vy * delta
                                 self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.001
+                    elif hazard.kind == "ice_patches":
+                        if getattr(hazard, "active", True):
+                            dx = hazard.x - self.ball.x
+                            dy = hazard.y - self.ball.y
+                            dist_sq = dx * dx + dy * dy
+                            if dist_sq < hazard.radius * hazard.radius:
+                                self.ball.is_frictionless = True
+                                if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+                                    self.ball.x += self.ball.vx * delta
+                                    self.ball.y += self.ball.vy * delta
+                                self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.0
                     elif hazard.kind == "fire_zone":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
