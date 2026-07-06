@@ -5358,7 +5358,8 @@ class Action:
                             target_mem = getattr(target, "memory", {})
                             target_mem[self.ball.id] = {"relation": "rival"}
                             target.memory = target_mem
-                        self.ball.attack_timer = max(0.2, 2.0 / getattr(self.ball, "speed", 2.0))
+                        ball_speed = getattr(self.ball, 'speed', 2.0)
+                        self.ball.attack_timer = max(0.2, 2.0 / ball_speed if ball_speed > 0 else 1.0)
                         if self.ball.attack_timer >= 0.8:
                             self.ball.stutter_timer = min(self.ball.attack_timer * 0.4, 0.4)
                 return
