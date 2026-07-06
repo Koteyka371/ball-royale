@@ -8840,7 +8840,7 @@
     },
     {
       "id": "idea-511",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Status Transfer Boomerang",
@@ -17739,6 +17739,40 @@
         "src/ai/doppelganger_match.py",
         "src/ai/doppelganger_match.gd",
         "tests/test_doppelganger_match.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1034",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Thermal Boots Booster",
+      "description": "Add a new booster type called 'Thermal Boots' that grants temporary immunity to the sliding effect of ice_patches, frictionless zones, and slip zones, allowing players to traverse these hazards with full control.",
+      "allowed_paths": [
+        "src/ai/thermal_boots_booster.py",
+        "src/ai/thermal_boots_booster.gd",
+        "tests/test_thermal_boots_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1035",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sliding Momentum Bash",
+      "description": "Introduce a new damage multiplier mechanic where a ball sliding on an ice_patches hazard deals significantly more damage upon collision, proportional to its current velocity, rewarding players for successfully targeting enemies while sliding.",
+      "allowed_paths": [
+        "src/ai/sliding_momentum_bash.py",
+        "src/ai/sliding_momentum_bash.gd",
+        "tests/test_sliding_momentum_bash.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

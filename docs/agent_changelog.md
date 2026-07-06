@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-511] Status Transfer Boomerang — *2026-07-06 17:57:59 UTC*
+
+An active item that absorbs the current status effects (stun, silence, dot) of the user and can be thrown at an enemy to inflict all those absorbed status effects at once.
+
+---
+
 ## [idea-567] Ice Slippage Modifier — *2026-07-06 17:41:25 UTC*
 
 Add an 'ice_patches' hazard type that drastically lowers friction for any ball caught in it, causing their movement/velocity commands to slide uncontrollably until they exit the patch.
