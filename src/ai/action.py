@@ -3508,28 +3508,29 @@ class Action:
                                     if owner:
                                         import copy
                                         import random
-                                        decoy = copy.copy(owner)
-                                        decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
-                                        if hasattr(self.world, "next_id"):
-                                            self.world.next_id += 1
-                                        decoy.x = hazard.x
-                                        decoy.y = hazard.y
-                                        decoy.hp = 100.0
-                                        decoy.max_hp = 100.0
-                                        decoy.is_decoy = True
-                                        decoy.decoy_timer = 5.0
-                                        decoy.decoy_type = "stun_trap"
-                                        decoy.skill = None
-                                        decoy.active_skill = None
-                                        if hasattr(decoy, "SKILL"):
-                                            decoy.SKILL = None
-                                        decoy.vx = 0.0
-                                        decoy.vy = 0.0
-                                        decoy.speed = 0.0
-                                        decoy.damage = 0.0
-                                        decoy.alive = True
-                                        if hasattr(self.world, "balls"):
-                                            self.world.balls.append(decoy)
+                                        for _ in range(3):
+                                            decoy = copy.copy(owner)
+                                            decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                                            if hasattr(self.world, "next_id"):
+                                                self.world.next_id += 1
+                                            decoy.x = hazard.x + random.uniform(-10, 10)
+                                            decoy.y = hazard.y + random.uniform(-10, 10)
+                                            decoy.hp = 1.0
+                                            decoy.max_hp = 1.0
+                                            decoy.is_decoy = True
+                                            decoy.decoy_timer = 5.0
+                                            decoy.decoy_type = "stun_trap"
+                                            decoy.skill = None
+                                            decoy.active_skill = None
+                                            if hasattr(decoy, "SKILL"):
+                                                decoy.SKILL = None
+                                            decoy.vx = 0.0
+                                            decoy.vy = 0.0
+                                            decoy.speed = 0.0
+                                            decoy.damage = 0.0
+                                            decoy.alive = True
+                                            if hasattr(self.world, "balls"):
+                                                self.world.balls.append(decoy)
                                     hazard.duration = 0.0 # Destroy trap
 
                                 else:

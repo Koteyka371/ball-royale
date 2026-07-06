@@ -5706,48 +5706,49 @@ func execute(strategy: String, delta: float):
                                             break
 
                                     if owner_ball != null:
-                                        var decoy = null
-                                        if owner_ball.has_method("duplicate"):
-                                            decoy = owner_ball.duplicate()
-                                        elif typeof(owner_ball) == TYPE_DICTIONARY:
-                                            decoy = owner_ball.duplicate()
+                                        for _i in range(3):
+                                            var decoy = null
+                                            if owner_ball.has_method("duplicate"):
+                                                decoy = owner_ball.duplicate()
+                                            elif typeof(owner_ball) == TYPE_DICTIONARY:
+                                                decoy = owner_ball.duplicate()
 
-                                        if decoy != null:
-                                            if "id" in decoy:
-                                                decoy.id = randi() % 90000 + 10000
-                                            if "hp" in decoy and "max_hp" in decoy:
-                                                decoy.max_hp = 100.0
-                                                decoy.hp = 100.0
-                                            if "damage" in decoy:
-                                                decoy.damage = 0.0
-                                            if "vx" in decoy:
-                                                decoy.vx = 0.0
-                                            if "vy" in decoy:
-                                                decoy.vy = 0.0
-                                            if "speed" in decoy:
-                                                decoy.speed = 0.0
+                                            if decoy != null:
+                                                if "id" in decoy:
+                                                    decoy.id = randi() % 90000 + 10000
+                                                if "hp" in decoy and "max_hp" in decoy:
+                                                    decoy.max_hp = 1.0
+                                                    decoy.hp = 1.0
+                                                if "damage" in decoy:
+                                                    decoy.damage = 0.0
+                                                if "vx" in decoy:
+                                                    decoy.vx = 0.0
+                                                if "vy" in decoy:
+                                                    decoy.vy = 0.0
+                                                if "speed" in decoy:
+                                                    decoy.speed = 0.0
 
-                                            if "x" in decoy: decoy.x = hazard.x
-                                            if "y" in decoy: decoy.y = hazard.y
-                                            if "alive" in decoy: decoy.alive = true
+                                                if "x" in decoy: decoy.x = hazard.x + (randf() * 20.0 - 10.0)
+                                                if "y" in decoy: decoy.y = hazard.y + (randf() * 20.0 - 10.0)
+                                                if "alive" in decoy: decoy.alive = true
 
-                                            if typeof(decoy) == TYPE_OBJECT and decoy.has_method("set_meta"):
-                                                decoy.set_meta("is_decoy", true)
-                                                decoy.set_meta("decoy_timer", 5.0)
-                                                decoy.set_meta("decoy_type", "stun_trap")
-                                                decoy.set_meta("skill", null)
-                                                decoy.set_meta("active_skill", null)
-                                                decoy.set_meta("SKILL", null)
-                                            elif typeof(decoy) == TYPE_DICTIONARY:
-                                                decoy["is_decoy"] = true
-                                                decoy["decoy_timer"] = 5.0
-                                                decoy["decoy_type"] = "stun_trap"
-                                                decoy["skill"] = null
-                                                decoy["active_skill"] = null
-                                                decoy["SKILL"] = null
+                                                if typeof(decoy) == TYPE_OBJECT and decoy.has_method("set_meta"):
+                                                    decoy.set_meta("is_decoy", true)
+                                                    decoy.set_meta("decoy_timer", 5.0)
+                                                    decoy.set_meta("decoy_type", "stun_trap")
+                                                    decoy.set_meta("skill", null)
+                                                    decoy.set_meta("active_skill", null)
+                                                    decoy.set_meta("SKILL", null)
+                                                elif typeof(decoy) == TYPE_DICTIONARY:
+                                                    decoy["is_decoy"] = true
+                                                    decoy["decoy_timer"] = 5.0
+                                                    decoy["decoy_type"] = "stun_trap"
+                                                    decoy["skill"] = null
+                                                    decoy["active_skill"] = null
+                                                    decoy["SKILL"] = null
 
-                                            if world != null and "balls" in world:
-                                                world.balls.append(decoy)
+                                                if world != null and "balls" in world:
+                                                    world.balls.append(decoy)
 
                                 if hazard.has_method("set_meta"):
                                     hazard.set_meta("duration", 0.0)

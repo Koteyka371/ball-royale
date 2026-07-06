@@ -70,16 +70,17 @@ def test_decoy_trap_spawns_decoy():
     # Post-condition: hazard is destroyed (duration=0), a decoy is spawned
     assert hazard.duration == 0.0
 
-    # 3 balls: triggering_ball, owner, decoy
-    assert len(world.balls) == 3
+    # 5 balls: triggering_ball, owner, 3 decoys
+    assert len(world.balls) == 5
 
-    decoy = world.balls[-1]
-    assert getattr(decoy, "is_decoy", False) == True
-    assert decoy.decoy_type == "stun_trap"
-    assert decoy.x == hazard.x
-    assert decoy.y == hazard.y
-    assert decoy.vx == 0.0
-    assert decoy.vy == 0.0
-    assert decoy.speed == 0.0
-    assert decoy.id != owner.id
-    assert decoy.hp == 100.0
+    for i in range(-3, 0):
+        decoy = world.balls[i]
+        assert getattr(decoy, "is_decoy", False) == True
+        assert decoy.decoy_type == "stun_trap"
+        assert abs(decoy.x - hazard.x) <= 10.0
+        assert abs(decoy.y - hazard.y) <= 10.0
+        assert decoy.vx == 0.0
+        assert decoy.vy == 0.0
+        assert decoy.speed == 0.0
+        assert decoy.id != owner.id
+        assert decoy.hp == 1.0

@@ -1,0 +1,4 @@
+{
+  "title": "Teleportation Mine",
+  "description": "A hazard that detonates when a player enters its radius, teleporting them to a random location in the arena while leaving a brief trail of particles behind."
+}
