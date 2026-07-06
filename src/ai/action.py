@@ -5358,7 +5358,8 @@ class Action:
                             target_mem = getattr(target, "memory", {})
                             target_mem[self.ball.id] = {"relation": "rival"}
                             target.memory = target_mem
-                        self.ball.attack_timer = max(0.2, 2.0 / getattr(self.ball, "speed", 2.0))
+                        speed_val = getattr(self.ball, "speed", 2.0)
+                        self.ball.attack_timer = max(0.2, 2.0 / speed_val if speed_val > 0 else 1.0)
                         if self.ball.attack_timer >= 0.8:
                             self.ball.stutter_timer = min(self.ball.attack_timer * 0.4, 0.4)
                 return
@@ -5809,6 +5810,8 @@ class Action:
                     if dist_enemy < ball_radius + enemy_radius + 30.0:
                         self._flee(delta)
                         return
+
+
 
             def get_bx(b_obj):
                 return b_obj.get("x", 0) if isinstance(b_obj, dict) else getattr(b_obj, "x", 0)

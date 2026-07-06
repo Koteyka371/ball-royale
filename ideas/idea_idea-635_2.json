@@ -1,4 +1,1 @@
-{
-  "title": "Meteor Shower Event",
-  "description": "Large shadow telegraphs appear on the arena. A few seconds later, meteors crash, dealing massive damage and leaving behind magma pools that deal damage over time."
-}
+{"title": "EMP Pulse Item", "description": "A new active item that disables the abilities and HUD of nearby enemies for a short duration when triggered, allowing for tactical ambushes."}
