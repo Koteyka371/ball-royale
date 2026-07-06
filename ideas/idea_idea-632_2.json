@@ -1,0 +1,4 @@
+{
+  "title": "Shrinking Safe Zones within Hazards",
+  "description": "Instead of a single shrinking arena, multiple smaller safe zones appear randomly across the map during late-game stages. Players must migrate between these zones as old ones collapse, creating dynamic chokepoints."
+}

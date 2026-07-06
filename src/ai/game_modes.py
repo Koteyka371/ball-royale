@@ -1007,6 +1007,76 @@ class BattleRoyaleMode(GameMode):
             self.is_dark_phase = True
             self.dark_phase_timer = 0.0
 
+            # Spawn shadow monsters outside vision
+            import random
+            import math
+            arena_w = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") else 1000.0
+            arena_h = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") else 1000.0
+
+            # Count players to determine monster amount
+            players_alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+            num_monsters = max(1, len(players_alive) // 2 + 1)
+
+            class ShadowMonster:
+                def __init__(self, id_val, x, y):
+                    self.id = id_val
+                    self.x = x
+                    self.y = y
+                    self.vx = 0.0
+                    self.vy = 0.0
+                    self.radius = 25.0
+                    self.hp = 100.0
+                    self.max_hp = 100.0
+                    self.alive = True
+                    self.time_since_death = 0.0
+                    self.ball_type = "shadow_monster"
+                    self.is_shadow_monster = True
+                    self.team = "ShadowMonsters"
+                    self.speed = 180.0
+                    self.base_speed = 180.0
+                    self.damage = 30.0
+                    self.base_damage = 30.0
+                    self.perception_radius = 800.0
+                    self.base_perception_radius = 800.0
+
+            for i in range(num_monsters):
+                spawned = False
+                for _ in range(50):
+                    rx = random.uniform(50, arena_w - 50)
+                    ry = random.uniform(50, arena_h - 50)
+                    valid = True
+                    for pb in players_alive:
+                        try:
+                            dist_sq = (rx - pb.x)**2 + (ry - pb.y)**2
+                            prad = float(getattr(pb, "perception_radius", 250.0))
+                            if dist_sq <= prad * prad:
+                                valid = False
+                                break
+                        except:
+                            pass
+                    if valid:
+                        monster_id = 100000 + random.randint(0, 99999)
+                        new_monster = ShadowMonster(monster_id, rx, ry)
+                        if hasattr(world, "balls"):
+                            world.balls.append(new_monster)
+                            if hasattr(world, "entities") and world.balls is not world.entities:
+                                world.entities.append(new_monster)
+                        spawned = True
+                        break
+                if not spawned:
+                    # Fallback if no valid spot found
+                    rx = random.uniform(50, arena_w - 50)
+                    ry = random.uniform(50, arena_h - 50)
+                    monster_id = 100000 + random.randint(0, 99999)
+                    new_monster = ShadowMonster(monster_id, rx, ry)
+                    if hasattr(world, "balls"):
+                        world.balls.append(new_monster)
+                        if hasattr(world, "entities") and world.balls is not world.entities:
+                            world.entities.append(new_monster)
+
+            if hasattr(world, "add_event"):
+                world.add_event("dark_phase_start", {"message": "Darkness falls... Shadow monsters are hunting!"})
+
             # Apply dark phase
             for b in balls:
                 if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
@@ -1022,6 +1092,25 @@ class BattleRoyaleMode(GameMode):
         elif self.is_dark_phase and self.dark_phase_timer >= 10.0:
             self.is_dark_phase = False
             self.dark_phase_timer = 0.0
+
+            # Despawn shadow monsters and reward survivors
+            survivors = []
+            for b in balls:
+                if getattr(b, "is_shadow_monster", False) and getattr(b, "alive", False):
+                    b.hp = 0
+                    b.alive = False
+                    if hasattr(world, "dead_balls"):
+                        world.dead_balls.append(b)
+                elif getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator" and not getattr(b, "is_shadow_monster", False):
+                    survivors.append(b)
+
+            if survivors:
+                for s in survivors:
+                    s.score = getattr(s, "score", 0) + 50
+                    s.xp = getattr(s, "xp", 0) + 200
+
+                if hasattr(world, "add_event"):
+                    world.add_event("dark_phase_end", {"message": "The darkness lifts. Survivors have been rewarded!"})
 
             # Restore normal phase
             for b in balls:

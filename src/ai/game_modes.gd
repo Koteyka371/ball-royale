@@ -1173,6 +1173,97 @@ class BattleRoyaleMode extends GameMode:
             is_dark_phase = true
             dark_phase_timer = 0.0
 
+            # Spawn shadow monsters outside vision
+            var arena_w = 1000.0
+            var arena_h = 1000.0
+            if "arena" in world and world.arena:
+                if "width" in world.arena: arena_w = world.arena.width
+                if "height" in world.arena: arena_h = world.arena.height
+
+            var players_alive = []
+            for b in balls:
+                if b.alive and b.ball_type != "spectator":
+                    players_alive.append(b)
+            var num_monsters = max(1, players_alive.size() / 2 + 1)
+            rng.randomize()
+
+            for i in range(num_monsters):
+                var spawned = false
+                for _attempt in range(50):
+                    var rx = rng.randf_range(50, arena_w - 50)
+                    var ry = rng.randf_range(50, arena_h - 50)
+                    var valid = true
+                    for pb in players_alive:
+                        var dx = rx - pb.x
+                        var dy = ry - pb.y
+                        var dist_sq = dx*dx + dy*dy
+                        var prad = 250.0
+                        if "perception_radius" in pb:
+                            prad = float(pb.perception_radius)
+                        if dist_sq <= prad * prad:
+                            valid = false
+                            break
+                    if valid:
+                        var monster_id = 100000 + (rng.randi() % 100000)
+                        var new_monster = {
+                            "id": monster_id,
+                            "x": rx,
+                            "y": ry,
+                            "vx": 0.0,
+                            "vy": 0.0,
+                            "radius": 25.0,
+                            "hp": 100.0,
+                            "max_hp": 100.0,
+                            "alive": true,
+                            "ball_type": "shadow_monster",
+                            "team": "ShadowMonsters",
+                            "speed": 180.0,
+                            "base_speed": 180.0,
+                            "damage": 30.0,
+                            "base_damage": 30.0,
+                            "perception_radius": 800.0,
+                            "base_perception_radius": 800.0
+                        }
+                        new_monster["is_shadow_monster"] = true
+
+                        if "balls" in world:
+                            world.balls.append(new_monster)
+                        if "entities" in world and ("balls" not in world or world.balls != world.entities):
+                            world.entities.append(new_monster)
+                        spawned = true
+                        break
+                if not spawned:
+                    var rx = rng.randf_range(50, arena_w - 50)
+                    var ry = rng.randf_range(50, arena_h - 50)
+                    var monster_id = 100000 + (rng.randi() % 100000)
+                    var new_monster = {
+                        "id": monster_id,
+                        "x": rx,
+                        "y": ry,
+                        "vx": 0.0,
+                        "vy": 0.0,
+                        "radius": 25.0,
+                        "hp": 100.0,
+                        "max_hp": 100.0,
+                        "alive": true,
+                        "ball_type": "shadow_monster",
+                        "team": "ShadowMonsters",
+                        "speed": 180.0,
+                        "base_speed": 180.0,
+                        "damage": 30.0,
+                        "base_damage": 30.0,
+                        "perception_radius": 800.0,
+                        "base_perception_radius": 800.0
+                    }
+                    new_monster["is_shadow_monster"] = true
+                    if "balls" in world:
+                        world.balls.append(new_monster)
+                    if "entities" in world and ("balls" not in world or world.balls != world.entities):
+                        world.entities.append(new_monster)
+
+            if world.has_method("add_event"):
+                world.add_event("dark_phase_start", {"message": "Darkness falls... Shadow monsters are hunting!"})
+
             # Apply dark phase
             for b in balls:
                 if b.alive and b.ball_type != "spectator":
@@ -1196,6 +1287,51 @@ class BattleRoyaleMode extends GameMode:
         elif is_dark_phase and dark_phase_timer >= 10.0:
             is_dark_phase = false
             dark_phase_timer = 0.0
+
+            # Despawn shadow monsters and reward survivors
+            var survivors = []
+            for b in balls:
+                var is_shadow = false
+                if typeof(b) == TYPE_DICTIONARY:
+                    if "is_shadow_monster" in b:
+                        is_shadow = b.is_shadow_monster
+                else:
+                    if "is_shadow_monster" in b:
+                        is_shadow = b.is_shadow_monster
+                    elif b.has_method("has_meta") and b.has_meta("is_shadow_monster"):
+                        is_shadow = b.get_meta("is_shadow_monster")
+
+                if is_shadow and b.alive:
+                    b.hp = 0
+                    b.alive = false
+                    if "dead_balls" in world:
+                        world.dead_balls.append(b)
+                elif b.alive and b.ball_type != "spectator" and not is_shadow:
+                    survivors.append(b)
+
+            if survivors.size() > 0:
+                for s in survivors:
+                    var cur_score = 0
+                    if "score" in s:
+                        cur_score = s.score
+                    elif s.has_method("get_meta") and s.has_meta("score"):
+                        cur_score = s.get_meta("score")
+
+                    var cur_xp = 0
+                    if "xp" in s:
+                        cur_xp = s.xp
+                    elif s.has_method("get_meta") and s.has_meta("xp"):
+                        cur_xp = s.get_meta("xp")
+
+                    if s.has_method("set_meta"):
+                        s.set_meta("score", cur_score + 50)
+                        s.set_meta("xp", cur_xp + 200)
+                    else:
+                        s.score = cur_score + 50
+                        s.xp = cur_xp + 200
+
+                if world.has_method("add_event"):
+                    world.add_event("dark_phase_end", {"message": "The darkness lifts. Survivors have been rewarded!"})
 
             # Restore normal phase
             for b in balls:
