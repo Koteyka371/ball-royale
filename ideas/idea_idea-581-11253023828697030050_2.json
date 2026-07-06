@@ -1,0 +1,7 @@
+{
+  "id": "idea-1235-reflect",
+  "title": "Reflect Wall Booster",
+  "description": "A booster that deploys a temporary mirror wall, which bounces off any attacks or players hitting it.",
+  "area": "gameplay",
+  "risk": "high"
+}

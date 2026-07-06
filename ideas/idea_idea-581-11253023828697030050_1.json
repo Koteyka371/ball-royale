@@ -1,0 +1,7 @@
+{
+  "id": "idea-1234-magnet",
+  "title": "Magnet Field Hazard",
+  "description": "Creates a temporary magnetic field that pulls nearby projectiles and players toward its center.",
+  "area": "gameplay",
+  "risk": "medium"
+}

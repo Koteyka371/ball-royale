@@ -46,6 +46,7 @@ def test_collect_vision_booster():
 
     # Spawn a vision booster near the ball
     h = MockHazard("vision_booster", 510.0, 500.0, 30.0)
+    world.arena.hazards.clear()
     world.arena.hazards.append(h)
 
     # Mock Action methods
