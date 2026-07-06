@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Entanglement Hazard",
+  "description": "A new procedural hazard that spawns in pairs across the arena. Any ball that enters one hazard becomes 'entangled' with a ball that enters the other. Entangled balls share a portion of the damage they take and mirror each other's movement inputs for a short duration."
+}

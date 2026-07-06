@@ -7407,16 +7407,58 @@ func execute(strategy: String, delta: float):
         if "vy" in self.ball: vy = self.ball.vy
         elif self.ball.has_method("get_meta") and self.ball.has_meta("vy"): vy = self.ball.get_meta("vy")
 
+        var w = 1000.0
+        if "width" in self.world: w = self.world.width
+        var h = 1000.0
+        if "height" in self.world: h = self.world.height
+        var r = 10.0
+        if "radius" in self.ball: r = self.ball.radius
+        var margin = r + 5.0
+
+        var hit_wall = ""
+        if self.ball.y <= margin:
+            hit_wall = "top"
+        elif self.ball.y >= h - margin:
+            hit_wall = "bottom"
+        elif self.ball.x <= margin:
+            hit_wall = "left"
+        elif self.ball.x >= w - margin:
+            hit_wall = "right"
+
+        var wall_state = "normal"
+        if hit_wall != "" and "arena" in self.world and self.world.arena != null and "boundary_states" in self.world.arena:
+            if self.world.arena.boundary_states.has(hit_wall):
+                wall_state = self.world.arena.boundary_states[hit_wall]
+
         var speed_sq = vx*vx + vy*vy
+
+        if wall_state == "sticky":
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                self.ball.set_meta("vx", 0.0)
+                self.ball.set_meta("vy", 0.0)
+                self.ball.set_meta("_reflection_vx", 0.0)
+                self.ball.set_meta("_reflection_vy", 0.0)
+            if "vx" in self.ball: self.ball.vx = 0.0
+            if "vy" in self.ball: self.ball.vy = 0.0
+            if "_reflection_vx" in self.ball: self.ball._reflection_vx = 0.0
+            if "_reflection_vy" in self.ball: self.ball._reflection_vy = 0.0
+            speed_sq = 0.0
+
+            if hit_wall == "top":
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("y", margin + 1.0)
+                if "y" in self.ball: self.ball.y = margin + 1.0
+            elif hit_wall == "bottom":
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("y", h - margin - 1.0)
+                if "y" in self.ball: self.ball.y = h - margin - 1.0
+            elif hit_wall == "left":
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("x", margin + 1.0)
+                if "x" in self.ball: self.ball.x = margin + 1.0
+            elif hit_wall == "right":
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("x", w - margin - 1.0)
+                if "x" in self.ball: self.ball.x = w - margin - 1.0
+
         if speed_sq > 0:
             var speed = sqrt(speed_sq)
-            var w = 1000.0
-            if "width" in self.world: w = self.world.width
-            var h = 1000.0
-            if "height" in self.world: h = self.world.height
-            var r = 10.0
-            if "radius" in self.ball: r = self.ball.radius
-            var margin = r + 5.0
 
             var nvx = vx
             var nvy = vy
@@ -7435,7 +7477,9 @@ func execute(strategy: String, delta: float):
                 if "name" in self.world.game_mode and self.world.game_mode.name == "Bouncy Terrain":
                     is_bouncy_terrain = true
             var new_speed = 0.0
-            if is_bouncy_terrain:
+            if wall_state == "bouncy":
+                new_speed = min(speed * 3.0, 4000.0)
+            elif is_bouncy_terrain:
                 new_speed = min(speed * 2.0, 3000.0)
             else:
                 new_speed = min(speed * 1.5, 2000.0)
@@ -7448,47 +7492,35 @@ func execute(strategy: String, delta: float):
 
             if is_frictionless:
                 new_speed = min(speed * 2.0, 4000.0)
-            var angle = atan2(nvy, nvx) + randf_range(-0.1, 0.1)
 
-            nvx = cos(angle) * new_speed
-            nvy = sin(angle) * new_speed
+            var angle = atan2(nvy, nvx) + randf_range(-0.2, 0.2)
 
-            if typeof(self.ball) == TYPE_DICTIONARY:
-                self.ball["_reflection_vx"] = nvx
-                self.ball["_reflection_vy"] = nvy
-            elif self.ball.has_method("set_meta"):
-                self.ball.set_meta("_reflection_vx", nvx)
-                self.ball.set_meta("_reflection_vy", nvy)
-            elif "vx" in self.ball:
-                self.ball._reflection_vx = nvx
-                self.ball._reflection_vy = nvy
-
-            var gm = null
-            if typeof(self.world) == TYPE_DICTIONARY and self.world.has("game_mode"):
-                gm = self.world["game_mode"]
-            elif typeof(self.world) == TYPE_OBJECT and "game_mode" in self.world:
-                gm = self.world.game_mode
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                self.ball.set_meta("_reflection_vx", cos(angle) * new_speed)
+                self.ball.set_meta("_reflection_vy", sin(angle) * new_speed)
+            elif "_reflection_vx" in self.ball:
+                self.ball._reflection_vx = cos(angle) * new_speed
+                self.ball._reflection_vy = sin(angle) * new_speed
+            else:
+                self.ball["_reflection_vx"] = cos(angle) * new_speed
+                self.ball["_reflection_vy"] = sin(angle) * new_speed
 
             var is_mirror_walls = false
-            if gm != null and typeof(gm) == TYPE_OBJECT and "name" in gm and gm.name == "Mirror Walls":
-                is_mirror_walls = true
-            elif typeof(gm) == TYPE_DICTIONARY and gm.has("name") and gm["name"] == "Mirror Walls":
+            if "game_mode" in self.world and self.world.game_mode != null:
+                if "name" in self.world.game_mode and self.world.game_mode.name == "Mirror Walls":
+                    is_mirror_walls = true
+            if is_bouncy_terrain:
                 is_mirror_walls = true
 
             var b_type = ""
-            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"):
-                b_type = str(self.ball["ball_type"]).to_lower()
-            elif typeof(self.ball) == TYPE_OBJECT:
-                if "ball_type" in self.ball:
-                    b_type = str(self.ball.ball_type).to_lower()
-                elif self.ball.has_method("get_meta") and self.ball.has_meta("ball_type"):
-                    b_type = str(self.ball.get_meta("ball_type")).to_lower()
-                elif "BALL_TYPE" in self.ball:
-                    b_type = str(self.ball.BALL_TYPE).to_lower()
-
+            if "ball_type" in self.ball: b_type = self.ball.ball_type
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("ball_type"): b_type = self.ball.get_meta("ball_type")
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): b_type = self.ball["ball_type"]
             var is_agile_bouncer = b_type in ["ninja", "assassin", "rogue"]
 
-            if speed > 500 and not is_mirror_walls and not is_agile_bouncer and not is_bouncy_terrain:
+            if wall_state == "bouncy":
+                pass
+            elif speed > 500 and not is_mirror_walls and not is_agile_bouncer and not is_bouncy_terrain:
                 var dmg = speed * 0.05
 
                 var was_knocked_back = false

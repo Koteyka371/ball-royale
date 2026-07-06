@@ -4339,15 +4339,58 @@ class Action:
             vy = getattr(self.ball, "vy", 0.0)
             speed_sq = vx*vx + vy*vy
 
+            # Determine which wall was hit based on coordinates
+            margin = getattr(self.ball, "radius", 10.0) + 5.0
+            hit_wall = None
+            if self.ball.y <= margin:
+                hit_wall = "top"
+            elif self.ball.y >= getattr(self.world, "height", 1000) - margin:
+                hit_wall = "bottom"
+            elif self.ball.x <= margin:
+                hit_wall = "left"
+            elif self.ball.x >= getattr(self.world, "width", 1000) - margin:
+                hit_wall = "right"
+
+            wall_state = "normal"
+            if hit_wall and hasattr(self.world, "arena") and hasattr(self.world.arena, "boundary_states"):
+                wall_state = self.world.arena.boundary_states.get(hit_wall, "normal")
+
+            if wall_state == "sticky":
+                self.ball.vx = 0.0
+                self.ball.vy = 0.0
+                self.ball._reflection_vx = 0.0
+                self.ball._reflection_vy = 0.0
+                speed_sq = 0.0 # prevent normal bounce processing
+
+                # Push slightly into the arena to prevent continuous sticking
+                if hit_wall == "top": self.ball.y = margin + 1.0
+                elif hit_wall == "bottom": self.ball.y = getattr(self.world, "height", 1000) - margin - 1.0
+                elif hit_wall == "left": self.ball.x = margin + 1.0
+                elif hit_wall == "right": self.ball.x = getattr(self.world, "width", 1000) - margin - 1.0
+
             # Simple reflection heuristic since we don't have exact normal here.
             # We can approximate by reversing velocity and increasing speed.
             if speed_sq > 0:
                 speed = _math.sqrt(speed_sq)
-                # Reverse velocity, add random slight angle variation for trick shots, and multiply speed
+
+                # Proper reflection vectors
+                nvx = vx
+                nvy = vy
+                if self.ball.x <= margin or self.ball.x >= getattr(self.world, "width", 1000) - margin:
+                    nvx = -vx
+                if self.ball.y <= margin or self.ball.y >= getattr(self.world, "height", 1000) - margin:
+                    nvy = -vy
+                if nvx == vx and nvy == vy:
+                    nvx = -vx
+                    nvy = -vy
+
+                # Reverse velocity properly, add random slight angle variation for trick shots, and multiply speed
                 import random
-                angle = _math.atan2(-vy, -vx) + random.uniform(-0.2, 0.2)
+                angle = _math.atan2(nvy, nvx) + random.uniform(-0.2, 0.2)
                 gm = getattr(self.world, "game_mode", None)
-                if gm and getattr(gm, "name", "") == "Bouncy Terrain":
+                if wall_state == "bouncy":
+                    new_speed = min(speed * 3.0, 4000.0)
+                elif gm and getattr(gm, "name", "") == "Bouncy Terrain":
                     new_speed = min(speed * 2.0, 3000.0)
                 else:
                     new_speed = min(speed * 1.5, 2000.0)
@@ -4356,8 +4399,8 @@ class Action:
                     new_speed = min(speed * 2.0, 4000.0)
 
                 # Save the reflection velocity to be set after execution
-                self.ball._reflection_vx = math.cos(angle) * new_speed
-                self.ball._reflection_vy = math.sin(angle) * new_speed
+                self.ball._reflection_vx = _math.cos(angle) * new_speed
+                self.ball._reflection_vy = _math.sin(angle) * new_speed
 
                 # Punishing players who get too close to the edge with high speed
                 gm = getattr(self.world, "game_mode", None)
@@ -4372,7 +4415,9 @@ class Action:
                 b_type = getattr(self.ball, "ball_type", getattr(type(self.ball), "BALL_TYPE", "")).lower()
                 is_agile_bouncer = b_type in ["ninja", "assassin", "rogue"]
 
-                if speed > 500 and not is_mirror_walls and not is_agile_bouncer and not is_bouncy_terrain:
+                if wall_state == "bouncy":
+                    pass # Bouncy walls don't deal damage
+                elif speed > 500 and not is_mirror_walls and not is_agile_bouncer and not is_bouncy_terrain:
                     damage = speed * 0.05
 
                     # Apply additional damage based on velocity if the ball was recently knocked back
