@@ -74,3 +74,60 @@ def test_anchor_booster():
 
 if __name__ == "__main__":
     test_anchor_booster()
+
+def test_anchor_booster_immunity_vortex():
+    ball = MockBall()
+    ball.anchor_booster_timer = 5.0
+    ball.x = 120.0
+    ball.y = 100.0
+    ball.vx = 0.0
+    ball.vy = 0.0
+    # Override standard behavior so it doesn't move arbitrarily
+    ball.speed = 0.0
+    ball.base_speed = 0.0
+
+    vortex = type('MockHazard', (), {'id': 99, 'x': 100, 'y': 100, 'kind': 'vortex', 'radius': 500, 'damage': 0.0})()
+
+    world = MockWorld()
+    world.balls = [ball]
+    world.entities = [ball]
+    world.arena.hazards = [vortex]
+    world.arena.wind_dx = 0.0
+    world.arena.wind_dy = 0.0
+
+    action = Action(ball, world)
+
+    # We stub standard methods
+    action._idle = lambda d: None
+    action._chase = lambda d: None
+    action._attack = lambda d: None
+    action._process_physics = lambda delta: None
+
+    # Run execute once. It calls `_process_hazards` or handles it in main loop
+    action.execute("idle", 0.1)
+
+    assert ball.x == 120.0
+    assert ball.y == 100.0
+
+def test_anchor_booster_immunity_quicksand():
+    ball = MockBall()
+    ball.anchor_booster_timer = 5.0
+    ball.x = 100.0
+    ball.y = 100.0
+
+    quicksand = type('MockHazard', (), {'id': 99, 'x': 100, 'y': 100, 'kind': 'quicksand', 'radius': 50, 'damage': 0.0})()
+
+    world = MockWorld()
+    world.balls = [ball]
+    world.entities = [ball]
+    world.arena.hazards = [quicksand]
+
+    action = Action(ball, world)
+    action.execute("idle", 0.1)
+
+    assert not getattr(ball, "is_in_quicksand", False)
+
+if __name__ == "__main__":
+    test_anchor_booster_immunity_vortex()
+    test_anchor_booster_immunity_quicksand()
+    print("All additional tests passed!")

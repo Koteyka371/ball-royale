@@ -1,0 +1,4 @@
+{
+  "title": "Time Rift Hazard",
+  "description": "A new procedural hazard called 'Time Rift' that periodically reverses the direction of all projectiles and halves the movement speed of any ball caught in its radius for a few seconds. The effect visually looks like a distorted purple bubble."
+}
