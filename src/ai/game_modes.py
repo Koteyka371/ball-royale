@@ -7829,7 +7829,49 @@ class ReverseGravityEventMode(GameMode):
                         b.x += (dx / dist) * force_mag * direction_mult
                         b.y += (dy / dist) * force_mag * direction_mult
 
+class InvisibleDecoysMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Invisible Decoys"
+        self.description = "The arena is seeded with invisible decoys. Avoid them or set off massive chain reactions."
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "arena") or world.arena is None:
+            return
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        import random
+        try:
+            from arena.procedural_arena import Hazard
+        except ImportError:
+            class Hazard:
+                def __init__(self, id, x, y, radius, kind, damage):
+                    self.id = id
+                    self.x = x
+                    self.y = y
+                    self.radius = radius
+                    self.kind = kind
+                    self.damage = damage
+                    self.active = True
+                    self.target_radius = 0.0
+
+        arena_width = getattr(world.arena, "width", 1000)
+        arena_height = getattr(world.arena, "height", 1000)
+
+        num_decoys = random.randint(30, 50)
+        for i in range(num_decoys):
+            x = random.uniform(50, arena_width - 50)
+            y = random.uniform(50, arena_height - 50)
+            h_id = 90000 + len(world.arena.hazards) + random.randint(0, 10000)
+            decoy = Hazard(id=h_id, x=x, y=y, radius=30.0, kind="invisible_decoy", damage=250.0)
+            setattr(decoy, "duration", 9999.0)
+            setattr(decoy, "invisible", True)
+            world.arena.hazards.append(decoy)
+
 GAME_MODES = {
+    "invisible_decoys": InvisibleDecoysMode(),
     "sweeping_paddles": SweepingPaddlesMode(),
     "artifact_upgrader": ArtifactUpgraderMode(),
     "meteor_shower": MeteorShowerMode(),

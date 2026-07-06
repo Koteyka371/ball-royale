@@ -1,0 +1,4 @@
+{
+    "title": "Decoy Detection Radar",
+    "description": "An item that periodically pulses, briefly revealing the location of all invisible decoys in the arena for 2 seconds. The pulse has a cooldown, forcing players to memorize the locations quickly."
+}

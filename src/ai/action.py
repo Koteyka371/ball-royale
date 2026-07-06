@@ -3089,6 +3089,44 @@ class Action:
                                                 exploded_traps.add(h)
                                                 traps_to_explode.append(h)
 
+                        elif hazard.kind == "invisible_decoy":
+                            hazard.duration = 0.0
+                            traps_to_explode = [hazard]
+                            exploded_traps = set([hazard])
+
+                            while traps_to_explode:
+                                current_trap = traps_to_explode.pop(0)
+
+                                if hasattr(self.world, "events"):
+                                    self.world.events.append(('visual_effect', {'type': 'explosion', 'x': current_trap.x, 'y': current_trap.y, 'radius': getattr(current_trap, 'radius', 40.0) * 3, 'color': 'red'}))
+
+                                explosion_radius = getattr(current_trap, "radius", 40.0) * 3
+                                explosion_damage = getattr(current_trap, "damage", 250.0)
+
+                                if hasattr(self.world, "balls"):
+                                    for b in self.world.balls:
+                                        if not getattr(b, "alive", True):
+                                            continue
+
+                                        dist_sq = (b.x - current_trap.x)**2 + (b.y - current_trap.y)**2
+                                        if dist_sq <= explosion_radius**2:
+                                            if hasattr(b, "take_damage"):
+                                                b.take_damage(explosion_damage)
+                                            elif hasattr(b, "hp"):
+                                                b.hp -= explosion_damage
+                                                if b.hp <= 0:
+                                                    b.alive = False
+
+                                chain_radius = 250.0
+                                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                                    for h in self.world.arena.hazards:
+                                        if h not in exploded_traps and getattr(h, "kind", "") == "invisible_decoy" and getattr(h, "duration", 1.0) > 0:
+                                            h_dist_sq = (h.x - current_trap.x)**2 + (h.y - current_trap.y)**2
+                                            if h_dist_sq <= chain_radius**2:
+                                                h.duration = 0.0
+                                                exploded_traps.add(h)
+                                                traps_to_explode.append(h)
+
                         elif hazard.kind == "trap":
                             if getattr(hazard, "owner_id", None) == getattr(self.ball, "id", object()):
                                 continue

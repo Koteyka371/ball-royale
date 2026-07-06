@@ -3786,10 +3786,93 @@ func execute(strategy: String, delta: float):
                             hazard["duration"] = 0.0
                         else:
                             hazard.duration = 0.0
+                    elif hazard.kind == "invisible_decoy":
+                        if typeof(hazard) == TYPE_DICTIONARY:
+                            hazard["duration"] = 0.0
+                        else:
+                            hazard.duration = 0.0
+
+                        var traps_to_explode = [hazard]
+                        var exploded_traps = [hazard]
+
+                        while traps_to_explode.size() > 0:
+                            var current_trap = traps_to_explode.pop_front()
+
+                            var trap_rad = 40.0
+                            if typeof(current_trap) == TYPE_DICTIONARY and current_trap.has("radius"):
+                                trap_rad = current_trap["radius"]
+                            elif "radius" in current_trap:
+                                trap_rad = current_trap.radius
+                            elif typeof(current_trap) == TYPE_OBJECT and current_trap.has_method("get_meta") and current_trap.has_meta("radius"):
+                                trap_rad = current_trap.get_meta("radius")
+
+                            var exp_radius = trap_rad * 3.0
+                            var exp_damage = 250.0
+                            if typeof(current_trap) == TYPE_DICTIONARY and current_trap.has("damage"):
+                                exp_damage = current_trap["damage"]
+                            elif "damage" in current_trap:
+                                exp_damage = current_trap.damage
+                            elif typeof(current_trap) == TYPE_OBJECT and current_trap.has_method("get_meta") and current_trap.has_meta("damage"):
+                                exp_damage = current_trap.get_meta("damage")
+
+                            if self.world != null and "events" in self.world:
+                                self.world.events.append({
+                                    "type": "visual_effect",
+                                    "effect_type": "explosion",
+                                    "x": current_trap.x,
+                                    "y": current_trap.y,
+                                    "radius": exp_radius,
+                                    "color": "red"
+                                })
+
+                            if self.world != null and "balls" in self.world:
+                                for b in self.world.balls:
+                                    if not ("alive" in b and b.alive):
+                                        continue
+
+                                    var d_sq = pow(b.x - current_trap.x, 2) + pow(b.y - current_trap.y, 2)
+                                    if d_sq <= exp_radius * exp_radius:
+                                        if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+                                            b.take_damage(exp_damage)
+                                        elif "hp" in b:
+                                            b.hp -= exp_damage
+                                            if b.hp <= 0:
+                                                b.alive = false
+
+                            var chain_rad = 250.0
+                            if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+                                for h in self.world.arena.hazards:
+                                    var h_kind = ""
+                                    if typeof(h) == TYPE_DICTIONARY and h.has("kind"): h_kind = h["kind"]
+                                    elif "kind" in h: h_kind = h.kind
+                                    elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("kind"): h_kind = h.get_meta("kind")
+
+                                    var is_exploded = false
+                                    for et in exploded_traps:
+                                        if h == et:
+                                            is_exploded = true
+                                            break
+
+                                    if not is_exploded and h_kind == "invisible_decoy":
+                                        var h_dur = 1.0
+                                        if typeof(h) == TYPE_DICTIONARY and h.has("duration"): h_dur = h["duration"]
+                                        elif "duration" in h: h_dur = h.duration
+                                        elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("duration"): h_dur = h.get_meta("duration")
+
+                                        if h_dur > 0:
+                                            var hd_sq = pow(h.x - current_trap.x, 2) + pow(h.y - current_trap.y, 2)
+                                            if hd_sq <= chain_rad * chain_rad:
+                                                if typeof(h) == TYPE_DICTIONARY:
+                                                    h["duration"] = 0.0
+                                                else:
+                                                    h.duration = 0.0
+                                                exploded_traps.append(h)
+                                                traps_to_explode.append(h)
+
                     elif hazard.kind == "trap":
                         var current_tick = 0
                         if "tick" in self.world:
-                        current_tick = self.world.tick
+                            current_tick = self.world.tick
 
                     var h_trap_variant = "normal"
                     if hazard.has_meta("trap_variant"):

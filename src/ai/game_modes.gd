@@ -10466,7 +10466,49 @@ class ReverseGravityEventMode extends GameMode:
 								b.x += move_x
 								b.y += move_y
 
+class InvisibleDecoysMode extends GameMode:
+	var rng = RandomNumberGenerator.new()
+
+	func _init() -> void:
+		name = "Invisible Decoys"
+		description = "The arena is seeded with invisible decoys. Avoid them or set off massive chain reactions."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if not "arena" in world or world.arena == null:
+			return
+		if not "hazards" in world.arena:
+			world.arena.hazards = []
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if "width" in world.arena:
+			arena_width = float(world.arena.width)
+		if "height" in world.arena:
+			arena_height = float(world.arena.height)
+
+		rng.randomize()
+		var ProceduralArena = load("res://src/arena/procedural_arena.gd")
+		var num_decoys = rng.randi_range(30, 50)
+
+		for i in range(num_decoys):
+			var x = rng.randf_range(50.0, arena_width - 50.0)
+			var y = rng.randf_range(50.0, arena_height - 50.0)
+			var h_id = 90000 + world.arena.hazards.size() + rng.randi_range(0, 10000)
+			var decoy = ProceduralArena.Hazard.new(h_id, x, y, 30.0, "invisible_decoy", 250.0)
+			if typeof(decoy) == TYPE_DICTIONARY:
+				decoy["duration"] = 9999.0
+				decoy["invisible"] = true
+			else:
+				decoy.set_meta("duration", 9999.0)
+				if "invisible" in decoy:
+					decoy.invisible = true
+				elif decoy.has_method("set_meta"):
+					decoy.set_meta("invisible", true)
+			world.arena.hazards.append(decoy)
+
 var GAME_MODES = {
+	"invisible_decoys": InvisibleDecoysMode.new(),
 	"reversed_input": ReversedInputMode.new(),
 	"sweeping_paddles": SweepingPaddlesMode.new(),
 	"artifact_upgrader": ArtifactUpgraderMode.new(),
