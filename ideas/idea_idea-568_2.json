@@ -1,0 +1,4 @@
+{
+  "title": "Echo Strike Skill",
+  "description": "A new active skill that records the player's movements and attacks for 3 seconds, then summons a temporal clone that replays those exact actions before disappearing."
+}

@@ -630,6 +630,30 @@ class Action:
         import math
         self.ball.is_frictionless = False
 
+        if getattr(self.ball, "shuffle_trap_timer", 0.0) > 0:
+            self.ball.shuffle_trap_timer -= delta
+            if self.ball.shuffle_trap_timer <= 0:
+                self.ball.shuffle_trap_timer = 0.0
+                target_id = getattr(self.ball, "shuffle_target_id", None)
+                if target_id is not None:
+                    target = None
+                    balls = getattr(self.world, "balls", getattr(self.world, "entities", []))
+                    for b in balls:
+                        if getattr(b, "id", None) == target_id:
+                            target = b
+                            break
+                    if target and getattr(target, "alive", True):
+                        my_inv = getattr(self.ball, "inventory", [])
+                        their_inv = getattr(target, "inventory", [])
+                        self.ball.inventory = their_inv
+                        target.inventory = my_inv
+
+                        my_skill = getattr(self.ball, "active_skill", None)
+                        their_skill = getattr(target, "active_skill", None)
+                        self.ball.active_skill = their_skill
+                        target.active_skill = my_skill
+                    self.ball.shuffle_target_id = None
+
         if getattr(self.ball, "leech_booster_timer", 0.0) > 0:
             self.ball.leech_booster_timer -= delta
 
@@ -3155,6 +3179,33 @@ class Action:
                                             temp_x, temp_y = owner.x, owner.y
                                             owner.x, owner.y = old_x, old_y
                                             self.ball.x, self.ball.y = temp_x, temp_y
+                                    hazard.duration = 0.0 # Destroy trap
+
+                                elif trap_variant == "shuffle":
+                                    import random
+                                    valid_targets = []
+                                    balls = getattr(self.world, "balls", getattr(self.world, "entities", []))
+                                    for b in balls:
+                                        if getattr(b, "alive", True) and not getattr(b, "is_decoy", False) and b != self.ball:
+                                            valid_targets.append(b)
+
+                                    if valid_targets:
+                                        target = random.choice(valid_targets)
+                                        # Swap inventory
+                                        my_inv = getattr(self.ball, "inventory", [])
+                                        their_inv = getattr(target, "inventory", [])
+                                        self.ball.inventory = their_inv
+                                        target.inventory = my_inv
+
+                                        # Swap active skill
+                                        my_skill = getattr(self.ball, "active_skill", None)
+                                        their_skill = getattr(target, "active_skill", None)
+                                        self.ball.active_skill = their_skill
+                                        target.active_skill = my_skill
+
+                                        self.ball.shuffle_trap_timer = 10.0
+                                        self.ball.shuffle_target_id = getattr(target, "id", None)
+
                                     hazard.duration = 0.0 # Destroy trap
 
                                 elif trap_variant == "decoy":
