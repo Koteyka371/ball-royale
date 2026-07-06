@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-630] Dynamic Arena Hazards — *2026-07-06 23:17:55 UTC*
+
+Hazards can change their size, shape, and damage dynamically during the game, based on arena-wide events and seasonal modifiers.
+
+---
+
 ## [idea-632] Shrinking Nightmares — *2026-07-06 22:02:40 UTC*
 
 During dark phases in Battle Royale, shadow monsters spawn randomly outside players' vision. The monsters aggressively hunt down players and despawn when the dark phase ends. Surviving players gain a significant score boost.
