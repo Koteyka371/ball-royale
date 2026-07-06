@@ -10169,7 +10169,7 @@
     },
     {
       "id": "idea-589",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather Predictor Booster",
@@ -18130,6 +18130,23 @@
         "src/ai/laser_sight_attachment.py",
         "src/ai/laser_sight_attachment.gd",
         "tests/test_laser_sight_attachment.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1057",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Teleportation Booster",
+      "description": "A rare booster that upon collection instantly teleports the player to a random safe location on the map, granting brief invulnerability and leaving behind a decoy that explodes on enemy contact.",
+      "allowed_paths": [
+        "src/ai/quantum_teleportation_booster.py",
+        "src/ai/quantum_teleportation_booster.gd",
+        "tests/test_quantum_teleportation_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

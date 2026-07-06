@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-589] Weather Predictor Booster — *2026-07-06 21:20:55 UTC*
+
+A new booster that spawns occasionally. Collecting it gives the player a 10-second warning before the weather changes and grants them temporary immunity to negative weather effects (like slow movement in mud/snow or lightning strikes in thunderstorms) for the first 15 seconds of the new weather phase.
+
+---
+
 ## [idea-597] Stormcaller Booster — *2026-07-06 21:12:03 UTC*
 
 A rare booster that upon collection surrounds the player with a mini lightning storm for 10 seconds. It grants a speed boost and periodically strikes nearby hazards or enemies to clear a path.
