@@ -1056,8 +1056,10 @@ class BattleRoyaleMode(GameMode):
             self.dark_phase_timer = 0.0
 
             # Apply dark phase
+            alive_players = []
             for b in balls:
-                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator" and not getattr(b, "is_shadow_monster", False):
+                    alive_players.append(b)
                     if not hasattr(b, "base_perception_radius"):
                         b.base_perception_radius = getattr(b, "perception_radius", 250.0)
                     if getattr(b, "vision_booster_timer", 0) > 0:
@@ -1067,14 +1069,68 @@ class BattleRoyaleMode(GameMode):
                             b.perception_radius = 120.0
                         else:
                             b.perception_radius = 60.0
+
+            # Spawn shadow monsters
+            import random, copy, math
+            for p in alive_players:
+                # Spawn one monster per player, outside their vision
+                spawn_dist = 200.0
+                angle = random.uniform(0, 3.14159 * 2)
+                sx = p.x + math.cos(angle) * spawn_dist
+                sy = p.y + math.sin(angle) * spawn_dist
+
+                # Keep within safe zone approximately
+                arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+                arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+                sx = max(50.0, min(arena_width - 50.0, sx))
+                sy = max(50.0, min(arena_height - 50.0, sy))
+
+                # Use copy to create a valid object instance, modifying it to be a shadow monster
+                new_monster = copy.copy(p)
+                new_monster.id = getattr(world, "next_id", random.randint(10000, 99999))
+                if hasattr(world, "next_id"):
+                    world.next_id += 1
+                new_monster.x = sx
+                new_monster.y = sy
+                new_monster.vx = 0.0
+                new_monster.vy = 0.0
+                new_monster.radius = 20.0
+                new_monster.hp = 100.0
+                new_monster.max_hp = 100.0
+                new_monster.alive = True
+                new_monster.ball_type = "assassin"
+                new_monster.team = "ShadowMonsters"
+                new_monster.speed = 150.0
+                new_monster.base_speed = 150.0
+                new_monster.damage = 25.0
+                new_monster.base_damage = 25.0
+                new_monster.perception_radius = 1000.0
+                new_monster.base_perception_radius = 1000.0
+                new_monster.is_shadow_monster = True
+                new_monster.score = 0
+
+                if hasattr(world, "balls"):
+                    world.balls.append(new_monster)
+                    if hasattr(world, "entities") and world.balls is not world.entities:
+                        world.entities.append(new_monster)
+                else:
+                    balls.append(new_monster)
+            if hasattr(world, "add_event"):
+                world.add_event("shadow_monsters_spawned", {"message": "Shadow monsters are hunting in the dark!"})
         elif self.is_dark_phase and self.dark_phase_timer >= 10.0:
             self.is_dark_phase = False
             self.dark_phase_timer = 0.0
 
-            # Restore normal phase
+            # Restore normal phase and clean up shadow monsters
             for b in balls:
-                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                if getattr(b, "is_shadow_monster", False):
+                    b.alive = False
+                    b.hp = 0
+                elif getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                     b.perception_radius = getattr(b, "base_perception_radius", 250.0)
+                    b.score = getattr(b, "score", 0) + 100
+            if hasattr(world, "add_event"):
+                world.add_event("shadow_monsters_despawned", {"message": "The light returns. Shadow monsters vanish!"})
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]

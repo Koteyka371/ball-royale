@@ -1226,8 +1226,15 @@ class BattleRoyaleMode extends GameMode:
             dark_phase_timer = 0.0
 
             # Apply dark phase
+            var alive_players = []
             for b in balls:
-                if b.alive and b.ball_type != "spectator":
+                var is_shadow = false
+                if "is_shadow_monster" in b and b.is_shadow_monster:
+                    is_shadow = true
+                elif b.has_method("get_meta") and b.has_meta("is_shadow_monster") and b.get_meta("is_shadow_monster"):
+                    is_shadow = true
+                if b.alive and b.ball_type != "spectator" and not is_shadow:
+                    alive_players.append(b)
                     var current_perc = 250.0
                     if "perception_radius" in b:
                         current_perc = float(b.perception_radius)
@@ -1245,17 +1252,131 @@ class BattleRoyaleMode extends GameMode:
                             b.perception_radius = 120.0
                         else:
                             b.perception_radius = 60.0
+
+            # Spawn shadow monsters
+            for p in alive_players:
+                var spawn_dist = 200.0
+                var angle = randf() * PI * 2.0
+                var px = p.x if "x" in p else (p.get("position").x if p.get("position") != null else 0.0)
+                var py = p.y if "y" in p else (p.get("position").y if p.get("position") != null else 0.0)
+                var sx = px + cos(angle) * spawn_dist
+                var sy = py + sin(angle) * spawn_dist
+
+                var arena_w = 1000.0
+                var arena_h = 1000.0
+                if world != null and "arena" in world and world.arena != null:
+                    arena_w = world.arena.width if "width" in world.arena else 1000.0
+                    arena_h = world.arena.height if "height" in world.arena else 1000.0
+                sx = max(50.0, min(arena_w - 50.0, sx))
+                sy = max(50.0, min(arena_h - 50.0, sy))
+
+                var monster = null
+                if p.has_method("duplicate"):
+                    monster = p.duplicate()
+                elif p is Dictionary:
+                    monster = p.duplicate()
+                else:
+                    var script = p.get_script()
+                    if script != null:
+                        var p_id = 0
+                        if "id" in p: p_id = p.id
+                        monster = script.new(p_id, sx, sy)
+
+                if monster != null:
+                    var m_id = 80000 + (randi() % 10000)
+                    if world != null and "next_id" in world:
+                        m_id = world.next_id
+                        world.next_id += 1
+
+                    if monster is Dictionary:
+                        monster["id"] = m_id
+                        monster["x"] = sx
+                        monster["y"] = sy
+                        monster["vx"] = 0.0
+                        monster["vy"] = 0.0
+                        monster["radius"] = 20.0
+                        monster["hp"] = 100.0
+                        monster["max_hp"] = 100.0
+                        monster["alive"] = true
+                        monster["ball_type"] = "assassin"
+                        monster["team"] = "ShadowMonsters"
+                        monster["speed"] = 150.0
+                        monster["base_speed"] = 150.0
+                        monster["damage"] = 25.0
+                        monster["base_damage"] = 25.0
+                        monster["perception_radius"] = 1000.0
+                        monster["base_perception_radius"] = 1000.0
+                        monster["is_shadow_monster"] = true
+                        monster["score"] = 0
+                    elif typeof(monster) == TYPE_OBJECT:
+                        if "id" in monster: monster.id = m_id
+                        if "x" in monster: monster.x = sx
+                        if "y" in monster: monster.y = sy
+                        if "vx" in monster: monster.vx = 0.0
+                        if "vy" in monster: monster.vy = 0.0
+                        if "radius" in monster: monster.radius = 20.0
+                        if "hp" in monster: monster.hp = 100.0
+                        if "max_hp" in monster: monster.max_hp = 100.0
+                        if "alive" in monster: monster.alive = true
+                        if "ball_type" in monster: monster.ball_type = "assassin"
+                        if "team" in monster: monster.team = "ShadowMonsters"
+                        if "speed" in monster: monster.speed = 150.0
+                        if "base_speed" in monster: monster.base_speed = 150.0
+                        if "damage" in monster: monster.damage = 25.0
+                        if "base_damage" in monster: monster.base_damage = 25.0
+                        if "perception_radius" in monster: monster.perception_radius = 1000.0
+                        if "base_perception_radius" in monster: monster.base_perception_radius = 1000.0
+                        if monster.has_method("set_meta"):
+                            monster.set_meta("is_shadow_monster", true)
+                        if "score" in monster: monster.score = 0
+                        elif monster.has_method("set_meta"): monster.set_meta("score", 0)
+
+                    if world != null and "balls" in world:
+                        world.balls.append(monster)
+                        if "entities" in world and world.entities != world.balls:
+                            world.entities.append(monster)
+                    else:
+                        balls.append(monster)
+
+            if world != null and world.has_method("add_event"):
+                world.add_event("shadow_monsters_spawned", {"message": "Shadow monsters are hunting in the dark!"})
         elif is_dark_phase and dark_phase_timer >= 10.0:
             is_dark_phase = false
             dark_phase_timer = 0.0
 
-            # Restore normal phase
+            # Restore normal phase and clean up shadow monsters
             for b in balls:
-                if b.alive and b.ball_type != "spectator":
+                var is_shadow = false
+                if "is_shadow_monster" in b and b.is_shadow_monster:
+                    is_shadow = true
+                elif b.has_method("get_meta") and b.has_meta("is_shadow_monster") and b.get_meta("is_shadow_monster"):
+                    is_shadow = true
+
+                if is_shadow:
+                    if b is Dictionary:
+                        b.alive = false
+                        b.hp = 0
+                    elif b.has_method("set"):
+                        b.set("alive", false)
+                        b.set("hp", 0)
+                elif b.alive and b.ball_type != "spectator":
                     var base_perc = 250.0
                     if b.has_method("get_meta") and b.has_meta("base_perception_radius"):
                         base_perc = b.get_meta("base_perception_radius")
                     b.perception_radius = base_perc
+                    var current_score = 0
+                    if "score" in b:
+                        current_score = b.score
+                    elif b.has_method("get_meta") and b.has_meta("score"):
+                        current_score = b.get_meta("score")
+
+                    if b is Dictionary:
+                        b.score = current_score + 100
+                    elif b.has_method("set_meta"):
+                        b.set_meta("score", current_score + 100)
+
+            if world != null and world.has_method("add_event"):
+                world.add_event("shadow_monsters_despawned", {"message": "The light returns. Shadow monsters vanish!"})
 
     func check_winner(world, balls: Array):
         var alive = []
