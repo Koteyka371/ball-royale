@@ -3268,37 +3268,52 @@ func execute(strategy: String, delta: float):
                             elif other.has_method("get_meta") and other.has_meta("id"):
                                 other_id = other.get_meta("id")
 
-                            if other_alive and other_team != b_team and other_id != b_id:
+                            if other_alive and other_id != b_id:
                                 var dx = other.x - b.x
                                 var dy = other.y - b.y
                                 var dist = sqrt(dx*dx + dy*dy)
                                 if dist <= radius:
+                                    var is_enemy = (other_team != b_team)
+                                    var is_ally = (other_team == b_team)
                                     var b_decoy_type = b.decoy_type if "decoy_type" in b else (b.get_meta("decoy_type") if b.has_method("has_meta") and b.has_meta("decoy_type") else "")
-                                    if b_decoy_type == "stun_trap":
-                                        if "stutter_timer" in other:
-                                            other.stutter_timer += 5.0
-                                        elif other.has_method("set_meta") and other.has_meta("stutter_timer"):
-                                            other.set_meta("stutter_timer", other.get_meta("stutter_timer") + 5.0)
-                                        elif other.has_method("set_meta"):
-                                            other.set_meta("stutter_timer", 5.0)
-                                    elif b_decoy_type == "explosive":
+
+                                    if b_decoy_type == "healing" and is_ally:
+                                        var max_hp = 100.0
+                                        if "max_hp" in other: max_hp = float(other.max_hp)
+                                        elif other.has_method("get_meta") and other.has_meta("max_hp"): max_hp = float(other.get_meta("max_hp"))
+
+                                        var heal_amount = 30.0
                                         if "hp" in other:
-                                            other.hp -= explosion_damage
-                                        if "stutter_timer" in other:
-                                            other.stutter_timer += 2.0
-                                        elif other.has_method("set_meta") and other.has_meta("stutter_timer"):
-                                            other.set_meta("stutter_timer", other.get_meta("stutter_timer") + 2.0)
-                                        elif other.has_method("set_meta"):
-                                            other.set_meta("stutter_timer", 2.0)
-                                    else:
-                                        if "hp" in other:
-                                            other.hp -= explosion_damage
-                                        if "stutter_timer" in other:
-                                            other.stutter_timer += 2.0
-                                        elif other.has_method("set_meta") and other.has_meta("stutter_timer"):
-                                            other.set_meta("stutter_timer", other.get_meta("stutter_timer") + 2.0)
-                                        elif other.has_method("set_meta"):
-                                            other.set_meta("stutter_timer", 2.0)
+                                            other.hp = min(max_hp, other.hp + heal_amount)
+                                        elif other.has_method("set_meta") and other.has_meta("hp"):
+                                            other.set_meta("hp", min(max_hp, other.get_meta("hp") + heal_amount))
+
+                                    elif is_enemy and b_decoy_type != "healing":
+                                        if b_decoy_type == "stun_trap":
+                                            if "stutter_timer" in other:
+                                                other.stutter_timer += 5.0
+                                            elif other.has_method("set_meta") and other.has_meta("stutter_timer"):
+                                                other.set_meta("stutter_timer", other.get_meta("stutter_timer") + 5.0)
+                                            elif other.has_method("set_meta"):
+                                                other.set_meta("stutter_timer", 5.0)
+                                        elif b_decoy_type == "explosive":
+                                            if "hp" in other:
+                                                other.hp -= explosion_damage
+                                            if "stutter_timer" in other:
+                                                other.stutter_timer += 2.0
+                                            elif other.has_method("set_meta") and other.has_meta("stutter_timer"):
+                                                other.set_meta("stutter_timer", other.get_meta("stutter_timer") + 2.0)
+                                            elif other.has_method("set_meta"):
+                                                other.set_meta("stutter_timer", 2.0)
+                                        else:
+                                            if "hp" in other:
+                                                other.hp -= explosion_damage
+                                            if "stutter_timer" in other:
+                                                other.stutter_timer += 2.0
+                                            elif other.has_method("set_meta") and other.has_meta("stutter_timer"):
+                                                other.set_meta("stutter_timer", other.get_meta("stutter_timer") + 2.0)
+                                            elif other.has_method("set_meta"):
+                                                other.set_meta("stutter_timer", 2.0)
 
                                     if "hp" in other:
                                         var rng = RandomNumberGenerator.new()
@@ -11078,6 +11093,75 @@ func _use_skill():
 
                     if "skill_timer" in self.ball: self.ball.skill_timer = cooldown
                     elif self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cooldown)
+
+        elif skill_name == "master_decoys":
+            if self.world != null and "balls" in self.world:
+                var cooldown = 10.0
+                if "SKILL_COOLDOWN" in self.ball: cooldown = float(self.ball.SKILL_COOLDOWN)
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("SKILL_COOLDOWN"): cooldown = float(self.ball.get_meta("SKILL_COOLDOWN"))
+
+                if "skill_timer" in self.ball: self.ball.skill_timer = cooldown
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cooldown)
+
+                var decoy_types = ["explosive", "stun_trap", "healing"]
+
+                for i in range(3):
+                    var decoy = null
+                    if self.ball.has_method("duplicate"): decoy = self.ball.duplicate()
+                    elif self.ball is Dictionary: decoy = self.ball.duplicate()
+
+                    if decoy != null:
+                        if "id" in decoy:
+                            decoy.id = randi() % 90000 + 10000
+                        if "hp" in decoy and "max_hp" in decoy:
+                            decoy.max_hp = float(self.ball.max_hp) * 0.5
+                            decoy.hp = float(self.ball.hp) * 0.5
+                        if "damage" in decoy:
+                            decoy.damage = 0.0
+
+                        var spd = 5.0
+                        if "speed" in self.ball: spd = float(self.ball.speed)
+
+                        if "speed" in decoy:
+                            decoy.speed = spd
+
+                        var self_id_stat = -2
+                        if "id" in self.ball: self_id_stat = self.ball.id
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): self_id_stat = self.ball.get_meta("id")
+
+                        var orbit_angle = (2.0 * PI / 3.0) * float(i)
+                        var offset_x = cos(orbit_angle) * 40.0
+                        var offset_y = sin(orbit_angle) * 40.0
+
+                        if "x" in decoy: decoy.x += offset_x
+                        if "y" in decoy: decoy.y += offset_y
+
+                        if decoy.has_method("set_meta"):
+                            decoy.set_meta("owner_id", self_id_stat)
+                            decoy.set_meta("is_decoy", true)
+                            decoy.set_meta("decoy_timer", 6.0)
+                            decoy.set_meta("skill_timer", 9999.0)
+                            decoy.set_meta("attack_timer", 9999.0)
+                            decoy.set_meta("skill", null)
+                            decoy.set_meta("active_skill", null)
+                            decoy.set_meta("SKILL", null)
+                            decoy.set_meta("decoy_type", decoy_types[i])
+                            decoy.set_meta("is_orbiting", true)
+                            decoy.set_meta("orbit_angle", orbit_angle)
+                        elif typeof(decoy) == TYPE_DICTIONARY:
+                            decoy["owner_id"] = self_id_stat
+                            decoy["is_decoy"] = true
+                            decoy["decoy_timer"] = 6.0
+                            decoy["skill_timer"] = 9999.0
+                            decoy["attack_timer"] = 9999.0
+                            decoy["skill"] = null
+                            decoy["active_skill"] = null
+                            decoy["SKILL"] = null
+                            decoy["decoy_type"] = decoy_types[i]
+                            decoy["is_orbiting"] = true
+                            decoy["orbit_angle"] = orbit_angle
+
+                        self.world.balls.append(decoy)
 
         elif skill_name == "deploy_decoy":
             var active_decoys = []
