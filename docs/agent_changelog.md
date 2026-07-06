@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-533] Mirror Image Ultimate — *2026-07-06 12:56:20 UTC*
+
+Introduce a new ball class (Illusionist) whose ultimate skill spawns multiple decoys that actively mimic the player's inputs (movement and basic attacks) but deal reduced damage.
+
+---
+
 ## [idea-610] Daily Quests — *2026-07-05 21:29:57 UTC*
 
 Introduce daily quests to encourage players to log in every day. Quests could include tasks like 'Deal 10,000 damage', 'Survive for 5 minutes', or 'Play 3 matches in the current weekly mutator mode'. Completing quests would reward players with experience, currency, or cosmetic items.
