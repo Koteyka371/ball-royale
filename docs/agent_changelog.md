@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-618] Black Hole Ultimate — *2026-07-06 18:58:58 UTC*
+
+A new ball type that can summon a slow-moving black hole, pulling in nearby balls and hazards, dealing heavy damage over time.
+
+---
+
 ## [idea-636] Mass Clone Skill — *2026-07-06 18:50:33 UTC*
 
 A rare skill or ultimate ability that creates a decoy clone for every ball currently in the arena to cause massive confusion during big fights.

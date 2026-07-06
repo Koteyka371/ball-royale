@@ -10663,7 +10663,7 @@
     },
     {
       "id": "idea-618",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Ultimate",
@@ -17926,6 +17926,23 @@
         "src/arena/winter_wonderland_arena.py",
         "src/arena/winter_wonderland_arena.gd",
         "tests/test_winter_wonderland_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1045",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Well Hazard",
+      "description": "A new arena hazard that periodically pulls all nearby balls towards its center, slowing movement away from it and accelerating movement towards it, making positioning critical near the edge of the arena.",
+      "allowed_paths": [
+        "src/arena/gravity_well.py",
+        "src/arena/gravity_well.gd",
+        "tests/test_gravity_well.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
