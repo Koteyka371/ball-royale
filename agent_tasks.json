@@ -10833,7 +10833,7 @@
     },
     {
       "id": "idea-628",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sonar Pulse Ability",
@@ -17586,6 +17586,40 @@
         "src/arena/mirage.py",
         "src/arena/mirage.gd",
         "tests/test_mirage.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1025",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Water Flow Physics",
+      "description": "Introduce directional water flow currents inside flood zones or rivers that physically push entities in a specific direction. Players could use these currents strategically to move faster across the map or push enemies into dangerous hazards.",
+      "allowed_paths": [
+        "src/ai/water_flow_physics.py",
+        "src/ai/water_flow_physics.gd",
+        "tests/test_water_flow_physics.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1026",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Flooded Arena Event Phase",
+      "description": "Create an arena event where the entire map slowly floods from the edges inward over time, restricting play exclusively to the shrinking dry center. Once fully flooded, only players with aquatic traits or floaters survive, changing the endgame dynamic completely.",
+      "allowed_paths": [
+        "src/arena/flooded_arena_phase.py",
+        "src/arena/flooded_arena_phase.gd",
+        "tests/test_flooded_arena_phase.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

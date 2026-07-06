@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-628] Sonar Pulse Ability — *2026-07-06 16:46:18 UTC*
+
+A new AI ability that temporarily increases the ball's perception radius significantly, emitting a ping that reveals the location of nearby enemies and items, particularly useful in dark or low-visibility game modes.
+
+---
+
 ## [idea-386] Dynamic Map Flooding — *2026-07-06 15:42:54 UTC*
 
 During prolonged 'rain' weather events, low areas of the arena could slowly flood, creating water hazards that drastically slow non-aquatic or non-floating entities.
