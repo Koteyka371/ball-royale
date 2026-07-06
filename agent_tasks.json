@@ -9896,7 +9896,7 @@
     },
     {
       "id": "idea-573",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bumper Explosions",
@@ -17773,6 +17773,40 @@
         "src/ai/sliding_momentum_bash.py",
         "src/ai/sliding_momentum_bash.gd",
         "tests/test_sliding_momentum_bash.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1036",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Echo Mode",
+      "description": "A game mode where player inputs and actions are 'recorded' every 10 seconds. In the following 10 seconds, shadowy echoes repeat those actions, doubling the player's output but also exposing their predictable patterns.",
+      "allowed_paths": [
+        "src/ai/echo.py",
+        "src/ai/echo.gd",
+        "tests/test_echo.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1037",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Entanglement Trap",
+      "description": "A trap that links two players together when triggered. Any damage or status effect inflicted on one is fully mirrored onto the other for the duration of the entanglement, leading to crazy indirect combat.",
+      "allowed_paths": [
+        "src/arena/quantum_entanglement_trap.py",
+        "src/arena/quantum_entanglement_trap.gd",
+        "tests/test_quantum_entanglement_trap.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

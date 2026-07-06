@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-573] Bumper Explosions — *2026-07-06 18:16:35 UTC*
+
+Bumpers could detonate on impact if a ball has enough velocity when striking them, damaging nearby players.
+
+---
+
 ## [idea-511] Status Transfer Boomerang — *2026-07-06 17:57:59 UTC*
 
 An active item that absorbs the current status effects (stun, silence, dot) of the user and can be thrown at an enemy to inflict all those absorbed status effects at once.
