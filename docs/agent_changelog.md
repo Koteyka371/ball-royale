@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-655] Necromancer Bone Armor — *2026-07-07 18:54:45 UTC*
+
+Necromancer periodically generates bone armor stacks that mitigate flat damage from incoming attacks.
+
+---
+
 ## [idea-659] Bouncy Castle Arena — *2026-07-07 18:22:10 UTC*
 
 The arena itself is made of bouncy material, making balls bounce with more force.

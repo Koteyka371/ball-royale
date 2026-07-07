@@ -11292,7 +11292,7 @@
     },
     {
       "id": "idea-655",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Necromancer Bone Armor",
@@ -18691,6 +18691,74 @@
         "src/ai/black_hole_singularity.py",
         "src/ai/black_hole_singularity.gd",
         "tests/test_black_hole_singularity.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1090",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Frictionless Arena Modifier",
+      "description": "Introduce an arena modifier that completely removes friction for a random duration, forcing players to perfectly balance their momentum and making collisions much more impactful and chaotic.",
+      "allowed_paths": [
+        "src/arena/frictionless_arena.py",
+        "src/arena/frictionless_arena.gd",
+        "tests/test_frictionless_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1091",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Bomb Skill",
+      "description": "A new skill where the player drops a fake powerup or healing orb that explodes for heavy damage when collected by enemies.",
+      "allowed_paths": [
+        "src/ai/decoy_bomb_skill.py",
+        "src/ai/decoy_bomb_skill.gd",
+        "tests/test_decoy_bomb_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1092",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Destructible Bouncy Boundaries",
+      "description": "Make parts of the bouncy arena boundaries destructible over time when hit by high-speed balls, gradually exposing deadly spikes or an infinite fall abyss behind them.",
+      "allowed_paths": [
+        "src/ai/destructible_bouncy_boundaries.py",
+        "src/ai/destructible_bouncy_boundaries.gd",
+        "tests/test_destructible_bouncy_boundaries.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1093",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Reaction",
+      "description": "Every elimination sets off a delayed explosion around the eliminated player. Surviving players can chain these explosions to eliminate multiple enemies.",
+      "allowed_paths": [
+        "src/ai/chain_reaction.py",
+        "src/ai/chain_reaction.gd",
+        "tests/test_chain_reaction.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
