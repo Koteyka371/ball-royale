@@ -1617,6 +1617,16 @@ class DualPayloadMode(GameMode):
 
             speed_mult_red = 1.0 + (nearby_red * 0.5)
 
+            # Heal nearby red teammates
+            for b in balls:
+                if getattr(b, "ball_type", None) == "spectator": continue
+                if not getattr(b, "alive", False) or b == self.payload_red: continue
+                if getattr(b, "team", "") == "Red":
+                    bdx = getattr(b, "x", 0) - getattr(self.payload_red, "x", 0)
+                    bdy = getattr(b, "y", 0) - getattr(self.payload_red, "y", 0)
+                    if math.hypot(bdx, bdy) <= 150.0:
+                        b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + 15.0 * delta)
+
             dx = center_x - getattr(self.payload_red, "x", 0)
             dy = center_y - getattr(self.payload_red, "y", 0)
             dist = math.hypot(dx, dy)
@@ -1641,6 +1651,16 @@ class DualPayloadMode(GameMode):
                     nearby_blue += 1
 
             speed_mult_blue = 1.0 + (nearby_blue * 0.5)
+
+            # Heal nearby blue teammates
+            for b in balls:
+                if getattr(b, "ball_type", None) == "spectator": continue
+                if not getattr(b, "alive", False) or b == self.payload_blue: continue
+                if getattr(b, "team", "") == "Blue":
+                    bdx = getattr(b, "x", 0) - getattr(self.payload_blue, "x", 0)
+                    bdy = getattr(b, "y", 0) - getattr(self.payload_blue, "y", 0)
+                    if math.hypot(bdx, bdy) <= 150.0:
+                        b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + 15.0 * delta)
 
             dx = center_x - getattr(self.payload_blue, "x", 0)
             dy = center_y - getattr(self.payload_blue, "y", 0)
@@ -6574,10 +6594,20 @@ class TugOfWarMode(GameMode):
                 # Red pushes towards Blue goal (right)
                 speed_multiplier = 1.0 + ((red_count - 1) * 0.5)
                 self.payload.x += move_speed * delta * (red_count - blue_count) * speed_multiplier
+                # Heal Red team nearby
+                for b in balls:
+                    if getattr(b, "alive", False) and getattr(b, "team", "") == "Red" and b != self.payload:
+                        if math.hypot(getattr(b, "x", 0) - getattr(self.payload, "x", 0), getattr(b, "y", 0) - getattr(self.payload, "y", 0)) < 150.0:
+                            b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + 15.0 * delta)
             elif blue_count > red_count:
                 # Blue pushes towards Red goal (left)
                 speed_multiplier = 1.0 + ((blue_count - 1) * 0.5)
                 self.payload.x -= move_speed * delta * (blue_count - red_count) * speed_multiplier
+                # Heal Blue team nearby
+                for b in balls:
+                    if getattr(b, "alive", False) and getattr(b, "team", "") == "Blue" and b != self.payload:
+                        if math.hypot(getattr(b, "x", 0) - getattr(self.payload, "x", 0), getattr(b, "y", 0) - getattr(self.payload, "y", 0)) < 150.0:
+                            b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + 15.0 * delta)
 
             # Keep in bounds
             if self.payload.x < 50.0:
