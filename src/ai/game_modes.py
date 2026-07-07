@@ -8967,7 +8967,137 @@ class JuggernautMode(GameMode):
 
         return None
 
+
+class ReverseTugOfWarMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Reverse Tug of War"
+        self.description = "Like Tug of War, but the payload moves AWAY from the team that has more players nearby. Teams must zone out enemies and avoid getting too close to push it towards the enemy goal."
+        self.payload = None
+        self.red_goal_x = 100.0
+        self.blue_goal_x = 900.0
+        self.timer = 180.0
+
+    def setup(self, world, balls) -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        mid = len(valid_balls) // 2
+
+        red_team = []
+        blue_team = []
+
+        for i, b in enumerate(valid_balls):
+            if i < mid:
+                b.team = "Red"
+                red_team.append(b)
+            else:
+                b.team = "Blue"
+                blue_team.append(b)
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        self.red_goal_x = 100.0
+        self.blue_goal_x = arena_width - 100.0
+
+        # Find or create a payload
+        class PayloadObj:
+            pass
+        self.payload = PayloadObj()
+        self.payload.ball_type = "payload"
+        self.payload.is_payload = True
+        self.payload.is_invulnerable = True
+        self.payload.speed = 0.0
+        self.payload.base_speed = 0.0
+        self.payload.damage = 0.0
+        self.payload.base_damage = 0.0
+        self.payload.max_hp = 10000.0
+        self.payload.hp = 10000.0
+        self.payload.x = arena_width / 2.0
+        self.payload.y = arena_height / 2.0
+        self.payload.alive = True
+        self.payload.team = "Neutral"
+        self.payload.radius = 20.0
+        balls.append(self.payload)
+
+    def tick(self, world, balls, delta: float = 0.016) -> None:
+        if getattr(self, "timer", 0) > 0:
+            self.timer -= delta
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        if self.payload and getattr(self.payload, "alive", False):
+            import math
+
+            # Count nearby players to determine movement
+            red_count = 0
+            blue_count = 0
+
+            for b in balls:
+                if b == self.payload or not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                    continue
+
+                dx = getattr(b, "x", 0) - getattr(self.payload, "x", 0)
+                dy = getattr(b, "y", 0) - getattr(self.payload, "y", 0)
+                dist = math.hypot(dx, dy)
+
+                if dist < 150.0:
+                    if getattr(b, "team", "") == "Red":
+                        red_count += 1
+                    elif getattr(b, "team", "") == "Blue":
+                        blue_count += 1
+
+            # Reverse logic: moves away from the team with more players
+            move_speed = 50.0 # base move speed
+
+            if red_count > blue_count:
+                # Red is closer, push payload AWAY from Red team (left, towards Red's own goal, so Blue is winning)
+                self.payload.x -= move_speed * delta * (red_count - blue_count)
+            elif blue_count > red_count:
+                # Blue is closer, push payload AWAY from Blue team (right, towards Blue's own goal, so Red is winning)
+                self.payload.x += move_speed * delta * (blue_count - red_count)
+
+            # Keep in bounds
+            if self.payload.x < 50.0:
+                self.payload.x = 50.0
+            elif self.payload.x > arena_width - 50.0:
+                self.payload.x = arena_width - 50.0
+
+    def check_winner(self, world, balls):
+        if not self.payload:
+            return None
+
+        px = getattr(self.payload, "x", 0)
+
+        # Check if it reached a goal
+        # If payload hits red goal (x <= 100), Blue pushed it there (meaning Blue stayed away and Red got close)
+        if px <= self.red_goal_x:
+            return "Blue" # Blue wins
+        # If payload hits blue goal (x >= 900), Red pushed it there (meaning Red stayed away and Blue got close)
+        elif px >= self.blue_goal_x:
+            return "Red" # Red wins
+
+        if getattr(self, "timer", 0) <= 0:
+            # Time up, whoever pushed it further wins
+            arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+            center_x = arena_width / 2.0
+
+            # If payload is on Blue's side (x > center), Red has pushed it more.
+            if px > center_x:
+                return "Red"
+            # If payload is on Red's side (x < center), Blue has pushed it more.
+            elif px < center_x:
+                return "Blue"
+            else:
+                return "Draw"
+
+        return None
+
 GAME_MODES = {
+    "reverse_tug_of_war": ReverseTugOfWarMode(),
     "extreme_weather": ExtremeWeatherMode(),
     "invisible_decoys": InvisibleDecoysMode(),
     "sweeping_paddles": SweepingPaddlesMode(),
