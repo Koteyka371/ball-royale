@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-649] Weather Resistant Items — *2026-07-07 19:15:24 UTC*
+
+Boots or goggles that specifically negate the negative movement or vision debuffs applied by certain weather effects.
+
+---
+
 ## [idea-677] Portal Relay Mode — *2026-07-07 19:15:20 UTC*
 
 A mode where two pairs of interconnected portals periodically spawn and swap positions, allowing players to instantly traverse the map but also throwing unexpected hazards through the rifts.
