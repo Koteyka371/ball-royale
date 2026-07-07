@@ -12108,7 +12108,7 @@
     },
     {
       "id": "idea-703",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Entanglement Mine",
@@ -19695,6 +19695,23 @@
         "src/arena/payload_traps.py",
         "src/arena/payload_traps.gd",
         "tests/test_payload_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1149",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Payload Overheal Shield",
+      "description": "When a payload heals a teammate who is already at max HP, it instead generates a temporary shield that absorbs one instance of incoming damage.",
+      "allowed_paths": [
+        "src/ai/payload_overheal_shield.py",
+        "src/ai/payload_overheal_shield.gd",
+        "tests/test_payload_overheal_shield.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

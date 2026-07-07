@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-703] Quantum Entanglement Mine — *2026-07-07 22:07:25 UTC*
+
+A hazard trap that links two enemies who walk near it. Any damage dealt to one is mirrored onto the other, and if one moves too far from the other, they are yanked violently back together.
+
+---
+
 ## [idea-665] Gravity Well Trap — *2026-07-07 21:55:30 UTC*
 
 A placeable trap that, when triggered, creates a temporary miniature black hole that violently pulls nearby balls and items towards the center, ignoring collision lines. It doesn't deal damage itself but leaves players vulnerable to AoE attacks.
