@@ -8495,6 +8495,83 @@ class ExtremeWeatherMode(GameMode):
                         b.x += math.cos(angle) * 100.0 * delta
                         b.y += math.sin(angle) * 100.0 * delta
 
+
+class JuggernautMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Juggernaut"
+        self.description = "Similar to Boss Fight, but when the Juggernaut is killed, the player who dealt the final blow becomes the new Juggernaut."
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        if not valid_balls:
+            return
+
+        boss = valid_balls[0]
+        self._make_juggernaut(world, boss)
+
+        # The rest are hunters
+        for b in valid_balls:
+            if b == boss:
+                continue
+            b.team = "Hunters"
+            b.max_hp = getattr(b, "max_hp", 100) * 0.8
+            b.hp = b.max_hp
+
+    def _make_juggernaut(self, world: Any, b: Any) -> None:
+        b.team = "Juggernaut"
+        # Optional: Actually change ball_type to juggernaut? Or just scale stats.
+        # "becomes the new Juggernaut" usually means their role is Juggernaut.
+        b.max_hp = getattr(b, "max_hp", 100) * 10.0
+        b.hp = b.max_hp
+        b.damage = getattr(b, "damage", 10.0) * 2.0
+        b.radius = getattr(b, "radius", 10.0) * 3.0
+
+        b.base_speed = float(getattr(b, "base_speed", getattr(b, "speed", 100.0))) * 0.6
+        b.mass = getattr(b, "mass", 1.0) * 5.0
+
+        # fully heal
+        b.hp = b.max_hp
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        # Check for Juggernaut death
+        dead_juggernauts = [b for b in balls if getattr(b, "team", "") == "Juggernaut" and not getattr(b, "alive", False)]
+
+        for dead_jug in dead_juggernauts:
+            killer_id = getattr(dead_jug, "killer", None)
+            if killer_id is not None:
+                killer = next((b for b in balls if getattr(b, "id", None) == killer_id), None)
+                if killer and getattr(killer, "alive", False):
+                    self._make_juggernaut(world, killer)
+                    if hasattr(world, "add_event"):
+                        world.add_event("juggernaut_change", {"message": "A new Juggernaut has emerged!"})
+            dead_jug.team = "Dead"
+
+        for b in balls:
+            if getattr(b, "team", "") == "Juggernaut" and getattr(b, "alive", False):
+                b.hp = min(b.hp + 5.0 * delta, getattr(b, "max_hp", 1000.0))
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
+        if not alive:
+            return "Draw"
+
+        juggernaut_alive = any(getattr(b, "team", "") == "Juggernaut" for b in alive)
+        hunters_alive = any(getattr(b, "team", "") == "Hunters" for b in alive)
+
+        if not juggernaut_alive:
+            return "Hunters"
+        if not hunters_alive:
+            return "Juggernaut"
+
+        return None
+
 GAME_MODES = {
     "extreme_weather": ExtremeWeatherMode(),
     "invisible_decoys": InvisibleDecoysMode(),
@@ -8555,6 +8632,7 @@ GAME_MODES = {
     "team_deathmatch": TeamDeathmatchMode(),
     "zombie_infection": ZombieInfectionMode(),
     "boss_fight": BossFightMode(),
+    "juggernaut": JuggernautMode(),
     "guild_boss_fight": GuildBossFightMode(),
     "vip_defense": VIPDefenseMode(),
     "survival": SurvivalMode(),
