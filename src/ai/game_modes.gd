@@ -11416,6 +11416,64 @@ class JuggernautMode extends GameMode:
 
 		return null
 
+class DecreasingSpeedMode extends GameMode:
+	var initial_max_speed: float = 300.0
+	var min_speed_cap: float = 50.0
+	var speed_decrease_rate: float = 2.0
+	var elapsed_time: float = 0.0
+
+	func _init():
+		super._init()
+		name = "Decreasing Speed"
+		description = "As the game progresses, the maximum speed cap for all entities decreases steadily, forcing players into more strategic and confined maneuvering."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		elapsed_time = 0.0
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		elapsed_time += delta
+
+		var current_cap = max(min_speed_cap, initial_max_speed - (elapsed_time * speed_decrease_rate))
+
+		for ball in balls:
+			var alive = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("alive"):
+				alive = ball["alive"]
+			elif typeof(ball) == TYPE_OBJECT and "alive" in ball:
+				alive = ball.alive
+
+			if not alive:
+				continue
+
+			var speed_val = 100.0
+			if typeof(ball) == TYPE_DICTIONARY:
+				if ball.has("speed"):
+					speed_val = ball["speed"]
+				elif ball.has("base_speed"):
+					speed_val = ball["base_speed"]
+
+				if speed_val > current_cap:
+					ball["speed"] = current_cap
+
+				if ball.has("max_speed") and ball["max_speed"] > current_cap:
+					ball["max_speed"] = current_cap
+
+			elif typeof(ball) == TYPE_OBJECT:
+				if "speed" in ball:
+					speed_val = ball.speed
+				elif "base_speed" in ball:
+					speed_val = ball.base_speed
+
+				if speed_val > current_cap:
+					if "speed" in ball:
+						ball.speed = current_cap
+
+				if "max_speed" in ball and ball.max_speed > current_cap:
+					ball.max_speed = current_cap
+
 var GAME_MODES = {
 	"extreme_weather": ExtremeWeatherMode.new(),
 	"invisible_decoys": InvisibleDecoysMode.new(),
@@ -11516,6 +11574,7 @@ var GAME_MODES = {
 	"rubber_band": RubberBandMode.new(),
 	"rift_roulette": RiftRouletteMode.new(),
 	"item_morph": ItemMorphMode.new(),
+	"decreasing_speed": DecreasingSpeedMode.new(),
 
 	"crossfire": CrossfireMode.new(),
 	"reverse_friction": preload("res://src/ai/reverse_friction.gd").ReverseFrictionMode.new()

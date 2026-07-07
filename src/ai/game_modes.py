@@ -9829,3 +9829,40 @@ class ItemMorphMode(GameMode):
                     world.add_event("items_morphed", {"message": "All items have morphed!"})
 
 GAME_MODES["item_morph"] = ItemMorphMode()
+
+class DecreasingSpeedMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Decreasing Speed"
+        self.description = "As the game progresses, the maximum speed cap for all entities decreases steadily, forcing players into more strategic and confined maneuvering."
+        self.initial_max_speed = 300.0
+        self.min_speed_cap = 50.0
+        self.speed_decrease_rate = 2.0  # Units per second
+        self.elapsed_time = 0.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.elapsed_time = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        self.elapsed_time += delta
+
+        # Calculate current max speed cap based on elapsed time
+        current_cap = max(self.min_speed_cap, self.initial_max_speed - (self.elapsed_time * self.speed_decrease_rate))
+
+        for ball in balls:
+            if not getattr(ball, 'alive', False):
+                continue
+
+            # Use speed or base_speed to enforce the cap
+            current_speed = getattr(ball, 'speed', getattr(ball, 'base_speed', 100.0))
+            if current_speed > current_cap:
+                ball.speed = current_cap
+
+            # Enforce max_speed attribute if it exists
+            if hasattr(ball, 'max_speed') and ball.max_speed > current_cap:
+                ball.max_speed = current_cap
+
+GAME_MODES["decreasing_speed"] = DecreasingSpeedMode()
