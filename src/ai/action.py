@@ -724,6 +724,18 @@ class Action:
             return
         import math
 
+        # Decoy Aura Buff
+        if getattr(self.ball, "decoy_aura_timer", 0.0) > 0:
+            self.ball.decoy_aura_timer -= delta
+            if self.ball.decoy_aura_timer > 0:
+                self.ball.speed = getattr(self.ball, "base_speed", 2.0) * 1.2
+                if hasattr(self.ball, "stamina") and hasattr(self.ball, "max_stamina"):
+                    self.ball.stamina = min(getattr(self.ball, "max_stamina", 100), getattr(self.ball, "stamina", 0) + 10.0 * delta)
+            else:
+                self.ball.decoy_aura_timer = 0
+                if hasattr(self.ball, "speed") and hasattr(self.ball, "base_speed"):
+                    self.ball.speed = self.ball.base_speed
+
         # Nemesis Reveal Passive
         if not hasattr(self.ball, "nemesis_reveal_timer"):
             self.ball.nemesis_reveal_timer = 5.0
@@ -2063,6 +2075,18 @@ class Action:
 
         if getattr(self.ball, "is_decoy", False):
             self.ball.decoy_timer -= delta
+
+            # Emit aura that grants slightly increased speed and stamina regen to allies within a certain radius
+            if hasattr(self.world, "balls"):
+                for b in self.world.balls:
+                    if getattr(b, "alive", False) and getattr(b, "id", None) != getattr(self.ball, "id", None):
+                        if getattr(b, "team", "") == getattr(self.ball, "team", ""):
+                            dx = self.ball.x - getattr(b, "x", 0)
+                            dy = self.ball.y - getattr(b, "y", 0)
+                            dist = math.sqrt(dx*dx + dy*dy)
+                            if dist <= 150.0:
+                                b.decoy_aura_timer = 0.5 # Refresh timer
+
             if self.ball.decoy_timer <= 0:
                 self.ball.alive = False
                 self.ball.hp = 0
