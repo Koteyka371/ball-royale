@@ -3852,68 +3852,76 @@ func execute(strategy: String, delta: float):
                         my_ball.y = my - (owner.y - my)
 
     if world != null and "balls" in world:
+        var exploding_decoys_by_owner = {}
         for b in world.balls:
             var b_is_decoy = false
-            if "is_decoy" in b:
-                b_is_decoy = b.is_decoy
-            elif b.has_method("get_meta") and b.has_meta("is_decoy"):
-                b_is_decoy = b.get_meta("is_decoy")
+            if "is_decoy" in b: b_is_decoy = b.is_decoy
+            elif b.has_method("get_meta") and b.has_meta("is_decoy"): b_is_decoy = b.get_meta("is_decoy")
 
             if b_is_decoy:
                 var b_hp = 1.0
-                if "hp" in b:
-                    b_hp = b.hp
+                if "hp" in b: b_hp = b.hp
                 var b_dt = 1.0
-                if "decoy_timer" in b:
-                    b_dt = b.decoy_timer
-                elif b.has_method("get_meta") and b.has_meta("decoy_timer"):
-                    b_dt = b.get_meta("decoy_timer")
+                if "decoy_timer" in b: b_dt = b.decoy_timer
+                elif b.has_method("get_meta") and b.has_meta("decoy_timer"): b_dt = b.get_meta("decoy_timer")
+
                 var b_alive = true
-                if "alive" in b:
-                    b_alive = b.alive
-                elif b.has_method("get_meta") and b.has_meta("alive"):
-                    b_alive = b.get_meta("alive")
+                if "alive" in b: b_alive = b.alive
+                elif b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
 
                 if b_hp <= 0.0 or b_dt <= 0.0 or not b_alive:
                     var b_exploded = false
-                    if "_decoy_exploded" in b:
-                        b_exploded = b._decoy_exploded
-                    elif b.has_method("get_meta") and b.has_meta("_decoy_exploded"):
-                        b_exploded = b.get_meta("_decoy_exploded")
+                    if "_decoy_exploded" in b: b_exploded = b._decoy_exploded
+                    elif b.has_method("get_meta") and b.has_meta("_decoy_exploded"): b_exploded = b.get_meta("_decoy_exploded")
 
                     if not b_exploded:
-                        if "_decoy_exploded" in b:
-                            b._decoy_exploded = true
-                        elif b.has_method("set_meta"):
-                            b.set_meta("_decoy_exploded", true)
+                        var owner_id = -1
+                        if "owner_id" in b: owner_id = b.owner_id
+                        elif b.has_method("get_meta") and b.has_meta("owner_id"): owner_id = b.get_meta("owner_id")
 
-                        if "alive" in b:
-                            b.alive = false
-                        elif b.has_method("set_meta"):
-                            b.set_meta("alive", false)
-                        if "hp" in b:
-                            b.hp = 0.0
+                        if not exploding_decoys_by_owner.has(owner_id):
+                            exploding_decoys_by_owner[owner_id] = []
+                        exploding_decoys_by_owner[owner_id].append(b)
 
-                        var b_team = ""
-                        if "team" in b:
-                            b_team = b.team
+        for owner_id in exploding_decoys_by_owner.keys():
+            var decoys = exploding_decoys_by_owner[owner_id]
+            var simultaneous = (decoys.size() >= 2)
 
-                        var b_id = -1
-                        if "id" in b:
-                            b_id = b.id
-                        elif b.has_method("get_meta") and b.has_meta("id"):
-                            b_id = b.get_meta("id")
+            for b in decoys:
+                if "_decoy_exploded" in b: b._decoy_exploded = true
+                elif b.has_method("set_meta"): b.set_meta("_decoy_exploded", true)
 
-                        var has_volatile = false
-                        if "traits" in b and typeof(b.traits) == TYPE_ARRAY and b.traits.has("volatile_decoy"):
-                            has_volatile = true
-                        elif b.has_method("get_meta") and b.has_meta("traits") and typeof(b.get_meta("traits")) == TYPE_ARRAY and b.get_meta("traits").has("volatile_decoy"):
-                            has_volatile = true
+                if "alive" in b: b.alive = false
+                elif b.has_method("set_meta"): b.set_meta("alive", false)
 
-                        var radius = 150.0 if has_volatile else 100.0
-                        var explosion_damage = 80.0 if has_volatile else 30.0
+                if "hp" in b: b.hp = 0.0
 
-                        for other in world.balls:
+            var idx = -1
+            for b in decoys:
+                idx += 1
+                if simultaneous and idx > 0:
+                    continue
+
+                var b_team = ""
+                if "team" in b: b_team = b.team
+                elif b.has_method("get_meta") and b.has_meta("team"): b_team = b.get_meta("team")
+
+                var b_id = -1
+                if "id" in b: b_id = b.id
+                elif b.has_method("get_meta") and b.has_meta("id"): b_id = b.get_meta("id")
+
+                var has_volatile = false
+                if "traits" in b and typeof(b.traits) == TYPE_ARRAY and b.traits.has("volatile_decoy"): has_volatile = true
+                elif b.has_method("get_meta") and b.has_meta("traits") and typeof(b.get_meta("traits")) == TYPE_ARRAY and b.get_meta("traits").has("volatile_decoy"): has_volatile = true
+
+                var radius = 150.0 if has_volatile else 100.0
+                var explosion_damage = 80.0 if has_volatile else 30.0
+
+                if simultaneous:
+                    radius *= 2.0
+                    explosion_damage *= 2.0
+
+                for other in world.balls:
                             var other_alive = false
                             if "alive" in other:
                                 other_alive = other.alive
@@ -12879,6 +12887,8 @@ func _use_skill():
                                 decoy.set_meta("active_skill", null)
                                 decoy.set_meta("is_orbiting", true if i == 0 else false)
                                 decoy.set_meta("is_mirroring", true if i == 1 else false)
+                                if i == 1:
+                                    decoy.set_meta("takes_double_damage", true)
                                 decoy.set_meta("orbit_angle", 0.0 if i == 0 else PI)
                             elif decoy is Dictionary:
                                 decoy["owner_id"] = self_id_stat
@@ -12892,6 +12902,8 @@ func _use_skill():
                                 decoy["active_skill"] = null
                                 decoy["is_orbiting"] = true if i == 0 else false
                                 decoy["is_mirroring"] = true if i == 1 else false
+                                if i == 1:
+                                    decoy["takes_double_damage"] = true
                                 decoy["orbit_angle"] = 0.0 if i == 0 else PI
                             else:
                                 pass # fallback if not possible
