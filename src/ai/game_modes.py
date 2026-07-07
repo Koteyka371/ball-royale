@@ -7235,6 +7235,23 @@ class DynamicSafeZoneMode(GameMode):
         return None
 
 
+class ExplodingDecoysMode(GameMode):
+    """
+    A mutator where decoys explode upon expiration or death, dealing area-of-effect damage to nearby enemies.
+    """
+    def __init__(self):
+        super().__init__()
+        self.mode_name = "exploding_decoys"
+        self.description = "A mutator where decoys explode upon expiration or death, dealing area-of-effect damage to nearby enemies."
+        self.mutators_active = True
+        self.mutators = ["exploding_decoys"]
+
+    def setup(self, world, balls, is_resume=False):
+        super().setup(world, balls)
+        self.world = world
+        if not hasattr(world, "game_mode") or world.game_mode != self:
+            world.game_mode = self
+
 class DailyMutatorMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -8867,6 +8884,7 @@ GAME_MODES = {
 
     "geometric_zone": GeometricZoneMode(),
     "daily_mutator": DailyMutatorMode(),
+    "exploding_decoys": ExplodingDecoysMode(),
     "factory": FactoryMode(),
     "mirror_walls": MirrorWallsMode(),
     "stamina_regen": StaminaRegenMode(),

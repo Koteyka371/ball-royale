@@ -8796,6 +8796,27 @@ class DynamicSafeZoneMode extends GameMode:
                         b.hp = 0
 
 
+class ExplodingDecoysMode extends GameMode:
+	var mutators_active: bool = true
+	var mutators: Array = ["exploding_decoys"]
+
+	func _init():
+		super._init()
+		mode_name = "exploding_decoys"
+		description = "A mutator where decoys explode upon expiration or death, dealing area-of-effect damage to nearby enemies."
+
+	func setup(world, balls, is_resume=false):
+		super.setup(world, balls, is_resume)
+		var has_gm = "game_mode" in world
+		var curr_gm = null
+		if has_gm:
+			curr_gm = world.game_mode if typeof(world) == TYPE_DICTIONARY else world.get("game_mode")
+		if not has_gm or curr_gm != self:
+			if typeof(world) == TYPE_DICTIONARY:
+				world["game_mode"] = self
+			elif typeof(world) == TYPE_OBJECT:
+				world.set("game_mode", self)
+
 class DailyMutatorMode extends GameMode:
 	var mutators: Array = []
 	var _rewards_given: bool = false
@@ -11434,6 +11455,7 @@ var GAME_MODES = {
 
 	"geometric_zone": GeometricZoneMode.new(),
 	"daily_mutator": DailyMutatorMode.new(),
+	"exploding_decoys": ExplodingDecoysMode.new(),
 	"factory": FactoryMode.new(),
     "mirror_walls": MirrorWallsMode.new(),
     "stamina_regen": StaminaRegenMode.new(),
