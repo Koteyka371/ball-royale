@@ -617,7 +617,7 @@ class BattleRoyaleMode(GameMode):
                         self.ball_type = "booster"
                         self.active = True
 
-                booster_kinds = ["speed_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_compass_item", "shadow_booster", "weather_scanner_item", "aura_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "cursed_booster", "grapple_booster", "time_rewind_booster", "shield_booster"]
+                booster_kinds = ["speed_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "weather_scanner_item", "aura_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "cursed_booster", "grapple_booster", "time_rewind_booster", "shield_booster"]
                 chosen_kind = rnd.choice(booster_kinds)
                 b_id = 9000 + len(world.boosters) + rnd.randint(0, 1000)
                 b_x = rnd.uniform(100, arena_width - 100)
@@ -10194,7 +10194,7 @@ class ItemMorphMode(GameMode):
         super().__init__()
         self.morph_timer = 0.0
         self.morph_interval = 10.0
-        self.booster_kinds = ["speed_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_compass_item", "shadow_booster", "weather_scanner_item", "aura_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "cursed_booster", "grapple_booster", "time_rewind_booster"]
+        self.booster_kinds = ["speed_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "weather_scanner_item", "aura_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "cursed_booster", "grapple_booster", "time_rewind_booster"]
         import random
         self.random = random
 
@@ -10412,7 +10412,7 @@ class SolarFlareMode(GameMode):
         self.flare_interval = 20.0
         self.flare_duration = 5.0
         self.is_flaring = False
-        self.excluded_hazards = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "shield_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "aura_booster", "exploding_booster", "debuff_booster", "forecast_booster", "teleporter", "quantum_teleporter"]
+        self.excluded_hazards = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "shield_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "aura_booster", "exploding_booster", "debuff_booster", "forecast_booster", "teleporter", "quantum_teleporter"]
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
