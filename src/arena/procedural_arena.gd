@@ -13,7 +13,7 @@ var safe_zone_radius: float
 var safe_zone_center: Array
 var last_tick: int = -1
 var danger_grid: Dictionary = {}
-var boundary_states: Dictionary = {"top": "normal", "bottom": "normal", "left": "normal", "right": "normal"}
+var boundary_states: Dictionary = {"top": "bouncy", "bottom": "bouncy", "left": "bouncy", "right": "bouncy"}
 
 class Hazard:
     var id: int
@@ -562,7 +562,7 @@ func clamp_position(x: float, y: float, radius: float) -> Array:
 func update_zone(current_tick: int, delta: float) -> void:
     if current_tick != last_tick:
         if current_tick % 400 == 0:
-            var states = ["normal", "normal", "bouncy", "sticky"]
+            var states = ["bouncy", "bouncy", "bouncy", "bouncy"]
             states.shuffle()
             boundary_states = {
                 "top": states[0],
