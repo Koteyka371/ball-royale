@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-666] Bouncing Laser Hazards — *2026-07-07 19:37:18 UTC*
+
+Adds a new moving hazard to the procedural arena: a slow-moving, concentrated laser beam that continuously bounces off the arena walls. Instead of static hitboxes, this hazard creates moving damage zones that balls must kite around or carefully dash through.
+
+---
+
 ## [idea-678] Decoy Overcharge Aura — *2026-07-07 19:21:40 UTC*
 
 While a decoy is active, it emits an aura that grants slightly increased speed and stamina regeneration to allies within a certain radius, providing a buffing utility before it explodes or is destroyed.
