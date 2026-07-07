@@ -8388,18 +8388,15 @@ func execute(strategy: String, delta: float):
 
     if link_target != null and ("alive" in link_target and link_target.alive):
         var dist_sq = pow(self.ball.x - link_target.x, 2) + pow(self.ball.y - link_target.y, 2)
-        if dist_sq > 90000.0:  # Distance > 300 breaks the link
-            if "damage_link_target" in self.ball: self.ball.damage_link_target = null
-            elif self.ball.has_method("set_meta"): self.ball.set_meta("damage_link_target", null)
+        if dist_sq > 90000.0:  # Distance > 300 yanks them back together
+            var dist = sqrt(dist_sq)
+            var dx = link_target.x - self.ball.x
+            var dy = link_target.y - self.ball.y
+            var yank_speed = 1500.0
+            self.ball.x += (dx / dist) * yank_speed * delta
+            self.ball.y += (dy / dist) * yank_speed * delta
 
-            var target_link = null
-            if "damage_link_target" in link_target: target_link = link_target.damage_link_target
-            elif link_target.has_method("get_meta") and link_target.has_meta("damage_link_target"): target_link = link_target.get_meta("damage_link_target")
-
-            if target_link == self.ball:
-                if "damage_link_target" in link_target: link_target.damage_link_target = null
-                elif link_target.has_method("set_meta"): link_target.set_meta("damage_link_target", null)
-        else:
+        if true:
             var is_receiving = false
             if "damage_link_is_receiving" in self.ball: is_receiving = self.ball.damage_link_is_receiving
             elif self.ball.has_method("get_meta") and self.ball.has_meta("damage_link_is_receiving"): is_receiving = self.ball.get_meta("damage_link_is_receiving")
