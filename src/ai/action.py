@@ -431,8 +431,24 @@ class Action:
                 if pm and hasattr(pm, "is_nemesis") and getattr(attacker, "ball_type", None) and getattr(target, "ball_type", None):
                     if pm.is_nemesis(target.ball_type, attacker.ball_type):
                         base_xp *= 2.0
+
+                # Bounty check
+                attacker_bounties = getattr(attacker, 'active_bounties', [])
+                target_guild = getattr(target, 'guild_name', None)
+                if target_guild and target_guild in attacker_bounties:
+                    base_xp *= 2.0
+
                 self._award_xp(attacker, base_xp, self.world)
         if new_hp <= 0 and old_hp > 0:
+            # Check for score update if it's a bounty kill
+            attacker_bounties = getattr(attacker, 'active_bounties', [])
+            target_guild = getattr(target, 'guild_name', None)
+            if target_guild and target_guild in attacker_bounties:
+                if hasattr(attacker, 'score'):
+                    attacker.score += 10 # Extra points for a bounty kill
+                if hasattr(self.world, 'events'):
+                    self.world.events.append({'type': 'bounty_claimed', 'data': {'killer': getattr(attacker, 'id', None), 'target': getattr(target, 'id', None)}})
+
             if pm and hasattr(pm, "add_kill"):
                 pm.add_kill(attacker.ball_type, target.ball_type)
                 if pm.is_nemesis(target.ball_type, attacker.ball_type):
@@ -704,6 +720,14 @@ class Action:
 
     def execute(self, strategy: str, delta: float) -> None:
         import math
+
+        # Update highlighting for active bounties
+        my_bounties = getattr(self.ball, 'active_bounties', [])
+        if my_bounties and hasattr(self.world, 'balls'):
+            for b in self.world.balls:
+                b_guild = getattr(b, 'guild_name', None)
+                if b_guild and b_guild in my_bounties:
+                    b.is_bounty_target = True
 
         if getattr(self.ball, "shuffle_booster_timer", 0.0) > 0:
             self.ball.shuffle_booster_timer -= delta

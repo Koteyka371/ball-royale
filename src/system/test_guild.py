@@ -211,3 +211,31 @@ def test_guild_perk_progression(temp_guild_file):
     gm.record_gvg_match("PerkGuild", "OtherGuild", "PerkGuild") # +50 XP, total 100
     assert gm.unlock_perk("PerkGuild", "hp_10_percent", 100, required_perk="hp_5_percent") == True
     assert "hp_10_percent" in gm.get_guild_perks("PerkGuild")
+
+def test_place_and_get_bounties(temp_guild_file):
+    gm = GuildManager(temp_guild_file)
+    gm.create_guild("BountyHunters", "player1")
+    gm.create_guild("TargetGuild", "player2")
+
+    # Test getting bounties on empty list
+    assert gm.get_active_bounties("BountyHunters") == []
+
+    # Needs resources to place bounty
+    assert gm.place_bounty("BountyHunters", "TargetGuild", 500) == False
+
+    # Add resources
+    gm.donate_resources("BountyHunters", 1000)
+
+    # Place bounty successfully
+    assert gm.place_bounty("BountyHunters", "TargetGuild", 500) == True
+
+    # Check resources deducted
+    guild = gm.get_guild("BountyHunters")
+    assert guild["resources"] == 500
+
+    # Check active bounties
+    assert "TargetGuild" in gm.get_active_bounties("BountyHunters")
+
+    # Place bounty again should fail (already exists)
+    assert gm.place_bounty("BountyHunters", "TargetGuild", 500) == False
+    assert guild["resources"] == 500

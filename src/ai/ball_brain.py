@@ -32,11 +32,13 @@ class BallBrain:
 
             # Apply guild buffs
             if pm.data.get("guild_name", ""):
+                self.ball.guild_name = pm.data["guild_name"]
                 try:
                     from system.guild import GuildManager
                     gm = GuildManager("guilds.json")
                     guild_buffs = gm.get_guild_buffs(pm.data["guild_name"])
                     guild_perks = gm.get_guild_perks(pm.data["guild_name"])
+                    self.ball.active_bounties = gm.get_active_bounties(pm.data["guild_name"])
 
                     hp_multi = 1.0
                     speed_multi = 1.0

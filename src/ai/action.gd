@@ -713,8 +713,52 @@ func _attempt_damage(attacker, target) -> void:
 			if pm != null and pm.has_method("is_nemesis") and attacker_type != "" and target_type != "":
 				if pm.is_nemesis(target_type, attacker_type):
 					base_xp *= 2.0
+
+			# Bounty check
+			var attacker_bounties = []
+			if attacker is Dictionary and attacker.has("active_bounties"):
+				attacker_bounties = attacker["active_bounties"]
+			elif typeof(attacker) == TYPE_OBJECT and "active_bounties" in attacker:
+				attacker_bounties = attacker.active_bounties
+
+			var target_guild = null
+			if target is Dictionary and target.has("guild_name"):
+				target_guild = target["guild_name"]
+			elif typeof(target) == TYPE_OBJECT and "guild_name" in target:
+				target_guild = target.guild_name
+
+			if target_guild != null and attacker_bounties.has(target_guild):
+				base_xp *= 2.0
+
 			self._award_xp(attacker, base_xp, self.world)
 	if new_hp <= 0 and old_hp > 0:
+		# Check for score update if it's a bounty kill
+		var attacker_bounties = []
+		if attacker is Dictionary and attacker.has("active_bounties"):
+			attacker_bounties = attacker["active_bounties"]
+		elif typeof(attacker) == TYPE_OBJECT and "active_bounties" in attacker:
+			attacker_bounties = attacker.active_bounties
+
+		var target_guild = null
+		if target is Dictionary and target.has("guild_name"):
+			target_guild = target["guild_name"]
+		elif typeof(target) == TYPE_OBJECT and "guild_name" in target:
+			target_guild = target.guild_name
+
+		if target_guild != null and attacker_bounties.has(target_guild):
+			if attacker is Dictionary and attacker.has("score"):
+				attacker["score"] += 10
+			elif typeof(attacker) == TYPE_OBJECT and "score" in attacker:
+				attacker.score += 10
+			if self.world != null and "events" in self.world:
+				var attacker_id = null
+				if attacker is Dictionary and attacker.has("id"): attacker_id = attacker["id"]
+				elif typeof(attacker) == TYPE_OBJECT and "id" in attacker: attacker_id = attacker.id
+				var target_id = null
+				if target is Dictionary and target.has("id"): target_id = target["id"]
+				elif typeof(target) == TYPE_OBJECT and "id" in target: target_id = target.id
+				self.world.events.append({"type": "bounty_claimed", "data": {"killer": attacker_id, "target": target_id}})
+
 		if pm != null and pm.has_method("add_kill"):
 			pm.add_kill(attacker_type, target_type)
 			if pm.is_nemesis(target_type, attacker_type):
@@ -1130,6 +1174,30 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+
+    # Update highlighting for active bounties
+    var my_bounties = []
+    if self.ball is Dictionary and self.ball.has("active_bounties"):
+        my_bounties = self.ball["active_bounties"]
+    elif typeof(self.ball) == TYPE_OBJECT and "active_bounties" in self.ball:
+        my_bounties = self.ball.active_bounties
+
+    if my_bounties.size() > 0 and self.world != null and "balls" in self.world:
+        for b in self.world.balls:
+            var b_guild = null
+            if b is Dictionary and b.has("guild_name"):
+                b_guild = b["guild_name"]
+            elif typeof(b) == TYPE_OBJECT and "guild_name" in b:
+                b_guild = b.guild_name
+
+            if b_guild != null and my_bounties.has(b_guild):
+                if b is Dictionary:
+                    b["is_bounty_target"] = true
+                elif typeof(b) == TYPE_OBJECT:
+                    if b.has_method("set_meta"):
+                        b.set_meta("is_bounty_target", true)
+                    else:
+                        b.is_bounty_target = true
 
     if self.ball.has_method("get_meta") and self.ball.has_meta("shuffle_booster_timer") and self.ball.get_meta("shuffle_booster_timer") > 0.0:
         var t = self.ball.get_meta("shuffle_booster_timer")

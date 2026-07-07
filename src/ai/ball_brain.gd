@@ -35,9 +35,19 @@ func _init(ball_ref, world_ref):
 
     # Apply guild buffs
     if pm.data.has("guild_name") and pm.data["guild_name"] != "":
+        if self.ball is Dictionary:
+            self.ball["guild_name"] = pm.data["guild_name"]
+        else:
+            self.ball.set("guild_name", pm.data["guild_name"])
+
         var gm = load("res://src/system/guild.gd").new()
         var guild_buffs = gm.get_guild_buffs(pm.data["guild_name"])
         var guild_perks = gm.get_guild_perks(pm.data["guild_name"])
+
+        if self.ball is Dictionary:
+            self.ball["active_bounties"] = gm.get_active_bounties(pm.data["guild_name"])
+        else:
+            self.ball.set("active_bounties", gm.get_active_bounties(pm.data["guild_name"]))
 
         var hp_multi = 1.0
         var speed_multi = 1.0

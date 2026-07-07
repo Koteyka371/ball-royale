@@ -24,6 +24,8 @@ class GuildManager:
                         guild["guild_xp"] = 0
                     if "perks" not in guild:
                         guild["perks"] = []
+                    if "bounties" not in guild:
+                        guild["bounties"] = []
                 return data
         except (FileNotFoundError, json.JSONDecodeError):
             return {"guilds": {}, "territories": {}}
@@ -50,6 +52,7 @@ class GuildManager:
             "chat_history": [],
             "vault": [],
             "boss_progress": {},
+            "bounties": [],
             "hq": {
                 "statues": [],
                 "banners": [],
@@ -258,3 +261,19 @@ class GuildManager:
                 "training_arena_unlocked": False
             })
         return None
+
+    def place_bounty(self, guild_name, target_guild, cost):
+        if guild_name in self.data["guilds"] and target_guild in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            if guild["resources"] >= cost:
+                if target_guild not in guild.setdefault("bounties", []):
+                    guild["resources"] -= cost
+                    guild["bounties"].append(target_guild)
+                    self.save()
+                    return True
+        return False
+
+    def get_active_bounties(self, guild_name):
+        if guild_name in self.data["guilds"]:
+            return self.data["guilds"][guild_name].get("bounties", [])
+        return []

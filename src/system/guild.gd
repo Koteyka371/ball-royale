@@ -30,6 +30,8 @@ func load_guilds():
                     data["guilds"][g_name]["guild_xp"] = 0
                 if not data["guilds"][g_name].has("perks"):
                     data["guilds"][g_name]["perks"] = []
+                if not data["guilds"][g_name].has("bounties"):
+                    data["guilds"][g_name]["bounties"] = []
             return
 
     data = {"guilds": {}, "territories": {}}
@@ -57,6 +59,7 @@ func create_guild(guild_name: String, creator_id: String) -> bool:
         "chat_history": [],
         "vault": [],
         "boss_progress": {},
+        "bounties": [],
         "hq": {
             "statues": [],
             "banners": [],
@@ -286,3 +289,23 @@ func get_hq_status(guild_name: String) -> Dictionary:
             return guild["hq"]
         return {"statues": [], "banners": [], "training_arena_unlocked": false}
     return {}
+
+func place_bounty(guild_name: String, target_guild: String, cost: int) -> bool:
+    if data["guilds"].has(guild_name) and data["guilds"].has(target_guild):
+        var guild = data["guilds"][guild_name]
+        if guild["resources"] >= cost:
+            if not guild.has("bounties"):
+                guild["bounties"] = []
+            if not guild["bounties"].has(target_guild):
+                guild["resources"] -= cost
+                guild["bounties"].append(target_guild)
+                save_guilds()
+                return true
+    return false
+
+func get_active_bounties(guild_name: String) -> Array:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        if guild.has("bounties"):
+            return guild["bounties"]
+    return []
