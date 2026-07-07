@@ -1,0 +1,172 @@
+src/system/guild.py: def record_gvg_match(self, guild1_name, guild2_name, winner_name):
+src/system/guild.py: if winner_name == guild1_name:
+src/system/guild.py: elif winner_name == guild2_name:
+src/system/crowd_system.py: # Find winner
+src/system/crowd_system.py: winner = max(self.votes.items(), key=lambda x: x[1])
+src/system/crowd_system.py: winning_option = winner[0]
+src/system/crowd_system.py: "message": f"The crowd has spoken! The winner is {winning_option} with {winner[1]} votes!"
+src/system/guild.gd: func record_gvg_match(guild1_name: String, guild2_name: String, winner_name: String) -> bool:
+src/system/guild.gd: if winner_name == guild1_name:
+src/system/guild.gd: elif winner_name == guild2_name:
+src/system/crowd_system.gd: "message": "The crowd has spoken! The winner is " + winning_option + " with " + str(max_votes) + " votes!"
+src/system/lobby.gd: {"description": "Win a Battle Royale match", "reward": {"skill_points": 200, "cosmetic": "winner_crown"}},
+src/system/lobby.py: {"description": "Win a Battle Royale match", "reward": {"skill_points": 200, "cosmetic": "winner_crown"}},
+src/ai/test_bounty_mode.py: # Verify winner logic
+src/ai/test_bounty_mode.py: assert mode.check_winner(world, balls) is None
+src/ai/test_bounty_mode.py: assert mode.check_winner(world, balls) == "Blue"
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func end_match(world, balls: Array) -> void:
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: var winner = owners[0]
+src/ai/game_modes.gd: _end_match(winner)
+src/ai/game_modes.gd: func _end_match(winner_guild: String):
+src/ai/game_modes.gd: gm.capture_territory(winner_guild, "GvG_Arena")
+src/ai/game_modes.gd: var loser = "GuildB" if winner_guild == "GuildA" else "GuildA"
+src/ai/game_modes.gd: gm.record_gvg_match(winner_guild, loser, winner_guild)
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: var winner_clan = null
+src/ai/game_modes.gd: winner_clan = null
+src/ai/game_modes.gd: var round_winner = null
+src/ai/game_modes.gd: round_winner = "ClanA"
+src/ai/game_modes.gd: round_winner = "ClanB"
+src/ai/game_modes.gd: round_winner = "Draw"
+src/ai/game_modes.gd: if round_winner != null:
+src/ai/game_modes.gd: if round_winner != "Draw":
+src/ai/game_modes.gd: scores[round_winner] += 1
+src/ai/game_modes.gd: winner_clan = w_clan
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.gd: func check_winner(world, balls: Array):
+src/ai/game_modes.py: def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+src/ai/game_modes.py: """Called every tick to check if there is a winner. Returns winner name or None."""
+src/ai/game_modes.py: def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+src/ai/game_modes.py: def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+src/ai/game_modes.py: def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+src/ai/game_modes.py: def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+src/ai/game_modes.py: def end_match(self, world: Any, balls: List[Any]) -> None:
+src/ai/game_modes.py: def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+src/ai/game_modes.py: def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+src/ai/game_modes.py: def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+src/ai/game_modes.py: def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+src/ai/game_modes.py: def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+src/ai/game_modes.py: def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+src/ai/game_modes.py: def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+src/ai/game_modes.py: def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+src/ai/game_modes.py: def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+src/ai/game_modes.py: def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+src/ai/game_modes.py: def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+src/ai/game_modes.py: def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+src/ai/game_modes.py: def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+src/ai/game_modes.py: def check_winner(self, world, balls):
+src/ai/game_modes.py: def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+src/ai/game_modes.py: def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+src/ai/game_modes.py: def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+src/ai/game_modes.py: def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+src/ai/game_modes.py: def check_winner(self, world, balls):
+src/ai/game_modes.py: def check_winner(self, world, balls):
+src/ai/game_modes.py: def check_winner(self, world, balls):
+src/ai/game_modes.py: def check_winner(self, world, balls):
+src/ai/game_modes.py: def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+src/ai/game_modes.py: def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+src/ai/game_modes.py: def check_winner(self, world, balls) -> str:
+src/ai/game_modes.py: def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+src/ai/game_modes.py: def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+src/ai/game_modes.py: def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+src/ai/game_modes.py: def check_winner(self, world, balls):
+src/ai/game_modes.py: def check_winner(self, world, balls):
+src/ai/game_modes.py: winner = owners[0]
+src/ai/game_modes.py: self._end_match(winner)
+src/ai/game_modes.py: def _end_match(self, winner_guild):
+src/ai/game_modes.py: gm.capture_territory(winner_guild, "GvG_Arena")
+src/ai/game_modes.py: loser = "GuildB" if winner_guild == "GuildA" else "GuildA"
+src/ai/game_modes.py: gm.record_gvg_match(winner_guild, loser, winner_guild)
+src/ai/game_modes.py: def check_winner(self, world, balls):
+src/ai/game_modes.py: def check_winner(self, world, balls):
+src/ai/game_modes.py: def check_winner(self, world, balls):
+src/ai/game_modes.py: def check_winner(self, world, balls):
+src/ai/game_modes.py: def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+src/ai/game_modes.py: self.winner_clan = None
+src/ai/game_modes.py: self.winner_clan = None
+src/ai/game_modes.py: round_winner = None
+src/ai/game_modes.py: round_winner = "ClanA"
+src/ai/game_modes.py: round_winner = "ClanB"
+src/ai/game_modes.py: round_winner = "Draw"
+src/ai/game_modes.py: if round_winner:
+src/ai/game_modes.py: if round_winner != "Draw":
+src/ai/game_modes.py: self.scores[round_winner] += 1
+src/ai/game_modes.py: def _end_tournament(self, winner_clan):
+src/ai/game_modes.py: self.winner_clan = winner_clan
+src/ai/game_modes.py: cm.add_clan_points(winner_clan, 500)
+src/ai/game_modes.py: cm.unlock_cosmetic(winner_clan, "Tournament_Champion_Aura")
+src/ai/test_game_modes.py: assert mode.check_winner(world, balls) is None
+src/ai/test_game_modes.py: assert mode.check_winner(world, balls) == "warrior"
+src/ai/test_game_modes.py: assert mode.check_winner(world, balls) is None
+src/ai/test_game_modes.py: assert mode.check_winner(world, balls) == "Blue"
+src/ai/test_game_modes.py: assert mode.check_winner(world, balls) is None
+src/ai/test_game_modes.py: assert mode.check_winner(world, balls) == "Zombies"
+src/ai/test_game_modes.py: assert mode.check_winner(world, balls) is None
+src/ai/test_game_modes.py: # check_winner actually checks if survivors == 0 among ALIVE balls.
+src/ai/test_game_modes.py: assert mode.check_winner(world, balls) == "Zombies"
+src/ai/test_game_modes.py: assert mode.check_winner(world, balls) is None
+src/ai/test_game_modes.py: assert mode.check_winner(world, balls) == "Hunters"
+src/ai/test_game_modes.py: assert mode.check_winner(world, balls) is None
+src/ai/test_game_modes.py: assert mode.check_winner(world, balls) == "Attackers"
+src/ai/test_game_modes.py: assert mode.check_winner(world, balls) is None
+src/ai/test_game_modes.py: assert mode.check_winner(world, balls) == "Enemies"
+src/ai/test_game_modes.py: winner = mode.check_winner(world, balls)
+src/ai/test_game_modes.py: assert winner == "warrior"
+src/ai/test_game_modes.py: assert mode.check_winner(world, balls) is None
+src/ai/test_game_modes.py: assert mode.check_winner(world, balls) == "warrior"
+src/ai/test_game_modes.py: assert mode.check_winner(world, balls) is None
+src/ai/test_game_modes.py: assert mode.check_winner(world, balls) == "Defenders"
+src/ai/test_game_modes.py: assert mode.check_winner(world, balls) == "Attackers"
+src/ai/commentator.py: winner = stats.get("winner")
+src/ai/commentator.py: if winner:
+src/ai/commentator.py: lines.append(f"[VICTORY] The {winner} type emerged victorious!")
+src/ai/test_clan_tournament_mode.py: assert mode.winner_clan == "ClanA"
+src/ai/test_dual_payload.py: def test_dual_payload_check_winner():
+src/ai/test_dual_payload.py: assert mode.check_winner(world, balls) is None
+src/ai/test_dual_payload.py: assert mode.check_winner(world, balls) == "Blue"
+src/ai/test_dual_payload.py: assert mode.check_winner(world, balls) == "Red"
+src/ai/test_dual_payload.py: assert mode.check_winner(world, balls) == "Draw"
+src/ai/test_tug_of_war.py: def test_tug_of_war_winner():
+src/ai/test_tug_of_war.py: assert mode.check_winner(world, balls) == "Red"
+src/ai/test_tug_of_war.py: assert mode.check_winner(world, balls) == "Blue"
+src/ai/test_tug_of_war.py: assert mode.check_winner(world, balls) == "Red"
+src/ai/interactive_training.py: def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+src/ai/interactive_training.gd: func check_winner(world, balls: Array):
+src/ai/test_guild_boss_mode.py: def test_guild_boss_fight_mode_end_match():
+src/ai/test_guild_boss_mode.py: mode.end_match(world, balls)
