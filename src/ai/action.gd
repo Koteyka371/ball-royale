@@ -2314,6 +2314,21 @@ func execute(strategy: String, delta: float):
 		if st > 0.0:
 			st -= delta
 			self.ball.silence_timer = max(0.0, st)
+	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
+		var inv = self.ball.get_meta("inventory")
+		if inv.has("deployable_black_hole"):
+			if world != null and "arena" in world and "hazards" in world.arena:
+				var arena = world.arena
+				var bh_id = arena.hazards.size() + randi() % 10000
+				var bh = null
+				if load("res://src/arena/procedural_arena.gd") != null:
+					bh = load("res://src/arena/procedural_arena.gd").Hazard.new(bh_id, self.ball.x, self.ball.y, 40.0, "black_hole", 20.0)
+					bh.set_meta("duration", 5.0)
+					if "id" in self.ball: bh.set_meta("owner_id", self.ball.id)
+					arena.hazards.append(bh)
+					inv.erase("deployable_black_hole")
+					self.ball.set_meta("inventory", inv)
+
 	if (strategy == "flee" or strategy == "defend") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
 		if inv.has("placeable_trap"):
@@ -11267,6 +11282,21 @@ func _collect_booster(delta: float):
                 if "inventory" in self.ball: inv = self.ball.inventory
                 elif self.ball.has_method("get_meta") and self.ball.has_meta("inventory"): inv = self.ball.get_meta("inventory")
                 inv.append("placeable_trap_booster")
+                if "inventory" in self.ball: self.ball.inventory = inv
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "deployable_black_hole":
+                var inv = []
+                if "inventory" in self.ball: inv = self.ball.inventory
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("inventory"): inv = self.ball.get_meta("inventory")
+                inv.append("deployable_black_hole")
                 if "inventory" in self.ball: self.ball.inventory = inv
                 elif self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv)
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
