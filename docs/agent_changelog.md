@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-659] Bouncy Castle Arena — *2026-07-07 18:22:10 UTC*
+
+The arena itself is made of bouncy material, making balls bounce with more force.
+
+---
+
 ## [idea-669] Shrinking Trap Arena Mode — *2026-07-07 18:22:05 UTC*
 
 A game mode where the arena slowly shrinks over time, but instead of just a damaging wall, the shrinking border leaves behind an increasing density of explosive landmines, forcing players into smaller safe zones with less room to maneuver.
