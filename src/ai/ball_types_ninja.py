@@ -16,7 +16,7 @@ class Ninja:
     PERCEPTION_RADIUS = 350
     AGGRESSION = 0.8
     COLOR = "black"
-    SKILL = "flank"
+    SKILL = "wall_jump"
     SKILL_COOLDOWN = 4.0
     ATTACK_RANGE = 21.0
 
