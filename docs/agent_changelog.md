@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-648] Black Hole Collapse Mode — *2026-07-07 16:14:07 UTC*
+
+An arena mode where instead of a ring closing, a slow-moving black hole sweeps across the map sucking in anything in its path.
+
+---
+
 ## [idea-656] Echo Booster — *2026-07-07 16:14:01 UTC*
 
 A new booster that deploys a decoy of the collecting ball that emits loud pings, revealing hidden enemies within a wide radius and causing them to briefly run away from the decoy in fear, creating crowd control opportunities.
