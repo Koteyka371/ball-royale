@@ -9829,3 +9829,129 @@ class ItemMorphMode(GameMode):
                     world.add_event("items_morphed", {"message": "All items have morphed!"})
 
 GAME_MODES["item_morph"] = ItemMorphMode()
+
+
+class IllusionWallMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Illusion Wall"
+        self.description = "Hazard objects that look like solid walls but are actually reflective illusions. Passing through them creates a temporary fake decoy of the ball that moves in the opposite direction."
+        self.spawn_timer = 0.0
+        self.decoy_id_counter = 800000
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "arena") or not world.arena:
+            return
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        import random
+        # Spawn some illusion walls as hazards
+        # We can make them wide like walls
+        arena_w = getattr(world.arena, "width", 800)
+        arena_h = getattr(world.arena, "height", 600)
+
+        try:
+            from arena.procedural_arena import Hazard
+        except ImportError:
+            class Hazard:
+                def __init__(self, id, x, y, radius, kind, damage):
+                    self.id = id
+                    self.x = x
+                    self.y = y
+                    self.radius = radius
+                    self.target_radius = radius
+                    self.kind = kind
+                    self.damage = damage
+                    self.active = True
+
+        for i in range(5):
+            h_id = 95000 + len(world.arena.hazards) + i
+            # Representing a line using a circle is tricky, we'll just make large circles that look like obstacles
+            x = random.uniform(200, arena_w - 200)
+            y = random.uniform(200, arena_h - 200)
+            wall = Hazard(id=h_id, x=x, y=y, radius=80.0, kind="illusion_wall", damage=0.0)
+            world.arena.hazards.append(wall)
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import math
+
+        # Check collision with illusion walls
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "illusion_wall":
+                    for b in list(balls):
+                        if not getattr(b, "alive", False) or getattr(b, "is_decoy", False) or getattr(b, "ball_type", None) == "spectator":
+                            continue
+
+                        # If ball is already interacting with THIS wall, skip
+                        interacted = getattr(b, "interacted_illusion_walls", [])
+                        if h.id in interacted:
+                            continue
+
+                        dx = b.x - h.x
+                        dy = b.y - h.y
+                        dist = math.sqrt(dx*dx + dy*dy)
+
+                        if dist < h.radius + getattr(b, "radius", 15.0):
+                            # Mark as interacted
+                            if not hasattr(b, "interacted_illusion_walls"):
+                                b.interacted_illusion_walls = []
+                            b.interacted_illusion_walls.append(h.id)
+
+                            # Create decoy
+                            class FakeDecoy:
+                                def __init__(self, id_val, source_ball):
+                                    self.id = id_val
+                                    self.x = source_ball.x
+                                    self.y = source_ball.y
+                                    self.vx = -getattr(source_ball, "vx", 0.0)
+                                    self.vy = -getattr(source_ball, "vy", 0.0)
+                                    self.radius = getattr(source_ball, "radius", 15.0)
+                                    self.hp = 1.0
+                                    self.max_hp = 1.0
+                                    self.alive = True
+                                    self.ball_type = getattr(source_ball, "ball_type", "mimic_decoy")
+                                    self.team = getattr(source_ball, "team", "neutral")
+                                    self.is_decoy = True
+                                    self.lifespan = 5.0
+
+                            self.decoy_id_counter += 1
+                            new_decoy = FakeDecoy(self.decoy_id_counter, b)
+
+                            if hasattr(world, "balls"):
+                                world.balls.append(new_decoy)
+                                if hasattr(world, "entities") and world.balls is not world.entities:
+                                    world.entities.append(new_decoy)
+
+        # Handle decoy lifecycle
+        for b in list(balls):
+            if getattr(b, "is_decoy", False) and hasattr(b, "lifespan"):
+                b.lifespan -= delta
+                if float(b.lifespan) <= 0:
+                    b.alive = False
+                    continue
+                # Move decoy
+                b.x += getattr(b, "vx", 0.0) * delta
+                b.y += getattr(b, "vy", 0.0) * delta
+
+        # Reset interaction logic if ball moves far away
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in list(balls):
+                interacted = getattr(b, "interacted_illusion_walls", [])
+                if interacted:
+                    new_interacted = []
+                    for h_id in interacted:
+                        h = next((hz for hz in world.arena.hazards if getattr(hz, "id", None) == h_id), None)
+                        if h:
+                            dx = b.x - h.x
+                            dy = b.y - h.y
+                            dist = math.sqrt(dx*dx + dy*dy)
+                            # Keep if still inside + small buffer
+                            if dist < h.radius + getattr(b, "radius", 15.0) + 10.0:
+                                new_interacted.append(h_id)
+                    b.interacted_illusion_walls = new_interacted
+
+GAME_MODES["illusion_wall"] = IllusionWallMode()

@@ -11516,6 +11516,7 @@ var GAME_MODES = {
 	"rubber_band": RubberBandMode.new(),
 	"rift_roulette": RiftRouletteMode.new(),
 	"item_morph": ItemMorphMode.new(),
+	"illusion_wall": IllusionWallMode.new(),
 
 	"crossfire": CrossfireMode.new(),
 	"reverse_friction": preload("res://src/ai/reverse_friction.gd").ReverseFrictionMode.new()
@@ -12184,3 +12185,227 @@ class ItemMorphMode extends GameMode:
 
 				if morphed and world.has_method("add_event"):
 					world.add_event("items_morphed", {"message": "All items have morphed!"})
+
+
+class IllusionWallMode extends GameMode:
+	var decoy_id_counter = 800000
+
+	func _init():
+		name = "Illusion Wall"
+		description = "Hazard objects that look like solid walls but are actually reflective illusions. Passing through them creates a temporary fake decoy of the ball that moves in the opposite direction."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if world == null or not ("arena" in world) or world.arena == null:
+			return
+
+		if not ("hazards" in world.arena):
+			return
+
+		var arena_w = 800.0
+		if "width" in world.arena:
+			arena_w = world.arena.width
+		var arena_h = 600.0
+		if "height" in world.arena:
+			arena_h = world.arena.height
+
+		for i in range(5):
+			var h_id = 95000 + world.arena.hazards.size() + i
+			var x = 200.0 + randf() * (arena_w - 400.0)
+			var y = 200.0 + randf() * (arena_h - 400.0)
+
+			var wall = {
+				"id": h_id,
+				"x": x,
+				"y": y,
+				"radius": 80.0,
+				"target_radius": 80.0,
+				"kind": "illusion_wall",
+				"damage": 0.0,
+				"active": true
+			}
+			world.arena.hazards.append(wall)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+			for h in world.arena.hazards:
+				var kind = ""
+				if typeof(h) == TYPE_DICTIONARY:
+					kind = h.get("kind", "")
+				else:
+					kind = h.get("kind")
+
+				if kind == "illusion_wall":
+					for b in balls:
+						if typeof(b) == TYPE_DICTIONARY:
+							if not b.get("alive", false) or b.get("is_decoy", false) or b.get("ball_type", "") == "spectator":
+								continue
+						else:
+							if not b.get("alive") or b.get("is_decoy") or b.get("ball_type") == "spectator":
+								continue
+
+						var h_id = -1
+						var h_x = 0.0
+						var h_y = 0.0
+						var h_radius = 80.0
+						if typeof(h) == TYPE_DICTIONARY:
+							h_id = h.get("id", -1)
+							h_x = h.get("x", 0.0)
+							h_y = h.get("y", 0.0)
+							h_radius = h.get("radius", 80.0)
+						else:
+							h_id = h.get("id")
+							h_x = h.get("x")
+							h_y = h.get("y")
+							h_radius = h.get("radius")
+
+						var interacted = []
+						if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("interacted_illusion_walls"):
+							interacted = b.get_meta("interacted_illusion_walls")
+						elif typeof(b) == TYPE_DICTIONARY and b.has("interacted_illusion_walls"):
+							interacted = b.get("interacted_illusion_walls")
+
+						if h_id in interacted:
+							continue
+
+						var b_x = 0.0
+						var b_y = 0.0
+						var b_vx = 0.0
+						var b_vy = 0.0
+						var b_type = "mimic_decoy"
+						var b_team = "neutral"
+						if typeof(b) == TYPE_DICTIONARY:
+							b_x = b.get("x", 0.0)
+							b_y = b.get("y", 0.0)
+							b_vx = b.get("vx", 0.0)
+							b_vy = b.get("vy", 0.0)
+							b_type = b.get("ball_type", "mimic_decoy")
+							b_team = b.get("team", "neutral")
+						else:
+							b_x = b.get("x")
+							b_y = b.get("y")
+							b_vx = b.get("vx")
+							b_vy = b.get("vy")
+							if "ball_type" in b: b_type = b.get("ball_type")
+							if "team" in b: b_team = b.get("team")
+
+						var dx = b_x - h_x
+						var dy = b_y - h_y
+						var dist = sqrt(dx*dx + dy*dy)
+
+						var b_radius = 15.0
+						if typeof(b) == TYPE_DICTIONARY:
+							b_radius = b.get("radius", 15.0)
+						else:
+							if "radius" in b: b_radius = b.get("radius")
+
+						if dist < h_radius + b_radius:
+							if typeof(b) == TYPE_OBJECT and b.has_method("has_meta"):
+								var inter_arr = []
+								if b.has_meta("interacted_illusion_walls"):
+									inter_arr = b.get_meta("interacted_illusion_walls")
+								inter_arr.append(h_id)
+								b.set_meta("interacted_illusion_walls", inter_arr)
+							elif typeof(b) == TYPE_DICTIONARY:
+								var inter_arr = []
+								if b.has("interacted_illusion_walls"):
+									inter_arr = b.get("interacted_illusion_walls")
+								inter_arr.append(h_id)
+								b["interacted_illusion_walls"] = inter_arr
+
+							decoy_id_counter += 1
+
+							var new_decoy = {}
+							new_decoy["id"] = decoy_id_counter
+							new_decoy["x"] = b_x
+							new_decoy["y"] = b_y
+							new_decoy["vx"] = -b_vx
+							new_decoy["vy"] = -b_vy
+							new_decoy["radius"] = b_radius
+							new_decoy["hp"] = 1.0
+							new_decoy["max_hp"] = 1.0
+							new_decoy["alive"] = true
+							new_decoy["ball_type"] = b_type
+							new_decoy["team"] = b_team
+							new_decoy["is_decoy"] = true
+							new_decoy["lifespan"] = 5.0
+
+							# Give dummy methods to avoid client crashes
+							new_decoy["has_method"] = func(name): return false
+
+							if "balls" in world:
+								world.balls.append(new_decoy)
+							if "entities" in world and world.balls != world.entities:
+								world.entities.append(new_decoy)
+
+		# Handle decoy lifecycle
+		for b in balls.duplicate():
+			if typeof(b) == TYPE_DICTIONARY and b.get("is_decoy", false) and b.has("lifespan"):
+				b["lifespan"] -= delta
+				if b["lifespan"] <= 0:
+					b["alive"] = false
+					continue
+				b["x"] += b.get("vx", 0.0) * delta
+				b["y"] += b.get("vy", 0.0) * delta
+
+		# Reset interaction logic if ball moves far away
+		if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+			for b in balls:
+				var interacted = []
+				if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("interacted_illusion_walls"):
+					interacted = b.get_meta("interacted_illusion_walls")
+				elif typeof(b) == TYPE_DICTIONARY and b.has("interacted_illusion_walls"):
+					interacted = b.get("interacted_illusion_walls")
+
+				if interacted.size() > 0:
+					var new_interacted = []
+					for h_id in interacted:
+						var h_found = null
+						for hz in world.arena.hazards:
+							var hz_id = -1
+							if typeof(hz) == TYPE_DICTIONARY:
+								hz_id = hz.get("id", -1)
+							else:
+								hz_id = hz.get("id")
+							if hz_id == h_id:
+								h_found = hz
+								break
+
+						if h_found != null:
+							var h_x = 0.0
+							var h_y = 0.0
+							var h_radius = 80.0
+							if typeof(h_found) == TYPE_DICTIONARY:
+								h_x = h_found.get("x", 0.0)
+								h_y = h_found.get("y", 0.0)
+								h_radius = h_found.get("radius", 80.0)
+							else:
+								h_x = h_found.get("x")
+								h_y = h_found.get("y")
+								h_radius = h_found.get("radius")
+
+							var b_x = 0.0
+							var b_y = 0.0
+							var b_radius = 15.0
+							if typeof(b) == TYPE_DICTIONARY:
+								b_x = b.get("x", 0.0)
+								b_y = b.get("y", 0.0)
+								b_radius = b.get("radius", 15.0)
+							else:
+								b_x = b.get("x")
+								b_y = b.get("y")
+								if "radius" in b: b_radius = b.get("radius")
+
+							var dx = b_x - h_x
+							var dy = b_y - h_y
+							var dist = sqrt(dx*dx + dy*dy)
+
+							if dist < h_radius + b_radius + 10.0:
+								new_interacted.append(h_id)
+
+						if typeof(b) == TYPE_OBJECT and b.has_method("has_meta"):
+							b.set_meta("interacted_illusion_walls", new_interacted)
+						elif typeof(b) == TYPE_DICTIONARY:
+							b["interacted_illusion_walls"] = new_interacted
