@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Entanglement Skill",
+  "description": "A new skill that allows a player to 'entangle' their state with an enemy ball. When entangled, any damage taken by the player is partially mirrored to the entangled enemy, and any healing received is also shared. The connection breaks if the distance between the two balls exceeds a certain threshold. This introduces a strategic element to counter high-damage burst classes."
+}
