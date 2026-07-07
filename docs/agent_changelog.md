@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-668] Nemesis Bounties — *2026-07-07 22:07:30 UTC*
+
+Introduce a bounty system where players can place bounties on their nemeses using prestige tokens. If another player or AI defeats a bounty target, they receive a portion of the tokens, while the player who placed the bounty gets a temporary buff.
+
+---
+
 ## [idea-703] Quantum Entanglement Mine — *2026-07-07 22:07:25 UTC*
 
 A hazard trap that links two enemies who walk near it. Any damage dealt to one is mirrored onto the other, and if one moves too far from the other, they are yanked violently back together.
