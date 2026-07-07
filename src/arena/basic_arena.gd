@@ -24,6 +24,35 @@ func _init(_arena_size: float = 2000.0, _seed = null):
 	safe_zone_center = [width / 2.0, height / 2.0]
 	last_tick = -1
 
+	# Generate quantum teleporters
+	var num_quantum = max(1, int(width / 1000.0))
+	for p in range(num_quantum):
+		var q1_id = hazards.size() + 11000 + p*2
+		var q2_id = hazards.size() + 11000 + p*2 + 1
+
+		var q1_pt = get_random_spawn_point(30.0)
+
+		# Find distant point
+		var q2_pt = get_random_spawn_point(30.0)
+		var best_dist = (q1_pt[0] - q2_pt[0])*(q1_pt[0] - q2_pt[0]) + (q1_pt[1] - q2_pt[1])*(q1_pt[1] - q2_pt[1])
+		for i in range(10):
+			var t_pt = get_random_spawn_point(30.0)
+			var dist = (q1_pt[0] - t_pt[0])*(q1_pt[0] - t_pt[0]) + (q1_pt[1] - t_pt[1])*(q1_pt[1] - t_pt[1])
+			if dist > best_dist:
+				best_dist = dist
+				q2_pt = t_pt
+
+		var q1 = preload("res://src/arena/procedural_arena.gd").Hazard.new(q1_id, q1_pt[0], q1_pt[1], 30.0, "quantum_teleporter", 0.0)
+		q1.set_meta("target_x", q2_pt[0])
+		q1.set_meta("target_y", q2_pt[1])
+
+		var q2 = preload("res://src/arena/procedural_arena.gd").Hazard.new(q2_id, q2_pt[0], q2_pt[1], 30.0, "quantum_teleporter", 0.0)
+		q2.set_meta("target_x", q1_pt[0])
+		q2.set_meta("target_y", q1_pt[1])
+
+		hazards.append(q1)
+		hazards.append(q2)
+
 func get_random_spawn_point(radius: float) -> Array:
 	return [rng.randf_range(radius, width - radius), rng.randf_range(radius, height - radius)]
 
@@ -167,7 +196,13 @@ func update_zone(current_tick: int, delta: float) -> void:
 					h.radius = h.target_radius
 
 		if current_tick % 600 == 0:
+			var kept_hazards = []
+			for h in hazards:
+				if "kind" in h and h.kind == "quantum_teleporter":
+					kept_hazards.append(h)
 			hazards.clear()
+			for h in kept_hazards:
+				hazards.append(h)
 			var num_zones = (randi() % 3) + 1
 			for i in range(num_zones):
 				var x = randf_range(200, width - 200)
