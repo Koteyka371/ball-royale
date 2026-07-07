@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-696] Crowd Betting System — *2026-07-07 20:51:39 UTC*
+
+Allow the crowd to place bets on which team or player will win. If the underdog wins, the crowd's excitement spikes significantly more, and the winning team gets a huge prestige bonus.
+
+---
+
 ## [idea-681] Explosive Decoys — *2026-07-07 20:40:29 UTC*
 
 A new mutator where decoys explode upon expiration or death, dealing area-of-effect damage to nearby enemies.

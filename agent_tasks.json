@@ -11989,7 +11989,7 @@
     },
     {
       "id": "idea-696",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Crowd Betting System",
@@ -19337,6 +19337,91 @@
         "src/arena/portal_gun_trap.py",
         "src/arena/portal_gun_trap.gd",
         "tests/test_portal_gun_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1128",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Swap Anomaly",
+      "description": "A rare hazard that, when triggered, temporarily reverses the gravitational pull of Black Holes and Gravity Wells in the arena, turning them into intense repulsors that scatter balls across the map.",
+      "allowed_paths": [
+        "src/ai/gravity_swap_anomaly.py",
+        "src/ai/gravity_swap_anomaly.gd",
+        "tests/test_gravity_swap_anomaly.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1129",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Elemental Resonance Trap",
+      "description": "A new trap that behaves like a normal mine, but instead of dealing damage, it forcefully spawns a random elemental hazard (fire zone or poison cloud) at its location upon triggering. If a tornado touches it, it creates a massive elemental explosion before converting the tornado into an elemental storm.",
+      "allowed_paths": [
+        "src/arena/elemental_resonance_trap.py",
+        "src/arena/elemental_resonance_trap.gd",
+        "tests/test_elemental_resonance_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1130",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Tunneling Modifier",
+      "description": "A new mutator that occasionally allows balls moving at extremely high speeds to pass directly through hazards or walls without taking damage, encouraging high-risk, high-velocity playstyles.",
+      "allowed_paths": [
+        "src/ai/quantum_tunneling.py",
+        "src/ai/quantum_tunneling.gd",
+        "tests/test_quantum_tunneling.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1131",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tornado Spawning Anomaly Event",
+      "description": "An arena-wide event where miniature tornadoes spawn periodically across the map for a limited time. They last 10 seconds and have high velocity, causing utter chaos. These miniature tornadoes can also combine with elemental hazards to become mini-firenados or mini-poison tornadoes.",
+      "allowed_paths": [
+        "src/ai/tornado_spawning_anomaly.py",
+        "src/ai/tornado_spawning_anomaly.gd",
+        "tests/test_tornado_spawning_anomaly.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1132",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Danger Zones Arena",
+      "description": "A dynamic procedural arena element where circular 'danger zones' periodically appear on the map. After a warning delay, any balls caught within the zone take heavy damage. The zones gradually shrink in size over the course of the match, forcing close-quarters combat.",
+      "allowed_paths": [
+        "src/arena/shrinking_danger_zones_arena.py",
+        "src/arena/shrinking_danger_zones_arena.gd",
+        "tests/test_shrinking_danger_zones_arena.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
