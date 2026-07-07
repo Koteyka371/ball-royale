@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-652] Rewind Powerup — *2026-07-07 19:48:46 UTC*
+
+A rare collectible booster that temporarily stores a ball's position, health, and cooldown states, then instantly rewinds them 3 seconds into the past if their HP drops below zero.
+
+---
+
 ## [idea-568] Booster Scrambler Trap — *2026-07-07 19:48:41 UTC*
 
 A new trap type that does not deal damage, but upon collection, it shuffles the player's active skill and inventory with a random nearby player for 10 seconds.
