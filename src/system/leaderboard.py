@@ -19,7 +19,9 @@ class LeaderboardManager:
             return {
                 "season_start_time": time.time(),
                 "current_season": 1,
-                "players": {}
+                "players": {},
+                "nemesis_rivalries": {},
+                "nemesis_event_active": False
             }
 
     def save(self):
@@ -75,6 +77,41 @@ class LeaderboardManager:
     def get_theme(self, season_num):
         index = (season_num - 1) % len(self.SEASON_THEMES)
         return self.SEASON_THEMES[index]
+
+    def is_nemesis_event_active(self):
+        return self.data.get("nemesis_event_active", False)
+
+    def set_nemesis_event_active(self, active: bool):
+        self.data["nemesis_event_active"] = active
+        self.save()
+
+    def record_nemesis_defeat(self, killer_id: str, victim_id: str):
+        if "nemesis_rivalries" not in self.data:
+            self.data["nemesis_rivalries"] = {}
+
+        # Sort the IDs to ensure A_vs_B is the same as B_vs_A
+        sorted_ids = sorted([killer_id, victim_id])
+        rivalry_key = f"{sorted_ids[0]}_vs_{sorted_ids[1]}"
+
+        self.data["nemesis_rivalries"][rivalry_key] = self.data["nemesis_rivalries"].get(rivalry_key, 0) + 1
+
+        # If event active and killer is local_player, grant rewards
+        if self.is_nemesis_event_active() and killer_id == "local_player" and self.profile_manager:
+            self.profile_manager.add_cosmetic("Nemesis Slayer")
+            self.profile_manager.add_title("Rivalry Champion")
+            self.profile_manager.data["prestige_tokens"] = self.profile_manager.data.get("prestige_tokens", 0) + 10
+            self.profile_manager.save()
+
+        self.save()
+
+    def get_top_rivalries(self, limit=10):
+        if "nemesis_rivalries" not in self.data:
+            return []
+
+        rivalries = self.data["nemesis_rivalries"]
+        sorted_rivalries = sorted(rivalries.items(), key=lambda x: x[1], reverse=True)
+
+        return [{"rivalry": k, "defeats": v} for k, v in sorted_rivalries[:limit]]
 
     def end_season(self):
         season_num = self.data.get("current_season", 1)
