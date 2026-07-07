@@ -954,9 +954,9 @@ class BattleRoyaleMode extends GameMode:
                             x = target_b["x"]
                             y = target_b["y"]
 
-                    var lightning = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 30.0, "lightning_strike", 50.0)
-                    lightning.set_meta("duration", 1.0)
-                    world.arena.hazards.append(lightning)
+                    var warning = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 30.0, "lightning_warning", 0.0)
+                    warning.set_meta("duration", 1.5)
+                    world.arena.hazards.append(warning)
                 if self.weather == "thunderstorm" and randf() < 0.05 * delta:
                     var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
                     var x = randf_range(100.0, world.arena.width - 100.0)

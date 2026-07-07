@@ -807,9 +807,9 @@ class BattleRoyaleMode(GameMode):
                         # Spawn lightning strike zone
                         x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
                         y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
-                        lightning = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=30.0, kind="lightning_strike", damage=50.0)
-                        setattr(lightning, 'duration', 1.0)
-                        world.arena.hazards.append(lightning)
+                        warning = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=30.0, kind="lightning_warning", damage=0.0)
+                        setattr(warning, 'duration', 1.5)
+                        world.arena.hazards.append(warning)
             elif self.weather == "thunderstorm":
                 if getattr(self, "random", __import__("random")).random() < 0.2 * delta:
                     from arena.procedural_arena import Hazard
@@ -822,9 +822,9 @@ class BattleRoyaleMode(GameMode):
                         target_b = getattr(self, "random", __import__("random")).choice(metal_balls)
                         x = target_b.x
                         y = target_b.y
-                    lightning = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=30.0, kind="lightning_strike", damage=50.0)
-                    setattr(lightning, 'duration', 1.0)
-                    world.arena.hazards.append(lightning)
+                    warning = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=30.0, kind="lightning_warning", damage=0.0)
+                    setattr(warning, 'duration', 1.5)
+                    world.arena.hazards.append(warning)
                 if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
                     from arena.procedural_arena import Hazard
                     # Spawn tornado warning
@@ -2551,9 +2551,9 @@ class WeatherChaosMode(GameMode):
                         # Spawn lightning strike zone
                         x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
                         y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
-                        lightning = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=30.0, kind="lightning_strike", damage=50.0)
-                        setattr(lightning, 'duration', 1.0)
-                        world.arena.hazards.append(lightning)
+                        warning = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=30.0, kind="lightning_warning", damage=0.0)
+                        setattr(warning, 'duration', 1.5)
+                        world.arena.hazards.append(warning)
             elif self.weather == "thunderstorm":
                 if getattr(self, "random", __import__("random")).random() < 0.2 * delta:
                     from arena.procedural_arena import Hazard
@@ -2566,9 +2566,9 @@ class WeatherChaosMode(GameMode):
                         target_b = getattr(self, "random", __import__("random")).choice(metal_balls)
                         x = target_b.x
                         y = target_b.y
-                    lightning = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=30.0, kind="lightning_strike", damage=50.0)
-                    setattr(lightning, 'duration', 1.0)
-                    world.arena.hazards.append(lightning)
+                    warning = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=30.0, kind="lightning_warning", damage=0.0)
+                    setattr(warning, 'duration', 1.5)
+                    world.arena.hazards.append(warning)
                 if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
                     from arena.procedural_arena import Hazard
                     # Spawn tornado warning

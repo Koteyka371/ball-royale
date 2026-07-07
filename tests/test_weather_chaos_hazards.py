@@ -52,4 +52,4 @@ def test_weather_chaos_hazards():
 
     # Should have spawned lightning strike
     assert len(world.arena.hazards) > 0
-    assert world.arena.hazards[0].kind == "lightning_strike"
+    assert world.arena.hazards[0].kind == "lightning_warning"

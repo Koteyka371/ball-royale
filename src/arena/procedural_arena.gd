@@ -947,6 +947,19 @@ func update_zone(current_tick: int, delta: float) -> void:
                         h.set_meta("vx", h.get_meta("vx") * -1.0)
                     if h.y < 0 or h.y > height:
                         h.set_meta("vy", h.get_meta("vy") * -1.0)
+            elif "kind" in h and h.kind == "lightning_warning":
+                if h.has_meta("duration"):
+                    var dur = h.get_meta("duration") - delta
+                    h.set_meta("duration", dur)
+                    if dur <= 0:
+                        if h.has_method("set_meta"):
+                            h.set_meta("active", false)
+                        if "active" in h:
+                            h.active = false
+                        var HazardClass = load("res://src/arena/procedural_arena.gd").Hazard
+                        var strike = HazardClass.new(9000 + hazards.size() + (randi() % 1000), h.x, h.y, h.radius, "lightning_strike", 50.0)
+                        strike.set_meta("duration", 0.5)
+                        hazards.append(strike)
             elif "kind" in h and h.kind == "tornado_warning":
                 if h.has_meta("duration"):
                     var dur = h.get_meta("duration") - delta

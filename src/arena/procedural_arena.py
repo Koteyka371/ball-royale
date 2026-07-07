@@ -795,6 +795,16 @@ class ProceduralArena:
                         if hasattr(h, "vx"): h.vx *= -1
                     if h.y < 0 or h.y > self.height:
                         if hasattr(h, "vy"): h.vy *= -1
+                elif getattr(h, "kind", "") == "lightning_warning":
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0:
+                            h.active = False
+                            import random
+                            strike_id = 9000 + len(self.hazards) + random.randint(0, 1000)
+                            strike = Hazard(id=strike_id, x=h.x, y=h.y, radius=h.radius, kind="lightning_strike", damage=50.0)
+                            setattr(strike, 'duration', 0.5)
+                            self.hazards.append(strike)
                 elif getattr(h, "kind", "") == "tornado_warning":
                     if hasattr(h, "duration"):
                         h.duration -= delta
