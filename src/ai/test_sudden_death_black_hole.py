@@ -44,13 +44,24 @@ def test_battle_royale_sudden_death_black_hole():
     assert bh.lifetime == 1.0
 
 
-    # Tick again to see pull effect
-    mode.tick(world, [b1], delta=1.0)
-
     # Check if ball moved towards black hole (500, 500)
-    # The ball is already at 500, 500, so let's move it first to see the pull
+    # Move it first to see the pull
     b1.x, b1.y = 100.0, 100.0
-    mode.tick(world, [b1], delta=1.0)
+
+    # Needs to not be a mock type that absorbs all float operations
+    class FakeBall:
+        def __init__(self):
+            self.x = 100.0
+            self.y = 100.0
+            self.alive = True
+            self.ball_type = "knight"
+            self.hp = 100.0
+            self.is_flying = False
+            self.team = "team1"
+
+    b1_real = FakeBall()
+    mode.tick(world, [b1_real], delta=1.0)
+    b1 = b1_real
 
     dist_sq = (500.0 - b1.x)**2 + (500.0 - b1.y)**2
     original_dist_sq = (500.0 - 100.0)**2 + (500.0 - 100.0)**2
