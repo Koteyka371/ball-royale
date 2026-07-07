@@ -1,4 +1,0 @@
-{
-  "title": "Quantum Entanglement Bumper",
-  "description": "A bumper that links two balls together dynamically. When one ball hits the bumper, its movement and physics properties are temporarily mirrored or synchronized with a random nearby opponent, forcing them to coordinate or face collisions."
-}

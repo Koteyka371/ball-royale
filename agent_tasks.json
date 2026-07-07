@@ -18254,6 +18254,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1064",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Entanglement Bumper",
+      "description": "A bumper that links two balls together dynamically. When one ball hits the bumper, its movement and physics properties are temporarily mirrored or synchronized with a random nearby opponent, forcing them to coordinate or face collisions.",
+      "allowed_paths": [
+        "src/ai/quantum_entanglement_bumper.py",
+        "src/ai/quantum_entanglement_bumper.gd",
+        "tests/test_quantum_entanglement_bumper.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1065",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aura Syphoning Trap",
+      "description": "A hazard that doesn't deal immediate damage, but instead slowly drains any active buffs, combo multipliers, or powerup durations (like shields or speed boosts) from nearby balls and redistributes them to the trap owner or closest ally.",
+      "allowed_paths": [
+        "src/arena/aura_syphoning_trap.py",
+        "src/arena/aura_syphoning_trap.gd",
+        "tests/test_aura_syphoning_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
