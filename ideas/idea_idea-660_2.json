@@ -1,4 +1,0 @@
-{
-    "title": "Temperature Mechanics",
-    "description": "Add a temperature gauge to the arena that rises in heatwaves and drops in blizzards. Balls must manage their internal temperature with boosters or specific hazard zones to prevent freezing or overheating (DoT or stun)."
-}

@@ -19546,6 +19546,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1140",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Magnetic Minefield Hazard",
+      "description": "New procedural arena hazard that spawns inactive magnetic mines. When a ball comes within a certain proximity, the mine starts slowly dragging the ball towards it before exploding in a massive shockwave.",
+      "allowed_paths": [
+        "src/arena/magnetic_minefield.py",
+        "src/arena/magnetic_minefield.gd",
+        "tests/test_magnetic_minefield.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }

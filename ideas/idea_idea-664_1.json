@@ -1,4 +1,0 @@
-{
-  "title": "Solar Powered Ball",
-  "description": "A new ball type 'solar_bot' that naturally regenerates HP and stamina as long as the arena is well lit, but suffers heavy debuffs (speed, damage) during blackouts or eclipses. It uses a unique skill 'Solar Flare' that burns nearby enemies and briefly lights up a dark area."
-}

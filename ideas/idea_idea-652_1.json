@@ -1,4 +1,0 @@
-{
-  "title": "Quantum Entanglement Hazard",
-  "description": "A hazard that randomly links two balls together. When one ball takes damage or receives healing, a percentage of that effect is transferred to the linked ball, regardless of distance."
-}

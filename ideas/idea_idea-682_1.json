@@ -1,4 +1,0 @@
-{
-  "title": "Holo-Decoy Augment",
-  "description": "An advanced deploy_decoy variant where the decoys phase out immediately upon taking fatal damage, blinding all enemies in a 300 unit radius for 3 seconds instead of exploding, turning defensive plays into aggressive counter-attacks."
-}

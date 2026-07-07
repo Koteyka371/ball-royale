@@ -1,4 +1,0 @@
-{
-  "title": "Chain Reaction Game Mode",
-  "description": "A game mode where every kill triggers an explosion that scales in radius and damage based on the killed ball's current killstreak. Players must carefully manage their spacing to avoid chain wipes."
-}

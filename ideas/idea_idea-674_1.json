@@ -1,4 +1,0 @@
-{
-  "title": "Weather Reactive Traps",
-  "description": "Introduce generic trap objects in procedural arenas that change their behavior based on the current weather. For instance, a basic proximity mine could become a frost mine during blizzards, freezing enemies instead of dealing pure damage, or turn into an electric tether during thunderstorms."
-}

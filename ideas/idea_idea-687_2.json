@@ -1,4 +1,0 @@
-{
-    "title": "Phase-Shifting Hazard",
-    "description": "A new hazard type that cycles between solid (blocks movement) and damaging (passes through but deals heavy damage over time)."
-}
