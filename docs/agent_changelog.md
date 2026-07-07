@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-682] Mirror Image Decoys — *2026-07-07 19:51:41 UTC*
+
+The deploy_decoy ability creates two decoys instead of one. The extra decoy behaves similarly but takes double damage. If both decoys explode simultaneously, their explosion radiuses combine for a massive blast.
+
+---
+
 ## [idea-683] Bumper Cars Mutator — *2026-07-07 19:51:36 UTC*
 
 A physics-based mutator where collisions between balls deal minimal damage but apply massive knockback. The arena gradually shrinks towards a central spike pit, turning the game into a chaotic sumo-style knockout match where positioning is key.
