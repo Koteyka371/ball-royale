@@ -48,7 +48,7 @@ class ProceduralArena:
         self.safe_zone_center = (arena_size / 2, arena_size / 2)
         self.last_tick = -1
         self.danger_grid: dict[tuple[int, int], float] = {}
-        self.boundary_states = {"top": "normal", "bottom": "normal", "left": "normal", "right": "normal"}
+        self.boundary_states = {"top": "bouncy", "bottom": "bouncy", "left": "bouncy", "right": "bouncy"}
 
         self.generate()
 
@@ -502,7 +502,7 @@ class ProceduralArena:
         if current_tick != self.last_tick:
             import random
             if current_tick % 400 == 0:
-                states = ["normal", "normal", "bouncy", "sticky"]
+                states = ["bouncy", "bouncy", "bouncy", "bouncy"]
                 random.shuffle(states)
                 self.boundary_states = {
                     "top": states[0],

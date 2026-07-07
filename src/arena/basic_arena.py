@@ -44,6 +44,7 @@ class BasicArena:
 
             self.hazards.append(q1)
             self.hazards.append(q2)
+        self.boundary_states = {"top": "bouncy", "bottom": "bouncy", "left": "bouncy", "right": "bouncy"}
 
     def get_random_spawn_point(self, radius: float) -> Tuple[float, float]:
         return (self.rng.uniform(radius, self.width - radius),
