@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-651] Chrono Shift Skill — *2026-07-07 18:14:54 UTC*
+
+A new skill that allows balls to speed up time in a localized area around them for a few seconds, drastically increasing their movement and attack speed while moving outside enemies slowly.
+
+---
+
 ## [idea-663] Grappling Hook Booster — *2026-07-07 17:25:10 UTC*
 
 A consumable booster that allows a ball to grapple onto another ball or the wall and pull themselves quickly towards it, giving them bursts of mobility.
