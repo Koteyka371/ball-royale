@@ -11122,7 +11122,7 @@
     },
     {
       "id": "idea-645",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Trickster Fake Health Bar",
@@ -18368,6 +18368,23 @@
         "src/ai/slingshot.py",
         "src/ai/slingshot.gd",
         "tests/test_slingshot.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1071",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Meteor Shower Event Mode",
+      "description": "A new game mode where periodically the entire arena is bombarded by meteor strikes (red warning circles appear on the ground before impact). Players must constantly dodge these strikes while fighting, and the meteors leave behind burning craters that act as temporary lava hazards.",
+      "allowed_paths": [
+        "src/ai/meteor_shower.py",
+        "src/ai/meteor_shower.gd",
+        "tests/test_meteor_shower.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

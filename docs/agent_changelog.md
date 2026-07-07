@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-645] Trickster Fake Health Bar — *2026-07-07 13:33:52 UTC*
+
+Tricksters occasionally display a fake health bar to enemies making them look severely wounded, baiting them into a trap.
+
+---
+
 ## [idea-640] Chain Lightning Ability — *2026-07-07 12:58:11 UTC*
 
 Add a new ability that targets one enemy and bounces to nearby enemies, dealing reduced damage on each subsequent bounce.
