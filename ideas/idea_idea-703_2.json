@@ -1,0 +1,4 @@
+{
+  "title": "Kinetic Bounce Walls",
+  "description": "Arena walls that absorb impact energy and reflect entities back with a velocity proportional to their incoming momentum, while spawning temporary defensive shields around the impact zone."
+}

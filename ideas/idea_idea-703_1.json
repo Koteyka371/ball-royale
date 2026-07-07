@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Entanglement Trap",
+  "description": "A new hazard type that tangles enemies. If they move too close together, their velocities are inverted pushing them apart, while taking damage based on the speed of the inverse force."
+}

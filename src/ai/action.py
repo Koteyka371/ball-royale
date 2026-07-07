@@ -4695,11 +4695,16 @@ class Action:
         link_target = getattr(self.ball, "damage_link_target", None)
         if link_target and getattr(link_target, "alive", True):
             dist_sq = (self.ball.x - link_target.x)**2 + (self.ball.y - link_target.y)**2
-            if dist_sq > 90000:  # Distance > 300 breaks the link
-                self.ball.damage_link_target = None
-                if getattr(link_target, "damage_link_target", None) == self.ball:
-                    link_target.damage_link_target = None
-            else:
+            if dist_sq > 90000:  # Distance > 300 yanks them back together
+                import math
+                dist = math.sqrt(dist_sq)
+                dx = link_target.x - self.ball.x
+                dy = link_target.y - self.ball.y
+                yank_speed = 1500.0
+                self.ball.x += (dx / dist) * yank_speed * delta
+                self.ball.y += (dy / dist) * yank_speed * delta
+
+            if True:
                 if damage_taken > 0 and not getattr(self.ball, "damage_link_is_receiving", False):
                     link_target.damage_link_is_receiving = True
                     if hasattr(link_target, "take_damage"):
