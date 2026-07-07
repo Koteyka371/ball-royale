@@ -11178,6 +11178,7 @@ var GAME_MODES = {
 	"soul_link": SoulLinkMode.new(),
 	"clan_tournament": ClanTournamentMode.new(),
 	"tag_team": TagTeamMode.new(),
+	"rubber_band": RubberBandMode.new(),
 	"crossfire": CrossfireMode.new(),
 	"reverse_friction": preload("res://src/ai/reverse_friction.gd").ReverseFrictionMode.new()
 }
@@ -11562,3 +11563,150 @@ class TeleporterHubMode extends GameMode:
 			_spawn_portals(world)
 			if world.has_method("add_event"):
 				world.add_event("portal_shift", {"type": "portal_shift", "message": "Teleporter Hub destinations shifted!"})
+
+class RubberBandMode extends GameMode:
+	var max_distance: float = 300.0
+	var snap_force: float = 1500.0
+	var damage: float = 50.0
+
+	func _init().():
+		name = "Rubber Band"
+		description = "Teams are tethered by invisible rubber bands. If they move too far apart, they snap back together with massive force, dealing damage to anything in their path."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+
+		var teams = {}
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_OBJECT and b.get("alive"):
+				is_alive = true
+			elif typeof(b) == TYPE_DICTIONARY and b.has("alive") and b["alive"]:
+				is_alive = true
+
+			if not is_alive:
+				continue
+
+			var team = null
+			if typeof(b) == TYPE_OBJECT and "team" in b:
+				team = b.get("team")
+			elif typeof(b) == TYPE_DICTIONARY and b.has("team"):
+				team = b["team"]
+
+			if team != null:
+				if not teams.has(team):
+					teams[team] = []
+				teams[team].append(b)
+
+		for team in teams.keys():
+			var tballs = teams[team]
+			var size = tballs.size()
+			if size < 2:
+				continue
+
+			for i in range(size):
+				for j in range(i + 1, size):
+					var b1 = tballs[i]
+					var b2 = tballs[j]
+
+					var b1_x = 0.0
+					var b1_y = 0.0
+					if typeof(b1) == TYPE_OBJECT:
+						b1_x = b1.get("x") if "x" in b1 else 0.0
+						b1_y = b1.get("y") if "y" in b1 else 0.0
+					else:
+						b1_x = b1["x"] if b1.has("x") else 0.0
+						b1_y = b1["y"] if b1.has("y") else 0.0
+
+					var b2_x = 0.0
+					var b2_y = 0.0
+					if typeof(b2) == TYPE_OBJECT:
+						b2_x = b2.get("x") if "x" in b2 else 0.0
+						b2_y = b2.get("y") if "y" in b2 else 0.0
+					else:
+						b2_x = b2["x"] if b2.has("x") else 0.0
+						b2_y = b2["y"] if b2.has("y") else 0.0
+
+					var dx = b2_x - b1_x
+					var dy = b2_y - b1_y
+					var dist = sqrt(dx * dx + dy * dy)
+
+					if dist > max_distance:
+						var excess = dist - max_distance
+						var pull = (excess / max_distance) * snap_force
+
+						var nx = dx / dist
+						var ny = dy / dist
+
+						var b1_vx = 0.0
+						var b1_vy = 0.0
+						if typeof(b1) == TYPE_OBJECT:
+							b1_vx = b1.get("vx") if "vx" in b1 else 0.0
+							b1_vy = b1.get("vy") if "vy" in b1 else 0.0
+							b1.set("vx", b1_vx + nx * pull * delta)
+							b1.set("vy", b1_vy + ny * pull * delta)
+						else:
+							b1_vx = b1["vx"] if b1.has("vx") else 0.0
+							b1_vy = b1["vy"] if b1.has("vy") else 0.0
+							b1["vx"] = b1_vx + nx * pull * delta
+							b1["vy"] = b1_vy + ny * pull * delta
+
+						var b2_vx = 0.0
+						var b2_vy = 0.0
+						if typeof(b2) == TYPE_OBJECT:
+							b2_vx = b2.get("vx") if "vx" in b2 else 0.0
+							b2_vy = b2.get("vy") if "vy" in b2 else 0.0
+							b2.set("vx", b2_vx - nx * pull * delta)
+							b2.set("vy", b2_vy - ny * pull * delta)
+						else:
+							b2_vx = b2["vx"] if b2.has("vx") else 0.0
+							b2_vy = b2["vy"] if b2.has("vy") else 0.0
+							b2["vx"] = b2_vx - nx * pull * delta
+							b2["vy"] = b2_vy - ny * pull * delta
+
+						for other in balls:
+							var other_alive = false
+							if typeof(other) == TYPE_OBJECT and other.get("alive"):
+								other_alive = true
+							elif typeof(other) == TYPE_DICTIONARY and other.has("alive") and other["alive"]:
+								other_alive = true
+
+							if not other_alive or other == b1 or other == b2:
+								continue
+
+							var other_x = 0.0
+							var other_y = 0.0
+							var other_radius = 15.0
+
+							if typeof(other) == TYPE_OBJECT:
+								other_x = other.get("x") if "x" in other else 0.0
+								other_y = other.get("y") if "y" in other else 0.0
+								other_radius = other.get("radius") if "radius" in other else 15.0
+							else:
+								other_x = other["x"] if other.has("x") else 0.0
+								other_y = other["y"] if other.has("y") else 0.0
+								other_radius = other["radius"] if other.has("radius") else 15.0
+
+							var px = other_x - b1_x
+							var py = other_y - b1_y
+
+							var dot = px * nx + py * ny
+							if dot >= 0 and dot <= dist:
+								var cx = b1_x + dot * nx
+								var cy = b1_y + dot * ny
+
+								var cdx = other_x - cx
+								var cdy = other_y - cy
+								var cdist = sqrt(cdx * cdx + cdy * cdy)
+
+								if cdist <= other_radius + 5.0:
+									var damage_val = damage * delta * 60.0
+									if world and world.has_method("_deal_damage"):
+										world._deal_damage(b1, other, damage_val)
+									else:
+										if typeof(other) == TYPE_OBJECT:
+											var hp = other.get("hp") if "hp" in other else 100.0
+											other.set("hp", hp - damage_val)
+										else:
+											var hp = other["hp"] if other.has("hp") else 100.0
+											other["hp"] = hp - damage_val

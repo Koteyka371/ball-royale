@@ -9284,3 +9284,83 @@ class TeleporterHubMode(GameMode):
                 world.add_event("portal_shift", {"type": "portal_shift", "message": "Teleporter Hub destinations shifted!"})
 
 GAME_MODES["teleporter_hub"] = TeleporterHubMode()
+
+class RubberBandMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Rubber Band"
+        self.description = "Teams are tethered by invisible rubber bands. If they move too far apart, they snap back together with massive force, dealing damage to anything in their path."
+        self.max_distance = 300.0
+        self.snap_force = 1500.0
+        self.damage = 50.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import math
+        import itertools
+
+        teams = {}
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+            team = getattr(b, "team", None)
+            if team is not None:
+                if team not in teams:
+                    teams[team] = []
+                teams[team].append(b)
+
+        for team, tballs in teams.items():
+            if len(tballs) < 2:
+                continue
+
+            for b1, b2 in itertools.combinations(tballs, 2):
+                dx = b2.x - b1.x
+                dy = b2.y - b1.y
+                dist = math.hypot(dx, dy)
+
+                if dist > self.max_distance:
+                    excess = dist - self.max_distance
+                    # Add proportional snap force
+                    pull = (excess / self.max_distance) * self.snap_force
+
+                    nx = dx / dist
+                    ny = dy / dist
+
+                    # Apply velocity to pull them together
+                    b1.vx = getattr(b1, "vx", 0.0) + nx * pull * delta
+                    b1.vy = getattr(b1, "vy", 0.0) + ny * pull * delta
+
+                    b2.vx = getattr(b2, "vx", 0.0) - nx * pull * delta
+                    b2.vy = getattr(b2, "vy", 0.0) - ny * pull * delta
+
+                    # Check for entities between them to deal damage
+                    for other in balls:
+                        if not getattr(other, "alive", False) or other == b1 or other == b2:
+                            continue
+
+                        # Line segment check: b1 to b2
+                        # Project other onto the line segment
+                        px = other.x - b1.x
+                        py = other.y - b1.y
+
+                        dot = px * nx + py * ny
+
+                        if 0 <= dot <= dist:
+                            # Closest point on the segment
+                            cx = b1.x + dot * nx
+                            cy = b1.y + dot * ny
+
+                            cdx = other.x - cx
+                            cdy = other.y - cy
+                            cdist = math.hypot(cdx, cdy)
+
+                            radius = getattr(other, "radius", 15.0)
+
+                            if cdist <= radius + 5.0:  # add a small buffer for the rubber band thickness
+                                if hasattr(world, "_deal_damage"):
+                                    # Deal damage. Use one of the team balls as the attacker for kill credit if needed
+                                    world._deal_damage(b1, other, self.damage * delta * 60) # Scaled to frame rate
+                                else:
+                                    other.hp = getattr(other, "hp", 100.0) - self.damage * delta * 60
+
+GAME_MODES["rubber_band"] = RubberBandMode()
