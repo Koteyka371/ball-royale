@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-701] Solar Flare Weather Event — *2026-07-07 21:28:39 UTC*
+
+Periodically, the arena suffers an extreme solar flare that disables all deployed hazards and traps and prevents active skills from regenerating for 5 seconds.
+
+---
+
 ## [idea-585] Bounty Contracts — *2026-07-07 21:28:34 UTC*
 
 Allow guilds to place bounties on other guilds. When a bounty is placed, members of the opposing guild are highlighted on the map and yield double points/rewards when eliminated during a match.
