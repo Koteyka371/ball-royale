@@ -9502,4 +9502,91 @@ class RubberBandMode(GameMode):
                                 else:
                                     other.hp = getattr(other, "hp", 100.0) - self.damage * delta * 60
 
+class TetheredRoyaleMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Tethered Royale"
+        self.description = "Players are paired and permanently tethered. Moving in opposite directions drains stamina. Coordinated movement grants buffs. Breaking a tether creates an explosion."
+        self.tethers = {}
+        self.prev_alive = {}
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        import random
+        alive_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        random.shuffle(alive_balls)
+
+        self.tethers = {}
+        self.prev_alive = {}
+
+        for i in range(0, len(alive_balls) - 1, 2):
+            b1 = alive_balls[i]
+            b2 = alive_balls[i+1]
+            b1.tether_target = b2
+            b2.tether_target = b1
+            self.tethers[b1.id] = b2
+            self.tethers[b2.id] = b1
+
+        if len(alive_balls) % 2 != 0:
+            alive_balls[-1].tether_target = None
+
+        for b in balls:
+            self.prev_alive[b.id] = getattr(b, "alive", False)
+
+    def tick(self, world, balls, delta: float = 0.016):
+        super().tick(world, balls, delta)
+
+        for b in balls:
+            was_alive = self.prev_alive.get(b.id, False)
+            is_alive = getattr(b, "alive", False)
+
+            # Detect elimination
+            if was_alive and not is_alive:
+                # Trigger explosive recoil
+                from arena.procedural_arena import Hazard
+                h = Hazard(id="recoil_" + str(b.id), x=getattr(b, "x", 0.0), y=getattr(b, "y", 0.0), kind="recoil_explosion", radius=100.0, damage=50.0)
+                h.duration = 0.2
+                h.damage = 50.0
+                if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    world.arena.hazards.append(h)
+
+            self.prev_alive[b.id] = is_alive
+
+            if not is_alive:
+                continue
+
+            target = getattr(b, "tether_target", None)
+            if target and getattr(target, "alive", False):
+                # Calculate movement coordination
+                v1x = getattr(b, "vx", 0.0)
+                v1y = getattr(b, "vy", 0.0)
+                v2x = getattr(target, "vx", 0.0)
+                v2y = getattr(target, "vy", 0.0)
+
+                # Use delta position or velocity to determine direction
+                # Dot product of velocities
+                import math
+                m1 = math.hypot(v1x, v1y)
+                m2 = math.hypot(v2x, v2y)
+
+                if m1 > 0.1 and m2 > 0.1:
+                    dot = (v1x * v2x + v1y * v2y) / (m1 * m2)
+
+                    if dot < -0.5: # Moving opposite directions
+                        b.stamina = max(0.0, getattr(b, "stamina", 100.0) - 20.0 * delta)
+                    elif dot > 0.5: # Coordinated movement
+                        b.speed = getattr(b, "base_speed", 100.0) * 1.5
+                        # We also need to give a damage buff. Since damage logic might be elsewhere,
+                        # we can set a flag or multiplier that action/decision could use.
+                        b.damage = getattr(b, "damage", 20.0) * 1.5
+                else:
+                    b.speed = getattr(b, "base_speed", 100.0)
+                    b.damage = getattr(b, "base_damage", 20.0)
+            else:
+                b.speed = getattr(b, "base_speed", 100.0)
+                b.damage = getattr(b, "base_damage", 20.0)
+
+
+
+GAME_MODES["tethered_royale"] = TetheredRoyaleMode()
 GAME_MODES["rubber_band"] = RubberBandMode()
