@@ -9724,4 +9724,100 @@ class RiftRouletteMode(GameMode):
 
 
 
+
+class HardpointMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Hardpoint"
+        self.description = "Control multiple hardpoints to accumulate points. Points periodically relocate."
+        self.team_scores = {"Red": 0.0, "Blue": 0.0}
+        self.target_score = 1000.0
+        self.points = []
+        self.relocate_timer = 20.0
+        self.relocate_interval = 20.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        self.team_scores = {"Red": 0.0, "Blue": 0.0}
+
+        mid = len(balls) // 2
+        for i, b in enumerate(balls):
+            if getattr(b, "ball_type", None) != "spectator":
+                if i < mid:
+                    b.team = "Red"
+                else:
+                    b.team = "Blue"
+
+        import random
+        arena_w = getattr(world.arena, "width", 800) if hasattr(world, "arena") else 800
+        arena_h = getattr(world.arena, "height", 600) if hasattr(world, "arena") else 600
+
+        self.points = []
+        for i in range(3):
+            self.points.append({
+                "id": f"hardpoint_{i}",
+                "x": random.uniform(100, arena_w - 100),
+                "y": random.uniform(100, arena_h - 100),
+                "radius": 150.0
+            })
+
+        self.relocate_timer = self.relocate_interval
+
+    def tick(self, world, balls, delta=0.016):
+        import random
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+
+        self.relocate_timer -= delta
+        if self.relocate_timer <= 0:
+            self.relocate_timer = self.relocate_interval
+            arena_w = getattr(world.arena, "width", 800) if hasattr(world, "arena") else 800
+            arena_h = getattr(world.arena, "height", 600) if hasattr(world, "arena") else 600
+            for pt in self.points:
+                pt["x"] = random.uniform(100, arena_w - 100)
+                pt["y"] = random.uniform(100, arena_h - 100)
+
+        for pt in self.points:
+            red_count = 0
+            blue_count = 0
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                    dist_sq = (b.x - pt["x"])**2 + (b.y - pt["y"])**2
+                    if dist_sq <= pt["radius"]**2:
+                        if getattr(b, "team", "") == "Red":
+                            red_count += 1
+                        elif getattr(b, "team", "") == "Blue":
+                            blue_count += 1
+
+            if red_count > blue_count:
+                self.team_scores["Red"] += 10.0 * delta
+            elif blue_count > red_count:
+                self.team_scores["Blue"] += 10.0 * delta
+
+    def check_winner(self, world, balls):
+        if self.team_scores["Red"] >= self.target_score:
+            return "Red"
+        if self.team_scores["Blue"] >= self.target_score:
+            return "Blue"
+
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
+        if not alive:
+            if self.team_scores["Red"] > self.team_scores["Blue"]: return "Red"
+            if self.team_scores["Blue"] > self.team_scores["Red"]: return "Blue"
+            return "Draw"
+
+        return None
+
+
 GAME_MODES["rift_roulette"] = RiftRouletteMode()
+GAME_MODES["hardpoint"] = HardpointMode()
