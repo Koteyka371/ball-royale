@@ -15776,17 +15776,46 @@ func _update_skill_timer(delta: float):
             rg_timer = 0.0
         else:
             if self.world != null and "balls" in self.world:
+                var arena_width = 1000.0
+                var arena_height = 1000.0
+                if self.world != null:
+                    if "width" in self.world: arena_width = self.world.width
+                    if "height" in self.world: arena_height = self.world.height
+                    if "arena" in self.world and self.world.arena != null:
+                        if "width" in self.world.arena: arena_width = self.world.arena.width
+                        if "height" in self.world.arena: arena_height = self.world.arena.height
+
                 for other in self.world.balls:
-                    if other.id != self.ball.id:
+                    var is_diff_team = false
+                    if "team" in other and "team" in self.ball:
+                        is_diff_team = (other.team != self.ball.team)
+                    elif other.has_method("get_meta") and self.ball.has_method("get_meta"):
+                        if other.has_meta("team") and self.ball.has_meta("team"):
+                            is_diff_team = (other.get_meta("team") != self.ball.get_meta("team"))
+
+                    if other.id != self.ball.id and is_diff_team:
                         var dist_sq = (other.x - self.ball.x) * (other.x - self.ball.x) + (other.y - self.ball.y) * (other.y - self.ball.y)
                         if dist_sq > 0 and dist_sq < 22500: # 150 range
-                            var dist = sqrt(dist_sq)
-                            if dist > 0.0001:
-                                var nx = (other.x - self.ball.x) / dist
-                                var ny = (other.y - self.ball.y) / dist
-                                var push_strength = 200.0 * delta
-                                other.x += nx * push_strength
-                                other.y += ny * push_strength
+                            var dist_left = other.x
+                            var dist_right = arena_width - other.x
+                            var dist_top = other.y
+                            var dist_bottom = arena_height - other.y
+
+                            var closest_wall_dist = min(min(dist_left, dist_right), min(dist_top, dist_bottom))
+                            var closest_wall = "left"
+                            if closest_wall_dist == dist_right: closest_wall = "right"
+                            elif closest_wall_dist == dist_top: closest_wall = "top"
+                            elif closest_wall_dist == dist_bottom: closest_wall = "bottom"
+
+                            var push_strength = 500.0 * delta
+                            if closest_wall == "left":
+                                other.x -= push_strength
+                            elif closest_wall == "right":
+                                other.x += push_strength
+                            elif closest_wall == "top":
+                                other.y -= push_strength
+                            elif closest_wall == "bottom":
+                                other.y += push_strength
 
         if "reverse_gravity_booster_timer" in self.ball:
             self.ball.reverse_gravity_booster_timer = rg_timer
