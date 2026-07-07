@@ -1,4 +1,4 @@
 {
-    "title": "Reflect Shield",
-    "description": "A temporary shield that bounces any projectiles or damage-dealing effects back at the attacker, creating defensive and counter-attacking opportunities in high-chaos situations."
+  "title": "Gravity Mine Trap",
+  "description": "A placeable trap that functions similarly to a black hole but activates only when an enemy comes near, briefly reversing gravity in a small area before imploding."
 }

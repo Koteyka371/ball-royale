@@ -1,6 +1,8 @@
 import pytest
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 from ai.action import Action
-from arena.procedural_arena import Hazard
 
 class MockArena:
     def __init__(self, hazards):
@@ -53,7 +55,7 @@ class MockBall:
 def test_deployable_black_hole_collect_and_deploy():
     brawler = MockBall(1, 0, 0, team="teamA")
 
-    booster = MockEntity(3, 0, 0, kind="deployable_black_hole")
+    booster = MockEntity(3, 0, 0, kind="deployable_black_hole_item")
 
     arena = MockArena([booster])
     world = MockWorld(arena, [brawler], boosters=[booster])
@@ -63,14 +65,14 @@ def test_deployable_black_hole_collect_and_deploy():
     # 1. Collect booster
     action.execute("collect_booster", 1.0)
 
-    assert "deployable_black_hole" in brawler.inventory
+    assert "deployable_black_hole_item" in brawler.inventory
     assert booster not in arena.hazards
     assert booster not in world.boosters
 
     # 2. Deploy black hole
     action.execute("attack", 1.0)
 
-    assert "deployable_black_hole" not in brawler.inventory
+    assert "deployable_black_hole_item" not in brawler.inventory
 
     assert len(arena.hazards) == 1
     bh = arena.hazards[0]
