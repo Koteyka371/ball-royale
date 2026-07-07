@@ -27,9 +27,9 @@
     "agent-4": {
       "name": "Jules Content",
       "area": "content",
-      "task_id": "idea-622",
-      "status": "working",
-      "started_at": "2026-07-07T22:51:38.097333+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 4
     },
     "agent-5": {
