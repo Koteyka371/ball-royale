@@ -11178,8 +11178,112 @@ var GAME_MODES = {
 	"soul_link": SoulLinkMode.new(),
 	"clan_tournament": ClanTournamentMode.new(),
 	"tag_team": TagTeamMode.new(),
+	"crossfire": CrossfireMode.new(),
 	"reverse_friction": preload("res://src/ai/reverse_friction.gd").ReverseFrictionMode.new()
 }
+
+
+class CrossfireMode extends GameMode:
+	func _init().():
+		name = "Crossfire"
+		description = "Balls are divided into two teams on opposite sides of a center line. Players cannot cross the line but can throw hazards and boosters."
+
+	func setup(world, balls: Array) -> void:
+		.setup(world, balls)
+		var arena_width = 1000.0
+		if typeof(world) == TYPE_OBJECT and world.get("arena"):
+			arena_width = float(world.arena.get("width"))
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			arena_width = float(world["arena"].get("width") if typeof(world["arena"]) == TYPE_OBJECT else world["arena"]["width"])
+
+		var alive_balls = []
+		for b in balls:
+			var is_spec = false
+			if typeof(b) == TYPE_OBJECT and b.get("ball_type") == "spectator":
+				is_spec = true
+			elif typeof(b) == TYPE_DICTIONARY and b.has("ball_type") and b["ball_type"] == "spectator":
+				is_spec = true
+			if not is_spec:
+				alive_balls.append(b)
+
+		alive_balls.shuffle()
+		var midpoint = alive_balls.size() / 2
+
+		for i in range(alive_balls.size()):
+			var b = alive_balls[i]
+			var is_left = (i < midpoint)
+			var team_name = "team_left" if is_left else "team_right"
+			var pos_x = 0.0
+
+			if is_left:
+				pos_x = rand_range(50.0, arena_width / 2.0 - 50.0)
+			else:
+				pos_x = rand_range(arena_width / 2.0 + 50.0, arena_width - 50.0)
+
+			if typeof(b) == TYPE_OBJECT:
+				b.set("team", team_name)
+				b.set("x", pos_x)
+			elif typeof(b) == TYPE_DICTIONARY:
+				b["team"] = team_name
+				b["x"] = pos_x
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+		var arena_width = 1000.0
+		if typeof(world) == TYPE_OBJECT and world.get("arena"):
+			arena_width = float(world.arena.get("width"))
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			arena_width = float(world["arena"].get("width") if typeof(world["arena"]) == TYPE_OBJECT else world["arena"]["width"])
+
+		var center_line = arena_width / 2.0
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_OBJECT and b.get("alive"):
+				is_alive = true
+			elif typeof(b) == TYPE_DICTIONARY and b.has("alive") and b["alive"]:
+				is_alive = true
+
+			if not is_alive:
+				continue
+
+			var team = null
+			var radius = 15.0
+			var b_x = 0.0
+			var vx = 0.0
+
+			if typeof(b) == TYPE_OBJECT:
+				team = b.get("team")
+				radius = b.get("radius")
+				b_x = b.get("x")
+				vx = b.get("vx") if b.get("vx") != null else 0.0
+			elif typeof(b) == TYPE_DICTIONARY:
+				team = b.get("team")
+				radius = b.get("radius")
+				b_x = b.get("x")
+				vx = b.get("vx") if b.has("vx") else 0.0
+
+			if team == "team_left":
+				if b_x + radius > center_line:
+					var new_x = center_line - radius
+					var new_vx = -abs(vx) * 0.5
+					if typeof(b) == TYPE_OBJECT:
+						b.set("x", new_x)
+						b.set("vx", new_vx)
+					elif typeof(b) == TYPE_DICTIONARY:
+						b["x"] = new_x
+						b["vx"] = new_vx
+			elif team == "team_right":
+				if b_x - radius < center_line:
+					var new_x = center_line + radius
+					var new_vx = abs(vx) * 0.5
+					if typeof(b) == TYPE_OBJECT:
+						b.set("x", new_x)
+						b.set("vx", new_vx)
+					elif typeof(b) == TYPE_DICTIONARY:
+						b["x"] = new_x
+						b["vx"] = new_vx
+
 
 class TagTeamMode extends GameMode:
 	var swap_timer: float = 0.0
