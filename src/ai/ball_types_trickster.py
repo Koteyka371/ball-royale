@@ -3,6 +3,7 @@ Auto-generated ball type: Trickster
 """
 
 import math
+import random
 from ai.personality import Personality
 
 class Trickster:
@@ -32,14 +33,31 @@ class Trickster:
         self.attack_timer = 0.0
         self.attack_range = float(self.ATTACK_RANGE)
         self.personality = Personality("aggressive")
+        self.fake_health_timer = random.uniform(5.0, 15.0)
+        self.fake_health_active = False
 
     def get_hp_percent(self) -> float:
-        return self.hp / self.max_hp if self.max_hp > 0 else 0.0
+        actual_percent = self.hp / self.max_hp if self.max_hp > 0 else 0.0
+        if getattr(self, 'fake_health_active', False):
+            return min(actual_percent, 0.1)
+        return actual_percent
+
+    def _tick_timers(self, delta: float) -> None:
+        self.fake_health_timer -= delta
+        if self.fake_health_timer <= 0:
+            if getattr(self, 'fake_health_active', False):
+                self.fake_health_active = False
+                self.fake_health_timer = random.uniform(10.0, 20.0)
+            else:
+                self.fake_health_active = True
+                self.fake_health_timer = random.uniform(3.0, 6.0)
 
     def flee(self, delta: float, target=None) -> None:
+        self._tick_timers(delta)
         self.current_action = "flee"
 
     def attack(self, delta: float, target=None) -> None:
+        self._tick_timers(delta)
         self.current_action = "attack"
         if target is None:
             return
@@ -69,12 +87,15 @@ class Trickster:
                     self.attack_timer = float(max(0.2, 2.0 / self.SPEED if self.SPEED > 0 else 1.0))
 
     def defend(self, delta: float) -> None:
+        self._tick_timers(delta)
         self.current_action = "defend"
 
     def collect_booster(self, delta: float) -> None:
+        self._tick_timers(delta)
         self.current_action = "opportunistic"
 
     def idle(self, delta: float) -> None:
+        self._tick_timers(delta)
         self.current_action = "idle"
 
     def take_damage(self, amount: float) -> None:
