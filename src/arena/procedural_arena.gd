@@ -617,6 +617,39 @@ func update_zone(current_tick: int, delta: float) -> void:
                         hazard.vx = vx
                         hazard.vy = vy
 
+                    if hazard.kind in ["tornado", "local_tornado"]:
+                        for other_hazard in hazards:
+                            var h_id = hazard.get_instance_id() if typeof(hazard) == TYPE_OBJECT else hash(hazard)
+                            var oh_id = other_hazard.get_instance_id() if typeof(other_hazard) == TYPE_OBJECT else hash(other_hazard)
+                            if h_id == oh_id:
+                                continue
+                            var is_active = true
+                            if other_hazard.has_method("has_meta") and other_hazard.has_meta("active"):
+                                is_active = other_hazard.get_meta("active")
+                            elif "active" in other_hazard:
+                                is_active = other_hazard.active
+
+                            if is_active and other_hazard.kind in ["fire_zone", "lava", "fire_ring", "poison_cloud", "poison_nova"]:
+                                var dist = Vector2(hazard.x, hazard.y).distance_to(Vector2(other_hazard.x, other_hazard.y))
+                                var other_rad = other_hazard.radius if "radius" in other_hazard else 10.0
+                                if dist < hazard.radius + other_rad:
+                                    if other_hazard.kind in ["fire_zone", "lava", "fire_ring"]:
+                                        if hazard.has_method("set_meta"):
+                                            hazard.set("kind", "firenado" if hazard.kind == "tornado" else "local_firenado")
+                                        else:
+                                            hazard.kind = "firenado" if hazard.kind == "tornado" else "local_firenado"
+                                    else:
+                                        if hazard.has_method("set_meta"):
+                                            hazard.set("kind", "poison_tornado" if hazard.kind == "tornado" else "local_poison_tornado")
+                                        else:
+                                            hazard.kind = "poison_tornado" if hazard.kind == "tornado" else "local_poison_tornado"
+
+                                    if other_hazard.has_method("set_meta"):
+                                        other_hazard.set_meta("active", false)
+                                    else:
+                                        other_hazard.active = false
+                                    break
+
                 if hazard.kind == "sinkhole" or hazard.kind == "massive_sinkhole":
                     hazard.radius += 2.0 * delta
                     for other_hazard in hazards:
@@ -931,7 +964,7 @@ func update_zone(current_tick: int, delta: float) -> void:
                         h.set_meta("target_x", new_target[0])
                         h.set_meta("target_y", new_target[1])
                     h.set_meta("change_timer", ct)
-            elif "kind" in h and h.kind in ["tornado", "lightning_storm"]:
+            elif "kind" in h and h.kind in ["tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "lightning_storm"]:
                 if h.has_meta("duration"):
                     var dur = h.get_meta("duration") - delta
                     h.set_meta("duration", dur)

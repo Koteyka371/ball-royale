@@ -540,6 +540,23 @@ class ProceduralArena:
                             hazard.y = self.height - hazard.radius
                             hazard.vy = -abs(hazard.vy)
 
+                    if hazard.kind in ("tornado", "local_tornado"):
+                        for other_hazard in self.hazards:
+                            if getattr(hazard, "id", None) == getattr(other_hazard, "id", None):
+                                continue
+                            if getattr(other_hazard, "active", True) and other_hazard.kind in ("fire_zone", "lava", "fire_ring", "poison_cloud", "poison_nova"):
+                                import math
+                                hx_diff = hazard.x - other_hazard.x
+                                hy_diff = hazard.y - other_hazard.y
+                                dist = math.hypot(hx_diff, hy_diff)
+                                if dist < hazard.radius + getattr(other_hazard, "radius", 10.0):
+                                    if other_hazard.kind in ("fire_zone", "lava", "fire_ring"):
+                                        hazard.kind = "firenado" if hazard.kind == "tornado" else "local_firenado"
+                                    else:
+                                        hazard.kind = "poison_tornado" if hazard.kind == "tornado" else "local_poison_tornado"
+                                    other_hazard.active = False
+                                    break
+
                     if hazard.kind == "sinkhole" or hazard.kind == "massive_sinkhole":
                         # Expand over time
                         hazard.radius += 2.0 * delta
@@ -781,7 +798,7 @@ class ProceduralArena:
                         if h.change_timer <= 0:
                             h.change_timer = 5.0
                             h.target_x, h.target_y = self.get_random_spawn_point(25.0)
-                elif getattr(h, "kind", "") == "tornado":
+                elif getattr(h, "kind", "") in ("tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
                     if hasattr(h, "duration"):
                         h.duration -= delta
                         if h.duration <= 0:
