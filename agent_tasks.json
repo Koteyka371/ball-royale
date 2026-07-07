@@ -11836,7 +11836,7 @@
     },
     {
       "id": "idea-687",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Safe Zone Hazard",
@@ -19201,6 +19201,40 @@
         "src/ai/king_of_the_hill_gravity_well.py",
         "src/ai/king_of_the_hill_gravity_well.gd",
         "tests/test_king_of_the_hill_gravity_well.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1120",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather-Adaptive Hazard Types",
+      "description": "Introduce generic trap objects that change their literal 'kind' string and visual appearance (e.g. into 'ice_patch' or 'quicksand') based on weather changes, standardizing trap behaviors across modes.",
+      "allowed_paths": [
+        "src/arena/adaptive_types.py",
+        "src/arena/adaptive_types.gd",
+        "tests/test_adaptive_types.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1121",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Temperature Mechanics",
+      "description": "Add a temperature gauge to the arena that rises in heatwaves and drops in blizzards. Balls must manage their internal temperature with boosters or specific hazard zones to prevent freezing or overheating (DoT or stun).",
+      "allowed_paths": [
+        "src/ai/temperature_mechanics.py",
+        "src/ai/temperature_mechanics.gd",
+        "tests/test_temperature_mechanics.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

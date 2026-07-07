@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-687] Shrinking Safe Zone Hazard — *2026-07-07 20:19:28 UTC*
+
+A hazard that acts like a typical Battle Royale shrinking circle. Balls taking damage outside the shrinking radius.
+
+---
+
 ## [idea-660] Weather Synergy Traps — *2026-07-07 20:12:29 UTC*
 
 Traps that react dynamically to current weather conditions, e.g., puddle traps becoming electrified during a thunderstorm or freezing during a blizzard to root enemies.
