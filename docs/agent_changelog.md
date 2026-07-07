@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-681] Explosive Decoys — *2026-07-07 20:40:29 UTC*
+
+A new mutator where decoys explode upon expiration or death, dealing area-of-effect damage to nearby enemies.
+
+---
+
 ## [idea-692] Tornado Combos — *2026-07-07 20:40:25 UTC*
 
 If a fire or poison hazard intersects with a tornado hazard, it becomes a 'Firenado' or 'Poison Tornado' that applies the respective DOT effects to pulled targets.
