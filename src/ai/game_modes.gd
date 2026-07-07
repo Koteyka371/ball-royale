@@ -11349,3 +11349,112 @@ class TagTeamMode extends GameMode:
 						inactive["y"] = a_y
 						inactive["vx"] = a_vx
 						inactive["vy"] = a_vy
+
+
+
+class TeleporterHubMode extends GameMode:
+	var hub_x: float = 400.0
+	var hub_y: float = 300.0
+	var shift_timer: float = 0.0
+	var shift_interval: float = 5.0
+	var peripheral_zones: Array = []
+	var portals: Array = []
+
+	func _init().():
+		name = "Teleporter Hub"
+		description = "A central teleporter hub that randomly connects to various peripheral zones, shifting its destinations every few seconds."
+
+	func setup(world, balls: Array) -> void:
+		.setup(world, balls)
+		shift_timer = 0.0
+
+		var arena_w = 800.0
+		var arena_h = 600.0
+		if world and "arena" in world and world.arena:
+			arena_w = world.arena.width if "width" in world.arena else 800.0
+			arena_h = world.arena.height if "height" in world.arena else 600.0
+
+		hub_x = arena_w / 2.0
+		hub_y = arena_h / 2.0
+
+		peripheral_zones = [
+			[100.0, 100.0],
+			[arena_w - 100.0, 100.0],
+			[100.0, arena_h - 100.0],
+			[arena_w - 100.0, arena_h - 100.0],
+			[arena_w / 2.0, 100.0],
+			[arena_w / 2.0, arena_h - 100.0],
+			[100.0, arena_h / 2.0],
+			[arena_w - 100.0, arena_h / 2.0]
+		]
+
+		_spawn_portals(world)
+
+	func _spawn_portals(world) -> void:
+		if not world or not "arena" in world or not "hazards" in world.arena:
+			return
+
+		# Remove existing
+		var new_hazards = []
+		for h in world.arena.hazards:
+			if not (typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.get_meta("mode_teleporter")):
+				if not (typeof(h) == TYPE_DICTIONARY and h.has("mode_teleporter")):
+					if not ("mode_teleporter" in h and h.mode_teleporter):
+						new_hazards.append(h)
+		world.arena.hazards = new_hazards
+		portals = []
+
+		var num_destinations = randi() % 2 + 3 # 3 or 4
+		var dests = []
+		var available_zones = peripheral_zones.duplicate()
+		for i in range(num_destinations):
+			var idx = randi() % available_zones.size()
+			dests.append(available_zones[idx])
+			available_zones.remove(idx)
+
+		var HazardObj = load("res://src/arena/procedural_arena.gd").Hazard
+
+		for i in range(dests.size()):
+			var dx = dests[i][0]
+			var dy = dests[i][1]
+
+			var p_out
+			if typeof(world.arena.hazards) == TYPE_ARRAY:
+				p_out = HazardObj.new("hub_dest_in_" + str(i), dx, dy, 30.0, "teleporter", 0.0)
+				p_out.set_meta("mode_teleporter", true)
+				p_out.set_meta("target_x", hub_x + randf_range(-10, 10))
+				p_out.set_meta("target_y", hub_y + randf_range(-10, 10))
+				# Compatibility fallback
+				p_out.target_x = hub_x + randf_range(-10, 10)
+				p_out.target_y = hub_y + randf_range(-10, 10)
+				p_out.mode_teleporter = true
+
+			world.arena.hazards.append(p_out)
+			portals.append(p_out)
+
+			var angle = (float(i) / float(num_destinations)) * 2.0 * PI
+			var cx = hub_x + cos(angle) * 30.0
+			var cy = hub_y + sin(angle) * 30.0
+
+			var p_in
+			if typeof(world.arena.hazards) == TYPE_ARRAY:
+				p_in = HazardObj.new("hub_dest_out_" + str(i), cx, cy, 30.0, "teleporter", 0.0)
+				p_in.set_meta("mode_teleporter", true)
+				p_in.set_meta("target_x", dx + randf_range(-10, 10))
+				p_in.set_meta("target_y", dy + randf_range(-10, 10))
+				p_in.target_x = dx + randf_range(-10, 10)
+				p_in.target_y = dy + randf_range(-10, 10)
+				p_in.mode_teleporter = true
+
+			world.arena.hazards.append(p_in)
+			portals.append(p_in)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+
+		shift_timer += delta
+		if shift_timer >= shift_interval:
+			shift_timer = 0.0
+			_spawn_portals(world)
+			if world.has_method("add_event"):
+				world.add_event("portal_shift", {"type": "portal_shift", "message": "Teleporter Hub destinations shifted!"})

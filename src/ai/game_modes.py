@@ -9147,3 +9147,91 @@ try:
     GAME_MODES["reverse_friction"] = ReverseFrictionMode()
 except ImportError:
     pass
+
+
+
+class TeleporterHubMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Teleporter Hub"
+        self.description = "A central teleporter hub that randomly connects to various peripheral zones, shifting its destinations every few seconds."
+        self.hub_x = 400.0
+        self.hub_y = 300.0
+        self.hub_radius = 40.0
+        self.shift_timer = 0.0
+        self.shift_interval = 5.0
+        self.portals = []
+        self.peripheral_zones = []
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        self.shift_timer = 0.0
+
+        arena_w = getattr(world.arena, "width", 800) if hasattr(world, "arena") else 800
+        arena_h = getattr(world.arena, "height", 600) if hasattr(world, "arena") else 600
+        self.hub_x = arena_w / 2.0
+        self.hub_y = arena_h / 2.0
+
+        self.peripheral_zones = [
+            (100.0, 100.0),
+            (arena_w - 100.0, 100.0),
+            (100.0, arena_h - 100.0),
+            (arena_w - 100.0, arena_h - 100.0),
+            (arena_w / 2.0, 100.0),
+            (arena_w / 2.0, arena_h - 100.0),
+            (100.0, arena_h / 2.0),
+            (arena_w - 100.0, arena_h / 2.0)
+        ]
+
+        self._spawn_portals(world)
+
+    def _spawn_portals(self, world: Any) -> None:
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+
+        import random
+        import math
+        from arena.procedural_arena import Hazard
+
+        # Remove existing mode portals
+        world.arena.hazards = [h for h in world.arena.hazards if getattr(h, "mode_teleporter", False) == False]
+        self.portals = []
+
+        # Select 3-4 random peripheral destinations
+        num_destinations = random.randint(3, 4)
+        dests = random.sample(self.peripheral_zones, num_destinations)
+
+        # We spawn a central portal and multiple peripheral portals
+        for i, (dx, dy) in enumerate(dests):
+            # Peripheral to central
+            p_out = Hazard(id=f"hub_dest_in_{i}", x=dx, y=dy, radius=30.0, kind="teleporter", damage=0.0)
+            p_out.target_x = self.hub_x + random.uniform(-10, 10)
+            p_out.target_y = self.hub_y + random.uniform(-10, 10)
+            p_out.mode_teleporter = True
+            world.arena.hazards.append(p_out)
+            self.portals.append(p_out)
+
+            # Central to peripheral (offset around the hub)
+            angle = (i / num_destinations) * 2 * math.pi
+            cx = self.hub_x + math.cos(angle) * 30.0
+            cy = self.hub_y + math.sin(angle) * 30.0
+
+            p_in = Hazard(id=f"hub_dest_out_{i}", x=cx, y=cy, radius=30.0, kind="teleporter", damage=0.0)
+            p_in.target_x = dx + random.uniform(-10, 10)
+            p_in.target_y = dy + random.uniform(-10, 10)
+            p_in.mode_teleporter = True
+            world.arena.hazards.append(p_in)
+            self.portals.append(p_in)
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import math
+
+        self.shift_timer += delta
+        if self.shift_timer >= self.shift_interval:
+            self.shift_timer = 0.0
+            self._spawn_portals(world)
+            if hasattr(world, "add_event"):
+                world.add_event("portal_shift", {"type": "portal_shift", "message": "Teleporter Hub destinations shifted!"})
+
+GAME_MODES["teleporter_hub"] = TeleporterHubMode()
