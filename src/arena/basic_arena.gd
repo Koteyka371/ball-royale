@@ -21,6 +21,29 @@ func _init(_arena_size: float = 2000.0, _seed = null):
 	else:
 		rng.randomize()
 
+	# Hexagonal tiles setup
+	self.set_meta("hex_tiles", [])
+	self.set_meta("hex_radius", 120.0)
+	var hex_radius = 120.0
+	var row_height = 1.5 * hex_radius
+	var col_width = sqrt(3.0) * hex_radius
+
+	var rows = int(height / row_height) + 2
+	var cols = int(width / col_width) + 2
+
+	var h_tiles = []
+	for r in range(rows):
+		for c in range(cols):
+			var cx = c * col_width
+			if r % 2 == 1:
+				cx += col_width / 2.0
+			var cy = r * row_height
+
+			if -hex_radius <= cx and cx <= width + hex_radius and -hex_radius <= cy and cy <= height + hex_radius:
+				var t = {"x": cx, "y": cy, "state": "safe", "timer": 0.0, "radius": hex_radius}
+				h_tiles.append(t)
+	self.set_meta("hex_tiles", h_tiles)
+
 	safe_zone_radius = width * 0.7
 	safe_zone_center = [width / 2.0, height / 2.0]
 	last_tick = -1
@@ -60,10 +83,20 @@ func get_random_spawn_point(radius: float) -> Array:
 func is_point_inside(x: float, y: float, radius: float) -> bool:
 	if not (radius <= x and x <= width - radius and radius <= y and y <= height - radius):
 		return false
-	var cx = safe_zone_center[0]
-	var cy = safe_zone_center[1]
-	var dist = sqrt((x - cx)*(x - cx) + (y - cy)*(y - cy))
-	return dist <= max(0.0, safe_zone_radius - radius)
+
+	if self.has_meta("hex_tiles"):
+		var h_tiles = self.get_meta("hex_tiles")
+		var nearest_hex = null
+		var min_dist = 999999999.0
+		for t in h_tiles:
+			var dist = (x - t["x"])*(x - t["x"]) + (y - t["y"])*(y - t["y"])
+			if dist < min_dist:
+				min_dist = dist
+				nearest_hex = t
+
+		if nearest_hex != null and nearest_hex["state"] == "fallen":
+			return false
+	return true
 
 func clamp_position(x: float, y: float, radius: float) -> Array:
 	var bounced = false
@@ -84,25 +117,54 @@ func clamp_position(x: float, y: float, radius: float) -> Array:
 		new_y = height - radius
 		bounced = true
 
-	var cx = safe_zone_center[0]
-	var cy = safe_zone_center[1]
-	var dist = sqrt((new_x - cx)*(new_x - cx) + (new_y - cy)*(new_y - cy))
-	if dist > max(0.0, safe_zone_radius - radius):
-		if dist > 0.0001:
-			var dir_x = (new_x - cx) / dist
-			var dir_y = (new_y - cy) / dist
-			new_x = cx + dir_x * max(0.0, safe_zone_radius - radius)
-			new_y = cy + dir_y * max(0.0, safe_zone_radius - radius)
-		else:
-			new_x = cx
-			new_y = cy
-		bounced = true
-
 	return [new_x, new_y, bounced]
 
 func update_zone(current_tick: int, delta: float) -> void:
 	if current_tick != last_tick:
 		last_tick = current_tick
+
+		# Handle Hexagonal Tile falling
+		if current_tick % 60 == 0 and self.has_meta("hex_tiles"):
+			var h_tiles = self.get_meta("hex_tiles")
+			var safe_tiles = []
+			for t in h_tiles:
+				if t["state"] == "safe":
+					safe_tiles.append(t)
+
+			if safe_tiles.size() > 0:
+				# Sort manually by distance to center
+				var cx = width / 2.0
+				var cy = height / 2.0
+				for i in range(safe_tiles.size()):
+					for j in range(i + 1, safe_tiles.size()):
+						var dist_i = (safe_tiles[i]["x"] - cx)*(safe_tiles[i]["x"] - cx) + (safe_tiles[i]["y"] - cy)*(safe_tiles[i]["y"] - cy)
+						var dist_j = (safe_tiles[j]["x"] - cx)*(safe_tiles[j]["x"] - cx) + (safe_tiles[j]["y"] - cy)*(safe_tiles[j]["y"] - cy)
+						if dist_j > dist_i:
+							var temp = safe_tiles[i]
+							safe_tiles[i] = safe_tiles[j]
+							safe_tiles[j] = temp
+
+				var num_to_fall = min(safe_tiles.size(), (randi() % 3) + 1)
+				var chosen = []
+				if safe_tiles.size() > 0:
+					chosen.append(safe_tiles[0])
+				for i in range(num_to_fall - 1):
+					if safe_tiles.size() > 0:
+						chosen.append(safe_tiles[randi() % safe_tiles.size()])
+
+				for t in chosen:
+					if t["state"] == "safe":
+						t["state"] = "glowing"
+						t["timer"] = 3.0
+
+		if self.has_meta("hex_tiles"):
+			var h_tiles = self.get_meta("hex_tiles")
+			for t in h_tiles:
+				if t["state"] == "glowing":
+					t["timer"] -= delta
+					if t["timer"] <= 0:
+						t["state"] = "fallen"
+
 		if safe_zone_radius > 0.0:
 			safe_zone_radius -= 10.0 * delta
 			if safe_zone_radius <= 0.0:
@@ -235,16 +297,35 @@ func _update_danger_grid() -> void:
 						current = danger_grid[key]
 					danger_grid[key] = current + (h.damage / 10.0)
 
+	# Check hex tiles for danger
 	var grid_w = int(width / 100) + 1
 	var grid_h = int(height / 100) + 1
+	var h_tiles = []
+	if self.has_meta("hex_tiles"):
+		h_tiles = self.get_meta("hex_tiles")
+
 	for i in range(grid_w):
 		for j in range(grid_h):
 			var cx = i * 100 + 50
 			var cy = j * 100 + 50
-			var dist_to_center = sqrt((cx - safe_zone_center[0])*(cx - safe_zone_center[0]) + (cy - safe_zone_center[1])*(cy - safe_zone_center[1]))
-			if dist_to_center > safe_zone_radius:
-				var key = str(i) + "," + str(j)
-				var current = 0.0
-				if danger_grid.has(key):
-					current = danger_grid[key]
-				danger_grid[key] = current + 5.0
+			var nearest_hex = null
+			var min_dist = 999999999.0
+			for t in h_tiles:
+				var dist = (cx - t["x"])*(cx - t["x"]) + (cy - t["y"])*(cy - t["y"])
+				if dist < min_dist:
+					min_dist = dist
+					nearest_hex = t
+
+			if nearest_hex != null:
+				if nearest_hex["state"] == "fallen":
+					var key = str(i) + "," + str(j)
+					var current = 0.0
+					if danger_grid.has(key):
+						current = danger_grid[key]
+					danger_grid[key] = current + 10.0
+				elif nearest_hex["state"] == "glowing":
+					var key = str(i) + "," + str(j)
+					var current = 0.0
+					if danger_grid.has(key):
+						current = danger_grid[key]
+					danger_grid[key] = current + 2.0

@@ -384,7 +384,13 @@ class BattleRoyaleMode(GameMode):
                 b_x = getattr(b, "x", 0.0)
                 b_y = getattr(b, "y", 0.0)
                 dist = math.hypot(b_x - self.zone_x, b_y - self.zone_y)
-                if dist > self.zone_radius:
+                is_safe = True
+                if hasattr(world, "arena") and hasattr(world.arena, "is_point_inside"):
+                    is_safe = world.arena.is_point_inside(b.x, b.y, getattr(b, "radius", 10.0))
+                else:
+                    is_safe = dist <= self.zone_radius
+
+                if not is_safe:
                     b.hp -= zone_damage_per_second * delta # damage per second outside safe zone
 
 
@@ -3879,7 +3885,13 @@ class MovingSafeZoneMode(GameMode):
             bdy = b.position.y - self.zone_y if hasattr(b, "position") else getattr(b, "y", 0.0) - self.zone_y
             bdist = math.sqrt(bdx*bdx + bdy*bdy)
 
-            if bdist > self.zone_radius:
+            is_safe = True
+            if hasattr(world, "arena") and hasattr(world.arena, "is_point_inside"):
+                is_safe = world.arena.is_point_inside(b.x, b.y, getattr(b, "radius", 10.0))
+            else:
+                is_safe = bdist <= self.zone_radius
+
+            if not is_safe:
                 if hasattr(b, "hp"):
                     damage = self.outside_damage_per_second * (10.0 if getattr(self, 'collapse_triggered', False) else 1.0) * delta
                     b.hp -= damage
@@ -3934,7 +3946,13 @@ class PoisonGasZoneMode(MovingSafeZoneMode):
             bdy = getattr(b, "position", b).y - self.zone_y if hasattr(b, "position") else getattr(b, "y", 0.0) - self.zone_y
             bdist = math.sqrt(bdx*bdx + bdy*bdy)
 
-            if bdist > self.zone_radius:
+            is_safe = True
+            if hasattr(world, "arena") and hasattr(world.arena, "is_point_inside"):
+                is_safe = world.arena.is_point_inside(b.x, b.y, getattr(b, "radius", 10.0))
+            else:
+                is_safe = bdist <= self.zone_radius
+
+            if not is_safe:
                 # Apply poison visual meta or status if applicable
                 b.poison_timer = getattr(b, "poison_timer", 0.0) + delta * 2.0 # Keeps it topped up while in gas
 
@@ -4074,7 +4092,13 @@ class ShrinkingDangerZoneMode(GameMode):
                 dist = math.sqrt(dx*dx + dy*dy)
 
                 # If outside safe zone, take damage
-                if dist > self.zone_radius:
+                is_safe = True
+                if hasattr(world, "arena") and hasattr(world.arena, "is_point_inside"):
+                    is_safe = world.arena.is_point_inside(b.x, b.y, getattr(b, "radius", 10.0))
+                else:
+                    is_safe = dist <= self.zone_radius
+
+                if not is_safe:
                     b.hp -= damage_this_tick
                     if b.hp <= 0:
                         b.alive = False
@@ -4299,7 +4323,13 @@ class ModifierZonesSafeZoneMode(GameMode):
             dy = b.y - self.zone_y
             dist = math.sqrt(dx*dx + dy*dy)
 
-            if dist > self.zone_radius:
+            is_safe = True
+            if hasattr(world, "arena") and hasattr(world.arena, "is_point_inside"):
+                is_safe = world.arena.is_point_inside(b.x, b.y, getattr(b, "radius", 10.0))
+            else:
+                is_safe = dist <= self.zone_radius
+
+            if not is_safe:
                 if hasattr(b, "hp"):
                     b.hp -= damage_this_tick
                     if b.hp <= 0:
@@ -4452,7 +4482,13 @@ class SafeZoneMode(GameMode):
                 dist = math.sqrt(dx*dx + dy*dy)
 
                 # If outside safe zone, take damage
-                if dist > self.zone_radius:
+                is_safe = True
+                if hasattr(world, "arena") and hasattr(world.arena, "is_point_inside"):
+                    is_safe = world.arena.is_point_inside(b.x, b.y, getattr(b, "radius", 10.0))
+                else:
+                    is_safe = dist <= self.zone_radius
+
+                if not is_safe:
                     b.hp -= damage_this_tick
                     if b.hp <= 0:
                         b.alive = False
@@ -7145,7 +7181,13 @@ class DynamicSafeZoneMode(GameMode):
                     delattr(b, "zone_modifier_damage")
 
             # Check if outside safe zone
-            if dist > self.zone_radius:
+            is_safe = True
+            if hasattr(world, "arena") and hasattr(world.arena, "is_point_inside"):
+                is_safe = world.arena.is_point_inside(b.x, b.y, getattr(b, "radius", 10.0))
+            else:
+                is_safe = dist <= self.zone_radius
+
+            if not is_safe:
                 if hasattr(b, "hp"):
                     b.hp -= damage_this_tick
                     if b.hp <= 0:
@@ -8422,7 +8464,13 @@ class MazeSafeZoneMode(GameMode):
                 bdy = b.y - self.zone_y
                 bdist = math.sqrt(bdx*bdx + bdy*bdy)
 
-                if bdist > self.zone_radius:
+                is_safe = True
+                if hasattr(world, "arena") and hasattr(world.arena, "is_point_inside"):
+                    is_safe = world.arena.is_point_inside(b.x, b.y, getattr(b, "radius", 10.0))
+                else:
+                    is_safe = bdist <= self.zone_radius
+
+                if not is_safe:
                     b.hp -= damage_this_tick
                     if b.hp <= 0:
                         b.alive = False

@@ -1,0 +1,28 @@
+Ok, so AI checks `danger_grid`.
+`BasicArena` and `ProceduralArena` push balls inside via `clamp_position`.
+If we make it so hexagons can "glow red" and "fall away", the safe area becomes fragmented.
+
+Wait, if we change `BasicArena` and `ProceduralArena` to NOT use `safe_zone_radius`, and instead use a `hex_tiles` structure, what about existing dependencies on `safe_zone_radius`?
+There are several tests and files referencing `safe_zone_radius` (e.g., `shrinking_hazards.py`, tests).
+So we shouldn't necessarily *remove* `safe_zone_radius` entirely, or we should provide a fallback.
+Or maybe we replace it and update those tests to ignore it, or just use `arena_size` instead?
+Actually, the task says: "Instead of a smooth circular shrinking zone, the arena is made of hexagonal tiles that independently glow red and fall away, reducing the safe map area into fragmented islands that players must jump between."
+This sounds like we should implement Hexagonal Tiles in the arena logic.
+
+Let's look at `ProceduralArena.py` which has `safe_zone_radius`.
+We can initialize a set of hexagons filling the map.
+For example, a hexagon is defined by a center `(cx, cy)`.
+A simple hex grid spacing:
+dx = hex_size * sqrt(3)
+dy = hex_size * 1.5
+We can generate all hex centers that fall within the arena size.
+Store them in a list/dict: `self.hexes = {id: {'x': cx, 'y': cy, 'state': 'safe', 'timer': 0.0}}`
+States could be: 'safe', 'warning' (glowing red), 'falling', 'fallen'.
+
+Then `is_point_inside(x, y, radius)`:
+Find the nearest hex center. If its state is 'safe', we return True. If it's 'fallen', return False.
+What if they are over 'warning'? Probably still safe, but warning.
+
+How do we "jump between"? If `is_point_inside` returns False, maybe they take damage?
+Wait, the `game_modes.py` handles out-of-bounds damage using `world.arena.is_point_inside()`.
+Let's check `game_modes.py`!

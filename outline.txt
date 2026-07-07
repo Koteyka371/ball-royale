@@ -1,23 +1,6 @@
-Plan to implement the "Guild Boss Fight PvE Mode":
+The task is to replace the smooth circular shrinking zone with an arena made of hexagonal tiles that independently glow red and fall away, reducing the safe map area into fragmented islands that players must jump between.
 
-1. Modify `src/system/guild.py` and `src/system/guild.gd`:
-   - Add a method to track damage dealt by guilds to a weekly boss: `record_boss_damage(guild_name, damage, week_id)`.
-   - Add a method to retrieve the boss state (HP, defeated status, rewards claimed).
-   - Alternatively, add boss state to `GuildManager`'s data directly under `"guilds"`. E.g., `guild["boss_progress"] = {"week_id": "...", "damage_dealt": 0, "rewards_claimed": False}`.
+So instead of `self.safe_zone_radius`, the arena is composed of hexagonal tiles.
+Wait, "jump between" - is there a jumping mechanic? Or does it just mean navigate between? The players are balls that roll around, so they might "jump" or dash, or just move.
 
-2. Create `GuildBossFightMode` in `src/ai/game_modes.py` and `src/ai/game_modes.gd`:
-   - Inherits from `GameMode`.
-   - Takes a `guild_name` and a `GuildManager` instance.
-   - The mode spawns a massive boss with millions of HP (or effectively immortal, we just track damage dealt).
-   - The boss has unique mechanics (e.g., occasional AoE blasts, spawning minion hazards).
-   - In `tick()`, track how much damage the boss takes from the guild members.
-   - When the match ends, call `record_boss_damage` on the `GuildManager`.
-
-3. Update `src/ai/game_modes.py` and `src/ai/game_modes.gd` to include `GuildBossFightMode` in `GAME_MODES` (or keep it as a dynamically instantiated mode).
-
-4. Add tests for `GuildBossFightMode` in `src/ai/test_guild_boss_mode.py`.
-5. Add tests for the new methods in `src/system/test_guild.py`.
-
-6. Run all tests and ensure they pass.
-7. Create IDEAS INBOX files.
-8. Complete pre-commit and submit PR.
+The shrinking zone logic is currently in `basic_arena.py` (and probably `basic_arena.gd`, `procedural_arena.py/gd`). Let's read `procedural_arena.py` too.
