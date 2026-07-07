@@ -11564,7 +11564,7 @@
     },
     {
       "id": "idea-671",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Mirrors",
@@ -19303,6 +19303,40 @@
         "src/arena/phase_shifting.py",
         "src/arena/phase_shifting.gd",
         "tests/test_phase_shifting.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1126",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Vampiric Drone",
+      "description": "A drone item that follows the player and periodically drains a small amount of health from nearby enemies, transferring it to the player.",
+      "allowed_paths": [
+        "src/ai/vampiric_drone.py",
+        "src/ai/vampiric_drone.gd",
+        "tests/test_vampiric_drone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1127",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Portal Gun Trap",
+      "description": "A deployable trap that shoots players to a random location in the arena, disorienting them and potentially dropping them into hazards.",
+      "allowed_paths": [
+        "src/arena/portal_gun_trap.py",
+        "src/arena/portal_gun_trap.gd",
+        "tests/test_portal_gun_trap.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

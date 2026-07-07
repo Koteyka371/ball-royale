@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-671] Decoy Mirrors — *2026-07-07 20:40:21 UTC*
+
+Hazard objects that look like solid walls but are actually reflective illusions. Passing through them creates a temporary fake decoy of the ball that moves in the opposite direction.
+
+---
+
 ## [idea-653] Shield Generator Booster — *2026-07-07 20:22:03 UTC*
 
 A booster that gives the collecting ball a temporary shield that absorbs the next incoming instance of damage.
