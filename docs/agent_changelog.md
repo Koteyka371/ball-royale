@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-568] Booster Scrambler Trap — *2026-07-07 19:48:41 UTC*
+
+A new trap type that does not deal damage, but upon collection, it shuffles the player's active skill and inventory with a random nearby player for 10 seconds.
+
+---
+
 ## [idea-675] Quantum Entanglement Link — *2026-07-07 19:48:36 UTC*
 
 A new utility skill that connects two allied balls via quantum entanglement. When one takes damage, it's shared equally, but they both gain increased movement speed and stamina regeneration as long as they stay within a certain radius of each other.
