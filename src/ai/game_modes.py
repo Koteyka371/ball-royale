@@ -3913,6 +3913,39 @@ class MovingSafeZoneMode(GameMode):
 
 
 
+
+class PoisonGasZoneMode(MovingSafeZoneMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Poison Gas Zone"
+        self.description = "A dynamic battle royale where a deadly poison gas engulfs the arena. The safe zone moves randomly and shrinks, forcing players together. Severe DoT damage outside."
+        self.outside_damage_per_second = 30.0 # Severe DoT damage
+        self.shrink_rate = 12.0 # Slightly faster shrink
+        self.move_speed = 40.0 # Faster movement to keep players on their toes
+        self.tick_timer = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        # Add visual poison gas effect via events if we can, or modify balls
+        import math
+        for b in balls:
+            if not getattr(b, "alive", False): continue
+            bdx = getattr(b, "position", b).x - self.zone_x if hasattr(b, "position") else getattr(b, "x", 0.0) - self.zone_x
+            bdy = getattr(b, "position", b).y - self.zone_y if hasattr(b, "position") else getattr(b, "y", 0.0) - self.zone_y
+            bdist = math.sqrt(bdx*bdx + bdy*bdy)
+
+            if bdist > self.zone_radius:
+                # Apply poison visual meta or status if applicable
+                b.poison_timer = getattr(b, "poison_timer", 0.0) + delta * 2.0 # Keeps it topped up while in gas
+
+        # Occasional visual gas particle event
+        self.tick_timer += delta
+        if self.tick_timer > 0.5:
+            self.tick_timer = 0.0
+            if hasattr(world, "add_event"):
+                world.add_event("poison_gas_ambient", {"zone_x": self.zone_x, "zone_y": self.zone_y, "radius": self.zone_radius})
+
+
 class ShrinkingDangerZoneMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -8749,6 +8782,7 @@ GAME_MODES = {
     "safe_zone": SafeZoneMode(),
     "dynamic_safe_zone": DynamicSafeZoneMode(),
     "moving_safe_zone": MovingSafeZoneMode(),
+    "poison_gas_zone": PoisonGasZoneMode(),
     "bounty_hunt": BountyHuntMode(),
     "earthquake": EarthquakeMode(),
     "inverse_mirror_arena": InverseMirrorArenaMode(),
