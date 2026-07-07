@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-669] Shrinking Trap Arena Mode — *2026-07-07 18:22:05 UTC*
+
+A game mode where the arena slowly shrinks over time, but instead of just a damaging wall, the shrinking border leaves behind an increasing density of explosive landmines, forcing players into smaller safe zones with less room to maneuver.
+
+---
+
 ## [idea-662] Weaponized Tether Mode — *2026-07-07 18:22:00 UTC*
 
 A new game mode where all balls are permanently tethered to another random ball in the arena. Moving in opposite directions drains stamina rapidly, while coordinated movements grant a temporary speed and damage buff. Eliminating an opponent breaks their tether, causing an explosive recoil that damages anyone nearby.
