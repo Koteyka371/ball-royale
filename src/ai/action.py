@@ -8186,6 +8186,12 @@ class Action:
                             if dist <= burst_radius:
                                 if hasattr(enemy, "take_damage"):
                                     enemy.take_damage(base_burst_dmg)
+            elif skill_name == "time_warp":
+                self.ball.time_warp_timer = 5.0
+                self.ball.skill_timer = getattr(self.ball, "base_skill_timer", 10.0)
+                # optionally spawn particles
+                if hasattr(self.ball, "spawn_particles"):
+                    self.ball.spawn_particles("time_warp")
             elif skill_name == "silence_aura":
                 enemies = self._get_enemies()
                 if enemies:
@@ -9361,6 +9367,36 @@ class Action:
                     self.ball.base_perception_radius /= 2.0
                     self.ball.perception_radius = self.ball.base_perception_radius
                     self.ball.vision_booster_applied = False
+
+
+        if getattr(self.ball, "time_warp_timer", 0.0) > 0:
+            self.ball.time_warp_timer -= delta
+            # Increase movement and attack speed
+            self.ball.speed = getattr(self.ball, "base_speed", 2.0) * 2.0
+            self.ball.attack_timer -= delta * 1.5 # Cooldown faster
+            self.ball.skill_timer -= delta * 1.5
+
+            # Slow down enemies in radius
+            import math
+            # Get enemies safely
+            if hasattr(self.world, "balls"):
+                for b in self.world.balls:
+                    if getattr(b, "id", None) != getattr(self.ball, "id", None) and getattr(b, "team", "") != getattr(self.ball, "team", "") and getattr(b, "alive", True):
+                        if math.hypot(b.x - self.ball.x, b.y - self.ball.y) < 150.0:
+                            b.time_warp_slow_timer = 0.2
+
+            if self.ball.time_warp_timer <= 0:
+                self.ball.time_warp_timer = 0.0
+                self.ball.speed = getattr(self.ball, "base_speed", 2.0)
+
+        if getattr(self.ball, "time_warp_slow_timer", 0.0) > 0:
+            self.ball.time_warp_slow_timer -= delta
+            self.ball.speed = getattr(self.ball, "base_speed", 2.0) * 0.4
+            self.ball.attack_timer += delta * 0.5 # Cooldown slower
+            self.ball.skill_timer += delta * 0.5
+            if self.ball.time_warp_slow_timer <= 0:
+                self.ball.time_warp_slow_timer = 0.0
+                self.ball.speed = getattr(self.ball, "base_speed", 2.0)
 
         if getattr(self.ball, "speed_boost_timer", 0.0) > 0:
             self.ball.speed_boost_timer -= delta
