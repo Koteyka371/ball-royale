@@ -7661,6 +7661,54 @@ func execute(strategy: String, delta: float):
     var stun_taken = current_stun - start_stun
     var silence_taken = current_silence - start_silence
 
+    var quantum_target = null
+    if "quantum_entanglement_target" in self.ball: quantum_target = self.ball.quantum_entanglement_target
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("quantum_entanglement_target"): quantum_target = self.ball.get_meta("quantum_entanglement_target")
+
+    var q_timer = 0.0
+    if "quantum_entanglement_timer" in self.ball: q_timer = self.ball.quantum_entanglement_timer
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("quantum_entanglement_timer"): q_timer = self.ball.get_meta("quantum_entanglement_timer")
+
+    if quantum_target != null and q_timer > 0.0:
+        var target_alive = true
+        if "alive" in quantum_target: target_alive = quantum_target.alive
+        elif typeof(quantum_target) == TYPE_OBJECT and quantum_target.has_method("has_meta") and quantum_target.has_meta("alive"): target_alive = quantum_target.get_meta("alive")
+        if target_alive:
+            var is_receiving = false
+            if "quantum_entanglement_is_receiving" in self.ball: is_receiving = self.ball.quantum_entanglement_is_receiving
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("quantum_entanglement_is_receiving"): is_receiving = self.ball.get_meta("quantum_entanglement_is_receiving")
+            if damage_taken > 0 and not is_receiving:
+                if "quantum_entanglement_is_receiving" in quantum_target: quantum_target.quantum_entanglement_is_receiving = true
+                elif typeof(quantum_target) == TYPE_OBJECT and quantum_target.has_method("set_meta"): quantum_target.set_meta("quantum_entanglement_is_receiving", true)
+
+                var half_damage = damage_taken * 0.5
+                if typeof(quantum_target) == TYPE_OBJECT and quantum_target.has_method("take_damage"):
+                    quantum_target.take_damage(half_damage)
+                else:
+                    var thp = 100.0
+                    if "hp" in quantum_target: thp = quantum_target.hp
+                    elif typeof(quantum_target) == TYPE_OBJECT and quantum_target.has_method("has_meta") and quantum_target.has_meta("hp"): thp = quantum_target.get_meta("hp")
+                    thp -= half_damage
+                    if "hp" in quantum_target: quantum_target.hp = thp
+                    elif typeof(quantum_target) == TYPE_OBJECT and quantum_target.has_method("set_meta"): quantum_target.set_meta("hp", thp)
+                    if thp <= 0:
+                        if "alive" in quantum_target: quantum_target.alive = false
+                        elif typeof(quantum_target) == TYPE_OBJECT and quantum_target.has_method("set_meta"): quantum_target.set_meta("alive", false)
+
+                var my_hp = 100.0
+                var my_max_hp = 100.0
+                if "hp" in self.ball: my_hp = self.ball.hp
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("hp"): my_hp = self.ball.get_meta("hp")
+                if "max_hp" in self.ball: my_max_hp = self.ball.max_hp
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("max_hp"): my_max_hp = self.ball.get_meta("max_hp")
+
+                my_hp = min(my_max_hp, my_hp + half_damage)
+                if "hp" in self.ball: self.ball.hp = my_hp
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("hp", my_hp)
+
+                if "quantum_entanglement_is_receiving" in quantum_target: quantum_target.quantum_entanglement_is_receiving = false
+                elif typeof(quantum_target) == TYPE_OBJECT and quantum_target.has_method("set_meta"): quantum_target.set_meta("quantum_entanglement_is_receiving", false)
+
     var chaos_target = null
     if "chaos_link_target" in self.ball: chaos_target = self.ball.chaos_link_target
     elif self.ball.has_method("get_meta") and self.ball.has_meta("chaos_link_target"): chaos_target = self.ball.get_meta("chaos_link_target")
@@ -14960,6 +15008,55 @@ func _spawn_skill_particles(skill_name: String = ""):
 
                     if self.has_method("_spawn_directed_particles"):
                         self._spawn_directed_particles(self.ball, target_cl, "chaos_link")
+        elif skill_name == "quantum_entanglement":
+            var allies = []
+            if "balls" in self.world:
+                for b in self.world.balls:
+                    if b != self.ball:
+                        var team1 = ""
+                        var team2 = ""
+                        if "team" in b: team1 = b.team
+                        elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("team"): team1 = b.get_meta("team")
+                        if "team" in self.ball: team2 = self.ball.team
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("team"): team2 = self.ball.get_meta("team")
+                        if team1 == team2 and team1 != "":
+                            allies.append(b)
+            if allies.size() > 0:
+                var target = null
+                var min_dist = 9999999.0
+                var my_x = 0.0
+                var my_y = 0.0
+                if "x" in self.ball: my_x = self.ball.x
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("x"): my_x = self.ball.get_meta("x")
+                if "y" in self.ball: my_y = self.ball.y
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("y"): my_y = self.ball.get_meta("y")
+
+                for a in allies:
+                    var a_x = 0.0
+                    var a_y = 0.0
+                    if "x" in a: a_x = a.x
+                    elif typeof(a) == TYPE_OBJECT and a.has_method("has_meta") and a.has_meta("x"): a_x = a.get_meta("x")
+                    if "y" in a: a_y = a.y
+                    elif typeof(a) == TYPE_OBJECT and a.has_method("has_meta") and a.has_meta("y"): a_y = a.get_meta("y")
+                    var dist = (a_x - my_x)*(a_x - my_x) + (a_y - my_y)*(a_y - my_y)
+                    if dist < min_dist:
+                        min_dist = dist
+                        target = a
+                if target != null:
+                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                        self.ball.set_meta("quantum_entanglement_target", target)
+                        self.ball.set_meta("quantum_entanglement_timer", 10.0)
+                    else:
+                        self.ball["quantum_entanglement_target"] = target
+                        self.ball["quantum_entanglement_timer"] = 10.0
+                    if typeof(target) == TYPE_OBJECT and target.has_method("set_meta"):
+                        target.set_meta("quantum_entanglement_target", self.ball)
+                        target.set_meta("quantum_entanglement_timer", 10.0)
+                    else:
+                        target["quantum_entanglement_target"] = self.ball
+                        target["quantum_entanglement_timer"] = 10.0
+                    if self.has_method("_spawn_directed_particles"):
+                        self._spawn_directed_particles(self.ball, target, "quantum_entanglement")
         elif skill_name == "health_link":
             var allies_hl = []
             if "balls" in self.world:
@@ -16106,6 +16203,67 @@ func _update_skill_timer(delta: float):
 
     var hl_timer = 0.0
     var chaos_link_timer = 0.0
+    var q_ent_timer = 0.0
+    if "quantum_entanglement_timer" in self.ball: q_ent_timer = self.ball.quantum_entanglement_timer
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("quantum_entanglement_timer"): q_ent_timer = self.ball.get_meta("quantum_entanglement_timer")
+
+    if q_ent_timer > 0:
+        q_ent_timer -= delta
+        var target = null
+        if "quantum_entanglement_target" in self.ball: target = self.ball.quantum_entanglement_target
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("quantum_entanglement_target"): target = self.ball.get_meta("quantum_entanglement_target")
+
+        var alive = true
+        if target != null:
+            if "alive" in target: alive = target.alive
+            elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("alive"): alive = target.get_meta("alive")
+
+        if target != null and alive:
+            var t_x = 0.0; var t_y = 0.0; var my_x = 0.0; var my_y = 0.0
+            if "x" in target: t_x = target.x
+            elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("x"): t_x = target.get_meta("x")
+            if "y" in target: t_y = target.y
+            elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("y"): t_y = target.get_meta("y")
+            if "x" in self.ball: my_x = self.ball.x
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("x"): my_x = self.ball.get_meta("x")
+            if "y" in self.ball: my_y = self.ball.y
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("y"): my_y = self.ball.get_meta("y")
+
+            var dist_sq = (t_x - my_x)*(t_x - my_x) + (t_y - my_y)*(t_y - my_y)
+            if dist_sq > 90000:
+                q_ent_timer = 0.0
+                target = null
+            else:
+                if q_ent_timer <= 0:
+                    target = null
+                else:
+                    var b_speed = 2.0
+                    if "base_speed" in self.ball: b_speed = self.ball.base_speed
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("base_speed"): b_speed = self.ball.get_meta("base_speed")
+
+                    if "speed" in self.ball: self.ball.speed = b_speed * 1.5
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("speed", b_speed * 1.5)
+
+                    var st = 100.0; var max_st = 100.0
+                    if "stamina" in self.ball: st = self.ball.stamina
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("stamina"): st = self.ball.get_meta("stamina")
+                    if "max_stamina" in self.ball: max_st = self.ball.max_stamina
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("max_stamina"): max_st = self.ball.get_meta("max_stamina")
+
+                    st = min(max_st, st + 20.0 * delta)
+                    if "stamina" in self.ball: self.ball.stamina = st
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("stamina", st)
+        else:
+            q_ent_timer = 0.0
+            target = null
+
+        if "quantum_entanglement_timer" in self.ball:
+            self.ball.quantum_entanglement_timer = q_ent_timer
+            self.ball.quantum_entanglement_target = target
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+            self.ball.set_meta("quantum_entanglement_timer", q_ent_timer)
+            self.ball.set_meta("quantum_entanglement_target", target)
+
     if "chaos_link_timer" in self.ball:
         chaos_link_timer = self.ball.chaos_link_timer
     elif self.ball.has_method("get_meta") and self.ball.has_meta("chaos_link_timer"):
