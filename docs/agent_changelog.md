@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-614] Decoy Trap Items — *2026-07-07 16:28:08 UTC*
+
+Introduce items that look like boosters on the map but explode or apply debuffs when a player collects them.
+
+---
+
 ## [idea-619] Rubber Band Bonds — *2026-07-07 16:28:02 UTC*
 
 Teams of balls are tethered together by invisible rubber bands. If they move too far apart, they are snapped back together with massive force, dealing damage to anything in their path.
