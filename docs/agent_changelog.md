@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-692] Tornado Combos — *2026-07-07 20:40:25 UTC*
+
+If a fire or poison hazard intersects with a tornado hazard, it becomes a 'Firenado' or 'Poison Tornado' that applies the respective DOT effects to pulled targets.
+
+---
+
 ## [idea-671] Decoy Mirrors — *2026-07-07 20:40:21 UTC*
 
 Hazard objects that look like solid walls but are actually reflective illusions. Passing through them creates a temporary fake decoy of the ball that moves in the opposite direction.
