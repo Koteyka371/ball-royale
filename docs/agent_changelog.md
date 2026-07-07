@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-670] Quantum Entanglement Ball — *2026-07-07 19:37:23 UTC*
+
+A new ball type that can temporarily entangle with another ball (friend or foe). While entangled, any damage or healing one receives is shared 50/50, and their movements are slightly tethered together. Useful for dragging a strong enemy down or saving an ally.
+
+---
+
 ## [idea-666] Bouncing Laser Hazards — *2026-07-07 19:37:18 UTC*
 
 Adds a new moving hazard to the procedural arena: a slow-moving, concentrated laser beam that continuously bounces off the arena walls. Instead of static hitboxes, this hazard creates moving damage zones that balls must kite around or carefully dash through.
