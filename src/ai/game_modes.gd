@@ -11567,7 +11567,73 @@ class JuggernautMode extends GameMode:
 
 		return null
 
+
+class SolarFlareMode extends GameMode:
+	var flare_timer: float = 0.0
+	var flare_interval: float = 20.0
+	var flare_duration: float = 5.0
+	var is_flaring: bool = false
+	var excluded_hazards = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "shield_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "aura_booster", "exploding_booster", "debuff_booster", "forecast_booster", "teleporter", "quantum_teleporter"]
+
+	func _init():
+		super()
+		name = "Solar Flare"
+		description = "Periodically, the arena suffers an extreme solar flare that disables all deployed hazards and traps and prevents active skills from regenerating for 5 seconds."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		flare_timer += delta
+
+		if not is_flaring and flare_timer >= flare_interval:
+			is_flaring = true
+			flare_timer = 0.0
+			if typeof(world) == TYPE_DICTIONARY:
+				world["solar_flare_active"] = true
+			elif world != null:
+				world.set_meta("solar_flare_active", true) if world.has_method("set_meta") else null
+
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("solar_flare_start", {"message": "Solar Flare Active! Hazards disabled and skills paused!"})
+			elif typeof(world) == TYPE_DICTIONARY and world.has("events"):
+				world.events.append({"type": "solar_flare_start", "message": "Solar Flare Active! Hazards disabled and skills paused!"})
+
+		elif is_flaring and flare_timer >= flare_duration:
+			is_flaring = false
+			flare_timer = 0.0
+			if typeof(world) == TYPE_DICTIONARY:
+				world["solar_flare_active"] = false
+			elif world != null:
+				world.set_meta("solar_flare_active", false) if world.has_method("set_meta") else null
+
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("solar_flare_end", {"message": "Solar Flare Ended."})
+			elif typeof(world) == TYPE_DICTIONARY and world.has("events"):
+				world.events.append({"type": "solar_flare_end", "message": "Solar Flare Ended."})
+
+		var hazards = null
+		if typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+			hazards = world.arena.hazards
+		elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null and "hazards" in world.arena:
+			hazards = world.arena.hazards
+
+		if hazards != null and typeof(hazards) == TYPE_ARRAY:
+			for h in hazards:
+				var hk = ""
+				if typeof(h) == TYPE_DICTIONARY:
+					hk = h.get("kind", "")
+				elif typeof(h) == TYPE_OBJECT:
+					if h.has_method("get_meta") and h.has_meta("kind"):
+						hk = h.get_meta("kind")
+					elif "kind" in h:
+						hk = h.kind
+				if not hk in excluded_hazards:
+					if typeof(h) == TYPE_DICTIONARY:
+						h["is_disabled_by_flare"] = is_flaring
+					elif typeof(h) == TYPE_OBJECT:
+						h.set_meta("is_disabled_by_flare", is_flaring) if h.has_method("set_meta") else null
+
 var GAME_MODES = {
+	"solar_flare": SolarFlareMode.new(),
 	"extreme_weather": ExtremeWeatherMode.new(),
 	"invisible_decoys": InvisibleDecoysMode.new(),
 	"reversed_input": ReversedInputMode.new(),
