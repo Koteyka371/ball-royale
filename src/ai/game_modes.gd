@@ -5424,6 +5424,95 @@ class CloneChaosMode extends GameMode:
 							if "balls" in world:
 								world.balls.append(clone)
 
+class SumoKnockoutMode extends GameMode:
+    var zone_x: float = 500.0
+    var zone_y: float = 500.0
+    var zone_radius: float = 500.0
+    var min_zone_radius: float = 100.0
+    var shrink_rate: float = 15.0
+    var outside_damage_per_second: float = 20.0
+    var tick_timer: float = 0.0
+
+    func _init() -> void:
+        name = "Sumo Knockout"
+        description = "A physics-based mutator where collisions between balls deal minimal damage but apply massive knockback. The arena gradually shrinks towards a central spike pit."
+
+    func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
+        var arena_width = 1000.0
+        var arena_height = 1000.0
+
+        if "arena" in world and world.arena:
+            if "width" in world.arena: arena_width = world.arena.width
+            if "height" in world.arena: arena_height = world.arena.height
+        elif "width" in world:
+            arena_width = world.width
+            arena_height = world.height
+
+        zone_x = arena_width / 2.0
+        zone_y = arena_height / 2.0
+        zone_radius = min(arena_width, arena_height) / 2.0
+
+        if "arena" in world and world.arena and "hazards" in world.arena:
+            var hazard_class = load("res://src/arena/procedural_arena.gd").Hazard if ResourceLoader.exists("res://src/arena/procedural_arena.gd") else null
+            if not hazard_class:
+                # Mock if load fails
+                var h = {"id": "sumo_spike_pit", "x": zone_x, "y": zone_y, "radius": 80.0, "kind": "spike_pit", "damage": 50.0}
+                world.arena.hazards.append(h)
+            else:
+                var spike_pit = hazard_class.new("sumo_spike_pit", zone_x, zone_y, "spike_pit", 80.0)
+                spike_pit.damage = 50.0
+                world.arena.hazards.append(spike_pit)
+
+        for b in balls:
+            b.damage = 1.0
+
+            var mutators = []
+            if "mutators" in b:
+                mutators = b.mutators
+            elif b.has_method("get_meta") and b.has_meta("mutators"):
+                mutators = b.get_meta("mutators")
+
+            if not mutators.has("bumper_balls"):
+                mutators.append("bumper_balls")
+
+            if b.has_method("set_meta"):
+                b.set_meta("mutators", mutators)
+            else:
+                b.mutators = mutators
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        tick_timer += delta
+
+        zone_radius -= shrink_rate * delta
+        if zone_radius < min_zone_radius:
+            zone_radius = min_zone_radius
+
+        for b in balls:
+            if ("alive" in b and not b.alive) or (b.has_method("get_meta") and b.has_meta("alive") and not b.get_meta("alive")):
+                continue
+
+            var bx = b.x if "x" in b else 0.0
+            var by = b.y if "y" in b else 0.0
+
+            var dx = bx - zone_x
+            var dy = by - zone_y
+            var dist = sqrt(dx*dx + dy*dy)
+
+            if dist > zone_radius:
+                if "hp" in b:
+                    b.hp -= outside_damage_per_second * delta
+                    if b.hp <= 0:
+                        b.hp = 0
+                        b.alive = false
+                        if "time_since_death" in b:
+                            b.time_since_death = 0.0
+
+        if tick_timer > 0.5:
+            tick_timer = 0.0
+            if world.has_method("add_event"):
+                world.add_event("zone_shrink_update", {"zone_x": zone_x, "zone_y": zone_y, "radius": zone_radius})
+
 class BumperBallsMode extends GameMode:
     func _init() -> void:
         name = "Bumper Balls"
@@ -11364,6 +11453,7 @@ var GAME_MODES = {
     "draft_royale": DraftRoyaleMode.new(),
     "tournament": TournamentMode.new(),
     "bumper_balls": BumperBallsMode.new(),
+    "sumo_knockout": SumoKnockoutMode.new(),
 	"bouncy_terrain": BouncyTerrainMode.new(),
 	"pinball": PinballMode.new(),
     "portal_node": PortalNodeMode.new(),
