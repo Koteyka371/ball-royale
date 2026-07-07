@@ -2474,6 +2474,176 @@ class VampireRoyaleMode extends GameMode:
         return null
 
 
+class ControlPointsMode extends GameMode:
+    var points = []
+    var target_score = 1000.0
+    var move_timer = 0.0
+    var move_interval = 15.0
+
+    func _init() -> void:
+        name = "Control Points"
+        description = "Capture moving control points to accumulate points. First to target score wins."
+
+    func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
+        if not "dead_balls" in world:
+            world.set_meta("dead_balls", []) if typeof(world) != TYPE_DICTIONARY and world.has_method("set_meta") else null
+
+        if typeof(world) == TYPE_DICTIONARY:
+            if not world.has("scores"):
+                world.scores = {"Red": 0.0, "Blue": 0.0}
+        else:
+            if world.has_method("set_meta") and not world.has_meta("scores"):
+                world.set_meta("scores", {"Red": 0.0, "Blue": 0.0})
+            elif not world.has_method("set_meta"):
+                if not "scores" in world:
+                    pass
+
+        var mid = balls.size() / 2
+        for i in range(balls.size()):
+            var b = balls[i]
+            if b.ball_type != "spectator":
+                if i < mid:
+                    b.team = "Red"
+                else:
+                    b.team = "Blue"
+
+        points = []
+        points.append({"id": "1", "x": 300, "y": 300, "radius": 120.0, "capture_progress": 0.0, "owner": null})
+        points.append({"id": "2", "x": 700, "y": 300, "radius": 120.0, "capture_progress": 0.0, "owner": null})
+        points.append({"id": "3", "x": 500, "y": 700, "radius": 120.0, "capture_progress": 0.0, "owner": null})
+        move_timer = 0.0
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        # Evaluate crowd system
+        if world != null and typeof(world) != TYPE_DICTIONARY and world.has_method("get_node") and world.has_node("CrowdSystem"):
+            var crowd = world.get_node("CrowdSystem")
+            var kill_log = []
+            if "kill_log" in world:
+                kill_log = world.kill_log
+            var current_tick = 0
+            if "tick" in world:
+                current_tick = world.tick
+            crowd.tick(balls, kill_log, current_tick)
+
+        if not "dead_balls" in world:
+            world.set_meta("dead_balls", []) if typeof(world) != TYPE_DICTIONARY and world.has_method("set_meta") else null
+
+        for b in balls:
+            if not b.alive:
+                var dead_list = []
+                if typeof(world) == TYPE_DICTIONARY and "dead_balls" in world:
+                    dead_list = world.dead_balls
+                elif typeof(world) != TYPE_DICTIONARY and world.has_method("get_meta") and world.has_meta("dead_balls"):
+                    dead_list = world.get_meta("dead_balls")
+
+                if not dead_list.has(b):
+                    if typeof(b) == TYPE_DICTIONARY:
+                        b.time_since_death = 0.0
+                    elif typeof(b) != TYPE_DICTIONARY and b.has_method("set_meta"):
+                        b.set_meta("time_since_death", 0.0)
+                    dead_list.append(b)
+                else:
+                    if typeof(b) == TYPE_DICTIONARY and "time_since_death" in b:
+                        b.time_since_death += delta
+                    elif typeof(b) != TYPE_DICTIONARY and b.has_method("get_meta") and b.has_meta("time_since_death"):
+                        b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+
+        var scores = {"Red": 0.0, "Blue": 0.0}
+        if typeof(world) == TYPE_DICTIONARY:
+            if not world.has("scores"):
+                world.scores = scores
+            else:
+                scores = world.scores
+        elif typeof(world) != TYPE_DICTIONARY:
+            if world.has_method("has_meta") and world.has_meta("scores"):
+                scores = world.get_meta("scores")
+            elif "scores" in world:
+                scores = world.scores
+            elif world.has_method("set_meta"):
+                world.set_meta("scores", scores)
+
+        move_timer += delta
+        if move_timer >= move_interval:
+            move_timer = 0.0
+            for pt in points:
+                pt.x = 200 + randf() * 600
+                pt.y = 200 + randf() * 600
+                pt.capture_progress = 0.0
+                pt.owner = null
+
+            if typeof(world) == TYPE_DICTIONARY and "events" in world:
+                world.events.append({"type": "control_points_moved"})
+            elif typeof(world) != TYPE_DICTIONARY and "events" in world:
+                world.events.append({"type": "control_points_moved"})
+
+        for pt in points:
+            var red_count = 0
+            var blue_count = 0
+            for b in balls:
+                if b.alive and b.ball_type != "spectator":
+                    var dist_sq = (b.x - pt.x) * (b.x - pt.x) + (b.y - pt.y) * (b.y - pt.y)
+                    if dist_sq <= pt.radius * pt.radius:
+                        if b.get("team") == "Red":
+                            red_count += 1
+                        elif b.get("team") == "Blue":
+                            blue_count += 1
+
+            if red_count > blue_count:
+                pt.capture_progress += 20.0 * delta
+            elif blue_count > red_count:
+                pt.capture_progress -= 20.0 * delta
+
+            pt.capture_progress = clamp(pt.capture_progress, -100.0, 100.0)
+
+            if pt.capture_progress >= 100.0:
+                pt.owner = "Red"
+            elif pt.capture_progress <= -100.0:
+                pt.owner = "Blue"
+            elif pt.capture_progress > -100.0 and pt.capture_progress < 100.0:
+                pt.owner = null
+
+            if pt.owner == "Red":
+                scores["Red"] += 10.0 * delta
+            elif pt.owner == "Blue":
+                scores["Blue"] += 10.0 * delta
+
+    func check_winner(world, balls: Array):
+        var scores = {"Red": 0.0, "Blue": 0.0}
+        if typeof(world) == TYPE_DICTIONARY and world.has("scores"):
+            scores = world.scores
+        elif typeof(world) != TYPE_DICTIONARY:
+            if world.has_method("has_meta") and world.has_meta("scores"):
+                scores = world.get_meta("scores")
+            elif "scores" in world:
+                scores = world.scores
+
+        if scores["Red"] >= target_score:
+            return "Red"
+        if scores["Blue"] >= target_score:
+            return "Blue"
+
+        var alive = []
+        for b in balls:
+            if b.alive and b.ball_type != "spectator":
+                alive.append(b)
+
+        var teams_alive = {}
+        for b in alive:
+            var team = b.get("team")
+            if team != null and team != "":
+                teams_alive[team] = true
+
+        if teams_alive.size() == 0:
+            if scores["Red"] > scores["Blue"]:
+                return "Red"
+            elif scores["Blue"] > scores["Red"]:
+                return "Blue"
+            return "Draw"
+
+        return null
+
+
 class KingOfTheHillMode extends GameMode:
     var tick_timer = 0.0
     var game_time = 0.0
@@ -11494,6 +11664,7 @@ var GAME_MODES = {
     "weather_chaos": WeatherChaosMode.new(),
 	"lunar_eclipse_event": LunarEclipseEventMode.new(),
     "domination": DominationMode.new(),
+    "control_points": ControlPointsMode.new(),
     "black_hole": BlackHoleMode.new(),
     "sweeping_black_hole": SweepingBlackHoleMode.new(),
     "gravity_well": GravityWellMode.new(),

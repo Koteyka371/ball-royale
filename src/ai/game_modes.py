@@ -3017,6 +3017,128 @@ class DominationMode(GameMode):
         return None
 
 
+class ControlPointsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Control Points"
+        self.description = "Capture moving control points to accumulate points. First to target score wins."
+        self.points = []
+        self.target_score = 1000.0
+        self.move_timer = 0.0
+        self.move_interval = 15.0
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        if not hasattr(world, "scores"):
+            world.scores = {"Red": 0.0, "Blue": 0.0}
+
+        mid = len(balls) // 2
+        for i, b in enumerate(balls):
+            if getattr(b, "ball_type", None) != "spectator":
+                if i < mid:
+                    b.team = "Red"
+                else:
+                    b.team = "Blue"
+
+        class ControlPoint:
+            def __init__(self, id, x, y):
+                self.id = id
+                self.x = x
+                self.y = y
+                self.radius = 120.0
+                self.capture_progress = 0.0 # -100 (Blue) to 100 (Red)
+                self.owner = None
+
+        self.points = [
+            ControlPoint("1", 300, 300),
+            ControlPoint("2", 700, 300),
+            ControlPoint("3", 500, 700)
+        ]
+        self.move_timer = 0.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        for b in balls:
+            w_timer = getattr(b, "weather_immunity_timer", 0.0)
+            if isinstance(w_timer, (int, float)) and w_timer > 0.0:
+                b.weather_immunity_timer = max(0.0, w_timer - delta)
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+
+        if not hasattr(world, "scores"):
+            world.scores = {"Red": 0.0, "Blue": 0.0}
+
+        self.move_timer += delta
+        if self.move_timer >= self.move_interval:
+            self.move_timer = 0.0
+            import random
+            for pt in self.points:
+                pt.x = random.uniform(200, 800)
+                pt.y = random.uniform(200, 800)
+                pt.capture_progress = 0.0
+                pt.owner = None
+            if hasattr(world, "events"):
+                world.events.append({"type": "control_points_moved"})
+
+        for pt in self.points:
+            red_count = 0
+            blue_count = 0
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                    dist_sq = (b.x - pt.x)**2 + (b.y - pt.y)**2
+                    if dist_sq <= pt.radius**2:
+                        team = getattr(b, "team", "")
+                        if team == "Red":
+                            red_count += 1
+                        elif team == "Blue":
+                            blue_count += 1
+
+            if red_count > blue_count:
+                pt.capture_progress += 20.0 * delta
+            elif blue_count > red_count:
+                pt.capture_progress -= 20.0 * delta
+
+            pt.capture_progress = max(-100.0, min(100.0, pt.capture_progress))
+
+            if pt.capture_progress >= 100.0:
+                pt.owner = "Red"
+            elif pt.capture_progress <= -100.0:
+                pt.owner = "Blue"
+            elif -100.0 < pt.capture_progress < 100.0:
+                pt.owner = None
+
+            if pt.owner == "Red":
+                world.scores["Red"] += 10.0 * delta
+            elif pt.owner == "Blue":
+                world.scores["Blue"] += 10.0 * delta
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        if hasattr(world, "scores"):
+            if world.scores.get("Red", 0) >= self.target_score:
+                return "Red"
+            if world.scores.get("Blue", 0) >= self.target_score:
+                return "Blue"
+
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        teams_alive = set(getattr(b, "team", "") for b in alive)
+        if len(teams_alive) == 0:
+            if hasattr(world, "scores"):
+                if world.scores.get("Red", 0) > world.scores.get("Blue", 0):
+                    return "Red"
+                elif world.scores.get("Blue", 0) > world.scores.get("Red", 0):
+                    return "Blue"
+            return "Draw"
+
+        return None
+
+
 class MovingZoneMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -8923,6 +9045,7 @@ GAME_MODES = {
     "weather_chaos": WeatherChaosMode(),
     "lunar_eclipse_event": LunarEclipseEventMode(),
     "domination": DominationMode(),
+    "control_points": ControlPointsMode(),
     "black_hole": BlackHoleMode(),
     "sweeping_black_hole": SweepingBlackHoleMode(),
     "gravity_well": GravityWellMode(),

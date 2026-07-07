@@ -1,0 +1,4 @@
+{
+    "title": "Control Point Modifiers",
+    "description": "Each time a control point respawns or moves, it applies a random buff (e.g. 10% speed increase) or debuff (e.g. constant slow ticking damage) to the team currently holding it. This forces teams to consider if a point is 'worth' holding given its specific modifier, adding another layer of tactical decision making."
+}
