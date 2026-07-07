@@ -11632,7 +11632,7 @@
     },
     {
       "id": "idea-675",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Entanglement Link",
@@ -19031,6 +19031,40 @@
         "src/arena/traps.py",
         "src/arena/traps.gd",
         "tests/test_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1110",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirror Ball Type",
+      "description": "A new ball type that can temporarily turn completely reflective. While active, any direct projectile hits or continuous laser damage is reflected back towards the nearest enemy.",
+      "allowed_paths": [
+        "src/ai/mirror_ball.py",
+        "src/ai/mirror_ball.gd",
+        "tests/test_mirror_ball.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1111",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tether Pull Booster",
+      "description": "A booster that grants the ability to shoot a tether at an enemy. The enemy is pulled towards the user for 3 seconds, making them easier targets for melee balls or environmental hazards.",
+      "allowed_paths": [
+        "src/ai/tether_pull_booster.py",
+        "src/ai/tether_pull_booster.gd",
+        "tests/test_tether_pull_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

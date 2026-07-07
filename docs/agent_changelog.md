@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-675] Quantum Entanglement Link — *2026-07-07 19:48:36 UTC*
+
+A new utility skill that connects two allied balls via quantum entanglement. When one takes damage, it's shared equally, but they both gain increased movement speed and stamina regeneration as long as they stay within a certain radius of each other.
+
+---
+
 ## [idea-670] Quantum Entanglement Ball — *2026-07-07 19:37:23 UTC*
 
 A new ball type that can temporarily entangle with another ball (friend or foe). While entangled, any damage or healing one receives is shared 50/50, and their movements are slightly tethered together. Useful for dragging a strong enemy down or saving an ally.
