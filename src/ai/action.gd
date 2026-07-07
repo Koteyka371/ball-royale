@@ -2501,6 +2501,70 @@ func execute(strategy: String, delta: float):
 
 	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
+		if inv.has("grapple_hook"):
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if world != null and "arena" in world and world.arena != null:
+				if "width" in world.arena: arena_width = float(world.arena.width)
+				if "height" in world.arena: arena_height = float(world.arena.height)
+
+			var pull_dist = 200.0
+			var grapple_targets = []
+			if world != null and "balls" in world:
+				for b in world.balls:
+					var is_b_alive = true
+					if typeof(b) == TYPE_DICTIONARY and b.has("alive"): is_b_alive = b.alive
+					elif typeof(b) != TYPE_DICTIONARY and "alive" in b: is_b_alive = b.alive
+					if b != self.ball and is_b_alive:
+						var bx = 0.0
+						var by = 0.0
+						if typeof(b) == TYPE_DICTIONARY:
+							bx = float(b.x)
+							by = float(b.y)
+						else:
+							bx = float(b.x)
+							by = float(b.y)
+						var dx = bx - self.ball.x
+						var dy = by - self.ball.y
+						var dist_sq = dx*dx + dy*dy
+						grapple_targets.append({"ball": b, "dist_sq": dist_sq, "x": bx, "y": by})
+
+			var closest_target = null
+			var closest_target_dist_sq = 999999999.0
+			for t in grapple_targets:
+				if t.dist_sq < closest_target_dist_sq:
+					closest_target = t
+					closest_target_dist_sq = t.dist_sq
+
+			var dist_left = self.ball.x
+			var dist_right = arena_width - self.ball.x
+			var dist_top = self.ball.y
+			var dist_bottom = arena_height - self.ball.y
+
+			var closest_wall_dist = min(min(dist_left, dist_right), min(dist_top, dist_bottom))
+			var closest_wall = "left"
+			if closest_wall_dist == dist_right: closest_wall = "right"
+			elif closest_wall_dist == dist_top: closest_wall = "top"
+			elif closest_wall_dist == dist_bottom: closest_wall = "bottom"
+
+			if closest_target != null and closest_target_dist_sq < (closest_wall_dist * closest_wall_dist):
+				var dist = sqrt(closest_target_dist_sq)
+				if dist > 0.0001:
+					self.ball.x += ((closest_target.x - self.ball.x) / dist) * pull_dist
+					self.ball.y += ((closest_target.y - self.ball.y) / dist) * pull_dist
+			else:
+				if closest_wall == "left":
+					self.ball.x = max(0.0, self.ball.x - pull_dist)
+				elif closest_wall == "right":
+					self.ball.x = min(arena_width, self.ball.x + pull_dist)
+				elif closest_wall == "top":
+					self.ball.y = max(0.0, self.ball.y - pull_dist)
+				elif closest_wall == "bottom":
+					self.ball.y = min(arena_height, self.ball.y + pull_dist)
+
+			inv.erase("grapple_hook")
+			self.ball.set_meta("inventory", inv)
+
 		if inv.has("portal_gun"):
 			if world != null and "arena" in world and "hazards" in world.arena:
 				var arena = world.arena
@@ -10396,7 +10460,21 @@ func _collect_booster(delta: float):
         if "radius" in self.ball: ball_radius = self.ball.radius
 
         if dist <= ball_radius + 10:
-            if "kind" in nearest and nearest.kind == "drone_item":
+            if "kind" in nearest and nearest.kind == "grapple_booster":
+                if not self.ball.has_meta("inventory"):
+                    self.ball.set_meta("inventory", [])
+                var inv = self.ball.get_meta("inventory")
+                inv.append("grapple_hook")
+                self.ball.set_meta("inventory", inv)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "drone_item":
                 self.ball.has_drone = true
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
@@ -11024,6 +11102,20 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "grapple_booster":
+                if not self.ball.has_meta("inventory"):
+                    self.ball.set_meta("inventory", [])
+                var inv = self.ball.get_meta("inventory")
+                inv.append("grapple_hook")
+                self.ball.set_meta("inventory", inv)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "portal_gun_item":
                 if not self.ball.has_meta("inventory"):
                     self.ball.set_meta("inventory", [])
@@ -14440,7 +14532,7 @@ func _use_skill():
                     elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
                     elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
 
-                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_compass_item", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "status_absorber_item"]:
+                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_compass_item", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "status_absorber_item", "grapple_booster"]:
                         var hx = 0.0
                         var hy = 0.0
                         if "x" in h: hx = h.x
@@ -15779,7 +15871,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_compass_item", "invert_booster", "reverse_gravity_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster"]
+                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_compass_item", "invert_booster", "reverse_gravity_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y
