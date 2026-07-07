@@ -752,6 +752,23 @@ class Action:
                                     self.world.events.append({"type": "nemesis_compass", "data": {"target_x": float(other.x), "target_y": float(other.y), "owner_id": getattr(self.ball, "id", None)}})
                                     self.world.events.append({"type": "visual_effect", "data": {"type": "line", "x": float(self.ball.x), "y": float(self.ball.y), "tx": float(other.x), "ty": float(other.y), "color": "red"}})
 
+        if getattr(self.ball, "time_rewind_booster_active", False):
+            if getattr(self.ball, "hp", 100.0) <= 0.0:
+                self.ball.time_rewind_booster_active = False
+                history = getattr(self.ball, "state_history", [])
+                if history:
+                    past = history[0]
+                    self.ball.x = past.get("x", self.ball.x)
+                    self.ball.y = past.get("y", self.ball.y)
+                    self.ball.hp = past.get("hp", getattr(self.ball, "max_hp", 100.0))
+                    if "attack_timer" in past: self.ball.attack_timer = past["attack_timer"]
+                    if "skill_timer" in past: self.ball.skill_timer = past["skill_timer"]
+
+                    self.ball.alive = True
+                    if hasattr(self.world, "events"):
+                        self.world.events.append({"type": "time_rewind", "data": {"id": getattr(self.ball, "id", None)}})
+                return
+
         if getattr(self.ball, "shuffle_booster_timer", 0.0) > 0:
             self.ball.shuffle_booster_timer -= delta
             if self.ball.shuffle_booster_timer <= 0:
@@ -870,7 +887,9 @@ class Action:
         current_state = {
             "x": self.ball.x,
             "y": self.ball.y,
-            "hp": getattr(self.ball, "hp", 100.0)
+            "hp": getattr(self.ball, "hp", 100.0),
+            "attack_timer": getattr(self.ball, "attack_timer", 0.0),
+            "skill_timer": getattr(self.ball, "skill_timer", 0.0)
         }
         self.ball.state_history.append(current_state)
         # Keep last 3 seconds (assuming ~60 ticks/sec or so, delta is in args, let's just keep last 180 ticks, 180 * 0.016 is ~3s)
@@ -6563,6 +6582,8 @@ class Action:
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
                     self.ball.inventory.append("grapple_hook")
+                elif getattr(nearest, "kind", None) == "time_rewind_booster":
+                    self.ball.time_rewind_booster_active = True
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
@@ -7789,7 +7810,7 @@ class Action:
                     target_hazard = None
                     min_dist_sq = 22500.0  # Range 150
                     for h in hazards:
-                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "cursed_booster", "status_absorber_item", "grapple_booster"]:
+                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster"]:
                             dx = h.x - self.ball.x
                             dy = h.y - self.ball.y
                             dist_sq = dx*dx + dy*dy
