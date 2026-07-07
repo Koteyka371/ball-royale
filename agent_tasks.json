@@ -18390,6 +18390,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1072",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Explosion Traps",
+      "description": "Trickster's decoys will explode upon being destroyed by an enemy, causing area-of-effect damage and temporarily blinding nearby opponents, further enhancing the baiting playstyle.",
+      "allowed_paths": [
+        "src/arena/decoy_explosion_traps.py",
+        "src/arena/decoy_explosion_traps.gd",
+        "tests/test_decoy_explosion_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1073",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bait and Switch Mode",
+      "description": "A new chaotic game mode where all players occasionally leave behind a decoy that perfectly replicates their health and movement history for 5 seconds. Attacking a decoy reflects 50% of the damage back to the attacker.",
+      "allowed_paths": [
+        "src/ai/bait_and_switch.py",
+        "src/ai/bait_and_switch.gd",
+        "tests/test_bait_and_switch.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
