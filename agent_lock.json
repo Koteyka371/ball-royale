@@ -11,10 +11,10 @@
     "agent-2": {
       "name": "Jules Behaviors",
       "area": "behaviors",
-      "task_id": "idea-568",
-      "status": "working",
-      "started_at": "2026-07-07T13:35:19.260118+00:00",
-      "cycles_today": 1
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
+      "cycles_today": 0
     },
     "agent-3": {
       "name": "Jules Tests",
