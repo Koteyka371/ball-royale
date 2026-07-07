@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-695] Reflect Shield Overcharge Mode — *2026-07-07 21:10:38 UTC*
+
+A game mode where reflect shields have 300% capacity but passively drain the owner's stamina while active. If the shield breaks, the explosion radius and damage are doubled.
+
+---
+
 ## [idea-664] Weather Anomaly: Solar Eclipse — *2026-07-07 20:51:44 UTC*
 
 A rare weather event that gradually darkens the entire arena, drastically reducing vision radius for all players except those with night vision. Causes some hazards to behave differently (e.g. solar panels stop providing power, shadow boosters spawn more frequently).

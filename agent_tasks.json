@@ -11972,7 +11972,7 @@
     },
     {
       "id": "idea-695",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Reflect Shield Overcharge Mode",
@@ -19422,6 +19422,125 @@
         "src/arena/shrinking_danger_zones_arena.py",
         "src/arena/shrinking_danger_zones_arena.gd",
         "tests/test_shrinking_danger_zones_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1133",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "VIP Bodyguard Bounties",
+      "description": "Players can dynamically purchase a 'Bodyguard Bounty' using score or in-game resources, placing a massive reward on a chosen ally to incentivize the entire team to protect them while drawing enemies.",
+      "allowed_paths": [
+        "src/ai/vip_bodyguard_bounties.py",
+        "src/ai/vip_bodyguard_bounties.gd",
+        "tests/test_vip_bodyguard_bounties.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1134",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Solar Powered Ball",
+      "description": "A new ball type 'solar_bot' that naturally regenerates HP and stamina as long as the arena is well lit, but suffers heavy debuffs (speed, damage) during blackouts or eclipses. It uses a unique skill 'Solar Flare' that burns nearby enemies and briefly lights up a dark area.",
+      "allowed_paths": [
+        "src/ai/solar_powered_ball.py",
+        "src/ai/solar_powered_ball.gd",
+        "tests/test_solar_powered_ball.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1135",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Payload Turret Attachment",
+      "description": "Allow specific defensive or supportive entities to be 'attached' to payloads in Escort and Dual Payload modes. When a payload gathers enough players around it to reach a certain speed threshold, it temporarily spawns an automated defensive turret that damages or repels approaching enemies, making coordination even more rewarding.",
+      "allowed_paths": [
+        "src/ai/payload_turret_attachment.py",
+        "src/ai/payload_turret_attachment.gd",
+        "tests/test_payload_turret_attachment.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1136",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Magnetic Repulsion Field Mode",
+      "description": "A game mode where all balls naturally repel each other slightly. The strength of repulsion increases as they get closer, making it difficult to land melee attacks and creating a pinball-like arena effect during high-speed collisions.",
+      "allowed_paths": [
+        "src/ai/magnetic_repulsion_field.py",
+        "src/ai/magnetic_repulsion_field.gd",
+        "tests/test_magnetic_repulsion_field.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1137",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Interactive Hologram Spectators",
+      "description": "During intense matches, high-excitement crowd events can spawn physical holograms of the spectators along the arena edges. These holograms can block projectiles or be interacted with to cheer and grant minor speed buffs to nearby players.",
+      "allowed_paths": [
+        "src/ai/interactive_hologram_spectators.py",
+        "src/ai/interactive_hologram_spectators.gd",
+        "tests/test_interactive_hologram_spectators.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1138",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Spotlight Hazards",
+      "description": "In blackout mode or night stages, introduce 'spotlight' hazards that roam the arena. Standing in a spotlight grants a massive vision boost and restores stamina, but reveals your position to all players and makes you take 1.5x damage from attacks.",
+      "allowed_paths": [
+        "src/arena/dynamic_spotlight_hazards.py",
+        "src/arena/dynamic_spotlight_hazards.gd",
+        "tests/test_dynamic_spotlight_hazards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1139",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sabotage Zone in Escort",
+      "description": "In Escort and Dual Payload modes, an 'anti-payload' hazard zone sporadically spawns on the map. If a payload passes through this zone, its speed is temporarily halved, regardless of how many allies are near it. Attackers can strategically use push/pull tools to force payloads into these zones to buy more time.",
+      "allowed_paths": [
+        "src/ai/sabotage_zone_in_escort.py",
+        "src/ai/sabotage_zone_in_escort.gd",
+        "tests/test_sabotage_zone_in_escort.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
