@@ -11037,7 +11037,7 @@
     },
     {
       "id": "idea-640",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chain Lightning Ability",
@@ -18351,6 +18351,23 @@
         "src/ai/quantum_resonance_booster.py",
         "src/ai/quantum_resonance_booster.gd",
         "tests/test_quantum_resonance_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1070",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Slingshot Mode",
+      "description": "Players can only move by dragging and releasing a slingshot mechanism, and deal damage based on speed upon collision with other players.",
+      "allowed_paths": [
+        "src/ai/slingshot.py",
+        "src/ai/slingshot.gd",
+        "tests/test_slingshot.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
