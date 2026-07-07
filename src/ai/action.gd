@@ -1131,6 +1131,71 @@ func _init(ball_ref, world_ref):
 
 func execute(strategy: String, delta: float):
 
+    # Nemesis Reveal Passive
+    var n_reveal = 5.0
+    if "nemesis_reveal_timer" in self.ball:
+        n_reveal = float(self.ball.nemesis_reveal_timer)
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("nemesis_reveal_timer"):
+        n_reveal = float(self.ball.get_meta("nemesis_reveal_timer"))
+    elif self.ball is Dictionary and self.ball.has("nemesis_reveal_timer"):
+        n_reveal = float(self.ball["nemesis_reveal_timer"])
+
+    n_reveal -= delta
+    if n_reveal <= 0.0:
+        n_reveal = 5.0
+        if "profile_manager" in self.world and self.world.profile_manager != null and self.world.profile_manager.has_method("is_nemesis") and "balls" in self.world:
+            for other in self.world.balls:
+                var my_id_e = -1
+                if "id" in self.ball: my_id_e = self.ball.id
+                elif self.ball is Dictionary and self.ball.has("id"): my_id_e = self.ball["id"]
+
+                var o_id_e = -1
+                if typeof(other) == TYPE_OBJECT and "id" in other: o_id_e = other.id
+                elif typeof(other) == TYPE_DICTIONARY and other.has("id"): o_id_e = other["id"]
+
+                var o_alive = true
+                if typeof(other) == TYPE_OBJECT and "alive" in other: o_alive = other.alive
+                elif typeof(other) == TYPE_DICTIONARY and other.has("alive"): o_alive = other["alive"]
+
+                if my_id_e != -1 and my_id_e != o_id_e and o_alive:
+                    var my_type = ""
+                    if "BALL_TYPE" in self.ball: my_type = self.ball.BALL_TYPE
+                    elif "ball_type" in self.ball: my_type = self.ball.ball_type
+                    elif self.ball is Dictionary and self.ball.has("ball_type"): my_type = self.ball["ball_type"]
+
+                    var o_type = ""
+                    if typeof(other) == TYPE_OBJECT and "BALL_TYPE" in other: o_type = other.BALL_TYPE
+                    elif typeof(other) == TYPE_OBJECT and "ball_type" in other: o_type = other.ball_type
+                    elif typeof(other) == TYPE_DICTIONARY and other.has("ball_type"): o_type = other["ball_type"]
+
+                    if my_type != "" and o_type != "" and self.world.profile_manager.is_nemesis(my_type, o_type):
+                        if "events" in self.world:
+                            var nx = 0.0
+                            if typeof(other) == TYPE_OBJECT and "x" in other: nx = float(other.x)
+                            elif typeof(other) == TYPE_DICTIONARY and other.has("x"): nx = float(other["x"])
+
+                            var ny = 0.0
+                            if typeof(other) == TYPE_OBJECT and "y" in other: ny = float(other.y)
+                            elif typeof(other) == TYPE_DICTIONARY and other.has("y"): ny = float(other["y"])
+
+                            self.world.events.append({"type": "nemesis_compass", "data": {"target_x": nx, "target_y": ny, "owner_id": my_id_e}})
+                            var bx = 0.0
+                            if "x" in self.ball: bx = float(self.ball.x)
+                            elif self.ball is Dictionary and self.ball.has("x"): bx = float(self.ball["x"])
+
+                            var by = 0.0
+                            if "y" in self.ball: by = float(self.ball.y)
+                            elif self.ball is Dictionary and self.ball.has("y"): by = float(self.ball["y"])
+
+                            self.world.events.append({"type": "visual_effect", "data": {"type": "line", "x": bx, "y": by, "tx": nx, "ty": ny, "color": "red"}})
+
+    if "nemesis_reveal_timer" in self.ball:
+        self.ball.nemesis_reveal_timer = n_reveal
+    elif self.ball.has_method("set_meta"):
+        self.ball.set_meta("nemesis_reveal_timer", n_reveal)
+    elif self.ball is Dictionary:
+        self.ball["nemesis_reveal_timer"] = n_reveal
+
     if self.ball.has_method("get_meta") and self.ball.has_meta("shuffle_booster_timer") and self.ball.get_meta("shuffle_booster_timer") > 0.0:
         var t = self.ball.get_meta("shuffle_booster_timer")
         t -= delta
