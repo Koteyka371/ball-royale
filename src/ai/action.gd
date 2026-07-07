@@ -1196,6 +1196,57 @@ func execute(strategy: String, delta: float):
     elif self.ball is Dictionary:
         self.ball["nemesis_reveal_timer"] = n_reveal
 
+    var is_rewind = false
+    if typeof(self.ball) == TYPE_DICTIONARY:
+        if self.ball.get("time_rewind_booster_active", false):
+            is_rewind = true
+    else:
+        if self.ball.has_method("has_meta") and self.ball.has_meta("time_rewind_booster_active") and self.ball.get_meta("time_rewind_booster_active"):
+            is_rewind = true
+        elif "time_rewind_booster_active" in self.ball and self.ball.time_rewind_booster_active:
+            is_rewind = true
+
+    if is_rewind:
+        var hp = float(self.ball.hp) if "hp" in self.ball else float(self.ball.get("hp", 100.0))
+        if hp <= 0.0:
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["time_rewind_booster_active"] = false
+                self.ball["alive"] = true
+            elif self.ball.has_method("set_meta"):
+                self.ball.set_meta("time_rewind_booster_active", false)
+                if "alive" in self.ball: self.ball.alive = true
+
+            var history = []
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                history = self.ball.get("state_history", [])
+            else:
+                if self.ball.has_method("has_meta") and self.ball.has_meta("state_history"):
+                    history = self.ball.get_meta("state_history")
+                elif "state_history" in self.ball:
+                    history = self.ball.state_history
+
+            if history.size() > 0:
+                var past = history[0]
+
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["x"] = past.get("x", self.ball.get("x", 0.0))
+                    self.ball["y"] = past.get("y", self.ball.get("y", 0.0))
+                    self.ball["hp"] = past.get("hp", self.ball.get("max_hp", 100.0))
+                    if "attack_timer" in past: self.ball["attack_timer"] = past["attack_timer"]
+                    if "skill_timer" in past: self.ball["skill_timer"] = past["skill_timer"]
+                else:
+                    self.ball.x = past.get("x", self.ball.x)
+                    self.ball.y = past.get("y", self.ball.y)
+                    if "hp" in self.ball: self.ball.hp = past.get("hp", self.ball.get("max_hp", 100.0))
+                    if "attack_timer" in self.ball and "attack_timer" in past: self.ball.attack_timer = past["attack_timer"]
+                    if "skill_timer" in self.ball and "skill_timer" in past: self.ball.skill_timer = past["skill_timer"]
+
+                if typeof(self.world) == TYPE_DICTIONARY and self.world.has("events"):
+                    self.world.events.append({"type": "time_rewind", "data": {"id": self.ball.get("id", -1)}})
+                elif typeof(self.world) != TYPE_DICTIONARY and "events" in self.world:
+                    self.world.events.append({"type": "time_rewind", "data": {"id": self.ball.get("id", -1) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.id}})
+            return
+
     if self.ball.has_method("get_meta") and self.ball.has_meta("shuffle_booster_timer") and self.ball.get_meta("shuffle_booster_timer") > 0.0:
         var t = self.ball.get_meta("shuffle_booster_timer")
         t -= delta
@@ -1567,7 +1618,13 @@ func execute(strategy: String, delta: float):
 			self.ball["state_history"] = []
 		var hp_val = 100.0
 		if self.ball.has("hp"): hp_val = float(self.ball["hp"])
-		self.ball["state_history"].push_back({"x": float(self.ball.get("x", 0.0)), "y": float(self.ball.get("y", 0.0)), "hp": hp_val})
+		self.ball["state_history"].push_back({
+			"x": float(self.ball.get("x", 0.0)),
+			"y": float(self.ball.get("y", 0.0)),
+			"hp": hp_val,
+			"attack_timer": float(self.ball.get("attack_timer", 0.0)),
+			"skill_timer": float(self.ball.get("skill_timer", 0.0))
+		})
 		if self.ball["state_history"].size() > 180:
 			self.ball["state_history"].pop_front()
 	else:
@@ -1578,7 +1635,13 @@ func execute(strategy: String, delta: float):
 			var history = self.ball.get_meta("state_history")
 			var hp_val = 100.0
 			if "hp" in self.ball: hp_val = float(self.ball.hp)
-			history.push_back({"x": float(self.ball.x), "y": float(self.ball.y), "hp": hp_val})
+			history.push_back({
+				"x": float(self.ball.x),
+				"y": float(self.ball.y),
+				"hp": hp_val,
+				"attack_timer": float(self.ball.get("attack_timer", 0.0) if "attack_timer" in self.ball else 0.0),
+				"skill_timer": float(self.ball.get("skill_timer", 0.0) if "skill_timer" in self.ball else 0.0)
+			})
 			if history.size() > 180:
 				history.pop_front()
 			self.ball.set_meta("state_history", history)
@@ -10470,6 +10533,12 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "time_rewind_booster":
+                self.ball.set_meta("time_rewind_booster_active", true)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
                 if self.world != null and "boosters" in self.world:
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
@@ -11108,6 +11177,12 @@ func _collect_booster(delta: float):
                 var inv = self.ball.get_meta("inventory")
                 inv.append("grapple_hook")
                 self.ball.set_meta("inventory", inv)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "time_rewind_booster":
+                self.ball.set_meta("time_rewind_booster_active", true)
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
@@ -14601,7 +14676,7 @@ func _use_skill():
                     elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
                     elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
 
-                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_compass_item", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "status_absorber_item", "grapple_booster"]:
+                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_compass_item", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster"]:
                         var hx = 0.0
                         var hy = 0.0
                         if "x" in h: hx = h.x
@@ -15940,7 +16015,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_compass_item", "invert_booster", "reverse_gravity_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster"]
+                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_compass_item", "invert_booster", "reverse_gravity_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "time_rewind_booster"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y
