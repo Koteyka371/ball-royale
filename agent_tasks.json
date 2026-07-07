@@ -10680,7 +10680,7 @@
     },
     {
       "id": "idea-619",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Rubber Band Bonds",
@@ -18436,6 +18436,57 @@
         "src/ai/decoy_distraction.py",
         "src/ai/decoy_distraction.gd",
         "tests/test_decoy_distraction.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1075",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Invisible Tracker Booster",
+      "description": "A booster that attaches a hidden tracker to the nearest enemy, allowing the player to permanently see them through walls and stealth until the tracker duration expires.",
+      "allowed_paths": [
+        "src/ai/invisible_tracker_booster.py",
+        "src/ai/invisible_tracker_booster.gd",
+        "tests/test_invisible_tracker_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1076",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Bomb Upgrade",
+      "description": "A feature where player decoys automatically detonate upon touching an enemy, creating a large blast radius that deals significant damage and briefly stuns all enemies hit.",
+      "allowed_paths": [
+        "src/ai/decoy_bomb_upgrade.py",
+        "src/ai/decoy_bomb_upgrade.gd",
+        "tests/test_decoy_bomb_upgrade.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1077",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Gravity Gun",
+      "description": "A new booster that, when collected, temporarily reverses gravity for all other opponents on the map. This causes them to slide in the opposite direction of their input for 3 seconds.",
+      "allowed_paths": [
+        "src/ai/reverse_gravity_gun.py",
+        "src/ai/reverse_gravity_gun.gd",
+        "tests/test_reverse_gravity_gun.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

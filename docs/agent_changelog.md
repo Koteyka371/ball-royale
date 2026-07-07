@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-619] Rubber Band Bonds — *2026-07-07 16:28:02 UTC*
+
+Teams of balls are tethered together by invisible rubber bands. If they move too far apart, they are snapped back together with massive force, dealing damage to anything in their path.
+
+---
+
 ## [idea-648] Black Hole Collapse Mode — *2026-07-07 16:14:07 UTC*
 
 An arena mode where instead of a ring closing, a slow-moving black hole sweeps across the map sucking in anything in its path.
