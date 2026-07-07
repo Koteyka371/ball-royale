@@ -4709,6 +4709,75 @@ class CloneChaosMode(GameMode):
                         if hasattr(world, "balls"):
                             world.balls.append(clone)
 
+
+class SumoKnockoutMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.collapse_triggered = False
+        self.name = "Sumo Knockout"
+        self.description = "A physics-based mutator where collisions between balls deal minimal damage but apply massive knockback. The arena gradually shrinks towards a central spike pit."
+        self.zone_x = 500.0
+        self.zone_y = 500.0
+        self.zone_radius = 500.0
+        self.min_zone_radius = 100.0
+        self.shrink_rate = 15.0
+        self.outside_damage_per_second = 20.0
+        self.tick_timer = 0.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.collapse_triggered = False
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else getattr(world, "width", 1000)
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else getattr(world, "height", 1000)
+
+        self.zone_x = arena_width / 2.0
+        self.zone_y = arena_height / 2.0
+        self.zone_radius = min(arena_width, arena_height) / 2.0
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            from arena.procedural_arena import Hazard
+            spike_pit = Hazard("sumo_spike_pit", self.zone_x, self.zone_y, 80.0, "spike_pit", 50.0)
+            world.arena.hazards.append(spike_pit)
+
+        for b in balls:
+            b.damage = 1.0
+            if not hasattr(b, "mutators"):
+                b.mutators = []
+            if "bumper_balls" not in b.mutators:
+                b.mutators.append("bumper_balls")
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+
+        self.tick_timer += delta
+
+        self.zone_radius -= self.shrink_rate * delta
+        if self.zone_radius < self.min_zone_radius:
+            self.zone_radius = self.min_zone_radius
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            bx = getattr(b, "position", b).x if hasattr(b, "position") else getattr(b, "x", 0.0)
+            by = getattr(b, "position", b).y if hasattr(b, "position") else getattr(b, "y", 0.0)
+
+            dx = bx - self.zone_x
+            dy = by - self.zone_y
+            dist = math.sqrt(dx*dx + dy*dy)
+
+            if dist > self.zone_radius:
+                b.hp = getattr(b, "hp", 100.0) - self.outside_damage_per_second * delta
+                if b.hp <= 0:
+                    b.hp = 0
+                    b.alive = False
+                    b.time_since_death = 0.0
+
+        if self.tick_timer > 0.5:
+            self.tick_timer = 0.0
+            if hasattr(world, "add_event"):
+                world.add_event("zone_shrink_update", {"zone_x": self.zone_x, "zone_y": self.zone_y, "radius": self.zone_radius})
+
 class BumperBallsMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -8817,6 +8886,7 @@ GAME_MODES = {
     "escort": EscortMode(),
     "tournament": TournamentMode(),
     "bumper_balls": BumperBallsMode(),
+    "sumo_knockout": SumoKnockoutMode(),
     "bouncy_terrain": BouncyTerrainMode(),
     "pinball": PinballMode(),
     "portal_node": PortalNodeMode(),
