@@ -242,6 +242,9 @@ class Action:
 
         original_damage = getattr(attacker, "damage", 10.0) * damage_reduction
 
+        if getattr(target, "takes_double_damage", False):
+            original_damage *= 2.0
+
         if random.random() > attack_accuracy:
             return
 
@@ -2153,12 +2156,27 @@ class Action:
                 if getattr(b, "is_decoy", False):
                     if getattr(b, "hp", 1.0) <= 0 or getattr(b, "decoy_timer", 1.0) <= 0 or not getattr(b, "alive", True):
                         if not getattr(b, "_decoy_exploded", False):
+                            owner_id = getattr(b, "owner_id", None)
+                            decoy_sibs = [sib for sib in getattr(self.world, "balls", []) if getattr(sib, "is_decoy", False) and getattr(sib, "owner_id", None) == owner_id and (getattr(sib, "hp", 1.0) <= 0 or getattr(sib, "decoy_timer", 1.0) <= 0 or not getattr(sib, "alive", True)) and not getattr(sib, "_decoy_exploded", False)]
+                            simultaneous = (len(decoy_sibs) >= 2)
+
                             b._decoy_exploded = True
                             b.alive = False
                             b.hp = 0
+
+                            for sib in decoy_sibs:
+                                if sib != b:
+                                    sib._decoy_exploded = True
+                                    sib.alive = False
+                                    sib.hp = 0
+
                             has_volatile = hasattr(b, "traits") and "volatile_decoy" in b.traits
                             radius = 150.0 if has_volatile else 100.0
                             explosion_damage = 80.0 if has_volatile else 30.0
+
+                            if simultaneous:
+                                radius *= 2.0
+                                explosion_damage *= 2.0
 
                             for other in self.world.balls:
                                 if getattr(other, "alive", False) and getattr(other, "id", None) != getattr(b, "id", None):
@@ -7526,6 +7544,10 @@ class Action:
                         # Orbit / Mirror state setup
                         decoy.is_orbiting = True if i == 0 else False
                         decoy.is_mirroring = True if i == 1 else False
+                        if i == 1:
+                            decoy.takes_double_damage = True
+                        if i == 1:
+                            decoy.takes_double_damage = True
                         decoy.orbit_angle = 0.0 if i == 0 else math.pi
 
                         # Initial displacement

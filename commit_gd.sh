@@ -1,3 +1,1 @@
-git add src/ai/game_modes.gd
-git diff --cached
-git commit --amend -m "[idea-662] Add Tethered Royale game mode" -a
+git commit -m "Update deploy_decoy ability for massive combined blast and double damage on second decoy"
