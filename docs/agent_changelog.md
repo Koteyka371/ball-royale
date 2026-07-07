@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-677] Portal Relay Mode — *2026-07-07 19:15:20 UTC*
+
+A mode where two pairs of interconnected portals periodically spawn and swap positions, allowing players to instantly traverse the map but also throwing unexpected hazards through the rifts.
+
+---
+
 ## [idea-673] Gravity Inversion Booster — *2026-07-07 19:15:15 UTC*
 
 A booster that temporarily flips gravity for all enemy balls, making them stick to walls and ceilings.
