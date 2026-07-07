@@ -11309,7 +11309,7 @@
     },
     {
       "id": "idea-656",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Echo Booster",
@@ -18419,6 +18419,23 @@
         "src/ai/bait_and_switch.py",
         "src/ai/bait_and_switch.gd",
         "tests/test_bait_and_switch.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1074",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Distraction Event",
+      "description": "Periodically spawn harmless AI-controlled fake balls around the arena that imitate movement patterns of real players but dissipate instantly when attacked. This confuses targeting systems and provides cover for sneaky maneuvers.",
+      "allowed_paths": [
+        "src/ai/decoy_distraction.py",
+        "src/ai/decoy_distraction.gd",
+        "tests/test_decoy_distraction.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

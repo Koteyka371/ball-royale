@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-656] Echo Booster — *2026-07-07 16:14:01 UTC*
+
+A new booster that deploys a decoy of the collecting ball that emits loud pings, revealing hidden enemies within a wide radius and causing them to briefly run away from the decoy in fear, creating crowd control opportunities.
+
+---
+
 ## [idea-657] Nemesis Tracking Aura — *2026-07-07 15:41:13 UTC*
 
 A passive skill that periodically reveals the location of your nemeses through walls, allowing you to track them down more easily.
