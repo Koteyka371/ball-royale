@@ -11515,6 +11515,8 @@ var GAME_MODES = {
 	"tag_team": TagTeamMode.new(),
 	"rubber_band": RubberBandMode.new(),
 	"rift_roulette": RiftRouletteMode.new(),
+	"item_morph": ItemMorphMode.new(),
+
 	"crossfire": CrossfireMode.new(),
 	"reverse_friction": preload("res://src/ai/reverse_friction.gd").ReverseFrictionMode.new()
 }
@@ -12123,3 +12125,62 @@ class RiftRouletteMode extends GameMode:
 						h.set_meta("is_rift_hazard", true)
 						h.duration = 5.0
 						world.arena.hazards.append(h)
+
+
+class ItemMorphMode extends GameMode:
+	var morph_timer: float = 0.0
+	var morph_interval: float = 10.0
+	var rng = RandomNumberGenerator.new()
+	var booster_kinds = ["speed_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_compass_item", "shadow_booster", "weather_scanner_item", "aura_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "cursed_booster", "grapple_booster", "time_rewind_booster"]
+
+	func _init().():
+		name = "Item Morph"
+		description = "Periodically, all active items and boosters in the arena randomly transform into different item types, keeping players constantly adapting."
+		rng.randomize()
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+		morph_timer += delta
+		while morph_timer >= morph_interval:
+			morph_timer -= morph_interval
+			if typeof(world) == TYPE_DICTIONARY and world.has("boosters") and typeof(world.boosters) == TYPE_ARRAY and world.boosters.size() > 0:
+				var morphed = false
+				for b in world.boosters:
+					var active = true
+					if typeof(b) == TYPE_DICTIONARY:
+						if b.has("active"): active = b["active"]
+					elif typeof(b) == TYPE_OBJECT:
+						if "active" in b: active = b.get("active")
+
+					if active:
+						var new_kind = booster_kinds[rng.randi() % booster_kinds.size()]
+						if typeof(b) == TYPE_DICTIONARY:
+							b["kind"] = new_kind
+						elif typeof(b) == TYPE_OBJECT:
+							b.set("kind", new_kind)
+						morphed = true
+
+				if morphed and world.has("add_event"):
+					if typeof(world.add_event) == TYPE_OBJECT and world.add_event.has_method("call"):
+						world.add_event.call("items_morphed", {"message": "All items have morphed!"})
+					elif world.has_method("add_event"):
+						world.add_event("items_morphed", {"message": "All items have morphed!"})
+			elif typeof(world) == TYPE_OBJECT and "boosters" in world and typeof(world.boosters) == TYPE_ARRAY and world.boosters.size() > 0:
+				var morphed = false
+				for b in world.boosters:
+					var active = true
+					if typeof(b) == TYPE_DICTIONARY:
+						if b.has("active"): active = b["active"]
+					elif typeof(b) == TYPE_OBJECT:
+						if "active" in b: active = b.get("active")
+
+					if active:
+						var new_kind = booster_kinds[rng.randi() % booster_kinds.size()]
+						if typeof(b) == TYPE_DICTIONARY:
+							b["kind"] = new_kind
+						elif typeof(b) == TYPE_OBJECT:
+							b.set("kind", new_kind)
+						morphed = true
+
+				if morphed and world.has_method("add_event"):
+					world.add_event("items_morphed", {"message": "All items have morphed!"})

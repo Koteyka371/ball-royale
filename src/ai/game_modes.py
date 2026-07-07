@@ -9798,3 +9798,34 @@ class RiftRouletteMode(GameMode):
 
 
 GAME_MODES["rift_roulette"] = RiftRouletteMode()
+
+class ItemMorphMode(GameMode):
+    """
+    Periodically, all active items and boosters in the arena randomly transform
+    into different item types, keeping players constantly adapting.
+    """
+    def __init__(self):
+        super().__init__()
+        self.morph_timer = 0.0
+        self.morph_interval = 10.0
+        self.booster_kinds = ["speed_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_compass_item", "shadow_booster", "weather_scanner_item", "aura_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "cursed_booster", "grapple_booster", "time_rewind_booster"]
+        import random
+        self.random = random
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        self.morph_timer += delta
+        while self.morph_timer >= self.morph_interval:
+            self.morph_timer -= self.morph_interval
+            if hasattr(world, "boosters") and world.boosters:
+                morphed = False
+                for b in world.boosters:
+                    if getattr(b, "active", True):
+                        new_kind = self.random.choice(self.booster_kinds)
+                        b.kind = new_kind
+                        morphed = True
+
+                if morphed and hasattr(world, "add_event"):
+                    world.add_event("items_morphed", {"message": "All items have morphed!"})
+
+GAME_MODES["item_morph"] = ItemMorphMode()
