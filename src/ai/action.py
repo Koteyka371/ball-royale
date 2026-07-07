@@ -2171,6 +2171,9 @@ class Action:
                                     sib.hp = 0
 
                             has_volatile = hasattr(b, "traits") and "volatile_decoy" in b.traits
+                            gm = getattr(self.world, "game_mode", None)
+                            if gm and getattr(gm, "mutators_active", False) and "exploding_decoys" in getattr(gm, "mutators", []):
+                                has_volatile = True
                             radius = 150.0 if has_volatile else 100.0
                             explosion_damage = 80.0 if has_volatile else 30.0
 

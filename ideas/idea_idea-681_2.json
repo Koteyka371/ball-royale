@@ -1,0 +1,4 @@
+{
+  "title": "Shrinking Danger Zones Arena",
+  "description": "A dynamic procedural arena element where circular 'danger zones' periodically appear on the map. After a warning delay, any balls caught within the zone take heavy damage. The zones gradually shrink in size over the course of the match, forcing close-quarters combat."
+}

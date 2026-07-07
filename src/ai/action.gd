@@ -4004,6 +4004,16 @@ func execute(strategy: String, delta: float):
                 if "traits" in b and typeof(b.traits) == TYPE_ARRAY and b.traits.has("volatile_decoy"): has_volatile = true
                 elif b.has_method("get_meta") and b.has_meta("traits") and typeof(b.get_meta("traits")) == TYPE_ARRAY and b.get_meta("traits").has("volatile_decoy"): has_volatile = true
 
+                var gm = null
+                if "game_mode" in world and world.game_mode != null: gm = world.game_mode
+                var mutators_active = false
+                if gm != null and "mutators_active" in gm: mutators_active = gm.mutators_active
+                var mutators = []
+                if gm != null and "mutators" in gm: mutators = gm.mutators
+
+                if mutators_active and mutators.has("exploding_decoys"):
+                    has_volatile = true
+
                 var radius = 150.0 if has_volatile else 100.0
                 var explosion_damage = 80.0 if has_volatile else 30.0
 

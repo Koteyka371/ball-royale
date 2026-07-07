@@ -6,6 +6,7 @@ from ai.game_modes import (
     BossFightMode, VIPDefenseMode, SurvivalMode, MemoryTrapsMode
 )
 
+from ai.game_modes import ExplodingDecoysMode
 class MockBall:
     def __init__(self, id, ball_type="warrior", alive=True):
         self.x = 0.0
@@ -1047,3 +1048,67 @@ def test_invisible_decoys_mode():
     assert decoy.invisible is True
     assert decoy.decoy_type == "explosive"
     assert decoy.team == "neutral"
+
+def test_exploding_decoys_mode():
+    world = MockWorld()
+    mode = ExplodingDecoysMode()
+    mode.setup(world, [])
+
+    # Setup a decoy about to expire
+    decoy = MockBall(id=1, ball_type="A")
+    decoy.team = "A"
+    decoy.is_decoy = True
+    decoy.owner_id = 99
+    decoy.decoy_timer = 0.0
+    decoy.x = 0
+    decoy.y = 0
+    decoy.alive = True
+
+    enemy = MockBall(id=2, ball_type="B")
+    enemy.team = "B"
+    enemy.hp = 100
+    enemy.x = 100 # Within the 150 radius of volatile/exploding_decoys, but > 100 (normal radius)
+    enemy.y = 0
+    enemy.alive = True
+
+    world.balls = [decoy, enemy]
+
+    from ai.action import Action
+    action = Action(decoy, world)
+    action.execute("none", 1.0)
+
+    assert enemy.hp < 100
+    # Specifically, volatile explosion damage is 80. Regular is 30.
+    # If the enemy was at x=100 and it wasn't volatile, radius is 100, so dist <= radius (100<=100)
+    # Let's set enemy at x=120 to prove the radius is 150.
+
+
+def test_exploding_decoys_mode_radius():
+    world = MockWorld()
+    mode = ExplodingDecoysMode()
+    mode.setup(world, [])
+
+    # Setup a decoy about to expire
+    decoy = MockBall(id=1, ball_type="A")
+    decoy.team = "A"
+    decoy.is_decoy = True
+    decoy.owner_id = 99
+    decoy.decoy_timer = 0.0
+    decoy.x = 0
+    decoy.y = 0
+    decoy.alive = True
+
+    enemy = MockBall(id=2, ball_type="B")
+    enemy.team = "B"
+    enemy.hp = 100
+    enemy.x = 120 # Within 150 (exploding_decoys radius) but outside 100 (normal radius)
+    enemy.y = 0
+    enemy.alive = True
+
+    world.balls = [decoy, enemy]
+
+    from ai.action import Action
+    action = Action(decoy, world)
+    action.execute("none", 1.0)
+
+    assert enemy.hp == 20 # 100 - 80 damage
