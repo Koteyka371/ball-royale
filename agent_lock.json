@@ -91,10 +91,10 @@
     "agent-11": {
       "name": "Jules Worker 11",
       "area": "innovation",
-      "task_id": "idea-638",
-      "status": "working",
-      "started_at": "2026-07-07T18:52:33.799930+00:00",
-      "cycles_today": 1
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
+      "cycles_today": 0
     },
     "agent-12": {
       "name": "Jules Worker 12",
