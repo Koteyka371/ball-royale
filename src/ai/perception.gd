@@ -198,18 +198,26 @@ func scan() -> Dictionary:
                 e_has_shadow = e.get_meta("shadow_booster_timer") > 0
             elif "shadow_booster_timer" in e:
                 e_has_shadow = float(e.shadow_booster_timer) > 0
+            var e_has_stealth_booster = false
+            if e.has_method("get_meta") and e.has_meta("stealth_booster_timer"):
+                e_has_stealth_booster = e.get_meta("stealth_booster_timer") > 0
+            elif "stealth_booster_timer" in e:
+                e_has_stealth_booster = float(e.stealth_booster_timer) > 0
+
 
             var is_sand_cloaked = false
             if "ball_type" in e and e.ball_type == "sand_elemental" and self.world != null and "arena" in self.world and "is_sandstorming" in self.world.arena and self.world.arena.is_sandstorming:
                 is_sand_cloaked = true
 
-            if e_has_stealth or e_has_shadow or is_sand_cloaked:
+            if e_has_stealth or e_has_shadow or e_has_stealth_booster or is_sand_cloaked:
                 var dist = sqrt(pow(e.x - bx_curr, 2) + pow(e.y - by_curr, 2))
                 if is_sand_cloaked and dist > 40.0:
                     continue
                 elif e_has_shadow and dist > 30.0:
                     continue
                 elif e_has_stealth and dist > 80.0:
+                    continue
+                elif e_has_stealth_booster and dist > 10.0:
                     continue
 
         data["enemies"].append(e)
@@ -272,7 +280,7 @@ func scan() -> Dictionary:
                                 break
                         if not found:
                             data["boosters"].append(h)
-                elif "kind" in h and (h.kind == "drone_item" or h.kind == "stealth_drone_item" or h.kind == "shadow_booster"):
+                elif "kind" in h and (h.kind == "drone_item" or h.kind == "stealth_drone_item" or h.kind == "shadow_booster" or h.kind == "stealth_booster"):
                     var found = false
                     for b in data["boosters"]:
                         if "id" in b and "id" in h and b.id == h.id:
