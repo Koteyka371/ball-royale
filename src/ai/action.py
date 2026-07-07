@@ -1652,7 +1652,11 @@ class Action:
 
                 hp_diff = prev_hp - self.ball.hp
                 if hp_diff > 0:
-                    # Apply 50% damage to partner
+                    # Apply 50% damage to partner, and refund 50% back to self
+                    self.ball._is_entangle_syncing = True
+                    self.ball.hp += hp_diff * 0.5
+                    self.ball._is_entangle_syncing = False
+
                     partner._is_entangle_syncing = True
                     if hasattr(partner, "take_damage"):
                         partner.take_damage(hp_diff * 0.5)
@@ -1660,7 +1664,11 @@ class Action:
                         partner.hp -= hp_diff * 0.5
                     partner._is_entangle_syncing = False
                 elif hp_diff < 0:
-                    # Apply 50% healing to partner
+                    # Apply 50% healing to partner, and remove 50% from self
+                    self.ball._is_entangle_syncing = True
+                    self.ball.hp += hp_diff * 0.5
+                    self.ball._is_entangle_syncing = False
+
                     partner._is_entangle_syncing = True
                     partner.hp = min(getattr(partner, "max_hp", 100.0), partner.hp - hp_diff * 0.5)
                     partner._is_entangle_syncing = False
@@ -1668,6 +1676,12 @@ class Action:
                 dx = self.ball.x - prev_x
                 dy = self.ball.y - prev_y
                 if abs(dx) > 0.001 or abs(dy) > 0.001:
+                    # Restore 50% movement to self
+                    self.ball._is_entangle_syncing = True
+                    self.ball.x -= dx * 0.5
+                    self.ball.y -= dy * 0.5
+                    self.ball._is_entangle_syncing = False
+
                     # Apply 50% movement to partner
                     partner._is_entangle_syncing = True
                     partner.x += dx * 0.5
@@ -6952,8 +6966,21 @@ class Action:
 
             elif skill_name == "entangle":
                 enemies = self._get_enemies()
-                if enemies:
-                    target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                allies = self._get_allies()
+                possible_targets = []
+                # If health is low, try to entangle an enemy to drag them down
+                if getattr(self.ball, "hp", 100) / getattr(self.ball, "max_hp", 100) < 0.5:
+                    possible_targets = enemies
+                else:
+                    # If health is high, try to entangle a low hp ally to save them
+                    low_hp_allies = [a for a in allies if getattr(a, "hp", 100) / getattr(a, "max_hp", 100) < 0.5]
+                    if low_hp_allies:
+                        possible_targets = low_hp_allies
+                    else:
+                        possible_targets = enemies
+
+                if possible_targets:
+                    target = min(possible_targets, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
                     self.ball.entangled_with_id = target.id
                     target.entangled_with_id = self.ball.id
                     self.ball.entangle_timer = 5.0

@@ -3089,6 +3089,15 @@ func execute(strategy: String, delta: float):
 
                 var hp_diff = prev_hp - my_ball.get("hp")
                 if hp_diff > 0:
+                    if my_ball.has_method("set_meta"):
+                        my_ball.set_meta("_is_entangle_syncing", true)
+                    if "hp" in my_ball:
+                        my_ball.hp += hp_diff * 0.5
+                    elif my_ball.has_method("set_meta") and my_ball.has_meta("hp"):
+                        my_ball.set_meta("hp", my_ball.get_meta("hp") + hp_diff * 0.5)
+                    if my_ball.has_method("set_meta"):
+                        my_ball.set_meta("_is_entangle_syncing", false)
+
                     if partner.has_method("set_meta"):
                         partner.set_meta("_is_entangle_syncing", true)
                     if partner.has_method("take_damage"):
@@ -3098,6 +3107,15 @@ func execute(strategy: String, delta: float):
                     if partner.has_method("set_meta"):
                         partner.set_meta("_is_entangle_syncing", false)
                 elif hp_diff < 0:
+                    if my_ball.has_method("set_meta"):
+                        my_ball.set_meta("_is_entangle_syncing", true)
+                    if "hp" in my_ball:
+                        my_ball.hp += hp_diff * 0.5
+                    elif my_ball.has_method("set_meta") and my_ball.has_meta("hp"):
+                        my_ball.set_meta("hp", my_ball.get_meta("hp") + hp_diff * 0.5)
+                    if my_ball.has_method("set_meta"):
+                        my_ball.set_meta("_is_entangle_syncing", false)
+
                     if partner.has_method("set_meta"):
                         partner.set_meta("_is_entangle_syncing", true)
                     var max_hp = 100.0
@@ -3111,10 +3129,19 @@ func execute(strategy: String, delta: float):
                 var dx = my_ball.get("x") - prev_x
                 var dy = my_ball.get("y") - prev_y
                 if abs(dx) > 0.001 or abs(dy) > 0.001:
+                    if my_ball.has_method("set_meta"):
+                        my_ball.set_meta("_is_entangle_syncing", true)
+                    if "x" in my_ball and "y" in my_ball:
+                        my_ball.x -= dx * 0.5
+                        my_ball.y -= dy * 0.5
+                    if my_ball.has_method("set_meta"):
+                        my_ball.set_meta("_is_entangle_syncing", false)
+
                     if partner.has_method("set_meta"):
                         partner.set_meta("_is_entangle_syncing", true)
-                    partner.x += dx * 0.5
-                    partner.y += dy * 0.5
+                    if "x" in partner and "y" in partner:
+                        partner.x += dx * 0.5
+                        partner.y += dy * 0.5
                     if partner.has_method("set_meta"):
                         partner.set_meta("_is_entangle_syncing", false)
 
@@ -12008,10 +12035,30 @@ func _use_skill():
 
         elif skill_name == "entangle":
             var enemies = _get_enemies()
-            if enemies.size() > 0:
+            var allies = _get_allies()
+            var possible_targets = []
+
+            var my_hp = self.ball.hp if "hp" in self.ball else (self.ball.get_meta("hp") if self.ball.has_method("has_meta") and self.ball.has_meta("hp") else 100.0)
+            var my_max_hp = self.ball.max_hp if "max_hp" in self.ball else (self.ball.get_meta("max_hp") if self.ball.has_method("has_meta") and self.ball.has_meta("max_hp") else 100.0)
+
+            if my_hp / my_max_hp < 0.5:
+                possible_targets = enemies
+            else:
+                var low_hp_allies = []
+                for a in allies:
+                    var a_hp = a.hp if "hp" in a else (a.get_meta("hp") if a.has_method("has_meta") and a.has_meta("hp") else 100.0)
+                    var a_max_hp = a.max_hp if "max_hp" in a else (a.get_meta("max_hp") if a.has_method("has_meta") and a.has_meta("max_hp") else 100.0)
+                    if a_hp / a_max_hp < 0.5:
+                        low_hp_allies.append(a)
+                if low_hp_allies.size() > 0:
+                    possible_targets = low_hp_allies
+                else:
+                    possible_targets = enemies
+
+            if possible_targets.size() > 0:
                 var target = null
                 var min_dist = 9999999.0
-                for e in enemies:
+                for e in possible_targets:
                     var dx = e.x - self.ball.x
                     var dy = e.y - self.ball.y
                     var dist_sq = dx*dx + dy*dy
