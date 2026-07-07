@@ -6761,6 +6761,19 @@ func execute(strategy: String, delta: float):
                             self.ball.x += (dx/dist) * 200.0 * delta
                             self.ball.y += (dy/dist) * 200.0 * delta
                         continue
+                    elif hazard.kind == "bounce_laser":
+                        var dx = self.ball.x - hazard.x
+                        var dy = self.ball.y - hazard.y
+                        var dist_sq = dx * dx + dy * dy
+                        var r_sum = hazard.radius + self.ball.radius
+                        if dist_sq < r_sum * r_sum:
+                            var damage_amount = hazard.damage * delta
+                            if self.ball.has_method("take_damage"):
+                                self.ball.take_damage(damage_amount)
+                            elif "hp" in self.ball:
+                                self.ball.hp -= damage_amount
+                                if self.ball.hp <= 0:
+                                    self.ball.alive = false
                     elif hazard.kind == "spinning_laser":
                         var is_on = true
                         if hazard.has_meta("is_on"):

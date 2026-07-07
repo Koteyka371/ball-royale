@@ -572,6 +572,49 @@ func update_zone(current_tick: int, delta: float) -> void:
             }
         if "hazards" in self:
             for hazard in hazards:
+                if hazard.kind == "bounce_laser":
+                    var speed = 300.0
+                    if hazard.has_method("has_meta") and hazard.has_meta("speed"):
+                        speed = hazard.get_meta("speed")
+                    elif "speed" in hazard:
+                        speed = hazard.speed
+
+                    if not hazard.has_method("has_meta") or not hazard.has_meta("vx"):
+                        var angle = randf_range(0.0, 2.0 * PI)
+                        if hazard.has_method("set_meta"):
+                            hazard.set_meta("vx", cos(angle) * speed)
+                            hazard.set_meta("vy", sin(angle) * speed)
+                        else:
+                            hazard.vx = cos(angle) * speed
+                            hazard.vy = sin(angle) * speed
+
+                    var vx = hazard.get_meta("vx") if hazard.has_method("has_meta") and hazard.has_meta("vx") else hazard.vx
+                    var vy = hazard.get_meta("vy") if hazard.has_method("has_meta") and hazard.has_meta("vy") else hazard.vy
+
+                    hazard.x += vx * delta
+                    hazard.y += vy * delta
+
+                    if hazard.x - hazard.radius < 0:
+                        hazard.x = hazard.radius
+                        vx = abs(vx)
+                    elif hazard.x + hazard.radius > width:
+                        hazard.x = width - hazard.radius
+                        vx = -abs(vx)
+
+                    if hazard.y - hazard.radius < 0:
+                        hazard.y = hazard.radius
+                        vy = abs(vy)
+                    elif hazard.y + hazard.radius > height:
+                        hazard.y = height - hazard.radius
+                        vy = -abs(vy)
+
+                    if hazard.has_method("set_meta"):
+                        hazard.set_meta("vx", vx)
+                        hazard.set_meta("vy", vy)
+                    else:
+                        hazard.vx = vx
+                        hazard.vy = vy
+
                 if hazard.kind == "sinkhole" or hazard.kind == "massive_sinkhole":
                     hazard.radius += 2.0 * delta
                     for other_hazard in hazards:
