@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-657] Nemesis Tracking Aura — *2026-07-07 15:41:13 UTC*
+
+A passive skill that periodically reveals the location of your nemeses through walls, allowing you to track them down more easily.
+
+---
+
 ## [idea-645] Trickster Fake Health Bar — *2026-07-07 13:33:52 UTC*
 
 Tricksters occasionally display a fake health bar to enemies making them look severely wounded, baiting them into a trap.
