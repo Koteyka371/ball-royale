@@ -24,6 +24,8 @@ class GuildManager:
                         guild["guild_xp"] = 0
                     if "perks" not in guild:
                         guild["perks"] = []
+                    if "active_bounties" not in guild:
+                        guild["active_bounties"] = {}
                 return data
         except (FileNotFoundError, json.JSONDecodeError):
             return {"guilds": {}, "territories": {}}
@@ -47,6 +49,7 @@ class GuildManager:
             "gvg_points": 0,
             "guild_xp": 0,
             "perks": [],
+            "active_bounties": {},
             "chat_history": [],
             "vault": [],
             "boss_progress": {},
@@ -95,6 +98,42 @@ class GuildManager:
                 self.save()
                 return True
         return False
+
+
+    def place_bounty(self, guild_name, target_guild_name, reward_points):
+        if guild_name in self.data["guilds"] and target_guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            if guild.get("resources", 0) >= reward_points:
+                guild["resources"] -= reward_points
+                target_guild = self.data["guilds"][target_guild_name]
+                if "active_bounties" not in target_guild:
+                    target_guild["active_bounties"] = {}
+
+                if guild_name not in target_guild["active_bounties"]:
+                    target_guild["active_bounties"][guild_name] = 0
+                target_guild["active_bounties"][guild_name] += reward_points
+                self.save()
+                return True
+        return False
+
+    def get_bounties_on_guild(self, guild_name):
+        if guild_name in self.data["guilds"]:
+            return self.data["guilds"][guild_name].get("active_bounties", {})
+        return {}
+
+    def claim_bounty(self, target_guild_name, claiming_guild_name):
+        if target_guild_name in self.data["guilds"] and claiming_guild_name in self.data["guilds"]:
+            target_guild = self.data["guilds"][target_guild_name]
+            claiming_guild = self.data["guilds"][claiming_guild_name]
+
+            bounties = target_guild.get("active_bounties", {})
+            if claiming_guild_name in bounties and bounties[claiming_guild_name] > 0:
+                reward = bounties[claiming_guild_name]
+                claiming_guild["resources"] = claiming_guild.get("resources", 0) + reward
+                bounties[claiming_guild_name] = 0
+                self.save()
+                return reward
+        return 0
 
     def get_guild_buffs(self, guild_name):
         if guild_name in self.data["guilds"]:

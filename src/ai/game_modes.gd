@@ -6834,6 +6834,40 @@ class GuildVsGuildMode extends GameMode:
 			else:
 				cp["progress"] = max(0, cp["progress"] - delta * 5)
 
+		if not self.has_meta("bounties_checked"):
+			self.set_meta("bounties_checked", true)
+			var GuildManager = load("res://src/system/guild.gd")
+			if GuildManager:
+				var gm = GuildManager.new()
+				var bounty_targets = []
+
+				for guild_name in guilds.keys():
+					var bounties = gm.get_bounties_on_guild(guild_name)
+					var has_bounty_from_opponent = false
+					for other_guild in guilds.keys():
+						if other_guild != guild_name and bounties.has(other_guild) and bounties[other_guild] > 0:
+							has_bounty_from_opponent = true
+							break
+					if has_bounty_from_opponent:
+						bounty_targets.append(guild_name)
+
+				for ball in world.balls:
+					var bid = ball.get_meta("id") if ball.has_method("get_meta") and ball.has_meta("id") else ball.id
+					var ball_guild = null
+					for guild in guilds.keys():
+						if guilds[guild].has(bid):
+							ball_guild = guild
+							break
+
+					if ball_guild in bounty_targets:
+						if ball.has_method("set_meta"):
+							ball.set_meta("is_bounty_target", true)
+						else:
+							ball.is_bounty_target = true
+
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							world.add_event("visual_effect", {"type": "bounty_highlight", "target": bid, "color": "red", "duration": 9999.0})
+
 		var owners = []
 		for cp in control_points:
 			if cp["owner"] != null:
@@ -6846,6 +6880,52 @@ class GuildVsGuildMode extends GameMode:
 		if owners.size() == control_points.size() and unique_owners.size() == 1:
 			var winner = owners[0]
 			_end_match(winner)
+
+	func on_ball_died(ball, killer):
+		if super.has_method("on_ball_died"):
+			super.on_ball_died(ball, killer)
+
+		var is_bounty = false
+		if ball.has_method("get_meta"):
+			is_bounty = ball.get_meta("is_bounty_target") if ball.has_meta("is_bounty_target") else false
+		else:
+			is_bounty = ball.is_bounty_target if "is_bounty_target" in ball else false
+
+		if killer != null and is_bounty:
+			var killer_id = killer.get_meta("id") if killer.has_method("get_meta") and killer.has_meta("id") else killer.id
+			var ball_id = ball.get_meta("id") if ball.has_method("get_meta") and ball.has_meta("id") else ball.id
+
+			var killer_guild = null
+			var ball_guild = null
+
+			for guild in guilds.keys():
+				if guilds[guild].has(killer_id):
+					killer_guild = guild
+				if guilds[guild].has(ball_id):
+					ball_guild = guild
+
+			if killer_guild != null and ball_guild != null and killer_guild != ball_guild:
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("bounty_claimed", {
+						"guild": killer_guild,
+						"target_guild": ball_guild,
+						"reward": 2 # Double standard kill points visually
+					})
+
+				# Provide double the standard elimination points for killing a bounty target
+				if killer.has_method("set_meta"):
+					var current_score = killer.get_meta("score") if killer.has_meta("score") else 0
+					killer.set_meta("score", current_score + 10) # assuming standard kill is +10 points, so this is +10 extra for double
+				elif "score" in killer:
+					killer.score += 10
+
+				if not self.has_meta("bounty_rewards"):
+					self.set_meta("bounty_rewards", {})
+				var br = self.get_meta("bounty_rewards")
+				if not br.has(killer_guild):
+					br[killer_guild] = 0
+				br[killer_guild] += 2
+				self.set_meta("bounty_rewards", br)
 
 	func _end_match(winner_guild: String):
 		territory_captured = true

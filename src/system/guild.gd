@@ -30,6 +30,8 @@ func load_guilds():
                     data["guilds"][g_name]["guild_xp"] = 0
                 if not data["guilds"][g_name].has("perks"):
                     data["guilds"][g_name]["perks"] = []
+                if not data["guilds"][g_name].has("active_bounties"):
+                    data["guilds"][g_name]["active_bounties"] = {}
             return
 
     data = {"guilds": {}, "territories": {}}
@@ -54,6 +56,7 @@ func create_guild(guild_name: String, creator_id: String) -> bool:
         "gvg_points": 0,
         "guild_xp": 0,
         "perks": [],
+        "active_bounties": {},
         "chat_history": [],
         "vault": [],
         "boss_progress": {},
@@ -102,6 +105,47 @@ func unlock_buff(guild_name: String, buff_name: String, cost: int) -> bool:
             save_guilds()
             return true
     return false
+
+
+func place_bounty(guild_name: String, target_guild_name: String, reward_points: int) -> bool:
+    if data["guilds"].has(guild_name) and data["guilds"].has(target_guild_name):
+        var guild = data["guilds"][guild_name]
+        if guild.has("resources") and guild["resources"] >= reward_points:
+            guild["resources"] -= reward_points
+            var target_guild = data["guilds"][target_guild_name]
+            if not target_guild.has("active_bounties"):
+                target_guild["active_bounties"] = {}
+
+            if not target_guild["active_bounties"].has(guild_name):
+                target_guild["active_bounties"][guild_name] = 0
+            target_guild["active_bounties"][guild_name] += reward_points
+            save_guilds()
+            return true
+    return false
+
+func get_bounties_on_guild(guild_name: String) -> Dictionary:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        if guild.has("active_bounties"):
+            return guild["active_bounties"]
+    return {}
+
+func claim_bounty(target_guild_name: String, claiming_guild_name: String) -> int:
+    if data["guilds"].has(target_guild_name) and data["guilds"].has(claiming_guild_name):
+        var target_guild = data["guilds"][target_guild_name]
+        var claiming_guild = data["guilds"][claiming_guild_name]
+
+        if target_guild.has("active_bounties"):
+            var bounties = target_guild["active_bounties"]
+            if bounties.has(claiming_guild_name) and bounties[claiming_guild_name] > 0:
+                var reward = bounties[claiming_guild_name]
+                if not claiming_guild.has("resources"):
+                    claiming_guild["resources"] = 0
+                claiming_guild["resources"] += reward
+                bounties[claiming_guild_name] = 0
+                save_guilds()
+                return reward
+    return 0
 
 func get_guild_buffs(guild_name: String) -> Dictionary:
     if data["guilds"].has(guild_name):

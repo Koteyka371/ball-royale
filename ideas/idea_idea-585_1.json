@@ -1,0 +1,4 @@
+{
+  "title": "Guild Headquarters Customization & Siege Defense",
+  "description": "Allow guilds to spend resources on building automated defenses (turrets, traps, barricades) in their HQ area on the persistent GvG map. Opposing guilds can attempt HQ sieges, where breaking defenses steals resources directly from the defending guild's vault. Successfully holding off a siege grants guild XP to the defenders."
+}
