@@ -6835,6 +6835,68 @@ class HazardBilliardsMode(GameMode):
 
 
 
+
+class _MinefieldHazard:
+    def __init__(self, id, x, y, radius, kind, damage, duration=-1.0):
+        self.id = id
+        self.x = x
+        self.y = y
+        self.radius = radius
+        self.kind = kind
+        self.damage = damage
+        self.duration = duration
+        self.active = True
+
+class MinefieldSafeZoneMode(SafeZoneMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Minefield Safe Zone"
+        self.description = "The safe zone shrinks over time, and the shrinking border leaves behind an increasing density of explosive landmines."
+        self.mine_spawn_timer = 0.0
+        self.base_mine_spawn_interval = 2.0
+        self.mines_spawned = 0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math
+        import random
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        max_arena_dim = max(arena_width, arena_height)
+
+        shrink_ratio = max(0.0, min(1.0, 1.0 - (self.zone_radius / (max_arena_dim / 2.0))))
+
+        current_interval = self.base_mine_spawn_interval * (1.0 - shrink_ratio * 0.8)
+        current_interval = max(0.1, current_interval)
+
+        self.mine_spawn_timer += delta
+        if self.mine_spawn_timer >= current_interval:
+            self.mine_spawn_timer = 0.0
+
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                angle = random.uniform(0, 3.14159 * 2)
+                dist = self.zone_radius + random.uniform(10.0, 50.0)
+                mx = self.zone_x + math.cos(angle) * dist
+                my = self.zone_y + math.sin(angle) * dist
+
+                mx = max(0.0, min(arena_width, mx))
+                my = max(0.0, min(arena_height, my))
+
+                h_id = len(world.arena.hazards) + random.randint(10000, 99999) + self.mines_spawned
+
+                # Import the real Hazard class or fallback to our _MinefieldHazard
+                try:
+                    from arena.procedural_arena import Hazard
+                    mine = Hazard(id=h_id, x=mx, y=my, radius=25.0, kind="hidden_mine", damage=45.0)
+                    mine.duration = -1.0
+                    mine.active = True
+                except ImportError:
+                    mine = _MinefieldHazard(h_id, mx, my, 25.0, "hidden_mine", 45.0, duration=-1.0)
+
+                world.arena.hazards.append(mine)
+                self.mines_spawned += 1
+
 class InverseSafeZoneMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -8780,6 +8842,7 @@ GAME_MODES = {
     "shrinking_danger_zone": ShrinkingDangerZoneMode(),
     "inverse_safe_zone": InverseSafeZoneMode(),
     "safe_zone": SafeZoneMode(),
+    "minefield_safe_zone": MinefieldSafeZoneMode(),
     "dynamic_safe_zone": DynamicSafeZoneMode(),
     "moving_safe_zone": MovingSafeZoneMode(),
     "poison_gas_zone": PoisonGasZoneMode(),
