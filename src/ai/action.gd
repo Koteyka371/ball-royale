@@ -5349,6 +5349,76 @@ func execute(strategy: String, delta: float):
                             self.ball.set_meta("_chrono_slow", 0.5)
                         elif typeof(self.ball) == TYPE_DICTIONARY:
                             self.ball["_chrono_slow"] = 0.5
+                elif hazard.kind == "puddle":
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    if dist_sq < hazard.radius * hazard.radius:
+                        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                            self.ball.set_meta("steering_mult", 0.5)
+                            self.ball.set_meta("dash_range_mult", 1.5)
+                        elif typeof(self.ball) == TYPE_DICTIONARY:
+                            self.ball["steering_mult"] = 0.5
+                            self.ball["dash_range_mult"] = 1.5
+
+                        var weather = ""
+                        if self.world != null and "game_mode" in self.world and self.world.game_mode != null and "weather" in self.world.game_mode:
+                            weather = self.world.game_mode.weather
+                        elif self.world != null and "arena" in self.world and self.world.arena != null and "weather" in self.world.arena:
+                            weather = self.world.arena.weather
+
+                        if weather == "thunderstorm":
+                            var hazard_damage = 20.0 * delta
+                            if self.ball.has_method("take_damage"):
+                                self.ball.take_damage(hazard_damage)
+                            elif "hp" in self.ball:
+                                self.ball.hp -= hazard_damage
+                                if self.ball.hp <= 0:
+                                    if "alive" in self.ball: self.ball.alive = false
+                            if randf() < 0.1 * delta:
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("stun_timer", 0.5)
+                                elif typeof(self.ball) == TYPE_DICTIONARY:
+                                    self.ball["stun_timer"] = 0.5
+                                elif "stun_timer" in self.ball:
+                                    self.ball.stun_timer = 0.5
+                        elif weather == "blizzard" or weather == "snow":
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                self.ball.set_meta("is_frictionless", true)
+                            elif typeof(self.ball) == TYPE_DICTIONARY:
+                                self.ball["is_frictionless"] = true
+                            elif "is_frictionless" in self.ball:
+                                self.ball.is_frictionless = true
+
+                            var bvx = 0.0
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("vx"): bvx = float(self.ball.get_meta("vx"))
+                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("vx"): bvx = float(self.ball["vx"])
+                            elif "vx" in self.ball: bvx = float(self.ball.vx)
+
+                            var bvy = 0.0
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("vy"): bvy = float(self.ball.get_meta("vy"))
+                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("vy"): bvy = float(self.ball["vy"])
+                            elif "vy" in self.ball: bvy = float(self.ball.vy)
+
+                            if "x" in self.ball: self.ball.x += bvx * delta
+                            if "y" in self.ball: self.ball.y += bvy * delta
+
+                            if "speed" in self.ball: self.ball.speed = 0.0
+
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                self.ball.set_meta("is_slipping", true)
+                            elif typeof(self.ball) == TYPE_DICTIONARY:
+                                self.ball["is_slipping"] = true
+                            elif "is_slipping" in self.ball:
+                                self.ball.is_slipping = true
+
+                            if randf() < 0.2 * delta:
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("stun_timer", 1.0)
+                                elif typeof(self.ball) == TYPE_DICTIONARY:
+                                    self.ball["stun_timer"] = 1.0
+                                elif "stun_timer" in self.ball:
+                                    self.ball.stun_timer = 1.0
                 elif hazard.kind == "ice_patch":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
