@@ -11275,7 +11275,7 @@
     },
     {
       "id": "idea-654",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Teleporter Hub Arena",
@@ -18317,6 +18317,40 @@
         "src/arena/shrinking.py",
         "src/arena/shrinking.gd",
         "tests/test_shrinking.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1068",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Unstable Quantum Overload Mode",
+      "description": "A game mode where every basic hazard (like spike traps or puddles) randomly shifts into a quantum teleporter for 5 seconds when activated, creating chaotic movement possibilities.",
+      "allowed_paths": [
+        "src/ai/unstable_quantum_overload.py",
+        "src/ai/unstable_quantum_overload.gd",
+        "tests/test_unstable_quantum_overload.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1069",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Resonance Booster",
+      "description": "A new booster type that temporarily halves the cooldown of quantum teleporters and additionally links your ball with your teammates for shared short-range teleports when near.",
+      "allowed_paths": [
+        "src/ai/quantum_resonance_booster.py",
+        "src/ai/quantum_resonance_booster.gd",
+        "tests/test_quantum_resonance_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

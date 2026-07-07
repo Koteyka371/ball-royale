@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-654] Teleporter Hub Arena — *2026-07-07 12:43:26 UTC*
+
+A specialized game mode or arena layout featuring a central teleporter hub that randomly connects to various peripheral zones, shifting its destinations every few seconds to create chaotic navigation challenges.
+
+---
+
 ## [idea-586] Quantum Teleporter Nodes — *2026-07-07 12:42:03 UTC*
 
 Place quantum teleporter nodes around the map. Entering one node instantly teleports a ball to a paired node on the other side of the arena. This creates high-risk, high-reward escape routes or flanking paths, but teleporters have a brief cooldown and leave a visual trail revealing the destination.
