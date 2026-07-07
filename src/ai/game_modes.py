@@ -9064,6 +9064,55 @@ class TagTeamMode(GameMode):
 
 GAME_MODES["tag_team"] = TagTeamMode()
 
+
+class CrossfireMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Crossfire"
+        self.description = "Balls are divided into two teams on opposite sides of a center line. Players cannot cross the line but can throw hazards and boosters."
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        import random
+        arena_width = getattr(world.arena, "width", 1000)
+
+        alive_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        random.shuffle(alive_balls)
+
+        midpoint = len(alive_balls) // 2
+        for i, b in enumerate(alive_balls):
+            if i < midpoint:
+                b.team = "team_left"
+                b.x = random.uniform(50.0, arena_width / 2.0 - 50.0)
+            else:
+                b.team = "team_right"
+                b.x = random.uniform(arena_width / 2.0 + 50.0, arena_width - 50.0)
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        arena_width = getattr(world.arena, "width", 1000)
+        center_line = arena_width / 2.0
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            team = getattr(b, "team", None)
+            radius = getattr(b, "radius", 15.0)
+            vx = getattr(b, "vx", 0.0)
+
+            if team == "team_left":
+                if b.x + radius > center_line:
+                    b.x = center_line - radius
+                    b.vx = -abs(vx) * 0.5
+            elif team == "team_right":
+                if b.x - radius < center_line:
+                    b.x = center_line + radius
+                    b.vx = abs(vx) * 0.5
+
+
+GAME_MODES["crossfire"] = CrossfireMode()
+
 try:
     from .reverse_friction import ReverseFrictionMode
     GAME_MODES["reverse_friction"] = ReverseFrictionMode()
