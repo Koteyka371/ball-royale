@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-642] Dodgeball Mode — *2026-07-07 12:49:20 UTC*
+
+Balls are divided into two teams on opposite sides of a center line. Players cannot cross the line but can throw hazards and boosters.
+
+---
+
 ## [idea-654] Teleporter Hub Arena — *2026-07-07 12:43:26 UTC*
 
 A specialized game mode or arena layout featuring a central teleporter hub that randomly connects to various peripheral zones, shifting its destinations every few seconds to create chaotic navigation challenges.
