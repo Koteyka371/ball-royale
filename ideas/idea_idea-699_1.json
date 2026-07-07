@@ -1,0 +1,4 @@
+{
+  "title": "Payload Swap Mode",
+  "description": "Two payloads are spawned, one for each team. The twist is that each team needs to push the *other* team's payload into the opposing goal. The payloads deal slight damage if a team member is near their own payload, forcing them to focus on the enemy payload."
+}
