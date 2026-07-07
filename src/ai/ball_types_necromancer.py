@@ -32,6 +32,8 @@ class Necromancer:
         self.attack_timer = 0.0
         self.attack_range = float(self.ATTACK_RANGE)
         self.personality = Personality("aggressive")
+        self.bone_armor_stacks = 0
+        self.bone_armor_timer = 5.0
 
     def get_hp_percent(self) -> float:
         return self.hp / self.max_hp if self.max_hp > 0 else 0.0

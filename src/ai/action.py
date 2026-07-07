@@ -242,6 +242,12 @@ class Action:
 
         original_damage = getattr(attacker, "damage", 10.0) * damage_reduction
 
+        if getattr(target, 'ball_type', getattr(target.__class__, 'BALL_TYPE', '')).lower() == 'necromancer':
+            bone_armor_stacks = getattr(target, 'bone_armor_stacks', 0)
+            if bone_armor_stacks > 0:
+                target.bone_armor_stacks = bone_armor_stacks - 1
+                original_damage = max(0.0, original_damage - 10.0)
+
         if random.random() > attack_accuracy:
             return
 
@@ -722,6 +728,19 @@ class Action:
             # optionally skip rest of execute if feared, or let them also do other stuff
             return
         import math
+
+        # Bone Armor Passive for Necromancer
+        b_type = getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower()
+        if b_type == 'necromancer':
+            if not hasattr(self.ball, 'bone_armor_timer'):
+                self.ball.bone_armor_timer = 5.0
+            if not hasattr(self.ball, 'bone_armor_stacks'):
+                self.ball.bone_armor_stacks = 0
+
+            self.ball.bone_armor_timer -= delta
+            if self.ball.bone_armor_timer <= 0.0:
+                self.ball.bone_armor_stacks = min(3, self.ball.bone_armor_stacks + 1)
+                self.ball.bone_armor_timer = 5.0
 
         # Nemesis Reveal Passive
         if not hasattr(self.ball, "nemesis_reveal_timer"):
