@@ -5969,6 +5969,7 @@ class WindstormMode extends GameMode:
 class BlackoutMode extends GameMode:
 	var timer: float = 0.0
 	var is_blackout: bool = false
+	var shadow_timer: float = 0.0
 
 	func _init() -> void:
 		name = "Blackout"
@@ -5977,6 +5978,7 @@ class BlackoutMode extends GameMode:
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		timer = 0.0
+		shadow_timer = 0.0
 		is_blackout = false
 		for b in balls:
 			if b.ball_type != "spectator":
@@ -5997,16 +5999,52 @@ class BlackoutMode extends GameMode:
 				var msg = "The arena went dark!" if is_blackout else "Vision restored!"
 				world.add_event("weather_warning", {"type": "weather_warning", "message": msg})
 
+			if is_blackout and world != null and "arena" in world and "hazards" in world.arena:
+				for h in world.arena.hazards:
+					if "kind" in h and h.kind == "solar_panel":
+						if h is Dictionary:
+							h["active"] = false
+						else:
+							h.active = false
+			elif not is_blackout and world != null and "arena" in world and "hazards" in world.arena:
+				for h in world.arena.hazards:
+					if "kind" in h and h.kind == "solar_panel":
+						if h is Dictionary:
+							h["active"] = true
+						else:
+							h.active = true
+
+		if is_blackout:
+			shadow_timer += delta
+			if shadow_timer >= 1.0:
+				shadow_timer = 0.0
+				if randf() < 0.2 and world != null and "arena" in world and "hazards" in world.arena:
+					var bx = randf_range(50.0, world.arena.width - 50.0) if "width" in world.arena else randf_range(50.0, 950.0)
+					var by = randf_range(50.0, world.arena.height - 50.0) if "height" in world.arena else randf_range(50.0, 950.0)
+					var shadow = load("res://src/arena/procedural_arena.gd").Hazard.new(world.arena.hazards.size() + 9000, bx, by, 15.0, "shadow_booster", 0.0)
+					world.arena.hazards.append(shadow)
+
 		for b in balls:
 			if b.alive and b.ball_type != "spectator":
 				if is_blackout:
-					b.perception_radius = 50.0
+					var has_night_vision = false
+					if "traits" in b and typeof(b.traits) == TYPE_ARRAY and b.traits.has("night_vision"):
+						has_night_vision = true
+					if "night_vision_active" in b and b.night_vision_active:
+						has_night_vision = true
+
+					if has_night_vision:
+						var base_perc = 250.0
+						if b.has_method("get_meta") and b.has_meta("base_perception_radius"):
+							base_perc = float(b.get_meta("base_perception_radius"))
+						b.perception_radius = base_perc
+					else:
+						b.perception_radius = 50.0
 				else:
 					var base_perc = 250.0
 					if b.has_method("get_meta") and b.has_meta("base_perception_radius"):
 						base_perc = float(b.get_meta("base_perception_radius"))
 					b.perception_radius = base_perc
-
 
 class BountyHuntMode extends GameMode:
     var bounties = {}

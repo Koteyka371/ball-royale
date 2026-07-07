@@ -5154,12 +5154,18 @@ class BlackoutMode(GameMode):
         self.description = "Periodically, the arena goes completely dark, reducing vision drastically for all balls."
         self.timer = 0.0
         self.is_blackout = False
+        import random
+        self.random = random
+        self.shadow_timer = 0.0
 
     def setup(self, world, balls):
         super().setup(world, balls)
         self.world = world
         self.timer = 0.0
+        self.shadow_timer = 0.0
         self.is_blackout = False
+        import random
+        self.random = random
         for b in balls:
             w_timer = getattr(b, 'weather_immunity_timer', 0.0)
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
@@ -5176,15 +5182,52 @@ class BlackoutMode(GameMode):
                 msg = "The arena went dark!" if self.is_blackout else "Vision restored!"
                 world.add_event("weather_warning", {"type": "weather_warning", "message": msg})
 
+            if self.is_blackout and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                for h in world.arena.hazards:
+                    # Solar panels stop providing power during blackout
+                    if getattr(h, "kind", "") == "solar_panel":
+                        h.active = False
+            elif not self.is_blackout and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                for h in world.arena.hazards:
+                    if getattr(h, "kind", "") == "solar_panel":
+                        h.active = True
+
+        if self.is_blackout:
+            self.shadow_timer += delta
+            if self.shadow_timer >= 1.0:
+                self.shadow_timer = 0.0
+                if hasattr(self, "random") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    if self.random.random() < 0.2:  # 20% chance every second to spawn shadow booster
+                        try:
+                            from arena.procedural_arena import Hazard
+                        except ImportError:
+                            try:
+                                from src.arena.procedural_arena import Hazard
+                            except ImportError:
+                                Hazard = None
+
+                        if Hazard is not None:
+                            bx = self.random.uniform(50, getattr(world.arena, "width", 1000) - 50)
+                            by = self.random.uniform(50, getattr(world.arena, "height", 1000) - 50)
+                            shadow = Hazard(id=len(world.arena.hazards) + 9000, x=bx, y=by, radius=15.0, kind="shadow_booster", damage=0.0)
+                            world.arena.hazards.append(shadow)
+
         for b in balls:
             w_timer = getattr(b, 'weather_immunity_timer', 0.0)
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 if self.is_blackout:
-                    b.perception_radius = 50.0
+                    has_night_vision = False
+                    if hasattr(b, "traits") and "night_vision" in b.traits:
+                        has_night_vision = True
+                    if getattr(b, "night_vision_active", False):
+                        has_night_vision = True
+                    if has_night_vision:
+                        b.perception_radius = getattr(b, "base_perception_radius", 250.0)
+                    else:
+                        b.perception_radius = 50.0
                 else:
                     b.perception_radius = getattr(b, "base_perception_radius", 250.0)
-
 
 class BountyHuntMode(GameMode):
     def __init__(self):
