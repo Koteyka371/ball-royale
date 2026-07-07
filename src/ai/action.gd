@@ -1130,6 +1130,38 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+    if "rewind_booster_active" in ball and ball.rewind_booster_active:
+        if not ball.has_meta("rewind_history"):
+            ball.set_meta("rewind_history", [])
+
+        var current_time = 0.0
+        if "time" in world:
+            current_time = world.time
+        else:
+            if not world.has_meta("_sim_time"):
+                world.set_meta("_sim_time", 0.0)
+            world.set_meta("_sim_time", world.get_meta("_sim_time") + delta)
+            current_time = world.get_meta("_sim_time")
+
+        var hp = ball.hp if "hp" in ball else 100
+        var st = ball.skill_timer if "skill_timer" in ball else 0.0
+
+        var hist = ball.get_meta("rewind_history")
+        hist.append([current_time, ball.x, ball.y, hp, st])
+
+        while hist.size() > 0 and current_time - hist[0][0] > 3.0:
+            hist.pop_front()
+
+        if hp <= 0:
+            if hist.size() > 0:
+                var old_state = hist[0]
+                ball.x = old_state[1]
+                ball.y = old_state[2]
+                ball.hp = old_state[3]
+                ball.skill_timer = old_state[4]
+                ball.rewind_booster_active = false
+                ball.set_meta("rewind_history", [])
+                ball.alive = true
 
     var is_d_aura_active = false
     var d_aura_val = 0.0
@@ -10611,6 +10643,17 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "rewind_booster":
+                self.ball.rewind_booster_active = true
+                self.ball.set_meta("rewind_history", [])
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "drone_item":
                 self.ball.has_drone = true
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
@@ -11245,6 +11288,17 @@ func _collect_booster(delta: float):
                 var inv = self.ball.get_meta("inventory")
                 inv.append("grapple_hook")
                 self.ball.set_meta("inventory", inv)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "rewind_booster":
+                self.ball.rewind_booster_active = true
+                self.ball.set_meta("rewind_history", [])
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
@@ -14758,7 +14812,7 @@ func _use_skill():
                     elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
                     elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
 
-                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_compass_item", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "status_absorber_item", "grapple_booster"]:
+                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_compass_item", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "status_absorber_item", "grapple_booster", "rewind_booster"]:
                         var hx = 0.0
                         var hy = 0.0
                         if "x" in h: hx = h.x
@@ -16126,7 +16180,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_compass_item", "invert_booster", "reverse_gravity_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster"]
+                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_compass_item", "invert_booster", "reverse_gravity_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "rewind_booster"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y
