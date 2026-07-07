@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-662] Weaponized Tether Mode — *2026-07-07 18:22:00 UTC*
+
+A new game mode where all balls are permanently tethered to another random ball in the arena. Moving in opposite directions drains stamina rapidly, while coordinated movements grant a temporary speed and damage buff. Eliminating an opponent breaks their tether, causing an explosive recoil that damages anyone nearby.
+
+---
+
 ## [idea-651] Chrono Shift Skill — *2026-07-07 18:14:54 UTC*
 
 A new skill that allows balls to speed up time in a localized area around them for a few seconds, drastically increasing their movement and attack speed while moving outside enemies slowly.
